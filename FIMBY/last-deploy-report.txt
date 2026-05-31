@@ -1,0 +1,135 @@
+﻿sf :  ┬╗   Warning: @salesforce/cli update available from 2.96.4 to 2.134.6.
+At C:\Users\srathjen\AppData\Local\Temp\1\ps-script-9237a479-5332-4c8f-8572-361f02f889d0.ps1:82 char:1
++ sf project deploy report --use-most-recent 2>&1 | Out-File -FilePath  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( ┬╗   Warning: ...6.4 to 2.134.6.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+0AfOL0000030sEn0AI... Failed
+
+Deploy Info
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé Key                      Γöé Value                    Γöé
+Γö£ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöñ
+Γöé checkOnly                Γöé false                    Γöé
+Γöé completedDate            Γöé 2026-05-21T03:58:56.000Z Γöé
+Γöé createdBy                Γöé 0055f000005dZ1f          Γöé
+Γöé createdByName            Γöé FIMBY                    Γöé
+Γöé createdDate              Γöé 2026-05-21T03:57:40.000Z Γöé
+Γöé done                     Γöé true                     Γöé
+Γöé id                       Γöé 0AfOL0000030sEn0AI       Γöé
+Γöé ignoreWarnings           Γöé false                    Γöé
+Γöé lastModifiedDate         Γöé 2026-05-21T03:58:56.000Z Γöé
+Γöé numberComponentErrors    Γöé 0                        Γöé
+Γöé numberComponentsDeployed Γöé 17                       Γöé
+Γöé numberComponentsTotal    Γöé 17                       Γöé
+Γöé numberFiles              Γöé 36                       Γöé
+Γöé numberTestErrors         Γöé 10                       Γöé
+Γöé numberTestsCompleted     Γöé 99                       Γöé
+Γöé numberTestsTotal         Γöé 109                      Γöé
+Γöé rollbackOnError          Γöé true                     Γöé
+Γöé runTestsEnabled          Γöé true                     Γöé
+Γöé startDate                Γöé 2026-05-21T03:57:42.000Z Γöé
+Γöé status                   Γöé Failed                   Γöé
+Γöé success                  Γöé false                    Γöé
+Γöé zipSize                  Γöé 350293                   Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+
+
+Deploy Options
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé Key              Γöé Value                                                                                                                                          Γöé
+Γö£ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöñ
+Γöé dry-run          Γöé false                                                                                                                                          Γöé
+Γöé ignore-conflicts Γöé false                                                                                                                                          Γöé
+Γöé ignore-errors    Γöé false                                                                                                                                          Γöé
+Γöé ignore-warnings  Γöé false                                                                                                                                          Γöé
+Γöé target-org       Γöé fimby@strathconavineyard.com                                                                                                                   Γöé
+Γöé tests            Γöé FimbyStoryCommentControllerTest,FimbyThanksControllerTest,FimbyContentReportControllerTest,FimbyHomeControllerTest,FimbyModeratorDashboardTest Γöé
+Γöé test-level       Γöé RunSpecifiedTests                                                                                                                              Γöé
+Γöé api              Γöé SOAP                                                                                                                                           Γöé
+Γöé manifest         Γöé C:\Users\srathjen\.sf\manifestCache\0AfOL0000030sEn0AI.xml                                                                                     Γöé
+Γöé wait             Γöé 10 minutes                                                                                                                                     Γöé
+Γöé isMdapi          Γöé false                                                                                                                                          Γöé
+Γöé status           Γöé Failed                                                                                                                                         Γöé
+Γöé use-most-recent  Γöé true                                                                                                                                           Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+
+
+Test Failures [10]
+ΓÇó FimbyStoryCommentControllerTest.testGetStoryComments_FiltersBlockedAuthor
+  message: System.AssertException: Assertion Failed: Comments from a blocked author must not be returned: Same value: a1hOL0000059upmYAA
+  stacktrace: 
+    Class.FimbyStoryCommentControllerTest.testGetStoryComments_FiltersBlockedAuthor: line 443, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testPostStoryComment_MentionFanOut
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuR: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testPostStoryComment_MentionFanOut: line 220, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testPostStoryComment_NotifiesStoryOwner
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuS: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testPostStoryComment_NotifiesStoryOwner: line 164, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testPostStoryComment_OwnStorySkipsNotification
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuT: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testPostStoryComment_OwnStorySkipsNotification: line 191, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testPostStoryComment_RequiresStoryAndBody
+  message: System.AssertException: Assertion Failed
+  stacktrace: 
+    Class.FimbyStoryCommentControllerTest.testPostStoryComment_RequiresStoryAndBody: line 250, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testPostStoryComment_Success_DualStamping
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuU: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testPostStoryComment_Success_DualStamping: line 122, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testSoftDeleteStoryComment_BlocksNonAuthors
+  message: System.AssertException: Assertion Failed
+  stacktrace: 
+    Class.FimbyStoryCommentControllerTest.testSoftDeleteStoryComment_BlocksNonAuthors: line 401, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testSoftDeleteStoryComment_Success
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuW: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testSoftDeleteStoryComment_Success: line 352, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testUpdateStoryComment_BlocksNonAuthors
+  message: System.AssertException: Assertion Failed
+  stacktrace: 
+    Class.FimbyStoryCommentControllerTest.testUpdateStoryComment_BlocksNonAuthors: line 330, column 1
+
+ΓÇó FimbyStoryCommentControllerTest.testUpdateStoryComment_IncrementsEditCountAndSnapshots
+  message: System.AuraHandledException: Error posting comment: Insert failed. First exception on row 0; first error: INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY, insufficient access rights on cross-reference id: a1FOL000003zYuY: []
+  stacktrace: 
+    Class.FimbyStoryCommentController.postStoryComment: line 206, column 1
+    Class.FimbyStoryCommentControllerTest.testUpdateStoryComment_IncrementsEditCountAndSnapshots: line 272, column 1
+
+
+Test Results Summary
+Passing: 99
+Failing: 10
+Total: 109
+Time: 58050
+ ┬╗   Warning: FimbyConversationController - Test coverage of selected Apex 
+ ┬╗   Class is 0%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyStoryCommentController - Test coverage of selected Apex 
+ ┬╗   Class is 60.595%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyVouchController - Test coverage of selected Apex Class is 
+ ┬╗   0%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyNotificationService - Test coverage of selected Apex Class 
+ ┬╗   is 43.75%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyModeratorActionService - Test coverage of selected Apex 
+ ┬╗   Class is 73.932%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyBlockingHelper - Test coverage of selected Apex Class is 
+ ┬╗   50%, at least 75% test coverage is required
+ ┬╗   Warning: FimbyStoriesController - Test coverage of selected Apex Class is 
+ ┬╗   0%, at least 75% test coverage is required

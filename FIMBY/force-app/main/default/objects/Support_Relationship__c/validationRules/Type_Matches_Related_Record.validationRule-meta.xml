@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Type_Matches_Related_Record</fullName>
+    <active>true</active>
+    <errorConditionFormula>(ISPICKVAL(Relationship_Type__c, &quot;Support_Person&quot;) &amp;&amp; ISBLANK(Related_Contact__c)) || (ISPICKVAL(Relationship_Type__c, &quot;Community_Group_Rep&quot;) &amp;&amp; ISBLANK(Related_Organization__c))</errorConditionFormula>
+    <errorMessage>The related record must match the relationship type.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Region_Account</fullName>
+    <active>true</active>
+    <description>Geographic cluster of Boundary Accounts (e.g., East Vancouver, Strathcona cluster). Used for dashboard rollups, admin filtering, staged expansion, and crisis messaging. Boundary Accounts set ParentId to their Region Account.</description>
+    <label>Region Account</label>
+    <picklistValues>
+        <picklist>Active__c</picklist>
+        <values>
+            <fullName>No</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Yes</fullName>
+            <default>true</default>
+        </values>
+    </picklistValues>
+</RecordType>

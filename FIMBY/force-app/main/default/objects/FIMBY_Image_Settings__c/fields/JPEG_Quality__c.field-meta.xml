@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>JPEG_Quality__c</fullName>
+    <defaultValue>0.8</defaultValue>
+    <description>JPEG compression quality from 0.1 (lowest quality, smallest file) to 1.0 (highest quality, largest file). Recommended: 0.7-0.8</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Compression quality 0.1-1.0 (default 0.8). Lower = smaller files.</inlineHelpText>
+    <label>JPEG Quality</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>1</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

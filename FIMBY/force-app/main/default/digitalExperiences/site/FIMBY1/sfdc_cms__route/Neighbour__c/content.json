@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Neighbour",
+  "contentBody" : {
+    "activeViewId" : "Neighbour",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-neighbour",
+    "urlPrefix" : "neighbour"
+  },
+  "urlName" : "neighbour"
+}

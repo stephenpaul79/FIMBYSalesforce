@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://lwc.dev/v1.0.0">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FIMBY Record Detail Card</masterLabel>
+    <description>Generic card for displaying record details with edit capability</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="displayFieldSetName" type="String" default="FIMBY_Display_Fields" label="Display Field Set" description="Field set for display fields"/>
+            <property name="editFieldSetName" type="String" default="FIMBY_Editable_Fields" label="Edit Field Set" description="Field set for editable fields"/>
+            <property name="primaryFieldCount" type="Integer" default="4" label="Primary Fields Count" description="Number of fields to show before collapse"/>
+            <property name="showAvatar" type="Boolean" default="false" label="Show Avatar"/>
+            <property name="showImage" type="Boolean" default="false" label="Show Image"/>
+            <property name="showStatus" type="Boolean" default="false" label="Show Status Badge"/>
+            <property name="canEdit" type="Boolean" default="false" label="Can Edit"/>
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="objectApiName" type="String" default="" label="Object API Name" description="API name of the Salesforce object (e.g., Need_Offer__c). Auto-populated on record detail pages."/>
+            <property name="displayFieldSetName" type="String" default="FIMBY_Display_Fields" label="Display Field Set" description="Field set for display fields"/>
+            <property name="editFieldSetName" type="String" default="FIMBY_Editable_Fields" label="Edit Field Set" description="Field set for editable fields"/>
+            <property name="primaryFieldCount" type="Integer" default="4" label="Primary Fields Count" description="Number of fields to show before collapse"/>
+            <property name="headerTitleField" type="String" default="Name" label="Header Title Field" description="API name of field to use as card title"/>
+            <property name="headerSubtitleField" type="String" default="" label="Header Subtitle Field" description="API name of field to use as subtitle"/>
+            <property name="timestampField" type="String" default="CreatedDate" label="Timestamp Field" description="API name of date/datetime field for timestamp"/>
+            <property name="avatarField" type="String" default="" label="Avatar Field" description="API name of URL field for avatar image"/>
+            <property name="imageField" type="String" default="" label="Image Field" description="API name of URL field for card image"/>
+            <property name="statusField" type="String" default="Status__c" label="Status Field" description="API name of field for status badge"/>
+            <property name="showAvatar" type="Boolean" default="false" label="Show Avatar"/>
+            <property name="showImage" type="Boolean" default="false" label="Show Image"/>
+            <property name="showStatus" type="Boolean" default="false" label="Show Status Badge"/>
+            <property name="canEdit" type="Boolean" default="false" label="Can Edit"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

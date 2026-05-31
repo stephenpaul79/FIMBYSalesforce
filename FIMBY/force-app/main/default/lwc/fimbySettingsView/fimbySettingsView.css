@@ -1,0 +1,769 @@
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+.fimby-settings-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 20px;
+}
+
+/* ========== SHARED INFO SECTIONS ========== */
+.info-section {
+    background: var(--fimby-surface-card);
+    padding: 20px;
+    margin: 12px 0 0;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.section-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header-clickable {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.section-header-clickable:hover {
+    opacity: 0.85;
+}
+
+.edit-pencil {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    color: var(--fimby-brand-teal);
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.edit-pencil:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.edit-pencil-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+/* ========== FIELD GRID (view mode) ========== */
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.field-value {
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+}
+
+.empty-hint {
+    font-size: 0.85rem;
+    color: var(--fimby-text-muted);
+    margin: 12px 0 0;
+    font-style: italic;
+}
+
+/* ========== SECTION ACTION ========== */
+.section-action {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+/* ========== SETTINGS ROWS ========== */
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+}
+
+.settings-label {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    font-weight: 500;
+}
+
+.settings-select {
+    padding: 8px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.85rem;
+    color: var(--fimby-text-strong);
+    background: var(--fimby-surface-input, var(--fimby-surface-card));
+    outline: none;
+    min-width: 140px;
+}
+
+.settings-select:focus-visible {
+    border-color: var(--fimby-brand-teal);
+}
+
+/* ========== TOGGLE ROWS ========== */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.toggle-row:last-child {
+    border-bottom: none;
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+}
+
+.toggle-sub-group {
+    padding-left: 16px;
+    border-left: 2px solid var(--fimby-border-subtle);
+    margin-top: 4px;
+}
+
+.toggle-sub-group .toggle-label {
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    appearance: none;
+    background: var(--fimby-border-strong);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+
+.toggle-switch:checked {
+    background: var(--fimby-brand-teal);
+}
+
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch:checked::before {
+    transform: translateX(20px);
+}
+
+/* ========== MASTER TOGGLES ========== */
+.master-toggles {
+    margin-bottom: 4px;
+}
+
+/* ========== CATEGORY GRID ========== */
+.category-grid {
+    margin-top: 12px;
+}
+
+.category-header {
+    display: grid;
+    grid-template-columns: 1fr 52px 52px;
+    gap: 8px;
+    align-items: center;
+    padding: 0 0 6px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.category-header-label {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.category-header-col {
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+}
+
+.category-row {
+    display: grid;
+    grid-template-columns: 1fr 52px 52px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.category-row:last-child {
+    border-bottom: none;
+}
+
+.category-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+}
+
+.toggle-sm {
+    width: 38px;
+    height: 20px;
+    justify-self: center;
+}
+
+.toggle-sm::before {
+    width: 16px;
+    height: 16px;
+}
+
+.toggle-sm:checked::before {
+    transform: translateX(18px);
+}
+
+/* ========== DIVIDER ========== */
+.settings-divider {
+    height: 1px;
+    background: var(--fimby-border-subtle);
+    margin: 16px 0;
+}
+
+/* ========== SUNDAY REST ========== */
+.sunday-rest-section {
+    padding: 0;
+}
+
+.sunday-rest-note {
+    font-size: 0.82rem;
+    color: var(--fimby-text-secondary);
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0 0 8px;
+}
+
+/* ========== EDIT MODE ========== */
+.edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+    background: var(--fimby-surface-input, var(--fimby-surface-card));
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.field-input:focus-visible {
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 2px var(--fimby-focus-glow);
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 8px;
+}
+
+/* ========== BLOCKED CONTACTS ========== */
+.blocked-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.blocked-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    background: var(--fimby-surface-page);
+    padding: 2px 8px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+.blocked-loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.blocked-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.blocked-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-sm);
+}
+
+.blocked-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--fimby-text-secondary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.blocked-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.blocked-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--fimby-text-strong);
+}
+
+.blocked-date {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+}
+
+.btn-unblock {
+    padding: 6px 14px;
+    border: 1px solid var(--fimby-brand-teal);
+    border-radius: var(--fimby-radius-md);
+    background: transparent;
+    color: var(--fimby-brand-teal);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.btn-unblock:hover {
+    background: var(--fimby-selected-bg);
+}
+
+/* ========== WALKTHROUGH SECTION ========== */
+.walkthrough-description {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 8px 0 16px;
+    line-height: 1.5;
+}
+
+.btn-icon-sm {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ========== DANGER SECTION ========== */
+.danger-section {
+    border: 1px solid var(--fimby-error-border, var(--fimby-error));
+}
+
+.danger-description {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 12px 0 16px;
+    line-height: 1.5;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--fimby-brand-teal);
+    color: #fff;
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--fimby-brand-teal-hover);
+}
+
+.btn-neutral {
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.btn-neutral:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-neutral:hover:not(:disabled) {
+    background: var(--fimby-border-subtle);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-brand-teal);
+}
+
+.btn-outline:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: var(--fimby-selected-bg);
+}
+
+.btn-danger {
+    background: var(--fimby-error);
+    color: white;
+    border: none;
+}
+
+.btn-danger:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-danger:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+/* ========== FUN STUFF ========== */
+.toggle-description {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+.fun-toggle-preview {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 4px;
+    animation: funGifFadeIn 0.3s ease;
+}
+
+.fun-toggle-gif {
+    max-width: 180px;
+    max-height: 140px;
+    border-radius: var(--fimby-radius-sm);
+    object-fit: contain;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+@keyframes funGifFadeIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* ========== THEME OPTIONS ========== */
+.theme-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--fimby-surface-page);
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    color: var(--fimby-text-primary);
+    flex: 1;
+    justify-content: center;
+}
+
+.theme-option:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.theme-option.selected {
+    background: var(--fimby-selected-bg);
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+    transform: scale(1.02);
+}
+
+.theme-option-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.theme-option-label {
+    font-weight: 500;
+}
+
+/* ========== DEACTIVATION MODAL ========== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding-top: var(--fimby-modal-inset-top, 86px);
+}
+
+.modal-content {
+    background: var(--fimby-surface-card);
+    padding: 32px;
+    border-radius: var(--fimby-radius-lg);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.modal-message {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.skip-grace-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    margin: 0 0 20px;
+    background: var(--fimby-surface-section);
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+}
+
+.skip-grace-row input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.skip-grace-label {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+.btn-danger-strong {
+    box-shadow: 0 0 0 2px var(--fimby-error);
+}
+
+/* Button reset for semantic section-header-clickable button */
+button.section-header-clickable {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    width: 100%;
+    display: block;
+}
+
+@media (min-width: 892px) {
+    .fimby-settings-page {
+        padding-bottom: 24px;
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+    .info-section {
+        margin: 8px 0 0;
+        padding: 16px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings-select {
+        width: 100%;
+    }
+}
+
+/* Keyboard focus visibility */
+.section-header-clickable:focus-visible,
+.edit-pencil:focus-visible,
+.btn-unblock:focus-visible,
+.theme-option:focus-visible,
+.toggle-switch:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toggle-switch,
+    .toggle-switch::before,
+    .edit-pencil,
+    .btn,
+    .theme-option {
+        transition: none;
+    }
+
+    .fun-toggle-preview {
+        animation: none;
+    }
+}

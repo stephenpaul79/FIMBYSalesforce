@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shared_To_Neighbourhood__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Neighbourhood of the Shared_To__c party at time of sharing. Stamped by before-insert flow from Shared_To__r.AccountId. Updated by split service when contacts move.</description>
+    <externalId>false</externalId>
+    <label>Shared To Neighbourhood</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Shared Contact Info (Shared To Side)</relationshipLabel>
+    <relationshipName>Shared_Contact_Info_Shared_To_Side</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Lookup</type>
+</CustomField>

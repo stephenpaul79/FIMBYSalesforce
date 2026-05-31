@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Overdue_Reminder__c</fullName>
+    <formula>TODAY() &gt;  Loan_Due_Date__c 
+&amp;&amp;
+Return_Confirmed_By_Borrower__c = FALSE
+&amp;&amp;
+MOD(TODAY() - Loan_Due_Date__c , 3) = 0</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Overdue Reminder</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

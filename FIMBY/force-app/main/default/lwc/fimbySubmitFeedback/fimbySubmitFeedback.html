@@ -1,0 +1,240 @@
+<template>
+    <!-- Modal Mode -->
+    <template lwc:if={shouldShowModal}>
+        <div class="modal-backdrop"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="feedback-modal-title"
+             onclick={handleBackdropClick}
+             onkeydown={handleModalKeydown}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <div class="modal-header">
+                    <h2 class="modal-title" id="feedback-modal-title">Submit Feedback</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container compact">
+                            <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showConfirmation}>
+                        <div class="confirmation-container compact">
+                            <div class="confirmation-icon">🙏</div>
+                            <h3>Feedback submitted!</h3>
+                            <p>Thank you for helping us improve FIMBY!</p>
+                            <lightning-button
+                                label="Done"
+                                onclick={handleGoBack}
+                                variant="brand">
+                            </lightning-button>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showPhotoStep}>
+                        <div class="photo-step-screen compact">
+                            <h3 class="photo-step-title">Add a Screenshot</h3>
+                            <p class="photo-step-message">A screenshot helps us understand what you saw.</p>
+                            <c-fimby-image-uploader
+                                record-id={newFeedbackId}
+                                object-api-name="Feedback__c"
+                                label="Upload Screenshot"
+                                onimageuploaded={handlePhotoUploaded}>
+                            </c-fimby-image-uploader>
+                            <div class="photo-step-actions">
+                                <lightning-button
+                                    label="Skip for now"
+                                    variant="neutral"
+                                    onclick={handleSkipPhoto}>
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showMainForm}>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as compact">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Posting as:</span>
+                                <span class="posting-as-value">{actingAsName}</span>
+                            </div>
+                        </template>
+
+                        <div class="form-field slds-m-bottom_medium">
+                            <label class="field-label" for="feedback-type-modal">Feedback Type <abbr class="slds-required" title="required">*</abbr></label>
+                            <lightning-combobox
+                                id="feedback-type-modal"
+                                variant="label-hidden"
+                                value={feedbackType}
+                                options={feedbackTypeOptions}
+                                onchange={handleFeedbackTypeChange}
+                                required>
+                            </lightning-combobox>
+                        </div>
+
+                        <div class="form-field slds-m-bottom_medium">
+                            <label class="field-label" for="feedback-title-modal">Feedback Title <abbr class="slds-required" title="required">*</abbr></label>
+                            <lightning-input
+                                id="feedback-title-modal"
+                                variant="label-hidden"
+                                value={feedbackTitle}
+                                onchange={handleFeedbackTitleChange}
+                                required>
+                            </lightning-input>
+                        </div>
+
+                        <div class="form-field-with-count">
+                            <div class="field-label-row">
+                                <label class="field-label" for="feedback-details-modal">Feedback Details</label>
+                                <span class={detailsCountClass}>{detailsCharacterCount}</span>
+                            </div>
+                            <lightning-textarea
+                                id="feedback-details-modal"
+                                variant="label-hidden"
+                                value={feedbackDetails}
+                                onchange={handleFeedbackDetailsChange}
+                                required
+                                max-length="32768"
+                                class="slds-m-bottom_small">
+                            </lightning-textarea>
+                        </div>
+                    </template>
+                </div>
+                <template lwc:if={showMainForm}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <lightning-button
+                            label="Submit Feedback"
+                            onclick={handleSubmit}
+                            data-action="submit"
+                            variant="brand"
+                            disabled={isSubmitDisabled}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Page Mode -->
+    <template lwc:if={shouldShowPage}>
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={showConfirmation}>
+            <div class="confirmation-container">
+                <div class="confirmation-icon">🙏</div>
+                <h2>Your feedback has been submitted.</h2>
+                <p>Thank you for helping us improve FIMBY!</p>
+                <div class="button-container">
+                    <lightning-button
+                        label="Done"
+                        onclick={handleGoBack}
+                        variant="brand">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showPhotoStep}>
+            <div class="photo-step-screen">
+                <div class="photo-step-content">
+                    <h2 class="photo-step-title">Add a Screenshot</h2>
+                    <p class="photo-step-message">A screenshot helps us understand what you saw. You can skip this if you prefer.</p>
+                    <c-fimby-image-uploader
+                        record-id={newFeedbackId}
+                        object-api-name="Feedback__c"
+                        label="Upload Screenshot"
+                        onimageuploaded={handlePhotoUploaded}>
+                    </c-fimby-image-uploader>
+                    <div class="photo-step-actions">
+                        <lightning-button
+                            label="Skip for now"
+                            variant="neutral"
+                            onclick={handleSkipPhoto}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showMainForm}>
+            <div class="form-container">
+                <h2 class="form-title">Submit Feedback</h2>
+
+                <template lwc:if={showIdentityBanner}>
+                    <div class="posting-as">
+                        <img src={posterIconUrl} alt="" class="posting-as-icon">
+                        <span class="posting-as-label">Posting as:</span>
+                        <span class="posting-as-value">{actingAsName}</span>
+                    </div>
+                </template>
+
+                <div class="form-field">
+                    <label class="field-label" for="feedback-type-page">Feedback Type <abbr class="slds-required" title="required">*</abbr></label>
+                    <lightning-combobox
+                        id="feedback-type-page"
+                        variant="label-hidden"
+                        value={feedbackType}
+                        options={feedbackTypeOptions}
+                        onchange={handleFeedbackTypeChange}
+                        required
+                        class="slds-m-bottom_medium">
+                    </lightning-combobox>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label" for="feedback-title-page">Feedback Title <abbr class="slds-required" title="required">*</abbr></label>
+                    <lightning-input
+                        id="feedback-title-page"
+                        variant="label-hidden"
+                        value={feedbackTitle}
+                        onchange={handleFeedbackTitleChange}
+                        required
+                        class="slds-m-bottom_medium">
+                    </lightning-input>
+                </div>
+
+                <div class="form-field-with-count">
+                    <div class="field-label-row">
+                        <label class="field-label" for="feedback-details-page">Feedback Details</label>
+                        <span class={detailsCountClass}>{detailsCharacterCount}</span>
+                    </div>
+                    <lightning-textarea
+                        id="feedback-details-page"
+                        variant="label-hidden"
+                        value={feedbackDetails}
+                        onchange={handleFeedbackDetailsChange}
+                        required
+                        max-length="32768"
+                        class="slds-m-bottom_small">
+                    </lightning-textarea>
+                </div>
+
+                <div class="button-container">
+                    <lightning-button
+                        label="Add Screenshot"
+                        onclick={handleSubmit}
+                        data-action="screenshot"
+                        variant="success"
+                        disabled={isSubmitDisabled}
+                        class="slds-m-right_small">
+                    </lightning-button>
+                    <lightning-button
+                        label="Submit Now"
+                        onclick={handleSubmit}
+                        data-action="submit"
+                        variant="brand"
+                        disabled={isSubmitDisabled}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

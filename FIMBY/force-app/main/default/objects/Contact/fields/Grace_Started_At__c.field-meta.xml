@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Grace_Started_At__c</fullName>
+    <description>When the neighbour requested in-app deletion with the default grace window. User.IsActive is flipped immediately, but the data scrub waits until Grace_Window_Days__c (default 30) have elapsed so the neighbour can restore the account via the email magic link. Null if no grace pending. FimbyGraceExpiryBatch flips Deactivation_Requested__c=true once this date is past.</description>
+    <externalId>false</externalId>
+    <label>Grace Started At</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>DateTime</type>
+</CustomField>

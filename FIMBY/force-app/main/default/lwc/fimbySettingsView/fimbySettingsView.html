@@ -1,0 +1,455 @@
+<template>
+    <div class="fimby-settings-page">
+        <c-fimby-page-header
+            page-title="Settings"
+            onback={handleBack}>
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="profile" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={settings.success}>
+            <div class="settings-content">
+
+                <!-- ========== 1. ACCOUNT ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={accountIconUrl} alt="" class="section-icon">
+                        Account
+                    </h3>
+                    <div class="field-grid">
+                        <div class="field-item full-width">
+                            <span class="field-label">Username</span>
+                            <span class="field-value">{settings.username}</span>
+                        </div>
+                    </div>
+                    <div class="section-action">
+                        <button class="btn btn-outline" onclick={handlePasswordReset} disabled={isResettingPassword}>
+                            <lightning-icon icon-name="utility:lock" size="xx-small"></lightning-icon>
+                            <template lwc:if={isResettingPassword}>Sending...</template>
+                            <template lwc:else>Reset Password</template>
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- ========== 2. NOTIFICATIONS & EMAIL ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={notificationsIconUrl} alt="" class="section-icon">
+                        Notifications &amp; Email
+                    </h3>
+
+                    <!-- Master toggles -->
+                    <div class="master-toggles">
+                        <div class="toggle-row">
+                            <span class="toggle-label">Push Notifications</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.pushNotificationsEnabled}
+                                   data-field="Push_Notifications_Enabled__c"
+                                   data-key="pushNotificationsEnabled"
+                                   onchange={handleToggle}>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">Email Alerts</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.emailAlertsEnabled}
+                                   data-field="Email_Alerts_Enabled__c"
+                                   data-key="emailAlertsEnabled"
+                                   onchange={handleToggle}>
+                        </div>
+                    </div>
+
+                    <!-- Quiet Hours -->
+                    <div class="settings-row">
+                        <div>
+                            <span class="settings-label">Quiet Hours</span>
+                            <span class="toggle-description">Push and email alerts wait until your quiet hours end.</span>
+                        </div>
+                        <select class="settings-select" onchange={handleQuietHoursChange}>
+                            <template for:each={quietHoursOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value}
+                                        selected={opt.selected}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Category grid -->
+                    <div class="category-grid">
+                        <div class="category-header">
+                            <span class="category-header-label"></span>
+                            <span class="category-header-col">Push</span>
+                            <span class="category-header-col">Email</span>
+                        </div>
+
+                        <template for:each={notificationCategories} for:item="cat">
+                            <div key={cat.key} class="category-row">
+                                <span class="category-label">{cat.label}</span>
+                                <input type="checkbox" class="toggle-switch toggle-sm"
+                                       checked={cat.pushChecked}
+                                       data-field={cat.pushField}
+                                       data-key={cat.pushKey}
+                                       disabled={cat.pushDisabled}
+                                       onchange={handleToggle}>
+                                <input type="checkbox" class="toggle-switch toggle-sm"
+                                       checked={cat.emailChecked}
+                                       data-field={cat.emailField}
+                                       data-key={cat.emailKey}
+                                       disabled={cat.emailDisabled}
+                                       onchange={handleToggle}>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="settings-divider"></div>
+
+                    <!-- Sunday Rest -->
+                    <div class="sunday-rest-section">
+                        <p class="sunday-rest-note">FIMBY takes Sundays off. Direct messages and lending replies still come through, but the rest can wait.</p>
+                        <div class="toggle-row">
+                            <div>
+                                <span class="toggle-label">Include Sundays</span>
+                                <span class="toggle-description">Get notifications 7 days a week</span>
+                            </div>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.includeSundays}
+                                   data-field="Include_Sundays__c"
+                                   data-key="includeSundays"
+                                   onchange={handleToggle}>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="settings-divider"></div>
+
+                    <!-- Neighbourhood Digest -->
+                    <div class="settings-row">
+                        <span class="settings-label">Neighbourhood Digest</span>
+                        <select class="settings-select" onchange={handleEmailFrequencyChange}>
+                            <template for:each={emailFrequencyOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value}
+                                        selected={opt.selected}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="settings-divider"></div>
+
+                    <!--
+                        Account & Safety: intentionally read-only — no toggle.
+                        Security/safety messages bypass every per-category gate
+                        AND the master Email_Alerts_Enabled__c / Push_Notifications_Enabled__c
+                        toggles in the Apex layer (see FimbyEmailAlertService and
+                        FimbyNotificationService). Showing a toggle here that the
+                        backend ignores would be dishonest UX; instead we tell
+                        the user plainly that these messages always send.
+                    -->
+                    <div class="settings-row" role="note" aria-label="Account and safety messages always send">
+                        <div>
+                            <span class="settings-label">Account &amp; Safety</span>
+                            <span class="toggle-description">We always send important account safety messages — password resets, login alerts, account changes, and vouching activity. There's no toggle for these.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 3a. UPDATES ABOUT FIMBY ITSELF ========== -->
+                <!--
+                    Separate from the transactional notification matrix above.
+                    Default-on under the CASL registered-charity exemption
+                    (Section 6(6)(a)); see FIMBY_Operating_Updates_Enabled__c
+                    field description for context. Opting out only suppresses
+                    the FIMBY-itself channel, not transactional notifications.
+                -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={fimbyUpdatesIconUrl} alt="" class="section-icon">
+                        Updates about FIMBY itself
+                    </h3>
+                    <div class="toggle-row">
+                        <div>
+                            <span class="toggle-label">Receive occasional updates</span>
+                            <span class="toggle-description">Occasional updates about FIMBY itself, including operating-cost requests from Strathcona Vineyard Church. Opting out doesn't affect your access to the app.</span>
+                        </div>
+                        <input type="checkbox" class="toggle-switch"
+                               checked={settings.fimbyOperatingUpdatesEnabled}
+                               data-field="FIMBY_Operating_Updates_Enabled__c"
+                               data-key="fimbyOperatingUpdatesEnabled"
+                               onchange={handleToggle}>
+                    </div>
+                </div>
+
+                <!-- ========== 3b. FUN STUFF ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={confettiIconUrl} alt="" class="section-icon">
+                        Fun Stuff
+                    </h3>
+                    <div class="toggle-row">
+                        <div>
+                            <span class="toggle-label">Confetti</span>
+                            <span class="toggle-description">Emoji confetti when you do something great</span>
+                        </div>
+                        <input type="checkbox" class="toggle-switch"
+                               checked={settings.celebrationConfettiEnabled}
+                               data-field="Celebration_Confetti_Enabled__c"
+                               data-key="celebrationConfettiEnabled"
+                               onchange={handleFunToggle}>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <span class="toggle-label">Celebration Memes</span>
+                            <span class="toggle-description">Random meme GIFs on success screens</span>
+                        </div>
+                        <input type="checkbox" class="toggle-switch"
+                               checked={settings.celebrationMemesEnabled}
+                               data-field="Celebration_Memes_Enabled__c"
+                               data-key="celebrationMemesEnabled"
+                               onchange={handleFunToggle}>
+                    </div>
+                    <template lwc:if={funToggleGifUrl}>
+                        <div class="fun-toggle-preview">
+                            <img src={funToggleGifUrl} alt="" class="fun-toggle-gif">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 4. REGIONAL ========== -->
+                <div class="info-section">
+                    <div class="section-header-flex">
+                        <h3 class="section-title">
+                            <img src={regionalIconUrl} alt="" class="section-icon">
+                            Regional
+                        </h3>
+                        <template lwc:if={isEditingRegional}>
+                            <span></span>
+                        </template>
+                        <template lwc:else>
+                            <button class="edit-pencil" onclick={handleEditRegional} title="Edit">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+                    <template lwc:if={isEditingRegional}>
+                        <div class="edit-fields">
+                            <div class="field-row">
+                                <label class="field-label">Time Zone</label>
+                                <select class="settings-select" data-field="editTimeZone" onchange={handleRegionalSelect}>
+                                    <template for:each={timeZonePicklist} for:item="opt">
+                                        <option key={opt.value} value={opt.value}
+                                                selected={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Locale</label>
+                                <select class="settings-select" data-field="editLocale" onchange={handleRegionalSelect}>
+                                    <template for:each={localePicklist} for:item="opt">
+                                        <option key={opt.value} value={opt.value}
+                                                selected={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Language</label>
+                                <select class="settings-select" data-field="editLanguage" onchange={handleRegionalSelect}>
+                                    <template for:each={languagePicklist} for:item="opt">
+                                        <option key={opt.value} value={opt.value}
+                                                selected={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelRegional} disabled={isSavingRegional}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveRegional} disabled={isSavingRegional}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="field-grid">
+                            <div class="field-item full-width">
+                                <span class="field-label">Time Zone</span>
+                                <span class="field-value">{displayTimeZone}</span>
+                            </div>
+                            <div class="field-item">
+                                <span class="field-label">Locale</span>
+                                <span class="field-value">{displayLocale}</span>
+                            </div>
+                            <div class="field-item">
+                                <span class="field-label">Language</span>
+                                <span class="field-value">{displayLanguage}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 5. APPEARANCE ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={appearanceIconUrl} alt="" class="section-icon">
+                        Appearance
+                    </h3>
+                    <div class="theme-options">
+                        <button class={themeLightClass} data-theme="light" onclick={handleThemeChange}>
+                            <img src={themeLightIconUrl} alt="" class="theme-option-icon">
+                            <span class="theme-option-label">Light</span>
+                        </button>
+                        <button class={themeDarkClass} data-theme="dark" onclick={handleThemeChange}>
+                            <img src={themeDarkIconUrl} alt="" class="theme-option-icon">
+                            <span class="theme-option-label">Dark</span>
+                        </button>
+                        <button class={themeAutoClass} data-theme="auto" onclick={handleThemeChange}>
+                            <img src={themeAutoIconUrl} alt="" class="theme-option-icon">
+                            <span class="theme-option-label">Auto</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ========== 6. BLOCKED CONTACTS ========== -->
+                <div class="info-section">
+                    <button type="button" class="section-header-clickable" aria-label="Toggle blocked users" onclick={handleToggleBlocked}>
+                        <h3 class="section-title">
+                            <img src={blockedIconUrl} alt="" class="section-icon">
+                            Blocked Contacts
+                        </h3>
+                        <div class="blocked-header-right">
+                            <template lwc:if={hasBlockedContacts}>
+                                <span class="blocked-count">{blockedCountLabel}</span>
+                            </template>
+                            <lightning-icon icon-name={blockedChevron} size="xx-small"></lightning-icon>
+                        </div>
+                    </button>
+
+                    <template lwc:if={showBlockedSection}>
+                        <template lwc:if={isLoadingBlocked}>
+                            <div class="blocked-loading">
+                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <template lwc:if={hasBlockedContacts}>
+                                <div class="blocked-list">
+                                    <template for:each={blockedContacts} for:item="bc">
+                                        <div key={bc.id} class="blocked-row">
+                                            <div class="blocked-avatar">{bc.initials}</div>
+                                            <div class="blocked-info">
+                                                <span class="blocked-name">{bc.contactName}</span>
+                                                <span class="blocked-date">Blocked {bc.formattedDate}</span>
+                                            </div>
+                                            <button class="btn-unblock"
+                                                    onclick={handleUnblock}
+                                                    data-contact-id={bc.contactId}>
+                                                Unblock
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <p class="empty-hint">No blocked contacts.</p>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- ========== 7. WALKTHROUGH ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={walkthroughIconUrl} alt="" class="section-icon">
+                        App Walkthrough
+                    </h3>
+                    <p class="walkthrough-description">Take a quick tour of what FIMBY has to offer.</p>
+                    <button class="btn btn-outline" onclick={handleLaunchWalkthrough}>
+                        <img src={neighbourhoodIconUrl} alt="" class="btn-icon-sm">
+                        Launch Walkthrough
+                    </button>
+                </div>
+
+                <!-- ========== 8. DELETE ACCOUNT ========== -->
+                <template lwc:if={canDeleteAccount}>
+                    <div class="info-section danger-section">
+                        <h3 class="section-title">
+                            <img src={deactivationIconUrl} alt="" class="section-icon">
+                            Delete account
+                        </h3>
+                        <p class="danger-description">
+                            Deleting your account deactivates your login right away. Your data stays for 30 days
+                            so you can restore your account if you change your mind, then it's permanently removed.
+                        </p>
+                        <button class="btn btn-danger" onclick={handleDeleteClick}>
+                            Delete my account
+                        </button>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <img src={deactivationIconUrl} alt="" class="section-icon">
+                            Delete account
+                        </h3>
+                        <p class="danger-description">
+                            You're currently helping someone else, so the delete option for their account
+                            isn't available here. Switch back to your own identity to delete your account.
+                            If the neighbour you're helping needs their account removed and can't do it
+                            themselves, email <a href="mailto:help@fimby.com">help@fimby.com</a> and we'll
+                            work with them directly.
+                        </p>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+        <!-- Delete Confirmation Modal (graceful default + opt-in skip-grace checkbox) -->
+        <template lwc:if={showDeleteConfirm}>
+            <div class="modal-overlay" onclick={handleDeleteCancel}>
+                <div class="modal-content" onclick={stopPropagation}>
+                    <h3 class="modal-title">{deleteConfirmTitle}</h3>
+                    <p class="modal-message">{deleteConfirmBody}</p>
+                    <label class="skip-grace-row">
+                        <input type="checkbox"
+                               checked={skipGrace}
+                               onchange={handleSkipGraceToggle}
+                               disabled={isDeleting}>
+                        <span class="skip-grace-label">
+                            Skip the 30-day grace period &mdash; delete immediately (cannot be undone)
+                        </span>
+                    </label>
+                    <div class="modal-actions">
+                        <button class="btn btn-neutral" onclick={handleDeleteCancel} disabled={isDeleting}>Cancel</button>
+                        <button class={deleteConfirmButtonClass} onclick={handleDeleteConfirm} disabled={isDeleting}>
+                            <template lwc:if={isDeleting}>Processing...</template>
+                            <template lwc:else>{deleteConfirmButtonLabel}</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Push permission denied: device blocked notifications, so we reverted the toggle -->
+        <template lwc:if={showPushPermissionModal}>
+            <div class="modal-overlay" onclick={handleClosePushPermissionModal}>
+                <div class="modal-content" onclick={stopPropagation}>
+                    <h3 class="modal-title">Turn on notifications on your phone</h3>
+                    <p class="modal-message">
+                        FIMBY needs permission from your phone before it can send push notifications.
+                        Open your device Settings, allow notifications for FIMBY, then come back and
+                        switch Push Notifications on again.
+                    </p>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick={handleClosePushPermissionModal}>Got it</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

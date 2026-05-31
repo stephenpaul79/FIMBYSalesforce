@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Visibility_Scope__c</fullName>
+    <description>Controls geographic visibility of this post across neighbourhood boundaries. Neighbourhood = local only. Adjacent = visible to adjacent cells. Regional = visible across a broader region. Set server-side by create controllers; null treated as Neighbourhood.</description>
+    <externalId>false</externalId>
+    <label>Visibility Scope</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Neighbourhood</fullName>
+                <default>true</default>
+                <label>Neighbourhood</label>
+            </value>
+            <value>
+                <fullName>Adjacent</fullName>
+                <default>false</default>
+                <label>Adjacent</label>
+            </value>
+            <value>
+                <fullName>Regional</fullName>
+                <default>false</default>
+                <label>Regional</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

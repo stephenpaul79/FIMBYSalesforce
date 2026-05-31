@@ -1,0 +1,722 @@
+<template>
+    <div class="fimby-need-offer-detail">
+        <c-fimby-page-header
+            page-title={detailPageTitle}
+            parent-label={breadcrumbLabel}
+            parent-url={breadcrumbUrl}
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <!-- Removed / Hidden State -->
+        <template lwc:if={isRemoved}>
+            <div class="detail-content">
+                <div class="content-removed-card" role="status">
+                    <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
+                    <h2 class="content-removed-title">This post is no longer available</h2>
+                    <p class="content-removed-message">{removedMessage}</p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading State -->
+        <template lwc:elseif={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={shouldRenderRecord}>
+            <!-- Bulk Buy Detail Body -->
+            <template lwc:if={isBulkBuyType}>
+                <div class="detail-content">
+                    <div class="post-card">
+                        <div class={cardLayoutClass}>
+                            <template lwc:if={showCardLeft}>
+                                <div class="card-left">
+                                    <div class="card-left-header">
+                                        <div class={bulkBuyStatusBadgeClass} data-status={bulkBuyDisplayStatus}>{bulkBuyStatusBadgeText}</div>
+                                    </div>
+                                    <button type="button" class="post-image-container bulk-buy-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
+                                        <img src={imageUrl} alt={postTitle} class="post-image">
+                                        <div class="image-overlay">
+                                            <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                        </div>
+                                    </button>
+                                </div>
+                            </template>
+                            <div class="card-right">
+                                <div class="card-right-top">
+                                    <div class="post-header-compact">
+                                        <div class="post-header-left">
+                                            <h1 class="post-title">{postTitle}</h1>
+                                            <span class="post-meta">
+                                                <span class="post-type">Bulk Buy</span> &middot; <span class="post-date">{formattedDate}</span>
+                                            </span>
+                                        </div>
+                                        <div class="poster-info-compact">
+                                            <template lwc:if={posterAvatar}>
+                                                <img src={posterAvatar} alt={posterName} class="poster-avatar">
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="avatar-placeholder">
+                                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
+                                                </div>
+                                            </template>
+                                            <span class="poster-name">{posterName}</span>
+                                        </div>
+                                    </div>
+                                    <template lwc:if={hasPostDetails}>
+                                        <div class="post-content">
+                                            <p class="post-details">{postDetails}</p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template lwc:if={showPhotoUploader}>
+                        <div class="info-section photo-uploader-section">
+                            <div class="section-header-row">
+                                <h3 class="section-title">
+                                    <img src={photoIconUrl} alt="" class="section-icon">
+                                    Manage Photos
+                                </h3>
+                                <button class="section-close-btn" onclick={handleClosePhotoUploader} aria-label="Close photo manager">&times;</button>
+                            </div>
+                            <c-fimby-multi-image-manager
+                                record-id={recordId}
+                                object-api-name="Needs_Offers__c"
+                                max-slots="4"
+                                mode="compact"
+                                onimageschanged={handleImagesChanged}>
+                            </c-fimby-multi-image-manager>
+                        </div>
+                    </template>
+
+                    <c-fimby-bulk-buy-detail-body
+                        post={bulkBuyPost}
+                        is-organiser={bulkBuyIsOrganiser}
+                        reservations={bulkBuyReservations}
+                        contact-id={actingAsContactId}
+                        follow-up-status={bulkBuyFollowUpStatus}
+                        onreserve={handleBulkBuyReserve}
+                        onnotifypickup={handleNotifyPickup}
+                        oncomplete={handleBulkBuyComplete}
+                        oncancel={handleBulkBuyCancel}
+                        oncheckin={handleCheckIn}
+                        oncancelreservation={handleCancelReservation}>
+                    </c-fimby-bulk-buy-detail-body>
+
+                    <c-fimby-bulk-buy-pickup-modal
+                        post-id={recordId}
+                        post-title={postTitle}
+                        onpickupnotified={handlePickupNotified}>
+                    </c-fimby-bulk-buy-pickup-modal>
+
+                    <c-fimby-not-responding-modal
+                        oncheckinsubmitted={handleCheckInSubmitted}>
+                    </c-fimby-not-responding-modal>
+                </div>
+            </template>
+
+            <!-- Standard Need/Offer/Event Detail Body -->
+            <template lwc:elseif={record}>
+            <div class="detail-content">
+
+                <!-- Photo uploader (appears below breadcrumb when activated) -->
+                <template lwc:if={showPhotoUploader}>
+                    <div class="info-section photo-uploader-section">
+                        <div class="section-header-row">
+                            <h3 class="section-title">
+                                <img src={photoIconUrl} alt="" class="section-icon">
+                                Manage Photos
+                            </h3>
+                            <button class="section-close-btn" onclick={handleClosePhotoUploader} aria-label="Close photo manager">&times;</button>
+                        </div>
+                        <c-fimby-multi-image-manager
+                            record-id={recordId}
+                            object-api-name="Needs_Offers__c"
+                            max-slots="4"
+                            mode="compact"
+                            onimageschanged={handleImagesChanged}>
+                        </c-fimby-multi-image-manager>
+                    </div>
+                </template>
+
+                <!-- ========== TOP SUMMARY CARD ========== -->
+                <div class="detail-top">
+                    <div class="post-card">
+                        <div class={cardLayoutClass}>
+                            <template lwc:if={showCardLeft}>
+                                <div class="card-left">
+                                    <div class="card-left-header">
+                                        <div class="status-badge" data-status={status}>{status}</div>
+                                    </div>
+                                    <template lwc:if={hasMultipleImages}>
+                                        <c-fimby-image-grid images={allImages} onimageclick={handleImageGridClick}></c-fimby-image-grid>
+                                    </template>
+                                    <template lwc:else>
+                                        <button type="button" class="post-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
+                                            <img src={imageUrl} alt={postTitle} class="post-image">
+                                            <div class="image-overlay">
+                                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <div class="card-right">
+                                <div class="card-right-top">
+                                    <div class="post-header-compact">
+                                        <div class="post-header-left">
+                                            <div class="title-row">
+                                                <h1 class="post-title">{postTitle}</h1>
+                                                <template lwc:if={showStatusInRight}>
+                                                    <div class="status-badge" data-status={status}>{status}</div>
+                                                </template>
+                                            </div>
+                                            <span class="post-meta">
+                                                <span class="post-type-row">
+                                                    <template lwc:if={isCommunityEvent}>
+                                                        <img src={communityEventBadgeIconUrl} alt="" class="post-type-badge-icon">
+                                                    </template>
+                                                    <span class="post-type">{postTypeDisplay}</span>
+                                                </span>
+                                                &middot; <span class="post-date">{formattedDate}</span>
+                                            </span>
+                                            <template lwc:if={showCompactMetaSecondary}>
+                                                <span class="compact-meta-secondary">
+                                                    <template for:each={compactMetaSecondaryItems} for:item="metaItem">
+                                                        <span key={metaItem} class="compact-meta-fact">{metaItem}</span>
+                                                    </template>
+                                                </span>
+                                            </template>
+                                            <template lwc:if={showHeaderEventLink}>
+                                                <a href={eventLinkUrl} target="_blank" rel="noopener noreferrer"
+                                                   class="core-event-details-link"
+                                                   aria-label="Open event details on external site">Event Details &#8599;</a>
+                                            </template>
+                                        </div>
+                                        <div class="poster-info-compact">
+                                            <template lwc:if={posterAvatar}>
+                                                <img src={posterAvatar} alt={posterName} class="poster-avatar">
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="avatar-placeholder">
+                                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
+                                                </div>
+                                            </template>
+                                            <span class="poster-identity-label">{headerIdentityLabel}</span>
+                                            <span class="poster-name">{headerIdentityName}</span>
+                                        </div>
+                                    </div>
+
+                                    <template lwc:if={hasPostDetails}>
+                                        <div class="post-content">
+                                            <p class="post-details">{postDetails}</p>
+                                            <template lwc:if={hasCategory}>
+                                                <div class="category-tag">
+                                                    <lightning-icon icon-name="utility:bookmark" size="xx-small"></lightning-icon>
+                                                    <span>{category}</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- POSTER: Response Inbox (side-by-side on desktop) -->
+                    <template lwc:if={showPosterResponseInbox}>
+                        <div class="info-section responses-section">
+                            <h3 class="section-title">
+                                <lightning-icon icon-name="utility:comments" size="xx-small"></lightning-icon>
+                                Response Inbox ({responseCount})
+                            </h3>
+
+                            <template lwc:if={showAttentionStrip}>
+                                <div class="attention-strip">
+                                    <template for:each={attentionItems} for:item="item">
+                                        <span key={item.label} class={item.pillClass}>{item.label}</span>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <div class="responses-list">
+                                <template for:each={processedResponses} for:item="resp">
+                                    <div key={resp.id} class={resp.rowClass}>
+                                        <div class="response-row-main">
+                                            <div class="response-row-top">
+                                                <span class="response-name">{resp.responderName}</span>
+                                                <span class="response-time-ago">{resp.timeAgo}</span>
+                                            </div>
+                                            <div class="response-row-bottom">
+                                                <div class="response-row-meta">
+                                                    <span class="response-status" data-status={resp.status}>{resp.status}</span>
+                                                    <template lwc:if={tracksQuantityForResponses}>
+                                                        <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
+                                                    </template>
+                                                </div>
+                                                <template lwc:if={resp.lastMessageDisplay}>
+                                                    <p class="response-preview">{resp.lastMessageDisplay}</p>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="response-row-end">
+                                            <template lwc:if={resp.hasUnread}>
+                                                <span class="unread-badge">{resp.unreadCount}</span>
+                                            </template>
+                                            <template lwc:if={resp.showThanksAction}>
+                                                <button class="thanks-btn"
+                                                        data-response-id={resp.id}
+                                                        data-recipient-id={resp.contactId}
+                                                        data-recipient-name={resp.responderName}
+                                                        onclick={handleSayThanks}>
+                                                    <img src={thanksIconUrl} alt="" class="thanks-btn-icon">
+                                                    Say Thanks
+                                                </button>
+                                            </template>
+                                            <template lwc:if={resp.posterThanked}>
+                                                <span class="thanked-badge">Thanked</span>
+                                            </template>
+                                            <template lwc:if={resp.canReply}>
+                                                <button class="response-open-btn" data-response-id={resp.id} onclick={handleResponseClick}>
+                                                    Open Thread
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Open Event planning context (attendance, what-to-bring) lives in the Details section -->
+
+                <!-- ========== POSTER: EMPTY STATE ========== -->
+                <template lwc:if={showPosterEmptyState}>
+                    <div class="poster-empty-state">
+                        <img src={postInfoIconUrl} alt="" class="empty-state-icon">
+                        <p class="empty-state-message">{posterEmptyStateMessage}</p>
+                        <span class="post-health-text">{posterPostHealthText}</span>
+                    </div>
+                </template>
+
+                <!-- ========== RESPONDED: YOUR RESPONSE CARD ========== -->
+                <template lwc:if={showRespondedStatusCard}>
+                    <div class="your-response-card">
+                        <h3 class="your-response-title">Your Response</h3>
+                        <div class="your-response-body">
+                            <div class="your-response-meta">
+                                <span class="response-status" data-status={yourResponseStatus}>{yourResponseStatus}</span>
+                                <template lwc:if={showYourResponseAmount}>
+                                    <span class="your-response-amount">{yourResponseAmountDisplay}</span>
+                                </template>
+                                <template lwc:if={yourResponseTimeAgo}>
+                                    <span class="your-response-time">{yourResponseTimeAgo}</span>
+                                </template>
+                            </div>
+                            <div class="your-response-actions">
+                                <button class="action-btn primary" onclick={handleOpenMyResponseThread}>
+                                    <img src={respondButtonIconUrl} alt="" class="action-btn-icon">
+                                    <span>Open Conversation</span>
+                                </button>
+                                <template lwc:if={yourResponseHasUnread}>
+                                    <span class="unread-badge">{yourResponseUnread}</span>
+                                </template>
+                                <template lwc:if={showResponderThanksAction}>
+                                    <button class="thanks-btn" onclick={handleSayThanksToPoster}>
+                                        <img src={thanksIconUrl} alt="" class="thanks-btn-icon">
+                                        Say Thanks
+                                    </button>
+                                </template>
+                                <template lwc:if={yourResponseResponderThanked}>
+                                    <span class="thanked-badge">Thanked</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ========== POTENTIAL RESPONDER: ACTION CONTEXT + CTA (Gathering) ========== -->
+                <template lwc:if={showPotentialResponderActionContext}>
+                    <div class="responder-action-block">
+                        <div class="responder-action-buttons">
+                            <button class={respondButtonClass}
+                                    onclick={handleRespond}
+                                    disabled={isRespondDisabled}
+                                    aria-label={respondAriaLabel}
+                                    aria-describedby={respondHelperId}>
+                                <img src={respondButtonIconUrl} alt="" class="action-btn-icon">
+                                <span>{respondButtonLabel}</span>
+                            </button>
+                        </div>
+                        <template lwc:if={showRespondHelperText}>
+                            <p class="respond-helper-text" id="respond-helper" role="status">
+                                {respondHelperText}
+                            </p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ========== QUICK RESPONSE: 1-CLICK CTA (Open Event / Community Event) ========== -->
+                <template lwc:if={showQuickResponseCTA}>
+                    <div class="quick-response-block">
+                        <div class="quick-response-count" aria-live="polite">
+                            {quickResponseCountLabel}
+                        </div>
+                        <button class={quickResponseCtaClass}
+                                onclick={handleQuickRespond}
+                                disabled={quickResponseCtaDisabled}
+                                aria-label={quickResponseCtaLabel}>
+                            <img src={respondButtonIconUrl} alt="" class="action-btn-icon">
+                            <span>{quickResponseCtaLabel}</span>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- ========== QUICK RESPONSE: STATUS (Already responded — Open Event / Community Event) ========== -->
+                <template lwc:if={showQuickResponseStatus}>
+                    <div class="quick-response-block responded">
+                        <template lwc:if={quickResponseCelebration}>
+                            <div class="quick-response-celebration" role="alert" aria-live="assertive">
+                                {quickResponseRespondedLabel}
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="quick-response-status-row">
+                                <span class="quick-response-confirmed">{quickResponseRespondedLabel}</span>
+                                <div class="quick-response-count" aria-live="polite">{quickResponseCountLabel}</div>
+                            </div>
+                            <template lwc:if={showGuestStepperOption}>
+                                <template lwc:if={showGuestStepper}>
+                                    <div class="guest-stepper" role="group" aria-label="Guest count">
+                                        <span class="guest-label">Guests (including you):</span>
+                                        <div class="guest-stepper-controls">
+                                            <button class="stepper-btn" onclick={handleGuestDecrement}
+                                                    aria-label="Decrease guest count"
+                                                    disabled={quickResponseProcessing}>&#8722;</button>
+                                            <span class="stepper-value" aria-live="polite">{quickGuestCount}</span>
+                                            <button class="stepper-btn" onclick={handleGuestIncrement}
+                                                    aria-label="Increase guest count"
+                                                    disabled={quickResponseProcessing}>+</button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <button class="text-btn guest-toggle" onclick={toggleGuestStepper}>
+                                        Bringing guests?
+                                    </button>
+                                </template>
+                            </template>
+                            <div class="quick-response-actions">
+                                <button class="text-btn withdraw-btn" onclick={handleQuickWithdraw}
+                                        disabled={quickResponseProcessing}
+                                        aria-label={quickResponseWithdrawLabel}>
+                                    {quickResponseWithdrawLabel}
+                                </button>
+                                <template lwc:if={showMessagePosterButton}>
+                                    <button class="action-btn secondary message-poster-btn" onclick={handleMessagePoster}>
+                                        Message Poster
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={showEventLinkButton}>
+                            <a href={eventLinkUrl} target="_blank" rel="noopener noreferrer"
+                               class="action-btn secondary event-link-btn"
+                               aria-label="Open event details on external site">
+                                <span>Event Details &#8599;</span>
+                            </a>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ========== POSTER: OPEN EVENT / COMMUNITY EVENT ATTENDEE LIST ========== -->
+                <template lwc:if={showOpenEventPosterAttendees}>
+                    <div class="info-section attendee-section">
+                        <h3 class="section-title">
+                            <lightning-icon icon-name="utility:groups" size="xx-small"></lightning-icon>
+                            <template lwc:if={isCommunityEvent}>
+                                Interested ({eventResponseCount})
+                            </template>
+                            <template lwc:else>
+                                Attendees ({eventResponseCount})
+                            </template>
+                        </h3>
+                        <div class="attendee-list">
+                            <template for:each={attendeeList} for:item="attendee">
+                                <div key={attendee.id} class="attendee-row">
+                                    <div class="attendee-info">
+                                        <img src={attendee.avatarUrl} alt="" class="attendee-avatar">
+                                        <span class="attendee-name">{attendee.name}</span>
+                                        <template lwc:if={attendee.guestCount}>
+                                            <span class="attendee-guests" lwc:if={isOpenEvent}>+{attendee.guestCount}</span>
+                                        </template>
+                                    </div>
+                                    <div class="attendee-actions">
+                                        <template lwc:if={showAttendeeModeration}>
+                                            <button class="attendee-mod-btn attendee-mod-remove"
+                                                    type="button"
+                                                    data-response-id={attendee.id}
+                                                    onclick={handleRemoveAttendee}
+                                                    aria-label={attendee.removeLabel}>
+                                                Remove
+                                            </button>
+                                            <button class="attendee-mod-btn attendee-mod-block"
+                                                    type="button"
+                                                    data-response-id={attendee.id}
+                                                    data-contact-id={attendee.contactId}
+                                                    onclick={handleBlockAttendee}
+                                                    aria-label={attendee.blockLabel}>
+                                                Block
+                                            </button>
+                                        </template>
+                                        <template lwc:if={showPosterMessageButton}>
+                                            <button class={attendeeMessageButtonClass}
+                                                    data-response-id={attendee.id}
+                                                    onclick={handleMessageAttendee}
+                                                    aria-label={attendee.name}>
+                                                <img src={chatIconUrl} alt="" class="attendee-msg-icon">
+                                            </button>
+                                        </template>
+                                        <span class="attendee-time">{attendee.timeAgo}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ========== EVENT CHAT CARD (Open Event only, after creation) ========== -->
+                <template lwc:if={showEventChatCard}>
+                    <div class="event-chat-card" role="link" tabindex="0"
+                         onclick={handleOpenEventChat}
+                         onkeydown={handleOpenEventChat}>
+                        <div class="event-chat-card-content">
+                            <img src={chatIconUrl} alt="" class="event-chat-card-icon">
+                            <div class="event-chat-card-text">
+                                <span class="event-chat-card-label">Event Chat</span>
+                                <span class="event-chat-card-meta">{eventChatMemberCount} members</span>
+                            </div>
+                        </div>
+                        <span class="event-chat-card-chevron" aria-hidden="true">&#8250;</span>
+                    </div>
+                </template>
+
+                <!-- ========== POSTER: OPEN EVENT / COMMUNITY EVENT EMPTY STATE ========== -->
+                <template lwc:if={showOpenEventPosterEmptyState}>
+                    <div class="poster-empty-state">
+                        <img src={postInfoIconUrl} alt="" class="empty-state-icon">
+                        <template lwc:if={isCommunityEvent}>
+                            <p class="empty-state-message">No neighbours have shown interest yet. Give it time!</p>
+                        </template>
+                        <template lwc:else>
+                            <p class="empty-state-message">No one has signed up yet. Your event is live — share it around!</p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ========== SECONDARY DETAILS (collapsible) ========== -->
+                <template lwc:if={showSecondaryDetails}>
+
+                    <!-- Details Section -->
+                    <div class="info-section collapsible-section">
+                        <button type="button" class="section-toggle" onclick={toggleDetails} aria-expanded={detailsExpanded}>
+                            <span class="section-toggle-label">
+                                <img src={postInfoIconUrl} alt="" class="section-icon">
+                                Details
+                            </span>
+                            <lightning-icon icon-name={detailsToggleIcon} size="xx-small"></lightning-icon>
+                        </button>
+                        <template lwc:if={detailsExpanded}>
+                            <div class="collapsible-content">
+                                <div class="field-grid">
+                                    <template lwc:if={hasCategory}>
+                                        <div class="field-item">
+                                            <span class="field-label">Category</span>
+                                            <span class="field-value">{category}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={isEventType}>
+                                        <template lwc:if={eventDetails}>
+                                            <div class="field-item full-width">
+                                                <span class="field-label">When &amp; Where</span>
+                                                <span class="field-value">{eventDetails}</span>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={eventNotes}>
+                                            <div class="field-item full-width">
+                                                <span class="field-label">{eventNotesDetailLabel}</span>
+                                                <span class="field-value">{eventNotes}</span>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={expectedAttendance}>
+                                            <div class="field-item">
+                                                <span class="field-label">Expected Attendance</span>
+                                                <span class="field-value">~{expectedAttendance}</span>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <template lwc:if={startDate}>
+                                            <div class="field-item">
+                                                <span class="field-label">Start Date</span>
+                                                <span class="field-value">{startDate}</span>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={endDate}>
+                                            <div class="field-item">
+                                                <span class="field-label">End Date</span>
+                                                <span class="field-value">{endDate}</span>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template lwc:if={contactDisplayName}>
+                                        <div class="field-item">
+                                            <span class="field-label">{contactLabel}</span>
+                                            <span class="field-value">{contactDisplayName}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={showPostedBy}>
+                                        <div class="field-item">
+                                            <span class="field-label">Posted by</span>
+                                            <span class="field-value">{postedByName}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Availability Section (only if quantity tracked) -->
+                    <template lwc:if={showAvailabilitySection}>
+                        <div class="info-section collapsible-section">
+                            <button type="button" class="section-toggle" onclick={toggleAvailability} aria-expanded={availabilityExpanded}>
+                                <span class="section-toggle-label">
+                                    <img src={quantityIconUrl} alt="" class="section-icon">
+                                    Availability
+                                </span>
+                                <lightning-icon icon-name={availabilityToggleIcon} size="xx-small"></lightning-icon>
+                            </button>
+                            <template lwc:if={availabilityExpanded}>
+                                <div class="collapsible-content">
+                                    <div class="field-grid">
+                                        <div class="field-item">
+                                            <span class="field-label">{quantityLabel}</span>
+                                            <span class="field-value">{totalQuantity}</span>
+                                        </div>
+                                        <div class="field-item">
+                                            <span class="field-label">Total Available</span>
+                                            <span class="field-value">{totalAvailable}</span>
+                                        </div>
+                                        <div class="field-item">
+                                            <span class="field-label">Total Accepted</span>
+                                            <span class="field-value">{totalAccepted}</span>
+                                        </div>
+                                        <template lwc:if={isPosterPersona}>
+                                            <div class="field-item">
+                                                <span class="field-label">{perResponseLimitLabel}</span>
+                                                <span class="field-value">{perResponseLimit}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Settings Section (poster only) -->
+                    <template lwc:if={isPosterPersona}>
+                        <div class="info-section collapsible-section">
+                            <button type="button" class="section-toggle" onclick={toggleSettings} aria-expanded={settingsExpanded}>
+                                <span class="section-toggle-label">
+                                    <img src={settingsIconUrl} alt="" class="section-icon">
+                                    Settings
+                                </span>
+                                <lightning-icon icon-name={settingsToggleIcon} size="xx-small"></lightning-icon>
+                            </button>
+                            <template lwc:if={settingsExpanded}>
+                                <div class="collapsible-content">
+                                    <div class="field-grid">
+                                        <div class="field-item">
+                                            <span class="field-label">{autoAcceptLabelText}</span>
+                                            <span class="field-value">{autoAcceptLabel}</span>
+                                        </div>
+                                        <div class="field-item">
+                                            <span class="field-label">Auto-Share Contact Info</span>
+                                            <span class="field-value">{autoShareLabel}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+
+
+            </div>
+        </template>
+        </template>
+
+        <!-- Delete Confirmation Modal -->
+        <template lwc:if={showDeleteConfirm}>
+            <div class="delete-overlay" onclick={handleDeleteCancel}>
+                <div class="delete-modal" onclick={stopPropagation}>
+                    <h3 class="delete-title">Delete Post?</h3>
+                    <p class="delete-message">This action cannot be undone. All responses will also be affected.</p>
+                    <div class="delete-actions">
+                        <button class="btn btn-neutral" onclick={handleDeleteCancel} disabled={isDeleting}>Cancel</button>
+                        <button class="btn btn-danger" onclick={handleDeleteConfirm} disabled={isDeleting}>
+                            {deleteButtonLabel}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Lightbox -->
+        <template lwc:if={showLightbox}>
+            <c-fimby-lightbox
+                images={lightboxImages}
+                start-index={lightboxStartIndex}
+                onclose={handleLightboxClose}>
+            </c-fimby-lightbox>
+        </template>
+
+        <!-- Bottom Navigation -->
+        <c-fimby-bottom-navigation
+            active-tab="askOffer"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Embedded Modals -->
+        <template lwc:if={isAuthor}>
+            <c-fimby-record-edit-modal
+                record-id={recordId}
+                object-api-name="Needs_Offers__c"
+                field-set-name="FIMBY_Editable_Fields"
+                modal-title="Edit Post"
+                onsave={handleEditSave}
+                oncancel={handleEditCancel}>
+            </c-fimby-record-edit-modal>
+        </template>
+
+        <c-fimby-report-content></c-fimby-report-content>
+
+        <!-- Quick Response Modal (for ask/offer/gathering respond + bulk buy reserve) -->
+        <c-fimby-quick-response-modal onresponsesaved={handleDetailResponseSaved}></c-fimby-quick-response-modal>
+
+        <!-- Thanks Giving Modal -->
+        <c-fimby-thanks-giving
+            is-modal-mode="true"
+            onthankssent={handleThanksSent}>
+        </c-fimby-thanks-giving>
+    </div>
+</template>

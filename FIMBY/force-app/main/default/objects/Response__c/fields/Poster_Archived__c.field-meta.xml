@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Poster_Archived__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Whether the poster has archived this response thread. Thread reappears if responder sends a new message.</description>
+    <label>Poster Archived</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

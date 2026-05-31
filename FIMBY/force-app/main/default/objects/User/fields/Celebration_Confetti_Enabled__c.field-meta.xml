@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Celebration_Confetti_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <label>Celebration Confetti</label>
+    <type>Checkbox</type>
+    <description>Whether emoji confetti celebrations are enabled for this user</description>
+</CustomField>

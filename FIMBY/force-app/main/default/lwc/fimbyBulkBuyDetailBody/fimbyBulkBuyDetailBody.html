@@ -1,0 +1,229 @@
+<template>
+    <template lwc:if={post}>
+        <div class="bulk-buy-body">
+            <!-- Allocation Thermometer + Legend -->
+            <div class="section section-thermometer">
+                <div class="thermometer-expanded">
+                    <div class="thermometer-bar-wrap" style={thermometerBarStyle} role="progressbar" aria-valuenow={legendReservedCount} aria-valuemin="0" aria-valuemax={totalShares} aria-label="Shares reserved"></div>
+                    <div class="alloc-legend">
+                        <template lwc:if={showBuyerSegment}>
+                            <span class="legend-item">
+                                <span class="legend-dot dot-buyer"></span>
+                                <span class="legend-label">{buyerPillText}</span>
+                            </span>
+                        </template>
+                        <template lwc:if={hasLegendReserved}>
+                            <span class="legend-item">
+                                <span class="legend-dot dot-reserved"></span>
+                                <span class="legend-label">{reservedPillText}</span>
+                            </span>
+                        </template>
+                        <template lwc:if={hasAvailableShares}>
+                            <span class="legend-item">
+                                <span class="legend-dot dot-available"></span>
+                                <span class="legend-label">{availablePillText}</span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Section -->
+            <template lwc:if={hasCostInfo}>
+                <div class="section section-cost">
+                    <div class="cost-box">
+                        <p class="cost-per-share">~{formattedCostPerShare} per {unitLabel}</p>
+                        <p class="cost-total">Total estimated: {formattedTotalCost}</p>
+                        <p class="cost-disclaimer">Estimated costs may change. Final amount will be confirmed by the organiser.</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Receipt Photo Section -->
+            <template lwc:if={hasReceiptImage}>
+                <div class="section section-receipt">
+                    <h3 class="section-title">Receipt</h3>
+                    <div class="receipt-image-wrap">
+                        <img src={receiptImageUrl} alt="Receipt" class="receipt-image" />
+                    </div>
+                </div>
+            </template>
+
+            <!-- ========== ORGANISER: EMPTY STATE ========== -->
+            <template lwc:if={showOrganiserEmptyState}>
+                <div class="poster-empty-state">
+                    <p class="empty-state-message">{organiserEmptyStateMessage}</p>
+                    <span class="post-health-text">{organiserPostHealthText}</span>
+                </div>
+            </template>
+
+            <!-- ========== RESERVER: YOUR RESERVATION CARD ========== -->
+            <template lwc:if={hasUserReservation}>
+                <div class="your-reservation-card">
+                    <h3 class="your-reservation-title">Your Reservation</h3>
+                    <div class="your-reservation-body">
+                        <span class="reservation-amount-display">{reserverAmountDisplay}</span>
+                        <span class="reservation-status-context">{reserverStatusContext}</span>
+                        <div class="your-reservation-actions">
+                            <template lwc:if={hasGroupConversation}>
+                                <button type="button" class="action-btn primary" onclick={handleOpenGroupChat}>
+                                    <img src={chatIconUrl} alt="" class="action-btn-icon" />
+                                    <span>Open Group Chat</span>
+                                </button>
+                            </template>
+                            <template lwc:if={canCancelReservation}>
+                                <button type="button" class="action-btn danger-outline" onclick={handleCancelClick}>
+                                    <img src={cancelIconUrl} alt="" class="action-btn-icon" />
+                                    <span>Cancel Reservation</span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ========== NEW VISITOR: ACTION CONTEXT + RESERVE CTA ========== -->
+            <template lwc:if={showReserveButton}>
+                <div class="visitor-action-block">
+                    <p class="action-context-text">{visitorActionContext}</p>
+                    <div class="reserve-btn-wrap">
+                        <button type="button"
+                                class={reserveButtonClass}
+                                onclick={handleReserve}
+                                disabled={isReserveDisabled}
+                                aria-label={reserveAriaLabel}
+                                aria-describedby={reserveHelperId}>
+                            <img src={buyIconUrl} alt="" class="action-btn-icon" />
+                            <span>{reserveButtonLabel}</span>
+                        </button>
+                        <template lwc:if={showReserveHelperText}>
+                            <p class="reserve-helper-text" id="reserve-helper" role="status">
+                                {reserveHelperText}
+                            </p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ========== ORGANISER: ACTIONS ========== -->
+            <template lwc:if={showOrganiserActions}>
+                <div class="section section-actions">
+                    <div class="action-buttons">
+                        <template lwc:if={showNotifyPickupButton}>
+                            <button type="button"
+                                    class={notifyPickupClass}
+                                    onclick={handleNotifyPickup}
+                                    disabled={isNotifyPickupDisabled}
+                                    aria-label={notifyPickupLabel}>
+                                <img src={pickupIconUrl} alt="" class="action-btn-icon" />
+                                <span>{notifyPickupLabel}</span>
+                            </button>
+                        </template>
+                        <template lwc:if={canComplete}>
+                            <button type="button" class="action-btn primary" onclick={handleComplete}>
+                                <img src={completeIconUrl} alt="" class="action-btn-icon" />
+                                <span>Mark Complete</span>
+                            </button>
+                        </template>
+                        <template lwc:if={showCancelPost}>
+                            <button type="button" class="action-btn organiser-btn danger" onclick={handleCancel}>
+                                <span>Cancel Post</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Cancel Reservation Confirmation Modal -->
+            <template lwc:if={cancelConfirmVisible}>
+                <div class="cancel-overlay" onclick={handleCancelDismiss}>
+                    <div class="cancel-modal" onclick={stopPropagation}>
+                        <h3 class="cancel-title">Cancel your reservation?</h3>
+                        <p class="cancel-message">{cancelModalMessage}</p>
+                        <div class="cancel-actions">
+                            <button class="btn btn-neutral" onclick={handleCancelDismiss} disabled={isCancelling}>Keep It</button>
+                            <button class="btn btn-danger" onclick={handleCancelConfirm} disabled={isCancelling}>
+                                <template lwc:if={isCancelling}>Cancelling...</template>
+                                <template lwc:else>Cancel Reservation</template>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Cancel Post Confirmation Modal -->
+            <template lwc:if={cancelPostConfirmVisible}>
+                <div class="cancel-overlay" onclick={handleCancelPostDismiss}>
+                    <div class="cancel-modal" onclick={stopPropagation}>
+                        <h3 class="cancel-title">Cancel this bulk buy?</h3>
+                        <p class="cancel-message">This will cancel the entire post and all current reservations. Everyone who reserved will be notified.</p>
+                        <div class="cancel-actions">
+                            <button class="btn btn-neutral" onclick={handleCancelPostDismiss}>Keep Post</button>
+                            <button class="btn btn-danger" onclick={handleCancelPostConfirm}>Cancel Bulk Buy</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ========== ORGANISER: RESERVATIONS LIST ========== -->
+            <template lwc:if={showOrganiserReservationsList}>
+                <template lwc:if={reservationsWithButtonState.length}>
+                    <div class="section section-reservations">
+                        <h3 class="section-title">People Who Reserved ({reservationsWithButtonState.length})</h3>
+                        <div class="reservations-list">
+                            <template for:each={reservationsWithButtonState} for:item="r">
+                                <div key={r.id} class="reservation-row">
+                                    <div class="reservation-avatar">
+                                        <div class="avatar-placeholder" title={r.firstName}>
+                                            <span class="avatar-initial">{r.avatarInitial}</span>
+                                        </div>
+                                    </div>
+                                    <div class="reservation-info">
+                                        <span class="reservation-name">{r.firstName} {r.lastName}</span>
+                                        <span class="reservation-amount">{r.amount} {unitLabel}</span>
+                                    </div>
+                                    <template lwc:if={showOrganiserReservationActions}>
+                                        <div class="reservation-action">
+                                            <button
+                                                type="button"
+                                                class="action-btn per-reserver-btn {r.buttonClass}"
+                                                data-reservation-id={r.id}
+                                                data-reserver-name={r.displayName}
+                                                disabled={r.buttonDisabled}
+                                                onclick={handleCheckIn}
+                                                aria-label={r.buttonLabel}>
+                                                {r.buttonLabel}
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <!-- Group Chat footer (active lifecycle; reserver card has its own CTA) -->
+            <template lwc:if={showFooterGroupChat}>
+                <div class="section section-group-chat">
+                    <button type="button" class="action-btn primary" onclick={handleOpenGroupChat}>
+                        <img src={chatIconUrl} alt="" class="action-btn-icon" />
+                        <span>Open Group Chat</span>
+                    </button>
+                </div>
+            </template>
+
+            <!-- Expiry Info -->
+            <template lwc:if={hasExpiry}>
+                <div class="section section-expiry">
+                    <p class="expiry-text">Expires: {formattedExpiry}</p>
+                </div>
+            </template>
+
+            <!-- Disclaimer -->
+            <div class="section section-disclaimer">
+                <p class="disclaimer-text">FIMBY helps neighbours coordinate shared purchases. Payment arrangements are between participants -- FIMBY does not handle payments, refunds, or disputes over money.</p>
+            </div>
+        </div>
+    </template>
+</template>

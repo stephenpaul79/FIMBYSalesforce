@@ -1,0 +1,1052 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin: 0 16px 8px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* FIMBY Conversation View — Gmail-style thread */
+.fimby-conversation-view {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    /* Cap at viewport so a long thread scrolls internally; short threads stay
+       at their natural content height (reply button directly below messages). */
+    max-height: calc(100dvh - var(--fimby-header-height, 78px) - 24px);
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    .fimby-conversation-view {
+        max-height: calc(100dvh - var(--fimby-header-height, 78px) - var(--fimby-bottom-nav-height, 70px) - 16px);
+    }
+    .relative-hint {
+        display: none;
+    }
+}
+
+/* ── Header ──────────────────────────────────────── */
+.conversation-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    flex-shrink: 0;
+    min-height: 56px;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.back-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    transition: background 0.15s ease;
+}
+
+.back-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.participant-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    padding: 4px 8px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+.participant-avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.participant-details {
+    flex: 1;
+}
+
+.participant-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #261A11);
+    margin: 0;
+}
+
+.on-behalf-label {
+    font-size: 11px;
+    color: var(--fimby-on-behalf-text);
+    font-weight: 500;
+    margin-top: 1px;
+}
+
+/* ── Related Record Row (badge + title link) ─────── */
+.related-record-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    min-width: 0;
+}
+
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #ffffff;
+    white-space: nowrap;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.badge-library  { background-color: rgba(141, 123, 106, 0.75); }
+.badge-bulkbuy  { background-color: rgba(168, 132, 78, 0.75); }
+.badge-event    { background-color: rgba(91, 135, 96, 0.75); }
+.badge-checkin  { background-color: rgba(178, 143, 86, 0.65); }
+.badge-vouch    { background-color: var(--fimby-badge-vouch); }
+
+.related-record-link {
+    color: var(--fimby-brand-teal);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.related-record-link:hover {
+    text-decoration: underline;
+}
+
+.related-record-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.link-chevron {
+    font-weight: 400;
+    opacity: 0.6;
+}
+
+.header-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.menu-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+    color: var(--fimby-text-secondary);
+}
+
+.menu-button:hover {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+/* ── Neighbourly Banner ──────────────────────────── */
+.neighbourly-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 24px;
+    background: var(--fimby-warning-tint);
+    border-bottom: 1px solid var(--fimby-warning-border);
+    gap: 8px;
+}
+
+.neighbourly-text {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    font-style: italic;
+}
+
+.banner-dismiss {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.5;
+}
+
+.banner-dismiss:hover {
+    opacity: 1;
+    background: var(--fimby-hover-bg);
+}
+
+/* ── Thread Body ─────────────────────────────────── */
+.thread-body {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+    /* Shrink to fit content; when content exceeds the parent's max-height,
+       shrink and let the messages-container scroll internally. */
+    flex: 0 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Loading ─────────────────────────────────────── */
+.loading-container {
+    flex: 1 1 0;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* ── Messages Container ──────────────────────────── */
+.messages-container {
+    padding: 16px 24px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    /* Scrolls internally inside the thread body card. */
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.load-more-container {
+    text-align: center;
+    padding: 16px 0;
+}
+
+.load-more-button {
+    background: transparent;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--fimby-brand-teal);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 140px;
+}
+
+.loading-spinner {
+    display: flex;
+    gap: 3px;
+}
+
+.spinner-dot {
+    width: 3px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: spinner 1.4s infinite ease-in-out;
+}
+
+.spinner-dot:nth-child(1) { animation-delay: -0.32s; }
+.spinner-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes spinner {
+    0%, 80%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+}
+
+/* ── Date Separator — hidden (timestamps on each message) ── */
+.date-separator {
+    display: none;
+}
+
+/* ── Messages List ───────────────────────────────── */
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Expanded message (Gmail flat style) ─────────── */
+.message-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: 0;
+    padding: 20px 0 16px;
+}
+
+.message-card.from-me {
+    background: transparent;
+}
+
+.message-card.zone-first {
+    border-bottom: none;
+}
+
+.message-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.from-me .card-avatar {
+    background: var(--fimby-earth-driftwood, #8D7B6A);
+}
+
+.card-sender {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #261A11);
+    line-height: 1.4;
+}
+
+.card-timestamp {
+    font-size: 12px;
+    color: var(--fimby-text-muted, #B5A088);
+    margin-left: auto;
+    white-space: nowrap;
+    line-height: 1.4;
+    padding-top: 2px;
+}
+
+.message-card-body {
+    padding-left: 52px;
+    padding-top: 2px;
+}
+
+.message-text {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+/* Via labels */
+.via-label {
+    font-size: 11px;
+    color: var(--fimby-on-behalf-text);
+    margin-top: 4px;
+    padding-left: 52px;
+    font-style: italic;
+}
+
+/* ── Collapsed pill with double-line extending right ─ */
+/* Remove border from first message when pill is shown (avoids extra line above pill) */
+.messages-list:has(.collapsed-pill-line) .msg-collapsed.zone-first {
+    border-bottom: none;
+}
+
+.collapsed-pill-line {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.collapsed-pill-line::after {
+    content: '';
+    flex: 1;
+    border-top: 3px double var(--fimby-border-subtle, #E0D9CF);
+    margin-left: 12px;
+}
+
+.collapsed-count-pill {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-surface-input, #F7F3EB);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    flex-shrink: 0;
+}
+
+.collapsed-count-pill:hover {
+    background: var(--fimby-hover-bg, #EBE6DD);
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+/* ── Collapsed message row (Gmail single-line) ───── */
+.msg-collapsed {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    transition: background 0.12s ease;
+    font-size: 14px;
+}
+
+.msg-collapsed:hover {
+    background: var(--fimby-hover-bg, #EBE6DD);
+    margin: 0 -24px;
+    padding: 10px 24px;
+}
+
+.msg-collapsed-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.msg-collapsed-sender {
+    font-weight: 600;
+    flex-shrink: 0;
+    color: var(--fimby-text-strong, #261A11);
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msg-collapsed-snippet {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--fimby-text-muted, #B5A088);
+}
+
+.msg-collapsed-time {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--fimby-text-muted, #B5A088);
+    white-space: nowrap;
+}
+
+/* System messages */
+.system-message {
+    text-align: center;
+    padding: 8px 16px;
+}
+
+.system-bubble {
+    display: inline-block;
+    background: var(--fimby-surface-section, rgba(0,0,0,0.04));
+    border-radius: 12px;
+    padding: 6px 14px;
+    max-width: 80%;
+}
+
+.system-text {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #5a6a5e);
+    line-height: 1.4;
+}
+
+.system-time {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--fimby-text-muted, #999);
+    margin-top: 2px;
+}
+
+.relative-hint {
+    margin-left: 4px;
+    font-style: italic;
+}
+
+/* Remove border from last message (avoids extra divider above reply) */
+.messages-list > div:last-child .message-card,
+.messages-list > div:last-child.message-card,
+.messages-list > div:last-child .message-item.system-message,
+.messages-list > div:last-child.message-item.system-message {
+    border-bottom: none;
+}
+
+/* ── Reply compose area ──────────────────────────── */
+.reply-container {
+    border-top: none;
+    padding: 4px 24px 12px;
+    padding-left: 76px;
+    flex-shrink: 0;
+}
+
+.reply-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reply-trigger:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+}
+
+.compose-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.compose-input {
+    width: 100%;
+    min-height: 80px;
+    max-height: 200px;
+    padding: 12px 16px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-radius-md);
+    font-size: 16px;
+    font-family: inherit;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    line-height: 1.4;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    touch-action: manipulation;
+    background: var(--fimby-surface-card, #FAF7F2);
+}
+
+.compose-input:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+}
+
+.compose-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.compose-cancel {
+    padding: 8px 16px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-radius-md);
+    background: transparent;
+    color: var(--fimby-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.compose-cancel:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.compose-send {
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--fimby-radius-md);
+    background: var(--fimby-brand-teal);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.compose-send:hover {
+    background: var(--fimby-brand-teal-pressed);
+}
+
+.compose-send:disabled {
+    background: var(--fimby-border-subtle, #E0D9CF);
+    color: var(--fimby-text-muted, #B5A088);
+    cursor: not-allowed;
+}
+
+/* ── Block/Report Modal ──────────────────────────── */
+section[role="dialog"].slds-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--fimby-modal-inset-top, 86px);
+}
+
+.block-modal-container {
+    max-width: 400px;
+    width: 90%;
+    margin: 0 auto;
+    border-radius: var(--fimby-radius-lg);
+    overflow: hidden;
+    background-color: var(--fimby-surface-card);
+    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    /* Override SLDS .slds-modal__container defaults (3rem padding, min sizing)
+       so the modal fits tightly to its content. */
+    padding: 0;
+    min-height: 0;
+    min-width: 0;
+    align-self: center;
+}
+
+.block-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.block-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.block-modal-body { padding: 20px; }
+
+.block-warning {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 16px;
+}
+
+.block-field { margin-bottom: 16px; }
+
+.block-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    margin-bottom: 6px;
+}
+
+.block-input,
+.report-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+}
+
+.report-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    min-height: 60px;
+}
+
+.block-input:focus,
+.report-textarea:focus {
+    border-color: var(--fimby-brand-teal);
+}
+.report-toggle { margin-bottom: 16px; }
+
+.report-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+}
+
+.block-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.cancel-btn {
+    padding: 8px 20px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    background: transparent;
+    color: var(--fimby-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover { background: var(--fimby-hover-bg); }
+
+.block-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--fimby-radius-md);
+    background: var(--fimby-error);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.block-btn:hover { opacity: 0.9; }
+
+section[role="dialog"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Revoked banner ──────────────────────────────── */
+.conversation-revoked-banner {
+    position: fixed;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: var(--fimby-error-tint);
+    color: var(--fimby-error);
+    border-top: 1px solid var(--fimby-error-border);
+    font-size: 0.9rem;
+    font-weight: 500;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (min-width: 768px) {
+    .fimby-conversation-view {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-conversation-view {
+        max-width: 800px;
+    }
+}
+
+@media (min-width: 892px) {
+    .conversation-revoked-banner {
+        bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* revoked banner inherits max-width from parent */
+
+/* ── Focus ───────────────────────────────────────── */
+.back-button:focus-visible,
+.banner-dismiss:focus-visible,
+.reply-trigger:focus-visible,
+.compose-cancel:focus-visible,
+.compose-send:focus-visible,
+.menu-button:focus-visible,
+.modal-close-btn:focus-visible,
+.cancel-btn:focus-visible,
+.block-btn:focus-visible,
+.collapsed-count-pill:focus-visible,
+.msg-collapsed:focus-visible,
+.collapsed-pill-line:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Follow-up action banner */
+.follow-up-banner {
+    background-color: var(--fimby-surface-section, #f5f2ec);
+    padding: 12px 24px 12px 76px;
+    text-align: left;
+    border-top: 1px solid var(--fimby-border-subtle, #e5e0d8);
+}
+
+.follow-up-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary, #2c3e2d);
+    margin-bottom: 8px;
+}
+
+.follow-up-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.follow-up-btn {
+    padding: 8px 20px;
+    border-radius: var(--fimby-radius-md, 8px);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-success {
+    background: var(--fimby-brand-teal, #5b8760);
+    color: #fff;
+}
+
+.btn-neutral {
+    background: var(--fimby-surface-card, #faf7f2);
+    color: var(--fimby-text-primary, #2c3e2d);
+    border: 1px solid var(--fimby-border-subtle, #e5e0d8);
+}
+
+.follow-up-resolved-banner {
+    padding: 10px 24px 10px 76px;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #5a6a5e);
+    background-color: var(--fimby-surface-section, #f5f2ec);
+    border-top: 1px solid var(--fimby-border-subtle, #e5e0d8);
+}
+
+/* ── Lending Action Banner ──────────────────────────────────────── */
+.lending-action-banner {
+    padding: 10px 16px;
+    margin: 0 24px 8px 76px;
+    border-radius: var(--fimby-radius-md, 12px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lending-banner-success {
+    background-color: var(--fimby-success-tint, #E8F5E9);
+    border: 1px solid var(--fimby-success, #2E7D32);
+}
+.lending-banner-warning {
+    background-color: var(--fimby-warning-tint, #FFF3E0);
+    border: 1px solid var(--fimby-warning, #E65100);
+}
+.lending-banner-info {
+    background-color: var(--fimby-info-tint, #E3F2FD);
+    border: 1px solid var(--fimby-info, #1565C0);
+}
+
+.lending-banner-text {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--fimby-text-primary, #4A3526);
+    font-weight: 500;
+}
+
+.lending-banner-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.lending-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-family: inherit;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.lending-btn:hover {
+    background-color: var(--fimby-hover-bg, #EBE6DD);
+    border-color: var(--fimby-border-strong, #CCC5BB);
+}
+.lending-btn:active {
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.lending-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.lending-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.lending-btn-success {
+    background-color: var(--fimby-btn-success-bg, #1A7B40);
+    color: #ffffff;
+    border-color: var(--fimby-btn-success-bg, #1A7B40);
+    font-weight: 700;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+.lending-btn-success:hover {
+    background-color: var(--fimby-btn-success-bg-hover, #166D38);
+    border-color: var(--fimby-btn-success-bg-hover, #166D38);
+}
+
+.lending-btn-primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    font-weight: 700;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+.lending-btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.lending-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-earth-teal, #448E9E);
+    text-decoration: none;
+}
+.lending-link:hover {
+    text-decoration: underline;
+}
+.lending-link-muted {
+    color: var(--fimby-text-secondary, #8B7355);
+}
+
+.lending-btn-secondary {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border-color: var(--fimby-border-default);
+    font-weight: 600;
+}
+
+.lending-btn-secondary:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.lending-banner-error {
+    margin: 8px 0 0;
+    color: var(--fimby-error);
+    font-size: 0.85rem;
+    flex-basis: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back-button,
+    .menu-button,
+    .spinner-dot,
+    .reply-trigger,
+    .compose-send,
+    .collapsed-count-pill,
+    .msg-collapsed,
+    .collapsed-pill-line {
+        transition: none !important;
+        animation: none !important;
+    }
+}

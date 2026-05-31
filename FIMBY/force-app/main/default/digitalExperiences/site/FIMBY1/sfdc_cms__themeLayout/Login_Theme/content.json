@@ -1,0 +1,68 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Login Theme",
+  "contentBody" : {
+    "component" : {
+      "attributes" : { },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "alignment" : "center",
+            "dxpStyle" : { },
+            "fit" : "contain",
+            "height" : 350,
+            "imageInfo" : "{\"imageInfoV1\":{\"url\":\"\",\"altText\":\"\",\"contentKey\":\"MCVCWUKQ6MKNFO3EXTQEOGICTDBA\",\"contentType\":null}}",
+            "overlayColor" : "",
+            "position" : "center center",
+            "width" : 15
+          },
+          "definition" : "dxp_base:image",
+          "id" : "b6292dcc-7bb8-4427-950a-794975bb7ce0",
+          "type" : "component"
+        } ],
+        "id" : "39366cd1-2a83-445c-93bb-1e64afe396fa",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"a254964e-1ba0-4e78-9d91-26227e4bb483\",\"columns\":[{\"UUID\":\"c77c22e5-dd15-4a3a-80d0-b1c97c2a6031\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "c77c22e5-dd15-4a3a-80d0-b1c97c2a6031",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "a254964e-1ba0-4e78-9d91-26227e4bb483",
+          "type" : "component"
+        } ],
+        "id" : "e32343f3-28ed-4f1a-9d3a-9bdac437250d",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "863c833b-52b2-464f-83da-f7d8db50734a",
+        "name" : "default",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:simpleThemeLayout",
+      "id" : "deed6b64-d8bc-40ab-ad2f-caf9ac090c66",
+      "type" : "component"
+    }
+  },
+  "urlName" : "login-theme"
+}

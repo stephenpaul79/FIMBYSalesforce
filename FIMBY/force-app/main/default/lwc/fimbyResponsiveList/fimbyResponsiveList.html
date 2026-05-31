@@ -1,0 +1,241 @@
+<template>
+    <div class="responsive-list-container">
+        <!-- Header with Search and Filter -->
+        <template lwc:if={showHeader}>
+            <div class="list-header">
+                <div class="header-left">
+                    <h2 class="list-title">{title}</h2>
+                    <template lwc:if={subtitle}>
+                        <span class="list-subtitle">{subtitle}</span>
+                    </template>
+                    <span class="record-count">{recordCountLabel}</span>
+                </div>
+                <div class="header-right">
+                    <!-- Search -->
+                    <template lwc:if={showSearch}>
+                        <div class="search-container">
+                            <lightning-icon icon-name="utility:search" size="x-small"></lightning-icon>
+                            <input
+                                type="text"
+                                class="search-input"
+                                placeholder={searchPlaceholder}
+                                value={searchTerm}
+                                oninput={handleSearch}>
+                        </div>
+                    </template>
+
+                    <!-- View Toggle (Desktop) -->
+                    <template lwc:if={showViewToggle}>
+                        <div class="view-toggle desktop-only">
+                            <button
+                                class={tableViewClass}
+                                onclick={handleTableView}
+                                title="Table View">
+                                <lightning-icon icon-name="utility:list" size="x-small"></lightning-icon>
+                            </button>
+                            <button
+                                class={cardViewClass}
+                                onclick={handleCardView}
+                                title="Card View">
+                                <lightning-icon icon-name="utility:layout" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Create Button -->
+                    <template lwc:if={showCreateButton}>
+                        <button class="create-btn" onclick={handleCreate}>
+                            <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                            <span class="desktop-only">{createButtonLabel}</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                <p class="loading-text">Loading records...</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template lwc:elseif={showEmptyState}>
+            <div class="empty-state">
+                <lightning-icon icon-name={emptyStateIcon} size="large"></lightning-icon>
+                <h3 class="empty-title">{emptyStateTitle}</h3>
+                <p class="empty-message">{emptyStateMessage}</p>
+                <template lwc:if={showCreateButton}>
+                    <button class="empty-action-btn" onclick={handleCreate}>
+                        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                        <span>{createButtonLabel}</span>
+                    </button>
+                </template>
+            </div>
+        </template>
+
+        <!-- Content Area -->
+        <template lwc:else>
+            <!-- Desktop Table View -->
+            <template lwc:if={isTableView}>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <template for:each={processedColumns} for:item="col">
+                                    <th key={col.key} onclick={handleSort} data-field={col.fieldName}>
+                                        <span class="column-header">
+                                            {col.label}
+                                            <template lwc:if={col.sortable}>
+                                                <lightning-icon
+                                                    icon-name={col.sortIcon}
+                                                    size="xx-small"
+                                                    class="sort-icon">
+                                                </lightning-icon>
+                                            </template>
+                                        </span>
+                                    </th>
+                                </template>
+                                <template lwc:if={hasRowActions}>
+                                    <th class="actions-column">Actions</th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={processedRecords} for:item="record">
+                                <tr key={record._id} class="table-row" tabindex="0" onclick={handleRowClick} onkeydown={handleRowKeydown} data-id={record._id}>
+                                    <template for:each={record._cells} for:item="cell">
+                                        <td key={cell.key}>
+                                            <!-- Image cell -->
+                                            <template lwc:if={cell.isImage}>
+                                                <div class="cell-image">
+                                                    <template lwc:if={cell.hasValue}>
+                                                        <img src={cell.value} alt="Image">
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="image-placeholder">
+                                                            <lightning-icon icon-name={cell.placeholderIcon} size="x-small"></lightning-icon>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <!-- Link cell -->
+                                            <template lwc:elseif={cell.isLink}>
+                                                <a href="javascript:void(0)" class="cell-link" onclick={handleCellClick} data-id={record._id} data-field={cell.fieldName}>
+                                                    {cell.value}
+                                                </a>
+                                            </template>
+                                            <!-- Badge cell -->
+                                            <template lwc:elseif={cell.isBadge}>
+                                                <span class={cell.badgeClass}>{cell.value}</span>
+                                            </template>
+                                            <!-- Standard cell -->
+                                            <template lwc:elseif={cell.isStandard}>
+                                                {cell.value}
+                                            </template>
+                                        </td>
+                                    </template>
+                                    <!-- Row Actions -->
+                                    <template lwc:if={hasRowActions}>
+                                        <td class="actions-cell">
+                                            <div class="row-actions">
+                                                <template for:each={rowActions} for:item="action">
+                                                    <button
+                                                        key={action.name}
+                                                        class="action-btn-small"
+                                                        onclick={handleRowAction}
+                                                        data-id={record._id}
+                                                        data-action={action.name}
+                                                        title={action.label}>
+                                                        <lightning-icon icon-name={action.icon} size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- Mobile Card View -->
+            <template lwc:elseif={isCardView}>
+                <div class="cards-container">
+                    <template for:each={processedRecords} for:item="record">
+                        <div key={record._id} class="record-card" role="button" tabindex="0" aria-label="View record" onclick={handleRowClick} onkeydown={handleRowKeydown} data-id={record._id}>
+                            <!-- Card Image (if applicable) -->
+                            <template lwc:if={record._hasImage}>
+                                <div class="card-image">
+                                    <template lwc:if={record._imageUrl}>
+                                        <img src={record._imageUrl} alt="Record image">
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="card-image-placeholder">
+                                            <lightning-icon icon-name={imagePlaceholderIcon} size="medium"></lightning-icon>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Card Content -->
+                            <div class="card-content">
+                                <!-- Primary Info (Name) -->
+                                <div class="card-primary">
+                                    <span class="card-title">{record._primaryValue}</span>
+                                    <template lwc:if={record._statusValue}>
+                                        <span class={record._statusBadgeClass}>{record._statusValue}</span>
+                                    </template>
+                                </div>
+
+                                <!-- Secondary Fields -->
+                                <div class="card-fields">
+                                    <template for:each={record._cardFields} for:item="field">
+                                        <div key={field.key} class="card-field">
+                                            <span class="field-label">{field.label}</span>
+                                            <span class="field-value">{field.value}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Card Actions -->
+                            <template lwc:if={hasRowActions}>
+                                <div class="card-actions">
+                                    <template for:each={rowActions} for:item="action">
+                                        <button
+                                            key={action.name}
+                                            class="card-action-btn"
+                                            onclick={handleRowAction}
+                                            data-id={record._id}
+                                            data-action={action.name}>
+                                            <lightning-icon icon-name={action.icon} size="xx-small"></lightning-icon>
+                                            <span>{action.label}</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+        <!-- Load More (Infinite Scroll) -->
+        <template lwc:if={showLoadMore}>
+            <div class="load-more-container">
+                <button class="load-more-btn" onclick={handleLoadMore}>
+                    <template lwc:if={isLoadingMore}>
+                        <lightning-spinner alternative-text="Loading more..." size="small"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
+                        <span>Load More</span>
+                    </template>
+                </button>
+            </div>
+        </template>
+    </div>
+</template>

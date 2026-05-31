@@ -1,0 +1,71 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:dynamicLayout",
+  "dataProviders" : [ ],
+  "id" : "d182208a-c147-4342-860f-478e1f6be828",
+  "label" : "New Contact",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "background" : "background: rgba(0,0,0,0)",
+        "backgroundOverlay" : "rgba(0,0,0,0.5)",
+        "contentAreaWidth" : 100,
+        "sectionConfig" : {
+          "UUID" : "b28aa322-9fee-415f-8e53-ced9c284aa7e",
+          "columns" : [ {
+            "UUID" : "46e66cf6-ac39-48b6-b3a8-255f9f7a684f",
+            "columnKey" : "1",
+            "columnName" : "Column 1",
+            "columnWidth" : "12",
+            "seedComponents" : [ ]
+          } ]
+        },
+        "sectionHeight" : 300
+      },
+      "componentName" : "forceCommunity:section",
+      "id" : "b28aa322-9fee-415f-8e53-ced9c284aa7e",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "flowArguments" : "",
+            "flowName" : "New_FIMBY_Contact"
+          },
+          "componentName" : "forceCommunity:flowCommunity",
+          "id" : "25c29461-5846-4104-8364-002226e5b240",
+          "renderPriority" : "NEUTRAL",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "46e66cf6-ac39-48b6-b3a8-255f9f7a684f",
+        "regionLabel" : "Column 1",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "2f8c5592-2665-4dd5-86cb-60eedb6ec04c",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "New Contact"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "c6463bc5-2cdc-4545-82fa-c110aeda6bd5",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "6e5c3abe-f42a-4fc7-8e88-3f594c0b2f15",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-new-contact"
+}

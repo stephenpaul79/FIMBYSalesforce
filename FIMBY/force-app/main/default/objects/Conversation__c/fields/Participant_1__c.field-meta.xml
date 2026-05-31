@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Participant_1__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>One party in the conversation (the initiator's actingAsContactId).</description>
+    <label>Participant 1</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Conversations (Participant 1)</relationshipLabel>
+    <relationshipName>Conversations_as_Participant_1</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,62 @@
+---
+description: LWC mobile gesture and interactive menu design patterns — pitfalls and fixes learned from swipe-to-reveal and kebab menu implementations
+globs: **/lwc/**/*.js,**/lwc/**/*.html,**/lwc/**/*.css
+alwaysApply: false
+---
+
+# LWC Mobile Gesture & Interactive Menu Patterns
+
+## `preventDefault()` in Touch Handlers Kills All Click Events
+
+`event.preventDefault()` in `touchend` prevents the browser from synthesizing a `click` event — not just for the wrapper, but for **every child** underneath. This breaks two things:
+
+1. **Plain taps on the row** (e.g., navigating into a thread) — the user taps, `touchstart` tracks a swipe, `touchend` calls `preventDefault()`, and the `onclick` on the inner row element never fires.
+2. **Taps on revealed action buttons** — the wrapper's touch handler intercepts the touch before the button's `onclick` can fire.
+
+**Fix both with two guards:**
+
+```javascript
+handleSwipeStart(event) {
+    if (event.target.closest('.swipe-action')) return; // guard #1: let action button clicks through
+    // ... swipe tracking logic
+}
+
+handleSwipeEnd(event) {
+    if (!this._swipeThreadId) return;
+    if (this._swiping) {          // guard #2: only prevent default for actual swipes
+        event.preventDefault();
+    }
+    // ... snap logic
+}
+```
+
+Guard #1 exempts action buttons from swipe tracking entirely. Guard #2 ensures plain taps (where `_swiping` stays `false`) still generate a `click` event for row navigation.
+
+## Swipe Gestures Must Only Reveal — Never Act
+
+Swipe handlers should **only** translate the foreground to reveal/hide action buttons. Database calls (Apex) belong on the `onclick` of the revealed button, not in the swipe handler itself. This prevents accidental triggers and gives the user a clear tap target.
+
+## `overflow: hidden` Clips Absolutely-Positioned Menus
+
+Dropdown menus rendered inside a scroll container (`overflow: hidden`) will be invisible even with `z-index`. Two options:
+
+1. **Preferred:** Render a single shared menu element **outside** the scroll container (sibling, not child). Position it with `position: fixed` using coordinates from `getBoundingClientRect()`.
+2. Close the menu with backdrop click **and** Escape key for accessibility.
+
+```javascript
+const rect = triggerBtn.getBoundingClientRect();
+this._menuTop = rect.bottom + 4;
+this._menuRight = window.innerWidth - rect.right;
+```
+
+## Imperative DOM Changes Are Lost on Re-render
+
+Direct `element.style.transform = ...` is wiped when any `@track` property changes and LWC re-renders the template. Keep this in mind when mixing imperative styles (swipe transforms) with reactive data updates (marking a thread read). Close/reset the swipe state before updating tracked properties.
+
+## Impact Icons Need No CSS Filters
+
+Icons in the `Impact_Icons` static resource are already designed with appropriate colors for their intended backgrounds. Avoid applying `filter: brightness(0) invert(1)` or similar — it washes out the visuals and can create a white overlay effect.
+
+## One Open Row at a Time
+
+Track which row has an open swipe (`_openSwipeThreadId`) or open menu (`_menuThreadId`) and close it when another row starts interacting. This prevents multiple rows from being in an open state simultaneously.

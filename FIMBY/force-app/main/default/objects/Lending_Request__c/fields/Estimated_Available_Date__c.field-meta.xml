@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Estimated_Available_Date__c</fullName>
+    <formula>IF(ISPICKVAL(Status__c, &quot;Approved&quot;) &amp;&amp; !ISBLANK( Approved_and_Available_Date__c),  Approved_and_Available_Date__c,
+IF(Waitlist_Position__c = 1 &amp;&amp; ISBLANK(Library_Item__r.Expected_Return_Date__c), TODAY(), 
+IF(Waitlist_Position__c = 1 &amp;&amp; !ISBLANK(Library_Item__r.Expected_Return_Date__c),  Library_Item__r.Expected_Return_Date__c, 
+Library_Item__r.Expected_Return_Date__c + ((Waitlist_Position__c-1)* Library_Item__r.Max_Lending_Time_In_Days__c) )))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Estimated Available Date</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

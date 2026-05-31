@@ -1,0 +1,131 @@
+<template>
+    <c-fimby-card
+        class="ask-offer-item-card"
+        show-header="false"
+        show-footer="true"
+        enable-hover="true"
+        onclick={handleCardClick}>
+
+        <!-- Image Carousel -->
+        <div slot="content" class="item-container">
+            <div class="image-container">
+                <template lwc:if={item.images}>
+                    <div class="image-carousel">
+                        <img src={currentImage} alt={item.title} class="item-image">
+
+                        <template lwc:if={hasMultipleImages}>
+                            <div class="image-indicators">
+                                <template for:each={item.images} for:item="image" for:index="index">
+                                    <button key={image}
+                                            class={getIndicatorClass}
+                                            data-index={index}
+                                            onclick={handleImageChange}>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+
+                        <div class="item-type-badge">
+                            <lightning-icon
+                                icon-name={typeIcon}
+                                size="xx-small">
+                            </lightning-icon>
+                            <span>{typeLabel}</span>
+                        </div>
+
+                        <template lwc:if={item.isUrgent}>
+                            <div class="urgent-badge">
+                                <lightning-icon icon-name="utility:warning" size="xx-small"></lightning-icon>
+                                Urgent
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <div class="placeholder-image">
+                        <lightning-icon
+                            icon-name={typeIcon}
+                            size="large">
+                        </lightning-icon>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Item Details -->
+            <div class="item-details">
+                <div class="item-header">
+                    <h3 class="item-title">{item.title}</h3>
+                    <div class="item-status">
+                        <span class={statusClass}>{item.status}</span>
+                    </div>
+                </div>
+
+                <p class="item-description">{truncatedDescription}</p>
+
+                <div class="item-meta">
+                    <div class="location-info">
+                        <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                        <span class="location-text">{item.distance}</span>
+                    </div>
+
+                    <div class="time-info">
+                        <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                        <span class="time-text">{formattedTime}</span>
+                    </div>
+                </div>
+
+                <div class="category-tags">
+                    <template for:each={item.categories} for:item="category">
+                        <span key={category} class="category-tag">{category}</span>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div slot="footer" class="item-actions">
+            <div class="poster-info">
+                <img src={item.posterAvatar} alt={item.posterName} class="poster-avatar">
+                <div class="poster-details">
+                    <span class="poster-name">{item.posterName}</span>
+                    <div class="poster-rating">
+                        <template for:each={ratingStars} for:item="star">
+                            <lightning-icon
+                                key={star.id}
+                                icon-name={star.icon}
+                                size="xx-small"
+                                class={star.class}>
+                            </lightning-icon>
+                        </template>
+                        <span class="rating-count">({item.posterRating})</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <template lwc:if={item.canRespond}>
+                    <button class="respond-button primary" onclick={handleRespond}>
+                        <lightning-icon icon-name={responseIcon} size="x-small"></lightning-icon>
+                        {responseLabel}
+                    </button>
+                </template>
+
+                <button class="message-button" onclick={handleMessage}>
+                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                </button>
+
+                <button class={saveButtonClass} onclick={handleSave}>
+                    <lightning-icon icon-name={saveIcon} size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+    </c-fimby-card>
+
+    <!-- Report Content Modal -->
+    <c-fimby-report-content
+        content-id={item.id}
+        content-type="Need_Offer"
+        onreportsubmitted={handleReportSubmitted}>
+    </c-fimby-report-content>
+</template>

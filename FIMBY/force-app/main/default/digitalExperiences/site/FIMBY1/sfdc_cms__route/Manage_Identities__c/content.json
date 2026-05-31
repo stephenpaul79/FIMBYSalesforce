@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Manage Identities",
+  "contentBody" : {
+    "activeViewId" : "Manage_Identities",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-manage-identities",
+    "urlPrefix" : "manage-identities"
+  },
+  "urlName" : "manage-identities"
+}

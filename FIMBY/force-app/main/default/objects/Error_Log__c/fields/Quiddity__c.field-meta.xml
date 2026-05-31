@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Quiddity__c</fullName>
+    <label>Quiddity</label>
+    <length>255</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+    <inlineHelpText>Execution context type from Request.getCurrent().getQuiddity(), e.g. SYNCHRONOUS, BATCH_APEX, FUTURE, QUEUEABLE.</inlineHelpText>
+</CustomField>

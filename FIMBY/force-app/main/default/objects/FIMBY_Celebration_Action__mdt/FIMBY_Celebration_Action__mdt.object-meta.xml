@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>FIMBY Celebration Action</label>
+    <pluralLabel>FIMBY Celebration Actions</pluralLabel>
+    <visibility>Public</visibility>
+    <description>Configurable celebration definitions for FIMBY. Each record maps an action type + occasion to emojis, messages, animation style, and milestone thresholds.</description>
+</CustomObject>

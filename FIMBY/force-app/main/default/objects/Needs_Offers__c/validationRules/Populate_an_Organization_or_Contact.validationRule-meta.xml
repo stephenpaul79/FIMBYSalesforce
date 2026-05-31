@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Populate_an_Organization_or_Contact</fullName>
+    <active>true</active>
+    <errorConditionFormula>(ISBLANK(Contact__c) &amp;&amp;  ISBLANK(Organization__c)) 
+||
+(!ISBLANK(Contact__c) &amp;&amp;  !ISBLANK(Organization__c))</errorConditionFormula>
+    <errorMessage>Please select the Contact OR Organization who has a need or offer to post.</errorMessage>
+</ValidationRule>

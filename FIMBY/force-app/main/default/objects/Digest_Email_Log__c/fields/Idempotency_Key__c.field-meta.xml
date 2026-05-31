@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Idempotency_Key__c</fullName>
+    <caseSensitive>false</caseSensitive>
+    <description>Composite unique key: NeighbourhoodId_Cadence_WindowDate. One row per neighbourhood-build per window — successful reruns overwrite a prior Skipped row at the same key. The legacy per-user format (with a trailing UserId) is gone as of the per-build refactor.</description>
+    <externalId>true</externalId>
+    <label>Idempotency Key</label>
+    <length>120</length>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

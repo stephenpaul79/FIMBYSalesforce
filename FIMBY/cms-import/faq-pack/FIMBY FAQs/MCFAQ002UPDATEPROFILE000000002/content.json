@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I update my profile?",
+  "contentBody" : {
+    "question" : "How do I update my profile?",
+    "answer" : "<p>Tap the <strong>menu icon</strong> in the top-right corner and select <strong>Profile</strong>. From there you can edit your name, photo, pronouns, bio, and care preferences. You can also update your profile at any time from the My Stuff tab.</p>",
+    "sortOrder" : "020",
+    "category" : "Getting Started"
+  },
+  "urlName" : "how-do-i-update-my-profile"
+}

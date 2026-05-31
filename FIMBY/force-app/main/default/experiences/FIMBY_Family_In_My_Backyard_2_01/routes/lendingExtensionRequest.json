@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "6858faf1-d4c8-452e-b2c8-67de36d19c15",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Lending_Extension_Request__c",
+  "id" : "afba15c5-5159-49a2-ba70-c9ca295a426f",
+  "label" : "Lending Extension Request",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-lending-extension-request",
+  "type" : "route",
+  "urlPrefix" : "lending-extension-request"
+}

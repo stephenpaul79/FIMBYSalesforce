@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="pageTitle" type="String" default="" label="Page Title"/>
+            <property name="pageSubtitle" type="String" default="" label="Page Subtitle"/>
+            <property name="showBackButton" type="Boolean" default="false" label="Show Back Button"/>
+            <property name="showSearch" type="Boolean" default="false" label="Show Search"/>
+            <property name="showNotifications" type="Boolean" default="false" label="Show Notifications"/>
+            <property name="showMenu" type="Boolean" default="false" label="Show Menu"/>
+            <property name="showCustomAction" type="Boolean" default="false" label="Show Custom Action"/>
+            <property name="customActionIcon" type="String" default="utility:add" label="Custom Action Icon"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

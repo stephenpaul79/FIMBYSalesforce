@@ -1,0 +1,1011 @@
+/* FIMBY Card - Mobile First Design */
+.fimby-card {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-md, 12px);
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border: 1px solid var(--fimby-divider-default, rgba(38, 26, 17, 0.10));
+}
+
+/* Card types — default left-border accent colours (earth-tone palette) */
+.card-story {
+    border-left: 3px solid var(--fimby-earth-ochre, #A38045);
+}
+
+.card-askOffer {
+    border-left: 3px solid var(--fimby-earth-sage, #5B8760);
+}
+
+.card-library {
+    border-left: 3px solid var(--fimby-earth-driftwood, #8D7B6A);
+}
+
+/* When card-accent-color is provided, keep the 3px border but let inline style set colour */
+.accent-override {
+    border-left: 3px solid;  /* colour comes from inline style */
+}
+
+/* Elevations */
+.elevation-low {
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.elevation-medium {
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.elevation-high {
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+/* Border radius */
+.radius-small {
+    border-radius: var(--fimby-radius-sm);
+}
+
+.radius-medium {
+    border-radius: var(--fimby-radius-md);
+}
+
+.radius-large {
+    border-radius: var(--fimby-radius-lg);
+}
+
+/* Clickable cards */
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.clickable:active {
+    transform: translateY(0);
+}
+
+/* Header */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.clickable-avatar {
+    cursor: pointer;
+    border-radius: var(--fimby-radius-full, 50%);
+}
+
+.clickable-avatar:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--fimby-divider-default);
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--fimby-surface-section);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--fimby-divider-default);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--fimby-text-strong);
+    line-height: 1.3;
+    margin-bottom: 2px;
+    overflow-wrap: break-word;
+}
+
+.timestamp {
+    font-size: 11px;
+    color: var(--fimby-text-muted);
+    line-height: 1.2;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.card-menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card-menu {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.card-menu-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+.card-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+}
+
+.card-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 160px;
+    background: var(--fimby-surface-card, #fff);
+    border: 1px solid var(--fimby-border-subtle, rgba(0, 0, 0, 0.08));
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 901;
+    padding: 6px 0;
+}
+
+.card-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+    text-align: left;
+}
+
+.card-menu-item:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.card-menu-item-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.card-menu:hover {
+    background: var(--fimby-hover-bg);
+}
+
+/* ----------------------------------------------------------
+ * Card Body — wraps media + content for layout flexibility
+ * ---------------------------------------------------------- */
+.card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Media */
+.card-media {
+    position: relative;
+    width: 100%;
+    background: var(--fimby-surface-page);
+}
+
+/* Content */
+.card-content {
+    padding: 16px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+/* Event metadata (date/time + location between title and description) */
+.card-event-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.event-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.event-meta-icon {
+    flex-shrink: 0;
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+}
+
+.event-location-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-link-text {
+    color: var(--fimby-accent-teal, #2ABFBF);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.event-link-text:hover {
+    text-decoration: underline;
+}
+
+.card-description {
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+/* Truncated description — line-clamp applied via inline style for dynamic max-lines */
+.card-description.truncated {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Read More / Show Less toggle */
+.read-more-btn {
+    background: none;
+    border: none;
+    padding: 0 0 8px;
+    margin-top: -8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-brand-teal);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.read-more-btn:hover {
+    color: var(--fimby-brand-teal-pressed);
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.tag {
+    background: var(--fimby-surface-section);
+    color: var(--fimby-text-primary);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    border: 1px solid var(--fimby-divider-default);
+    pointer-events: none;
+    user-select: none;
+}
+
+.custom-content {
+    margin-top: 12px;
+}
+
+/* Actions */
+.card-actions {
+    padding: 0 16px 12px;
+    border-top: 1px solid var(--fimby-divider-subtle);
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--fimby-radius-xl);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+.action-button:hover {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+.action-button:active {
+    transform: scale(0.95);
+}
+
+.action-count {
+    font-weight: 500;
+    min-width: 16px;
+    text-align: center;
+}
+
+.action-label {
+    font-weight: 500;
+}
+
+.custom-action .action-label {
+    font-weight: inherit;
+}
+
+.custom-action {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    margin-left: auto;
+    padding: 10px 20px;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.custom-action:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    color: #ffffff;
+}
+
+.custom-action:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.custom-action-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .custom-action {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Card Footer Bar — response pill + engagement count */
+.card-footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-top: 1px solid var(--fimby-divider-subtle);
+    gap: 12px;
+}
+
+/* Allocation pills (Bulk Buy compact view) */
+.footer-alloc-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.alloc-pill-compact {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Reserved pill — earth-slate (NOT teal; only CTA uses teal). Secondary badge: white text on coloured bg. */
+.alloc-pill-reserved {
+    background-color: var(--fimby-earth-slate, #5E7B92);
+    color: #ffffff;
+}
+
+/* Available pill — earth-sage. Secondary badge: white text on coloured bg. */
+.alloc-pill-available {
+    background-color: var(--fimby-earth-sage, #5B8760);
+    color: #ffffff;
+}
+
+.alloc-pill-on-hold {
+    background-color: var(--fimby-earth-amber, #B4883B);
+    color: #ffffff;
+}
+
+.alloc-pill-on-loan {
+    background-color: var(--fimby-earth-slate, #5E7B92);
+    color: #ffffff;
+}
+
+.alloc-pill-zero {
+    opacity: 0.4;
+}
+
+.footer-engagement {
+    flex: 1;
+    min-width: 0;
+}
+
+.engagement-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    cursor: pointer;
+}
+
+.engagement-text:hover {
+    color: var(--fimby-text-primary);
+}
+
+.footer-response {
+    flex-shrink: 0;
+}
+
+/* Mobile: stack pills above CTA to avoid collisions and improve tap targets */
+@media (max-width: 480px) {
+    .card-footer-bar {
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .footer-alloc-pills {
+        order: 1;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .footer-engagement {
+        order: 2;
+    }
+
+    .footer-response {
+        order: 3;
+        flex-shrink: 0;
+    }
+}
+
+.response-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    color: #ffffff;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.response-pill:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.response-pill:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.response-pill-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Responded variant (secondary outline — confirmed participation state) */
+.response-pill-responded {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #4A3526);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.response-pill-responded:hover {
+    background-color: var(--fimby-hover-bg, #EBE6DD);
+    border-color: var(--fimby-border-strong, #CCC5BB);
+}
+
+.response-pill-responded:active {
+    background-color: var(--fimby-pressed-bg, #E0D9CF);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+/* Reserved variant (green — confirmed/done state) */
+.response-pill-reserved {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-success-bg, #1A7B40);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    color: #ffffff;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.response-pill-reserved:hover {
+    background-color: var(--fimby-btn-success-bg-hover, #166D38);
+}
+
+.response-pill-reserved:active {
+    background-color: var(--fimby-btn-success-bg-active, #0F5A2E);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+/* Legacy Footer Slot */
+.card-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--fimby-divider-subtle);
+    background-color: var(--fimby-surface-input, #F7F3EB);
+}
+
+/* ----------------------------------------------------------
+ * Responsive design
+ * ---------------------------------------------------------- */
+@media (max-width: 320px) {
+    .card-header,
+    .card-content,
+    .card-actions {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .card-title {
+        font-size: 15px;
+    }
+
+    .card-description {
+        font-size: 13px;
+    }
+
+    .action-buttons {
+        gap: 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-card {
+        margin-bottom: 20px;
+    }
+
+    .card-header,
+    .card-content,
+    .card-actions {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .card-content {
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    /* ----------------------------------------------------------
+     * Horizontal card layout — image(s) left, content right
+     * Applied when .card-horizontal class is present (any card
+     * with images on ≥768px).
+     * ---------------------------------------------------------- */
+    .card-horizontal .card-body {
+        flex-direction: row;
+    }
+
+    .card-horizontal .card-media {
+        width: 40%;
+        max-width: 300px;
+        flex-shrink: 0;
+        align-self: stretch;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .card-horizontal .card-content-wrapper {
+        flex: 1;
+        min-width: 0;
+        justify-content: flex-start;
+    }
+
+    .card-horizontal .card-content {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .card-horizontal .card-title {
+        font-size: 18px;
+    }
+
+    .card-horizontal .card-description {
+        font-size: 16px;
+    }
+}
+
+/* Button resets for converted interactive elements */
+button.card-menu {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+}
+
+button.action-button {
+    font-family: inherit;
+    text-align: inherit;
+}
+
+button.card-menu:focus-visible,
+button.action-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Keyboard focus visibility */
+.clickable:focus-visible,
+.read-more-btn:focus-visible,
+.custom-action:focus-visible,
+.response-pill:focus-visible,
+.response-pill-responded:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ----------------------------------------------------------
+ * Compact Card Layout — image on top, minimal content, small footer
+ * Used by fimbyLibraryBrowser grid view
+ * ---------------------------------------------------------- */
+.card-compact {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.compact-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.compact-title-row .card-title {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.compact-card-menu {
+    flex-shrink: 0;
+}
+
+.list-card-menu {
+    align-self: flex-end;
+}
+
+.card-compact .card-body {
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-compact .card-media {
+    width: 100%;
+    max-width: none;
+    height: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.card-compact .card-content {
+    padding: 10px 12px 6px;
+}
+
+.card-compact .card-title {
+    font-size: 15px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.card-compact .card-description,
+.card-compact .read-more-btn,
+.card-compact .card-event-meta,
+.card-compact .card-tags,
+.card-compact .custom-content,
+.card-compact .card-actions {
+    display: none;
+}
+
+/* Compact badge + status row */
+.compact-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.compact-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.compact-badge-icon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+ * List Card Layout — image left, content right, tight rows
+ * Used by fimbyLibraryBrowser list view
+ * ---------------------------------------------------------- */
+.card-list {
+    margin-bottom: 0;
+}
+
+.card-list .card-body {
+    flex-direction: row;
+}
+
+.card-list .card-media {
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    height: auto;
+    max-height: none;
+    align-self: stretch;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.card-list .card-content-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-list .card-content {
+    padding: 10px 14px 4px;
+    flex: 1;
+}
+
+.card-list .card-title {
+    font-size: 16px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.card-list .card-description {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.card-list .read-more-btn,
+.card-list .card-event-meta,
+.card-list .card-tags,
+.card-list .custom-content,
+.card-list .card-actions {
+    display: none;
+}
+
+.card-list .list-owner-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    float: right;
+    margin: 0 0 2px 12px;
+}
+
+.card-list .list-owner-row .owner-identity {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-list .compact-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+/* Compact footer: owner left, CTA right */
+.card-footer-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-top: 1px solid var(--fimby-divider-subtle);
+    gap: 10px;
+    margin-top: auto;
+}
+
+.compact-owner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.compact-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.compact-owner-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* CTA pill in compact footer */
+.card-footer-compact .response-pill,
+.card-footer-compact .response-pill-responded,
+.card-footer-compact .response-pill-reserved {
+    padding: 7px 14px;
+    min-height: 34px;
+    font-size: 0.82rem;
+}
+
+.compact-response-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* List layout: CTA pill in stacked owner block */
+.card-list .list-owner-row .response-pill,
+.card-list .list-owner-row .response-pill-responded,
+.card-list .list-owner-row .response-pill-reserved {
+    padding: 5px 12px;
+    min-height: 28px;
+    font-size: 0.78rem;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .fimby-card,
+    .clickable,
+    .card-menu,
+    .action-button {
+        transition: none;
+    }
+}

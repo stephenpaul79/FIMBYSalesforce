@@ -1,0 +1,287 @@
+<template>
+    <div class="health-container">
+        <template lwc:if={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading health data" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={showContent}>
+            <!-- Overdue Loans -->
+            <div class="health-section">
+                <button class="section-header" onclick={toggleLoans}
+                        aria-expanded={loansExpanded} aria-controls="loans-body">
+                    <div class="section-header-left">
+                        <h3 class="section-title">Overdue Loans</h3>
+                        <span class="count-badge">{overdueLoansCount}</span>
+                    </div>
+                    <lightning-icon icon-name={loansChevron} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={_loansExpanded}>
+                    <div id="loans-body" class="section-body">
+                        <template lwc:if={hasOverdueLoans}>
+                            <!-- Desktop table -->
+                            <div class="table-wrapper">
+                                <table class="data-table" aria-label="Overdue loans">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Borrower</th>
+                                            <th scope="col">Owner</th>
+                                            <th scope="col">Days Overdue</th>
+                                            <th scope="col">Due Date</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={overdueLoans} for:item="loan">
+                                            <tr key={loan.id}>
+                                                <td>
+                                                    <a href={loan.itemLink} class="record-link">{loan.itemName}</a>
+                                                </td>
+                                                <td>{loan.borrowerName}</td>
+                                                <td>{loan.ownerName}</td>
+                                                <td>
+                                                    <span class={loan._overdueClass}>{loan.daysOverdue}</span>
+                                                </td>
+                                                <td>{loan.dueDate}</td>
+                                                <td class="action-cell">
+                                                    <button class="icon-btn" aria-label="View item"
+                                                            data-record-id={loan.itemId}
+                                                            onclick={handleViewItem}>
+                                                        <img src={searchIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                    <button class="icon-btn" aria-label="Contact borrower"
+                                                            data-contact-id={loan.borrowerId}
+                                                            onclick={handleContactBorrower}>
+                                                        <img src={chatIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                    <button class="icon-btn" aria-label="Contact owner"
+                                                            data-contact-id={loan.ownerId}
+                                                            onclick={handleContactOwner}>
+                                                        <img src={chatIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Mobile cards -->
+                            <div class="card-list">
+                                <template for:each={overdueLoans} for:item="loan">
+                                    <div key={loan.id} class="data-card">
+                                        <div class="card-row-main">
+                                            <a href={loan.itemLink} class="record-link card-title">{loan.itemName}</a>
+                                            <span class={loan._overdueClass}>{loan.daysOverdue}d overdue</span>
+                                        </div>
+                                        <div class="card-meta">
+                                            <span>Borrower: {loan.borrowerName}</span>
+                                            <span>Owner: {loan.ownerName}</span>
+                                            <span>Due: {loan.dueDate}</span>
+                                        </div>
+                                        <div class="card-actions">
+                                            <button class="icon-btn" aria-label="View item"
+                                                    data-record-id={loan.itemId}
+                                                    onclick={handleViewItem}>
+                                                <img src={searchIconUrl} alt="" class="icon-img">
+                                            </button>
+                                            <button class="icon-btn" aria-label="Contact borrower"
+                                                    data-contact-id={loan.borrowerId}
+                                                    onclick={handleContactBorrower}>
+                                                <img src={chatIconUrl} alt="" class="icon-img">
+                                            </button>
+                                            <button class="icon-btn" aria-label="Contact owner"
+                                                    data-contact-id={loan.ownerId}
+                                                    onclick={handleContactOwner}>
+                                                <img src={chatIconUrl} alt="" class="icon-img">
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noOverdueLoans}>
+                            <p class="empty-text">No overdue loans right now.</p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Stale / Expired Posts -->
+            <div class="health-section">
+                <button class="section-header" onclick={togglePosts}
+                        aria-expanded={postsExpanded} aria-controls="posts-body">
+                    <div class="section-header-left">
+                        <h3 class="section-title">Stale / Expired Posts</h3>
+                        <span class="count-badge">{stalePostsCount}</span>
+                    </div>
+                    <lightning-icon icon-name={postsChevron} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={_postsExpanded}>
+                    <div id="posts-body" class="section-body">
+                        <template lwc:if={hasStalePosts}>
+                            <!-- Desktop table -->
+                            <div class="table-wrapper">
+                                <table class="data-table" aria-label="Stale and expired posts">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Title</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Author</th>
+                                            <th scope="col">Expired</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={stalePosts} for:item="post">
+                                            <tr key={post.id}>
+                                                <td>
+                                                    <a href={post.postLink} class="record-link">{post.title}</a>
+                                                </td>
+                                                <td>
+                                                    <span class="type-badge-inline">{post.type}</span>
+                                                </td>
+                                                <td>{post.authorName}</td>
+                                                <td>{post.expiredDate}</td>
+                                                <td class="action-cell">
+                                                    <button class="icon-btn" aria-label="View post"
+                                                            data-record-id={post.postId}
+                                                            onclick={handleViewPost}>
+                                                        <img src={searchIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                    <button class="icon-btn" aria-label="Contact author"
+                                                            data-contact-id={post.authorId}
+                                                            onclick={handleContactAuthor}>
+                                                        <img src={chatIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Mobile cards -->
+                            <div class="card-list">
+                                <template for:each={stalePosts} for:item="post">
+                                    <div key={post.id} class="data-card">
+                                        <div class="card-row-main">
+                                            <a href={post.postLink} class="record-link card-title">{post.title}</a>
+                                            <span class="type-badge-inline">{post.type}</span>
+                                        </div>
+                                        <div class="card-meta">
+                                            <span>Author: {post.authorName}</span>
+                                            <span>Expired: {post.expiredDate}</span>
+                                        </div>
+                                        <div class="card-actions">
+                                            <button class="icon-btn" aria-label="View post"
+                                                    data-record-id={post.postId}
+                                                    onclick={handleViewPost}>
+                                                <img src={searchIconUrl} alt="" class="icon-img">
+                                            </button>
+                                            <button class="icon-btn" aria-label="Contact author"
+                                                    data-contact-id={post.authorId}
+                                                    onclick={handleContactAuthor}>
+                                                <img src={chatIconUrl} alt="" class="icon-img">
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noStalePosts}>
+                            <p class="empty-text">No stale or expired posts.</p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Inactive Members -->
+            <div class="health-section">
+                <button class="section-header" onclick={toggleMembers}
+                        aria-expanded={membersExpanded} aria-controls="members-body">
+                    <div class="section-header-left">
+                        <h3 class="section-title">Inactive Members</h3>
+                        <span class="count-badge">{inactiveMembersCount}</span>
+                    </div>
+                    <lightning-icon icon-name={membersChevron} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={_membersExpanded}>
+                    <div id="members-body" class="section-body">
+                        <template lwc:if={hasInactiveMembers}>
+                            <!-- Desktop table -->
+                            <div class="table-wrapper">
+                                <table class="data-table" aria-label="Inactive members">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Last Activity</th>
+                                            <th scope="col">Days Inactive</th>
+                                            <th scope="col">Member Since</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={inactiveMembers} for:item="member">
+                                            <tr key={member.id}>
+                                                <td>{member.name}</td>
+                                                <td>{member.lastActivity}</td>
+                                                <td>{member.daysInactive}</td>
+                                                <td>{member.memberSince}</td>
+                                                <td class="action-cell">
+                                                    <button class="icon-btn" aria-label="View profile"
+                                                            data-record-id={member.contactId}
+                                                            onclick={handleViewProfile}>
+                                                        <img src={profileIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                    <button class="icon-btn" aria-label="Send check-in"
+                                                            data-contact-id={member.contactId}
+                                                            onclick={handleSendCheckin}>
+                                                        <img src={chatIconUrl} alt="" class="icon-img">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Mobile cards -->
+                            <div class="card-list">
+                                <template for:each={inactiveMembers} for:item="member">
+                                    <div key={member.id} class="data-card">
+                                        <div class="card-row-main">
+                                            <span class="card-title">{member.name}</span>
+                                            <span class="inactive-days">{member.daysInactive}d inactive</span>
+                                        </div>
+                                        <div class="card-meta">
+                                            <span>Last active: {member.lastActivity}</span>
+                                            <span>Member since: {member.memberSince}</span>
+                                        </div>
+                                        <div class="card-actions">
+                                            <button class="icon-btn" aria-label="View profile"
+                                                    data-record-id={member.contactId}
+                                                    onclick={handleViewProfile}>
+                                                <img src={profileIconUrl} alt="" class="icon-img">
+                                            </button>
+                                            <button class="icon-btn" aria-label="Send check-in"
+                                                    data-contact-id={member.contactId}
+                                                    onclick={handleSendCheckin}>
+                                                <img src={chatIconUrl} alt="" class="icon-img">
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noInactiveMembers}>
+                            <p class="empty-text">Everyone's been active recently!</p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

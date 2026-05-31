@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Alert_Batch_Cap__c</fullName>
+    <defaultValue>5000</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Email Alert Batch Cap</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum Pending email notification rows processed per batch cycle.</inlineHelpText>
+</CustomField>

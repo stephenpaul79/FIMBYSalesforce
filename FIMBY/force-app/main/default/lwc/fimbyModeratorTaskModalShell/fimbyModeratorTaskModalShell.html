@@ -1,0 +1,41 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+             role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Header -->
+                <div class="modal-header">
+                    <div class="modal-title-area">
+                        <span class={categoryBadgeClass}>{categoryDisplayLabel}</span>
+                        <h2 id="modal-title" class="modal-title">{_taskData.summary}</h2>
+                    </div>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <!-- Scrollable body -->
+                <div class="modal-body">
+                    <template lwc:if={hasSubjectData}>
+                        <c-fimby-moderator-subject-snapshot
+                            subject-data={_taskData.subjectData}>
+                        </c-fimby-moderator-subject-snapshot>
+                    </template>
+
+                    <template lwc:if={hasEvidence}>
+                        <div class="evidence-section">
+                            <c-fimby-moderator-evidence-timeline
+                                evidence-items={_taskData.evidenceItems}>
+                            </c-fimby-moderator-evidence-timeline>
+                        </div>
+                    </template>
+
+                    <div class="panel-content">
+                        <slot></slot>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </template>
+</template>

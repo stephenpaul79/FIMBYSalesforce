@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All</fullName>
+    <columns>Portal_Image__c</columns>
+    <columns>NAME</columns>
+    <columns>Category__c</columns>
+    <columns>Description__c</columns>
+    <columns>Status__c</columns>
+    <columns>Borrow_Link__c</columns>
+    <columns>Owner_Contact__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>notEqual</operation>
+        <value>Unavailable,Removed from Library</value>
+    </filters>
+    <label>All Items</label>
+</ListView>

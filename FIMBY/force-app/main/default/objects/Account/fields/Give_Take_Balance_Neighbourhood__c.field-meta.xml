@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Give_Take_Balance_Neighbourhood__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+(Need_Postings_For_Others__c = 0 &amp;&amp;
+Need_Postings_For_Self__c = 0 &amp;&amp;
+Need_Responses_For_Others__c = 0 &amp;&amp;
+Need_Responses_For_Self__c = 0 &amp;&amp;
+Offer_Postings_For_Others__c = 0 &amp;&amp;
+Offer_Postings_For_Self__c = 0 &amp;&amp;
+Offer_Responses_For_Others__c = 0 &amp;&amp;
+Offer_Responses_For_Self__c = 0), &quot;&quot;,
+
+IF(Give_Take_Count__c &lt;= -50, IMAGE(&quot;/resource/Impact_Icons/RedCircle.png&quot;,&quot;Red Light&quot;, 18,18) + &quot; &quot; + TEXT(Give_Take_Count__c),
+IF(Give_Take_Count__c &lt; 0, IMAGE(&quot;/resource/Impact_Icons/YellowCircle.png&quot;,&quot;Yellow Light&quot;, 18,18)+ &quot; &quot; + TEXT(Give_Take_Count__c),
+IF(Give_Take_Count__c &gt;= 0, IMAGE(&quot;/resource/Impact_Icons/GreenCircle.png&quot;,&quot;Green Light&quot;, 18,18)+ &quot; &quot; + TEXT(Give_Take_Count__c), &quot;&quot;))))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText>The &apos;Give &amp; Receive Balance&apos; totals up all Posting &amp; Reponses your nieghbourhood has made for themselves and others to help you know if your neghbourhood is giving and receiving in equal measure.  
+
+Calucation Process: Need Postings for &apos;Self&apos; or &apos;Household&apos; and accepted &apos;Offer Responses for &apos;Self&apos; or &apos;Household&apos; decrease the total (Taking) while all other Post and Response types (Giving) increase the total.</inlineHelpText>
+    <label>Give &amp; Receive Balance (Boundary)</label>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "650862549258",
+    "project_id": "fimby-62c69",
+    "storage_bucket": "fimby-62c69.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650862549258:android:789d9213f08c5735f442f3",
+        "android_client_info": {
+          "package_name": "com.fimby.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbcSn6twGX1aEA0c7mwQw_iB4ZTp5mh4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

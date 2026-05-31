@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Event_Link__c</fullName>
+    <description>External event page URL for Community Events. Rendered as a clickable button on the detail page so users can verify details and reach the real organizer.</description>
+    <inlineHelpText>Link to the event page, ticket site, or organizer's page so neighbours can get the latest details.</inlineHelpText>
+    <label>Event Link</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Url</type>
+</CustomField>

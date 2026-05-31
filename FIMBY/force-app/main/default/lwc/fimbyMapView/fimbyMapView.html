@@ -1,0 +1,21 @@
+<template>
+    <div class="fimby-map-view">
+        <c-fimby-page-header page-title="Neighbourhood Map"></c-fimby-page-header>
+        <div class="map-container">
+            <div class="map-placeholder">
+                <lightning-icon icon-name="utility:location" size="large" class="map-icon"></lightning-icon>
+                <h3 class="map-title">Interactive Map</h3>
+                <p class="map-message">See what's happening in your neighborhood</p>
+                <div class="map-filters">
+                    <template for:each={mapFilters} for:item="filter">
+                        <button key={filter.id} class="filter-chip" onclick={handleFilterToggle} data-filter={filter.id}>
+                            <lightning-icon icon-name={filter.icon} size="xx-small"></lightning-icon>
+                            {filter.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+        <c-fimby-bottom-navigation active-tab="map" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

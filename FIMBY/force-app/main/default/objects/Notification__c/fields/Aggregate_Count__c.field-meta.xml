@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Aggregate_Count__c</fullName>
+    <defaultValue>1</defaultValue>
+    <label>Aggregate Count</label>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <description>How many actions this notification represents (for batching).</description>
+</CustomField>

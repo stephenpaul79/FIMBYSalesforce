@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "41e813c1-7104-4aff-acbf-480691eb30cd",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "My_Items__c",
+  "id" : "8f5fe8fb-fe3c-4dd2-9548-47320bbb01de",
+  "label" : "My Items",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-my-items",
+  "type" : "route",
+  "urlPrefix" : "my-items"
+}

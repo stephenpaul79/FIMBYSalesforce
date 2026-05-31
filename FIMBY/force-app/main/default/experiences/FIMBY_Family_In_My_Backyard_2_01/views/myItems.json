@@ -1,0 +1,159 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "41e813c1-7104-4aff-acbf-480691eb30cd",
+  "label" : "My Items",
+  "regions" : [ {
+    "id" : "9da8ba60-78db-4af0-b8dd-3a942d1209b6",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "tabsetConfig" : {
+          "UUID" : "78503fd6-b19b-4dc8-bf21-6ed1c56a3b24",
+          "activeTab" : "",
+          "tabs" : [ {
+            "UUID" : "25a25c49-e9a8-4587-8e35-ace5881dc1f5",
+            "allowGuestUser" : false,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "3",
+            "tabName" : "Borrowed"
+          }, {
+            "UUID" : "16008d18-ed6e-4275-9ab5-5ae273bbdf9d",
+            "allowGuestUser" : false,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "2",
+            "tabName" : "Lent"
+          }, {
+            "UUID" : "608d78f5-3213-43d3-911d-6633abd7da18",
+            "allowGuestUser" : false,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "1",
+            "tabName" : "My Items"
+          } ],
+          "useOverflowMenu" : false
+        }
+      },
+      "componentName" : "forceCommunity:tabset",
+      "id" : "78503fd6-b19b-4dc8-bf21-6ed1c56a3b24",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "My_Borrowed_Items",
+            "layout" : "FULL",
+            "pageSize" : 25,
+            "scope" : "Loaned_Item__c",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : true,
+            "showManualRefreshButton" : true,
+            "showObjectName" : true,
+            "showPinnedList" : false,
+            "showSearchBar" : false
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "2c06de29-219e-470b-91dd-0dc3f0aff397",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "25a25c49-e9a8-4587-8e35-ace5881dc1f5",
+        "regionLabel" : "Borrowed",
+        "regionName" : "3",
+        "renditionMap" : { },
+        "type" : "region"
+      }, {
+        "components" : [ {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "My_Lent_Items",
+            "layout" : "FULL",
+            "pageSize" : 25,
+            "scope" : "Loaned_Item__c",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : true,
+            "showManualRefreshButton" : true,
+            "showObjectName" : true,
+            "showPinnedList" : false,
+            "showSearchBar" : false
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "c125ce78-b536-4bcd-9ba7-07bf932f1ed6",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "16008d18-ed6e-4275-9ab5-5ae273bbdf9d",
+        "regionLabel" : "Lent",
+        "regionName" : "2",
+        "renditionMap" : { },
+        "type" : "region"
+      }, {
+        "components" : [ {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "My_Households_Items",
+            "layout" : "FULL",
+            "pageSize" : 25,
+            "scope" : "Library_Item__c",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : true,
+            "showManualRefreshButton" : true,
+            "showObjectName" : true,
+            "showPinnedList" : false,
+            "showSearchBar" : false
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "9e4ae0ce-d2df-4bc9-af6b-3348f4b591b0",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "608d78f5-3213-43d3-911d-6633abd7da18",
+        "regionLabel" : "My Items",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "ea82d00f-d093-43ba-8a80-3bf8d86f4eee",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "24fc9df0-c6d1-442e-9e42-aea274783c98",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "My Items"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "e544fb80-bf35-485d-b09c-d030ba57ae5f",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "b546df10-58a4-4dcd-ba19-080529d3e09b",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-my-items"
+}

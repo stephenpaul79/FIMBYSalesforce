@@ -1,0 +1,80 @@
+<template>
+    <template lwc:if={hasImages}>
+
+        <!-- ========== 1 Image: Full width, contain, natural ratio ========== -->
+        <template lwc:if={isSingleImage}>
+            <div class="image-grid grid-single">
+                <div class="grid-cell single-cell" style={singleImageContainerStyle}>
+                    <img
+                        src={singleImage.url}
+                        alt={singleImage.alt}
+                        class="grid-image single-image"
+                        data-index={singleImage.index}
+                        onclick={handleImageClick}
+                        onerror={handleImageError}>
+                </div>
+            </div>
+        </template>
+
+        <!-- ========== 2 Images: Side by side, orientation-aware ========== -->
+        <template lwc:elseif={isTwoImages}>
+            <div class={twoImageGridClass} style={twoImageContainerStyle}>
+                <template for:each={twoImages} for:item="img">
+                    <div class="grid-cell" key={img.key}>
+                        <img
+                            src={img.url}
+                            alt={img.alt}
+                            class="grid-image"
+                            data-index={img.index}
+                            onclick={handleImageClick}
+                            onerror={handleImageError}>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ========== 3 Images: Hero left + 2 stacked right ========== -->
+        <template lwc:elseif={isThreeImages}>
+            <div class="image-grid grid-3" style={threeImageContainerStyle}>
+                <div class="grid-cell grid-3-hero">
+                    <img
+                        src={threeImageHero.url}
+                        alt={threeImageHero.alt}
+                        class="grid-image"
+                        data-index={threeImageHero.index}
+                        onclick={handleImageClick}
+                        onerror={handleImageError}>
+                </div>
+                <template for:each={threeImageSecondary} for:item="img">
+                    <div class="grid-cell" key={img.key}>
+                        <img
+                            src={img.url}
+                            alt={img.alt}
+                            class="grid-image"
+                            data-index={img.index}
+                            onclick={handleImageClick}
+                            onerror={handleImageError}>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ========== 4 Images: 2x2 grid ========== -->
+        <template lwc:elseif={isFourImages}>
+            <div class="image-grid grid-4" style={fourImageContainerStyle}>
+                <template for:each={fourImages} for:item="img">
+                    <div class="grid-cell" key={img.key}>
+                        <img
+                            src={img.url}
+                            alt={img.alt}
+                            class="grid-image"
+                            data-index={img.index}
+                            onclick={handleImageClick}
+                            onerror={handleImageError}>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+    </template>
+</template>

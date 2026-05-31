@@ -1,0 +1,101 @@
+<template>
+    <template lwc:if={_isModalVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-container" onclick={handleModalClick} role="dialog" aria-modal="true" aria-labelledby="composer-modal-title">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="composer-modal-title">{modalTitle}</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container compact">
+                            <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+                        </div>
+                    </template>
+
+                    <template lwc:if={errorMessage}>
+                        <div class="error-banner" role="alert">
+                            <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                            <span>{errorMessage}</span>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showSuccess}>
+                        <div class="success-container compact">
+                            <lightning-icon icon-name="utility:check" size="medium" variant="success"></lightning-icon>
+                            <span class="success-text">{successMessage}</span>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showForm}>
+                        <template lwc:if={showStoryContext}>
+                            <div class="story-context modal-story-context">
+                                <p class="story-context-label">On the story</p>
+                                <p class="story-title">{storyTitle}</p>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="commenting-as compact">
+                                <span class="commenting-label">Posting as:</span>
+                                <span class="commenting-name">{actingAsContactName}</span>
+                            </div>
+                        </template>
+
+                        <div class="textarea-container">
+                            <div class="field-label-row">
+                                <label class="field-label" for="comment-input">Comment</label>
+                                <span class={characterCountClass}>{characterCountDisplay}</span>
+                            </div>
+                            <lightning-textarea
+                                id="comment-input"
+                                variant="label-hidden"
+                                placeholder="Write your comment... Use @ to mention someone"
+                                value={commentText}
+                                onchange={handleCommentChange}
+                                onfocus={handleInputFocus}
+                                onblur={handleInputBlur}
+                                class="comment-textarea modal-textarea"
+                                max-length="1000">
+                            </lightning-textarea>
+
+                            <template lwc:if={showMentionSuggestions}>
+                                <div class="mention-dropdown">
+                                    <template for:each={mentionSuggestions} for:item="person">
+                                        <div
+                                            key={person.id}
+                                            class="mention-item"
+                                            data-person-id={person.id}
+                                            data-person-name={person.name}
+                                            onclick={handleMentionSelect}>
+                                            <span class="mention-name">{person.name}</span>
+                                            <template lwc:if={person.neighbourhood}>
+                                                <span class="mention-neighbourhood">{person.neighbourhood}</span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="modal-footer">
+                            <div class={characterCountClass}>{characterCountDisplay}</div>
+                            <div class="modal-actions">
+                                <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                                <button
+                                    class="submit-btn"
+                                    onclick={handleSubmit}
+                                    disabled={isSubmitDisabled}>
+                                    <span>{submitButtonLabel}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</template>

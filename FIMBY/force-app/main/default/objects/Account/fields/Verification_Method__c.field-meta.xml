@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Verification_Method__c</fullName>
+    <description>Verification method(s) supplied at org creation.</description>
+    <label>Verification Method</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>CRA_URL</fullName>
+                <default>false</default>
+                <label>CRA URL</label>
+            </value>
+            <value>
+                <fullName>Charity_Registration_Number</fullName>
+                <default>false</default>
+                <label>Charity Registration Number</label>
+            </value>
+            <value>
+                <fullName>Uploaded_Document</fullName>
+                <default>false</default>
+                <label>Uploaded Document</label>
+            </value>
+            <value>
+                <fullName>Phone</fullName>
+                <default>false</default>
+                <label>Phone</label>
+            </value>
+            <value>
+                <fullName>Email</fullName>
+                <default>false</default>
+                <label>Email</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+</CustomField>

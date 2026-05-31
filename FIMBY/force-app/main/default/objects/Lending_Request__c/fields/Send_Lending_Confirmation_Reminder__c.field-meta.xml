@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Send_Lending_Confirmation_Reminder__c</fullName>
+    <formula>ISPICKVAL(Status__c, &quot;Approved&quot;)
+&amp;&amp;
+MOD(TODAY() - Approved_and_Available_Date__c , 3) = 0</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Send Lending Confirmation Reminder</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

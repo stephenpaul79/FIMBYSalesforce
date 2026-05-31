@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Only_Poster_can_Accept_a_Reply</fullName>
+    <active>false</active>
+    <errorConditionFormula>!ISNEW()
+&amp;&amp;
+(
+ISPICKVAL(Status__c, &quot;Accepted&quot;)
+||
+ISPICKVAL(Status__c, &quot;Completed&quot;)
+||
+ISPICKVAL(PRIORVALUE(Status__c), &quot;Accepted&quot;)
+||
+ISPICKVAL(PRIORVALUE(Status__c), &quot;Completed&quot;)
+||
+ISPICKVAL(PRIORVALUE(Status__c), &quot;Cancelled&quot;)
+||
+ISPICKVAL(PRIORVALUE(Status__c), &quot;Declined&quot;)
+)
+&amp;&amp;
+LEFT(Reply_To_Contact__c,15) !=  LEFT($User.ContactId, 15)</errorConditionFormula>
+    <errorDisplayField>Status__c</errorDisplayField>
+    <errorMessage>Only the Posting Contact can set the status to &apos;Accepted&apos; or &apos;Completed&apos;. Additionally,  statuses of &apos;Cancelled / Declined&apos; cannot be changed.</errorMessage>
+</ValidationRule>

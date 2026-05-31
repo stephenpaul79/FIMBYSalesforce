@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Revocation_Category__c</fullName>
+    <description>Why this approved vouch was revoked. Only for-cause categories set Counts_Toward_Voucher_Pause__c true.</description>
+    <label>Revocation Category</label>
+    <required>false</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Safety_Trust_Concern</fullName>
+                <default>false</default>
+                <label>Safety / Trust Concern</label>
+            </value>
+            <value>
+                <fullName>Theft_Or_Misuse</fullName>
+                <default>false</default>
+                <label>Theft or Misuse</label>
+            </value>
+            <value>
+                <fullName>Repeated_No_Return</fullName>
+                <default>false</default>
+                <label>Repeated No Return</label>
+            </value>
+            <value>
+                <fullName>Serious_Conduct_Issue</fullName>
+                <default>false</default>
+                <label>Serious Conduct Issue</label>
+            </value>
+            <value>
+                <fullName>Identity_Misrepresentation</fullName>
+                <default>false</default>
+                <label>Identity Misrepresentation</label>
+            </value>
+            <value>
+                <fullName>Other_For_Cause</fullName>
+                <default>false</default>
+                <label>Other (For Cause)</label>
+            </value>
+            <value>
+                <fullName>Admin_Correction</fullName>
+                <default>false</default>
+                <label>Admin Correction</label>
+            </value>
+            <value>
+                <fullName>Wrong_Contact_Selected</fullName>
+                <default>false</default>
+                <label>Wrong Contact Selected</label>
+            </value>
+            <value>
+                <fullName>Duplicate_Or_Test_Record</fullName>
+                <default>false</default>
+                <label>Duplicate or Test Record</label>
+            </value>
+            <value>
+                <fullName>Neighbourhood_Move</fullName>
+                <default>false</default>
+                <label>Neighbourhood Move</label>
+            </value>
+            <value>
+                <fullName>Support_Relationship_Ended</fullName>
+                <default>false</default>
+                <label>Support Relationship Ended</label>
+            </value>
+            <value>
+                <fullName>Organization_Rep_Link_Corrected</fullName>
+                <default>false</default>
+                <label>Organization Rep Link Corrected</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

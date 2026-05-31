@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FIMBY Sign-Up POC</masterLabel>
+    <description>Throwaway proof-of-concept: validates that a guest LWC renders and can complete an @AuraEnabled round-trip on Safari (where the sign-up Flow fails with Unauthorized access). Safe to delete after validation.</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+</LightningComponentBundle>

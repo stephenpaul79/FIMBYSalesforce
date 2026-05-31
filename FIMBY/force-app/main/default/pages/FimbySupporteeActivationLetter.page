@@ -1,0 +1,84 @@
+<apex:page controller="FimbySupporteeActivationLetterController"
+           renderAs="pdf"
+           applyHtmlTag="true"
+           showHeader="false"
+           sidebar="false"
+           standardStylesheets="false"
+           docType="html-5.0"
+           cache="false"
+           contentType="application/pdf">
+<head>
+    <style type="text/css">
+        @page { size: letter; margin: 0.9in; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12pt;
+            color: #2a2a2a;
+            line-height: 1.55;
+        }
+        .from {
+            font-size: 10pt;
+            color: #555;
+            margin-bottom: 30pt;
+        }
+        .to {
+            white-space: pre;
+            margin-bottom: 28pt;
+        }
+        .greet { margin: 0 0 14pt; }
+        p { margin: 0 0 12pt; }
+        .signoff { margin-top: 24pt; }
+        .footer {
+            font-size: 9pt;
+            color: #555;
+            margin-top: 28pt;
+            border-top: 1pt solid #cfcfcf;
+            padding-top: 8pt;
+        }
+        .err { color: #b00020; font-weight: 600; }
+    </style>
+</head>
+<body>
+<apex:outputPanel rendered="{!hasError}">
+    <p class="err">{!errorMessage}</p>
+</apex:outputPanel>
+
+<apex:outputPanel rendered="{!NOT(hasError)}">
+    <div class="from">
+        FIMBY (Family In My Backyard)<br/>
+        help@fimby.com<br/>
+        {!renderedDate}
+    </div>
+
+    <div class="to">{!supporteeAddressBlock}</div>
+
+    <p class="greet">Hello {!supportee.FirstName},</p>
+
+    <p>You're receiving this letter because <strong>{!supporter.Name}</strong> set up a
+    FIMBY supporter relationship on your behalf in {!sr.Neighbourhood__r.Name}.
+    They told us you signed a paper authorization form, and our team approved it
+    on {!approvedDateLabel}.</p>
+
+    <p><strong>What this means:</strong> {!supporter.FirstName} can now post asks and
+    offers, reply to neighbours, and use the FIMBY library on your behalf. They
+    cannot change your password, delete your account, or sign anything outside FIMBY.</p>
+
+    <p><strong>If you did not sign this form, or you've changed your mind:</strong> please
+    call or email us. We will end this relationship immediately, no questions asked.
+    You don't need to give a reason. Reach us at <strong>help@fimby.com</strong>.</p>
+
+    <p>If everything is as you expected, you don't need to do anything — this letter
+    is just for your records.</p>
+
+    <p>Thanks for being part of your neighbourhood.</p>
+
+    <p class="signoff">— The FIMBY team</p>
+
+    <p class="footer">
+        Reference: {!sr.Name}.
+        FIMBY always confirms with the person being supported, not just the supporter.
+        That's why you're getting this letter.
+    </p>
+</apex:outputPanel>
+</body>
+</apex:page>

@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Need</fullName>
+    <active>true</active>
+    <compactLayoutAssignment>Need_Offer_Compact_Layout</compactLayoutAssignment>
+    <label>Need</label>
+    <picklistValues>
+        <picklist>Category__c</picklist>
+        <values>
+            <fullName>Antiques</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Appliances</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Arts %26 Crafts</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Automotive</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Baby %26 Kid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Barter</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Beauty</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Beauty %26 Health</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Bikes</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Books</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Business</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>CDs %2F DVDs %2F VHS</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cars %2B Trucks</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cell Phones</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Clothes %26 Accessories</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Collectibles</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Computers</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Creative</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cycle</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Electronics</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Event</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Farm %26 Garden</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Financial</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Food</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Furniture</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Garage Sale</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>General</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Health %26 Wellness</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Household</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Jewelry</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Labour %2F Moving</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Legal</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Lessons</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Marine</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Materials</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Motorcycles %26 Scooters</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Music Instruments</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Other</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Pet</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Real Estate</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Skilled Trade</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Small Business Ads</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sporting</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Tickets</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Tools</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Toys %26 Games</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Travel %2F Vacation</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Video Gaming</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Write %2F Education %2F Translation</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Flag_Inappropriate_Content__c</picklist>
+        <values>
+            <fullName>Harassment or Bullying</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hateful or Abusive Content</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Infringes on People%27s Rights</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Misinformation</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sexual Content</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Spam or Misleading</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Violient or Repulsive Content</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Giver_Recipient_Type__c</picklist>
+        <values>
+            <fullName>Another Organization</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Another Person</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Self</fullName>
+            <default>true</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Image_1_Dimensions__c</picklist>
+        <values>
+            <fullName>Rectangle %28Tall%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rectangle %28Wide%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Square</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Image_2_Dimensions__c</picklist>
+        <values>
+            <fullName>Rectangle %28Tall%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rectangle %28Wide%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Square</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Image_3_Dimensions__c</picklist>
+        <values>
+            <fullName>Rectangle %28Tall%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rectangle %28Wide%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Square</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Image_4_Dimensions__c</picklist>
+        <values>
+            <fullName>Rectangle %28Tall%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rectangle %28Wide%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Square</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Cancelled</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Completed %28Offer Accepted %2F Need Met%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Expired</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Posted</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Reply Accepted</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Reply Received</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Type__c</picklist>
+        <values>
+            <fullName>Event</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Goods - Perishable</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Goods - Unperishable</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Services - Free</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Services - Paid</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

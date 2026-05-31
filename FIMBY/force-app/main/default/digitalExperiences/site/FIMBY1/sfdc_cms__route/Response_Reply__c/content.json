@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Response Reply",
+  "contentBody" : {
+    "activeViewId" : "Response_Reply",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-response-reply",
+    "urlPrefix" : "response-reply"
+  },
+  "urlName" : "response-reply"
+}

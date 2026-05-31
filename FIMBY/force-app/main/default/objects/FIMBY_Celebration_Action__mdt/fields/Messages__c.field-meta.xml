@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Messages__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Messages</label>
+    <length>2000</length>
+    <required>false</required>
+    <type>LongTextArea</type>
+    <visibleLines>5</visibleLines>
+    <description>Newline-separated celebration messages. Component picks one at random. Use {count} placeholder in Milestone messages.</description>
+</CustomField>

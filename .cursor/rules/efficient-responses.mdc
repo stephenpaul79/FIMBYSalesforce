@@ -1,0 +1,34 @@
+---
+description: Response efficiency — keep outputs concise and avoid unnecessary token generation
+alwaysApply: true
+---
+
+# Efficient Responses
+
+## Output Style
+
+- Default to concise, structured output: bullets, short paragraphs, tables.
+- Do not restate the user's question or repeat context they already provided.
+- Skip preamble ("Sure!", "Great question!", "Let me help you with that.").
+- When explaining code changes, describe what changed and why in 1–2 sentences — not a line-by-line walkthrough.
+
+## Implementation Approach
+
+- Plan before building. Outline the approach in a few bullets, then implement one step at a time.
+- Do not generate an entire feature in a single response unless the user explicitly asks for it.
+- When multiple files need changes, tackle them sequentially — confirm approach before proceeding if the scope is large.
+
+## Read Glob-Matched Rules Before Editing
+
+Before editing any file, check `.cursor/rules/` for rules whose `globs` pattern matches the file type you are about to edit (e.g., `**/lwc/**/*.css`, `**/lwc/**/*.js`, `**/classes/*.cls`). **Read every matching rule before writing or changing a single line.** Do not treat glob-triggered rules as optional — they contain mandatory conventions (tokens, icon names, patterns) that prevent rework. This applies on the first edit of each file type per session, not on every subsequent edit of the same type.
+
+## Context Management
+
+- Do not re-read files that are already in the conversation context unless they may have changed.
+- Reference existing rule names (e.g., "per the Architecture rule") instead of restating their content.
+- When a task is complete, stop. Do not add unsolicited suggestions or "next steps" unless there is a clear gap.
+
+## Code Output
+
+- Produce only the changed code, not surrounding unchanged lines (unless needed for context).
+- No narration comments in code. Comments should only explain non-obvious intent.

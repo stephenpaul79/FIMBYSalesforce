@@ -1,0 +1,95 @@
+<template>
+    <!-- Modal Backdrop -->
+    <template lwc:if={isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <img src={editIconUrl} alt="" class="modal-title-icon">
+                        <span>Edit {objectLabel}</span>
+                    </h2>
+                    <button class="close-button" onclick={handleClose} title="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container">
+                            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                            <p class="loading-text">Loading fields...</p>
+                        </div>
+                    </template>
+                    <template lwc:elseif={hasError}>
+                        <div class="error-container">
+                            <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                            <p class="error-message">{errorMessage}</p>
+                            <button class="retry-button" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Editing as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <lightning-record-edit-form
+                            record-id={recordId}
+                            object-api-name={objectApiName}
+                            onsuccess={handleSuccess}
+                            onerror={handleError}
+                            onsubmit={handleSubmit}>
+
+                            <!-- Dynamic Fields from Field Set -->
+                            <div class="form-fields">
+                                <template for:each={fieldSetFields} for:item="field">
+                                    <div key={field.apiName} class="field-container">
+                                        <lightning-input-field
+                                            field-name={field.apiName}
+                                            required={field.required}>
+                                        </lightning-input-field>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Form Messages -->
+                            <lightning-messages></lightning-messages>
+
+                            <!-- Form Actions (hidden, we use custom buttons) -->
+                            <div class="form-actions-hidden">
+                                <lightning-button
+                                    class="submit-btn-hidden"
+                                    type="submit"
+                                    label="Save">
+                                </lightning-button>
+                            </div>
+                        </lightning-record-edit-form>
+                    </template>
+                </div>
+
+                <!-- Modal Footer (only when not loading and no error) -->
+                <template lwc:if={showFooter}>
+                    <div class="modal-footer">
+                        <button class="cancel-button" onclick={handleCancel} disabled={isSaving}>
+                            Cancel
+                        </button>
+                        <button class="save-button" onclick={handleSave} disabled={isSaving}>
+                            <template lwc:if={isSaving}>
+                                <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
+                                <span>Saving...</span>
+                            </template>
+                            <template lwc:else>
+                                <img src={saveIconUrl} alt="" class="save-btn-icon">
+                                <span>Save Changes</span>
+                            </template>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

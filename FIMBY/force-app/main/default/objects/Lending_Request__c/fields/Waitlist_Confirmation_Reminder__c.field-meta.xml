@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Waitlist_Confirmation_Reminder__c</fullName>
+    <formula>ISPICKVAL(Status__c, &quot;Requesting Confirmation&quot;)
+&amp;&amp;
+Waitlist_Position__c = 1
+&amp;&amp;
+MOD(TODAY() - Waitlist_Last_Updated__c  , 3) = 0
+&amp;&amp;
+TODAY() &gt; Waitlist_Last_Updated__c</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Waitlist Confirmation Reminder</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

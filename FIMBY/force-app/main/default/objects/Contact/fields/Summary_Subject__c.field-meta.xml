@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Summary_Subject__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE( RIGHT(TEXT(DAY(TODAY())),1),
+&quot;0&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_10.Subject_Line_Text__c ,
+&quot;1&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_1.Subject_Line_Text__c ,
+&quot;2&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_2.Subject_Line_Text__c ,
+&quot;3&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_3.Subject_Line_Text__c ,
+&quot;4&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_4.Subject_Line_Text__c ,
+&quot;5&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_5.Subject_Line_Text__c ,
+&quot;6&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_6.Subject_Line_Text__c ,
+&quot;7&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_7.Subject_Line_Text__c ,
+&quot;8&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_8.Subject_Line_Text__c ,
+&quot;9&quot;, $CustomMetadata.Summary_Subject_Line__mdt.Day_9.Subject_Line_Text__c ,
+&quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Summary Subject</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

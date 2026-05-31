@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "e45e3d4d-d6e1-42b7-85c9-324cb198c845",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "neighbours__c",
+  "id" : "33ddde43-e608-4b8e-85a1-887cc158bcd9",
+  "label" : "Neighbours Menu",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-neighbours",
+  "type" : "route",
+  "urlPrefix" : "neighbours"
+}

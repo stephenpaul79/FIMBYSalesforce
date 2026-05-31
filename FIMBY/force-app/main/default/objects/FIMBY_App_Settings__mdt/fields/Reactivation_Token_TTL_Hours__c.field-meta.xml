@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reactivation_Token_TTL_Hours__c</fullName>
+    <description>How long a reactivation magic-link token requested via /account-paused stays valid. Tokens issued in the original delete-with-grace confirmation email override this and stay valid for the full grace window. Default 24 hours.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Reactivation Token TTL Hours</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

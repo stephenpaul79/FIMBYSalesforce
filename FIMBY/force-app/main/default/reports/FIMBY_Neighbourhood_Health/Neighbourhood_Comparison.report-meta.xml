@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://soap.sforce.com/2006/04/metadata">
+    <aggregates>
+        <calculatedFormula>Neighbourhood_Health_Snapshot__c.Active_Member_Pct__c:MAX</calculatedFormula>
+        <datatype>percent</datatype>
+        <developerName>FORMULA1</developerName>
+        <isActive>true</isActive>
+        <isCrossBlock>false</isCrossBlock>
+        <masterLabel>Active Member %</masterLabel>
+        <scale>1</scale>
+    </aggregates>
+    <aggregates>
+        <calculatedFormula>Neighbourhood_Health_Snapshot__c.Posts_Per_Week__c:MAX</calculatedFormula>
+        <datatype>number</datatype>
+        <developerName>FORMULA2</developerName>
+        <isActive>true</isActive>
+        <isCrossBlock>false</isCrossBlock>
+        <masterLabel>Posts/Week</masterLabel>
+        <scale>1</scale>
+    </aggregates>
+    <aggregates>
+        <calculatedFormula>Neighbourhood_Health_Snapshot__c.Response_Rate__c:MAX</calculatedFormula>
+        <datatype>percent</datatype>
+        <developerName>FORMULA3</developerName>
+        <isActive>true</isActive>
+        <isCrossBlock>false</isCrossBlock>
+        <masterLabel>Response Rate</masterLabel>
+        <scale>1</scale>
+    </aggregates>
+    <aggregates>
+        <calculatedFormula>Neighbourhood_Health_Snapshot__c.Recognition_Score__c:MAX</calculatedFormula>
+        <datatype>number</datatype>
+        <developerName>FORMULA4</developerName>
+        <isActive>true</isActive>
+        <isCrossBlock>false</isCrossBlock>
+        <masterLabel>Recognition Score</masterLabel>
+        <scale>1</scale>
+    </aggregates>
+    <aggregates>
+        <calculatedFormula>Neighbourhood_Health_Snapshot__c.Lurker_Ratio__c:MAX</calculatedFormula>
+        <datatype>percent</datatype>
+        <developerName>FORMULA5</developerName>
+        <isActive>true</isActive>
+        <isCrossBlock>false</isCrossBlock>
+        <masterLabel>Lurker Ratio</masterLabel>
+        <scale>1</scale>
+    </aggregates>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Active_Member_Pct__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Posts_Per_Week__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Response_Rate__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Recognition_Score__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Lurker_Ratio__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Give_Take_Balance__c</field>
+    </columns>
+    <format>Summary</format>
+    <groupingsDown>
+        <dateGranularity>Day</dateGranularity>
+        <field>Neighbourhood_Health_Snapshot__c.Neighbourhood__c</field>
+        <sortOrder>Asc</sortOrder>
+    </groupingsDown>
+    <name>Neighbourhood Comparison</name>
+    <reportType>CustomEntity$Neighbourhood_Health_Snapshot__c</reportType>
+    <scope>organization</scope>
+    <showDetails>true</showDetails>
+    <sortColumn>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</sortColumn>
+    <sortOrder>Desc</sortOrder>
+    <timeFrameFilter>
+        <dateColumn>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</dateColumn>
+        <interval>INTERVAL_CUSTOM</interval>
+    </timeFrameFilter>
+</Report>

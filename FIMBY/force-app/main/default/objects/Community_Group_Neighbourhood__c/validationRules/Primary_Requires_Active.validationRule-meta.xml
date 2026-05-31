@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Primary_Requires_Active</fullName>
+    <active>true</active>
+    <errorConditionFormula>Is_Primary__c &amp;&amp; ISPICKVAL(Status__c, &quot;Inactive&quot;)</errorConditionFormula>
+    <errorMessage>The primary neighbourhood must be an active record.</errorMessage>
+</ValidationRule>

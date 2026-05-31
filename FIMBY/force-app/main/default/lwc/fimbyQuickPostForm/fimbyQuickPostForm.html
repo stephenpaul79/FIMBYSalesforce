@@ -1,0 +1,155 @@
+<template>
+    <!-- Modal Mode -->
+    <template lwc:if={isModal}>
+        <div lwc:if={isVisible} class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalContentClick}>
+                <div class="modal-header">
+                    <h2 class="modal-title">What would you like to share?</h2>
+                    <button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon
+                            icon-name="utility:close"
+                            size="small"
+                            variant="neutral">
+                        </lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <div class="type-selection-grid modal-grid">
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="need">
+                            <div class="type-icon need-icon">
+                                <img src={needIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Make an Ask</div>
+                                <div class="type-description">Ask your neighbours</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="offer">
+                            <div class="type-icon offer-icon">
+                                <img src={offerIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Make an Offer</div>
+                                <div class="type-description">Share with your neighbours</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="event">
+                            <div class="type-icon event-icon">
+                                <img src={eventIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Post an Event</div>
+                                <div class="type-description">Share an upcoming event</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="bulkbuy">
+                            <div class="type-icon bulkbuy-icon">
+                                <img src={bulkBuyIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Bulk Buy</div>
+                                <div class="type-description">Coordinate a shared purchase</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="story">
+                            <div class="type-icon story-icon">
+                                <img src={storyIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Share in Shared Life</div>
+                                <div class="type-description">Prayer, thanks, lament, intro, God story</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
+                            <div class="type-icon lending-icon">
+                                <img src={lendingIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <div class="type-text">
+                                <div class="type-label">Lend an Item</div>
+                                <div class="type-description">Add to the Library</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Full Page Mode -->
+    <template lwc:else>
+        <div class="fimby-quick-post-form">
+            <!-- Header -->
+            <div class="form-header">
+                <div class="header-controls">
+                    <div class="header-spacer"></div>
+                    <h2 class="form-title">What would you like to share?</h2>
+                    <button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon
+                            icon-name="utility:close"
+                            size="medium"
+                            variant="neutral">
+                        </lightning-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Type Selection -->
+            <div class="form-content">
+                <div class="type-selection-grid">
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="need">
+                        <div class="type-icon need-icon">
+                            <img src={needIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Make an Ask</span>
+                        <span class="type-description">Ask your neighbours</span>
+                    </button>
+
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="offer">
+                        <div class="type-icon offer-icon">
+                            <img src={offerIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Make an Offer</span>
+                        <span class="type-description">Share with your neighbours</span>
+                    </button>
+
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="event">
+                        <div class="type-icon event-icon">
+                            <img src={eventIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Event</span>
+                        <span class="type-description">Post an upcoming event</span>
+                    </button>
+
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="bulkbuy">
+                        <div class="type-icon bulkbuy-icon">
+                            <img src={bulkBuyIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Bulk Buy</span>
+                        <span class="type-description">Coordinate a shared purchase</span>
+                    </button>
+
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="story">
+                        <div class="type-icon story-icon">
+                            <img src={storyIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Share in Shared Life</span>
+                        <span class="type-description">Prayer, thanks, lament, intro, God story</span>
+                    </button>
+
+                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
+                        <div class="type-icon lending-icon">
+                            <img src={lendingIconUrl} alt="" class="type-icon-img" />
+                        </div>
+                        <span class="type-label">Lend an Item</span>
+                        <span class="type-description">Add to the Library</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mirror_Record__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Points to the reciprocal adjacency record (the reverse-direction pair). Populated by automation after insert.</description>
+    <externalId>false</externalId>
+    <label>Mirror Record</label>
+    <referenceTo>Neighbourhood_Adjacency__c</referenceTo>
+    <relationshipLabel>Mirror Of</relationshipLabel>
+    <relationshipName>Mirror_Of</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Lookup</type>
+</CustomField>

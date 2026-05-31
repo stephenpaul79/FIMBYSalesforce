@@ -1,0 +1,70 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Story List",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"d4c87f53-9398-45de-a5a5-b7115e4e0f4e\",\"columns\":[{\"UUID\":\"906a8317-1fcf-4a50-97aa-a6c6474af448\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "pageSize" : 15,
+                "selectedCategory" : "All"
+              },
+              "definition" : "c:fimbyStoriesFeed",
+              "id" : "475d1f82-7992-44ca-91e6-5e282436b656",
+              "type" : "component"
+            } ],
+            "id" : "906a8317-1fcf-4a50-97aa-a6c6474af448",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "d4c87f53-9398-45de-a5a5-b7115e4e0f4e",
+          "type" : "component"
+        } ],
+        "id" : "7ff720d6-73dc-486b-a171-25ead8b7fe0d",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "dxpStyle" : { },
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "dc1168a6-4a98-48fd-af50-a89617fdaad4",
+          "type" : "component"
+        } ],
+        "id" : "429ea16c-f84a-443c-ab89-7dff0d0a4d9e",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "dc22d4b1-3acd-42dd-b1fc-ac2cfa959d61",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "list-Story__c"
+  },
+  "urlName" : "story-list"
+}

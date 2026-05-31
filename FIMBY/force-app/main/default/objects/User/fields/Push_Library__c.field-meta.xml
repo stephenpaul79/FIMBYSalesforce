@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Push_Library__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Receive push notifications for lending library activity (borrow requests, returns, etc.).</description>
+    <externalId>false</externalId>
+    <label>Push: Library</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

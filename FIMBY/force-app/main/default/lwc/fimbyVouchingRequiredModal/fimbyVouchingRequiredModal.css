@@ -1,0 +1,377 @@
+:host { display: contents; }
+
+.acting-as-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-warning-tint, rgba(255, 200, 0, 0.12));
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-warning, #d97706);
+    color: var(--fimby-text-strong);
+}
+
+.acting-as-block p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 9000;
+    padding: 0;
+}
+
+@media (min-width: 768px) {
+    .modal-backdrop {
+        top: var(--fimby-modal-inset-top, 86px);
+        align-items: center;
+        padding: 16px;
+    }
+}
+
+.modal-container {
+    background-color: var(--fimby-surface-card);
+    width: 100%;
+    max-width: 480px;
+    border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+    box-shadow: var(--fimby-shadow-modal);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .modal-container {
+        border-radius: var(--fimby-radius-lg);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fimby-text-secondary);
+}
+
+.close-btn:hover { background-color: var(--fimby-hover-bg); }
+.close-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.hero {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 12px;
+}
+
+.hero-icon {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+}
+
+@media (min-width: 768px) {
+    .hero-icon {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+.explainer-body, .form-intro {
+    margin: 0 0 16px;
+    color: var(--fimby-text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.voucher-toggle {
+    display: flex;
+    gap: 0;
+    margin: 4px 0 16px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-xl);
+    padding: 4px;
+    background-color: var(--fimby-surface-page);
+}
+
+.toggle-option {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: var(--fimby-radius-xl);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    min-height: 36px;
+}
+
+.toggle-option:hover {
+    color: var(--fimby-brand-teal);
+}
+
+.toggle-option_active {
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.toggle-option_active:hover {
+    color: #ffffff;
+}
+
+.toggle-option:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.voucher-lookup {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-input {
+    width: 100%;
+    border-radius: var(--fimby-radius-sm);
+    border: 1px solid var(--fimby-border-default);
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-primary);
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    min-height: 44px;
+}
+
+.search-input:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.search-results {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+}
+
+.search-result-item + .search-result-item {
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.search-result-item:hover,
+.search-result-item:focus-visible {
+    background-color: var(--fimby-hover-bg);
+    outline: none;
+}
+
+.result-name {
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    font-size: 0.95rem;
+}
+
+.result-subtitle {
+    font-size: 0.8rem;
+    color: var(--fimby-text-muted);
+}
+
+.no-results {
+    margin: 4px 0 0;
+    color: var(--fimby-text-muted);
+    font-size: 0.9rem;
+}
+
+.selected-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--fimby-brand-teal);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-chip-teal-bg);
+    min-height: 44px;
+}
+
+.selected-pill-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.selected-pill-name {
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    font-size: 0.95rem;
+}
+
+.selected-pill-subtitle {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+.pill-clear {
+    background: transparent;
+    border: none;
+    color: var(--fimby-text-secondary);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.pill-clear:hover {
+    background-color: var(--fimby-hover-bg);
+    color: var(--fimby-text-strong);
+}
+
+.pill-clear:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.submit-message {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background-color: var(--fimby-vouch-tint);
+    border: 1px solid var(--fimby-vouch-border);
+    border-radius: var(--fimby-radius-md);
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+}
+
+.modal-error {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background-color: var(--fimby-error-tint);
+    border: 1px solid var(--fimby-error-border);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-text-strong);
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.nav-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.nav-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-next {
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    border-color: var(--fimby-brand-teal);
+}
+
+.nav-next:hover {
+    background-color: var(--fimby-brand-teal-hover);
+    border-color: var(--fimby-brand-teal-hover);
+}
+
+.nav-next lightning-icon { --lwc-colorTextIconDefault: #ffffff; }
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop, .modal-container, .nav-btn { transition: none; }
+}

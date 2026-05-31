@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Event_Details__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+    !ISBLANK(Start_Date__c),
+    CASE(MONTH(Start_Date__c),
+        1, &quot;Jan&quot;,
+        2, &quot;Feb&quot;,
+        3, &quot;Mar&quot;,
+        4, &quot;Apr&quot;,
+        5, &quot;May&quot;,
+        6, &quot;Jun&quot;,
+        7, &quot;Jul&quot;,
+        8, &quot;Aug&quot;,
+        9, &quot;Sep&quot;,
+        10, &quot;Oct&quot;,
+        11, &quot;Nov&quot;,
+        12, &quot;Dec&quot;,
+        &quot;&quot;
+    ) + &quot; &quot; + TEXT(DAY(Start_Date__c)) + &quot;/&quot; + RIGHT(TEXT(YEAR(Start_Date__c)), 2) + &quot; &quot; + SUBSTITUTE(Start_Time_Text__c, &quot; &quot;, &quot;&quot;) +
+    IF(
+        !ISBLANK(End_Date__c),
+        IF(
+            Start_Date__c = End_Date__c,
+            &quot; to &quot; + SUBSTITUTE(End_Time_Text__c, &quot; &quot;, &quot;&quot;),
+            &quot; to &quot; + CASE(MONTH(End_Date__c),
+                1, &quot;Jan&quot;,
+                2, &quot;Feb&quot;,
+                3, &quot;Mar&quot;,
+                4, &quot;Apr&quot;,
+                5, &quot;May&quot;,
+                6, &quot;Jun&quot;,
+                7, &quot;Jul&quot;,
+                8, &quot;Aug&quot;,
+                9, &quot;Sep&quot;,
+                10, &quot;Oct&quot;,
+                11, &quot;Nov&quot;,
+                12, &quot;Dec&quot;,
+                &quot;&quot;
+            ) + &quot; &quot; + TEXT(DAY(End_Date__c)) + &quot;/&quot; + RIGHT(TEXT(YEAR(End_Date__c)), 2) + &quot; &quot; + SUBSTITUTE(End_Time_Text__c, &quot; &quot;, &quot;&quot;)
+        ),
+        &quot;&quot;
+    ) +
+    IF(
+        !ISBLANK(Location__c), 
+        &quot; @ &quot; + Location__c, 
+        &quot;&quot;
+    ),
+    &quot;&quot;
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Event Details</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

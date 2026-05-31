@@ -1,0 +1,106 @@
+<template>
+    <div class="panel-body">
+        <!-- Bulk buy info card -->
+        <div class="info-card">
+            <h3 class="info-card-title">{panelData.bulkBuyName}</h3>
+            <div class="info-row">
+                <span class="info-label">Organiser</span>
+                <span class="info-value">{panelData.organiserName}</span>
+            </div>
+        </div>
+
+        <!-- Reported user row -->
+        <div class="user-row">
+            <img src={reportedUserPhoto} alt="" class="user-photo">
+            <div class="user-details">
+                <span class="user-name">{panelData.reportedUserName}</span>
+                <template lwc:if={panelData.isBlocked}>
+                    <span class="block-badge">Blocked</span>
+                </template>
+            </div>
+        </div>
+
+        <!-- Block reason -->
+        <template lwc:if={panelData.isBlocked}>
+            <div class="block-indicator">
+                <span class="block-indicator-label">Block Reason</span>
+                <p class="block-indicator-text">{panelData.blockReason}</p>
+            </div>
+        </template>
+
+        <!-- Follow-up timeline -->
+        <template lwc:if={hasTimeline}>
+            <div class="timeline-section">
+                <h4 class="section-title">Follow-Up Timeline</h4>
+                <ul class="timeline-list">
+                    <template for:each={timelineItems} for:item="entry">
+                        <li key={entry._key} class="timeline-entry">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-entry-content">
+                                <div class="timeline-header-row">
+                                    <span class={entry._statusClass}>{entry.status}</span>
+                                    <span class="timeline-date">{entry._formattedDate}</span>
+                                </div>
+                                <template lwc:if={entry.notes}>
+                                    <p class="timeline-notes">{entry.notes}</p>
+                                </template>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </template>
+        <template lwc:if={noTimeline}>
+            <p class="empty-text">No follow-up records yet.</p>
+        </template>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <template lwc:if={isFormActive}>
+            <div class="inline-form">
+                <h4 class="inline-form-title">{formTitle}</h4>
+                <div class="field-label-row">
+                    <label for="form-note" class="field-label">Note</label>
+                    <span class={noteCountClass}>{noteLength}/500</span>
+                </div>
+                <textarea id="form-note" class="inline-form-textarea" value={formNote}
+                          oninput={handleFormNoteChange} maxlength="500" rows="4"
+                          placeholder={formPlaceholder}></textarea>
+                <div class="inline-form-actions">
+                    <button class={formConfirmClass} type="button" onclick={handleFormConfirm}>
+                        {formConfirmLabel}
+                    </button>
+                    <button class="btn-action btn-contact" type="button" onclick={handleFormCancel}>Cancel</button>
+                </div>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="footer-contact-group">
+                <button class="btn-action btn-contact" type="button" onclick={handleContactReported}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Reported User</span>
+                </button>
+                <button class="btn-action btn-contact" type="button" onclick={handleContactOrganiser}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Organiser</span>
+                </button>
+            </div>
+            <div class="footer-escalation-group">
+                <button class="btn-action btn-escalation-1" type="button" onclick={handleCheckIn}>
+                    <img src={checkInIconUrl} alt="" class="btn-icon">
+                    <span>i. Send Check-In</span>
+                </button>
+                <button class="btn-action btn-escalation-2" type="button" onclick={handleRecordConcern}>
+                    <img src={dangerSignIconUrl} alt="" class="btn-icon">
+                    <span>ii. Record Concern</span>
+                </button>
+                <button class="btn-action btn-escalation-3" type="button" onclick={handleEscalate}>
+                    <img src={lifesaverIconUrl} alt="" class="btn-icon">
+                    <span>iii. Ask for Help</span>
+                </button>
+            </div>
+            <button class="btn-action btn-link" type="button" onclick={handleViewBulkBuy}>View Bulk Buy</button>
+        </template>
+    </div>
+</template>

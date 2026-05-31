@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sender__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The actingAs contact — the persona this message is from.</description>
+    <label>Sender</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Response Messages Sent (As)</relationshipLabel>
+    <relationshipName>Response_Messages_Sent_As</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

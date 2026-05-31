@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "be8bf05e-278b-4bb9-9fd5-107645f4dd6b",
+  "label" : "Loan Item Status Update",
+  "regions" : [ {
+    "id" : "f570bbae-5079-4adb-bdc2-f7579ff1a54f",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!recordId}\"}]",
+        "flowName" : "Loaned_Item_Returned_Damaged"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "401f10c3-3def-41f5-a018-303abf723744",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "8e66533b-c7b8-46c8-82e0-333c5a35ddf9",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "a3bc3a89-eee1-453c-bbf5-829feab33ec3",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Loan Item Status Update"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "d746a172-c07a-4116-b800-d96f37958760",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "5cfa6266-6c28-4ba7-a8f1-1534ed9bf1d3",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-loan-item-status-update"
+}

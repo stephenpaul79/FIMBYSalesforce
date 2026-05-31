@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Return_Confirmed_By_Borrower__c</fullName>
+    <defaultValue>false</defaultValue>
+    <label>Return Confirmed By Borrower</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

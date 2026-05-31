@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loaned_To_Real_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The Contact who physically confirmed pickup on behalf of the borrower (typically the same person as Loaned To, but may differ when the borrower was acting as another identity such as an organization).</description>
+    <inlineHelpText>Audit trail: the real Contact who physically completed the handoff. May differ from Loaned To when acting on behalf of another identity.</inlineHelpText>
+    <label>Loaned To (Real Contact)</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Loaned Items (Handed Off By)</relationshipLabel>
+    <relationshipName>Loaned_Items_Handed_Off_By</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

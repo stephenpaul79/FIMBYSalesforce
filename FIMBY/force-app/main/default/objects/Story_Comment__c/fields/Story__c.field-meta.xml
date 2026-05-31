@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Story__c</fullName>
+    <description>The parent story this comment belongs to. Master-detail; reparenting disallowed; cascade delete.</description>
+    <label>Story</label>
+    <referenceTo>Story__c</referenceTo>
+    <relationshipLabel>Story Comments</relationshipLabel>
+    <relationshipName>Story_Comments</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

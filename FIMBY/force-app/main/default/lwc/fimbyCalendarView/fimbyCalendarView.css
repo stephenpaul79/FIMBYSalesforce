@@ -1,0 +1,112 @@
+.fimby-calendar-view {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+.calendar-container {
+    flex: 1;
+    padding: 16px;
+    padding-bottom: 80px;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.nav-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-xl);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.month-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    background: var(--fimby-surface-card);
+    padding: 16px;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.calendar-day:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.calendar-day.today {
+    background: var(--fimby-brand-teal);
+    color: white;
+}
+
+.day-number {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.event-indicator {
+    position: absolute;
+    bottom: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--fimby-error);
+    border-radius: 50%;
+}
+
+/* Keyboard focus visibility */
+.nav-button:focus-visible,
+.calendar-day:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (min-width: 892px) {
+    .calendar-container {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-calendar-view {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .calendar-day {
+        transition: none !important;
+        animation: none !important;
+    }
+}

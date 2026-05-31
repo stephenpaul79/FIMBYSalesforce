@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Reply_Contact__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(Last_Reply_Contact_Lookup__r.Id =  Reply_To_Contact__r.Id ,  Contact__r.FirstName + &quot; &quot; + Contact__r.LastName,  Reply_To_Contact__r.FirstName +&quot; &quot; + Reply_To_Contact__r.LastName)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Last Reply Contact</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

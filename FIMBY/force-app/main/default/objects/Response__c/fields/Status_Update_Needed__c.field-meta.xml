@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status_Update_Needed__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Completed (Offer Accepted / Need Met)&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;Accepted&quot;), &quot;Completed&quot;, 
+IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Completed (Offer Accepted / Need Met)&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;New&quot;), &quot;Declined&quot;,
+IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Expired&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;Accepted&quot;), &quot;Completed&quot;,
+IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Expired&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;New&quot;), &quot;Expired&quot;,
+IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Cancelled&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;New&quot;), &quot;Cancelled&quot;,
+IF( ISPICKVAL(Need_Offer_Responded_To__r.Status__c, &quot;Cancelled&quot;) &amp;&amp; ISPICKVAL( Status__c, &quot;Accepted&quot;), &quot;Cancelled&quot;, &quot;&quot;))))))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Status Update Needed</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

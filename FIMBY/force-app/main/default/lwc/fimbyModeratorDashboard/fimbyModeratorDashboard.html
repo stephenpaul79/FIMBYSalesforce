@@ -1,0 +1,216 @@
+<template>
+    <div class="moderator-dashboard">
+        <c-fimby-page-header
+            page-title="Moderator Dashboard"
+            parent-label="My Stuff"
+            parent-url="/my-stuff">
+        </c-fimby-page-header>
+
+        <!-- Access Denied State -->
+        <template lwc:if={accessDenied}>
+            <div class="access-denied">
+                <img src={lockIconUrl} alt="" class="denied-icon">
+                <div class="denied-title">Access Required</div>
+                <p>You need an active moderator assignment to view this dashboard.</p>
+            </div>
+        </template>
+
+        <template lwc:if={isAuthorized}>
+            <!-- Loading -->
+            <template lwc:if={isInitialLoading}>
+                <div class="loading-container">
+                    <c-fimby-loading-message context="moderator" size="medium"></c-fimby-loading-message>
+                </div>
+            </template>
+
+            <template lwc:if={isReady}>
+                <div class="dashboard-body">
+                    <!-- Neighbourhood Toggle -->
+                    <template lwc:if={showNeighbourhoodToggle}>
+                        <div class="neighbourhood-toggle">
+                            <template for:each={assignmentsWithToggleClass} for:item="a">
+                                <button key={a.Id}
+                                        type="button"
+                                        class={a._toggleClass}
+                                        data-id={a.Neighbourhood__c}
+                                        onclick={handleNeighbourhoodChange}>
+                                    {a.Neighbourhood__r.Name}
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="neighbourhood-label">{singleNeighbourhoodName}</div>
+                    </template>
+
+                    <!-- What Needs You Now -->
+                    <div class="triage-card">
+                        <div class="triage-title">What Needs You Now</div>
+                        <div class="triage-text">{triageSummaryText}</div>
+                        <div class="triage-actions">
+                            <template lwc:if={showTriageEscalated}>
+                                <button type="button" class="triage-btn escalated" onclick={handleTriageEscalated}>
+                                    View Escalated to Admin
+                                </button>
+                            </template>
+                            <template lwc:if={showTriageUrgent}>
+                                <button type="button" class="triage-btn urgent" onclick={handleTriageUrgent}>
+                                    Review Urgent Items
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Priority Sections -->
+                    <div class="main-panel">
+                            <template for:each={sections} for:item="section">
+                                <div key={section.key}
+                                     class={section.sectionClass}
+                                     style={section.sectionStyle}
+                                     data-section-id={section.key}>
+
+                                    <!-- Section Header (collapsed = quiet row; expanded = full) -->
+                                    <template lwc:if={section.isEmpty}>
+                                        <div class="section-quiet-row">
+                                            <button type="button"
+                                                    class="section-header quiet"
+                                                    data-section={section.key}
+                                                    onclick={handleSectionToggle}
+                                                    aria-expanded={section.ariaExpanded}
+                                                    aria-controls={section.bodyId}>
+                                                <img lwc:if={section.iconUrl} src={section.iconUrl} alt="" class="section-icon">
+                                                <span class="section-label">{section.label}</span>
+                                                <span class="section-empty-hint">{section.emptyHint}</span>
+                                            </button>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:else>
+                                        <button type="button"
+                                                class={section.headerClass}
+                                                data-section={section.key}
+                                                onclick={handleSectionToggle}
+                                                aria-expanded={section.ariaExpanded}
+                                                aria-controls={section.bodyId}>
+                                            <div class="section-header-left">
+                                                <img lwc:if={section.iconUrl} src={section.iconUrl} alt="" class="section-icon">
+                                                <div class="section-title-group">
+                                                    <div class="section-label">{section.label}</div>
+                                                    <div class="section-count-badge">{section.sectionCount}</div>
+                                                </div>
+                                            </div>
+                                            <lightning-icon
+                                                icon-name={section.chevronIcon}
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </button>
+
+                                        <!-- Expanded Section Body -->
+                                        <template lwc:if={section.isExpanded}>
+                                            <div id={section.bodyId} class="section-body">
+                                                <div class="section-helper">{section.helperText}</div>
+
+                                                <!-- Tabs (multi-tab sections only) -->
+                                                <template lwc:if={section.hasTabs}>
+                                                    <div class="section-tab-bar" role="tablist">
+                                                        <template for:each={section.tabs} for:item="tab">
+                                                            <button key={tab.key}
+                                                                    type="button"
+                                                                    class={tab.tabClass}
+                                                                    role="tab"
+                                                                    aria-selected={tab.ariaSelected}
+                                                                    data-section={section.key}
+                                                                    data-tab={tab.key}
+                                                                    onclick={handleTabChange}>
+                                                                <span class="tab-label">{tab.label}</span>
+                                                                <span class="tab-count">{tab.countLabel}</span>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Task content -->
+                                                <template lwc:if={section.isTaskSection}>
+                                                    <div class="section-task-content" role="tabpanel">
+                                                        <c-fimby-moderator-task-list
+                                                            tasks={section.tasks}
+                                                            is-loading={section.isLoading}
+                                                            is-loading-more={section.isLoadingMore}
+                                                            has-more={section.hasMore}
+                                                            empty-title={section.emptyTitle}
+                                                            empty-message={section.emptyMessage}
+                                                            cta-config={section.ctaConfigs}
+                                                            data-section={section.key}
+                                                            data-tab={section.activeTab.key}
+                                                            ontaskaction={handleTaskAction}
+                                                            onloadmore={handleLoadMore}>
+                                                        </c-fimby-moderator-task-list>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Health content -->
+                                                <template lwc:if={section.isHealthSection}>
+                                                    <c-fimby-moderator-health-panel
+                                                        neighbourhood-id={selectedNeighbourhoodId}
+                                                        overdue-loans={overdueLoans}
+                                                        stale-posts={stalePosts}
+                                                        inactive-members={inactiveMembers}
+                                                        is-loading={isHealthLoading}
+                                                        onhealthaction={handleHealthAction}>
+                                                    </c-fimby-moderator-health-panel>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                    <div class="priority-section archive-entry-section empty-section">
+                        <div class="section-quiet-row">
+                            <button type="button"
+                                    class="section-header quiet archive-entry-link"
+                                    onclick={handleArchiveClick}
+                                    aria-label="Closed tasks — look back at past decisions">
+                                <img src={archiveIconUrl} alt="" class="section-icon">
+                                <span class="section-label">Closed tasks</span>
+                                <span class="section-empty-hint">Look back at past decisions when you need to refresh your memory.</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="archive-entry-chevron"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- Modal Shell -->
+        <c-fimby-moderator-task-modal-shell onclose={handleModalClose}>
+            <template lwc:if={isContentModal}>
+                <c-fimby-moderator-content-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-content-panel>
+            </template>
+            <template lwc:if={isFollowUpModal}>
+                <c-fimby-moderator-follow-up-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-follow-up-panel>
+            </template>
+            <template lwc:if={isBlockModal}>
+                <c-fimby-moderator-block-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-block-panel>
+            </template>
+            <template lwc:if={isWelcomeModal}>
+                <c-fimby-moderator-welcome-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-welcome-panel>
+            </template>
+            <template lwc:if={isFeedbackModal}>
+                <c-fimby-moderator-feedback-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-feedback-panel>
+            </template>
+            <template lwc:if={isSupportModal}>
+                <c-fimby-moderator-support-panel panel-data={modalPanelData} mode={supportPanelMode} onmodalaction={handleModalAction}></c-fimby-moderator-support-panel>
+            </template>
+            <template lwc:if={isEscalationModal}>
+                <c-fimby-moderator-escalation-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-escalation-panel>
+            </template>
+        </c-fimby-moderator-task-modal-shell>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleBottomTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

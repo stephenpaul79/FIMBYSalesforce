@@ -1,0 +1,247 @@
+:host {
+    display: contents;
+}
+
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Backdrop stops above the universal bottom nav so the modal never
+   overlays it. Same look at every viewport - a floating card,
+   never a fullscreen sheet. */
+.intro-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: var(--fimby-bottom-nav-height, 70px);
+    background: rgba(28, 32, 36, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    padding: max(16px, env(safe-area-inset-top)) 16px 16px;
+}
+
+@media (min-width: 481px) {
+    .intro-modal-backdrop {
+        top: var(--fimby-modal-inset-top, 86px);
+        bottom: 0;
+        padding: 16px;
+    }
+}
+
+.intro-modal-card {
+    background: var(--fimby-surface-page, #fdfaf3);
+    color: var(--fimby-text-strong, #2a2820);
+    width: 100%;
+    max-width: 560px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--fimby-radius-lg, 16px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.intro-modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--fimby-border-soft, #e9e3d2);
+    background: var(--fimby-surface-card, #fffaef);
+}
+
+.intro-modal-badge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.intro-modal-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+.intro-modal-title {
+    font-family: var(--fimby-font-family-display, inherit);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: var(--fimby-text-strong, #2a2820);
+    line-height: 1.25;
+}
+
+.intro-modal-sub {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+    color: var(--fimby-text-default, #4a4536);
+    line-height: 1.45;
+}
+
+.intro-modal-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--fimby-text-muted, #7a715a);
+    font-style: italic;
+}
+
+.intro-modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* lightning-textarea wrapper - sizing + SLDS token pass-through into
+   the shadow-DOM textarea so it picks up FIMBY brand surfaces.        */
+.intro-modal-textarea {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+
+    /* Forwarded into the inner textarea via SLDS / SDS custom properties */
+    --sds-c-textarea-color-background: var(--fimby-surface-input, #fffefb);
+    --sds-c-textarea-color-border: var(--fimby-border-default, #d8cfb8);
+    --sds-c-textarea-radius-border: var(--fimby-radius-md, 10px);
+    --sds-c-textarea-text-color: var(--fimby-text-strong, #2a2820);
+    --sds-c-textarea-sizing-min-height: 180px;
+    --sds-c-textarea-color-border-focus: var(--fimby-btn-primary-bg, #3A7D8C);
+    --sds-c-textarea-shadow-focus: 0 0 0 2px var(--fimby-btn-primary-bg, #3A7D8C);
+}
+
+.intro-modal-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--fimby-text-muted, #7a715a);
+}
+
+.intro-modal-meta-label {
+    font-weight: 500;
+}
+
+.intro-modal-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    background: var(--fimby-surface-danger-soft, #fdecea);
+    color: var(--fimby-text-danger, #a23a2c);
+    font-size: 0.9rem;
+}
+
+.intro-modal-loading,
+.intro-modal-celebration {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    min-height: 200px;
+}
+
+.intro-modal-photo-step {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 4px 0 8px;
+    min-height: 220px;
+}
+
+.intro-modal-celebration-text {
+    margin: 16px 0 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #2a2820);
+}
+
+.intro-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--fimby-border-soft, #e9e3d2);
+    background: var(--fimby-surface-card, #fffaef);
+}
+
+.intro-modal-skip {
+    background: none;
+    border: none;
+    color: var(--fimby-text-muted, #7a715a);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 8px 4px;
+}
+
+.intro-modal-skip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.intro-modal-post {
+    background: var(--fimby-brand-teal, #2c8c84);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--fimby-radius-pill, 999px);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+}
+
+.intro-modal-post:hover:not(:disabled) {
+    background: var(--fimby-brand-teal-strong, #246e67);
+}
+
+.intro-modal-post:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.intro-modal-celebration-finishing {
+    font-size: 0.9rem;
+    color: var(--fimby-text-muted, #7a715a);
+    font-style: italic;
+}

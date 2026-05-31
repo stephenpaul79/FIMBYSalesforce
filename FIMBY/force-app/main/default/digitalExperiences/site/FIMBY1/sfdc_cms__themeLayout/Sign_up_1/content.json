@@ -1,0 +1,69 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Sign-up",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "hideThemeFooter" : false,
+        "showThemeFooterAtBottom" : true,
+        "stickyThemeHeader" : false
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "dxpStyle" : { }
+          },
+          "definition" : "c:fimbyPublicHeader",
+          "id" : "13c2bb20-8442-4b23-bbe8-5585c54e5bfd",
+          "type" : "component"
+        } ],
+        "id" : "2789ad81-7798-4a2a-b991-2a30cbc846d7",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"d27a4a43-095b-46db-a0b9-a1eb14111f1a\",\"columns\":[{\"UUID\":\"7d079e90-39d8-4fa0-833f-2338e2b5c07c\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyPublicFooter",
+              "id" : "275450dd-6a80-4443-ae6f-762cfd51f86b",
+              "type" : "component"
+            } ],
+            "id" : "7d079e90-39d8-4fa0-833f-2338e2b5c07c",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "d27a4a43-095b-46db-a0b9-a1eb14111f1a",
+          "type" : "component"
+        } ],
+        "id" : "557f897e-7235-4b15-a60b-7a2ae698a44c",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      } ],
+      "definition" : "community_byo:scopedHeaderAndFooter",
+      "id" : "252cecd8-3305-4b6d-8110-6c603ae976ea",
+      "type" : "component"
+    }
+  },
+  "urlName" : "sign-up"
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Logged_In_As_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Lookup replacement for the old Text(18) Logged_In_As_ID__c field. Stores the Contact ID the user is currently acting as.</description>
+    <label>Logged In As</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Acting As (Contacts)</relationshipLabel>
+    <relationshipName>Acting_As_Contacts</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <type>Lookup</type>
+</CustomField>

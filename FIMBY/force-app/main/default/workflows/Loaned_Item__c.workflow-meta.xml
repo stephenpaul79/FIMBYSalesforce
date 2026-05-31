@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workflow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <alerts>
+        <fullName>Item_Damaged_By_Borrower</fullName>
+        <description>Item Damaged By Borrower</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Owned_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Borrower_Loan_Item_Damaged_1686870319913</template>
+    </alerts>
+    <alerts>
+        <fullName>Item_Damaged_By_Borrower_Owner_Reminder</fullName>
+        <description>Item Damaged By Borrower - Owner Reminder</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Owned_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Borrower_Loan_Item_Damaged_Reminder_1686953517735</template>
+    </alerts>
+    <alerts>
+        <fullName>Item_Returned_By_Borrower</fullName>
+        <description>Item Returned By Borrower</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Owned_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Borrower_Loan_Item_Returned_1686869925383</template>
+    </alerts>
+    <alerts>
+        <fullName>Item_Returned_By_Borrower_Owner_Reminder</fullName>
+        <description>Item Returned By Borrower - Owner Reminder</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Owned_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Borrower_Loan_Item_Returned_Reminder_1686953609260</template>
+    </alerts>
+    <alerts>
+        <fullName>Loan_Extension_Approval_Request</fullName>
+        <description>Loan Extension Approval Request</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Owned_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Extension_Approval_Request_Clone_1686854155764</template>
+    </alerts>
+    <alerts>
+        <fullName>Loan_Extension_Approved</fullName>
+        <description>Loan Extension Approved</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Loaned_To__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Extension_Approved_1686854731478</template>
+    </alerts>
+    <alerts>
+        <fullName>Loan_Extension_Decline</fullName>
+        <description>Loan Extension Decline</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Loaned_To__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderType>CurrentUser</senderType>
+        <template>unfiled$public/Extension_Declined_1686855026530</template>
+    </alerts>
+    <alerts>
+        <fullName>Owner_Confirmed_Item_Damaged</fullName>
+        <description>Owner Confirmed Item Damaged</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Loaned_To__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Owner_Confirmed_Loan_Item_Damaged_1686873263969</template>
+    </alerts>
+    <alerts>
+        <fullName>Owner_Confirmed_Item_Returned</fullName>
+        <description>Owner Confirmed Item Returned</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Loaned_To__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Owner_Confirmed_Loan_Item_Returned_1686872844722</template>
+    </alerts>
+</Workflow>

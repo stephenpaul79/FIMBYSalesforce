@@ -1,0 +1,394 @@
+:host {
+    display: block;
+}
+
+/* Bulk Buy Form - Mobile First (parent handles horizontal padding) */
+.bulk-buy-form {
+    position: relative;
+    padding: 0 0 24px;
+}
+
+/* Section Headers with Impact Icons */
+.form-section {
+    background: var(--fimby-surface-card);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 16px;
+}
+
+.section-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.section-help {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    margin: -8px 0 16px;
+    line-height: 1.5;
+}
+
+.form-field {
+    margin-bottom: 16px;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    margin-bottom: 6px;
+}
+
+.required {
+    color: var(--fimby-error);
+}
+
+/* Field label row (label left, character count right) */
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+}
+
+.character-count {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    text-align: right;
+    margin-top: 4px;
+}
+
+.field-label-row .character-count {
+    font-size: 0.75rem;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+.readonly-value {
+    padding: 10px 12px;
+    background: var(--fimby-surface-input);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+}
+
+/* Posting As — identity display (matches fimbyResponseReply .replying-as) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    margin-top: 16px;
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Shares Grid */
+.shares-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+/* Pill Radio Groups */
+.pill-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    background: var(--fimby-surface-input);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    min-height: 44px;
+}
+
+.pill-btn:hover {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+/* Selected: equal visual weight — tint + teal border, never solid teal fill with dark text */
+.pill-btn.selected {
+    background: var(--fimby-selected-bg);
+    color: var(--fimby-text-primary);
+    border: 2px solid var(--fimby-brand-teal);
+}
+
+.pill-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Native datetime input */
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    background: var(--fimby-surface-input);
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--fimby-focus-ring);
+    box-shadow: 0 0 0 1px var(--fimby-focus-ring);
+}
+
+/* Shares Preview Callout */
+.shares-preview-callout {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: var(--fimby-cta-strip-bg, #eaf6fa);
+    border-left: var(--fimby-cta-strip-border-width, 4px) solid var(--fimby-cta-strip-accent, #3A7D8C);
+    border-radius: var(--fimby-radius-md);
+}
+
+.shares-preview-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #261A11);
+    line-height: 1.4;
+}
+
+/* Cost Reference Section */
+.cost-section {
+    /* Uses same card background as other sections */
+}
+
+.cost-per-share {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fimby-brand-teal);
+    margin: 8px 0 12px;
+}
+
+.cost-disclaimer {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--fimby-text-muted);
+    margin: 12px 0 0;
+    line-height: 1.4;
+}
+
+/* Form Navigation — Back left, Next right (per lwc-responsive-theming) */
+.form-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+/* Compact nav when inside form section with submit (less space above buttons) */
+.form-section-with-submit .form-navigation {
+    margin-top: 4px;
+    padding-top: 0;
+    border-top: none;
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-secondary);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.nav-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.nav-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.nav-back {
+    background-color: var(--fimby-surface-card);
+    border-color: var(--fimby-border-default);
+}
+
+.nav-back:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.form-section-with-submit .nav-back {
+    background-color: var(--fimby-surface-page);
+}
+
+.nav-next {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.nav-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-next:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.nav-next:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border-radius: var(--fimby-radius-md);
+}
+
+.loading-content {
+    background: var(--fimby-surface-card);
+    padding: 24px 32px;
+    border-radius: var(--fimby-radius-md);
+    text-align: center;
+}
+
+/* Responsive — no horizontal padding on child; parent (composer) provides it (per header-body width rule) */
+@media (max-width: 480px) {
+    .bulk-buy-form {
+        padding-bottom: 20px;
+    }
+
+    .form-section {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .section-help {
+        margin: -4px 0 12px;
+    }
+
+    .pill-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 768px) {
+    .bulk-buy-form {
+        padding-bottom: 32px;
+    }
+
+    .form-section {
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .shares-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .shares-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .pill-btn,
+    .form-input {
+        transition: none;
+    }
+}

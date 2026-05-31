@@ -1,0 +1,50 @@
+.celebration-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    animation: celebrationEntrance 0.5s ease-out;
+}
+
+@keyframes celebrationEntrance {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.meme-container {
+    display: flex;
+    justify-content: center;
+}
+
+.celebration-gif {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    object-fit: contain;
+}
+
+.celebration-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--fimby-text-strong);
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.milestone-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fimby-brand-teal);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .celebration-wrapper {
+        animation: none;
+    }
+}

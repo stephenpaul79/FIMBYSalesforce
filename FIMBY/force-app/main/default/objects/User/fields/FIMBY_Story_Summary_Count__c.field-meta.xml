@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>FIMBY_Story_Summary_Count__c</fullName>
+    <formula>IF( Contact.Account.Story_Summary_Count__c &gt; 0, TRUE, FALSE)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>FIMBY Story Summary Count</label>
+    <type>Checkbox</type>
+</CustomField>

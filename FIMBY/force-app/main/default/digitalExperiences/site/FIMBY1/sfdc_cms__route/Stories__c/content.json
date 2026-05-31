@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Shared Life Post",
+  "contentBody" : {
+    "activeViewId" : "stories",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-stories",
+    "urlPrefix" : "shared-life-post"
+  },
+  "urlName" : "stories"
+}

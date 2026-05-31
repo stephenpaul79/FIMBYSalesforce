@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Alert_Events__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Email me on event-related activity (event chat replies, event reminders, RSVP updates). When false, FimbyEmailAlertService suppresses event-type emails. Layered on top of Email_Alerts_Enabled__c.</description>
+    <externalId>false</externalId>
+    <label>Email Alert - Events</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

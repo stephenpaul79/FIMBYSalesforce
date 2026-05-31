@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Borrow_Rating__c</fullName>
+    <description>Score from 1-5.   5/5 Borrower was easy to work with and they returned the item on time and in good condition.  1/5 Borrow was difficult to work with and/or damaged the item, and/or did not return it on time.</description>
+    <externalId>false</externalId>
+    <label>Borrow Rating</label>
+    <precision>1</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

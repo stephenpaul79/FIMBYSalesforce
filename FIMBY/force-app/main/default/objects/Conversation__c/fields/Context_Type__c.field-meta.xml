@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Context_Type__c</fullName>
+    <description>Indicates what kind of conversation this is. Direct is a standard DM; Library_Lending is auto-created when a lending request is approved.</description>
+    <label>Context Type</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Direct</fullName>
+                <default>true</default>
+                <label>Direct</label>
+            </value>
+            <value>
+                <fullName>Library_Lending</fullName>
+                <default>false</default>
+                <label>Library Lending</label>
+            </value>
+            <value>
+                <fullName>Bulk_Buy</fullName>
+                <default>false</default>
+                <label>Bulk Buy</label>
+            </value>
+            <value>
+                <fullName>Missed_Pickup</fullName>
+                <default>false</default>
+                <label>Missed Pickup</label>
+            </value>
+            <value>
+                <fullName>Event</fullName>
+                <default>false</default>
+                <label>Event</label>
+            </value>
+            <value>
+                <fullName>Vouch_Request</fullName>
+                <default>false</default>
+                <label>Vouch Request</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

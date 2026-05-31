@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>unfiled$public/Experience_Cloud_Forgot_Password_FIMBY</members>
+        <members>unfiled$public/Experience_Cloud_Changed_Password_FIMBY</members>
+        <members>unfiled$public/CommunityHeadlessForgotPasswordTemplate</members>
+        <members>unfiled$public/CommunityHeadlessRegistrationTemplate</members>
+        <name>EmailTemplate</name>
+    </types>
+    <version>64.0</version>
+</Package>

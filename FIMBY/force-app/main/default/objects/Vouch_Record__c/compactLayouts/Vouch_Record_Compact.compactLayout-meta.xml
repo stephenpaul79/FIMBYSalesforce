@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouch_Record_Compact</fullName>
+    <fields>Status__c</fields>
+    <fields>Requester_Contact__c</fields>
+    <fields>Reference_Contact__c</fields>
+    <fields>Reference_Organization__c</fields>
+    <fields>Requested_Date__c</fields>
+    <label>Vouch Record Compact</label>
+</CompactLayout>

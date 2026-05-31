@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Posted_For_Person__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Posted For (Person)</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Feedback (Posted For)</relationshipLabel>
+    <relationshipName>Feedback1</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

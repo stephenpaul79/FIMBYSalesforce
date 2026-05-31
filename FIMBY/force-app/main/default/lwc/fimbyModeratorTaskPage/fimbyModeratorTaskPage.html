@@ -1,0 +1,1280 @@
+<template>
+    <div class={taskPageClass}>
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="moderator" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template lwc:if={hasError}>
+            <div class="error-container">
+                <img src={analysisIconUrl} alt="" class="error-icon">
+                <div class="error-title">Something went wrong</div>
+                <p class="error-text">{errorMessage}</p>
+                <button type="button" class="back-btn-inline" onclick={handleBack}>
+                    Return to Dashboard
+                </button>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template lwc:if={showContent}>
+            <!-- Task Header -->
+            <div class="task-header">
+                <button type="button" class="back-chevron" onclick={handleBack} aria-label="Back to dashboard">
+                    <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                </button>
+                <img src={categoryIconUrl} alt="" class="header-icon">
+                <div class="header-content">
+                    <span class="category-label">{categoryLabel}</span>
+                    <div class="header-summary-row">
+                        <span class="task-summary-text">{taskSummary}</span>
+                        <template lwc:if={isUrgent}>
+                            <span class="priority-badge priority-urgent">Urgent</span>
+                        </template>
+                        <span class="task-age">{taskAge}</span>
+                    </div>
+                </div>
+                <div class="header-decision-btns">
+                    <template lwc:if={showTaskActions}>
+                        <template lwc:if={isContentPage}>
+                            <button type="button" class="btn-action btn-success btn-sm" onclick={handleRepublish} disabled={_isProcessing}>Republish</button>
+                            <button type="button" class="btn-action btn-danger btn-sm" onclick={handleKeepHidden} disabled={_isProcessing}>Keep Hidden</button>
+                        </template>
+                        <template lwc:if={isBlockPage}>
+                            <button type="button" class="btn-action btn-primary btn-sm" onclick={handleMarkReviewed} disabled={_isProcessing}>Mark Reviewed</button>
+                        </template>
+                        <template lwc:if={isSupportApprovalPage}>
+                            <button type="button" class="btn-action btn-success btn-sm" onclick={handleApprove} disabled={supportRepApproveDisabled}>Approve</button>
+                            <button type="button" class="btn-action btn-danger btn-sm" onclick={handleDecline} disabled={_isProcessing}>Decline</button>
+                        </template>
+                        <template lwc:if={isOrganizationApprovalPage}>
+                            <button type="button" class="btn-action btn-success btn-sm" onclick={handleApproveOrganization} disabled={_isProcessing}>Approve org</button>
+                            <button type="button" class="btn-action btn-danger btn-sm" onclick={handleRejectOrganization} disabled={_isProcessing}>Reject org</button>
+                        </template>
+                        <template lwc:if={isSupportConcernPage}>
+                            <button type="button" class="btn-action btn-primary btn-sm" onclick={handleNoAction} disabled={_isProcessing}>No Action Needed</button>
+                        </template>
+                        <template lwc:if={isBulkBuyPage}>
+                            <button type="button" class="btn-action btn-danger btn-sm" onclick={handleConfirmFlag} disabled={_isProcessing}>Confirm Flag</button>
+                            <button type="button" class="btn-action btn-success btn-sm" onclick={handleClearFlag} disabled={_isProcessing}>Clear Flag</button>
+                        </template>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Contextual Stage Prompt -->
+            <div class="stage-prompt">{stagePrompt}</div>
+
+            <template lwc:if={isClosed}>
+                <div class={closedSummaryCardClass}>
+                    <div class="closed-summary-title">Task closed</div>
+                    <div class="closed-summary-row">
+                        <span class="closed-summary-label">Status</span>
+                        <span class="closed-summary-value">{closedStatusLabel}</span>
+                    </div>
+                    <template lwc:if={closedDecisionLabel}>
+                        <div class="closed-summary-row">
+                            <span class="closed-summary-label">Decision</span>
+                            <span class="closed-summary-value">{closedDecisionLabel}</span>
+                        </div>
+                    </template>
+                    <template lwc:if={closedByLine}>
+                        <div class="closed-summary-meta">{closedByLine}</div>
+                    </template>
+                    <template lwc:if={hasClosedNotes}>
+                        <div class="closed-summary-notes">{closedNotes}</div>
+                    </template>
+                    <template lwc:if={showReopenConfirm}>
+                        <p class="closed-reopen-confirm">Reopen this task? It will move back into your active queue. Your original decision and notes will be cleared from the record but remain in field history.</p>
+                        <div class="closed-reopen-actions">
+                            <button type="button" class="btn-action btn-secondary" onclick={handleReopenCancel} disabled={_isProcessing}>Cancel</button>
+                            <button type="button" class="btn-action btn-primary" onclick={handleReopenConfirm} disabled={_isProcessing}>Reopen this task</button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <button type="button" class="btn-action btn-primary closed-reopen-btn" onclick={handleReopen} disabled={_isProcessing}>Reopen this task</button>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Grid layout -->
+            <div class="review-layout">
+                <div class={reviewMainClass}>
+
+                    <!-- ===========================================
+                         1. CONTENT REPORT
+                         =========================================== -->
+                    <template lwc:if={isContentPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">What Happened</div>
+                                <span class="content-type-badge">{contentTypeBadge}</span>
+                                <div class="content-title">{contentTitle}</div>
+                                <div class="body-text">{contentBody}</div>
+                                <template lwc:if={isBodyLong}>
+                                    <button type="button" class="read-more-btn" onclick={toggleReadMore}>{readMoreLabel}</button>
+                                </template>
+                                <template lwc:if={hasImages}>
+                                    <div class="image-grid">
+                                        <template for:each={imageUrls} for:item="img">
+                                            <button type="button" key={img} class="image-thumb-btn" data-url={img} onclick={handleImageClick}>
+                                                <img src={img} alt="Attached image" class="image-thumb">
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:if={originalPostUrl}>
+                                    <button type="button" class="btn-link" onclick={handleViewOriginalPost}>View Post</button>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your Decision</div>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions">
+                                        <button type="button" class="btn-action btn-success" onclick={handleRepublish} disabled={_isProcessing}>Republish</button>
+                                        <button type="button" class="btn-action btn-danger" onclick={handleKeepHidden} disabled={_isProcessing}>Keep Hidden</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class={whosInvolvedClass}>
+                            <div class="section-label">Who's Involved</div>
+                            <div class="people-grid">
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={authorPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Author</span>
+                                            <span class="person-name">{authorName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta">Posted {postDate}</span>
+                                        <button type="button" class="btn-contact" data-contact-id={authorContactId} onclick={handleContactPerson}>Contact Author</button>
+                                    </div>
+                                </div>
+                                <template lwc:if={reporterName}>
+                                    <div class="person-card">
+                                        <div class="person-row-1">
+                                            <img src={reporterPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-role">Reporter</span>
+                                                <span class="person-name">{reporterName}</span>
+                                            </div>
+                                        </div>
+                                        <div class="person-row-2">
+                                            <span class="person-meta"></span>
+                                            <button type="button" class="btn-contact" data-contact-id={reporterContactId} onclick={handleContactPerson}>Contact Reporter</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Subject History (row 1 col 3 on desktop) -->
+                        <template lwc:if={hasSubjectSnapshot}>
+                            <div class="history-card history-subject">
+                                <button type="button" class="history-card-header" onclick={toggleSubjectHistory}
+                                        aria-expanded={subjectAriaExpanded} aria-controls="subject-body-c">
+                                    <span class="history-card-title">Subject History</span>
+                                    <lightning-icon icon-name={subjectChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isSubjectExpanded}>
+                                    <div id="subject-body-c" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{subjectHistoryName}</span>
+                                                <template lwc:if={subjectHistoryPronouns}>
+                                                    <span class="person-meta">{subjectHistoryPronouns}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{subjectReportCount}</span>
+                                                <span class="stat-label-inline">Reports</span>
+                                            </div>
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{subjectCheckInCount}</span>
+                                                <span class="stat-label-inline">Check-ins</span>
+                                            </div>
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{subjectConcernCount}</span>
+                                                <span class="stat-label-inline">Concerns</span>
+                                            </div>
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{subjectBlockCount}</span>
+                                                <span class="stat-label-inline">Blocks</span>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={hasSubjectRecentCases}>
+                                            <div class="recent-cases-title">Recent history</div>
+                                            <div class="recent-cases-list">
+                                                <template for:each={subjectRecentCases} for:item="item">
+                                                    <div key={item.id} class="recent-case-item">
+                                                        <span class="recent-case-date">{item.dateFormatted}</span>
+                                                        <span class="recent-case-summary">{item.summary}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={noSubjectHistory}>
+                                            <p class="no-history-text">No prior moderation history.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Reporter History (row 2 col 3 on desktop) -->
+                        <template lwc:if={showReporterHistory}>
+                            <div class="history-card history-reporter">
+                                <button type="button" class="history-card-header" onclick={toggleReporterHistory}
+                                        aria-expanded={reporterAriaExpanded} aria-controls="reporter-body-c">
+                                    <span class="history-card-title">Reporter History</span>
+                                    <lightning-icon icon-name={reporterChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isReporterExpanded}>
+                                    <div id="reporter-body-c" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{reporterHistoryName}</span>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{reporterLast90}</span>
+                                                <span class="stat-label-inline">Last 90 days</span>
+                                            </div>
+                                            <div class="stat-item-inline">
+                                                <span class="stat-value-inline">{reporterTotal}</span>
+                                                <span class="stat-label-inline">All time</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={logResponseClass}>
+                            <div class="section-label">Log Your Response</div>
+                            <div class="section-helper">Recorded on this person's moderation history.</div>
+                            <template lwc:if={showInlineForm}>
+                                <div class="inline-form">
+                                    <div class="inline-form-title">{formTitle}</div>
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="form-note">Notes</label>
+                                        <span class={formCountClass}>{formNoteLength}/1000</span>
+                                    </div>
+                                    <textarea id="form-note" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <div class="inline-form-actions">
+                                        <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
+                                        <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="log-actions">
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-1" data-form="checkIn" onclick={handleOpenForm} disabled={checkInDisabled}>
+                                            <span class="escalation-numeral">i.</span> Log Check-In
+                                        </button>
+                                        <template lwc:if={checkInStatusText}>
+                                            <span class="action-status action-status-done">{checkInStatusText}</span>
+                                        </template>
+                                    </div>
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-2" data-form="concern" onclick={handleOpenForm} disabled={concernDisabled}>
+                                            <span class="escalation-numeral">ii.</span> Record Concern
+                                        </button>
+                                        <template lwc:if={concernStatusText}>
+                                            <span class="action-status action-status-done">{concernStatusText}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={askForHelpClass}>
+                            <div class="ask-for-help-section">
+                                <div class="section-label">Ask for Help</div>
+                                <div class="section-helper">When local facilitation hasn't resolved the situation.</div>
+                                <div class="log-action-row">
+                                    <button type="button" class="btn-action btn-escalation-3" onclick={handleEscalate} disabled={escalateDisabled}>
+                                        <span class="escalation-numeral">iii.</span> Escalate to Admin
+                                    </button>
+                                    <template lwc:if={escalateStatusText}>
+                                        <span class="action-status action-status-escalated">{escalateStatusText}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </template>
+
+                    <!-- ===========================================
+                         2. BLOCK REPORT
+                         =========================================== -->
+                    <template lwc:if={isBlockPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">What Happened</div>
+                                <div class="block-visual">
+                                    <img src={blockerPhoto} alt="" class="person-avatar">
+                                    <span class="block-arrow">blocked</span>
+                                    <img src={blockedPhoto} alt="" class="person-avatar">
+                                </div>
+                                <div class="block-names">
+                                    <span>{blockerName}</span>
+                                    <span class="block-arrow-text">blocked</span>
+                                    <span>{blockedName}</span>
+                                </div>
+                                <div class="block-meta">Blocked on: {blockDate}</div>
+                                <template lwc:if={hasBlockReason}>
+                                    <div class="block-reason-box">
+                                        <div class="block-reason-label">Reason</div>
+                                        <p class="block-reason-text">{blockReason}</p>
+                                    </div>
+                                </template>
+                                <template lwc:if={hasOtherBlocks}>
+                                    <div class="other-blocks-label">Other blocks ({otherBlockCount})</div>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your Decision</div>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions">
+                                        <button type="button" class="btn-action btn-primary" onclick={handleMarkReviewed} disabled={_isProcessing}>Mark Reviewed</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class={whosInvolvedClass}>
+                            <div class="section-label">Who's Involved</div>
+                            <div class="people-grid">
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={blockerPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Blocker</span>
+                                            <span class="person-name">{blockerName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={blockerContactId} onclick={handleContactPerson}>Contact Blocker</button>
+                                    </div>
+                                </div>
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={blockedPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Blocked Person</span>
+                                            <span class="person-name">{blockedName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={blockedContactId} onclick={handleContactPerson}>Contact Blocked</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template lwc:if={hasSubjectSnapshot}>
+                            <div class="history-card history-subject">
+                                <button type="button" class="history-card-header" onclick={toggleSubjectHistory}
+                                        aria-expanded={subjectAriaExpanded} aria-controls="subject-body-b">
+                                    <span class="history-card-title">Subject History</span>
+                                    <lightning-icon icon-name={subjectChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isSubjectExpanded}>
+                                    <div id="subject-body-b" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{subjectHistoryName}</span>
+                                                <template lwc:if={subjectHistoryPronouns}>
+                                                    <span class="person-meta">{subjectHistoryPronouns}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectReportCount}</span><span class="stat-label-inline">Reports</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectCheckInCount}</span><span class="stat-label-inline">Check-ins</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectConcernCount}</span><span class="stat-label-inline">Concerns</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectBlockCount}</span><span class="stat-label-inline">Blocks</span></div>
+                                        </div>
+                                        <template lwc:if={hasSubjectRecentCases}>
+                                            <div class="recent-cases-title">Recent history</div>
+                                            <div class="recent-cases-list">
+                                                <template for:each={subjectRecentCases} for:item="item">
+                                                    <div key={item.id} class="recent-case-item">
+                                                        <span class="recent-case-date">{item.dateFormatted}</span>
+                                                        <span class="recent-case-summary">{item.summary}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={noSubjectHistory}>
+                                            <p class="no-history-text">No prior moderation history.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showReporterHistory}>
+                            <div class="history-card history-reporter">
+                                <button type="button" class="history-card-header" onclick={toggleReporterHistory}
+                                        aria-expanded={reporterAriaExpanded} aria-controls="reporter-body-b">
+                                    <span class="history-card-title">Reporter History</span>
+                                    <lightning-icon icon-name={reporterChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isReporterExpanded}>
+                                    <div id="reporter-body-b" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info"><span class="person-name">{reporterHistoryName}</span></div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{reporterLast90}</span><span class="stat-label-inline">Last 90 days</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{reporterTotal}</span><span class="stat-label-inline">All time</span></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={logResponseClass}>
+                            <div class="section-label">Log Your Response</div>
+                            <div class="section-helper">Recorded on this person's moderation history.</div>
+                            <template lwc:if={showInlineForm}>
+                                <div class="inline-form">
+                                    <div class="inline-form-title">{formTitle}</div>
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="form-note-block">Notes</label>
+                                        <span class={formCountClass}>{formNoteLength}/1000</span>
+                                    </div>
+                                    <textarea id="form-note-block" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <div class="inline-form-actions">
+                                        <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
+                                        <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="log-actions">
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-1" data-form="checkIn" onclick={handleOpenForm} disabled={checkInDisabled}>
+                                            <span class="escalation-numeral">i.</span> Log Check-In
+                                        </button>
+                                        <template lwc:if={checkInStatusText}>
+                                            <span class="action-status action-status-done">{checkInStatusText}</span>
+                                        </template>
+                                    </div>
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-2" data-form="concern" onclick={handleOpenForm} disabled={concernDisabled}>
+                                            <span class="escalation-numeral">ii.</span> Record Concern
+                                        </button>
+                                        <template lwc:if={concernStatusText}>
+                                            <span class="action-status action-status-done">{concernStatusText}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={askForHelpClass}>
+                            <div class="ask-for-help-section">
+                                <div class="section-label">Ask for Help</div>
+                                <div class="section-helper">When local facilitation hasn't resolved the situation.</div>
+                                <div class="log-action-row">
+                                    <button type="button" class="btn-action btn-escalation-3" onclick={handleEscalate} disabled={escalateDisabled}>
+                                        <span class="escalation-numeral">iii.</span> Escalate to Admin
+                                    </button>
+                                    <template lwc:if={escalateStatusText}>
+                                        <span class="action-status action-status-escalated">{escalateStatusText}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </template>
+
+                    <!-- ===========================================
+                         3. SUPPORT APPROVAL
+                         =========================================== -->
+                    <template lwc:if={isSupportApprovalPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">What Happened</div>
+                                <template lwc:if={hasPriorRevocation}>
+                                    <div class="alert-banner alert-warning">A prior support relationship with this person was revoked.</div>
+                                </template>
+                                <template lwc:if={supportRepBlockedByOrg}>
+                                    <div class="alert-banner alert-warning">The organization must be verified before this representative can be approved.</div>
+                                </template>
+                                <div class="detail-row">
+                                    <span class="detail-label">Relationship</span>
+                                    <span class="detail-value">{relationshipType}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Consent</span>
+                                    <span class="detail-value">{consentMethod}</span>
+                                </div>
+                                <template lwc:if={supportNotes}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Notes</span>
+                                        <span class="detail-value">{supportNotes}</span>
+                                    </div>
+                                </template>
+                                <div class="detail-row">
+                                    <span class="detail-label">Submitted</span>
+                                    <span class="detail-value">{submissionDate}</span>
+                                </div>
+                                <template lwc:if={hasAuthorizationImage}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Authorization</span>
+                                        <div class="detail-value">
+                                            <template lwc:if={authorizationIsPdf}>
+                                                <button type="button" class="document-file-btn" data-url={supportAuthorizationImageUrl} onclick={handleDocumentLinkClick}>
+                                                    <lightning-icon icon-name="doctype:pdf" size="small" alternative-text="PDF"></lightning-icon>
+                                                    <span>View authorization PDF</span>
+                                                </button>
+                                            </template>
+                                            <template lwc:else>
+                                                <button type="button" class="document-image-btn" data-url={supportAuthorizationImageUrl} data-alt="Authorization letter" onclick={handleImageClick}>
+                                                    <img src={supportAuthorizationImageUrl} alt="Authorization document" class="document-image-thumb">
+                                                </button>
+                                                <span class="image-view-hint">Tap to view full size</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your Decision</div>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions">
+                                        <button type="button" class="btn-action btn-success" onclick={handleApprove} disabled={supportRepApproveDisabled}>Approve</button>
+                                        <button type="button" class="btn-action btn-danger" onclick={handleDecline} disabled={_isProcessing}>Decline</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class={whosInvolvedClass}>
+                            <div class="section-label">Who's Involved</div>
+                            <div class="people-grid">
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={helperPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Helper</span>
+                                            <span class="person-name">{helperName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={helperContactId} onclick={handleContactPerson}>Request More Info</button>
+                                    </div>
+                                </div>
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={subjectPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Subject</span>
+                                            <span class="person-name">{subjectName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={subjectContactId} onclick={handleContactPerson}>Contact Subject</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template lwc:if={hasSubjectSnapshot}>
+                            <div class="history-card history-subject">
+                                <button type="button" class="history-card-header" onclick={toggleSubjectHistory}
+                                        aria-expanded={subjectAriaExpanded} aria-controls="subject-body-sa">
+                                    <span class="history-card-title">Subject History</span>
+                                    <lightning-icon icon-name={subjectChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isSubjectExpanded}>
+                                    <div id="subject-body-sa" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{subjectHistoryName}</span>
+                                                <template lwc:if={subjectHistoryPronouns}>
+                                                    <span class="person-meta">{subjectHistoryPronouns}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectReportCount}</span><span class="stat-label-inline">Reports</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectCheckInCount}</span><span class="stat-label-inline">Check-ins</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectConcernCount}</span><span class="stat-label-inline">Concerns</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectBlockCount}</span><span class="stat-label-inline">Blocks</span></div>
+                                        </div>
+                                        <template lwc:if={hasSubjectRecentCases}>
+                                            <div class="recent-cases-title">Recent history</div>
+                                            <div class="recent-cases-list">
+                                                <template for:each={subjectRecentCases} for:item="item">
+                                                    <div key={item.id} class="recent-case-item">
+                                                        <span class="recent-case-date">{item.dateFormatted}</span>
+                                                        <span class="recent-case-summary">{item.summary}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={noSubjectHistory}>
+                                            <p class="no-history-text">No prior moderation history.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- ===========================================
+                         3b. ORGANIZATION APPROVAL
+                         =========================================== -->
+                    <template lwc:if={isOrganizationApprovalPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">Group details</div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Organization name</span>
+                                    <span class="detail-value">{orgName}</span>
+                                </div>
+                                <template lwc:if={orgStreet}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Street address</span>
+                                        <span class="detail-value">{orgStreet}</span>
+                                    </div>
+                                </template>
+                                <template lwc:if={orgCity}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">City</span>
+                                        <span class="detail-value">{orgCity}</span>
+                                    </div>
+                                </template>
+                                <template lwc:if={orgState}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Province</span>
+                                        <span class="detail-value">{orgState}</span>
+                                    </div>
+                                </template>
+                                <template lwc:if={orgPostalCode}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Postal code</span>
+                                        <span class="detail-value">{orgPostalCode}</span>
+                                    </div>
+                                </template>
+                                <template lwc:if={orgCountry}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Country</span>
+                                        <span class="detail-value">{orgCountry}</span>
+                                    </div>
+                                </template>
+                                <div class="detail-row">
+                                    <span class="detail-label">What kind of group is this?</span>
+                                    <span class="detail-value">{orgTypeLabel}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Your role at this organization</span>
+                                    <span class="detail-value">{orgRequesterRole}</span>
+                                </div>
+                                <template lwc:if={orgWebsite}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Website</span>
+                                        <a class="detail-value" href={orgWebsite} target="_blank" rel="noopener noreferrer">{orgWebsite}</a>
+                                    </div>
+                                </template>
+                                <template lwc:if={orgDescription}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Public description</span>
+                                        <span class="detail-value">{orgDescription}</span>
+                                    </div>
+                                </template>
+
+                                <template lwc:if={orgIsCharity}>
+                                    <div class="section-label section-label--sub">Charity verification</div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Registered charity</span>
+                                        <span class="detail-value">Yes</span>
+                                    </div>
+                                    <template lwc:if={orgCharityUrl}>
+                                        <div class="detail-row">
+                                            <span class="detail-label">CRA charity listing URL</span>
+                                            <a class="detail-value" href={orgCharityUrl} target="_blank" rel="noopener noreferrer">{orgCharityUrl}</a>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={orgCharityNumber}>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Charity / BN registration number</span>
+                                            <span class="detail-value">{orgCharityNumber}</span>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <div class="section-label section-label--sub">Informal group verification</div>
+                                    <template lwc:if={orgPhone}>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Organization phone</span>
+                                            <span class="detail-value">{orgPhone}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={orgEmail}>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Organization email</span>
+                                            <span class="detail-value">{orgEmail}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={hasOrgVerificationDocs}>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Verification document</span>
+                                            <div class="detail-value">
+                                                <div class="image-grid">
+                                                    <template for:each={orgVerificationDocsIndexed} for:item="doc">
+                                                        <div key={doc.key} class="document-grid-item">
+                                                            <template lwc:if={doc.isPdf}>
+                                                                <button type="button" class="document-file-btn" data-url={doc.url} onclick={handleDocumentLinkClick}>
+                                                                    <lightning-icon icon-name="doctype:pdf" size="small" alternative-text="PDF"></lightning-icon>
+                                                                    <span>{doc.label}</span>
+                                                                </button>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <button type="button" class="document-image-btn" data-index={doc.index} onclick={handleVerificationDocClick}>
+                                                                    <img src={doc.url} alt={doc.label} class="document-image-thumb">
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                                <span class="image-view-hint">Tap to view full size</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <div class="section-label section-label--sub">Representative request</div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Submitted by</span>
+                                    <span class="detail-value">{orgRequesterName}</span>
+                                </div>
+                                <template lwc:if={hasAuthorizationImage}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Authorization letter</span>
+                                        <div class="detail-value">
+                                            <template lwc:if={authorizationIsPdf}>
+                                                <button type="button" class="document-file-btn" data-url={supportAuthorizationImageUrl} onclick={handleDocumentLinkClick}>
+                                                    <lightning-icon icon-name="doctype:pdf" size="small" alternative-text="PDF"></lightning-icon>
+                                                    <span>View authorization PDF</span>
+                                                </button>
+                                            </template>
+                                            <template lwc:else>
+                                                <button type="button" class="document-image-btn" data-url={supportAuthorizationImageUrl} data-alt="Authorization letter" onclick={handleImageClick}>
+                                                    <img src={supportAuthorizationImageUrl} alt="Authorization document" class="document-image-thumb">
+                                                </button>
+                                                <span class="image-view-hint">Tap to view full size</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:if={hasOrgRepNotes}>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Notes</span>
+                                        <span class="detail-value">{orgRepNotes}</span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your decision</div>
+                                <template lwc:if={orgHasPendingRep}>
+                                    <p class="section-helper">Approve the organization only, or approve the organization and representative together. Representative approval on its own happens from the separate support task on your dashboard.</p>
+                                </template>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions decision-actions--org">
+                                        <template lwc:if={orgHasPendingRep}>
+                                            <button type="button" class="btn-action btn-primary" onclick={handleApproveOrganizationAndRep} disabled={_isProcessing}>Approve organization and rep</button>
+                                        </template>
+                                        <button type="button" class="btn-action btn-success" onclick={handleApproveOrganization} disabled={_isProcessing}>Approve organization</button>
+                                        <template lwc:if={orgRequesterContactId}>
+                                            <button type="button" class="btn-action btn-contact-grid" data-contact-id={orgRequesterContactId} onclick={handleContactPerson}>Contact requester</button>
+                                        </template>
+                                        <button type="button" class="btn-action btn-danger" onclick={handleRejectOrganization} disabled={_isProcessing}>Reject organization</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ===========================================
+                         4. SUPPORT CONCERN
+                         =========================================== -->
+                    <template lwc:if={isSupportConcernPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">What Happened</div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Active Relationship</span>
+                                    <span class="detail-value">{relationshipType}</span>
+                                </div>
+                                <div class="concern-summary-box">
+                                    <div class="concern-label">Concern Summary</div>
+                                    <p class="concern-text">{concernSummary}</p>
+                                </div>
+                                <template lwc:if={hasRecentActivity}>
+                                    <div class="recent-activity">
+                                        <div class="detail-label">Recent activity</div>
+                                        <template for:each={helperRecentActivity} for:item="item">
+                                            <div key={item.id} class="activity-item">
+                                                <span class="activity-type">{item.type}</span>
+                                                <span class="activity-summary">{item.summary}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your Decision</div>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions">
+                                        <button type="button" class="btn-action btn-primary" onclick={handleNoAction} disabled={_isProcessing}>No Action Needed</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class={whosInvolvedClass}>
+                            <div class="section-label">Who's Involved</div>
+                            <div class="people-grid">
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={helperPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Helper</span>
+                                            <span class="person-name">{helperName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={helperContactId} onclick={handleContactPerson}>Contact Helper</button>
+                                    </div>
+                                </div>
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={subjectPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Subject</span>
+                                            <span class="person-name">{subjectName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={subjectContactId} onclick={handleContactPerson}>Contact Subject</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template lwc:if={hasSubjectSnapshot}>
+                            <div class="history-card history-subject">
+                                <button type="button" class="history-card-header" onclick={toggleSubjectHistory}
+                                        aria-expanded={subjectAriaExpanded} aria-controls="subject-body-sc">
+                                    <span class="history-card-title">Subject History</span>
+                                    <lightning-icon icon-name={subjectChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isSubjectExpanded}>
+                                    <div id="subject-body-sc" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{subjectHistoryName}</span>
+                                                <template lwc:if={subjectHistoryPronouns}>
+                                                    <span class="person-meta">{subjectHistoryPronouns}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectReportCount}</span><span class="stat-label-inline">Reports</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectCheckInCount}</span><span class="stat-label-inline">Check-ins</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectConcernCount}</span><span class="stat-label-inline">Concerns</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectBlockCount}</span><span class="stat-label-inline">Blocks</span></div>
+                                        </div>
+                                        <template lwc:if={hasSubjectRecentCases}>
+                                            <div class="recent-cases-title">Recent history</div>
+                                            <div class="recent-cases-list">
+                                                <template for:each={subjectRecentCases} for:item="item">
+                                                    <div key={item.id} class="recent-case-item">
+                                                        <span class="recent-case-date">{item.dateFormatted}</span>
+                                                        <span class="recent-case-summary">{item.summary}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={noSubjectHistory}>
+                                            <p class="no-history-text">No prior moderation history.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={askForHelpClass}>
+                            <div class="ask-for-help-section">
+                                <div class="section-label">Ask for Help</div>
+                                <div class="section-helper">When local facilitation hasn't resolved the situation.</div>
+                                <div class="log-action-row">
+                                    <button type="button" class="btn-action btn-escalation-3" onclick={handleEscalate} disabled={escalateDisabled}>Escalate to Admin</button>
+                                    <template lwc:if={escalateStatusText}>
+                                        <span class="action-status action-status-escalated">{escalateStatusText}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </template>
+
+                    <!-- ===========================================
+                         5. ESCALATED TO ADMIN
+                         =========================================== -->
+                    <template lwc:if={isEscalationPage}>
+                        <div class="page-section">
+                            <div class="section-label">Escalation Details</div>
+                            <template lwc:if={originalCategory}>
+                                <span class="content-type-badge">{originalCategory}</span>
+                            </template>
+                            <p class="escalation-summary">{escalationSummary}</p>
+                            <div class="escalation-reason-box">
+                                <div class="concern-label">Escalation Reason</div>
+                                <p class="concern-text">{escalationReason}</p>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Escalated to</span>
+                                <span class="detail-value">{escalatedToName}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Escalated on</span>
+                                <span class="detail-value">{escalatedDate}</span>
+                            </div>
+                            <template lwc:if={isResolved}>
+                                <div class="resolution-box">
+                                    <span class="resolution-badge">Resolved</span>
+                                    <span class="resolution-date">{resolutionDate}</span>
+                                    <p class="resolution-notes">{resolutionNotes}</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="page-section">
+                            <div class="section-label">Actions</div>
+                            <div class="escalation-actions">
+                                <button type="button" class="btn-action btn-primary" onclick={handleFollowUp}>Follow Up</button>
+                                <button type="button" class="btn-action btn-secondary" onclick={handleReopen} disabled={_isProcessing}>Reopen</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ===========================================
+                         6. BULK BUY FOLLOW-UP
+                         =========================================== -->
+                    <template lwc:if={isBulkBuyPage}>
+                        <div class="top-row">
+                            <div class={whatHappenedClass}>
+                                <div class="section-label">What Happened</div>
+                                <div class="bulk-buy-header">
+                                    <span class="bulk-buy-name">{bulkBuyName}</span>
+                                    <button type="button" class="btn-link" onclick={handleViewBulkBuy}>View Buy</button>
+                                </div>
+                                <div class="reason-subtype-badge">{reasonSubtypeLabel}</div>
+                                <template lwc:if={hasReportMessage}>
+                                    <div class="report-message-box">
+                                        <p class="report-message-text">{reportMessage}</p>
+                                    </div>
+                                </template>
+                                <template lwc:if={isBulkBuyBlocked}>
+                                    <div class="alert-banner alert-danger">Reporter also blocked this person</div>
+                                </template>
+                            </div>
+                            <div class={decisionClass}>
+                                <div class="section-label">Your Decision</div>
+                                <template lwc:if={showTaskActions}>
+                                    <div class="decision-actions">
+                                        <button type="button" class="btn-action btn-danger" onclick={handleConfirmFlag} disabled={_isProcessing}>Confirm Flag</button>
+                                        <button type="button" class="btn-action btn-success" onclick={handleClearFlag} disabled={_isProcessing}>Clear Flag</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class={whosInvolvedClass}>
+                            <div class="section-label">Who's Involved</div>
+                            <div class="people-grid people-grid-three">
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={reportedUserPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Reported User</span>
+                                            <span class="person-name">{reportedUserName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={reportedUserId} onclick={handleContactPerson}>Contact</button>
+                                    </div>
+                                </div>
+                                <div class="person-card">
+                                    <div class="person-row-1">
+                                        <img src={reporterPhoto} alt="" class="person-avatar">
+                                        <div class="person-info">
+                                            <span class="person-role">Reporter</span>
+                                            <span class="person-name">{reporterName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="person-row-2">
+                                        <span class="person-meta"></span>
+                                        <button type="button" class="btn-contact" data-contact-id={reporterContactId} onclick={handleContactPerson}>Contact</button>
+                                    </div>
+                                </div>
+                                <template lwc:if={showOrganiserCard}>
+                                    <div class="person-card">
+                                        <div class="person-row-1">
+                                            <img src={organiserPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-role">Organiser</span>
+                                                <span class="person-name">{organiserName}</span>
+                                            </div>
+                                        </div>
+                                        <div class="person-row-2">
+                                            <span class="person-meta"></span>
+                                            <button type="button" class="btn-contact" data-contact-id={organiserContactId} onclick={handleContactPerson}>Contact</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <template lwc:if={hasSubjectSnapshot}>
+                            <div class="history-card history-subject">
+                                <button type="button" class="history-card-header" onclick={toggleSubjectHistory}
+                                        aria-expanded={subjectAriaExpanded} aria-controls="subject-body-bb">
+                                    <span class="history-card-title">Subject History</span>
+                                    <lightning-icon icon-name={subjectChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isSubjectExpanded}>
+                                    <div id="subject-body-bb" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info">
+                                                <span class="person-name">{subjectHistoryName}</span>
+                                                <template lwc:if={subjectHistoryPronouns}>
+                                                    <span class="person-meta">{subjectHistoryPronouns}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectReportCount}</span><span class="stat-label-inline">Reports</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectCheckInCount}</span><span class="stat-label-inline">Check-ins</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectConcernCount}</span><span class="stat-label-inline">Concerns</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{subjectBlockCount}</span><span class="stat-label-inline">Blocks</span></div>
+                                        </div>
+                                        <template lwc:if={hasSubjectRecentCases}>
+                                            <div class="recent-cases-title">Recent history</div>
+                                            <div class="recent-cases-list">
+                                                <template for:each={subjectRecentCases} for:item="item">
+                                                    <div key={item.id} class="recent-case-item">
+                                                        <span class="recent-case-date">{item.dateFormatted}</span>
+                                                        <span class="recent-case-summary">{item.summary}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={noSubjectHistory}>
+                                            <p class="no-history-text">No prior moderation history.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showReporterHistory}>
+                            <div class="history-card history-reporter">
+                                <button type="button" class="history-card-header" onclick={toggleReporterHistory}
+                                        aria-expanded={reporterAriaExpanded} aria-controls="reporter-body-bb">
+                                    <span class="history-card-title">Reporter History</span>
+                                    <lightning-icon icon-name={reporterChevronIcon} size="xx-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={isReporterExpanded}>
+                                    <div id="reporter-body-bb" class="history-card-body">
+                                        <div class="history-person">
+                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <div class="person-info"><span class="person-name">{reporterHistoryName}</span></div>
+                                        </div>
+                                        <div class="stats-grid-inline">
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{reporterLast90}</span><span class="stat-label-inline">Last 90 days</span></div>
+                                            <div class="stat-item-inline"><span class="stat-value-inline">{reporterTotal}</span><span class="stat-label-inline">All time</span></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={logResponseClass}>
+                            <div class="section-label">Log Your Response</div>
+                            <div class="section-helper">Recorded on this person's moderation history.</div>
+                            <template lwc:if={showInlineForm}>
+                                <div class="inline-form">
+                                    <div class="inline-form-title">{formTitle}</div>
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="form-note-bulk">Notes</label>
+                                        <span class={formCountClass}>{formNoteLength}/1000</span>
+                                    </div>
+                                    <textarea id="form-note-bulk" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <div class="inline-form-actions">
+                                        <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
+                                        <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="log-actions">
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-1" data-form="checkIn" onclick={handleOpenForm} disabled={checkInDisabled}>
+                                            <span class="escalation-numeral">i.</span> Log Check-In
+                                        </button>
+                                        <template lwc:if={checkInStatusText}>
+                                            <span class="action-status action-status-done">{checkInStatusText}</span>
+                                        </template>
+                                    </div>
+                                    <div class="log-action-row">
+                                        <button type="button" class="btn-action btn-escalation-2" data-form="concern" onclick={handleOpenForm} disabled={concernDisabled}>
+                                            <span class="escalation-numeral">ii.</span> Record Concern
+                                        </button>
+                                        <template lwc:if={concernStatusText}>
+                                            <span class="action-status action-status-done">{concernStatusText}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        </template>
+
+                        <template lwc:if={showTaskActions}>
+                        <div class={askForHelpClass}>
+                            <div class="ask-for-help-section">
+                                <div class="section-label">Ask for Help</div>
+                                <div class="section-helper">When local facilitation hasn't resolved the situation.</div>
+                                <div class="log-action-row">
+                                    <button type="button" class="btn-action btn-escalation-3" onclick={handleEscalate} disabled={escalateDisabled}>
+                                        <span class="escalation-numeral">iii.</span> Escalate to Admin
+                                    </button>
+                                    <template lwc:if={escalateStatusText}>
+                                        <span class="action-status action-status-escalated">{escalateStatusText}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </template>
+
+                </div>
+
+                <!-- Sidebar (Follow-Up Timeline & Evidence only) -->
+                <template lwc:if={hasSidebarContent}>
+                <div class="review-sidebar">
+                    <template lwc:if={showFollowUpTimelineSidebar}>
+                        <div class="sidebar-card">
+                            <div class="sidebar-card-header">
+                                <img src={timelineIconUrl} alt="" class="sidebar-card-icon">
+                                <div class="sidebar-card-title">Follow-Up Timeline</div>
+                            </div>
+                            <div class="timeline-list">
+                                <template for:each={followUpTimeline} for:item="entry">
+                                    <div key={entry.date} class="timeline-entry">
+                                        <span class="timeline-status">{entry.status}</span>
+                                        <span class="timeline-date">{entry.date}</span>
+                                        <template lwc:if={entry.notes}>
+                                            <p class="timeline-notes">{entry.notes}</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:if={showEvidenceTimeline}>
+                        <div class="sidebar-card">
+                            <div class="sidebar-card-header">
+                                <img src={evidenceIconUrl} alt="" class="sidebar-card-icon">
+                                <div class="sidebar-card-title">Evidence &amp; Reports</div>
+                            </div>
+                            <c-fimby-moderator-evidence-timeline
+                                evidence-items={_panelData.evidenceItems}>
+                            </c-fimby-moderator-evidence-timeline>
+                        </div>
+                    </template>
+                </div>
+                </template>
+            </div>
+
+            <!-- Mobile Sticky Decision Bar -->
+            <template lwc:if={showTaskActions}>
+            <div class="sticky-decision-bar">
+                <template lwc:if={isContentPage}>
+                    <button type="button" class="btn-action btn-success" onclick={handleRepublish} disabled={_isProcessing}>Republish</button>
+                    <button type="button" class="btn-action btn-danger" onclick={handleKeepHidden} disabled={_isProcessing}>Keep Hidden</button>
+                </template>
+                <template lwc:if={isBlockPage}>
+                    <button type="button" class="btn-action btn-primary" onclick={handleMarkReviewed} disabled={_isProcessing}>Mark Reviewed</button>
+                </template>
+                <template lwc:if={isSupportApprovalPage}>
+                    <button type="button" class="btn-action btn-success" onclick={handleApprove} disabled={supportRepApproveDisabled}>Approve</button>
+                    <button type="button" class="btn-action btn-danger" onclick={handleDecline} disabled={_isProcessing}>Decline</button>
+                </template>
+                <template lwc:if={isSupportConcernPage}>
+                    <button type="button" class="btn-action btn-primary" onclick={handleNoAction} disabled={_isProcessing}>No Action Needed</button>
+                </template>
+                <template lwc:if={isBulkBuyPage}>
+                    <button type="button" class="btn-action btn-danger" onclick={handleConfirmFlag} disabled={_isProcessing}>Confirm Flag</button>
+                    <button type="button" class="btn-action btn-success" onclick={handleClearFlag} disabled={_isProcessing}>Clear Flag</button>
+                </template>
+                <template lwc:if={isOrganizationApprovalPage}>
+                    <button type="button" class="btn-action btn-success" onclick={handleApproveOrganization} disabled={_isProcessing}>Approve org</button>
+                    <template lwc:if={orgHasPendingRep}>
+                        <button type="button" class="btn-action btn-primary" onclick={handleApproveOrganizationAndRep} disabled={_isProcessing}>Approve both</button>
+                    </template>
+                    <button type="button" class="btn-action btn-danger" onclick={handleRejectOrganization} disabled={_isProcessing}>Reject</button>
+                </template>
+            </div>
+            </template>
+        </template>
+
+        <template lwc:if={showLightbox}>
+            <c-fimby-lightbox
+                images={lightboxImages}
+                start-index={lightboxStartIndex}
+                onclose={handleLightboxClose}>
+            </c-fimby-lightbox>
+        </template>
+    </div>
+</template>

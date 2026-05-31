@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tos_Reacceptance_Required__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Login Flow sets this to true at login when Tos_Version_Accepted__c does not match FIMBY_App_Settings.Default.Tos_Current_Version__c (or acceptance pre-dates the current Tos_Effective_Date__c). The fimbyUniversalHeader LWC reads this from the existing acting-as DTO and shows the TOS reacceptance modal. FimbyTosController.acceptTos clears it on successful acceptance. Set high-frequency on every login, so trackHistory is false.</description>
+    <externalId>false</externalId>
+    <label>TOS Reacceptance Required</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

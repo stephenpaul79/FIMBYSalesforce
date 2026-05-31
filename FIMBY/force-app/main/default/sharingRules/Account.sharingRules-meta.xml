@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingGuestRules>
+        <fullName>Qucik_Signup_Guest_User</fullName>
+        <accessLevel>Read</accessLevel>
+        <label>Qucik Signup Guest User</label>
+        <sharedTo>
+            <guestUser>FIMBY_Family_In_My_Backyard_2_0</guestUser>
+        </sharedTo>
+        <criteriaItems>
+            <field>Name</field>
+            <operation>equals</operation>
+            <value>Quick Signups</value>
+        </criteriaItems>
+        <includeHVUOwnedRecords>false</includeHVUOwnedRecords>
+    </sharingGuestRules>
+</SharingRules>

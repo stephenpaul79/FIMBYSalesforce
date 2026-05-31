@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Urgent__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Flags a Need (Ask) as urgent. Urgent asks get Adjacent visibility scope so they reach neighbouring cells.</description>
+    <externalId>false</externalId>
+    <label>Is Urgent</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

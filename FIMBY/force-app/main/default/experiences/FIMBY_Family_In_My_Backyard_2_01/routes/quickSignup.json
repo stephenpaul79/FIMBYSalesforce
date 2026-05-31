@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "b66e7ac2-aa35-4526-87e7-25b7a2a1ac2b",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Quick_Signup__c",
+  "id" : "5f7779d7-1b01-4ede-8d83-86f3bdc997b1",
+  "label" : "Quick Signup",
+  "pageAccess" : "Public",
+  "routeType" : "custom-quick-signup",
+  "type" : "route",
+  "urlPrefix" : "quick-signup"
+}

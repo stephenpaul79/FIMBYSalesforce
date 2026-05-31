@@ -1,0 +1,276 @@
+<template>
+    <div class={cardClasses} style={cardStyle} onclick={handleCardClick}>
+        <!-- Header (hidden in compact mode) -->
+        <div lwc:if={showDefaultHeader} class="card-header">
+            <div class="header-left">
+                <!-- User avatar -->
+                <div lwc:if={showAvatar} class={avatarWrapperClass}
+                     onclick={handleAvatarClick} onkeydown={handleAvatarKeydown}>
+                    <img lwc:if={avatarUrl} src={avatarUrl} alt={avatarAlt} class="avatar-image" onerror={handleImageError}>
+                    <div lwc:else class="avatar-placeholder">
+                        <lightning-icon icon-name="utility:user" size="small"></lightning-icon>
+                    </div>
+                </div>
+
+                <!-- User info -->
+                <div class="user-info">
+                    <div lwc:if={userName} class="user-name">{userName}</div>
+                    <div lwc:if={timestamp} class="timestamp">{formattedTimestamp}</div>
+                </div>
+            </div>
+
+            <!-- Header actions + badge slot (badge in flow so name flexes with variable pill width) -->
+            <div class="header-right">
+                <slot name="badge"></slot>
+                <div lwc:if={showMenu} class="card-menu-wrap">
+                    <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
+                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                    </button>
+                    <template lwc:if={showMenuDropdown}>
+                        <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+                        <div class="card-menu-dropdown" role="menu">
+                            <button type="button" class="card-menu-item" role="menuitem" onclick={handleReportClick}>
+                                <img src={reportIconUrl} alt="" class="card-menu-item-icon">
+                                Report
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card body: wraps media + content for horizontal layout on desktop -->
+        <div class="card-body">
+            <!-- Image Grid (replaces legacy single-image media section) -->
+            <template lwc:if={showImageGrid}>
+                <div class="card-media">
+                    <c-fimby-image-grid
+                        images={normalizedImages}
+                        onimageclick={handleImageGridClick}>
+                    </c-fimby-image-grid>
+                </div>
+            </template>
+
+            <!-- Content wrapper -->
+            <div class="card-content-wrapper">
+                <!-- Content -->
+                <div class="card-content">
+                    <!-- List layout: owner + CTA floated top-right, before title so float works -->
+                    <template lwc:if={showListOwnerRow}>
+                        <div class="list-owner-row">
+                            <template lwc:if={showListCardMenu}>
+                                <div class="card-menu-wrap list-card-menu">
+                                    <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
+                                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                                    </button>
+                                    <template lwc:if={showMenuDropdown}>
+                                        <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+                                        <div class="card-menu-dropdown" role="menu">
+                                            <button type="button" class="card-menu-item" role="menuitem" onclick={handleReportClick}>
+                                                <img src={reportIconUrl} alt="" class="card-menu-item-icon">
+                                                Report
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <div class="owner-identity">
+                                <template lwc:if={avatarUrl}>
+                                    <img src={avatarUrl} alt="" class="compact-avatar">
+                                </template>
+                                <span lwc:if={userName} class="compact-owner-name">{userName}</span>
+                            </div>
+                            <template lwc:if={responseLabel}>
+                                <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                                    <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
+                                    <span>{responseLabel}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Compact grid: title + kebab on same row -->
+                    <template lwc:if={showCompactTitleRow}>
+                        <div class="compact-title-row">
+                            <div class="card-title">{displayTitle}</div>
+                            <template lwc:if={showCompactCardMenu}>
+                                <div class="card-menu-wrap compact-card-menu">
+                                    <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
+                                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                                    </button>
+                                    <template lwc:if={showMenuDropdown}>
+                                        <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+                                        <div class="card-menu-dropdown" role="menu">
+                                            <button type="button" class="card-menu-item" role="menuitem" onclick={handleReportClick}>
+                                                <img src={reportIconUrl} alt="" class="card-menu-item-icon">
+                                                Report
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:elseif={title}>
+                        <div class="card-title">{displayTitle}</div>
+                    </template>
+
+                    <!-- Compact/list badge + status row -->
+                    <template lwc:if={showCompactBadgeRow}>
+                        <div class="compact-badge-row">
+                            <template lwc:if={badgeLabel}>
+                                <div class="compact-badge" style={badgeStyle}>
+                                    <img lwc:if={badgeIconUrl} src={badgeIconUrl} alt="" class="compact-badge-icon">
+                                    <span>{badgeLabel}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={hasAllocationPills}>
+                                <template for:each={allocationPills} for:item="pill">
+                                    <span key={pill.key} class={pill.cssClass}>{pill.label}</span>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Event metadata (date/time + location) -->
+                    <template lwc:if={hasEventMeta}>
+                        <div class="card-event-meta">
+                            <template lwc:if={eventDateTime}>
+                                <div class="event-meta-line event-datetime">
+                                    <span class="event-meta-icon" aria-hidden="true">📅</span>
+                                    <span>{eventDateTime}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={eventLocation}>
+                                <div class="event-meta-line event-location">
+                                    <span class="event-meta-icon" aria-hidden="true">📍</span>
+                                    <span class="event-location-text">{eventLocation}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={hasEventLink}>
+                                <div class="event-meta-line event-link-line">
+                                    <span class="event-meta-icon" aria-hidden="true">🔗</span>
+                                    <a href={eventLinkUrl} target="_blank" rel="noopener noreferrer"
+                                       class="event-link-text" onclick={handleEventLinkClick}>Event Details &#8599;</a>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Description -->
+                    <div lwc:if={description} class={descriptionClass} style={descriptionStyle}>
+                        <lightning-formatted-rich-text value={description}></lightning-formatted-rich-text>
+                    </div>
+                    <button lwc:if={showReadMore} class="read-more-btn" onclick={handleReadMoreClick}>
+                        {readMoreLabel}
+                    </button>
+
+                    <!-- Tags/Categories -->
+                    <div lwc:if={showTags} class="card-tags">
+                        <template for:each={tags} for:item="tag">
+                            <span key={tag} class="tag">{tag}</span>
+                        </template>
+                    </div>
+
+                    <!-- Custom content slot -->
+                    <div lwc:if={showCustomContent} class="custom-content">
+                        <slot name="content"></slot>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div lwc:if={showActions} class="card-actions">
+                    <div class="action-buttons">
+                        <!-- Like/Heart -->
+                        <button lwc:if={showLike} type="button" class="action-button" aria-label="Like" onclick={handleLikeClick}>
+                            <lightning-icon
+                                icon-name={likeIcon}
+                                size="small"
+                                variant={likeVariant}>
+                            </lightning-icon>
+                            <span lwc:if={likeCount} class="action-count">{likeCount}</span>
+                        </button>
+
+                        <!-- Comment -->
+                        <button lwc:if={showComment} type="button" class="action-button" aria-label="Comment" onclick={handleCommentClick}>
+                            <lightning-icon
+                                icon-name="utility:comments"
+                                size="small"
+                                variant="neutral">
+                            </lightning-icon>
+                        </button>
+
+                        <!-- Share -->
+                        <button lwc:if={showShare} type="button" class="action-button" aria-label="Share" onclick={handleShareClick}>
+                            <lightning-icon
+                                icon-name="utility:share_post"
+                                size="small"
+                                variant="neutral">
+                            </lightning-icon>
+                        </button>
+
+                        <!-- Custom action -->
+                        <button lwc:if={showCustomAction} type="button" class="action-button custom-action" aria-label={customActionLabel} onclick={handleCustomAction}>
+                            <template lwc:if={customActionIconUrl}>
+                                <img src={customActionIconUrl} alt="" class="custom-action-icon">
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon
+                                    icon-name={customActionIcon}
+                                    size="small"
+                                    variant={customActionVariant}>
+                                </lightning-icon>
+                            </template>
+                            <span lwc:if={customActionLabel} class="action-label">{customActionLabel}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Footer Bar (full-size pill + engagement count) -->
+        <template lwc:if={showDefaultFooter}>
+            <div class="card-footer-bar">
+                <template lwc:if={hasAllocationPills}>
+                    <div class="footer-alloc-pills">
+                        <template for:each={allocationPills} for:item="pill">
+                            <span key={pill.key} class={pill.cssClass}>{pill.label}</span>
+                        </template>
+                    </div>
+                </template>
+                <div lwc:if={showEngagement} class="footer-engagement">
+                    <span class="engagement-text">{engagementText}</span>
+                </div>
+                <div class="footer-response">
+                    <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                        <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="response-pill-icon">
+                        <span>{responseLabel}</span>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Compact Footer: owner + CTA (compact layout only) -->
+        <template lwc:if={showCompactFooter}>
+            <div class="card-footer-compact">
+                <div class="compact-owner">
+                    <template lwc:if={avatarUrl}>
+                        <img src={avatarUrl} alt="" class="compact-avatar">
+                    </template>
+                    <span lwc:if={userName} class="compact-owner-name">{userName}</span>
+                </div>
+                <template lwc:if={responseLabel}>
+                    <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                        <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
+                        <span>{responseLabel}</span>
+                    </button>
+                </template>
+            </div>
+        </template>
+
+        <!-- Legacy Footer Slot -->
+        <div lwc:if={showFooter} class="card-footer">
+            <slot name="footer"></slot>
+        </div>
+    </div>
+</template>

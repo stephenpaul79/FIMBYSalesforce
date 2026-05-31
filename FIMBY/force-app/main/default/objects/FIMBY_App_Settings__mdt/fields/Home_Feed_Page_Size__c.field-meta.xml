@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Home_Feed_Page_Size__c</fullName>
+    <defaultValue>15</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Home Feed Page Size</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Number of items loaded per page on the home feed. Lower values load faster. Applies to stories, needs/offers, and library items in the unified feed.</inlineHelpText>
+</CustomField>

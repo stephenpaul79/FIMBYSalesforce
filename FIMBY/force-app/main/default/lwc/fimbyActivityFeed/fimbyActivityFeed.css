@@ -1,0 +1,54 @@
+.fimby-activity-feed {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+.activity-scroll {
+    flex: 1;
+    overflow: hidden;
+}
+
+.activity-container {
+    padding: 16px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-sm);
+    margin-bottom: 8px;
+}
+
+.activity-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-text {
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    margin-bottom: 4px;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+@media (min-width: 1024px) {
+    .fimby-activity-feed {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Default_Grace_Window_Days__c</fullName>
+    <description>Default number of days a neighbour's in-app delete request waits before the data scrub runs. User.IsActive is flipped immediately on tap; this controls when the cleanup batch picks them up. Default 30 (industry standard: X / Snapchat / TikTok).</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Default Grace Window Days</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

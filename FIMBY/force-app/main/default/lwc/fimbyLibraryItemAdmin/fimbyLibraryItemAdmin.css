@@ -1,0 +1,399 @@
+:host {
+    display: block;
+}
+
+.admin-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.loading-row {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+}
+
+/* ── Sections ───────────────────────────────────────────────────── */
+.admin-section {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    padding: 16px;
+    margin: 8px 0 0;
+    border-radius: var(--fimby-radius-md, 12px);
+    box-shadow: var(--fimby-shadow-card, 0 1px 3px rgba(0,0,0,0.06));
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #4A3526);
+    margin: 0;
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* ── Collapsible Toggle ─────────────────────────────────────────── */
+.section-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+}
+
+.section-chevron {
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary, #8B7355);
+    transition: transform 0.2s ease;
+}
+.section-chevron.expanded {
+    transform: rotate(180deg);
+}
+
+/* ── On Loan To Row (mirrors request-row layout) ───────────────── */
+.loan-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+}
+
+.loan-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.loan-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.loan-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.loan-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #8B7355);
+}
+
+.loan-due-date {
+    font-size: 0.8rem;
+}
+
+/* ── Status Chip ────────────────────────────────────────────────── */
+.status-chip {
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    background-color: var(--fimby-earth-slate, #5E7B92);
+    color: #fff;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ── Request / History Lists ────────────────────────────────────── */
+.request-list,
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+
+.request-item,
+.history-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+}
+.request-item:last-child,
+.history-item:last-child {
+    border-bottom: none;
+}
+
+/* ── Request Row: mobile card layout by default ─────────────────── */
+.request-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+}
+
+.request-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.request-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.request-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.request-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #8B7355);
+}
+
+.request-meta-text {
+    font-size: 0.8rem;
+}
+
+/* Mobile: actions stack full-width below user info */
+.request-actions,
+.loan-actions,
+.history-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+/* Desktop: inline row layout for request, loan & history rows */
+@media (min-width: 768px) {
+    .request-row,
+    .loan-row,
+    .history-row {
+        flex-direction: row;
+        align-items: center;
+        padding: 4px 0;
+        background-color: transparent;
+        border-radius: 0;
+    }
+
+    .request-user-row,
+    .loan-user-row,
+    .history-user-row {
+        flex: 1;
+    }
+
+    .request-actions,
+    .loan-actions,
+    .history-actions {
+        flex-direction: row;
+        align-items: center;
+        flex-shrink: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* ── History Row (mirrors request-row layout) ────────────────────── */
+.history-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.history-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.history-meta,
+.history-condition {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #8B7355);
+}
+
+/* ── Avatar ─────────────────────────────────────────────────────── */
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ── Action Buttons (Tier 1 — rounded rectangle) ────────────────── */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card, #FAF7F2));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #4A3526);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.action-btn:hover {
+    background-color: var(--fimby-hover-bg, #EBE6DD);
+    border-color: var(--fimby-border-strong, #CCC5BB);
+}
+.action-btn:active {
+    background-color: var(--fimby-pressed-bg, #E0D9CF);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.action-btn-primary {
+    border: none;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    color: #ffffff;
+}
+.action-btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.action-btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+}
+
+.action-btn-danger {
+    color: var(--fimby-error, #E74C3C);
+    border-color: var(--fimby-error-border, rgba(231, 76, 60, 0.30));
+}
+.action-btn-danger:hover {
+    background-color: var(--fimby-error-tint, rgba(231, 76, 60, 0.10));
+}
+
+.action-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.action-btn-sm {
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    min-height: 36px;
+}
+
+/* ── Loan-specific ─────────────────────────────────────────────── */
+
+.loan-overdue {
+    color: var(--fimby-error, #c62828);
+    font-weight: 600;
+}
+
+/* ── Status Pills ──────────────────────────────────────────────── */
+.status-pill {
+    display: inline-block;
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.status-pill-success {
+    background-color: var(--fimby-success-tint, #E8F5E9);
+    color: var(--fimby-success, #2E7D32);
+}
+
+.status-pill-warning {
+    background-color: var(--fimby-warning-tint, #FFF3E0);
+    color: var(--fimby-warning, #E65100);
+}
+
+.status-pill-danger {
+    background-color: var(--fimby-error-tint, #ffebee);
+    color: var(--fimby-error, #c62828);
+}
+
+/* ── Empty State ────────────────────────────────────────────────── */
+.empty-state {
+    margin: 6px 0 0;
+    font-size: 0.88rem;
+    color: var(--fimby-text-secondary, #8B7355);
+    font-style: italic;
+}
+
+/* ── CTA Attention Strip tiers ───────────────────────────────── */
+.cta-strip-urgent {
+    box-shadow: var(--fimby-shadow-card, 0 1px 3px rgba(0,0,0,0.06)),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent-urgent, #E74C3C);
+}
+.cta-strip-strong {
+    background-color: var(--fimby-cta-strip-bg, #eaf6fa);
+    box-shadow: var(--fimby-shadow-card, 0 1px 3px rgba(0,0,0,0.06)),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+}
+.cta-strip-subtle {
+    box-shadow: var(--fimby-shadow-card, 0 1px 3px rgba(0,0,0,0.06)),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+}
+
+/* ── Focus ──────────────────────────────────────────────────────── */
+.section-toggle:focus-visible,
+.action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .section-chevron,
+    .action-btn {
+        transition: none;
+    }
+}

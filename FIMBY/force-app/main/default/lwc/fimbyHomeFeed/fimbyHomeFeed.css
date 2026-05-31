@@ -1,0 +1,796 @@
+/* FIMBY Home Feed — Cascading-filter unified feed */
+:host {
+    display: block;
+    width: 100%;
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-home-feed {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fimby-surface-page);
+    position: relative;
+}
+
+.home-scroll-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ================================================================
+   Greeting Section
+   ================================================================ */
+.greeting-section {
+    padding: 20px 16px 12px;
+}
+
+.greeting-text {
+    font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--fimby-earth-ochre, #A38045);
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.greeting-subtext {
+    font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--fimby-earth-terracotta, #B07248);
+    margin: 6px 0 0;
+    line-height: 1.4;
+}
+
+.greeting-subtext::before {
+    content: '— ';
+    opacity: 0.5;
+}
+
+.welcome-back-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background-color: var(--fimby-selected-bg);
+    border: 1px solid var(--fimby-brand-teal);
+    border-radius: var(--fimby-radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+
+.welcome-back-text {
+    font-size: 13px;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+}
+
+.welcome-back-dismiss {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--fimby-text-secondary);
+}
+
+.welcome-back-dismiss:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+/* ============================================================
+   Say-hi banner (info nudge — mirrors settling-in-banner layout)
+   ============================================================ */
+
+.say-hi-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    background-color: var(--fimby-info-tint);
+    border: 1px solid var(--fimby-info-border);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+    margin: 12px 0;
+    box-sizing: border-box;
+}
+
+.say-hi-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.say-hi-content { flex: 1; }
+
+.say-hi-title {
+    margin: 0;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.say-hi-text {
+    margin: 4px 0 0;
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.say-hi-cta.btn-primary {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    padding: 10px 20px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.say-hi-cta.btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.say-hi-cta.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+@media (min-width: 768px) {
+    .say-hi-banner {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        max-width: 800px;
+        margin: 12px auto;
+    }
+    .say-hi-cta.btn-primary {
+        align-self: center;
+    }
+}
+
+/* ================================================================
+   Filter Header (always visible above scroll container)
+   ================================================================ */
+.feed-filter-header {
+    position: sticky;
+    top: var(--sticky-top, 0px);
+    z-index: 200;
+    background-color: var(--fimby-surface-page, #F0EBE3);
+    border-radius: var(--fimby-radius-md, 12px);
+    flex-shrink: 0;
+}
+
+/* Mobile: slide up to hide on scroll-down, reappear on scroll-up */
+@media (max-width: 767px) {
+    .feed-filter-header {
+        transition: transform 0.3s ease;
+    }
+    .feed-filter-header.filter-hidden {
+        transform: translateY(calc(-100% - var(--sticky-top, 0px)));
+        pointer-events: none;
+    }
+}
+
+.feed-filter-header > :first-child {
+    border-top-left-radius: var(--fimby-radius-md);
+    border-top-right-radius: var(--fimby-radius-md);
+}
+
+.feed-filter-header > :last-child {
+    border-bottom-left-radius: var(--fimby-radius-md);
+    border-bottom-right-radius: var(--fimby-radius-md);
+}
+
+/* ================================================================
+   Level 1 Filter Pills
+   ================================================================ */
+.feed-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    padding: 12px 16px;
+}
+
+/* ================================================================
+   Desktop Refresh Button (hidden on mobile — pull-to-refresh)
+   ================================================================ */
+.refresh-button {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: var(--fimby-radius-xl, 20px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.refresh-button:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+    background-color: var(--fimby-selected-bg);
+}
+
+.refresh-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.refresh-button.refreshing .refresh-icon {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@media (min-width: 768px) {
+    .refresh-button { display: flex; }
+}
+
+.filters-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.filters-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: var(--fimby-radius-xl, 20px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.filter-button:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+    background-color: var(--fimby-selected-bg);
+}
+
+.filter-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.filter-button.active {
+    background-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-brand-teal);
+    color: #ffffff;
+}
+
+/* ================================================================
+   Level 2 Sub-filter Pills
+   ================================================================ */
+.feed-sub-filters {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    padding: 8px 16px;
+}
+
+.filter-button.sub-filter {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-color: var(--fimby-border-default);
+}
+
+.filter-button.sub-filter.active {
+    background-color: var(--fimby-text-primary);
+    border-color: var(--fimby-text-primary);
+    color: #ffffff;
+}
+
+.filter-button.sub-filter:hover {
+    border-color: var(--fimby-text-secondary);
+    color: var(--fimby-text-primary);
+    background-color: var(--fimby-hover-bg);
+}
+
+.filter-button.sub-filter.active:hover {
+    background-color: var(--fimby-text-primary);
+    border-color: var(--fimby-text-primary);
+    color: #ffffff;
+}
+
+/* ================================================================
+   Feed section
+   ================================================================ */
+.feed-section {
+    padding: 16px;
+}
+
+/* Card wrapper with type badge — reserve header space so long names don't collide with badge */
+.feed-card-wrapper {
+    position: relative;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.feed-card-wrapper:hover {
+    transform: translateY(-2px);
+}
+
+.feed-card-wrapper:last-child {
+    margin-bottom: 0;
+}
+
+/* ================================================================
+   Card Type Badges
+   ================================================================ */
+/* Badge base styles shared by absolute-positioned (library) and in-flow (slotted) badges */
+.card-type-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    white-space: nowrap;
+    flex-shrink: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Slotted badge: in-flow inside card header — position handled by card's flex layout */
+.card-type-badge[slot="badge"] {
+    position: static;
+}
+
+/* Absolute badge: library cards still use old absolute positioning */
+.library-announcement .card-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+}
+
+.badge-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+/* Story type badges */
+.story-badge       { background-color: var(--fimby-badge-story,     rgba(163, 128,  69, 0.90)); color: #ffffff; }
+.godstory-badge    { background-color: var(--fimby-badge-god-story,  rgba(163, 128,  69, 0.90)); color: #ffffff; }
+.thankyou-badge    { background-color: var(--fimby-badge-thank-you,  rgba(176, 114,  72, 0.90)); color: #ffffff; }
+.lament-badge      { background-color: var(--fimby-badge-lament,     rgba( 94, 123, 146, 0.85)); color: #ffffff; }
+.prayer-badge      { background-color: var(--fimby-badge-prayer,     rgba(126, 116, 149, 0.90)); color: #ffffff; }
+.bio-badge         { background-color: var(--fimby-badge-bio,        rgba(107, 125,  84, 0.90)); color: #ffffff; }
+.neighbourhood-badge { background-color: var(--fimby-badge-neighbourhood, rgba(175, 130, 125, 0.90)); color: #ffffff; }
+
+/* Ask & Offer badge */
+.ask-offer-badge {
+    background-color: var(--fimby-badge-ask-offer, rgba(91, 135, 96, 0.90));
+    color: #ffffff;
+}
+
+/* Urgent exclamation icons flanking the Ask pill text */
+.badge-icon-urgent {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Event badge */
+.event-badge {
+    background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.90));
+    color: #ffffff;
+}
+
+.community-event-badge {
+    background-color: var(--fimby-badge-community-event, rgba(113, 90, 158, 0.90));
+    color: #ffffff;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+}
+
+/* Bulk Buy badge */
+.bulk-buy-badge {
+    background-color: var(--fimby-badge-bulk-buy, rgba(168, 132, 78, 0.90));
+    color: #ffffff;
+}
+
+/* Library badge */
+.library-badge {
+    background-color: var(--fimby-badge-library, rgba(141, 123, 106, 0.90));
+    color: #ffffff;
+}
+
+/* ================================================================
+   Library "Just Listed" Announcement Card
+   ================================================================ */
+.library-just-listed-card {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border: 1px solid var(--fimby-divider-default, rgba(38, 26, 17, 0.10));
+    border-radius: var(--fimby-radius-md, 12px);
+    border-left: 3px solid var(--fimby-badge-library, rgba(141, 123, 106, 0.90));
+    overflow: hidden;
+}
+
+/* --- Header: avatar + announcement text --- */
+.library-listed-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+}
+
+/*
+ * Library type badge is position:absolute (top-right of .library-announcement).
+ * Reserve width so copy wraps in the channel between avatar and pill — same inset as badge (12px) + pill + gap.
+ */
+.library-announcement .library-listed-header {
+    padding-right: calc(12px + 7rem + 16px);
+}
+
+.library-listed-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.library-card-menu {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    margin-left: 8px;
+    border: none;
+    border-radius: 16px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.library-card-menu:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.library-card-menu-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+.library-listed-avatar-wrap {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.library-listed-avatar-wrap.clickable-avatar {
+    cursor: pointer;
+    border-radius: var(--fimby-radius-full, 50%);
+}
+
+.library-listed-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--fimby-divider-default);
+}
+
+.library-listed-text {
+    display: block;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+    overflow-wrap: break-word;
+}
+
+.library-listed-text strong {
+    color: var(--fimby-text-strong);
+}
+
+.library-listed-meta {
+    display: block;
+    font-size: 12px;
+    color: var(--fimby-text-muted);
+    margin-top: 2px;
+}
+
+/* --- Body: wraps media + content for layout flexibility --- */
+.library-listed-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.library-listed-media {
+    width: 100%;
+    background-color: var(--fimby-surface-page);
+}
+
+.library-listed-thumb {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    display: block;
+}
+
+.library-listed-content {
+    padding: 12px 16px;
+    display: none;
+}
+
+.library-listed-item-name {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.library-listed-item-category {
+    display: block;
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+}
+
+/* --- Footer: borrow/view pill --- */
+.library-listed-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    border-top: 1px solid var(--fimby-divider-subtle);
+}
+
+@media (max-width: 480px) {
+    .library-listed-footer {
+        justify-content: center;
+        padding: 12px 16px;
+    }
+}
+
+.library-borrow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    color: #ffffff;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.library-borrow-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.library-borrow-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.library-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #4A3526);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.library-view-btn:hover {
+    background-color: var(--fimby-hover-bg, #EBE6DD);
+    border-color: var(--fimby-border-strong, #CCC5BB);
+}
+
+.library-view-btn:active {
+    background-color: var(--fimby-pressed-bg, #E0D9CF);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.borrow-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Button reset for semantic feed-card-wrapper buttons */
+button.feed-card-wrapper {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    width: 100%;
+    display: block;
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+@media (max-width: 320px) {
+    .feed-section { padding: 12px; }
+    .feed-card-wrapper { margin-bottom: 12px; }
+    .feed-filters { padding: 10px 12px; }
+    .feed-sub-filters { padding: 6px 12px; }
+    .filter-button { padding: 6px 12px; font-size: 0.8rem; }
+    .feed-filter-header { border-radius: 0; }
+    .feed-filter-header > :first-child,
+    .feed-filter-header > :last-child { border-radius: 0; }
+
+    .library-listed-header { padding: 10px 12px; }
+    .library-listed-footer { padding: 6px 12px; }
+    .library-listed-text { font-size: 13px; }
+    .library-borrow-btn { padding: 6px 12px; font-size: 0.8rem; }
+}
+
+@media (max-width: 480px) {
+    .card-type-badge { padding: 3px 8px; font-size: 0.65rem; }
+
+    .library-announcement .library-listed-header {
+        padding-right: calc(12px + 5.75rem + 12px);
+    }
+}
+
+@media (min-width: 768px) {
+    .greeting-section,
+    .feed-filter-header,
+    .feed-section { width: 100%; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
+    .feed-section { padding: 24px 0; }
+    .feed-card-wrapper { margin-bottom: 20px; }
+
+    .library-listed-header { padding: 14px 20px; }
+    .library-listed-footer { padding: 10px 20px; }
+
+    /* Desktop horizontal layout when the library item has an image */
+    .library-has-image .library-listed-body {
+        flex-direction: row;
+    }
+
+    .library-has-image .library-listed-media {
+        width: 45%;
+        max-width: 320px;
+        flex-shrink: 0;
+        align-self: stretch;
+        display: flex;
+    }
+
+    .library-has-image .library-listed-thumb {
+        max-height: none;
+        height: 100%;
+        min-height: 140px;
+    }
+
+    .library-has-image .library-listed-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+        padding: 16px 20px;
+    }
+
+    .library-has-image .library-listed-item-name {
+        font-size: 18px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .greeting-section,
+    .feed-filter-header,
+    .feed-section { max-width: 800px; }
+}
+
+/* ================================================================
+   Animation
+   ================================================================ */
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.feed-card-wrapper:nth-child(1) { animation-delay: 0ms; }
+.feed-card-wrapper:nth-child(2) { animation-delay: 50ms; }
+.feed-card-wrapper:nth-child(3) { animation-delay: 100ms; }
+.feed-card-wrapper:nth-child(4) { animation-delay: 150ms; }
+.feed-card-wrapper:nth-child(5) { animation-delay: 200ms; }
+
+/* Keyboard focus visibility */
+.filter-button:focus-visible,
+.feed-card-wrapper:focus-visible,
+.library-borrow-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filter-button,
+    .feed-card-wrapper,
+    .library-borrow-btn,
+    .feed-filter-header,
+    .refresh-button,
+    .refresh-icon {
+        transition: none !important;
+        animation: none !important;
+    }
+}

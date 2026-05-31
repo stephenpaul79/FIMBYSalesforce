@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Min_Active_Members_Per_Cell__c</fullName>
+    <defaultValue>15</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Min Active Members Per Cell</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Minimum active members for viable child cell</inlineHelpText>
+</CustomField>

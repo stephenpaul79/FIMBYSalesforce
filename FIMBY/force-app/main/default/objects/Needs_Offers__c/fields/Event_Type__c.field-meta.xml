@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Event_Type__c</fullName>
+    <description>Drives all event-type-specific behavior: form fields, CTA labels, capacity logic, response model, and feed rendering.</description>
+    <inlineHelpText>Gathering — A smaller event you're personally hosting. Open Event — A larger or more public event you're hosting. Community Event — An event someone else is hosting that you want neighbours to know about.</inlineHelpText>
+    <label>Event Type</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Gathering</fullName>
+                <default>true</default>
+                <label>Gathering</label>
+            </value>
+            <value>
+                <fullName>Open_Event</fullName>
+                <default>false</default>
+                <label>Open Event</label>
+            </value>
+            <value>
+                <fullName>Community_Event</fullName>
+                <default>false</default>
+                <label>Community Event</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

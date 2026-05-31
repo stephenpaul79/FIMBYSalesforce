@@ -1,0 +1,62 @@
+<template>
+    <div class="fimby-my-stuff-hub">
+        <div class="hub-pills">
+            <template lwc:if={_isModerator}>
+                <button type="button" class="hub-pill hub-pill-moderator" onclick={handleRowClick} data-path="/moderator-dashboard">
+                    <img src={moderatorIconUrl} alt="" class="hub-pill-icon" />
+                    <span class="hub-pill-label">Moderator Dashboard</span>
+                    <template lwc:if={_moderatorTaskCount}>
+                        <span class="hub-pill-count">{_moderatorTaskCount}</span>
+                    </template>
+                </button>
+            </template>
+            <button type="button" class="hub-pill hub-pill-contacts" onclick={handleRowClick} data-path="/my-stuff/my-contacts">
+                <img src={contactsIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Neighbours</span>
+                <template lwc:if={contactsCount}>
+                    <span class="hub-pill-count">{contactsCount}</span>
+                </template>
+            </button>
+            <button type="button" class="hub-pill hub-pill-posts" onclick={handleRowClick} data-path="/my-stuff/my-posts">
+                <img src={postsIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Posts</span>
+                <template lwc:if={postsActiveCount}>
+                    <span class="hub-pill-count hub-count-active">{postsActiveCount}</span>
+                </template>
+                <template lwc:if={postsInactiveCount}>
+                    <span class="hub-pill-count hub-count-past">{postsInactiveCount}</span>
+                </template>
+            </button>
+            <button type="button" class="hub-pill hub-pill-shared-life" onclick={handleRowClick} data-path="/my-stuff/my-shared-life">
+                <img src={sharedLifeIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Shared Life</span>
+                <template lwc:if={storiesCount}>
+                    <span class="hub-pill-count">{storiesCount}</span>
+                </template>
+            </button>
+            <button type="button" class="hub-pill hub-pill-library" onclick={handleRowClick} data-path="/my-stuff/my-library-items">
+                <img src={libraryIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Library Items</span>
+                <template lwc:if={libraryActiveCount}>
+                    <span class="hub-pill-count hub-count-active">{libraryActiveCount}</span>
+                </template>
+                <template lwc:if={libraryAvailableCount}>
+                    <span class="hub-pill-count hub-count-past">{libraryAvailableCount}</span>
+                </template>
+            </button>
+            <button type="button" class="hub-pill hub-pill-borrowing" onclick={handleRowClick} data-path="/my-stuff/my-borrowing">
+                <img src={borrowingIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Borrowing</span>
+                <template lwc:if={borrowedCount}>
+                    <span class="hub-pill-count">{borrowedCount}</span>
+                </template>
+            </button>
+        </div>
+
+        <template lwc:if={isLoading}>
+            <div class="hub-loading">
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

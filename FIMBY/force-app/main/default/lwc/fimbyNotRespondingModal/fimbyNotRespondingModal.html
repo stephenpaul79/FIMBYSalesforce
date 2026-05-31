@@ -1,0 +1,112 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div
+                class="modal-container"
+                onclick={handleModalClick}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="checkin-modal-title">
+                <header class="modal-header">
+                    <h2 id="checkin-modal-title" class="modal-title">
+                        <img src={checkinIconUrl} alt="" class="modal-title-icon">
+                        <span>Check in with {reserverName}</span>
+                    </h2>
+                    <button
+                        class="close-button"
+                        onclick={handleCancel}
+                        aria-label="Close"
+                        title="Close">
+                        <lightning-icon
+                            icon-name="utility:close"
+                            size="small"></lightning-icon>
+                    </button>
+                </header>
+
+                <div class="modal-body">
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Checking in as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
+                    <p class="context-text">
+                        This will start a private conversation with {reserverName}
+                        so you can sort things out. If this isn't resolved within
+                        48 hours, it may be recorded in their Bulk Buy History.
+                    </p>
+
+                    <div class="form-group">
+                        <span class="form-label">What happened? <span class="required">*</span></span>
+                        <div
+                            class="radio-pills"
+                            role="radiogroup"
+                            aria-label="What happened?">
+                            <template for:each={reasonOptions} for:item="opt">
+                                <label key={opt.value} class="radio-pill">
+                                    <input
+                                        type="radio"
+                                        name="reason"
+                                        value={opt.value}
+                                        checked={opt.isSelected}
+                                        onchange={handleReasonChange}
+                                        disabled={isSubmitting}
+                                        aria-required="true">
+                                    <span class="pill-label">{opt.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="field-label-row">
+                            <label for="checkin-message" class="form-label"
+                                >Let them know what's going on
+                                <span class="required">*</span></label>
+                            <span class={messageCountClass}>{messageLength}/5000</span>
+                        </div>
+                        <textarea
+                            id="checkin-message"
+                            class="form-textarea"
+                            placeholder="Write a message to start the conversation..."
+                            value={message}
+                            onchange={handleMessageChange}
+                            oninput={handleMessageChange}
+                            maxlength="5000"
+                            required
+                            disabled={isSubmitting}
+                            aria-required="true"></textarea>
+                    </div>
+
+                    <template lwc:if={errorMessage}>
+                        <div class="error-message" role="alert">{errorMessage}</div>
+                    </template>
+                </div>
+
+                <footer class="modal-footer">
+                    <button
+                        class="btn-secondary"
+                        onclick={handleCancel}
+                        disabled={isSubmitting}>
+                        Cancel
+                    </button>
+                    <button
+                        class="btn-primary"
+                        onclick={handleSubmit}
+                        disabled={isSubmitDisabled}>
+                        <template lwc:if={isSubmitting}>
+                            <lightning-spinner
+                                alternative-text="Sending..."
+                                size="x-small"></lightning-spinner>
+                            <span>Sending...</span>
+                        </template>
+                        <template lwc:else>
+                            <span>Send Check-In</span>
+                        </template>
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </template>
+</template>

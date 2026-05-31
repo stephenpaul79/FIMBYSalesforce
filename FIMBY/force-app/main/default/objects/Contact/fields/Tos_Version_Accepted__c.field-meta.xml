@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tos_Version_Accepted__c</fullName>
+    <description>Version string of the FIMBY Terms of Service this Contact most recently accepted. Compared to FIMBY_App_Settings__mdt.Tos_Current_Version__c by the Login Flow.</description>
+    <externalId>false</externalId>
+    <label>TOS Version Accepted</label>
+    <length>10</length>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

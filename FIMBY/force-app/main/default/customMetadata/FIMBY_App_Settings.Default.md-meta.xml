@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Default</label>
+    <protected>false</protected>
+    <values>
+        <field>Archive_Page_Size__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Borrowed_Items_Limit__c</field>
+        <value xsi:type="xsd:double">100.0</value>
+    </values>
+    <values>
+        <field>Cga_Current_Version__c</field>
+        <value xsi:type="xsd:string">1.0</value>
+    </values>
+    <values>
+        <field>Cga_Effective_Date__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Conversation_Cleanup_Batch_Size__c</field>
+        <value xsi:type="xsd:double">5000.0</value>
+    </values>
+    <values>
+        <field>Conversation_Cleanup_Days__c</field>
+        <value xsi:type="xsd:double">90.0</value>
+    </values>
+    <values>
+        <field>Conversation_Messages_Page_Size__c</field>
+        <value xsi:type="xsd:double">50.0</value>
+    </values>
+    <values>
+        <field>Conversation_Trim_Keep_Count__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>DM_Threads_Limit__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>Data_Retention_Batch_Size__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Data_Retention_Months__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Default_Grace_Window_Days__c</field>
+        <value xsi:type="xsd:double">30.0</value>
+    </values>
+    <values>
+        <field>Delete_All_Notifications_Limit__c</field>
+        <value xsi:type="xsd:double">2000.0</value>
+    </values>
+    <values>
+        <field>Dependency_Intervene_Weeks__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Dependency_Monitor_Weeks__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Dependency_Review_Weeks__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Home_Feed_Page_Size__c</field>
+        <value xsi:type="xsd:double">15.0</value>
+    </values>
+    <values>
+        <field>Library_Conversation_Cleanup_Days__c</field>
+        <value xsi:type="xsd:double">180.0</value>
+    </values>
+    <values>
+        <field>Library_Just_Listed_Days__c</field>
+        <value xsi:type="xsd:double">7.0</value>
+    </values>
+    <values>
+        <field>Library_Page_Size__c</field>
+        <value xsi:type="xsd:double">15.0</value>
+    </values>
+    <values>
+        <field>Lurker_Ratio_Threshold__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Mark_All_Read_Limit__c</field>
+        <value xsi:type="xsd:double">1000.0</value>
+    </values>
+    <values>
+        <field>Max_Dependency_Ratio__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Max_New_Conversations_Per_Day__c</field>
+        <value xsi:type="xsd:double">5.0</value>
+    </values>
+    <values>
+        <field>Messageable_Contacts_Limit__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>Messages_Page_Size__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Min_Active_Members_Per_Cell__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Min_Households_Per_Cell__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Min_Internal_Tie_Ratio__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Min_Posts_Per_Week_Per_Cell__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Min_Responders_Per_Cell__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>My_Library_Items_Limit__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>My_Posts_Page_Size__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Need_Default_End_Days__c</field>
+        <value xsi:type="xsd:double">7.0</value>
+    </values>
+    <values>
+        <field>Neighbourhood_Ideal_Max__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Neighbourhood_Ideal_Min__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Neighbourhood_Soft_Cap__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Notification_Cleanup_Batch_Size__c</field>
+        <value xsi:type="xsd:double">10000.0</value>
+    </values>
+    <values>
+        <field>Notification_Retention_Days__c</field>
+        <value xsi:type="xsd:double">30.0</value>
+    </values>
+    <values>
+        <field>Notifications_Page_Size__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Offer_Default_End_Days__c</field>
+        <value xsi:type="xsd:double">21.0</value>
+    </values>
+    <values>
+        <field>Push_Batch_Cap__c</field>
+        <value xsi:type="xsd:double">5000.0</value>
+    </values>
+    <values>
+        <field>Push_Fatigue_Days__c</field>
+        <value xsi:type="xsd:double">7.0</value>
+    </values>
+    <values>
+        <field>Push_Notification_Batch_Size__c</field>
+        <value xsi:type="xsd:double">100.0</value>
+    </values>
+    <values>
+        <field>Push_Quiet_Hour_End__c</field>
+        <value xsi:type="xsd:double">6.0</value>
+    </values>
+    <values>
+        <field>Push_Quiet_Hour_Start__c</field>
+        <value xsi:type="xsd:double">22.0</value>
+    </values>
+    <values>
+        <field>Reactivation_Token_TTL_Hours__c</field>
+        <value xsi:type="xsd:double">24.0</value>
+    </values>
+    <values>
+        <field>Recognition_Score_Threshold__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Response_Messages_Page_Size__c</field>
+        <value xsi:type="xsd:double">50.0</value>
+    </values>
+    <values>
+        <field>Response_Thread_Cleanup_Days__c</field>
+        <value xsi:type="xsd:double">180.0</value>
+    </values>
+    <values>
+        <field>Response_Threads_Limit__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>Search_Contacts_Limit__c</field>
+        <value xsi:type="xsd:double">100.0</value>
+    </values>
+    <values>
+        <field>Search_Page_Size__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Search_Results_Limit__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>Shared_Contacts_Limit__c</field>
+        <value xsi:type="xsd:double">500.0</value>
+    </values>
+    <values>
+        <field>Split_Review_Household_Trigger__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Story_Comments_Limit__c</field>
+        <value xsi:type="xsd:double">50.0</value>
+    </values>
+    <values>
+        <field>Story_Feed_TTL_Days__c</field>
+        <value xsi:type="xsd:double">90.0</value>
+    </values>
+    <values>
+        <field>Tos_Current_Version__c</field>
+        <value xsi:type="xsd:string">1.0</value>
+    </values>
+    <values>
+        <field>Tos_Effective_Date__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Unified_Feed_Min_Query_Limit__c</field>
+        <value xsi:type="xsd:double">50.0</value>
+    </values>
+    <values>
+        <field>Lending_Confirmation_Expiry_Days__c</field>
+        <value xsi:type="xsd:double">3.0</value>
+    </values>
+</CustomMetadata>

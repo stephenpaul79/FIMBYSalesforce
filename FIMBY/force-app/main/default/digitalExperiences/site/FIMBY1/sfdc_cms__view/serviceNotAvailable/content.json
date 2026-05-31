@@ -1,0 +1,57 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Service Not Available",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"775e588a-69dd-4768-b95b-71a8a0f4dd2e\",\"columns\":[{\"UUID\":\"f653eba9-ab83-4bda-98fa-1a1f683341d8\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "imageInfos" : "",
+                "richTextValue" : "<div class=\"fimby-auth-status\"><h1 style=\"text-align:center;font-size:1.375rem;font-weight:600;color:var(--fimby-text-primary,#2D2D2D);margin:0 0 0.75rem;\">FIMBY is taking a short break</h1><p style=\"text-align:center;font-size:1rem;color:var(--fimby-text-secondary,#6B6B6B);margin:0;\">We are doing a little maintenance. Please try again in a few minutes.</p></div>"
+              },
+              "definition" : "community_builder:htmlEditor",
+              "id" : "7a27a1fd-cc4c-45bb-9d48-dbbf21d8a762",
+              "type" : "component"
+            } ],
+            "id" : "f653eba9-ab83-4bda-98fa-1a1f683341d8",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "775e588a-69dd-4768-b95b-71a8a0f4dd2e",
+          "scopedBrandingSetId" : "Login_Palette",
+          "type" : "component"
+        } ],
+        "id" : "7a7a49af-49fd-468a-a637-2e6ecb7f5d38",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "b16333b2-45dc-4ff0-af94-e59b562463a9",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "ServiceNotAvailable",
+    "viewType" : "service-not-available"
+  },
+  "urlName" : "service-not-available"
+}

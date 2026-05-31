@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Library List",
+  "contentBody" : {
+    "activeViewId" : "Library_List",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-library-list",
+    "urlPrefix" : "library-list"
+  },
+  "urlName" : "library-list"
+}

@@ -1,0 +1,174 @@
+<template>
+    <div class="fimby-quick-signup">
+        <!-- Header -->
+        <c-fimby-page-header
+            page-title="Quick Sign Up">
+        </c-fimby-page-header>
+
+        <!-- Quick Signup Form -->
+        <div class="signup-container">
+            <div class="signup-header">
+                <h1 class="signup-title">Join FIMBY in 2 minutes</h1>
+                <p class="signup-subtitle">Connect with your neighbors and start sharing</p>
+            </div>
+
+            <div class="signup-form">
+                <!-- Name Fields -->
+                <div class="name-row">
+                    <lightning-input
+                        type="text"
+                        label="First Name"
+                        placeholder="First"
+                        value={firstName}
+                        onchange={handleFirstNameChange}
+                        required
+                        class="name-input">
+                    </lightning-input>
+                    <lightning-input
+                        type="text"
+                        label="Last Name"
+                        placeholder="Last"
+                        value={lastName}
+                        onchange={handleLastNameChange}
+                        required
+                        class="name-input">
+                    </lightning-input>
+                </div>
+
+                <!-- Email -->
+                <lightning-input
+                    type="email"
+                    label="Email Address"
+                    placeholder="your@email.com"
+                    value={email}
+                    onchange={handleEmailChange}
+                    required
+                    class="form-input">
+                </lightning-input>
+
+                <!-- Phone -->
+                <lightning-input
+                    type="tel"
+                    label="Phone Number"
+                    placeholder="(604) 555-0123"
+                    value={phone}
+                    onchange={handlePhoneChange}
+                    class="form-input">
+                </lightning-input>
+
+                <!-- Quick Location Picker -->
+                <div class="location-section">
+                    <div class="location-label">Your Neighborhood</div>
+                    <div class="location-quick-select">
+                        <template for:each={popularNeighborhoods} for:item="neighborhood">
+                            <button
+                                key={neighborhood.value}
+                                class={neighborhood.cssClass}
+                                onclick={handleNeighborhoodSelect}
+                                data-location={neighborhood.value}>
+                                {neighborhood.label}
+                            </button>
+                        </template>
+                        <button class="neighborhood-chip other" onclick={handleOtherLocation}>
+                            <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                            Other
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Terms Checkbox -->
+                <div class="terms-section">
+                    <lightning-input
+                        type="checkbox"
+                        label=""
+                        checked={agreeToTerms}
+                        onchange={handleTermsChange}
+                        class="terms-checkbox">
+                    </lightning-input>
+                    <div class="terms-text">
+                        I agree to <a href="/terms" target="_blank">Terms</a> &
+                        <a href="/privacy" target="_blank">Privacy Policy</a>
+                    </div>
+                </div>
+
+                <!-- Sign Up Button -->
+                <lightning-button
+                    label="Create Account"
+                    variant="brand"
+                    onclick={handleQuickSignup}
+                    disabled={isSignupDisabled}
+                    class="signup-btn">
+                </lightning-button>
+
+                <!-- OR Divider -->
+                <div class="or-divider">
+                    <span class="or-text">or</span>
+                </div>
+
+                <!-- Full Registration Link -->
+                <lightning-button
+                    label="Complete Full Registration"
+                    variant="base"
+                    onclick={handleFullRegistration}
+                    class="full-reg-btn">
+                </lightning-button>
+            </div>
+
+            <!-- Social Login Options -->
+            <div class="social-login">
+                <div class="social-title">Quick sign up with:</div>
+                <div class="social-buttons">
+                    <button class="social-btn google" onclick={handleGoogleSignup}>
+                        <div class="social-icon">G</div>
+                        <span>Google</span>
+                    </button>
+                    <button class="social-btn facebook" onclick={handleFacebookSignup}>
+                        <div class="social-icon">f</div>
+                        <span>Facebook</span>
+                    </button>
+                    <button class="social-btn apple" onclick={handleAppleSignup}>
+                        <div class="social-icon">🍎</div>
+                        <span>Apple</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                Already have an account?
+                <a href="/login" onclick={handleLogin}>Sign In</a>
+            </div>
+
+            <!-- Why FIMBY Section -->
+            <div class="why-fimby">
+                <div class="why-title">Why join FIMBY?</div>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <lightning-icon icon-name="utility:groups" size="small" variant="success"></lightning-icon>
+                        <span>Meet neighbors</span>
+                    </div>
+                    <div class="benefit-item">
+                        <lightning-icon icon-name="utility:package" size="small" variant="success"></lightning-icon>
+                        <span>Share items</span>
+                    </div>
+                    <div class="benefit-item">
+                        <lightning-icon icon-name="utility:heart" size="small" variant="success"></lightning-icon>
+                        <span>Get help</span>
+                    </div>
+                    <div class="benefit-item">
+                        <lightning-icon icon-name="utility:world" size="small" variant="success"></lightning-icon>
+                        <span>Build community</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div lwc:if={isSigningUp} class="loading-overlay">
+            <div class="loading-content">
+                <lightning-spinner alternative-text="Creating account..." size="large"></lightning-spinner>
+                <div class="loading-text">Creating your account...</div>
+            </div>
+        </div>
+    </div>
+</template>

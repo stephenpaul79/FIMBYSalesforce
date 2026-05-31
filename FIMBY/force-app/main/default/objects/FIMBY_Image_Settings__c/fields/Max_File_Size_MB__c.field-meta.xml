@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Max_File_Size_MB__c</fullName>
+    <defaultValue>10</defaultValue>
+    <description>Maximum file size in megabytes that users can upload before compression. Files larger than this will be rejected.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Max upload size in MB before compression (default 10MB)</inlineHelpText>
+    <label>Max File Size MB</label>
+    <precision>3</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

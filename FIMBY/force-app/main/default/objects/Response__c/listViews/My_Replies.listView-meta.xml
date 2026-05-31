@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Replies</fullName>
+    <booleanFilter>1 AND (2 OR 3)</booleanFilter>
+    <columns>NAME</columns>
+    <columns>Response_Posting_Details__c</columns>
+    <columns>Need_Offer_Responded_To__c</columns>
+    <columns>Status__c</columns>
+    <columns>Reply_To_First_Name__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>My_Replies__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>New,Accepted</value>
+    </filters>
+    <filters>
+        <field>CREATED_DATE</field>
+        <operation>greaterThan</operation>
+        <value>N_DAYS_AGO:7</value>
+    </filters>
+    <label>My Replies</label>
+</ListView>

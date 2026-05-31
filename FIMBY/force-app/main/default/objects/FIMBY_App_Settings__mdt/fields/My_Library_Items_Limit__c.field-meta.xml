@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Library_Items_Limit__c</fullName>
+    <defaultValue>200</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>My Library Items Limit</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum library item records returned for My Library. Increase if users report missing items.</inlineHelpText>
+</CustomField>

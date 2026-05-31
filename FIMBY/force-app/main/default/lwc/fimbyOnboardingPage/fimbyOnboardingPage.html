@@ -1,0 +1,678 @@
+<template>
+    <template lwc:if={isReady}>
+        <div class="page-shell" role="main" aria-label="FIMBY onboarding">
+
+            <!-- ============================================================
+                 PHASE 1 - Profile setup (7 steps + celebration)
+                 ============================================================ -->
+            <template lwc:if={isPhase1}>
+                <header class="page-header">
+                    <div class="progress-dots">
+                        <template for:each={profileSteps} for:item="step">
+                            <span key={step.index} class={step.dotClass} aria-label={step.ariaLabel}></span>
+                        </template>
+                    </div>
+                </header>
+
+                <div class="page-body" aria-live="polite">
+
+                    <!-- Step 1: Name + Pronouns -->
+                    <template lwc:if={isStep1}>
+                        <div class="step-content">
+                            <img src={logoUrl} alt="" class="welcome-logo">
+                            <h1 class="welcome-heading">Welcome to the neighbourhood!</h1>
+                            <p class="welcome-subtext">Let's get your profile set up so your neighbours can get to know you.</p>
+                            <div class="form-fields">
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-first-name">First Name <span class="required">*</span></label>
+                                    <input type="text" id="onb-first-name" class="field-input"
+                                           value={firstName} data-field="firstName"
+                                           required onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-last-name">Last Name <span class="required">*</span></label>
+                                    <input type="text" id="onb-last-name" class="field-input"
+                                           value={lastName} data-field="lastName"
+                                           required onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-pronouns">Pronouns</label>
+                                    <input type="text" id="onb-pronouns" class="field-input"
+                                           value={pronouns} data-field="pronouns"
+                                           placeholder="e.g. she/her, they/them"
+                                           maxlength="40" onchange={handleInputChange}>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Step 2: Profile Photo -->
+                    <template lwc:if={isStep2}>
+                        <div class="step-content photo-step">
+                            <img src={logoUrl} alt="" class="step-icon-lg">
+                            <h2 class="step-heading">Add a profile photo</h2>
+                            <p class="step-subtext">Help your neighbours recognize you. You can always change this later.</p>
+                            <template lwc:if={contactId}>
+                                <div class="avatar-upload-section photo-step-uploader">
+                                    <c-fimby-image-uploader
+                                        record-id={contactId}
+                                        object-api-name="Contact"
+                                        label="Upload a photo"
+                                        onimageuploaded={handlePhotoUploaded}>
+                                    </c-fimby-image-uploader>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Step 3: About You (pick at least 2 of 5) -->
+                    <template lwc:if={isStep3}>
+                        <div class="step-content">
+                            <img src={chatIconUrl} alt="" class="step-icon">
+                            <h2 class="step-heading">{personalizedGreeting}</h2>
+                            <p class="step-subtext">These help your neighbours recognize and connect with you. We'll use them to draft an intro post at the end.</p>
+                            <p class={aboutCounterClass} aria-live="polite">{aboutCounterMessage}</p>
+                            <div class="form-fields form-grid-2col">
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-tenure">How long have you lived here?</label>
+                                    <input type="text" id="onb-tenure" class="field-input"
+                                           value={aboutTenure} data-field="aboutTenure"
+                                           maxlength="40" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-brought">What brought you here?</label>
+                                    <input type="text" id="onb-brought" class="field-input"
+                                           value={aboutBroughtYou} data-field="aboutBroughtYou"
+                                           maxlength="120" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-place">One local place you love</label>
+                                    <input type="text" id="onb-place" class="field-input"
+                                           value={aboutLocalPlace} data-field="aboutLocalPlace"
+                                           maxlength="80" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-enjoys">Something you enjoy doing</label>
+                                    <input type="text" id="onb-enjoys" class="field-input"
+                                           value={aboutEnjoys} data-field="aboutEnjoys"
+                                           maxlength="100" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row full-width">
+                                    <label class="field-label" for="onb-funfact">One small thing about you</label>
+                                    <input type="text" id="onb-funfact" class="field-input"
+                                           value={aboutFunFact} data-field="aboutFunFact"
+                                           maxlength="120"
+                                           placeholder="Fun fact, something you care about, or something neighbours might not expect."
+                                           onchange={handleInputChange}>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Step 4: Welcome Support -->
+                    <template lwc:if={isStep4}>
+                        <div class="step-content">
+                            <img src={careIconUrl} alt="" class="step-icon">
+                            <h2 class="step-heading">How can your neighbours care for you well?</h2>
+                            <p class="step-subtext">FIMBY was built on the belief that neighbours look out for each other. These questions help people in your community know how to show up for you &mdash; on your terms. Everything here is optional, and you can update it any time in your profile.</p>
+                            <div class="form-fields">
+                                <div class="care-question">
+                                    <label class="field-label">What kind of support is usually welcome?</label>
+                                    <div class="checkbox-group">
+                                        <template for:each={careWelcomeOptions} for:item="opt">
+                                            <label key={opt.value} class="checkbox-item">
+                                                <input type="checkbox" checked={opt.checked}
+                                                       data-group="careWelcome" data-value={opt.value}
+                                                       onchange={handleCheckboxChange}>
+                                                <span class="checkbox-label">{opt.label}</span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Step 5: How to Ask + Unhelpful + Hard Nos -->
+                    <template lwc:if={isStep5}>
+                        <div class="step-content">
+                            <img src={careIconUrl} alt="" class="step-icon">
+                            <h2 class="step-heading">One more thing</h2>
+                            <p class="step-subtext">How would you prefer people reach out when they want to help?</p>
+                            <div class="form-fields">
+                                <div class="care-question">
+                                    <label class="field-label">How should someone ask before helping?</label>
+                                    <div class="radio-group">
+                                        <template for:each={careHowToAskOptions} for:item="opt">
+                                            <label key={opt.value} class="radio-item">
+                                                <input type="radio" name="careHowToAsk" value={opt.value}
+                                                       checked={opt.checked}
+                                                       onchange={handleRadioChange}>
+                                                <span class="radio-label">{opt.label}</span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="care-question">
+                                    <label class="field-label">What can feel unhelpful or overwhelming?</label>
+                                    <div class="checkbox-group">
+                                        <template for:each={careUnhelpfulOptions} for:item="opt">
+                                            <label key={opt.value} class="checkbox-item">
+                                                <input type="checkbox" checked={opt.checked}
+                                                       data-group="careUnhelpful" data-value={opt.value}
+                                                       onchange={handleCheckboxChange}>
+                                                <span class="checkbox-label">{opt.label}</span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label" for="onb-hardnos">Anything else to avoid? (optional)</label>
+                                    <textarea id="onb-hardnos" class="field-textarea"
+                                              value={careHardNos} data-field="careHardNos"
+                                              maxlength="256"
+                                              placeholder="Anything you'd like neighbours to know &mdash; short and clear is perfect."
+                                              onchange={handleInputChange}></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Step 6: Quiet Hours -->
+                    <template lwc:if={isStep6}>
+                        <div class="step-content">
+                            <h2 class="step-heading">When should FIMBY rest?</h2>
+                            <p class="step-subtext">FIMBY has a rhythm. Late at night, we rest &mdash; no buzzes, no pings. Your neighbours' messages and activity will be here in the morning. Pick the quiet hours that fit your life.</p>
+                            <div class="form-fields">
+                                <div class="care-question">
+                                    <div class="radio-group">
+                                        <template for:each={quietHoursOptions} for:item="opt">
+                                            <label key={opt.value} class="radio-item">
+                                                <input type="radio" name="quietHours" value={opt.value}
+                                                       checked={opt.checked}
+                                                       onchange={handleQuietHoursChange}>
+                                                <span class="radio-label">{opt.label}</span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Step 7: Vouch / Introduction -->
+                    <template lwc:if={isStep7}>
+                        <div class="step-content">
+                            <div class="vouch-hero">
+                                <img src={waveIconUrl} alt="" class="vouch-hero-icon">
+                            </div>
+                            <h2 class="step-heading">One last thing &mdash; introduce yourself</h2>
+                            <p class="step-subtext">FIMBY is a neighbourhood where people know each other. To unlock the lending library, ask someone who already knows you to vouch for you.</p>
+                            <div class="form-fields">
+                                <div class="field-row">
+                                    <label for="vouchFullName" class="field-label">Their full name</label>
+                                    <input id="vouchFullName" type="text" maxlength="80"
+                                           value={vouchFullName} data-field="vouchFullName"
+                                           oninput={handleInputChange}
+                                           class="field-input" autocomplete="off">
+                                </div>
+                                <div class="field-row">
+                                    <label for="vouchEmail" class="field-label">Their email</label>
+                                    <input id="vouchEmail" type="email" maxlength="80"
+                                           value={vouchEmail} data-field="vouchEmail"
+                                           oninput={handleInputChange}
+                                           class="field-input" autocomplete="off">
+                                </div>
+                                <div class="field-row">
+                                    <label for="vouchOrgName" class="field-label">Or a community group / church</label>
+                                    <input id="vouchOrgName" type="text" maxlength="80"
+                                           value={vouchOrgName} data-field="vouchOrgName"
+                                           oninput={handleInputChange}
+                                           class="field-input"
+                                           placeholder="If a community group introduced you"
+                                           autocomplete="off">
+                                </div>
+                            </div>
+                            <template lwc:if={vouchSubmitMessage}>
+                                <p class="vouch-submit-message">{vouchSubmitMessage}</p>
+                            </template>
+                            <button type="button" class="vouch-skip-link"
+                                    onclick={handleSkipIntroduction}
+                                    disabled={isSaving}>
+                                Skip for now &mdash; I'll do this later
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Celebration between Phase 1 and Phase 2 -->
+                    <template lwc:if={showCelebration}>
+                        <div class="celebration-content">
+                            <c-fimby-celebration action-type="welcome" confetti-enabled memes-enabled></c-fimby-celebration>
+                            <h2 class="celebration-heading">You're all set, {firstName}!</h2>
+                            <p class="celebration-subtext">Your profile is ready. Want a quick tour of what FIMBY has to offer?</p>
+                            <p class="celebration-fine-print">Too much whimsy? You can tone it down in <a href="/settings">Settings</a>.</p>
+                        </div>
+                    </template>
+                </div>
+
+                <template lwc:if={saveError}>
+                    <div class="save-error-banner">
+                        <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                        <span>{saveError}</span>
+                    </div>
+                </template>
+
+                <footer class="page-footer">
+                    <template lwc:if={showCelebration}>
+                        <button class="btn btn-neutral" onclick={handleSkipTour}>Skip Tour</button>
+                        <button class="btn btn-primary" onclick={handleStartTour}>Show Me Around</button>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={canGoBack}>
+                            <button class="btn btn-neutral" onclick={handleBack} disabled={isSaving}>Back</button>
+                        </template>
+                        <template lwc:else>
+                            <span></span>
+                        </template>
+                        <button class="btn btn-primary" onclick={handleNext} disabled={isNextDisabled}>
+                            <template lwc:if={isSaving}>
+                                <lightning-spinner alternative-text="Saving" size="small"></lightning-spinner>
+                                <span>Saving...</span>
+                            </template>
+                            <template lwc:else>
+                                {nextButtonLabel}
+                            </template>
+                        </button>
+                    </template>
+                </footer>
+            </template>
+
+            <!-- ============================================================
+                 PHASE 2 - Walkthrough (5 hard-coded screens)
+                 ============================================================ -->
+            <template lwc:if={isPhase2}>
+                <header class="page-header walkthrough-header">
+                    <div class="progress-dots">
+                        <template for:each={walkthroughDots} for:item="dot">
+                            <span key={dot.id} class={dot.dotClass} aria-label={dot.ariaLabel}></span>
+                        </template>
+                    </div>
+                    <button class="close-button" onclick={handleSkipWalkthrough}
+                            aria-label="Skip the rest of the tour">
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </header>
+
+                <div class="page-body walkthrough-body" aria-live="polite">
+
+                    <!-- Screen 1: Vision -->
+                    <template lwc:if={isVisionScreen}>
+                        <div class="wt-screen wt-hero-text">
+                            <div class="wt-hero-img">
+                                <img src={visionContent.heroPhoto} alt={visionContent.heroPhotoAlt} class="wt-photo" />
+                            </div>
+                            <div class="wt-text-col">
+                                <h2 class="wt-title">{visionContent.title}</h2>
+                                <p class="wt-subtitle">{visionContent.subtitle}</p>
+                                <div class="wt-body">
+                                    <lightning-formatted-rich-text value={visionContent.body}></lightning-formatted-rich-text>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Screen 2: Mobile phone-frame feed mock (mirrors fimbyHomeFeed on mobile) -->
+                    <template lwc:if={isFeedScreen}>
+                        <div class="wt-screen wt-feed-mock">
+                            <div class="wt-hero-img">
+                                <div class="phone-frame" role="img" aria-label="FIMBY home feed on mobile">
+                                    <span class="phone-notch" aria-hidden="true"></span>
+
+                                    <!-- Mobile universal header: logo + spacer + bell/search/menu -->
+                                    <div class="phone-top-bar">
+                                        <img src={logoUrl} alt="FIMBY" class="phone-top-logo" />
+                                        <span class="phone-top-spacer"></span>
+                                        <template for:each={headerActions} for:item="action">
+                                            <img key={action.id} src={action.iconUrl} alt={action.label} class="phone-top-icon" />
+                                        </template>
+                                    </div>
+
+                                    <!-- Filter pills -->
+                                    <div class="phone-filter-pills">
+                                        <template for:each={feedFilterPills} for:item="pill">
+                                            <span key={pill.id} class={pill.phonePillClass}>
+                                                <img lwc:if={pill.iconUrl} src={pill.iconUrl} alt="" class="phone-pill-icon" />
+                                                <span>{pill.label}</span>
+                                            </span>
+                                        </template>
+                                    </div>
+
+                                    <!-- One sample feed card -->
+                                    <div class="phone-feed-region">
+                                        <div class="phone-feed-card">
+                                            <div class="phone-feed-card-header">
+                                                <div class="phone-feed-avatar">AT</div>
+                                                <div class="phone-feed-meta">
+                                                    <div class="phone-feed-name">Arthur T.</div>
+                                                    <div class="phone-feed-time">This morning</div>
+                                                </div>
+                                                <span class="phone-feed-badge">OFFER</span>
+                                            </div>
+                                            <div class="phone-feed-title">Tomato seedlings, free to a good garden</div>
+                                            <div class="phone-feed-body">Started too many. Cherry, beefsteak, Roma &mdash; a dozen of each.</div>
+                                            <img src={feedContent.sampleCardPhoto} alt={feedContent.sampleCardPhotoAlt} class="phone-feed-photo" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Mobile bottom nav -->
+                                    <div class="phone-bottom-nav">
+                                        <template for:each={navItems} for:item="nav">
+                                            <div key={nav.id} class={nav.phoneItemClass}>
+                                                <template lwc:if={nav.isCreate}>
+                                                    <span class="phone-nav-create-button">
+                                                        <img src={nav.iconUrl} alt={nav.label} class="phone-nav-icon" />
+                                                    </span>
+                                                </template>
+                                                <template lwc:else>
+                                                    <img src={nav.iconUrl} alt="" class="phone-nav-icon" />
+                                                    <span class="phone-nav-label">{nav.label}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wt-text-col">
+                                <h2 class="wt-title">{feedContent.title}</h2>
+                                <div class="wt-body">
+                                    <lightning-formatted-rich-text value={feedContent.body}></lightning-formatted-rich-text>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Screen 3: Ask / Offer / Bulk Buy -->
+                    <template lwc:if={isAskOfferScreen}>
+                        <div class="wt-screen wt-hero-text">
+                            <div class="wt-hero-img">
+                                <div class="quickpost-mock" aria-label="Create post tile grid">
+                                    <div class="quickpost-mock-title">Create a post</div>
+                                    <div class="quickpost-mock-grid">
+                                        <template for:each={quickPostTiles} for:item="tile">
+                                            <div key={tile.type} class="quickpost-mock-tile">
+                                                <img src={tile.iconUrl} alt="" class="quickpost-mock-icon" />
+                                                <span class="quickpost-mock-label">{tile.label}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wt-text-col">
+                                <h2 class="wt-title wt-title-with-icon">
+                                    <span>Tap the</span>
+                                    <img src={askOfferPlusIconUrl} alt="plus" class="wt-title-inline-icon" />
+                                    <span>Share what's on your mind.</span>
+                                </h2>
+                                <div class="wt-body">
+                                    <lightning-formatted-rich-text value={askOfferContent.body}></lightning-formatted-rich-text>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Screen 4: Shared Life + Events carousel -->
+                    <template lwc:if={isSharedLifeEventsScreen}>
+                        <div class="wt-screen wt-carousel">
+                            <div class="carousel-viewport">
+                                <div class="carousel-track" style={carouselTransform}>
+
+                                    <!-- Slide 4a: Shared Life - phone-frame with 2 sample posts -->
+                                    <div class="carousel-slide">
+                                        <div class="wt-hero-text wt-carousel-slide-content">
+                                            <div class="wt-hero-img">
+                                                <div class="phone-frame" role="img" aria-label="Shared Life posts on mobile">
+                                                    <span class="phone-notch" aria-hidden="true"></span>
+
+                                                    <div class="phone-top-bar">
+                                                        <img src={logoUrl} alt="FIMBY" class="phone-top-logo" />
+                                                        <span class="phone-top-spacer"></span>
+                                                        <template for:each={headerActions} for:item="action">
+                                                            <img key={action.id} src={action.iconUrl} alt={action.label} class="phone-top-icon" />
+                                                        </template>
+                                                    </div>
+
+                                                    <div class="phone-filter-pills">
+                                                        <template for:each={sharedLifeFilterPills} for:item="pill">
+                                                            <span key={pill.id} class={pill.phonePillClass}>
+                                                                <img lwc:if={pill.iconUrl} src={pill.iconUrl} alt="" class="phone-pill-icon" />
+                                                                <span>{pill.label}</span>
+                                                            </span>
+                                                        </template>
+                                                    </div>
+
+                                                    <div class="phone-feed-region phone-feed-region-stack">
+                                                        <template for:each={sharedLifePhonePosts} for:item="post">
+                                                            <div key={post.id} class="phone-feed-card phone-feed-card-sharedlife" style={post.cardStyle}>
+                                                                <div class="phone-feed-card-header">
+                                                                    <div class="phone-feed-avatar">{post.initials}</div>
+                                                                    <div class="phone-feed-meta">
+                                                                        <div class="phone-feed-name">{post.name}</div>
+                                                                        <div class="phone-feed-time">{post.time}</div>
+                                                                    </div>
+                                                                    <span class="phone-feed-badge" style={post.badgeStyle}>
+                                                                        <span aria-hidden="true">{post.badgeEmoji}</span>
+                                                                        <span>{post.badgeLabel}</span>
+                                                                    </span>
+                                                                </div>
+                                                                <template lwc:if={post.title}>
+                                                                    <div class="phone-feed-title">{post.title}</div>
+                                                                </template>
+                                                                <div class="phone-feed-body">{post.body}</div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+
+                                                    <div class="phone-bottom-nav">
+                                                        <template for:each={navItems} for:item="nav">
+                                                            <div key={nav.id} class={nav.phoneItemClass}>
+                                                                <template lwc:if={nav.isCreate}>
+                                                                    <span class="phone-nav-create-button">
+                                                                        <img src={nav.iconUrl} alt={nav.label} class="phone-nav-icon" />
+                                                                    </span>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <img src={nav.iconUrl} alt="" class="phone-nav-icon" />
+                                                                    <span class="phone-nav-label">{nav.label}</span>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="wt-text-col">
+                                                <h2 class="wt-title">Share more than logistics.</h2>
+                                                <div class="wt-body">
+                                                    <lightning-formatted-rich-text value="Some moments aren't asks or offers &mdash; they're a thank-you, a prayer request, a hard week, a small piece of your story. <strong>Shared Life</strong> holds those.<br/><br/>Post a <strong>Thank You</strong>, a <strong>Prayer</strong>, a <strong>Lament</strong>, or a <strong>Neighbourhood Moment</strong>. Your neighbours can comment."></lightning-formatted-rich-text>
+                                                </div>
+                                                <div class="carousel-controls">
+                                                    <button class="carousel-arrow carousel-arrow-left"
+                                                            onclick={handlePrevSlide}
+                                                            disabled={isFirstCarouselSlide}
+                                                            aria-label="Previous slide">
+                                                        <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                                                    </button>
+                                                    <div class="carousel-dots">
+                                                        <template for:each={carouselSlides} for:item="slide">
+                                                            <span key={slide.id} class={slide.dotClass}
+                                                                  aria-label={slide.ariaLabel}></span>
+                                                        </template>
+                                                    </div>
+                                                    <button class="carousel-arrow carousel-arrow-right"
+                                                            onclick={handleNextSlide}
+                                                            disabled={isLastCarouselSlide}
+                                                            aria-label="Next slide">
+                                                        <lightning-icon icon-name="utility:chevronright" size="small"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Slide 4b: Events -->
+                                    <div class="carousel-slide">
+                                        <div class="wt-hero-text wt-carousel-slide-content">
+                                            <div class="wt-hero-img">
+                                                <div class="events-mock">
+                                                    <template for:each={eventTiers} for:item="tier">
+                                                        <div key={tier.id} class="events-mock-card">
+                                                            <img src={tier.iconUrl} alt="" class="events-mock-icon" />
+                                                            <div class="events-mock-card-text">
+                                                                <div class="events-mock-card-title">{tier.title}</div>
+                                                                <div class="events-mock-card-desc">{tier.description}</div>
+                                                                <div class="events-mock-tier-tag">{tier.tierTag}</div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="wt-text-col">
+                                                <h2 class="wt-title">Three ways to gather.</h2>
+                                                <div class="wt-body">
+                                                    <lightning-formatted-rich-text value="A <strong>Gathering</strong> is small and hosted &mdash; neighbours RSVP, you control the guest list. An <strong>Open Event</strong> is bigger &mdash; a block party or cleanup day, anyone can tap <em>I'm Going</em>. A <strong>Community Event</strong> is something happening nearby that you want neighbours to know about.<br/><br/>Same plus button. Pick the shape that fits."></lightning-formatted-rich-text>
+                                                </div>
+                                                <div class="carousel-controls">
+                                                    <button class="carousel-arrow carousel-arrow-left"
+                                                            onclick={handlePrevSlide}
+                                                            disabled={isFirstCarouselSlide}
+                                                            aria-label="Previous slide">
+                                                        <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                                                    </button>
+                                                    <div class="carousel-dots">
+                                                        <template for:each={carouselSlides} for:item="slide">
+                                                            <span key={slide.id} class={slide.dotClass}
+                                                                  aria-label={slide.ariaLabel}></span>
+                                                        </template>
+                                                    </div>
+                                                    <button class="carousel-arrow carousel-arrow-right"
+                                                            onclick={handleNextSlide}
+                                                            disabled={isLastCarouselSlide}
+                                                            aria-label="Next slide">
+                                                        <lightning-icon icon-name="utility:chevronright" size="small"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Screen 5: Library -->
+                    <template lwc:if={isLibraryScreen}>
+                        <div class="wt-screen wt-hero-text">
+                            <div class="wt-hero-img">
+                                <div class="library-mock">
+                                    <template for:each={libraryCards} for:item="card">
+                                        <div key={card.itemName} class="library-card">
+                                            <img src={card.photo} alt={card.photoAlt} class="library-card-photo" />
+                                            <div class="library-card-meta">
+                                                <div class="library-card-meta-top">
+                                                    <span class={card.badgeClass}>
+                                                        <img src={libraryToolboxActiveIconUrl} alt="" class="library-card-badge-icon" />
+                                                        <span>{card.category}</span>
+                                                    </span>
+                                                    <div class="library-card-title">{card.itemName}</div>
+                                                    <div class="library-card-owner">{card.owner}</div>
+                                                </div>
+                                                <div class="library-card-footer">
+                                                    <span class="library-card-borrow">
+                                                        <img src={libraryBorrowIconUrl} alt="" class="library-card-borrow-icon" />
+                                                        <span>Borrow</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="wt-text-col">
+                                <h2 class="wt-title">{libraryScreen.title}</h2>
+                                <div class="wt-body">
+                                    <lightning-formatted-rich-text value={libraryScreen.body}></lightning-formatted-rich-text>
+                                </div>
+                                <template lwc:if={libraryFooterNote}>
+                                    <p class="wt-footer-note"><em>{libraryFooterNote}</em></p>
+                                </template>
+                                <!-- Non-clickable mockup of the desktop header strip
+                                     with the Library tab lit up + arrow pointing at it -->
+                                <template lwc:if={libraryNavHint}>
+                                    <div class="wt-nav-hint" role="note" aria-label={libraryNavHint}>
+                                        <div class="wt-nav-hint-strip">
+                                            <template for:each={libraryNavHintIcons} for:item="item">
+                                                <span key={item.id} class={item.itemClass}>
+                                                    <template lwc:if={item.isCreate}>
+                                                        <span class="wt-nav-hint-create-bubble">
+                                                            <img src={item.iconUrl} alt="" class="wt-nav-hint-create-icon" />
+                                                        </span>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <img src={item.iconUrl} alt="" class="wt-nav-hint-icon" />
+                                                    </template>
+                                                    <span class="wt-nav-hint-indicator"></span>
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <div class="wt-nav-hint-arrow-row" aria-hidden="true">
+                                            <span class="wt-nav-hint-cell"></span>
+                                            <span class="wt-nav-hint-cell wt-nav-hint-arrow">&#x2191;</span>
+                                            <span class="wt-nav-hint-cell"></span>
+                                            <span class="wt-nav-hint-cell"></span>
+                                            <span class="wt-nav-hint-cell"></span>
+                                        </div>
+                                        <p class="wt-nav-hint-label">{libraryNavHint}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <footer class="page-footer walkthrough-footer">
+                    <button class="btn btn-text" onclick={handleSkipWalkthrough}>Skip Tour</button>
+                    <div class="footer-right-group">
+                        <template lwc:if={canGoBack}>
+                            <span></span>
+                        </template>
+                        <button class="btn btn-neutral" onclick={handleWalkthroughBack} disabled={isFirstWalkthroughScreen}>Back</button>
+                        <template lwc:if={isLastWalkthroughScreen}>
+                            <button class="btn btn-primary" onclick={handleWalkthroughNext}>Finish</button>
+                        </template>
+                        <template lwc:else>
+                            <button class="btn btn-primary" onclick={handleWalkthroughNext}>Next</button>
+                        </template>
+                    </div>
+                </footer>
+            </template>
+
+            <!-- ============================================================
+                 PHASE 3 - Intro post modal (delegated to fimbyIntroPostModal)
+                 ============================================================ -->
+            <template lwc:if={showIntroModal}>
+                <c-fimby-intro-post-modal
+                    onbioposted={handleBioPosted}
+                    onbioskipped={handleBioSkipped}>
+                </c-fimby-intro-post-modal>
+            </template>
+
+        </div>
+    </template>
+
+    <!-- Loading state while flag-driven routing resolves -->
+    <template lwc:if={isLoading}>
+        <div class="page-loading">
+            <lightning-spinner alternative-text="Loading FIMBY" size="medium"></lightning-spinner>
+        </div>
+    </template>
+</template>

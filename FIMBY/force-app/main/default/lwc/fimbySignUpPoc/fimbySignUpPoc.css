@@ -1,0 +1,75 @@
+.poc-card {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: var(--fimby-surface-card, #ffffff);
+    border-radius: 12px;
+    box-shadow: var(--fimby-shadow-card, 0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.poc-title {
+    margin: 0 0 8px;
+    color: var(--fimby-text-primary, #2f4f4f);
+    font-size: 1.25rem;
+}
+
+.poc-sub {
+    margin: 0 0 16px;
+    color: var(--fimby-text-secondary, #5c6b6b);
+    font-size: 0.9rem;
+}
+
+.poc-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--fimby-text-primary, #2f4f4f);
+    font-size: 0.9rem;
+}
+
+.poc-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--fimby-border, #c7d2d2);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.poc-button {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 9999px;
+    background-color: var(--fimby-primary, #357280);
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.poc-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.poc-result {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-left: 4px solid var(--fimby-success, #2a6842);
+    border-radius: 6px;
+    background-color: var(--fimby-success-tint, #eef6f0);
+    color: var(--fimby-text-primary, #2f4f4f);
+    font-size: 0.9rem;
+}
+
+.poc-error {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-left: 4px solid var(--fimby-error, #c13030);
+    border-radius: 6px;
+    background-color: var(--fimby-error-tint, #fbecec);
+    color: var(--fimby-text-primary, #2f4f4f);
+    font-size: 0.9rem;
+}

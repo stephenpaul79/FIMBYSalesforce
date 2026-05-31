@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Max_Dependency_Ratio__c</fullName>
+    <defaultValue>0.35</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Max Dependency Ratio</label>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum ratio of cross-cell dependency (0-1 scale)</inlineHelpText>
+</CustomField>

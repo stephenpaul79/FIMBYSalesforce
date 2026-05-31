@@ -1,0 +1,400 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* =============================================
+ * Modal Shell (matches fimbyLendingApprovalModal)
+ * ============================================= */
+
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg, 16px);
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+ * Header
+ * ============================================= */
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+.close-button:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+.close-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* =============================================
+ * Body
+ * ============================================= */
+
+.modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* =============================================
+ * State Containers
+ * ============================================= */
+
+.state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+    gap: 16px;
+    min-height: 120px;
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--fimby-error-tint, #FFF0F0);
+    border: 1px solid var(--fimby-error-border, #FFC9C9);
+    border-radius: var(--fimby-radius-sm, 8px);
+    color: var(--fimby-error, #C13030);
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.secondary-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card, #FAF7F2));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+    font-family: inherit;
+}
+.secondary-btn:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.success-state {
+    gap: 16px;
+    padding: 16px 16px 24px;
+}
+
+.damaged-icon {
+    font-size: 3rem;
+}
+
+.confirmation-message {
+    font-size: 14px;
+    color: var(--fimby-text-primary, #3D3833);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* =============================================
+ * Form Fields
+ * ============================================= */
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.form-input {
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    font-size: 14px;
+    color: var(--fimby-text-primary, #3D3833);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    font-family: inherit;
+    min-height: 44px;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(59,158,160,0.15));
+}
+
+select.form-input {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236B6256'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+/* =============================================
+ * Decision Toggle (custom radio — from approval modal)
+ * ============================================= */
+
+.decision-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.radio-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fimby-text-primary, #3D3833);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    font-family: inherit;
+}
+.radio-option:hover {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+}
+.radio-option.selected {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+    background-color: var(--fimby-accent-bg, rgba(59,158,160,0.08));
+}
+
+.radio-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--fimby-border-default, #D4CCBF);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.15s ease;
+}
+.radio-option.selected .radio-dot {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+}
+.radio-option.selected .radio-dot::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--fimby-earth-teal, #3B9EA0);
+}
+
+/* =============================================
+ * Footer
+ * ============================================= */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary, #6B6256);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    transition: all 0.2s ease;
+    min-height: 44px;
+    font-family: inherit;
+}
+.cancel-btn:hover {
+    color: var(--fimby-text-primary, #3D3833);
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+.submit-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.submit-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.submit-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* =============================================
+ * Mobile: Bottom Sheet
+ * ============================================= */
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        top: 0;
+        padding: 0;
+        align-items: flex-end;
+    }
+    .modal-container {
+        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        max-height: 90vh;
+        max-height: 90dvh;
+        animation: slideUpMobile 0.3s ease;
+    }
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+}
+
+/* =============================================
+ * Reduced Motion
+ * ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .submit-btn,
+    .cancel-btn,
+    .secondary-btn,
+    .radio-option {
+        transition: none;
+        animation: none;
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Post Archive",
+  "contentBody" : {
+    "activeViewId" : "Post_Archive",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-post-archive",
+    "urlPrefix" : "post-archive"
+  },
+  "urlName" : "post-archive"
+}

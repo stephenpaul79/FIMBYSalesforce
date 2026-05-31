@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "d1e6f5cf-e598-4acb-8ceb-06695fdb66cd",
+  "label" : "Post An Offer",
+  "regions" : [ {
+    "id" : "5bd2b9c5-df91-4155-bec8-e90c57c659ba",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "",
+        "flowName" : "Post_an_Offer"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "bb427a9b-68d7-4f01-85f4-2fea83cd1b31",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "726ed823-9ac4-49c0-a607-0a8940a3d818",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "53470865-d1a1-4d5c-9f37-7c40612de3cb",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Post An Offer"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "9708ccd3-2d76-4864-b122-98f0ae381db3",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "4953fac3-f443-44a5-9103-141969dfb9bb",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-post-an-offer"
+}

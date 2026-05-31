@@ -1,0 +1,439 @@
+<template>
+    <template lwc:if={isVisible}>
+        <div class="modal-backdrop" role="dialog" aria-modal="true" aria-label={modalAriaLabel}>
+            <div class="modal-container" onclick={handleModalClick}>
+
+                <!-- ========== PHASE 1: PROFILE SETUP ========== -->
+                <template lwc:if={isPhase1}>
+
+                    <!-- Dismiss X — top-right, absolutely positioned, WCAG 44x44 -->
+                    <template lwc:if={showDismissProfile}>
+                        <button class="dismiss-x" onclick={handleDismissProfile}
+                                aria-label="Not now — finish later">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </template>
+
+                    <div class="modal-header">
+                        <div class="progress-dots">
+                            <template for:each={profileSteps} for:item="step">
+                                <span key={step.index}
+                                      class={step.dotClass}
+                                      aria-label={step.ariaLabel}></span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="modal-body" aria-live="polite">
+
+                        <!-- Step 1: Name + Pronouns -->
+                        <template lwc:if={isStep1}>
+                            <div class="step-content">
+                                <img src={logoUrl} alt="" class="welcome-logo">
+                                <h1 class="welcome-heading">Welcome to the neighbourhood!</h1>
+                                <p class="welcome-subtext">Let's get your profile set up so your neighbours can get to know you.</p>
+
+                                <div class="form-fields">
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-first-name">First Name <span class="required">*</span></label>
+                                        <input type="text" id="onb-first-name" class="field-input"
+                                               value={firstName} data-field="firstName"
+                                               required onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-last-name">Last Name <span class="required">*</span></label>
+                                        <input type="text" id="onb-last-name" class="field-input"
+                                               value={lastName} data-field="lastName"
+                                               required onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-pronouns">Pronouns</label>
+                                        <input type="text" id="onb-pronouns" class="field-input"
+                                               value={pronouns} data-field="pronouns"
+                                               placeholder="e.g. she/her, they/them"
+                                               maxlength="40" onchange={handleInputChange}>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Step 2: Profile Photo -->
+                        <template lwc:if={isStep2}>
+                            <div class="step-content photo-step">
+                                <img src={logoUrl} alt="" class="step-icon-lg">
+                                <h2 class="step-heading">Add a profile photo</h2>
+                                <p class="step-subtext">Help your neighbours recognize you. You can always change this later.</p>
+
+                                <template lwc:if={contactId}>
+                                    <div class="avatar-upload-section photo-step-uploader">
+                                        <c-fimby-image-uploader
+                                            record-id={contactId}
+                                            object-api-name="Contact"
+                                            label="Upload a photo"
+                                            onimageuploaded={handlePhotoUploaded}>
+                                        </c-fimby-image-uploader>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Step 3: About You (2-column on desktop) -->
+                        <template lwc:if={isStep3}>
+                            <div class="step-content">
+                                <img src={chatIconUrl} alt="" class="step-icon">
+                                <h2 class="step-heading">{personalizedGreeting}</h2>
+                                <p class="step-subtext">These help your neighbours recognize and connect with you. All optional.</p>
+
+                                <div class="form-fields form-grid-2col">
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-tenure">How long have you lived here?</label>
+                                        <input type="text" id="onb-tenure" class="field-input"
+                                               value={aboutTenure} data-field="aboutTenure"
+                                               maxlength="40" onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-brought">What brought you here?</label>
+                                        <input type="text" id="onb-brought" class="field-input"
+                                               value={aboutBroughtYou} data-field="aboutBroughtYou"
+                                               maxlength="120" onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-place">One local place you love</label>
+                                        <input type="text" id="onb-place" class="field-input"
+                                               value={aboutLocalPlace} data-field="aboutLocalPlace"
+                                               maxlength="80" onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-enjoys">Something you enjoy doing</label>
+                                        <input type="text" id="onb-enjoys" class="field-input"
+                                               value={aboutEnjoys} data-field="aboutEnjoys"
+                                               maxlength="100" onchange={handleInputChange}>
+                                    </div>
+                                    <div class="field-row full-width">
+                                        <label class="field-label" for="onb-funfact">One small thing about you</label>
+                                        <input type="text" id="onb-funfact" class="field-input"
+                                               value={aboutFunFact} data-field="aboutFunFact"
+                                               maxlength="120"
+                                               placeholder="Fun fact, something you care about, or something neighbours might not expect."
+                                               onchange={handleInputChange}>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Step 4: Care Intro + Welcome Support checkboxes -->
+                        <template lwc:if={isStep4}>
+                            <div class="step-content">
+                                <img src={careIconUrl} alt="" class="step-icon">
+                                <h2 class="step-heading">How can your neighbours care for you well?</h2>
+                                <p class="step-subtext">FIMBY was built on the belief that neighbours look out for each other. These questions help people in your community know how to show up for you — on your terms. Everything here is optional, and you can update it any time in your profile.</p>
+
+                                <div class="form-fields">
+                                    <div class="care-question">
+                                        <label class="field-label">What kind of support is usually welcome?</label>
+                                        <div class="checkbox-group">
+                                            <template for:each={careWelcomeOptions} for:item="opt">
+                                                <label key={opt.value} class="checkbox-item">
+                                                    <input type="checkbox" checked={opt.checked}
+                                                           data-group="careWelcome" data-value={opt.value}
+                                                           onchange={handleCheckboxChange}>
+                                                    <span class="checkbox-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Step 5: How to Ask + Unhelpful Things + Hard Nos -->
+                        <template lwc:if={isStep5}>
+                            <div class="step-content">
+                                <img src={careIconUrl} alt="" class="step-icon">
+                                <h2 class="step-heading">One more thing</h2>
+                                <p class="step-subtext">How would you prefer people reach out when they want to help?</p>
+
+                                <div class="form-fields">
+                                    <div class="care-question">
+                                        <label class="field-label">How should someone ask before helping?</label>
+                                        <div class="radio-group">
+                                            <template for:each={careHowToAskOptions} for:item="opt">
+                                                <label key={opt.value} class="radio-item">
+                                                    <input type="radio" name="careHowToAsk" value={opt.value}
+                                                           checked={opt.checked}
+                                                           data-field="careHowToAsk"
+                                                           onchange={handleRadioChange}>
+                                                    <span class="radio-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="care-question">
+                                        <label class="field-label">What can feel unhelpful or overwhelming?</label>
+                                        <div class="checkbox-group">
+                                            <template for:each={careUnhelpfulOptions} for:item="opt">
+                                                <label key={opt.value} class="checkbox-item">
+                                                    <input type="checkbox" checked={opt.checked}
+                                                           data-group="careUnhelpful" data-value={opt.value}
+                                                           onchange={handleCheckboxChange}>
+                                                    <span class="checkbox-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-row">
+                                        <label class="field-label" for="onb-hardnos">Anything else to avoid? (optional)</label>
+                                        <textarea id="onb-hardnos" class="field-textarea"
+                                                  value={careHardNos} data-field="careHardNos"
+                                                  maxlength="256"
+                                                  placeholder="Anything you'd like neighbours to know — short and clear is perfect."
+                                                  onchange={handleInputChange}></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Step 6: Quiet Hours Preference -->
+                        <template lwc:if={isStep6}>
+                            <div class="step-content">
+                                <h2 class="step-heading">When should FIMBY rest?</h2>
+                                <p class="step-subtext">FIMBY has a rhythm. Late at night, we rest &mdash; no buzzes, no pings. Your neighbours' messages and activity will be here in the morning. Pick the quiet hours that fit your life.</p>
+
+                                <div class="form-fields">
+                                    <div class="care-question">
+                                        <div class="radio-group">
+                                            <template for:each={quietHoursOptions} for:item="opt">
+                                                <label key={opt.value} class="radio-item">
+                                                    <input type="radio" name="quietHours" value={opt.value}
+                                                           checked={opt.checked}
+                                                           onchange={handleQuietHoursChange}>
+                                                    <span class="radio-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Step 7: Meet your introducer -->
+                        <template lwc:if={isStep7}>
+                            <div class="step-content">
+                                <div class="vouch-hero">
+                                    <img src={waveIconUrl} alt="" class="vouch-hero-icon">
+                                </div>
+                                <h2 class="step-heading">One last thing &mdash; introduce yourself</h2>
+                                <p class="step-subtext">FIMBY is a neighbourhood where people know each other. To unlock the lending library, ask someone who already knows you to vouch for you.</p>
+
+                                <div class="form-fields">
+                                    <div class="form-field">
+                                        <label for="vouchFullName" class="field-label">Their full name</label>
+                                        <input id="vouchFullName"
+                                               type="text"
+                                               maxlength="80"
+                                               value={vouchFullName}
+                                               data-field="vouchFullName"
+                                               oninput={handleInputChange}
+                                               class="text-input"
+                                               autocomplete="off">
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="vouchEmail" class="field-label">Their email</label>
+                                        <input id="vouchEmail"
+                                               type="email"
+                                               maxlength="80"
+                                               value={vouchEmail}
+                                               data-field="vouchEmail"
+                                               oninput={handleInputChange}
+                                               class="text-input"
+                                               autocomplete="off">
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="vouchOrgName" class="field-label">Or a community group / church</label>
+                                        <input id="vouchOrgName"
+                                               type="text"
+                                               maxlength="80"
+                                               value={vouchOrgName}
+                                               data-field="vouchOrgName"
+                                               oninput={handleInputChange}
+                                               class="text-input"
+                                               placeholder="If a community group introduced you"
+                                               autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <template lwc:if={vouchSubmitMessage}>
+                                    <p class="vouch-submit-message">{vouchSubmitMessage}</p>
+                                </template>
+
+                                <button type="button"
+                                        class="vouch-skip-link"
+                                        onclick={handleSkipIntroduction}
+                                        disabled={isSaving}>
+                                    Skip for now &mdash; I'll do this later
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- Celebration Screen (between phases) -->
+                        <template lwc:if={showCelebration}>
+                            <div class="celebration-content">
+                                <c-fimby-celebration action-type="welcome" confetti-enabled memes-enabled></c-fimby-celebration>
+                                <h2 class="celebration-heading">You're all set, {firstName}!</h2>
+                                <p class="celebration-subtext">Your profile is ready. Want a quick tour of what FIMBY has to offer?</p>
+                                <p class="celebration-fine-print">Too much whimsy? You can tone it down in <a href="/s/settings">Settings</a>.</p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <template lwc:if={saveError}>
+                        <div class="save-error-banner">
+                            <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                            <span>{saveError}</span>
+                        </div>
+                    </template>
+
+                    <div class="modal-footer">
+                        <template lwc:if={showCelebration}>
+                            <button class="btn btn-neutral" onclick={handleSkipTour}>Skip Tour</button>
+                            <button class="btn btn-primary" onclick={handleStartTour}>Show Me Around</button>
+                        </template>
+                        <template lwc:else>
+                            <template lwc:if={canGoBack}>
+                                <button class="btn btn-neutral" onclick={handleBack} disabled={isSaving}>Back</button>
+                            </template>
+                            <template lwc:else>
+                                <span></span>
+                            </template>
+                            <button class="btn btn-primary" onclick={handleNext} disabled={isNextDisabled}>
+                                <template lwc:if={isSaving}>
+                                    <lightning-spinner alternative-text="Saving" size="small"></lightning-spinner>
+                                    <span>Saving...</span>
+                                </template>
+                                <template lwc:else>
+                                    {nextButtonLabel}
+                                </template>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ========== PHASE 2: WALKTHROUGH ========== -->
+                <template lwc:if={isPhase2}>
+                    <div class="modal-header walkthrough-header">
+                        <div class="progress-dots">
+                            <template for:each={walkthroughPages} for:item="page">
+                                <span key={page.pageOrder}
+                                      class={page.dotClass}
+                                      aria-label={page.ariaLabel}></span>
+                            </template>
+                        </div>
+                        <button class="close-button" onclick={handleDismissWalkthrough}
+                                aria-label="Close walkthrough">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="modal-body walkthrough-body" aria-live="polite">
+                        <template lwc:if={isLoadingContent}>
+                            <div class="loading-container">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <template lwc:if={hasWalkthroughContent}>
+                            <template lwc:if={currentPageIsCarousel}>
+                                <!-- Carousel page -->
+                                <div class="carousel-container">
+                                    <div class="carousel-viewport">
+                                        <div class="carousel-track" style={carouselTransform}>
+                                            <template for:each={currentPageSlides} for:item="slide">
+                                                <div key={slide.contentKey} class="carousel-slide">
+                                                    <template lwc:if={slide.heroImage}>
+                                                        <img src={slide.heroImage} alt={slide.title} class="slide-image">
+                                                    </template>
+                                                    <h3 class="slide-title">{slide.title}</h3>
+                                                    <div class="slide-body">
+                                                        <lightning-formatted-rich-text value={slide.body}></lightning-formatted-rich-text>
+                                                    </div>
+                                                    <template lwc:if={slide.buttonLabel}>
+                                                        <a href={slide.buttonUrl} class="slide-cta">{slide.buttonLabel}</a>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-controls">
+                                        <button class="carousel-arrow carousel-arrow-left"
+                                                onclick={handlePrevSlide}
+                                                disabled={isFirstSlide}
+                                                aria-label="Previous slide">
+                                            <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                                        </button>
+                                        <div class="carousel-dots">
+                                            <template for:each={currentPageSlides} for:item="slide">
+                                                <span key={slide.contentKey}
+                                                      class={slide.slideDotClass}></span>
+                                            </template>
+                                        </div>
+                                        <button class="carousel-arrow carousel-arrow-right"
+                                                onclick={handleNextSlide}
+                                                disabled={isLastSlide}
+                                                aria-label="Next slide">
+                                            <lightning-icon icon-name="utility:chevronright" size="small"></lightning-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template lwc:else>
+                                <!-- Single-slide page -->
+                                <div class="single-page-content">
+                                    <template lwc:if={currentSlideImage}>
+                                        <img src={currentSlideImage} alt={currentSlideTitle} class="page-image">
+                                    </template>
+                                    <h2 class="page-heading">{currentSlideTitle}</h2>
+                                    <div class="page-body">
+                                        <lightning-formatted-rich-text value={currentSlideBody}></lightning-formatted-rich-text>
+                                    </div>
+                                    <template lwc:if={currentSlideButtonLabel}>
+                                        <a href={currentSlideButtonUrl} class="slide-cta">{currentSlideButtonLabel}</a>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+
+                        <template lwc:if={noWalkthroughContent}>
+                            <div class="empty-walkthrough">
+                                <img src={logoUrl} alt="" class="welcome-logo">
+                                <h2 class="step-heading">You're ready to go!</h2>
+                                <p class="step-subtext">Explore your neighbourhood and connect with your community.</p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="modal-footer walkthrough-footer">
+                        <div class="footer-left">
+                            <button class="btn btn-text" onclick={handleDismissWalkthrough}>Skip Tour</button>
+                            <label class="dont-show-label">
+                                <input type="checkbox" checked={dontShowAgain}
+                                       onchange={handleDontShowChange}>
+                                <span>Don't show again</span>
+                            </label>
+                        </div>
+                        <div class="footer-right">
+                            <template lwc:if={isLastWalkthroughPage}>
+                                <button class="btn btn-primary" onclick={handleFinishTour}>Get Started</button>
+                            </template>
+                            <template lwc:else>
+                                <button class="btn btn-primary" onclick={handleNextPage}>Next</button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

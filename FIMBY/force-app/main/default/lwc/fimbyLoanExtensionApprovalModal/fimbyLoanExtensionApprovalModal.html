@@ -1,0 +1,124 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+             role="dialog" aria-modal="true" aria-labelledby="ext-approval-modal-title">
+            <div class="modal-container" onclick={handleModalClick}>
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h2 id="ext-approval-modal-title" class="modal-title">Extension Request</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Loading -->
+                    <template lwc:if={isLoading}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Already Handled -->
+                    <template lwc:elseif={isAlreadyHandled}>
+                        <div class="state-container info-state">
+                            <lightning-icon icon-name="utility:check" size="medium" variant="success"></lightning-icon>
+                            <p class="state-message">Looks like you already took action here.</p>
+                            <button class="submit-btn" onclick={handleClose}>Got It</button>
+                        </div>
+                    </template>
+
+                    <!-- Error -->
+                    <template lwc:elseif={isError}>
+                        <div class="state-container error-state">
+                            <div class="error-banner" role="alert">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{_errorMessage}</span>
+                            </div>
+                            <button class="secondary-btn" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+
+                    <!-- Submitting -->
+                    <template lwc:elseif={isSubmitting}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Success -->
+                    <template lwc:elseif={isSuccess}>
+                        <div class="state-container success-state">
+                            <c-fimby-celebration action-type="extension-approved"></c-fimby-celebration>
+                            <h2 class={successTitleClass}>{_successTitle}</h2>
+                            <p class="success-subtitle">{_successSubtitle}</p>
+                            <button class="submit-btn approve" onclick={handleSuccessDone}>Done</button>
+                        </div>
+                    </template>
+
+                    <!-- Form -->
+                    <template lwc:elseif={isForm}>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Reviewing as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <p class="loan-context">{loanContext}</p>
+
+                        <!-- Dates comparison -->
+                        <div class="dates-comparison">
+                            <div class="date-box new-date">
+                                <span class="date-label">New Requested Date</span>
+                                <span class="date-value">{requestedDateDisplay}</span>
+                            </div>
+                            <div class="date-box original-date">
+                                <span class="date-label">Original Due Date</span>
+                                <span class="date-value">{dueDateDisplay}</span>
+                            </div>
+                        </div>
+
+                        <!-- Decision toggle -->
+                        <div class="decision-toggle">
+                            <button class={approveRadioClass} onclick={handleSelectApprove}>
+                                <span class="radio-dot"></span>
+                                <span>Approve</span>
+                            </button>
+                            <button class={declineRadioClass} onclick={handleSelectDecline}>
+                                <span class="radio-dot"></span>
+                                <span>Decline</span>
+                            </button>
+                        </div>
+
+                        <!-- Decline reason -->
+                        <template lwc:if={isDeclineDecision}>
+                            <div class="field-group">
+                                <label class="field-label" for="ext-decline-reason">Reason for Decline</label>
+                                <textarea id="ext-decline-reason" class="form-input form-textarea"
+                                          value={declineReason} oninput={handleDeclineReasonChange}
+                                          placeholder="Let them know why so they understand..."
+                                          maxlength="255"></textarea>
+                            </div>
+                        </template>
+                    </template>
+
+                </div>
+
+                <!-- Footer: form -->
+                <template lwc:if={isForm}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <button class={submitButtonClass} onclick={handleSubmit}
+                                disabled={isSubmitDisabled}>
+                            <span>{submitButtonLabel}</span>
+                        </button>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

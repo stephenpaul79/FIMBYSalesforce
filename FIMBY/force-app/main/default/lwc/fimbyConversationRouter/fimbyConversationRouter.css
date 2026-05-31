@@ -1,0 +1,24 @@
+:host {
+    display: block;
+    overflow: hidden;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.error-container {
+    text-align: center;
+    padding: var(--fimby-spacing-xl, 2rem);
+    color: var(--fimby-text-secondary, #666);
+}
+
+.error-container a {
+    display: inline-block;
+    margin-top: var(--fimby-spacing-md, 1rem);
+    color: var(--fimby-brand-primary, #008080);
+    font-weight: 500;
+}

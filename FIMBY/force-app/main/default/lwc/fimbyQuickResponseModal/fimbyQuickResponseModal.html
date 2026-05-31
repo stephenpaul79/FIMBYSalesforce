@@ -1,0 +1,336 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+             role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+            <div class="modal-container" onclick={handleModalClick}>
+
+                <!-- ========== HEADER ========== -->
+                <div class="modal-header">
+                    <h2 id="qr-modal-title" class="modal-title">{modalTitle}</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name={closeIconName} size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- ========== LOADING ========== -->
+                    <template lwc:if={isLoading}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context={loadingContext} size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- ========== ERROR ========== -->
+                    <template lwc:elseif={isError}>
+                        <div class="state-container error-state">
+                            <div class="error-banner" role="alert">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{errorMessage}</span>
+                            </div>
+                            <button class="retry-btn" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+
+                    <!-- ========== ALREADY RESPONDED ========== -->
+                    <template lwc:elseif={isAlreadyResponded}>
+                        <div class="state-container info-state">
+                            <lightning-icon icon-name="utility:check" size="medium" variant="success"></lightning-icon>
+                            <p class="state-message">You've already responded to this.</p>
+                            <button class="view-details-btn" onclick={handleViewDetails}>View Details</button>
+                        </div>
+                    </template>
+
+                    <!-- ========== UNAVAILABLE ========== -->
+                    <template lwc:elseif={isUnavailable}>
+                        <div class="state-container info-state">
+                            <lightning-icon icon-name="utility:info" size="medium"></lightning-icon>
+                            <p class="state-message">{errorMessage}</p>
+                            <button class="close-state-btn" onclick={handleClose}>Close</button>
+                        </div>
+                    </template>
+
+                    <!-- ========== SUCCESS ========== -->
+                    <template lwc:elseif={isSuccess}>
+                        <div class="state-container success-state">
+                            <template lwc:if={showCelebration}>
+                                <div class="celebration-wrapper">
+                                    <c-fimby-celebration action-type={celebrationActionType}></c-fimby-celebration>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="success-icon-wrapper">
+                                    <lightning-icon icon-name="utility:success" size="large"></lightning-icon>
+                                </div>
+                            </template>
+                            <h2 class="success-title">{successDisplayMessage}</h2>
+                            <template lwc:if={showWaitlistDisclaimer}>
+                                <p class="waitlist-disclaimer">{waitlistDisclaimer}</p>
+                            </template>
+                            <div class="success-actions">
+                                <button class="done-btn" onclick={handleClose}>Done</button>
+                                <button class="view-details-link" onclick={handleViewDetails}>View Details</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ========== SUBMITTING ========== -->
+                    <template lwc:elseif={isSubmittingState}>
+                        <div class="state-container submitting-state">
+                            <c-fimby-loading-message context={submittingContext} size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- ========== FORM ========== -->
+                    <template lwc:else>
+
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="identity-row">
+                                <img src={identityIconUrl} alt="" class="identity-icon">
+                                <span class="identity-label">{identityLabel}</span>
+                                <span class="identity-name">{_actingAsContactName}</span>
+                            </div>
+                        </template>
+
+                        <!-- Summary card -->
+                        <div class="summary-card">
+                            <template lwc:if={hasSummaryImage}>
+                                <img src={summaryImageUrl} alt="" class="summary-image">
+                            </template>
+                            <div class="summary-info">
+                                <span class="summary-title">{summaryTitle}</span>
+                                <template lwc:if={summarySubtitle}>
+                                    <span class="summary-subtitle">{summarySubtitle}</span>
+                                </template>
+                                <template lwc:if={summaryMeta}>
+                                    <span class="summary-meta">{summaryMeta}</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- ===== STORY COMMENT FORM ===== -->
+                        <template lwc:if={isStoryType}>
+                            <div class="form-section">
+                                <div class="textarea-container">
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="qr-comment">Comment</label>
+                                        <span class={commentCountClass}>{commentCharacterDisplay}</span>
+                                    </div>
+                                    <lightning-textarea
+                                        id="qr-comment"
+                                        variant="label-hidden"
+                                        placeholder="Write your comment... Use @ to mention someone"
+                                        value={_commentText}
+                                        onchange={handleCommentChange}
+                                        max-length="1000"
+                                        class="form-textarea">
+                                    </lightning-textarea>
+                                    <template lwc:if={_showMentionSuggestions}>
+                                        <div class="mention-dropdown">
+                                            <template for:each={_mentionSuggestions} for:item="person">
+                                                <div key={person.id} class="mention-item"
+                                                     data-person-id={person.id} data-person-name={person.name}
+                                                     onclick={handleMentionSelect}>
+                                                    <span class="mention-name">{person.name}</span>
+                                                    <template lwc:if={person.neighbourhood}>
+                                                        <span class="mention-neighbourhood">{person.neighbourhood}</span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ===== OPEN EVENT FORM ===== -->
+                        <template lwc:if={isOpenEventType}>
+                            <div class="form-section event-form">
+                                <div class="guest-stepper" role="group" aria-label="Guest count">
+                                    <span class="field-label">How many are coming?</span>
+                                    <div class="stepper-controls">
+                                        <button class="stepper-btn" onclick={handleGuestDecrement}
+                                                aria-label="Decrease guest count"
+                                                disabled={_isSubmitting}>&#8722;</button>
+                                        <span class="stepper-value" aria-live="polite">{_guestCount}</span>
+                                        <button class="stepper-btn" onclick={handleGuestIncrement}
+                                                aria-label="Increase guest count"
+                                                disabled={_isSubmitting}>+</button>
+                                    </div>
+                                    <span class="stepper-hint">Including yourself</span>
+                                </div>
+                                <button class="event-confirm-btn" onclick={handleSubmit}
+                                        disabled={isSubmitDisabled}>
+                                    <span>{submitLabel}</span>
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- ===== ASK / OFFER / GATHERING FORM ===== -->
+                        <template lwc:if={isAskOfferType}>
+                            <div class="form-section">
+                                <div class="field-group">
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="qr-subject">Subject</label>
+                                        <span class={subjectCountClass}>{subjectDisplay}</span>
+                                    </div>
+                                    <input id="qr-subject"
+                                           type="text"
+                                           class="form-input"
+                                           value={_subject}
+                                           oninput={handleSubjectChange}
+                                           maxlength="80"
+                                           placeholder="Brief subject line">
+                                </div>
+
+                                <div class="field-group">
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="qr-details">Response Details</label>
+                                        <span class={detailsCountClass}>{detailsDisplay}</span>
+                                    </div>
+                                    <textarea id="qr-details"
+                                              class="form-input form-native-textarea"
+                                              value={_responseDetails}
+                                              oninput={handleDetailsChange}
+                                              maxlength="255"
+                                              placeholder="Share your response details..."></textarea>
+                                </div>
+
+                                <template lwc:if={showAmountField}>
+                                    <div class="field-group">
+                                        <label class="field-label" for="qr-amount">Amount Requested</label>
+                                        <div class="amount-row">
+                                            <lightning-input
+                                                id="qr-amount"
+                                                variant="label-hidden"
+                                                type="number"
+                                                value={_amountRequested}
+                                                onchange={handleAmountChange}
+                                                min="1"
+                                                max={maxAmount}
+                                                class="amount-input">
+                                            </lightning-input>
+                                            <span class="amount-hint">of {maxAmount} available</span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <div class="field-group">
+                                    <label class="decline-label">
+                                        <input type="checkbox" checked={_decline} onchange={handleDeclineChange}>
+                                        <span>Decline — send a message without accepting</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ===== BULK BUY FORM ===== -->
+                        <template lwc:if={isBulkBuyType}>
+                            <div class="form-section">
+                                <div class="thermometer">
+                                    <div class="thermo-bar">
+                                        <div class="thermo-taken" style={takenWidth}></div>
+                                        <div class="thermo-pending" style={pendingWidth}></div>
+                                        <div class="thermo-remaining" style={remainingWidth}></div>
+                                    </div>
+                                    <div class="thermo-legend">
+                                        <span class="legend-item legend-taken">{thermoTakenCount} reserved</span>
+                                        <span class="legend-item legend-pending">{thermoPendingCount} your share</span>
+                                        <span class="legend-item legend-remaining">{thermoRemainingCount} available</span>
+                                    </div>
+                                </div>
+
+                                <div class="field-group">
+                                    <label class="field-label">How many shares?</label>
+                                    <div class="stepper-controls reserve-stepper">
+                                        <button class="stepper-btn" onclick={handleReserveDecrement}
+                                                aria-label="Decrease amount"
+                                                disabled={_isSubmitting}>&#8722;</button>
+                                        <input type="number" class="stepper-input"
+                                               value={_reserveAmount}
+                                               onchange={handleReserveAmountChange}
+                                               min="1" max={bulkBuyMaxAmount}
+                                               aria-label="Number of shares">
+                                        <button class="stepper-btn" onclick={handleReserveIncrement}
+                                                aria-label="Increase amount"
+                                                disabled={_isSubmitting}>+</button>
+                                    </div>
+                                </div>
+
+                                <div class="notice-text">
+                                    By reserving, you're committing to pick up and pay for your share.
+                                    You can cancel your reservation from the post detail page.
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ===== LIBRARY BORROW FORM ===== -->
+                        <template lwc:if={isLibraryType}>
+                            <div class="form-section">
+                                <template lwc:if={showDateField}>
+                                    <div class="field-group">
+                                        <label class="field-label" for="qr-date">Requested Pickup Date</label>
+                                        <input id="qr-date" type="date" class="form-input"
+                                               value={_requestedDate}
+                                               onchange={handleDateChange}
+                                               min={todayDate} max={maxPickupDate}
+                                               aria-describedby="date-error">
+                                        <template lwc:if={dateValidationError}>
+                                            <span id="date-error" class="field-error" role="alert">{dateValidationError}</span>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <div class="field-group">
+                                    <label class="field-label" for="qr-days"># of Days Needed</label>
+                                    <input id="qr-days" type="number" class="form-input"
+                                           value={_daysNeeded}
+                                           onchange={handleDaysChange}
+                                           min="1" max={maxLendingDays}
+                                           placeholder="e.g. 3"
+                                           aria-describedby="days-error">
+                                    <template lwc:if={daysValidationError}>
+                                        <span id="days-error" class="field-error" role="alert">{daysValidationError}</span>
+                                    </template>
+                                </div>
+
+                                <template lwc:if={showDateHint}>
+                                    <p class="field-hint">You'll choose your preferred start date when it's your turn.</p>
+                                </template>
+
+                                <div class="field-group">
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="qr-note">Note to Lender (optional)</label>
+                                        <span class={noteCountClass}>{noteCharDisplay}</span>
+                                    </div>
+                                    <lightning-textarea
+                                        id="qr-note"
+                                        variant="label-hidden"
+                                        value={_noteToLender}
+                                        onchange={handleNoteChange}
+                                        max-length="255"
+                                        placeholder="Any details for the lender..."
+                                        class="form-textarea note-textarea">
+                                    </lightning-textarea>
+                                </div>
+                            </div>
+                        </template>
+
+                    </template>
+                </div>
+
+                <!-- ========== FOOTER (form state only, not for open event) ========== -->
+                <template lwc:if={showFormFooter}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <button class={submitButtonClass} onclick={handleSubmit}
+                                disabled={isSubmitDisabled}>
+                            <span>{submitLabel}</span>
+                        </button>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

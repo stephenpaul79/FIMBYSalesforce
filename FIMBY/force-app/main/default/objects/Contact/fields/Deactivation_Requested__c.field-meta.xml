@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Deactivation_Requested__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Flag set when user requests account deactivation. Midnight batch job picks these up to deactivate the user, obfuscate records, and delete related data.</description>
+    <externalId>false</externalId>
+    <label>Deactivation Requested</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

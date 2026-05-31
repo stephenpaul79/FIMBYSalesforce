@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Type__c</fullName>
+    <label>Type</label>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Response</fullName>
+                <default>false</default>
+                <label>Response</label>
+            </value>
+            <value>
+                <fullName>Comment</fullName>
+                <default>false</default>
+                <label>Comment</label>
+            </value>
+            <value>
+                <fullName>Lending_Request</fullName>
+                <default>false</default>
+                <label>Lending Request</label>
+            </value>
+            <value>
+                <fullName>Loan_Approved</fullName>
+                <default>false</default>
+                <label>Loan Approved</label>
+            </value>
+            <value>
+                <fullName>Extension_Request</fullName>
+                <default>false</default>
+                <label>Extension Request</label>
+            </value>
+            <value>
+                <fullName>Extension_Approved</fullName>
+                <default>false</default>
+                <label>Extension Approved</label>
+            </value>
+            <value>
+                <fullName>Extension_Declined</fullName>
+                <default>false</default>
+                <label>Extension Declined</label>
+            </value>
+            <value>
+                <fullName>Overdue_Reminder</fullName>
+                <default>false</default>
+                <label>Overdue Reminder</label>
+            </value>
+            <value>
+                <fullName>Item_Returned</fullName>
+                <default>false</default>
+                <label>Item Returned</label>
+            </value>
+            <value>
+                <fullName>Bulk_Buy_Reservation</fullName>
+                <default>false</default>
+                <label>Bulk Buy Reservation</label>
+            </value>
+            <value>
+                <fullName>Bulk_Buy_Status</fullName>
+                <default>false</default>
+                <label>Bulk Buy Status</label>
+            </value>
+            <value>
+                <fullName>Bulk_Buy_Pickup</fullName>
+                <default>false</default>
+                <label>Bulk Buy Pickup</label>
+            </value>
+            <value>
+                <fullName>Not_Responding_Flag</fullName>
+                <default>false</default>
+                <label>Not Responding Flag</label>
+            </value>
+            <value>
+                <fullName>Not_Responding_Response</fullName>
+                <default>false</default>
+                <label>Not Responding Response</label>
+            </value>
+            <value>
+                <fullName>Not_Responding_Escalated</fullName>
+                <default>false</default>
+                <label>Not Responding Escalated</label>
+            </value>
+            <value>
+                <fullName>Follow_Up_Resolved</fullName>
+                <default>false</default>
+                <label>Follow Up Resolved</label>
+            </value>
+            <value>
+                <fullName>Message</fullName>
+                <default>false</default>
+                <label>Message</label>
+            </value>
+            <value>
+                <fullName>Event_Chat</fullName>
+                <default>false</default>
+                <label>Event Chat</label>
+            </value>
+            <value>
+                <fullName>Event_Reminder</fullName>
+                <default>false</default>
+                <label>Event Reminder</label>
+            </value>
+            <value>
+                <fullName>Relationship_Approved</fullName>
+                <default>false</default>
+                <label>Relationship Approved</label>
+            </value>
+            <value>
+                <fullName>Relationship_Revoked</fullName>
+                <default>false</default>
+                <label>Relationship Revoked</label>
+            </value>
+            <value>
+                <fullName>Relationship_Request</fullName>
+                <default>false</default>
+                <label>Relationship Request</label>
+            </value>
+            <value>
+                <fullName>Relationship_Deactivated</fullName>
+                <default>false</default>
+                <label>Relationship Deactivated</label>
+            </value>
+            <value>
+                <fullName>System</fullName>
+                <default>false</default>
+                <label>System</label>
+            </value>
+            <value>
+                <fullName>Moderator</fullName>
+                <default>false</default>
+                <label>Moderator</label>
+            </value>
+            <value>
+                <fullName>Vouch_Request_Received</fullName>
+                <default>false</default>
+                <label>Vouch Request Received</label>
+            </value>
+            <value>
+                <fullName>Vouch_Request_Reminder</fullName>
+                <default>false</default>
+                <label>Vouch Request Reminder</label>
+            </value>
+            <value>
+                <fullName>Vouch_Approved</fullName>
+                <default>false</default>
+                <label>Vouch Approved</label>
+            </value>
+            <value>
+                <fullName>Vouch_Declined</fullName>
+                <default>false</default>
+                <label>Vouch Declined</label>
+            </value>
+            <value>
+                <fullName>Vouch_Revoked</fullName>
+                <default>false</default>
+                <label>Vouch Revoked</label>
+            </value>
+            <value>
+                <fullName>Voucher_Paused</fullName>
+                <default>false</default>
+                <label>Voucher Paused</label>
+            </value>
+            <value>
+                <fullName>Thanks_Received</fullName>
+                <default>false</default>
+                <label>Thanks Received</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

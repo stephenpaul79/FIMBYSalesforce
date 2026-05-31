@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I report a problem or concern?",
+  "contentBody" : {
+    "question" : "How do I report a problem or concern?",
+    "answer" : "<p>If you see content that is inappropriate or experience an issue with the app, tap the <strong>three-dot menu</strong> on any post and select <strong>Report</strong>. For general app feedback or support, visit this Help page and use the contact options below. Our team reviews all reports promptly.</p>",
+    "sortOrder" : "090",
+    "category" : "Account"
+  },
+  "urlName" : "how-do-i-report-a-problem"
+}

@@ -1,0 +1,373 @@
+/* Quick Post Form - Type Selection Router */
+:host {
+    display: block;
+    background: var(--fimby-surface-input);
+}
+
+/* ===========================================
+   MODAL MODE STYLES
+   =========================================== */
+.modal-overlay {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--fimby-scrim);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-modal);
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-input);
+    position: relative;
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+    text-align: center;
+}
+
+.modal-content {
+    padding: clamp(12px, 3vw, 20px);
+    overflow-y: auto;
+    max-height: calc(90vh - 70px);
+}
+
+/* Modal Grid — 2×3 fluid card grid (compound selector beats shared .type-selection-grid) */
+.type-selection-grid.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(8px, 2vw, 14px);
+}
+
+.type-selection-grid.modal-grid .type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: clamp(10px, 2.5vw, 20px) clamp(8px, 1.5vw, 14px);
+    gap: clamp(4px, 1vw, 8px);
+}
+
+.type-selection-grid.modal-grid .type-icon {
+    width: clamp(36px, 9vw, 56px);
+    height: clamp(36px, 9vw, 56px);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.type-selection-grid.modal-grid .type-icon-img {
+    width: clamp(22px, 5.5vw, 32px);
+    height: clamp(22px, 5.5vw, 32px);
+}
+
+.type-selection-grid.modal-grid .type-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.type-selection-grid.modal-grid .type-label {
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
+    margin-bottom: 2px;
+}
+
+.type-selection-grid.modal-grid .type-description {
+    font-size: clamp(0.72rem, 1.6vw, 0.8rem);
+}
+
+/* Desktop: minimal padding/gap reduction to fit without scrollbar — keep icons/text full size */
+@media (min-width: 768px) {
+    .modal-content {
+        padding: 16px 18px;
+    }
+
+    .type-selection-grid.modal-grid {
+        gap: 12px;
+    }
+
+    .type-selection-grid.modal-grid .type-option {
+        padding: 16px 12px;
+        gap: 6px;
+    }
+}
+
+/* ===========================================
+   FULL PAGE MODE STYLES
+   =========================================== */
+.fimby-quick-post-form {
+    background: var(--fimby-surface-input);
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.form-header {
+    background: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    box-shadow: var(--fimby-shadow-card);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+}
+
+.header-spacer {
+    width: 40px;
+}
+
+.close-button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.modal-header .close-button {
+    position: absolute;
+    right: 20px;
+}
+
+.form-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+    text-align: center;
+}
+
+/* Content Area */
+.form-content {
+    flex: 1;
+    padding: 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===========================================
+   SHARED TYPE SELECTION STYLES
+   =========================================== */
+.type-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.type-option {
+    background: var(--fimby-surface-card);
+    border: 2px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font: inherit;
+    color: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.type-option:hover {
+    border-color: var(--fimby-brand-teal);
+    transform: translateY(-4px);
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.type-option:active {
+    transform: translateY(-2px);
+}
+
+.type-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.type-icon-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.need-icon {
+    background-color: var(--fimby-error-tint);
+}
+
+.offer-icon {
+    background-color: var(--fimby-success-tint);
+}
+
+.story-icon {
+    background-color: var(--fimby-info-tint);
+}
+
+.event-icon {
+    background-color: var(--fimby-selected-bg);
+}
+
+.bulkbuy-icon {
+    background-color: var(--fimby-surface-section);
+}
+
+.lending-icon {
+    background-color: var(--fimby-warning-tint);
+}
+
+.type-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 8px;
+}
+
+.type-description {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+   =========================================== */
+@media (max-width: 480px) {
+    /* Modal adjustments */
+    .modal-overlay {
+        padding: 16px;
+    }
+
+    .modal-container {
+        border-radius: var(--fimby-radius-xl);
+    }
+
+    /* Full page adjustments */
+    .form-content {
+        padding: 16px 12px;
+        align-items: flex-start;
+        padding-top: 24px;
+    }
+
+    /* Full-page grid only — modal grid handled by .type-selection-grid.modal-grid */
+    .type-selection-grid:not(.modal-grid) {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .type-selection-grid:not(.modal-grid) .type-option {
+        padding: 20px 16px;
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 16px;
+    }
+
+    .type-selection-grid:not(.modal-grid) .type-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .type-selection-grid:not(.modal-grid) .type-label {
+        font-size: 1rem;
+        margin-bottom: 4px;
+    }
+
+    .type-selection-grid:not(.modal-grid) .type-description {
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .type-selection-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 640px;
+    }
+}
+
+/* Keyboard focus visibility */
+.close-button:focus-visible,
+.type-option:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-overlay,
+    .modal-container,
+    .close-button,
+    .type-option {
+        transition: none !important;
+        animation: none !important;
+    }
+}

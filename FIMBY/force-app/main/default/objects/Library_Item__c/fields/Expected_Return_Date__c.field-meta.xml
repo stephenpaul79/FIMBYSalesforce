@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Expected_Return_Date__c</fullName>
+    <formula>IF(ISBLANK(On_Loan_Return_Date__c), NULL,
+IF( !ISBLANK(On_Loan_Return_Date__c) &amp;&amp; On_Loan_Return_Date__c &gt; TODAY(), On_Loan_Return_Date__c, TODAY()))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Expected Return Date</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

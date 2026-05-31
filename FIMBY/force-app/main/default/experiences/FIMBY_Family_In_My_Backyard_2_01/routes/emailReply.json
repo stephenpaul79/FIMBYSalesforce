@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "0eb42e2a-7a74-4ec9-8f10-d86e86750e41",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "emailreply__c",
+  "id" : "d705ba60-ab5b-4b42-82de-e9788d9bef3b",
+  "label" : "Email Reply",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-email-reply",
+  "type" : "route",
+  "urlPrefix" : "email-reply"
+}

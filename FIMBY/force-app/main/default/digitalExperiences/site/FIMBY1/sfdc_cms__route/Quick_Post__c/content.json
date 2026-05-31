@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Quick Post",
+  "contentBody" : {
+    "activeViewId" : "Quick_Post",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-quick-post",
+    "urlPrefix" : "quick-post"
+  },
+  "urlName" : "quick-post"
+}

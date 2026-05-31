@@ -1,0 +1,38 @@
+{
+  "appPageId" : "11223344-5566-7788-99aa-bbccddeeff00",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "aa11bb22-cc33-dd44-ee55-ff6677880011",
+  "label" : "Post Archive",
+  "regions" : [ {
+    "id" : "bb22cc33-dd44-ee55-ff66-778899001122",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "id" : "cc33dd44-ee55-ff66-7788-990011223344",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "dd44ee55-ff66-7788-9900-112233445566",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "Archive of all my posts (needs and offers)",
+        "title" : "Post Archive"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "ee55ff66-7788-9900-1122-334455667788",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "ff667788-9900-1122-3344-556677889900",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-post_archive"
+}

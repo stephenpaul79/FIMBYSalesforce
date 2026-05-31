@@ -1,0 +1,29 @@
+<template>
+    <div class="fimby-neighborhood-stats">
+        <c-fimby-page-header page-title="Neighbourhood Stats"></c-fimby-page-header>
+        <div class="stats-container">
+            <div class="stats-grid">
+                <template for:each={neighborhoodStats} for:item="stat">
+                    <div key={stat.id} class="stat-card">
+                        <lightning-icon icon-name={stat.icon} size="large" class="stat-icon"></lightning-icon>
+                        <div class="stat-number">{stat.value}</div>
+                        <div class="stat-label">{stat.label}</div>
+                        <div class="stat-change">{stat.changeText}</div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="activity-summary">
+                <h3 class="section-title">Recent Activity</h3>
+                <template for:each={recentActivities} for:item="activity">
+                    <div key={activity.id} class="activity-item">
+                        <lightning-icon icon-name={activity.icon} size="small"></lightning-icon>
+                        <span class="activity-text">{activity.text}</span>
+                        <span class="activity-time">{activity.time}</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <c-fimby-bottom-navigation active-tab="stats" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

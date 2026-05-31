@@ -1,0 +1,217 @@
+/* FIMBY Experience Cloud (LWR) — DXP token overrides
+   Maps Salesforce DXP design tokens to FIMBY's central --fimby-* tokens.
+   Branding-set classes (.dxpBrand_*) load AFTER head-markup CSS,
+   so !important is required on tokens the branding set overrides.
+   No separate dark-mode block needed — the --fimby-* values switch
+   automatically via fimby-tokens.css.
+*/
+
+
+/* ── Base defaults (lowest priority) ──────────────────────────── */
+:root {
+  --dxp-g-brand: var(--fimby-brand-teal);
+  --dxp-g-root:  var(--fimby-surface-page);
+  --dxp-s-form-element-color-background: var(--fimby-surface-input);
+  --dxp-g-root-contrast:   var(--fimby-text-strong);
+  --dxp-g-root-contrast-1: var(--fimby-text-strong);
+  --dxp-g-root-contrast-2: var(--fimby-text-primary);
+  --dxp-g-root-contrast-3: var(--fimby-text-secondary);
+  --dxp-g-neutral-3:       var(--fimby-text-muted);
+  --dxp-s-form-element-color-border: var(--fimby-input-border-default);
+  --dxp-g-neutral:   var(--fimby-border-default);
+  --dxp-g-neutral-2: var(--fimby-border-strong);
+  --dxp-s-link-text-color-1: var(--fimby-brand-teal);
+  --dxp-g-success:   var(--fimby-success);
+  --dxp-g-warning-1: var(--fimby-warning);
+  --dxp-g-warning-2: var(--fimby-warning);
+  --dxp-g-warning-3: var(--fimby-text-secondary);
+  --dxp-g-error:     var(--fimby-error);
+  --dxp-g-info:      var(--fimby-info);
+  --dxp-s-button-color-contrast-1: var(--fimby-text-on-teal);
+}
+
+
+/* ── Branding-set override ────────────────────────────────────────
+   The site theme applies a .dxpBrand_* class to sections that
+   resets --dxp-g-root to white and other tokens to defaults.
+   !important is needed because those styles load after this file.
+   ────────────────────────────────────────────────────────────────── */
+[class*="dxpBrand_"] {
+  --dxp-g-root: var(--fimby-surface-page) !important;
+  --dxp-g-brand: var(--fimby-brand-teal) !important;
+  --dxp-s-form-element-color-background: var(--fimby-surface-input) !important;
+  --dxp-g-root-contrast:   var(--fimby-text-strong) !important;
+  --dxp-g-root-contrast-1: var(--fimby-text-strong) !important;
+  --dxp-g-root-contrast-2: var(--fimby-text-primary) !important;
+  --dxp-g-root-contrast-3: var(--fimby-text-secondary) !important;
+  --dxp-g-neutral-3:       var(--fimby-text-muted) !important;
+  --dxp-s-form-element-color-border: var(--fimby-input-border-default) !important;
+  --dxp-g-neutral:   var(--fimby-border-default) !important;
+  --dxp-g-neutral-2: var(--fimby-border-strong) !important;
+  --dxp-s-link-text-color-1: var(--fimby-brand-teal) !important;
+  --dxp-g-success:   var(--fimby-success) !important;
+  --dxp-g-warning-1: var(--fimby-warning) !important;
+  --dxp-g-warning-2: var(--fimby-warning) !important;
+  --dxp-g-warning-3: var(--fimby-text-secondary) !important;
+  --dxp-g-error:     var(--fimby-error) !important;
+  --dxp-g-info:      var(--fimby-info) !important;
+  --dxp-s-button-color-contrast-1: var(--fimby-text-on-teal) !important;
+}
+
+
+/* ── Login form card ──────────────────────────────────────────────
+   The form inherits --dxp-g-root (page color) from its branding-set
+   section. Override it to the lighter card surface so the form
+   stands out against the warm-grey page canvas.
+   ────────────────────────────────────────────────────────────────── */
+community_login-login-form,
+community_login-forgot-password,
+community_login-check-email {
+  --dxp-g-root: var(--fimby-surface-card) !important;
+  --dxp-s-form-element-color-background: var(--fimby-surface-input) !important;
+}
+
+.fimby-auth-status {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 420px;
+  padding: 1.5rem 1rem;
+  width: 100%;
+}
+
+
+/* ── Visualforce auth pages (Change Password override) ─────────── */
+.fimby-vf-auth {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fimby-surface-page);
+  color: var(--fimby-text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.fimby-vf-auth__shell {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem 3rem;
+  width: 100%;
+}
+
+.fimby-vf-auth__logo {
+  display: block;
+  height: auto;
+  margin-bottom: 1.75rem;
+  max-width: min(220px, 60vw);
+  width: auto;
+}
+
+.fimby-vf-auth__card {
+  background: var(--fimby-surface-card);
+  border: 1px solid var(--fimby-border-default);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--fimby-elevated-edge);
+  box-sizing: border-box;
+  max-width: 420px;
+  padding: 2rem 1.75rem;
+  width: 100%;
+}
+
+.fimby-vf-auth__title {
+  color: var(--fimby-text-primary);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.fimby-vf-auth__field {
+  margin-bottom: 1rem;
+}
+
+.fimby-vf-auth__label {
+  color: var(--fimby-text-primary);
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+}
+
+.fimby-vf-auth__input {
+  background: var(--fimby-surface-input) !important;
+  border: 1px solid var(--fimby-border-strong) !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  color: var(--fimby-text-strong) !important;
+  font-size: 1rem !important;
+  padding: 0.625rem 0.75rem !important;
+  width: 100% !important;
+}
+
+.fimby-vf-auth__input:focus {
+  border-color: var(--fimby-brand-teal) !important;
+  box-shadow: 0 0 0 3px var(--fimby-focus-glow) !important;
+  outline: none !important;
+}
+
+.fimby-vf-auth__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* Tier 1 primary CTA — matches --fimby-btn-* pattern in lwc-css-foundations */
+.fimby-vf-auth__btn,
+input.fimby-vf-auth__btn {
+  align-items: center;
+  background-color: var(--fimby-btn-primary-bg) !important;
+  border: none !important;
+  border-radius: var(--fimby-btn-radius) !important;
+  box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom) !important;
+  box-sizing: border-box;
+  color: #ffffff !important;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--fimby-btn-font-size) !important;
+  font-weight: 700 !important;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 10rem;
+  padding: 12px 24px !important;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  width: auto;
+}
+
+.fimby-vf-auth__btn:hover,
+input.fimby-vf-auth__btn:hover {
+  background-color: var(--fimby-btn-primary-bg-hover) !important;
+  color: #ffffff !important;
+}
+
+.fimby-vf-auth__btn:active,
+input.fimby-vf-auth__btn:active {
+  background-color: var(--fimby-btn-primary-bg-active) !important;
+  box-shadow: var(--fimby-btn-shadow-active) !important;
+  color: #ffffff !important;
+  transform: scale(0.97);
+}
+
+.fimby-vf-auth__btn:focus-visible,
+input.fimby-vf-auth__btn:focus-visible {
+  outline: 2px solid var(--fimby-focus-ring);
+  outline-offset: 2px;
+}
+
+.fimby-vf-auth__messages {
+  margin-bottom: 1rem;
+}
+
+.fimby-vf-auth__messages .message {
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  padding: 0.625rem 0.75rem;
+}

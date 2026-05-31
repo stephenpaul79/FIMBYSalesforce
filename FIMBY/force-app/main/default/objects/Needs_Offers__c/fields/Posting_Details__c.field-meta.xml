@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Posting_Details__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( ISPICKVAL(Type__c, &quot;Event&quot;),IMAGE(&quot;/resource/Impact_Icons/plannersm.png&quot;, &quot;Event&quot;, 25, 25)+&quot; &quot;,NULL)+
+IF( RecordType.Name = &quot;Need&quot; &amp;&amp; !ISPICKVAL(Type__c, &quot;Event&quot;),IMAGE(&quot;/resource/Impact_Icons/needsm.png&quot;, &quot;Event&quot;, 25, 25)+&quot; &quot;,NULL)+
+IF( RecordType.Name = &quot;Offer&quot; &amp;&amp; !ISPICKVAL(Type__c, &quot;Event&quot;) ,IMAGE(&quot;/resource/Impact_Icons/giftsm.png&quot;, &quot;Event&quot;, 25, 25)+&quot; &quot;,NULL)+
+IF(!ISBLANK(Contact__c), HYPERLINK(&quot;/&quot;+  Contact__c,  Contact__r.FirstName + &quot; &quot; + Contact__r.LastName + IF(Right(Contact__r.LastName, 1)=&quot;s&quot;, &quot;&apos;&quot;, &quot;&apos;s&quot;)), 
+IF(!ISBLANK(Organization__c), HYPERLINK(&quot;/&quot;+ Organization__c, Organization__r.Name  + IF(Right(Organization__r.Name, 1)=&quot;s&quot;, &quot;&apos;&quot;, &quot;&apos;s&quot;)),&quot;&quot;)) + &quot; &quot; + IF( ISPICKVAL(Type__c, &quot;Event&quot;), &quot;Event&quot;, RecordType.Name) +
+IF(!ISBLANK(Posted_By__c), 
+BR() +  IF(Contact__c = Posted_By__c, &quot;&quot;, &quot;(Posted by &quot; + HYPERLINK(&quot;/&quot;+ Posted_By__c, Posted_By__r.FirstName +&quot; &quot; +  Posted_By__r.LastName) + &quot;)&quot;)
+, &quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Posting Details</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

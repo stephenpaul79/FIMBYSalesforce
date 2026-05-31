@@ -1,0 +1,92 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:dynamicLayout",
+  "dataProviders" : [ ],
+  "id" : "e45e3d4d-d6e1-42b7-85c9-324cb198c845",
+  "label" : "Neighbours",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "background" : "background: rgba(0,0,0,0)",
+        "backgroundOverlay" : "rgba(0,0,0,0.5)",
+        "contentAreaWidth" : 100,
+        "sectionConfig" : {
+          "UUID" : "278bb78a-b911-464e-b12a-dbe0baff3f8d",
+          "columns" : [ {
+            "UUID" : "2cf95f43-64ec-4d9e-8332-008d9b6d7fec",
+            "columnKey" : "1",
+            "columnName" : "Column 1",
+            "columnWidth" : "12",
+            "seedComponents" : [ ]
+          } ]
+        },
+        "sectionHeight" : 300
+      },
+      "componentName" : "forceCommunity:section",
+      "id" : "278bb78a-b911-464e-b12a-dbe0baff3f8d",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "richTextValue" : "<p style=\"text-align: center;\"><strong style=\"font-size: 28px;\">Neighbours</strong></p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><a href=\"/s/shared-contact-info/Shared_Contact_Info__c/00B5f00000PJq9cEAD\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.ConnectionsCirclepng.1}\" style=\"width: 83.4px; height: 83.4px;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/s/new-contact\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.AddContactsCirclepng.1}\" style=\"width: 82.6px; height: 82.6px;\"></a></p>\n<p style=\"text-align: center;\"><br></p>"
+          },
+          "componentName" : "forceCommunity:richTextInline",
+          "id" : "6dfdc5e8-3443-4a2c-81e1-048890bbabb9",
+          "renderPriority" : "NEUTRAL",
+          "renditionMap" : { },
+          "type" : "component"
+        }, {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "All_FIMBY_Contacts",
+            "layout" : "FULL",
+            "pageSize" : 25,
+            "scope" : "Contact",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : false,
+            "showManualRefreshButton" : false,
+            "showObjectName" : false,
+            "showPinnedList" : true,
+            "showSearchBar" : true
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "b40cb738-94a7-43c2-a9c2-2abdddf7ae33",
+          "renderPriority" : "NEUTRAL",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "2cf95f43-64ec-4d9e-8332-008d9b6d7fec",
+        "regionLabel" : "Column 1",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "3999957d-c9f9-494d-adc8-1e1519fe4bcf",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Neighbours"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "979e5c5c-51ab-403a-8f53-271c6e25611c",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "bb643114-158d-43b9-9c33-080a52c8379a",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-neighbours"
+}

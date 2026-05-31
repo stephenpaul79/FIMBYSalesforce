@@ -1,0 +1,80 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "dda4b3df-9e4f-46f5-abe3-c7911f77e40c",
+  "label" : "Lending Library",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><strong style=\"font-size: 28px;\">Lending Library</strong></p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><a href=\"/s/post-library-item\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" src=\"{!contentAsset.LendItemCirclepng.1}\" alt=\"\" style=\"width: 73.8px; height: 73.8px;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/s/my-items\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" src=\"{!contentAsset.ManageItemsCirclepng.1}\" alt=\"\" style=\"width: 73.8px; height: 73.8px;\"></a></p>\n<p style=\"text-align: center;\"><br></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "257a138e-fcff-47ab-94ec-011db78c7706",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "enableInlineEdit" : false,
+        "filterName" : "All",
+        "layout" : "FULL",
+        "pageSize" : 25,
+        "scope" : "Library_Item__c",
+        "showActionBar" : true,
+        "showChartsPanel" : false,
+        "showDisplay" : "grid",
+        "showFilterPanel" : false,
+        "showImageIcon" : false,
+        "showManualRefreshButton" : false,
+        "showObjectName" : false,
+        "showPinnedList" : true,
+        "showSearchBar" : true
+      },
+      "componentName" : "forceCommunity:objectHome",
+      "id" : "6935922e-11fe-4422-8413-6803eefd430b",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "90c0b2cf-65ba-4dc2-b5c1-2a6fabeee96f",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "id" : "c55ba532-033e-453c-ae1a-afc4b41cd339",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><a href=\"https://fimby.my.site.com/s/feedback\" rel=\"noopener noreferrer\" target=\"_self\" style=\"color: rgb(230, 0, 0);\"><strong><u>SUBMIT FEEDBACK</u></strong></a></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\">Need Assistance with FIMBY?</p><p style=\"text-align: center;\">fimby @ strathconavineyard.com</p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "b23a50c4-68c8-4607-b632-1907f7ff71eb",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "332bd801-fcc0-48fe-92a2-840331b8ca20",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Lending Library"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "849bdd0a-d3b2-4046-8c63-a86362ed9a7d",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "00312f45-d85f-4f4b-9c3e-83d0daea48b0",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-lending-library"
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reference_Organization__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Optional — the Organization Account the reference contact represents (CG rep vouches only).</description>
+    <label>Reference Organization</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Vouches by This Organization</relationshipLabel>
+    <relationshipName>Vouches_By_Organization</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

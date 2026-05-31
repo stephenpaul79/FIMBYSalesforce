@@ -1,0 +1,55 @@
+<template>
+    <div class="reactivate-page">
+        <div class="reactivate-card">
+            <template lwc:if={showForm}>
+                <img src={formIconUrl} alt="" class="reactivate-icon">
+                <h1 class="reactivate-title">Restore your FIMBY account</h1>
+                <p class="reactivate-lede">
+                    If your account is inside its 30-day grace window, enter the username
+                    you sign in with and we'll send a fresh restore link to the email on
+                    file for that account.
+                </p>
+
+                <form onsubmit={handleSubmit}>
+                    <label for="usernameInput" class="reactivate-label">Your username</label>
+                    <input
+                        id="usernameInput"
+                        type="text"
+                        class="reactivate-input"
+                        value={username}
+                        oninput={handleUsernameChange}
+                        placeholder="The username you log in with"
+                        autocomplete="username"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        required
+                        disabled={isSubmitting}>
+
+                    <button
+                        type="submit"
+                        class="reactivate-button"
+                        disabled={isSubmitting}>
+                        <template lwc:if={isSubmitting}>Sending...</template>
+                        <template lwc:else>Send restore link</template>
+                    </button>
+                </form>
+
+                <p class="reactivate-help">
+                    Not sure of your username? Email&nbsp;<a href="mailto:help@fimby.com">help@fimby.com</a>&nbsp;from the address on your account.
+                </p>
+            </template>
+
+            <template lwc:if={showSent}>
+                <img src={sentIconUrl} alt="" class="reactivate-icon">
+                <h1 class="reactivate-title">Check your inbox</h1>
+                <p class="reactivate-lede">
+                    If a restorable FIMBY account exists for that username, we've sent a
+                    restore link to the email on file. The link is good for the next 24 hours.
+                </p>
+                <p class="reactivate-help">
+                    Didn't get an email? Check your spam folder, or&nbsp;<button type="button" class="reactivate-link-button" onclick={handleTryAgain}>try a different username</button>. If you've already asked for a link a few times today and still don't see one, email&nbsp;<a href="mailto:help@fimby.com">help@fimby.com</a>&nbsp;and we can help.
+                </p>
+            </template>
+        </div>
+    </div>
+</template>

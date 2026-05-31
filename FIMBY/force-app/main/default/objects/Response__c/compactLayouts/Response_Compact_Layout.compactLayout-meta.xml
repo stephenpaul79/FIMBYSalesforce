@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Response_Compact_Layout</fullName>
+    <fields>Response_Posting_Details__c</fields>
+    <fields>Need_Offer_Responded_To__c</fields>
+    <fields>Amount_Requested__c</fields>
+    <label>Response Compact Layout</label>
+</CompactLayout>

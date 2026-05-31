@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Digest_Email_Send_Hour__c</fullName>
+    <defaultValue>6</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Digest Email Send Hour</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Hour (0-23) when the daily/weekly digest email job runs.</inlineHelpText>
+</CustomField>

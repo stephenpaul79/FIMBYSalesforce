@@ -1,0 +1,70 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:dynamicLayout",
+  "dataProviders" : [ ],
+  "id" : "f4caf71d-e3bb-41b5-8078-2799817f29cb",
+  "label" : "Homepage",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "background" : "background: rgba(0,0,0,0)",
+        "backgroundOverlay" : "rgba(0,0,0,0.5)",
+        "contentAreaWidth" : 100,
+        "sectionConfig" : {
+          "UUID" : "b98bce6e-7a7d-449c-bc96-944ba80c1710",
+          "columns" : [ {
+            "UUID" : "60a40408-587a-482c-908d-459d1d44a500",
+            "columnKey" : "1",
+            "columnName" : "Column 1",
+            "columnWidth" : "12",
+            "seedComponents" : [ ]
+          } ]
+        },
+        "sectionHeight" : 300
+      },
+      "componentName" : "forceCommunity:section",
+      "id" : "b98bce6e-7a7d-449c-bc96-944ba80c1710",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "richTextValue" : "<p style=\"text-align: center;\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.VanSkyline_Grey11.1}\" style=\"width: 455.672px; height: 142.391px;\"></p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><a href=\"https://fimby.my.site.com/s/give-and-receive\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.GiveReceive.2}\" style=\"width: 197.313px; height: 132.125px;\"></a> <a href=\"https://fimby.my.site.com/s/lending-library\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.Lendpng.2}\" style=\"width: 198px; height: 129.125px;\"></a></p>\n<p style=\"text-align: center;\"><a href=\"https://fimby.my.site.com/s/neighbours\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.Neighbourspng.4}\" style=\"width: 195.016px; height: 128.859px;\"></a> <a href=\"https://fimby.my.site.com/s/stories\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.OurStoriespng.2}\" style=\"width: 190.344px; height: 125.766px;\"></a></p>"
+          },
+          "componentName" : "forceCommunity:richTextInline",
+          "id" : "93354427-dd16-440a-afb2-7135ac56703f",
+          "renderPriority" : "NEUTRAL",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "60a40408-587a-482c-908d-459d1d44a500",
+        "regionLabel" : "Column 1",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "49b4ebb0-c128-4a4d-9945-225725f85ddf",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Home"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "e13b7546-19ba-4752-b5b3-30ae3bf475b1",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "c4327db3-267e-49da-90ff-1fe8d65b4a2e",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "home"
+}

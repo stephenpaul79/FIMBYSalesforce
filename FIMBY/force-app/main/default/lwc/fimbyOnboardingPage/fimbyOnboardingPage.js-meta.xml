@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FIMBY Onboarding Page</masterLabel>
+    <description>Dedicated /onboarding page hosting first-time profile setup (Phase 1) and the 5-screen walkthrough (Phase 2). The final say-hi step is delegated to fimbyIntroPostModal. Phase routing is fully flag-driven, no URL params required.</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+</LightningComponentBundle>

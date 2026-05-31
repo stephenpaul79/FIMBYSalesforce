@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "eb02b43c-3d3c-44d7-bfab-65883e402ce3",
+  "label" : "Confirm Lending Request",
+  "regions" : [ {
+    "id" : "03517491-b8ae-4a21-8af5-e75aa3a182f4",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!recordId}\"}]",
+        "flowName" : "Confirm_Lending_Request"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "f87658a2-f76c-4e64-ad2e-95875283dd0d",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "38426114-4bec-4ea5-a10e-ac2ae143b145",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "ea877a89-2ce8-4409-85bd-4c7c8ef4c913",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Confirm Lending Request"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "159f9613-3d10-4e0f-ba64-93a8e9d42505",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "f61161ef-c065-4855-a1be-7a52f656b32e",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-confirm-lending-request"
+}

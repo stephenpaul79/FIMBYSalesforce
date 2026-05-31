@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Personal</fullName>
+    <active>true</active>
+    <description>Used to lend resources or skills without being managed by FIMBY.</description>
+    <label>Personal</label>
+    <picklistValues>
+        <picklist>Category__c</picklist>
+        <values>
+            <fullName>Art %26 Craft Supplies</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Baby %26 Children</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Bikes</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Books</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Camping Gear</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cars %26 Trucks</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Clothing</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Electronics</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Games %26 Toys</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Gardening</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Household Items</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Kitchen Supplies</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Media %28Music %26 Movies%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Miscellaneous</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Music Instruments</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Office Supplies</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Small Appliances</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sports Equipment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Tools</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Image_Dimensions__c</picklist>
+        <values>
+            <fullName>Rectangle %28Tall%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rectangle %28Wide%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Square</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Owned_By__c</picklist>
+        <values>
+            <fullName>Organization</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Self</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Available</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Currently Lent Out</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>On Hold</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Removed from Library</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Unavailable</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

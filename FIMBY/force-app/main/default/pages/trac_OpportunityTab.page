@@ -1,0 +1,11 @@
+<apex:Page tabStyle="Opportunity" >
+<script src="/soap/ajax/15.0/connection.js"></script>
+<script type="text/javascript" />
+<script>
+     window.onload = function() {
+
+     // Change the whole window to point to this location
+     document.location.href = "/006?fcf=00B1I0000042FHqUAM";
+}
+</script>
+</apex:page>

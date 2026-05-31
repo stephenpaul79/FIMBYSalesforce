@@ -1,0 +1,267 @@
+/*
+ * FIMBY Fixed Footer Navigation — 5 tabs
+ *
+ * Layout: Home | Library | [+] Create | Messages | Mine
+ *
+ * This component uses position:fixed to stick to the viewport bottom.
+ * Experience Cloud doesn't natively support fixed footers, so we use
+ * CSS to force it. The connectedCallback adds bottom padding to the
+ * page body so content isn't hidden behind this footer.
+ *
+ * On desktop (≥892px) the footer hides — navigation lives in the header.
+ */
+
+:host {
+    display: block;
+}
+
+.fimby-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-top: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
+}
+
+.nav-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    place-items: center center;
+    padding: 4px 6px 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding: 2px 4px;
+    border-radius: var(--fimby-radius-md);
+    transition: all 0.2s ease-in-out;
+    min-width: 48px;
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.nav-item:hover {
+    background: var(--fimby-selected-bg);
+    transform: translateY(-1px);
+}
+
+.nav-item:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Icon wrapper */
+.nav-icon {
+    position: relative;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+/* Custom PNG icon */
+.nav-icon-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    transition: transform 0.15s ease;
+}
+
+.nav-item:hover .nav-icon-img {
+    transform: scale(1.08);
+}
+
+/* Labels */
+.nav-label {
+    font-size: 0.55rem;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    transition: color 0.2s ease;
+}
+
+/* Active state */
+.nav-item.active .nav-label {
+    color: var(--fimby-brand-teal);
+    font-weight: 600;
+}
+
+/* Active indicator bar */
+.nav-indicator {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.nav-indicator.active {
+    background: var(--fimby-brand-teal);
+}
+
+/* ================================================================
+   Center [+] Create Button
+   Elevated circular button that stands out from standard nav items.
+   Extended hit area on mobile so taps near the icon trigger Create
+   instead of Library/Messages; z-index ensures it trumps neighbors.
+   ================================================================ */
+.create-item {
+    padding: 12px;
+    min-width: 56px;
+    min-height: 56px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.create-item:hover {
+    background: transparent;
+    transform: none;
+}
+
+.create-item:active {
+    transform: none;
+}
+
+.create-button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.2s ease;
+    margin-top: -8px;
+}
+
+.create-button:hover {
+    transform: scale(1.08);
+}
+
+.create-button:active {
+    transform: scale(0.95);
+}
+
+.create-icon-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+/* Unread count badge for messages */
+.nav-count-badge {
+    position: absolute;
+    top: -6px;
+    right: -13px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background-color: var(--fimby-error, #E74C3C);
+    color: #ffffff;
+    border-radius: 9px;
+    border: 2px solid var(--fimby-surface-card, #FAF7F2);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Responsive — small phones */
+@media (max-width: 380px) {
+    .nav-label {
+        font-size: 0.5rem;
+    }
+
+    .nav-container {
+        padding: 4px 4px 8px;
+    }
+
+    .nav-item {
+        padding: 4px 2px;
+        min-width: 40px;
+    }
+
+    .nav-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .nav-icon-img {
+        width: 26px;
+        height: 26px;
+    }
+
+    .create-button {
+        width: 40px;
+        height: 40px;
+        margin-top: -6px;
+    }
+
+    .create-icon-img {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Very narrow: stack into 2 rows, center-align both rows */
+@media (max-width: 320px) {
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px 12px;
+    }
+}
+
+/* Desktop — hide footer; navigation lives in the header on ≥892px */
+@media (min-width: 892px) {
+    .fimby-bottom-nav {
+        display: none;
+    }
+}
+
+/* Keyboard focus visibility */
+.nav-item:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .nav-item,
+    .nav-label,
+    .nav-indicator,
+    .nav-icon-img,
+    .create-button {
+        transition: none;
+    }
+}

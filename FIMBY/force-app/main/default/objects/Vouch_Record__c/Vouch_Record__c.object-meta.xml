@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Source-of-truth audit record for each vouch request, decision, and revocation. Each row represents one vouch request and its eventual outcome. Used by moderator audit logs, private profile history, DLRS rollups, and revocation review.</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <label>Vouch Record</label>
+    <nameField>
+        <displayFormat>VR-{00000}</displayFormat>
+        <label>Vouch Record Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Vouch Records</pluralLabel>
+    <sharingModel>Private</sharingModel>
+    <externalSharingModel>Private</externalSharingModel>
+</CustomObject>

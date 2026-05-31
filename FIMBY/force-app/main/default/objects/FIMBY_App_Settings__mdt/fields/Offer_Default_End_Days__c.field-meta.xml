@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Offer_Default_End_Days__c</fullName>
+    <defaultValue>21</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Offer Default End Days</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Default number of days before an Offer post expires from creation date. Users can override this when posting.</inlineHelpText>
+</CustomField>

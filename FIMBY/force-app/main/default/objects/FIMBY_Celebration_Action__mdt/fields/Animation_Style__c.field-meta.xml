@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Animation_Style__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Animation Style</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <description>Confetti animation type: Cannon (burst from bottom), Drift (breeze left to right), Fall (gentle top-down), Rise (float upward), Approach (coming at you from center)</description>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cannon</fullName>
+                <default>true</default>
+                <label>Cannon</label>
+            </value>
+            <value>
+                <fullName>Drift</fullName>
+                <default>false</default>
+                <label>Drift</label>
+            </value>
+            <value>
+                <fullName>Fall</fullName>
+                <default>false</default>
+                <label>Fall</label>
+            </value>
+            <value>
+                <fullName>Rise</fullName>
+                <default>false</default>
+                <label>Rise</label>
+            </value>
+            <value>
+                <fullName>Approach</fullName>
+                <default>false</default>
+                <label>Approach</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

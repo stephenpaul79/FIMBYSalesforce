@@ -1,0 +1,181 @@
+<template>
+    <div class="admin-panel">
+        <template lwc:if={isLoading}>
+            <div class="loading-row">
+                <lightning-spinner alternative-text="Loading admin data" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={adminDataLoaded}>
+            <!-- On Loan To (only when active) -->
+            <template lwc:if={hasCurrentLoan}>
+                <div class={loanSectionStripClass}>
+                    <h2 class="section-title">
+                        <img src={lendingIconUrl} alt="" class="section-icon">
+                        On Loan To
+                    </h2>
+                    <div class="loan-row">
+                        <div class="loan-user-row">
+                            <template lwc:if={currentLoan.borrowerAvatar}>
+                                <img src={currentLoan.borrowerAvatar} alt="" class="avatar-sm">
+                            </template>
+                            <template lwc:else>
+                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
+                            </template>
+                            <div class="loan-info">
+                                <span class="loan-name">{currentLoanBorrowerName}</span>
+                                <span class="loan-meta">
+                                    <span class={loanDueDateClass}>Due: {currentLoanDueDate}</span>
+                                    <template lwc:if={showCurrentLoanPill}>
+                                        <span class={currentLoanPillClass}>{currentLoanPhaseLabel}</span>
+                                    </template>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="loan-actions">
+                            <template lwc:if={currentLoan.isExtensionRequested}>
+                                <button class="action-btn action-btn-primary" onclick={handleApproveExtension}>
+                                    <img src={extensionIconUrl} alt="" class="action-btn-icon">
+                                    <span>Approve Extension</span>
+                                </button>
+                            </template>
+                            <template lwc:if={currentLoan.isReturnPending}>
+                                <button class="action-btn action-btn-primary" onclick={handleVerifyReturn}>
+                                    <img src={returnIconUrl} alt="" class="action-btn-icon">
+                                    <span>Verify Return &amp; Condition</span>
+                                </button>
+                            </template>
+                            <template lwc:if={currentLoan.showMessageBorrower}>
+                                <button class="action-btn" data-url={currentLoan.messageUrl} onclick={handleNavigate}>
+                                    <img src={messageIconUrl} alt="" class="action-btn-icon">
+                                    <span>Message Borrower</span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Lending Requests -->
+            <div class="admin-section">
+                <button class="section-toggle" onclick={toggleLendingRequests} aria-expanded={showLendingRequests}>
+                    <h2 class="section-title">
+                        <img src={waitlistIconUrl} alt="" class="section-icon">
+                        {requestsSectionLabel}
+                    </h2>
+                    <span class={requestsChevronClass}>&#9660;</span>
+                </button>
+                <template lwc:if={showLendingRequests}>
+                    <template lwc:if={hasLendingRequests}>
+                        <ul class="request-list">
+                            <template for:each={processedRequests} for:item="req">
+                                <li key={req.id} class="request-item">
+                                    <div class={req.rowStripClass}>
+                                        <div class="request-user-row">
+                                            <template lwc:if={req.requesterAvatar}>
+                                                <img src={req.requesterAvatar} alt="" class="avatar-sm">
+                                            </template>
+                                            <template lwc:else>
+                                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
+                                            </template>
+                                            <div class="request-info">
+                                                <span class="request-name">{req.requesterName}</span>
+                                                <span class="request-meta">
+                                                    <template lwc:if={req.showApprovedPill}>
+                                                        <span class="status-pill status-pill-success">{req.displayStatus}</span>
+                                                    </template>
+                                                    <template lwc:elseif={req.showAwaitingPill}>
+                                                        <span class="status-pill status-pill-warning">Awaiting Confirmation</span>
+                                                    </template>
+                                                    <span class="request-meta-text">{req.formattedMeta}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="request-actions">
+                                            <template lwc:if={req.isReviewAction}>
+                                                <button class="action-btn action-btn-primary" data-request-id={req.id} onclick={handleReview} aria-label="Review request">
+                                                    <img src={reviewIconUrl} alt="" class="action-btn-icon">
+                                                    <span>Review</span>
+                                                </button>
+                                            </template>
+                                            <template lwc:if={req.showCoordinatePickup}>
+                                                <button class="action-btn" data-url={req.conversationUrl} onclick={handleNavigate} aria-label="Coordinate pickup">
+                                                    <img src={messageIconUrl} alt="" class="action-btn-icon">
+                                                    <span>Coordinate Pickup</span>
+                                                </button>
+                                            </template>
+                                            <template lwc:if={req.showRecordHandoff}>
+                                                <button class="action-btn action-btn-primary" data-request-id={req.id} onclick={handleRecordHandoff} disabled={isHandoffProcessing} aria-label="Mark item as picked up">
+                                                    <img src={checkIconUrl} alt="" class="action-btn-icon">
+                                                    <span>Mark as Picked Up</span>
+                                                </button>
+                                            </template>
+                                            <template lwc:if={req.showRemove}>
+                                                <button class="action-btn action-btn-danger" data-request-id={req.id} onclick={handleRemove} aria-label="Remove from waitlist">
+                                                    <img src={removeIconUrl} alt="" class="action-btn-icon">
+                                                    <span>Remove</span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="empty-state">No pending requests.</p>
+                    </template>
+                </template>
+            </div>
+
+            <!-- Lending History -->
+            <div class="admin-section">
+                <button class="section-toggle" onclick={toggleLendingHistory} aria-expanded={showLendingHistory}>
+                    <h2 class="section-title">
+                        <img src={historyIconUrl} alt="" class="section-icon">
+                        {historySectionLabel}
+                    </h2>
+                    <span class={historyChevronClass}>&#9660;</span>
+                </button>
+                <template lwc:if={showLendingHistory}>
+                    <template lwc:if={hasLendingHistory}>
+                        <ul class="history-list">
+                            <template for:each={processedHistory} for:item="hist">
+                                <li key={hist.id} class="history-item">
+                                    <div class="history-row">
+                                        <div class="history-user-row">
+                                            <template lwc:if={hist.borrowerAvatar}>
+                                                <img src={hist.borrowerAvatar} alt="" class="avatar-sm">
+                                            </template>
+                                            <template lwc:else>
+                                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
+                                            </template>
+                                            <div class="history-info">
+                                                <span class="history-name">{hist.borrowerName}</span>
+                                                <span class="history-meta">{hist.displayStartDate} — {hist.displayEndDate}</span>
+                                                <template lwc:if={hist.condition}>
+                                                    <span class="history-condition">Returned: {hist.condition}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={hist.hasConversation}>
+                                            <div class="history-actions">
+                                                <button class="action-btn action-btn-sm" data-url={hist.conversationUrl} onclick={handleNavigate} aria-label="Message borrower">
+                                                    <img src={messageIconUrl} alt="" class="action-btn-icon">
+                                                    <span>Message</span>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="empty-state">No lending history yet.</p>
+                    </template>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,22 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-container">
+            <c-fimby-loading-message context="messages" size="medium"></c-fimby-loading-message>
+        </div>
+    </template>
+
+    <template lwc:if={showGroupView}>
+        <c-fimby-group-conversation conversation-id={conversationId}></c-fimby-group-conversation>
+    </template>
+
+    <template lwc:if={showDirectView}>
+        <c-fimby-conversation-view conversation-id={conversationId}></c-fimby-conversation-view>
+    </template>
+
+    <template lwc:if={hasError}>
+        <div class="error-container">
+            <p>This conversation could not be found.</p>
+            <a href="/messages">Back to Messages</a>
+        </div>
+    </template>
+</template>

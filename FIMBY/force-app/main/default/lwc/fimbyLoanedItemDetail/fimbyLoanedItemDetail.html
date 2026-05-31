@@ -1,0 +1,93 @@
+<template>
+    <div class="fimby-loaned-item-detail">
+        <c-fimby-page-header
+            page-title="Loan Details"
+            parent-label="My Stuff"
+            parent-url="/my-stuff"
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="detail-content">
+                <!-- Loan Status Card -->
+                <div class="status-card">
+                    <div class="status-header">
+                        <div class="status-badge" data-status={statusType}>{status}</div>
+                        <span class="due-date">{dueDateLabel}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style={progressStyle}></div>
+                    </div>
+                    <p class="status-message">{statusMessage}</p>
+                </div>
+
+                <!-- Item Info Card -->
+                <div class="item-card">
+                    <div class="card-header">
+                        <h2>Borrowed Item</h2>
+                    </div>
+                    <div class="item-row" onclick={handleViewItem}>
+                        <img lwc:if={itemImage} src={itemImage} alt={itemName} class="item-thumb">
+                        <div lwc:else class="item-thumb-placeholder">
+                            <lightning-icon icon-name="utility:package" size="small"></lightning-icon>
+                        </div>
+                        <div class="item-details">
+                            <span class="item-name">{itemName}</span>
+                            <span class="item-category">{itemCategory}</span>
+                        </div>
+                        <lightning-icon icon-name="utility:chevronright" size="small"></lightning-icon>
+                    </div>
+                </div>
+
+                <!-- Borrower/Owner Info -->
+                <div class="people-card">
+                    <div class="card-header">
+                        <h2>People</h2>
+                    </div>
+                    <div class="person-row">
+                        <span class="person-label">Borrowed by</span>
+                        <div class="person-info">
+                            <img lwc:if={borrowerAvatar} src={borrowerAvatar} alt={borrowerName} class="person-avatar">
+                            <span class="person-name">{borrowerName}</span>
+                        </div>
+                    </div>
+                    <div class="person-row">
+                        <span class="person-label">Owner</span>
+                        <div class="person-info">
+                            <img lwc:if={ownerAvatar} src={ownerAvatar} alt={ownerName} class="person-avatar">
+                            <span class="person-name">{ownerName}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class={actionsCardClass}>
+                    <button lwc:if={canReturn} class="action-btn primary" onclick={handleReturn}>
+                        <lightning-icon icon-name="utility:undo" size="small"></lightning-icon>
+                        <span>Return Item</span>
+                    </button>
+                    <button lwc:if={canExtend} class="action-btn secondary" onclick={handleExtend}>
+                        <lightning-icon icon-name="utility:clock" size="small"></lightning-icon>
+                        <span>Request Extension</span>
+                    </button>
+                    <button class="action-btn" onclick={handleMessage}>
+                        <lightning-icon icon-name="utility:chat" size="small"></lightning-icon>
+                        <span>Message Owner</span>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="library" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+
+        <c-fimby-report-content></c-fimby-report-content>
+    </div>
+</template>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Safeguard_Enqueue_After__c</fullName>
+    <description>Set to ConfirmationReceivedDate + 24h when the user replies CONFIRM DELETE. The expiry batch picks up Confirmed cases whose safeguard has elapsed and invokes enqueueDeletion. Gives the user a 24-hour cooling-off window to email "wait, I didn't mean that".</description>
+    <label>Safeguard Enqueue After</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

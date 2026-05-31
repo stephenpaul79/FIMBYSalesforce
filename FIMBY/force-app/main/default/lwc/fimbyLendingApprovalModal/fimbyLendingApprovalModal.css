@@ -1,0 +1,632 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* =============================================
+ * Modal Shell (matches fimbyQuickResponseModal)
+ * ============================================= */
+
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg, 16px);
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+ * Header
+ * ============================================= */
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.close-button:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.close-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* =============================================
+ * Body
+ * ============================================= */
+
+.modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* =============================================
+ * State Containers
+ * ============================================= */
+
+.state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+    gap: 16px;
+    min-height: 120px;
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--fimby-error-tint, #FFF0F0);
+    border: 1px solid var(--fimby-error-border, #FFC9C9);
+    border-radius: var(--fimby-radius-sm, 8px);
+    color: var(--fimby-error, #C13030);
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.secondary-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card, #FAF7F2));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+    font-family: inherit;
+}
+
+.secondary-btn:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.success-state {
+    gap: 16px;
+    padding: 16px 16px 24px;
+}
+
+.success-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--fimby-success, #2D8A4E);
+    margin: 0;
+}
+
+.success-subtitle {
+    font-size: 14px;
+    color: var(--fimby-text-secondary, #6B6256);
+    margin: 0;
+}
+
+.info-state {
+    gap: 16px;
+    padding: 24px 16px 32px;
+}
+
+.state-message {
+    font-size: 15px;
+    color: var(--fimby-text-secondary, #6B6256);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* =============================================
+ * Requester Summary
+ * ============================================= */
+
+.requester-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.requester-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.requester-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.requester-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+.requester-meta {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.requester-meta strong {
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+/* =============================================
+ * Request Details
+ * ============================================= */
+
+.request-detail-row {
+    padding: 10px 12px;
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+    border-radius: var(--fimby-radius-sm, 8px);
+    border-left: 3px solid var(--fimby-earth-teal, #3B9EA0);
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+.note-block {
+    padding: 10px 12px;
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.note-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary, #6B6256);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.note-text {
+    font-size: 14px;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+}
+
+/* =============================================
+ * Decision Toggle (custom radio)
+ * ============================================= */
+
+.decision-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.radio-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fimby-text-primary, #3D3833);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    font-family: inherit;
+}
+
+.radio-option:hover {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+}
+
+.radio-option.selected {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+    background-color: var(--fimby-accent-bg, rgba(59,158,160,0.08));
+}
+
+.radio-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--fimby-border-default, #D4CCBF);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.15s ease;
+}
+
+.radio-option.selected .radio-dot {
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+}
+
+.radio-option.selected .radio-dot::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--fimby-earth-teal, #3B9EA0);
+}
+
+/* =============================================
+ * Form Fields
+ * ============================================= */
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.form-input {
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    font-size: 14px;
+    color: var(--fimby-text-primary, #3D3833);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    font-family: inherit;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--fimby-earth-teal, #3B9EA0);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(59,158,160,0.15));
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* =============================================
+ * Risk Section
+ * ============================================= */
+
+.risk-section {
+    padding: 12px;
+    border: 1px solid var(--fimby-error-border, rgba(231, 76, 60, 0.30));
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-error-tint, rgba(231, 76, 60, 0.10));
+}
+
+.risk-text {
+    font-size: 13px;
+    color: var(--fimby-error, #E74C3C);
+    margin: 0 0 10px;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.risk-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+.risk-checkbox input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--fimby-earth-teal, #3B9EA0);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.info-note {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+    padding: 8px 12px;
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+    border-radius: var(--fimby-radius-sm, 8px);
+    margin: 0;
+}
+
+/* =============================================
+ * Share Contact Info
+ * ============================================= */
+
+.share-intro {
+    font-size: 14px;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.share-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.share-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+.share-toggle input[type="checkbox"] {
+    accent-color: var(--fimby-earth-teal, #3B9EA0);
+    width: 16px;
+    height: 16px;
+}
+
+.share-field {
+    padding-left: 24px;
+}
+
+.address-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 24px;
+}
+
+.address-row {
+    display: flex;
+    gap: 8px;
+}
+
+.address-row .form-input {
+    flex: 1;
+}
+
+.share-note {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.share-note strong {
+    color: var(--fimby-text-primary, #3D3833);
+}
+
+/* =============================================
+ * Footer
+ * ============================================= */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary, #6B6256);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    transition: all 0.2s ease;
+    min-height: 44px;
+    font-family: inherit;
+}
+
+.cancel-btn:hover {
+    color: var(--fimby-text-primary, #3D3833);
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.submit-btn.approve {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+}
+
+.submit-btn.approve:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.submit-btn.approve:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.submit-btn.decline {
+    background-color: var(--fimby-btn-danger-bg, #C0392B);
+}
+
+.submit-btn.decline:hover {
+    background-color: var(--fimby-btn-danger-bg-hover, #A93226);
+}
+
+.submit-btn.decline:active {
+    background-color: var(--fimby-btn-danger-bg-hover, #A93226);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.submit-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* =============================================
+ * Mobile: Bottom Sheet
+ * ============================================= */
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        top: 0;
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-container {
+        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        max-height: 90vh;
+        max-height: 90dvh;
+        animation: slideUpMobile 0.3s ease;
+    }
+
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+}
+
+/* =============================================
+ * Reduced Motion
+ * ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .submit-btn,
+    .cancel-btn,
+    .secondary-btn,
+    .radio-option {
+        transition: none;
+        animation: none;
+    }
+}

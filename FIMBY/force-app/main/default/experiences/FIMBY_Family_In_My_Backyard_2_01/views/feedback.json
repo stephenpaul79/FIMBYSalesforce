@@ -1,0 +1,71 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:dynamicLayout",
+  "dataProviders" : [ ],
+  "id" : "1e044498-bc0a-4b01-9ea8-5eee570d2fc6",
+  "label" : "Feedback",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "background" : "background: rgba(0,0,0,0)",
+        "backgroundOverlay" : "rgba(0,0,0,0.5)",
+        "contentAreaWidth" : 100,
+        "sectionConfig" : {
+          "UUID" : "4c3d730b-9ddc-4a74-b521-628c82676ceb",
+          "columns" : [ {
+            "UUID" : "12bbcc66-16c0-48c4-8b4c-3d143b533af9",
+            "columnKey" : "1",
+            "columnName" : "Column 1",
+            "columnWidth" : "12",
+            "seedComponents" : [ ]
+          } ]
+        },
+        "sectionHeight" : 300
+      },
+      "componentName" : "forceCommunity:section",
+      "id" : "4c3d730b-9ddc-4a74-b521-628c82676ceb",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "flowArguments" : "[]",
+            "flowName" : "Submit_Feedback"
+          },
+          "componentName" : "forceCommunity:flowCommunity",
+          "id" : "0ef26b9b-bf30-4562-a8d9-83282db5b435",
+          "renderPriority" : "NEUTRAL",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "12bbcc66-16c0-48c4-8b4c-3d143b533af9",
+        "regionLabel" : "Column 1",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "5ce9b218-dad9-4855-8e0a-27247e8b9fe4",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Feedback"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "7322e17d-8692-4cd9-9da3-5603e67093d4",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "7053a5d3-1370-410c-baf0-8ee6602e9bf0",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-feedback"
+}

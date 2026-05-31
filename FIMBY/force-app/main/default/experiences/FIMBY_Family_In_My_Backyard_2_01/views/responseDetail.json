@@ -1,0 +1,154 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsTwoCol66Layout",
+  "dataProviders" : [ ],
+  "id" : "96c4c8c4-3726-465c-9884-3ab5f999e52e",
+  "label" : "Response Detail",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordHeadline",
+      "id" : "b5c3d75b-656e-4994-ba35-c9d678d8ce69",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><strong> Chat with the Posting or Responding Contact by clicking the 'Reply' button</strong><strong style=\"background-color: var(--lwc-colorContentAreaBackground,rgb(255, 255, 255)); color: var(--lwc-colorTextDefault,#222222);\">.</strong></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "d4916980-a7c4-4312-b6bb-c913d15acd8d",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "437f5fe3-eb66-4c09-9122-96800068a6f1",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "tabsetConfig" : {
+          "UUID" : "bc0312ad-b540-47a0-83e9-80807b694256",
+          "activeTab" : "",
+          "tabs" : [ {
+            "UUID" : "7ba0683d-a9b5-4323-8e79-0db21f84d168",
+            "allowGuestUser" : true,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "1",
+            "tabName" : "Response"
+          } ],
+          "useOverflowMenu" : false
+        }
+      },
+      "componentName" : "forceCommunity:tabset",
+      "id" : "bc0312ad-b540-47a0-83e9-80807b694256",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "recordId" : "{!recordId}"
+          },
+          "componentName" : "forceCommunity:recordDetail",
+          "id" : "9d6d3fca-6f09-448d-a168-35258288e030",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "7ba0683d-a9b5-4323-8e79-0db21f84d168",
+        "regionLabel" : "Response",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":true,\"value\":\"{!Record.Id}\"}]",
+        "flowName" : "Response_Contact_Info"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "72ef1761-2112-4d07-8e48-31d5e4edf4bd",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "1a76e016-d92e-463d-b878-cc30ce4dd8b2",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "0affdbf7-ed2d-492f-bc71-d4ff9f92a5dc",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "{!Record._Object}: {!Record._Title}"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "423a44e1-9471-43bd-9962-452ddd826ad1",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "07285012-32f8-4515-9ab2-d4db80cd59e8",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "tabsetConfig" : {
+          "UUID" : "f5914d78-0f83-407c-81aa-7c263f0c7ada",
+          "activeTab" : "",
+          "tabs" : [ {
+            "UUID" : "8dd888f4-255b-4dc2-972e-1864a66416ab",
+            "allowGuestUser" : true,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "1",
+            "tabName" : "Chat History"
+          } ],
+          "useOverflowMenu" : false
+        }
+      },
+      "componentName" : "forceCommunity:tabset",
+      "id" : "f5914d78-0f83-407c-81aa-7c263f0c7ada",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "canChangeSorting" : false,
+            "defaultFilter" : "",
+            "defaultSortOrderHomeFeed" : "Relevance",
+            "defaultSortOrderTopicsFeed" : "Relevance",
+            "feedDesign" : "DEFAULT",
+            "hasFeedSearch" : false,
+            "subjectId" : "{!recordId}",
+            "type" : "Record"
+          },
+          "componentName" : "forceCommunity:forceCommunityFeed",
+          "id" : "e019fcca-1839-4cac-878f-798aee6dfd3e",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "8dd888f4-255b-4dc2-972e-1864a66416ab",
+        "regionLabel" : "Chat History",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "eacffd83-b2da-475f-a3d4-4cf107d83f09",
+    "regionName" : "sidebar",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "detail-a0z"
+}

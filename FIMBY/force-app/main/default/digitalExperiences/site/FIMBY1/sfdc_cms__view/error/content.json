@@ -1,0 +1,74 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Error",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"da53ddbe-9e02-4460-a8b8-3a04687fa91b\",\"columns\":[{\"UUID\":\"80399a5a-beee-43fe-8640-6303a44dab4a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "imageInfos" : "",
+                "richTextValue" : "<div class=\"fimby-auth-status\"><h1 style=\"text-align:center;font-size:1.375rem;font-weight:600;color:var(--fimby-text-primary,#2D2D2D);margin:0 0 0.75rem;\">Page not found</h1><p style=\"text-align:center;font-size:1rem;color:var(--fimby-text-secondary,#6B6B6B);margin:0;\">That link may be old or mistyped. Head back to login and try again.</p></div>"
+              },
+              "definition" : "community_builder:richTextEditor",
+              "id" : "49c4f767-fb25-4ccd-a837-0982dee09b47",
+              "type" : "component"
+            } ],
+            "id" : "80399a5a-beee-43fe-8640-6303a44dab4a",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "da53ddbe-9e02-4460-a8b8-3a04687fa91b",
+          "scopedBrandingSetId" : "Login_Palette",
+          "type" : "component"
+        } ],
+        "id" : "b4142003-2fa9-4329-af01-afed370d309a",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Error",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "5d917e91-3340-453e-9620-6a3cdf4f1e37",
+          "type" : "component"
+        } ],
+        "id" : "ce3ee7f7-7db7-41c5-93f9-caf2362e4d00",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "b29b408a-000f-4993-83e5-9fe769753e72",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "DH6Y6r7eS4lp8Ms7QkXxYa5kQP7hWI",
+    "viewType" : "error"
+  },
+  "urlName" : "error"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Contacts",
+  "contentBody" : {
+    "activeViewId" : "My_Contacts",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-contacts",
+    "urlPrefix" : "my-contacts"
+  },
+  "urlName" : "my-contacts"
+}

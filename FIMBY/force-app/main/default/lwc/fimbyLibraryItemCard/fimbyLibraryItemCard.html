@@ -1,0 +1,179 @@
+<template>
+    <c-fimby-card
+        class="library-item-card"
+        show-header="false"
+        show-footer="true"
+        enable-hover="true"
+        onclick={handleCardClick}>
+
+        <!-- Image and Status -->
+        <div slot="content" class="item-container">
+            <div class="image-container">
+                <template lwc:if={item.images}>
+                    <div class="image-carousel">
+                        <img src={currentImage} alt={item.title} class="item-image">
+
+                        <template lwc:if={hasMultipleImages}>
+                            <div class="image-indicators">
+                                <template for:each={item.images} for:item="image" for:index="index">
+                                    <button key={image}
+                                            class={getIndicatorClass}
+                                            data-index={index}
+                                            onclick={handleImageChange}>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+
+                        <div class="availability-badge">
+                            <lightning-icon
+                                icon-name={availabilityIcon}
+                                size="xx-small">
+                            </lightning-icon>
+                            <span>{availabilityText}</span>
+                        </div>
+
+                        <div class="category-badge">
+                            <img src={categoryIconUrl} alt="" class="category-badge-icon">
+                            <span>{item.category}</span>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <div class="placeholder-image">
+                        <img src={categoryIconUrl} alt="" class="placeholder-category-icon">
+                    </div>
+                </template>
+            </div>
+
+            <!-- Item Details -->
+            <div class="item-details">
+                <div class="item-header">
+                    <h3 class="item-title">{item.title}</h3>
+                    <div class="condition-indicator">
+                        <lightning-icon
+                            icon-name={conditionIcon}
+                            size="xx-small"
+                            class={conditionClass}>
+                        </lightning-icon>
+                        <span class="condition-text">{item.condition}</span>
+                    </div>
+                </div>
+
+                <p class="item-description">{truncatedDescription}</p>
+
+                <div class="item-meta">
+                    <div class="loan-period">
+                        <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                        <span class="meta-text">{loanPeriodText}</span>
+                    </div>
+
+                    <div class="location-info">
+                        <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                        <span class="meta-text">{item.distance}</span>
+                    </div>
+                </div>
+
+                <template lwc:if={item.specialInstructions}>
+                    <div class="special-instructions">
+                        <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                        <span class="instructions-text">{item.specialInstructions}</span>
+                    </div>
+                </template>
+
+                <div class="item-stats">
+                    <div class="stat-item">
+                        <lightning-icon icon-name="utility:like" size="xx-small"></lightning-icon>
+                        <span class="stat-text">{borrowCountDisplay} borrows</span>
+                    </div>
+                    <template lwc:if={item.rating}>
+                        <div class="stat-item">
+                            <div class="rating-display">
+                                <template for:each={ratingStars} for:item="star">
+                                    <lightning-icon
+                                        key={star.id}
+                                        icon-name={star.icon}
+                                        size="xx-small"
+                                        class={star.class}>
+                                    </lightning-icon>
+                                </template>
+                                <span class="rating-text">({item.rating})</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div slot="footer" class="item-actions">
+            <div class="owner-info">
+                <img src={item.ownerAvatar} alt={item.ownerName} class="owner-avatar">
+                <div class="owner-details">
+                    <span class="owner-name">{item.ownerName}</span>
+                    <div class="owner-rating">
+                        <template for:each={ownerRatingStars} for:item="star">
+                            <lightning-icon
+                                key={star.id}
+                                icon-name={star.icon}
+                                size="xx-small"
+                                class={star.class}>
+                            </lightning-icon>
+                        </template>
+                        <span class="rating-count">({item.ownerRating})</span>
+                    </div>
+                </div>
+                <template lwc:if={item.ownerVerified}>
+                    <div class="verified-badge">
+                        <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                    </div>
+                </template>
+            </div>
+
+            <div class="action-buttons">
+                <template lwc:if={showActions}>
+                    <template lwc:if={item.isAvailable}>
+                        <button class="borrow-button primary" onclick={handleBorrow}>
+                            <lightning-icon icon-name="utility:bookmark" size="x-small"></lightning-icon>
+                            {borrowButtonText}
+                        </button>
+                    </template>
+
+                    <template lwc:else>
+                        <button class="notify-button" onclick={handleNotifyAvailable}>
+                            <lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon>
+                            Notify Me
+                        </button>
+                    </template>
+                </template>
+
+                <button class="message-button" onclick={handleMessage}>
+                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                </button>
+
+                <button class={saveButtonClass} onclick={handleSave}>
+                    <lightning-icon icon-name={saveIcon} size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Due Date Banner (for borrowed items) -->
+        <template lwc:if={showDueDate}>
+            <div class="due-date-banner" slot="overlay">
+                <lightning-icon icon-name="utility:warning" size="xx-small"></lightning-icon>
+                <span class="due-text">Due: {formattedDueDate}</span>
+                <template lwc:if={isOverdue}>
+                    <span class="overdue-text">OVERDUE</span>
+                </template>
+            </div>
+        </template>
+    </c-fimby-card>
+
+    <!-- Report Content Modal -->
+    <c-fimby-report-content
+        content-id={item.id}
+        content-type="Library_Item"
+        onreportsubmitted={handleReportSubmitted}>
+    </c-fimby-report-content>
+</template>

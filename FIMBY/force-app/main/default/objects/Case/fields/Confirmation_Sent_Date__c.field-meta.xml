@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Confirmation_Sent_Date__c</fullName>
+    <description>When the verification email asking the user to reply CONFIRM DELETE was dispatched. Used by the expiry batch to age-out unconfirmed requests after 7 days.</description>
+    <label>Confirmation Sent Date</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

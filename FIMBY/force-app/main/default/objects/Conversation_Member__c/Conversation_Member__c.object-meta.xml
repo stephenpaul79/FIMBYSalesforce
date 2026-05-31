@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>false</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <externalSharingModel>ControlledByParent</externalSharingModel>
+    <label>Conversation Member</label>
+    <nameField>
+        <displayFormat>CM-{00000}</displayFormat>
+        <label>Conversation Member Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Conversation Members</pluralLabel>
+    <sharingModel>ControlledByParent</sharingModel>
+</CustomObject>

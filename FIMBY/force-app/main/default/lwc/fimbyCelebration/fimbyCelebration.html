@@ -1,0 +1,15 @@
+<template>
+    <div class="celebration-wrapper">
+        <template lwc:if={showMeme}>
+            <div class="meme-container">
+                <img src={gifUrl} alt="" class="celebration-gif">
+            </div>
+        </template>
+        <template lwc:if={showMessage}>
+            <p class="celebration-message">{messageText}</p>
+        </template>
+        <template lwc:if={_isMilestone}>
+            <p class="milestone-label">{milestoneLabel}</p>
+        </template>
+    </div>
+</template>

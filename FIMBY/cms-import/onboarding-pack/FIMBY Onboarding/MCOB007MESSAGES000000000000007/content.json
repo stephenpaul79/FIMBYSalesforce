@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Direct Messages",
+  "contentBody" : {
+    "title" : "Direct Messages",
+    "body" : "<p>Have a private conversation with any neighbour using <strong>Messages</strong>. Coordinate a borrow, follow up on an offer, or just say hello.</p><p>Your messages are private - only you and the other person can see them.</p>",
+    "pageOrder" : "050",
+    "slideOrder" : "010",
+    "pageTitle" : "Messages"
+  },
+  "urlName" : "messaging-feature"
+}

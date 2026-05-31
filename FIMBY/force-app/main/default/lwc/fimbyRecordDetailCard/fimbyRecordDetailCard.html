@@ -1,0 +1,120 @@
+<template>
+    <div class="record-detail-card">
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                <p class="loading-text">Loading record...</p>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template lwc:elseif={hasError}>
+            <div class="error-state">
+                <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                <p class="error-text">{errorMessage}</p>
+                <button class="retry-button" onclick={handleRetry}>Try Again</button>
+            </div>
+        </template>
+
+        <!-- Record Content -->
+        <template lwc:else>
+            <c-fimby-card
+                class="detail-card"
+                card-type={cardType}
+                show-header="true"
+                show-avatar={showAvatar}
+                avatar-url={avatarUrl}
+                user-name={headerTitle}
+                timestamp={recordTimestamp}
+                show-media={showImage}
+                image-url={imageUrl}
+                image-alt={imageAlt}
+                title={recordTitle}
+                show-menu={showMenu}
+                oncardmenu={handleMenuClick}>
+
+                <!-- Record Fields -->
+                <div slot="content" class="record-fields">
+                    <!-- Primary fields section -->
+                    <template lwc:if={primaryFields.length}>
+                        <div class="field-section primary-fields">
+                            <template for:each={primaryFields} for:item="field">
+                                <div key={field.apiName} class="field-item">
+                                    <span class="field-label">{field.label}</span>
+                                    <span class="field-value">{field.displayValue}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Secondary fields section (collapsible) -->
+                    <template lwc:if={secondaryFields.length}>
+                        <div class="field-section secondary-fields">
+                            <button class="section-toggle" onclick={toggleSecondaryFields}>
+                                <span>Additional Details</span>
+                                <lightning-icon
+                                    icon-name={secondaryToggleIcon}
+                                    size="x-small">
+                                </lightning-icon>
+                            </button>
+                            <template lwc:if={showSecondaryFields}>
+                                <div class="collapsible-fields">
+                                    <template for:each={secondaryFields} for:item="field">
+                                        <div key={field.apiName} class="field-item">
+                                            <span class="field-label">{field.label}</span>
+                                            <span class="field-value">{field.displayValue}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Status Badge -->
+                    <template lwc:if={showStatus}>
+                        <div class="status-section">
+                            <span class={statusBadgeClass}>{statusValue}</span>
+                        </div>
+                    </template>
+
+                    <!-- Custom slot for additional content -->
+                    <slot name="additional-content"></slot>
+                </div>
+
+                <!-- Footer with Actions -->
+                <div slot="footer" class="card-footer">
+                    <div class="footer-actions">
+                        <!-- Edit Button -->
+                        <template lwc:if={canEdit}>
+                            <button class="action-btn edit-btn" onclick={handleEdit}>
+                                <img src={editIconUrl} alt="" class="action-btn-icon">
+                                <span>Edit</span>
+                            </button>
+                        </template>
+
+                        <!-- Custom Actions -->
+                        <template for:each={customActions} for:item="action">
+                            <button
+                                key={action.name}
+                                class={action.buttonClass}
+                                onclick={handleCustomAction}
+                                data-action={action.name}>
+                                <lightning-icon icon-name={action.icon} size="x-small"></lightning-icon>
+                                <span>{action.label}</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </c-fimby-card>
+        </template>
+
+        <!-- Edit Modal -->
+        <c-fimby-record-edit-modal
+            record-id={recordId}
+            object-api-name={objectApiName}
+            field-set-name={editFieldSetName}
+            onrecordsaved={handleRecordSaved}>
+        </c-fimby-record-edit-modal>
+    </div>
+</template>

@@ -1,0 +1,75 @@
+<template>
+    <div class="fimby-archive-page">
+        <div class="header-card">
+            <nav class="breadcrumb-nav">
+                <a href="/" class="breadcrumb-link">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="/my-stuff/my-borrowing" class="breadcrumb-link">My Borrowing</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span class="breadcrumb-current">History</span>
+            </nav>
+
+            <div class="feed-filters" lwc:if={hasFilters}>
+                <div class="filters-scroll">
+                    <template for:each={processedFilters} for:item="filter">
+                        <button key={filter.value}
+                                class={filter.cssClass}
+                                data-value={filter.value}
+                                onclick={handleFilterClick}>
+                            {filter.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="archive" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:elseif={hasItems}>
+            <div class="content-section">
+                <template for:each={items} for:item="item">
+                    <button type="button" class="list-row" key={item.id} aria-label="View borrowed item" data-id={item.itemId} onclick={handleCardClick}>
+                        <span class="type-badge" style={item.categoryBadgeStyle}>
+                            <img src={item.categoryIconUrl} alt="" class="badge-icon">
+                            {item.category}
+                        </span>
+                        <span class="list-row-title">{item.itemName}</span>
+                        <span class="list-row-date">{item.dateDisplay}</span>
+                        <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                    </button>
+                </template>
+
+                <template lwc:if={showPagination}>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" disabled={isPrevDisabled} onclick={handlePrevPage}>Previous</button>
+                        <span class="page-info">Page {currentPage} of {totalPages}</span>
+                        <button class="pagination-btn" disabled={isNextDisabled} onclick={handleNextPage}>Next</button>
+                    </div>
+                </template>
+
+                <div class="section-footer">
+                    <a href="/my-stuff/my-borrowing" class="archive-btn">
+                        <img src={recentIconUrl} alt="" class="archive-btn-icon">
+                        Recent Borrowing
+                    </a>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="empty-section">
+                <img src={emptyIconUrl} alt="" class="empty-icon-img" />
+                <h3>No borrow history</h3>
+                <p>Items you borrow from your neighbourhood will appear here</p>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="myStuff" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

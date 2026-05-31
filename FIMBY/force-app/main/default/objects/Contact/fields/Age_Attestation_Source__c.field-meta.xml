@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Age_Attestation_Source__c</fullName>
+    <description>How the most recent 19+ age attestation was captured. Public Sign-up Form = self-attested via the FIMBY Sign Up flow on /sign-up. Login Flow = self-attested via the TOS reacceptance modal at next login (combined TOS + age checkbox in fimbyTosFlowScreen). Support Relationship Paper Form = signed by the supportee on the printed FimbyAuthorizedSupporterForm and stamped at relationship approval. Admin Backfill = recorded by a privileged admin (document the basis in the Contact record history).</description>
+    <label>Age Attestation Source</label>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Public Sign-up Form</fullName>
+                <default>false</default>
+                <label>Public Sign-up Form</label>
+            </value>
+            <value>
+                <fullName>Login Flow</fullName>
+                <default>false</default>
+                <label>Login Flow</label>
+            </value>
+            <value>
+                <fullName>Support Relationship Paper Form</fullName>
+                <default>false</default>
+                <label>Support Relationship Paper Form</label>
+            </value>
+            <value>
+                <fullName>Admin Backfill</fullName>
+                <default>false</default>
+                <label>Admin Backfill</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

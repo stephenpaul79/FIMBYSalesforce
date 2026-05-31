@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Retry_Count__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>Number of email send attempts. Max 3 before permanent failure.</description>
+    <externalId>false</externalId>
+    <label>Email Retry Count</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

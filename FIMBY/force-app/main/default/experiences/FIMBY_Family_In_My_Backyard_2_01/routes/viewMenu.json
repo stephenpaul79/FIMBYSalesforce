@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "4d895bfb-0750-4265-965f-78ab55713685",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Browse__c",
+  "id" : "fe4c65bf-ff24-44f7-8b12-de07456bffd0",
+  "label" : "View Menu",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-browse",
+  "type" : "route",
+  "urlPrefix" : "browse"
+}

@@ -1,0 +1,331 @@
+<template>
+    <div class="fimby-add-library-item">
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="library" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Photo Upload Step (shown after form submit, before success) -->
+        <template lwc:elseif={showPhotoStep}>
+            <c-fimby-page-header
+                page-title="Post Library Item"
+                parent-label="Library"
+                parent-url="/library-list">
+            </c-fimby-page-header>
+
+            <div class="photo-step-screen">
+                <div class="photo-step-content">
+                    <h2 class="photo-step-title">Add a Photo</h2>
+                    <p class="photo-step-message">A photo helps your item stand out. You can always add one later.</p>
+
+                    <c-fimby-image-uploader
+                        record-id={createdItemId}
+                        object-api-name="Library_Item__c"
+                        label="Upload Photo"
+                        onimageuploaded={handlePhotoUploaded}>
+                    </c-fimby-image-uploader>
+
+                    <div class="photo-step-actions">
+                        <button class="btn btn-neutral" onclick={handleSkipPhoto}>
+                            Skip &amp; Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success Screen -->
+        <template lwc:elseif={showSuccess}>
+            <div class="success-container">
+                <div class="success-content">
+                    <c-fimby-celebration action-type="library"></c-fimby-celebration>
+                    <h2 class="success-title">Thanks for being generous!</h2>
+                    <p class="success-message">
+                        Your new library item "<strong>{title}</strong>" is available to lend out.
+                    </p>
+
+                    <div class="success-actions">
+                        <button class="btn btn-primary" onclick={handleGoToItem}>
+                            <img src={viewItemIconUrl} alt="" class="btn-icon">
+                            View Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Form -->
+        <template lwc:else>
+            <c-fimby-page-header
+                page-title="Post Library Item"
+                parent-label="Library"
+                parent-url="/library-list">
+            </c-fimby-page-header>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                <!-- Error Display -->
+                <template lwc:if={error}>
+                    <div class="error-banner">
+                        <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                        <span>{error}</span>
+                    </div>
+                </template>
+
+                <!-- Poster Details Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={posterIconUrl} alt="Poster" class="section-icon">
+                        Poster Details
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Owner <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input
+                                    type="radio"
+                                    name="owner"
+                                    value="Self"
+                                    checked={isSelfOwned}
+                                    onchange={handleOwnerChange}
+                                    class="radio-input">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text">Self</span>
+                            </label>
+                            <label class="radio-option">
+                                <input
+                                    type="radio"
+                                    name="owner"
+                                    value="Organization"
+                                    checked={isOrganizationOwned}
+                                    onchange={handleOwnerChange}
+                                    class="radio-input">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text">Organization</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Organization Lookup (visible when Organization selected) -->
+                    <template lwc:if={isOrganizationOwned}>
+                        <div class="form-group">
+                            <label for="org-search" class="form-label">
+                                Organization's Name <span class="required">*</span>
+                            </label>
+                            <div class="lookup-container">
+                                <input
+                                    id="org-search"
+                                    type="text"
+                                    class="form-input"
+                                    placeholder="Search for an organization..."
+                                    value={organizationSearchTerm}
+                                    oninput={handleOrganizationSearchChange}
+                                    autocomplete="off">
+                                <template lwc:if={showOrganizationSearch}>
+                                    <div class="lookup-dropdown">
+                                        <template for:each={organizationSearchResults} for:item="org">
+                                            <div
+                                                key={org.id}
+                                                class="lookup-option"
+                                                data-id={org.id}
+                                                data-name={org.name}
+                                                onclick={handleOrganizationSelect}>
+                                                {org.name}
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="org-relationship" class="form-label">
+                                Relationship to the organization <span class="required">*</span>
+                            </label>
+                            <input
+                                id="org-relationship"
+                                type="text"
+                                class="form-input"
+                                placeholder="e.g., Volunteer, Staff Member, Board Member"
+                                value={organizationRelationship}
+                                oninput={handleOrganizationRelationshipChange}>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Posting as:</span>
+                            <span class="posting-as-value">{actingAsContactName}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Item Details Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={itemDetailsIconUrl} alt="Item Details" class="section-icon">
+                        Lending Library Item Details
+                    </h3>
+
+                    <div class="form-group">
+                        <div class="field-label-row">
+                            <label for="item-title" class="form-label">
+                                Item to Lend Title <span class="required">*</span>
+                            </label>
+                            <span class={titleCountClass}>{titleLength}/80</span>
+                        </div>
+                        <input
+                            id="item-title"
+                            type="text"
+                            class="form-input"
+                            placeholder="What are you sharing?"
+                            value={title}
+                            oninput={handleTitleChange}
+                            maxlength="80">
+                        <template lwc:if={titleLengthError}>
+                            <div class="field-error">{titleLengthError}</div>
+                        </template>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="field-label-row">
+                            <label for="item-description" class="form-label">
+                                Description <span class="required">*</span>
+                            </label>
+                            <span class={descriptionCountClass}>{descriptionLength}/255</span>
+                        </div>
+                        <textarea
+                            id="item-description"
+                            class="form-textarea"
+                            placeholder="Describe your item..."
+                            value={description}
+                            oninput={handleDescriptionChange}
+                            rows="4"
+                            maxlength="255"></textarea>
+                        <template lwc:if={descriptionLengthError}>
+                            <div class="field-error">{descriptionLengthError}</div>
+                        </template>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="category" class="form-label">
+                                Category <span class="required">*</span>
+                            </label>
+                            <select
+                                id="category"
+                                class="form-select"
+                                value={selectedCategory}
+                                onchange={handleCategoryChange}>
+                                <option value="">-- Select Category --</option>
+                                <template for:each={categories} for:item="cat">
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div class="form-group half-width">
+                            <label for="lending-days" class="form-label">
+                                Maximum Lending Time (Days) <span class="required">*</span>
+                            </label>
+                            <input
+                                id="lending-days"
+                                type="number"
+                                class="form-input"
+                                value={maxLendingDays}
+                                oninput={handleMaxLendingDaysChange}
+                                min="1"
+                                max="365">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Settings Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={settingsIconUrl} alt="Settings" class="section-icon">
+                        Item Settings
+                    </h3>
+                    <p class="section-description">
+                        If you are comfortable, auto-accepting and auto-sharing your contact info
+                        with those who respond can make things quicker &amp; easier for you.
+                    </p>
+
+                    <div class="checkbox-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={autoAcceptRequests}
+                                    onchange={handleAutoAcceptChange}
+                                    class="checkbox-input">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">Auto-Accept Requests</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={autoShareContactInfo}
+                                    onchange={handleAutoShareChange}
+                                    class="checkbox-input">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">Auto-Share Contact Info</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Acknowledgement Section -->
+                <div class="form-section warning-section">
+                    <h3 class="section-title">
+                        <img src={warningIconUrl} alt="Warning" class="section-icon">
+                        Risk Acknowledgement
+                    </h3>
+                    <p class="section-description">
+                        By offering to lend out your item there is the potential that it could be
+                        damaged in the process. Additionally, any issues that arise as a result of
+                        lending out this item will need to be resolved directly between the lender
+                        (you) and lendee.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={damageWaiverConfirmed}
+                                onchange={handleDamageWaiverChange}
+                                class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">
+                                I understand the risk and will take responsibility for any issues that arise.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button
+                        class="btn btn-primary btn-large"
+                        onclick={handlePostNow}
+                        disabled={isFormInvalid}>
+                        <template lwc:if={isSaving}>
+                            <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
+                        </template>
+                        <template lwc:else>
+                            <img src={submitIconUrl} alt="" class="btn-icon">
+                            {submitButtonLabel}
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

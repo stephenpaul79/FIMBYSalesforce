@@ -1,0 +1,119 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="intro-modal-backdrop" onclick={handleBackdropClick}
+             role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
+
+            <div class="intro-modal-card" onclick={handleStopProp}>
+
+                <!-- Header (phase-aware copy) -->
+                <div class="intro-modal-header">
+                    <div class="intro-modal-badge-row">
+                        <img src={storiesIconUrl} alt="" class="intro-modal-badge" />
+                        <img src={bioIconUrl} alt="" class="intro-modal-badge" />
+                    </div>
+                    <h2 id="intro-modal-title" class="intro-modal-title">{modalTitle}</h2>
+                    <p class="intro-modal-sub">{modalSubtitle}</p>
+                    <template lwc:if={showModalHint}>
+                        <p class="intro-modal-hint">{modalHint}</p>
+                    </template>
+                </div>
+
+                <!-- Body -->
+                <div class="intro-modal-body">
+                    <template lwc:if={_isLoading}>
+                        <div class="intro-modal-loading">
+                            <c-fimby-loading-message context="onboarding" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <template lwc:elseif={_showCelebration}>
+                        <div class="intro-modal-celebration">
+                            <c-fimby-celebration action-type="story" confetti-enabled memes-enabled></c-fimby-celebration>
+                            <p class="intro-modal-celebration-text">Nice to meet you, {_firstName}!</p>
+                        </div>
+                    </template>
+
+                    <template lwc:elseif={_showPhotoStep}>
+                        <div class="intro-modal-photo-step">
+                            <c-fimby-image-uploader
+                                record-id={_createdStoryId}
+                                object-api-name="Story__c"
+                                label="Upload photo"
+                                onimageuploaded={handlePhotoUploaded}>
+                            </c-fimby-image-uploader>
+                        </div>
+                    </template>
+
+                    <template lwc:else>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Posting as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <lightning-textarea
+                            class="intro-modal-textarea"
+                            label="Your introduction post"
+                            variant="label-hidden"
+                            value={_draftText}
+                            onchange={handleTextChange}
+                            disabled={_isPosting}>
+                        </lightning-textarea>
+                        <div class="intro-modal-meta">
+                            <span class="intro-modal-meta-label">Posting to Shared Life &middot; Bio</span>
+                            <span class="intro-modal-meta-count">{characterCount} characters</span>
+                        </div>
+
+                        <template lwc:if={_errorMessage}>
+                            <div class="intro-modal-error" role="alert">
+                                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                                <span>{_errorMessage}</span>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- Footer (phase-aware) -->
+                <template lwc:if={_showCelebration}>
+                    <div class="intro-modal-footer">
+                        <span></span>
+                        <span class="intro-modal-celebration-finishing">Wrapping up&hellip;</span>
+                    </div>
+                </template>
+                <template lwc:elseif={_showPhotoStep}>
+                    <div class="intro-modal-footer">
+                        <span></span>
+                        <button type="button"
+                                class="intro-modal-post"
+                                onclick={handleSkipPhoto}>
+                            Skip &amp; finish
+                        </button>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="intro-modal-footer">
+                        <button type="button"
+                                class="intro-modal-skip"
+                                onclick={handleSkip}
+                                disabled={_isPosting}>
+                            Skip for now
+                        </button>
+                        <button type="button"
+                                class="intro-modal-post"
+                                onclick={handlePost}
+                                disabled={isPostDisabled}>
+                            <template lwc:if={_isPosting}>
+                                <lightning-spinner alternative-text="Posting" size="small"></lightning-spinner>
+                                <span>Posting&hellip;</span>
+                            </template>
+                            <template lwc:else>
+                                Next
+                            </template>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,125 @@
+<template>
+    <div class="fimby-contact-detail">
+        <!-- Page Header -->
+        <c-fimby-page-header
+            page-title={contactName}
+            page-subtitle="Contact Details"
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="neighbour" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Contact Card -->
+        <template lwc:else>
+            <div class="detail-content">
+                <!-- Profile Header Card -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="avatar-container">
+                            <img lwc:if={avatarUrl} src={avatarUrl} alt={contactName} class="profile-avatar">
+                            <div lwc:else class="avatar-placeholder">
+                                <lightning-icon icon-name="standard:contact" size="large"></lightning-icon>
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <h1 class="profile-name">{contactName}</h1>
+                            <p lwc:if={accountName} class="profile-account">{accountName}</p>
+                            <div lwc:if={isActiveUser} class="active-badge">
+                                <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                                <span>Active User</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button lwc:if={email} class="action-btn" onclick={handleEmail}>
+                            <lightning-icon icon-name="utility:email" size="small"></lightning-icon>
+                            <span>Email</span>
+                        </button>
+                        <button lwc:if={phone} class="action-btn" onclick={handleCall}>
+                            <lightning-icon icon-name="utility:call" size="small"></lightning-icon>
+                            <span>Call</span>
+                        </button>
+                        <button class="action-btn" onclick={handleMessage}>
+                            <lightning-icon icon-name="utility:chat" size="small"></lightning-icon>
+                            <span>Message</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contact Details Card -->
+                <div class="details-card">
+                    <div class="card-header">
+                        <h2>Contact Information</h2>
+                        <button lwc:if={canEdit} class="edit-btn" onclick={handleEdit}>
+                            <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="details-grid">
+                        <div lwc:if={email} class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <a href={emailLink} class="detail-value link">{email}</a>
+                        </div>
+                        <div lwc:if={phone} class="detail-item">
+                            <span class="detail-label">Phone</span>
+                            <a href={phoneLink} class="detail-value link">{phone}</a>
+                        </div>
+                        <div lwc:if={mailingAddress} class="detail-item full-width">
+                            <span class="detail-label">Address</span>
+                            <span class="detail-value">{mailingAddress}</span>
+                        </div>
+                        <div lwc:if={description} class="detail-item full-width">
+                            <span class="detail-label">About</span>
+                            <span class="detail-value">{description}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Summary Card -->
+                <div class="activity-card">
+                    <div class="card-header">
+                        <h2>Activity</h2>
+                    </div>
+                    <div class="activity-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">{postCount}</span>
+                            <span class="stat-label">Posts</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{responseCount}</span>
+                            <span class="stat-label">Responses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{storyCount}</span>
+                            <span class="stat-label">Shared Life</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Bottom Navigation -->
+        <c-fimby-bottom-navigation
+            active-tab="profile"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Edit Modal -->
+        <c-fimby-record-edit-modal
+            record-id={recordId}
+            object-api-name="Contact"
+            field-set-name="FIMBY_Editable_Fields"
+            modal-title="Edit Contact"
+            onsave={handleEditSave}
+            oncancel={handleEditCancel}>
+        </c-fimby-record-edit-modal>
+    </div>
+</template>

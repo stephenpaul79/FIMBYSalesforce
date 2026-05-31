@@ -1,0 +1,157 @@
+---
+description: FIMBY LWC technical patterns — reusable primitives, image URL resolution, menuItems API, collapsible sections, and onboarding structure
+globs: "**/lwc/**"
+alwaysApply: false
+---
+
+# FIMBY LWC Patterns
+
+## Component Overview (~92 components)
+
+All prefixed `fimby*`. Areas: home feed, stories, ask/offer, library/lending, messaging (DM + response threads + group chat), bulk buy, profile/my-stuff, search, notifications, onboarding, identity management, admin lists, shared utilities. Components support dual-mode (page vs modal via `isModalMode`).
+
+## Reusable Primitives
+
+Build on these before creating new components:
+
+| Component | Purpose |
+|-----------|---------|
+| `fimbyCard` | Universal feed card — images, tags, social actions, Read More/Less, desktop horizontal layout |
+| `fimbyInfiniteScroll` | Paginated lists with pull-to-refresh, empty/error/end-of-feed states |
+| `fimbyResponsiveList` | Table ↔ card responsive (768px breakpoint) with sorting and search |
+| `fimbyImageUploader` | Client-side compression (1200px max, JPEG 0.8), tap + drag-and-drop |
+| `fimbyRecordEditModal` / `fimbyRecordDetailCard` | Dynamic record forms via field sets |
+| `fimbyLoadingMessage` | Rotating loading messages from `FIMBY_Loading_Message__mdt` |
+| `fimbyCelebration` | Emoji confetti + GIFs, occasion-scaled, `prefers-reduced-motion` aware |
+| `fimbyPageHeader` | Breadcrumb + `menuItems` three-tier actions + search + notifications + progress bar |
+| `fimbyUniversalHeader` / `fimbyBottomNavigation` | Site-wide nav: 4 tabs + Create + identity switcher + acting-as chip |
+| `fimbyManageIdentities` | Identity management with responsive table/card layout |
+| `fimbyRelationshipSetupModal` | Multi-step wizard for support relationships |
+| `fimbyOrganizationProfile` | Basic profile page for community group organizations |
+
+## Header menuItems API (Three-Tier Display)
+
+`fimbyPageHeader` accepts `menu-items` array, emits `menuaction`. Each item declares `display`:
+
+- **`inline`** — Always visible action button (rounded rectangle). For primary CTAs (Compose, Set Up).
+- **`responsive`** — Action button on desktop (≥768px), kebab on mobile. For management actions (Edit, Photo, Delete).
+- **`kebab`** — Always in dropdown. For safety actions (Flag, Block).
+
+Header action buttons follow **Tier 1 (rounded rectangle)** from the shape hierarchy in `lwc-css-foundations`. They must never use pill shape (`9999px`).
+
+Item shape: `{ key, label, icon, display, variant }`. `icon` = filename from `Impact_Icons` (e.g., `'edit.png'`). `variant`: `'primary'` (teal fill) or `'danger'` (red tint on hover). Kebab trigger only appears when items would render inside it.
+
+```javascript
+get headerMenuItems() {
+    if (this.isPosterPersona) {
+        return [
+            { key: 'edit', label: 'Edit', icon: 'edit.png', display: 'responsive' },
+            { key: 'photo', label: 'Photo', icon: 'photo.png', display: 'responsive' },
+            { key: 'delete', label: 'Delete', icon: 'trash.png', display: 'responsive', variant: 'danger' }
+        ];
+    }
+    return [{ key: 'flag', label: 'Report', icon: 'warning.png', display: 'kebab' }];
+}
+handleHeaderMenuAction(event) {
+    const actions = { edit: () => this.handleEdit(), photo: () => this.handleUploadPhoto(), delete: () => this.handleDeleteClick(), flag: () => this.handleFlag() };
+    actions[event.detail.key]?.();
+}
+```
+
+**Never** use deprecated `slot="actions"`, `showCustomAction`, or `showMenu`. All actions via `menuItems`. Do not build custom header markup — always use `c-fimby-page-header`.
+
+## Image URL Resolution (Organization ID Suffix)
+
+CMS images require the Salesforce Org ID suffix. Every LWC displaying user-uploaded images must:
+
+1. Import: `import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';`
+2. Fetch in `connectedCallback`: `this._organizationId = await getOrganizationId();` (cacheable=true)
+3. Process URLs:
+
+```javascript
+_completeImageUrl(url) {
+    if (!url) return '';
+    if (this._organizationId && !url.includes(this._organizationId)) {
+        return url + this._organizationId;
+    }
+    return url;
+}
+```
+
+Apply to all image URLs from Apex/records. Do **not** apply to static resource URLs (`IMPACT_ICONS`, `MEMES*`, `FIMBY_Brand`).
+
+## Persona-First Detail Pages (Technical)
+
+Detail pages use 3 persona getters: `isPosterPersona`, `isResponderPersona`, `isRespondedPersona`. Client-side only (no new Apex). Single-column layout at all viewports. Poster actions via `headerMenuItems` (`responsive` display), viewer safety via `headerMenuItems` (`kebab` display). Reference: `fimbyNeedOfferDetail`, `fimbyBulkBuyDetailBody`.
+
+## Event Type Config (CONFIG-Driven Getters)
+
+`fimbyNeedOfferDetail` uses an `EVENT_TYPE_CONFIG` object keyed by `Event_Type__c` value (`Gathering`, `Open_Event`, `Community_Event`). All event-specific getters resolve through `this.eventTypeConfig.property` instead of nested if/else. When adding event behavior, **add a property to the config object** — do not introduce ad-hoc conditionals.
+
+Key config flags: `usesCapacity`, `usesQuickResponse`, `usesResponseThreads`, `usesOnDemandEventChat`, `usesAttendeeList`, `showMessagePoster`, `showGuestStepper`, `showModeration`, `showEventLink`.
+
+**Critical**: `usesCapacity` is `true` only for Gathering. Open Event and Community Event must never enter capacity exhaustion paths (`isQuantityExhausted`, "Event Full", disabled CTA). Gate all capacity logic behind `isGathering`.
+
+## Quick-Response Modal (`fimbyQuickResponseModal`)
+
+All response interactions from feeds use `fimbyQuickResponseModal` — a single reusable modal with type-switching variants. **Do not navigate to `/respond`, `/reserve-share`, or `/borrow-item`** — those routes are deprecated.
+
+| Type | From Feed | From Detail |
+|---|---|---|
+| Community Event | Inline 1-click (no modal) | Inline 1-click |
+| Open Event | Modal (guest stepper) | Inline 1-click + post-RSVP stepper |
+| Gathering / Ask / Offer | Form modal | Form modal |
+| Bulk Buy | Form modal (amount stepper) | Form modal |
+| Library | Form modal (date + days) | Form modal |
+| Story | Comment modal | Existing `fimbyCommentComposer` |
+
+After modal close or inline action, cards/detail pages update in-place (no page reload, scroll preserved).
+
+## Confetti — DOM-Based Only
+
+Celebrations use `fireEmojiConfetti({ emojis, style, intensity })` from `fimbyConfettiHelper`. This is a pure-DOM engine using `element.animate()` (Web Animations API). **Do not** import `loadScript(CONFETTI)`, `buildEmojiShapes`, or any canvas-based confetti API — the canvas approach is deprecated due to cross-platform emoji rendering failures in WebView. The `Confetti` static resource exists only as rollback insurance.
+
+## Character-Limited Text Fields
+
+Every text input or textarea with a `maxlength` must follow this pattern:
+
+1. **`maxlength` matches the Salesforce field length exactly** — never set a higher value. The counter display and the HTML limit must agree.
+2. **Always show a counter** in the `field-label-row`: `<span class={countClass}>{length}/{max}</span>`
+3. **Counter colour changes dynamically** via a class getter:
+
+```javascript
+get fieldCountClass() {
+    const len = this.fieldValue.length;
+    if (len >= MAX) return 'character-count at-limit';
+    if (len >= Math.floor(MAX * 0.9)) return 'character-count near-limit';
+    return 'character-count';
+}
+```
+
+4. **CSS** (scoped per component — add once if missing):
+
+```css
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+```
+
+Some components use `char-count` as the base class instead of `character-count` — match whichever the component already uses, but always include `.near-limit` and `.at-limit` modifiers.
+
+5. **Hard limits, not soft** — `maxlength` enforces the cap; the browser stops input at the limit. Do not allow overage and block submit. The counter turns red *at* the limit (`>=`), not above it (`>`).
+6. **Prefer native `<input>` / `<textarea>`** over `lightning-input` / `lightning-textarea` in modals and compact forms. Lightning base components reserve internal padding for help text and error slots even when unused, causing layout bloat. Native elements give full CSS control.
+
+## Collapsible Sections
+
+Tracked boolean + chevron `<button>` + `slideDown` CSS. Mobile default: collapsed. Desktop: expanded (via `window.matchMedia('(min-width: 768px)')` in `connectedCallback`). Respect `prefers-reduced-motion`. Inline per consumer — no shared component. Used in `fimbyRecordDetailCard` and `fimbyNeedOfferDetail`.
+
+## Onboarding Structure
+
+- **Registration** (`fimbyUserRegistration`): pre-account, 5 steps — Info → Location → Photo → Interests → Review
+- **Profile setup** (`fimbyOnboardingModal`): post-login, 5 steps — only name required; steps 2–5 optional
+- **Walkthrough**: CMS-driven (`FimbyCmsHelper`), dismissible per-session (`sessionStorage`) or permanently (Apex). Re-invocable via `showWalkthrough()`

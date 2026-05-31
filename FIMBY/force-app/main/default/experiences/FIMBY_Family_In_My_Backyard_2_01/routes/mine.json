@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "a1b2c3d4-5e6f-7890-abcd-ef1234567890",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "My_Stuff",
+  "id" : "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f90",
+  "label" : "My Stuff",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-mine",
+  "type" : "route",
+  "urlPrefix" : "mine"
+}

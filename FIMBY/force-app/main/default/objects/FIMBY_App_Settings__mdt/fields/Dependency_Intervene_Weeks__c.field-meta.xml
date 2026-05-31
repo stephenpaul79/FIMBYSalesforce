@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Dependency_Intervene_Weeks__c</fullName>
+    <defaultValue>8</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Dependency Intervene Weeks</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Weeks of elevated dependency before intervention</inlineHelpText>
+</CustomField>

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Response Detail",
+  "contentBody" : {
+    "activeViewId" : "Response_Detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-response-detail",
+    "urlPrefix" : "response-detail"
+  },
+  "urlName" : "response-detail"
+}

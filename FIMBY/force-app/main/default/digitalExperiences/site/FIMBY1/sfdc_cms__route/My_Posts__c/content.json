@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Posts",
+  "contentBody" : {
+    "activeViewId" : "My_Posts",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-posts",
+    "urlPrefix" : "my-posts"
+  },
+  "urlName" : "my-posts"
+}

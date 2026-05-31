@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>First_Name__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( !ISBLANK(Posted_For_Organization__c) || !ISBLANK( Posted_For_Person__c ), Posted_By__r.FirstName + &quot;(On Behalf of) &quot; + Posted_For_Organization__r.Name +  Posted_For_Person__r.FirstName    , Posted_By__r.FirstName )</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>First Name</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

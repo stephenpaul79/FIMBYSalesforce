@@ -1,0 +1,409 @@
+/* FIMBY Story Composer - Mobile First */
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-story-composer {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+@media (min-width: 892px) {
+    .fimby-story-composer {
+        padding-bottom: 24px;
+    }
+}
+
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+    background-color: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Composer Form — horizontal padding lives on the outer wrapper per LWC CSS foundations */
+
+/* Form Sections (Card Style) */
+.form-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 20px 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+/* Section Headers with Icons */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 16px;
+}
+
+.section-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Form Fields */
+.form-field {
+    margin-bottom: 16px;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+}
+
+.character-count {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    text-align: right;
+}
+
+.field-label-row .character-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+/* Story Type Selection — 2 rows of 3 on all viewports */
+.story-types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 8px;
+}
+
+.story-type {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 6px;
+    min-height: 44px;
+    border: 2px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: 100%;
+    font-family: inherit;
+}
+
+.story-type:hover {
+    border-color: var(--fimby-brand-teal);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.story-type.active {
+    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-info-tint);
+}
+
+.story-type-icon {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.story-type-details {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.story-type-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 1px;
+}
+
+.story-type-desc {
+    font-size: 10px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.2;
+}
+
+/* Submit Section */
+.submit-section {
+    padding: 20px;
+    text-align: center;
+}
+
+.submit-button {
+    min-width: 200px;
+}
+
+/* Photo Upload Step Screen */
+.photo-step-screen {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+.photo-step-content {
+    background-color: var(--fimby-surface-card);
+    padding: 40px 32px;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card-hover);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.photo-step-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.photo-step-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.photo-step-actions {
+    margin-top: 16px;
+}
+
+/* Success Screen */
+.success-screen {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+    background-color: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-lg);
+    margin: 12px;
+}
+
+.success-content {
+    text-align: center;
+    background-color: var(--fimby-surface-card);
+    padding: 40px 32px;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card-hover);
+    max-width: 400px;
+    width: 100%;
+}
+
+.success-icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--fimby-success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.success-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--fimby-success);
+    margin: 0 0 12px;
+}
+
+.success-message {
+    font-size: 16px;
+    color: var(--fimby-text-primary);
+    margin: 0 0 32px;
+    line-height: 1.5;
+}
+
+.success-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.action-button {
+    min-width: 160px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-neutral {
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.btn-neutral:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background-color: var(--fimby-surface-card);
+    padding: 32px 40px;
+    border-radius: var(--fimby-radius-md);
+    text-align: center;
+    max-width: 280px;
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    margin-top: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .form-section {
+        padding: 16px 14px;
+        margin-bottom: 12px;
+    }
+
+    .photo-step-content,
+    .success-content {
+        padding: 32px 24px;
+    }
+
+    .success-title {
+        font-size: 20px;
+    }
+}
+
+@media (min-width: 768px) {
+    .form-section {
+        padding: 24px 20px;
+        border-radius: var(--fimby-radius-lg);
+    }
+
+    .story-types-grid {
+        gap: 12px;
+    }
+
+    .story-type {
+        gap: 8px;
+        padding: 14px 12px;
+    }
+
+    .story-type-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .story-type-name {
+        font-size: 13px;
+    }
+
+    .story-type-desc {
+        font-size: 11px;
+    }
+}
+
+/* Keyboard focus visibility */
+.back-button:focus-visible,
+.story-type:focus-visible,
+.btn-neutral:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .story-type,
+    .btn,
+    .back-button {
+        transition: none;
+    }
+}

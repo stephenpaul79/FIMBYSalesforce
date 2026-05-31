@@ -1,0 +1,71 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "8a09bd5a-e6f5-45fa-a8b2-129313148f40",
+  "label" : "Give and Receive",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><strong style=\"font-size: 28px; color: rgb(68, 68, 68);\">Give &amp; Receive</strong></p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><a href=\"/s/post-a-need\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.NeedCirclepng.2}\" style=\"width: 70px; height: 70px;\"></a><span style=\"background-color: var(--lwc-colorPageBackground,#F5F7FA); color: var(--slds-g-color-neutral-base-10, var(--lwc-colorTextDefault,#222222));\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><a href=\"/s/post-an-offer\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.OfferCirclepng.2}\" style=\"width: 72.4px; height: 72.4px;\"></a><span style=\"background-color: var(--lwc-colorPageBackground,#F5F7FA); color: var(--slds-g-color-neutral-base-10, var(--lwc-colorTextDefault,#222222));\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><a href=\"/s/responses-and-replies\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.MailCircle.1}\" style=\"width: 72.2px; height: 72.2px;\"></a></p>\n<p style=\"text-align: center;\"><br></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "6d43e174-34b7-4bfe-b687-73be5cd3b4e3",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "ebb4316e-b585-4e19-b555-a5c2d9860fec",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "enableInlineEdit" : false,
+        "filterName" : "All_Active_Posts",
+        "layout" : "FULL",
+        "pageSize" : 25,
+        "scope" : "Needs_Offers__c",
+        "showActionBar" : false,
+        "showChartsPanel" : false,
+        "showDisplay" : "grid",
+        "showFilterPanel" : false,
+        "showImageIcon" : false,
+        "showManualRefreshButton" : false,
+        "showObjectName" : false,
+        "showPinnedList" : true,
+        "showSearchBar" : false
+      },
+      "componentName" : "forceCommunity:objectHome",
+      "id" : "16ff8db2-1247-4b90-92e5-0d32fdfe8d3f",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "8989d3cf-8104-4756-adad-fa55bd30ae74",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "1151fd9b-7d8d-4250-a012-0094fd021517",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Give and Receive"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "c48f5e46-0263-46dc-9694-09b6703c1e92",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "da6e8a37-376b-4e9c-94a0-76a0d25b877e",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-give-and-receive"
+}

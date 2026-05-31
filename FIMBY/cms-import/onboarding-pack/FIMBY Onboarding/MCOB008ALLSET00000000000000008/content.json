@@ -1,0 +1,14 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Your Profile and Settings",
+  "contentBody" : {
+    "title" : "Your Profile and Settings",
+    "body" : "<p>Make FIMBY yours! From the menu you can:</p><ul><li>Update your <strong>profile</strong> - photo, bio, and care preferences</li><li>Adjust <strong>notification settings</strong> so you only hear about what matters to you</li><li>Visit <strong>Help and Support</strong> any time you need a hand</li></ul><p>You are all set! Go explore your neighbourhood.</p>",
+    "pageOrder" : "060",
+    "slideOrder" : "010",
+    "pageTitle" : "You're All Set!",
+    "buttonLabel" : "Explore FIMBY",
+    "buttonUrl" : "/"
+  },
+  "urlName" : "your-profile-and-settings"
+}

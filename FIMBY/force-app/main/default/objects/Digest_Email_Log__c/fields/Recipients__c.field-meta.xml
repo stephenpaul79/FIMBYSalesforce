@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recipients__c</fullName>
+    <description>Delimited list of users who successfully received this digest. One per line: "{FirstName} {LastName} - {UserId}". Newlines stripped from name to preserve format.</description>
+    <label>Recipients</label>
+    <length>131072</length>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+</CustomField>

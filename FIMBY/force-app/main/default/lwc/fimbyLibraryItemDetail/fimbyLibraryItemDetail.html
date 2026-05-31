@@ -1,0 +1,396 @@
+<template>
+    <div class="fimby-library-item-detail">
+        <c-fimby-page-header
+            page-title={detailPageTitle}
+            parent-label="Library"
+            parent-url="/library-list"
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <!-- Removed / Hidden State -->
+        <template lwc:if={isRemoved}>
+            <div class="detail-content">
+                <div class="content-removed-card" role="status">
+                    <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
+                    <h2 class="content-removed-title">This item is no longer available</h2>
+                    <p class="content-removed-message">{removedMessage}</p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading State -->
+        <template lwc:elseif={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="library" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={shouldRenderRecord}>
+            <div class="detail-content">
+                <div class="item-card">
+                    <div class={cardLayoutClass}>
+                        <!-- Left: Image or placeholder -->
+                        <template lwc:if={showCardLeft}>
+                            <div class="card-left">
+                                <div class="card-left-header">
+                                    <div class="status-badge" data-status={status}>{status}</div>
+                                </div>
+                                <template lwc:if={hasImage}>
+                                    <button type="button" class="item-image-container" style={imageContainerStyle}
+                                            aria-label="View full image" onclick={handleImageClick}>
+                                        <img src={imageUrl} alt={itemName} class="item-image">
+                                        <div class="image-overlay">
+                                            <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                        </div>
+                                    </button>
+                                </template>
+                                <template lwc:elseif={isOwner}>
+                                    <div class="item-placeholder">
+                                        <img src={noPhotoUrl} alt="" class="placeholder-icon">
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Right: Header + Content + Actions -->
+                        <div class="card-right">
+                            <div class="card-right-top">
+                                <div class="post-header-compact">
+                                    <div class="post-header-left">
+                                        <div class="title-row">
+                                            <h1 class="item-name">{itemName}</h1>
+                                            <template lwc:if={showStatusInRight}>
+                                                <div class="status-badge" data-status={status}>{status}</div>
+                                            </template>
+                                        </div>
+                                        <span class="post-meta">
+                                            <template lwc:if={category}>
+                                                <span class="post-type-row">
+                                                    <img src={categoryIconUrl} alt="" class="post-type-badge-icon">
+                                                    <span class="post-type">{category}</span>
+                                                </span>
+                                            </template>
+                                            <template lwc:if={expectedReturnDate}>
+                                                <span class="post-date">Return: {expectedReturnDate}</span>
+                                            </template>
+                                        </span>
+                                    </div>
+                                    <div class="poster-info-compact">
+                                        <template lwc:if={ownerAvatar}>
+                                            <img src={ownerAvatar} alt={ownerName} class="poster-avatar">
+                                        </template>
+                                        <template lwc:else>
+                                            <img src={noProfilePhotoUrl} alt="" class="poster-avatar">
+                                        </template>
+                                        <span class="poster-name">{ownerName}</span>
+                                    </div>
+                                </div>
+
+                                <template lwc:if={hasDescription}>
+                                    <div class="item-content">
+                                        <p class="item-description">{description}</p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Borrow / Join Waitlist for non-owners with no relationship -->
+                            <template lwc:if={showBorrowAction}>
+                                <div class="item-actions">
+                                    <button class="action-btn primary" onclick={handleBorrow}>
+                                        <img src={borrowIconUrl} alt="" class="action-btn-icon">
+                                        <span>Borrow</span>
+                                    </button>
+                                </div>
+                            </template>
+                            <template lwc:if={showJoinWaitlist}>
+                                <div class="item-actions">
+                                    <button class="action-btn primary" onclick={handleBorrow}>
+                                        <img src={borrowIconUrl} alt="" class="action-btn-icon">
+                                        <span>Join Waitlist</span>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requester banner (active request or loan — own info-section card) -->
+                <template lwc:if={showRequesterBanner}>
+                    <div class={requesterSectionClass}>
+                        <template lwc:if={isOverdue}>
+                            <span class="overdue-pill">{overduePillLabel}</span>
+                        </template>
+                        <p class="banner-message">{bannerMessage}</p>
+                        <div class="banner-actions">
+                            <template lwc:if={showBannerReturnAction}>
+                                <button class="action-btn primary" onclick={handleBorrowerReturn}>Return Item</button>
+                            </template>
+                            <template lwc:if={showBannerExtensionAction}>
+                                <button class="action-btn" onclick={handleBannerRequestExtension}>Request Extension</button>
+                            </template>
+                            <template lwc:if={showBannerConfirmAction}>
+                                <button class="action-btn primary" onclick={handleBannerConfirmWaitlist}>Confirm</button>
+                            </template>
+                            <template lwc:if={showBannerConfirmPickup}>
+                                <button class="action-btn primary" onclick={handleConfirmPickup}>I Have the Item</button>
+                            </template>
+                            <template lwc:if={showBannerMessageOwner}>
+                                <a href={messageOwnerUrl} class="action-btn">Message Owner</a>
+                            </template>
+                            <template lwc:if={showBannerCancelRequest}>
+                                <button class="action-btn action-btn-muted" onclick={handleCancelRequest}>Cancel Request</button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- On Loan info for non-owners -->
+                <template lwc:if={showOnLoanInfo}>
+                    <div class="info-section requester-section requester-section-neutral">
+                        <p class="banner-message">This item is currently on loan — expected back {expectedReturnDate}.</p>
+                    </div>
+                </template>
+
+                <!-- Photo Uploader (owner only, toggle) -->
+                <template lwc:if={showPhotoUploader}>
+                    <div class="info-section photo-uploader-section">
+                        <div class="section-header-row">
+                            <h3 class="section-title">
+                                <img src={photoIconUrl} alt="" class="section-icon">
+                                Manage Photo
+                            </h3>
+                            <button class="section-close-btn" onclick={handleClosePhotoUploader} aria-label="Close photo manager">&times;</button>
+                        </div>
+                        <c-fimby-image-uploader
+                            record-id={recordId}
+                            object-api-name="Library_Item__c"
+                            image-slot="1"
+                            label=""
+                            onimageuploaded={handlePhotoUploaded}>
+                        </c-fimby-image-uploader>
+                    </div>
+                </template>
+
+                <!-- Owner Admin Panel -->
+                <template lwc:if={isOwner}>
+                    <c-fimby-library-item-admin
+                        record-id={recordId}
+                        admin-data={adminData}
+                        admin-data-loaded={adminDataLoaded}
+                        organization-id={organizationId}
+                        onreviewrequest={handleReviewRequest}
+                        onremoverequest={handleRemoveRequest}
+                        onconfirmpickup={handleAdminConfirmPickup}
+                        onapproveextension={handleAdminApproveExtension}
+                        onhandoffcomplete={handleHandoffComplete}
+                        onverifyreturn={handleVerifyReturn}>
+                    </c-fimby-library-item-admin>
+                </template>
+
+                <!-- Borrower Lending History (non-owner only) -->
+                <template lwc:if={hasBorrowerHistory}>
+                    <div class="info-section">
+                        <h2 class="section-title">
+                            <img src={historyIconUrl} alt="" class="section-icon">
+                            Your Borrowing History
+                        </h2>
+                        <ul class="borrower-history-list">
+                            <template for:each={borrowerHistory} for:item="bh">
+                                <li key={bh.id} class="borrower-history-item">
+                                    <div class="borrower-history-row">
+                                        <div class="borrower-history-user">
+                                            <template lwc:if={bh.lenderAvatar}>
+                                                <img src={bh.lenderAvatar} alt="" class="avatar-sm">
+                                            </template>
+                                            <template lwc:else>
+                                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
+                                            </template>
+                                            <div class="borrower-history-info">
+                                                <span class="borrower-history-name">{bh.lenderName}</span>
+                                                <span class="borrower-history-meta">{bh.displayStartDate} — {bh.displayEndDate}</span>
+                                                <template lwc:if={bh.condition}>
+                                                    <span class="borrower-history-condition">Returned: {bh.condition}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={bh.hasConversation}>
+                                            <div class="borrower-history-actions">
+                                                <a href={bh.conversationUrl} class="bh-msg-btn" aria-label="Message lender">
+                                                    <img src={messageIconUrl} alt="" class="bh-msg-icon">
+                                                    <span>Message</span>
+                                                </a>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+
+                <!-- Availability -->
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <img src={availabilityIconUrl} alt="" class="section-icon">
+                        Availability
+                    </h2>
+                    <div class="field-grid">
+                        <template lwc:if={ownerName}>
+                            <div class="field-item">
+                                <span class="field-label">Owner</span>
+                                <span class="field-value">{ownerName}</span>
+                            </div>
+                        </template>
+                        <template lwc:if={ownerOrganizationName}>
+                            <div class="field-item">
+                                <span class="field-label">Organization</span>
+                                <span class="field-value">{ownerOrganizationName}</span>
+                            </div>
+                        </template>
+                        <template lwc:if={maxLendingDays}>
+                            <div class="field-item">
+                                <span class="field-label">Max Lending (Days)</span>
+                                <span class="field-value">{maxLendingDays}</span>
+                            </div>
+                        </template>
+                        <template lwc:if={expectedReturnDate}>
+                            <div class="field-item">
+                                <span class="field-label">Expected Return</span>
+                                <span class="field-value">{expectedReturnDate}</span>
+                            </div>
+                        </template>
+                        <template lwc:if={onLoanReturnDate}>
+                            <div class="field-item">
+                                <span class="field-label">On Loan Return</span>
+                                <span class="field-value">{onLoanReturnDate}</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Item Settings -->
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <img src={settingsIconUrl} alt="" class="section-icon">
+                        Item Settings
+                    </h2>
+                    <div class="field-grid">
+                        <div class="field-item">
+                            <span class="field-label">Auto-Accept Requests</span>
+                            <span class="field-value">{autoAcceptLabel}</span>
+                        </div>
+                        <div class="field-item">
+                            <span class="field-label">Auto-Share Contact Info</span>
+                            <span class="field-value">{autoShareLabel}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Delete Confirmation Modal -->
+        <template lwc:if={showDeleteConfirm}>
+            <div class="delete-overlay" onclick={handleDeleteCancel}>
+                <div class="delete-modal" onclick={stopPropagation}>
+                    <h3 class="delete-title">Delete Item?</h3>
+                    <p class="delete-message">This action cannot be undone. Any pending lending requests will also be affected.</p>
+                    <div class="delete-actions">
+                        <button class="btn btn-neutral" onclick={handleDeleteCancel} disabled={isDeleting}>Cancel</button>
+                        <button class="btn btn-danger" onclick={handleDeleteConfirm} disabled={isDeleting}>
+                            {deleteButtonLabel}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Removal Confirmation Modal (owner removes from waitlist) -->
+        <template lwc:if={showRemoveConfirm}>
+            <div class="delete-overlay" onclick={handleRemoveCancel}>
+                <div class="delete-modal" onclick={stopPropagation}>
+                    <h3 class="delete-title">Remove {removeTargetName} from the waitlist?</h3>
+                    <p class="delete-message">Let them know why you're removing their request.</p>
+                    <textarea class="remove-reason-input" placeholder="Reason (required)" value={removeReason} onchange={handleRemoveReasonChange}></textarea>
+                    <div class="delete-actions">
+                        <button class="btn btn-neutral" onclick={handleRemoveCancel} disabled={isRemoving}>Cancel</button>
+                        <button class="btn btn-warning" onclick={handleRemoveConfirm} disabled={removeConfirmDisabled}>
+                            {removeButtonLabel}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Image Modal -->
+        <template lwc:if={showImageModal}>
+            <div class="image-modal" role="dialog" aria-label="Full size image"
+                 onclick={handleCloseImageModal} onkeydown={handleModalKeydown}>
+                <button class="modal-close-btn" aria-label="Close image" onclick={handleCloseImageModal}>
+                    <lightning-icon icon-name="utility:close" size="medium" variant="inverse"></lightning-icon>
+                </button>
+                <div class="modal-image-container">
+                    <img src={imageUrl} alt={itemName} class="modal-image">
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="library" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+
+        <template lwc:if={isOwner}>
+            <c-fimby-record-edit-modal
+                record-id={recordId}
+                object-api-name="Library_Item__c"
+                field-set-name="FIMBY_Editable_Fields"
+                modal-title="Edit Library Item"
+                onsave={handleEditSave}
+                oncancel={handleEditCancel}>
+            </c-fimby-record-edit-modal>
+        </template>
+
+        <c-fimby-report-content></c-fimby-report-content>
+
+        <!-- Quick Response Modal (for borrow requests) -->
+        <c-fimby-quick-response-modal onresponsesaved={handleDetailResponseSaved} onmodalclosed={handleResponseModalClosed}></c-fimby-quick-response-modal>
+
+        <!-- Vouching Required Modal (gates borrow for settling-in members) -->
+        <c-fimby-vouching-required-modal></c-fimby-vouching-required-modal>
+
+        <!-- Lending Approval Modal (owner reviews requests) -->
+        <c-fimby-lending-approval-modal
+            onapprovalcomplete={handleApprovalComplete}
+            onapprovalmodalclosed={handleApprovalComplete}>
+        </c-fimby-lending-approval-modal>
+
+        <!-- Item Return Modal (owner verify + borrower return) -->
+        <c-fimby-item-return-modal
+            onreturncomplete={handleReturnComplete}
+            onreturnmodalclosed={handleReturnComplete}>
+        </c-fimby-item-return-modal>
+
+        <!-- Pickup Confirmation Modal -->
+        <c-fimby-pickup-confirmation-modal
+            onpickupcomplete={handlePickupComplete}
+            onpickupmodalclosed={handlePickupComplete}>
+        </c-fimby-pickup-confirmation-modal>
+
+        <!-- Lending Confirmation Modal (waitlist your-turn) -->
+        <c-fimby-lending-confirmation-modal
+            onconfirmationcomplete={handleConfirmationComplete}
+            onconfirmationmodalclosed={handleConfirmationComplete}>
+        </c-fimby-lending-confirmation-modal>
+
+        <!-- Loan Extension Modal (borrower request / owner set) -->
+        <c-fimby-loan-extension-modal
+            onextensioncomplete={handleExtensionComplete}
+            onextensionmodalclosed={handleExtensionComplete}>
+        </c-fimby-loan-extension-modal>
+
+        <!-- Loan Extension Approval Modal (owner approve/decline) -->
+        <c-fimby-loan-extension-approval-modal
+            onextensionapprovalcomplete={handleExtensionApprovalComplete}
+            onextensionapprovalmodalclosed={handleExtensionApprovalComplete}>
+        </c-fimby-loan-extension-approval-modal>
+    </div>
+</template>

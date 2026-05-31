@@ -1,0 +1,163 @@
+<template>
+    <div class="fimby-notifications-list">
+        <div class="header-wrapper">
+            <c-fimby-page-header page-title="Notifications"></c-fimby-page-header>
+        </div>
+
+        <!-- Action bar -->
+        <div class="action-bar">
+            <!-- Inline actions -->
+            <div class="action-bar-inline">
+                <button class="action-bar-btn" onclick={handleMarkAllRead} disabled={notHasUnread} aria-label="Mark all as read">
+                    <lightning-icon icon-name="utility:check" size="x-small"></lightning-icon>
+                    <span>Mark all read</span>
+                </button>
+                <button class="action-bar-btn" onclick={handleClearAllClick} aria-label="Clear all notifications">
+                    <img src={trashIconUrl} alt="" class="action-bar-icon">
+                    <span>Clear all</span>
+                </button>
+                <button class="action-bar-btn icon-only" onclick={handleSettingsClick} aria-label="Notification settings">
+                    <img src={settingsIconUrl} alt="" class="action-bar-icon">
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Confirmation dialog -->
+        <template lwc:if={showConfirmation}>
+            <div class="confirm-overlay" role="presentation"></div>
+            <div class="confirm-dialog" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+                <p id="confirm-title" class="confirm-title">Clear all notifications?</p>
+                <p id="confirm-msg" class="confirm-msg">This will permanently remove all your notifications.</p>
+                <div class="confirm-actions">
+                    <button class="confirm-btn confirm-cancel" onclick={handleConfirmCancel}>Cancel</button>
+                    <button class="confirm-btn confirm-delete" onclick={handleConfirmClearAll}>Clear all</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Undo toast -->
+        <template lwc:if={showUndoToast}>
+            <div class="undo-toast" role="alert">
+                <span>Notification deleted</span>
+                <button class="undo-btn" onclick={handleUndo}>Undo</button>
+            </div>
+        </template>
+
+        <!-- Aria live region for status updates -->
+        <div class="sr-only" role="status" aria-live="polite">{statusMessage}</div>
+
+        <!-- Infinite scroll wrapper -->
+        <c-fimby-infinite-scroll
+            enable-pull-to-refresh
+            empty-state-image-url={emptyIconUrl}
+            empty-state-title="No notifications"
+            empty-state-message="When neighbours interact with your posts, you'll see notifications here"
+            onloadmore={handleLoadMore}
+            onrefresh={handleRefresh}>
+
+            <div class="notifications-container">
+                <template for:each={groupedNotifications} for:item="group">
+                    <section key={group.key} class="notification-group" aria-label={group.label}>
+                        <h2 class="group-header">{group.label}</h2>
+
+                        <template for:each={group.items} for:item="notification">
+                            <div key={notification.id}
+                                 class="swipe-wrapper"
+                                 data-notification-id={notification.id}
+                                 ontouchstart={handleSwipeStart}
+                                 ontouchmove={handleSwipeMove}
+                                 ontouchend={handleSwipeEnd}>
+
+                                <!-- Left action (read/unread toggle) — revealed on swipe right, auto-commits -->
+                                <button type="button"
+                                        class={notification.readSwipeClass}
+                                        data-notification-id={notification.id}
+                                        onclick={handleSwipeActionClick}
+                                        aria-label={notification.readToggleLabel}>
+                                    <img src={notification.readStatusIconUrl} alt="" class="swipe-action-icon" />
+                                    <span class="swipe-action-prefix">Mark as</span>
+                                    <span class="swipe-action-label">{notification.readStatusLabel}</span>
+                                </button>
+
+                                <!-- Right action (delete) — revealed on swipe left, reveal+tap -->
+                                <button type="button"
+                                        class="swipe-action swipe-action-right"
+                                        data-notification-id={notification.id}
+                                        onclick={handleSwipeActionClick}
+                                        aria-label="Delete notification">
+                                    <img src={trashIconUrl} alt="" class="swipe-action-icon" />
+                                    <span class="swipe-action-prefix">Tap to</span>
+                                    <span class="swipe-action-label">Clear</span>
+                                </button>
+
+                                <div class="swipe-foreground">
+                                    <a href={notification.actionUrl}
+                                       class={notification.containerClass}
+                                       data-notification-id={notification.id}
+                                       onclick={handleNotificationClick}>
+
+                                        <img src={notification.typeIconUrl} alt="" class="type-icon">
+                                        <div class="notification-content">
+                                            <div class="notification-title">
+                                                {notification.displayTitle}
+                                                <template lwc:if={notification.isUnread}>
+                                                    <span class="sr-only">Unread</span>
+                                                </template>
+                                            </div>
+                                            <template lwc:if={notification.hasActor}>
+                                                <div class="notification-actor">{notification.displayActor}</div>
+                                            </template>
+                                            <template lwc:if={notification.hasBody}>
+                                                <div class="notification-body">{notification.displayBody}</div>
+                                            </template>
+                                            <div class="notification-time">{notification.formattedTime}</div>
+                                        </div>
+                                    </a>
+
+                                    <!-- Desktop kebab trigger -->
+                                    <div class="notif-kebab-container">
+                                        <button type="button"
+                                                class="notif-kebab"
+                                                data-notification-id={notification.id}
+                                                onclick={handleKebabClick}
+                                                aria-label="Notification options"
+                                                aria-haspopup="true">
+                                            <lightning-icon icon-name="utility:threedots" size="x-small"></lightning-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+            </div>
+        </c-fimby-infinite-scroll>
+
+        <!-- Desktop kebab dropdown — rendered outside the scroll container -->
+        <template lwc:if={showKebabMenu}>
+            <div class="kebab-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+            <div class="kebab-menu" style={kebabMenuStyle}>
+                <button type="button"
+                        class="kebab-menu-item"
+                        data-action={kebabMenuReadAction}
+                        onclick={handleMenuActionClick}>
+                    <img src={kebabMenuReadIconUrl} alt="" class="kebab-menu-icon" />
+                    {kebabMenuReadLabel}
+                </button>
+                <button type="button"
+                        class="kebab-menu-item kebab-menu-item-danger"
+                        data-action="delete"
+                        onclick={handleMenuActionClick}>
+                    <img src={trashIconUrl} alt="" class="kebab-menu-icon" />
+                    Clear
+                </button>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "83507494-89c6-4026-a489-32e25f30cab5",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Post_a_Story__c",
+  "id" : "97a3ccac-ea85-48dc-a453-d2a473a91cde",
+  "label" : "Post a Story",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post-a-story",
+  "type" : "route",
+  "urlPrefix" : "post-a-story"
+}

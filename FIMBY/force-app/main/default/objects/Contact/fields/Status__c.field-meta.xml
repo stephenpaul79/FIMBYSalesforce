@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <label>Status</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>New Public Signup</fullName>
+                <default>false</default>
+                <label>New Public Signup</label>
+            </value>
+            <value>
+                <fullName>New Internal Signup</fullName>
+                <default>false</default>
+                <label>New Internal Signup</label>
+            </value>
+            <value>
+                <fullName>Active User</fullName>
+                <default>false</default>
+                <label>Active User</label>
+            </value>
+            <value>
+                <fullName>Inactive User</fullName>
+                <default>false</default>
+                <label>Inactive User</label>
+            </value>
+            <value>
+                <fullName>Banned User</fullName>
+                <default>false</default>
+                <label>Banned User</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

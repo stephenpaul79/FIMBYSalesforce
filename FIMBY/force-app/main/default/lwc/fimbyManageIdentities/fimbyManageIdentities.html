@@ -1,0 +1,399 @@
+<template>
+    <div class="manage-identities-page">
+        <template lwc:if={isLoading}>
+            <c-fimby-loading-message context="general"></c-fimby-loading-message>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={error}>
+                <div class="error-banner" role="alert">{error}</div>
+            </template>
+
+            <c-fimby-page-header
+                page-title="Manage Identities"
+                menu-items={headerMenuItems}
+                onmenuaction={handleHeaderMenuAction}>
+            </c-fimby-page-header>
+
+            <!-- Section 1: People I Support -->
+            <div class="identity-section">
+                <div class="section-header">
+                    <img src={careIconUrl} alt="" class="section-icon" />
+                    <h2 class="section-title">People I Support</h2>
+                </div>
+                <template lwc:if={hasPeopleISupport}>
+                    <div class="identity-list">
+                        <template for:each={peopleISupport} for:item="rel">
+                            <div key={rel.id} class={rel.rowClass}>
+                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <div class="row-info">
+                                    <span class="row-name">{rel.name}</span>
+                                    <template lwc:if={rel.helperText}>
+                                        <span class="helper-text">{rel.helperText}</span>
+                                    </template>
+                                </div>
+                                <div class="status-cell">
+                                    <span class={rel.statusClass}>
+                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
+                                        {rel.status}
+                                    </span>
+                                </div>
+                                <div class="row-actions">
+                                    <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="support" onclick={handleViewDetails}>Details</button>
+                                    <template lwc:if={rel.isApproved}>
+                                        <button type="button" class="pill-btn primary" data-id={rel.id} onclick={handleAccess}>
+                                            <img src={switchIconUrl} alt="" class="btn-icon" />
+                                            Access
+                                        </button>
+                                    </template>
+                                    <template lwc:if={rel.isInactive}>
+                                        <button type="button" class="text-btn" data-id={rel.id} data-side="helper" onclick={handleDismiss}>Remove</button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="empty-state">
+                        <p>You're not currently supporting anyone. You can set this up if a neighbour needs a hand.</p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Section 2: Community Groups I Represent -->
+            <div class="identity-section">
+                <div class="section-header">
+                    <img src={communityIconUrl} alt="" class="section-icon" />
+                    <h2 class="section-title">Community Groups I Represent</h2>
+                </div>
+                <template lwc:if={hasCommunityGroups}>
+                    <div class="identity-list">
+                        <template for:each={communityGroups} for:item="rel">
+                            <div key={rel.id} class={rel.rowClass}>
+                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <div class="row-info">
+                                    <span class="row-name">{rel.name}</span>
+                                    <span class="row-neighbourhood">{rel.neighbourhood}</span>
+                                    <template lwc:if={rel.helperText}>
+                                        <span class="helper-text">{rel.helperText}</span>
+                                    </template>
+                                </div>
+                                <div class="status-cell">
+                                    <span class={rel.statusClass}>
+                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
+                                        {rel.status}
+                                    </span>
+                                </div>
+                                <div class="row-actions">
+                                    <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="groups" onclick={handleViewDetails}>Details</button>
+                                    <template lwc:if={rel.isApproved}>
+                                        <button type="button" class="pill-btn primary" data-id={rel.id} onclick={handleAccess}>
+                                            <img src={switchIconUrl} alt="" class="btn-icon" />
+                                            Access
+                                        </button>
+                                    </template>
+                                    <template lwc:if={rel.isInactive}>
+                                        <button type="button" class="text-btn" data-id={rel.id} data-side="helper" onclick={handleDismiss}>Remove</button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="empty-state">
+                        <p>No community groups yet. If you represent a local group, you can request to connect them here.</p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Section 2.5: Paper-form support relationships (drafts + lifecycle) -->
+            <template lwc:if={hasPaperRelationships}>
+                <div class="identity-section">
+                    <div class="section-header">
+                        <img src={careIconUrl} alt="" class="section-icon" />
+                        <h2 class="section-title">Your support relationships (paper)</h2>
+                    </div>
+                    <p class="helper-text">Anyone you set up using a paper form lives here while we get them activated.</p>
+                    <div class="identity-list">
+                        <template for:each={paperRelationships} for:item="paper">
+                            <div key={paper.id} class="identity-row">
+                                <div class="row-info">
+                                    <span class="row-name">{paper.supporteeName}</span>
+                                    <template lwc:if={paper.supporteeCity}>
+                                        <span class="row-neighbourhood">{paper.supporteeCity}</span>
+                                    </template>
+                                    <span class="helper-text">{paper.statusLabel}</span>
+                                </div>
+                                <div class="status-cell">
+                                    <span class={paper.statusClass}>{paper.status}</span>
+                                </div>
+                                <div class="row-actions">
+                                    <template lwc:if={paper.isDraft}>
+                                        <button type="button" class="pill-btn primary" data-id={paper.id} onclick={handlePaperResume}>Resume</button>
+                                    </template>
+                                    <template lwc:if={paper.isExpired}>
+                                        <button type="button" class="pill-btn secondary" data-id={paper.id} onclick={handlePaperResume}>Re-start</button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Section 3: People Who Support Me -->
+            <div class="identity-section">
+                <div class="section-header">
+                    <img src={peopleIconUrl} alt="" class="section-icon" />
+                    <h2 class="section-title">People Who Support Me</h2>
+                </div>
+                <template lwc:if={hasPeopleWhoSupportMe}>
+                    <div class="identity-list">
+                        <template for:each={peopleWhoSupportMe} for:item="rel">
+                            <div key={rel.id} class={rel.rowClass}>
+                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <div class="row-info">
+                                    <span class="row-name">{rel.name}</span>
+                                    <template lwc:if={rel.helperText}>
+                                        <span class="helper-text">{rel.helperText}</span>
+                                    </template>
+                                </div>
+                                <div class="status-cell">
+                                    <span class={rel.statusClass}>
+                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
+                                        {rel.status}
+                                    </span>
+                                </div>
+                                <div class="row-actions">
+                                    <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="supportme" onclick={handleViewDetails}>Details</button>
+                                    <template lwc:if={rel.showConfirm}>
+                                        <button type="button" class="pill-btn confirm" data-id={rel.id} onclick={handleConfirmConnection}>Confirm</button>
+                                    </template>
+                                    <template lwc:if={rel.confirmed}>
+                                        <span class="confirmed-badge" title="Confirmed">&#10003;</span>
+                                    </template>
+                                    <template lwc:if={rel.isApproved}>
+                                        <button type="button" class="pill-btn danger" data-id={rel.id} data-name={rel.name} onclick={handleRevoke}>Revoke Access</button>
+                                    </template>
+                                    <template lwc:if={rel.isInactive}>
+                                        <button type="button" class="text-btn" data-id={rel.id} data-side="subject" onclick={handleDismiss}>Remove</button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="empty-state">
+                        <p>No one is currently supporting you. If someone offers, it will appear here.</p>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Confirmation Modal -->
+        <template lwc:if={showConfirmModal}>
+            <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+                <div class="modal-card">
+                    <h3 id="confirm-title" class="modal-title">{confirmModalTitle}</h3>
+                    <p class="modal-body">{confirmModalBody}</p>
+                    <div class="modal-actions">
+                        <button type="button" class="pill-btn ghost" onclick={handleCancelConfirm}>Cancel</button>
+                        <button type="button" class={confirmActionClass} onclick={handleConfirmAction}>{confirmModalAction}</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Detail Modal -->
+        <template lwc:if={showDetailModal}>
+            <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+                <div class="modal-card">
+                    <div class="modal-header-row">
+                        <h3 id="detail-title" class="modal-title">Connection Details</h3>
+                        <button type="button" class="close-x" onclick={handleCloseDetail} aria-label="Close">&times;</button>
+                    </div>
+                    <template lwc:if={detailRecord}>
+                        <div class="detail-content">
+                            <img src={detailRecord.avatarUrl} alt="" class="detail-avatar" />
+                            <p class="detail-name">{detailRecord.name}</p>
+                            <span class={detailRecord.statusClass}>
+                                <img src={detailRecord.statusDotUrl} alt="" class="status-dot" />
+                                {detailRecord.status}
+                            </span>
+                            <template lwc:if={detailRecord.organizationId}>
+                                <a href={detailProfileUrl} class="view-profile-link">View Profile</a>
+                            </template>
+                            <template lwc:if={detailRecord.neighbourhood}>
+                                <p class="detail-line">Neighbourhood: {detailRecord.neighbourhood}</p>
+                            </template>
+                            <template lwc:if={detailRecord.since}>
+                                <p class="detail-line">Connected since: {detailRecord.since}</p>
+                            </template>
+                        </div>
+                        <template lwc:if={detailRecord.isApproved}>
+                            <!--
+                                A2: Community Group Detail Modal actions.
+                                For Community Groups we expose three lifecycle
+                                actions stacked vertically — Stop Representing
+                                (existing deactivateRelationship under the
+                                hood), plus Close Group and Delete Group, both
+                                of which file a Moderator_Task__c via
+                                FimbySupportRelationshipController instead of
+                                mutating the Account directly. For Support
+                                Person relationships, only the original Step
+                                Back button shows.
+                            -->
+                            <template lwc:if={detailRecord.isCommunityGroup}>
+                                <div class="modal-actions modal-actions-stacked">
+                                    <button type="button"
+                                            class="pill-btn secondary full-width"
+                                            data-id={detailRecord.id}
+                                            data-name={detailRecord.name}
+                                            data-is-group="true"
+                                            onclick={handleStepBack}>
+                                        Stop representing this group
+                                    </button>
+                                    <button type="button"
+                                            class="pill-btn secondary full-width"
+                                            data-id={detailRecord.id}
+                                            data-name={detailRecord.name}
+                                            onclick={handleCloseGroup}>
+                                        Close group
+                                    </button>
+                                    <button type="button"
+                                            class="pill-btn danger full-width"
+                                            data-id={detailRecord.id}
+                                            data-name={detailRecord.name}
+                                            onclick={handleDeleteGroup}>
+                                        Delete group
+                                    </button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="modal-actions">
+                                    <button type="button" class="pill-btn secondary" data-id={detailRecord.id} data-name={detailRecord.name} data-is-group="false" onclick={handleStepBack}>Step Back</button>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!--
+            A2: Close Group review-request modal. Files a Moderator_Task__c
+            (Category = Community_Group_Lifecycle, reasonCode = 'Close') and
+            shows a follow-up confirmation. The Account is NOT mutated by
+            this LWC path; an admin acts on the task to actually pause the
+            group's neighbourhood presence per Terms section 23.
+        -->
+        <template lwc:if={showCloseGroupModal}>
+            <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="close-group-title">
+                <div class="modal-card">
+                    <h3 id="close-group-title" class="modal-title">Close this group?</h3>
+                    <template lwc:if={lifecycleActingAsLabel}>
+                        <p class="acting-as-label">{lifecycleActingAsLabel}</p>
+                    </template>
+                    <p class="modal-body">
+                        We&rsquo;ll send your request to a moderator. They&rsquo;ll review it, give the
+                        group reasonable notice where neighbours are mid-interaction, and follow up.
+                        The group stays active in the meantime.
+                    </p>
+                    <label class="lifecycle-field-label" for="close-group-reason">
+                        What&rsquo;s prompting this? (optional)
+                    </label>
+                    <textarea id="close-group-reason"
+                              class="lifecycle-textarea"
+                              rows="3"
+                              maxlength="500"
+                              value={lifecycleReason}
+                              oninput={handleLifecycleReasonInput}
+                              placeholder="A short note for the moderator. Optional."></textarea>
+                    <template lwc:if={lifecycleError}>
+                        <p class="lifecycle-error" role="alert">{lifecycleError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button type="button"
+                                class="pill-btn ghost"
+                                onclick={handleCloseGroupCancel}
+                                disabled={isLifecycleSubmitting}>
+                            Cancel
+                        </button>
+                        <button type="button"
+                                class="pill-btn primary"
+                                onclick={handleCloseGroupConfirm}
+                                disabled={isLifecycleSubmitting}>
+                            <template lwc:if={isLifecycleSubmitting}>Sending&hellip;</template>
+                            <template lwc:else>Send request</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!--
+            A2: Delete Group review-request modal. Higher-friction confirm —
+            the operator must type the group name exactly to enable the
+            destructive action. Same task-filing path as Close; Account is
+            never directly deleted from the LWC.
+        -->
+        <template lwc:if={showDeleteGroupModal}>
+            <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-group-title">
+                <div class="modal-card">
+                    <h3 id="delete-group-title" class="modal-title">Delete this group?</h3>
+                    <template lwc:if={lifecycleActingAsLabel}>
+                        <p class="acting-as-label">{lifecycleActingAsLabel}</p>
+                    </template>
+                    <p class="modal-body">
+                        We&rsquo;ll send your delete request to a moderator. Posts and history may
+                        be retained for neighbourhood safety and record continuity. The group
+                        stays active until the moderator acts.
+                    </p>
+                    <label class="lifecycle-field-label" for="delete-group-reason">
+                        What&rsquo;s prompting this? (optional)
+                    </label>
+                    <textarea id="delete-group-reason"
+                              class="lifecycle-textarea"
+                              rows="3"
+                              maxlength="500"
+                              value={lifecycleReason}
+                              oninput={handleLifecycleReasonInput}
+                              placeholder="A short note for the moderator. Optional."></textarea>
+                    <label class="lifecycle-field-label" for="delete-group-confirm">
+                        Type the group name to confirm: <strong>{_lifecycleGroupName}</strong>
+                    </label>
+                    <input type="text"
+                           id="delete-group-confirm"
+                           class="lifecycle-input"
+                           value={deleteConfirmText}
+                           oninput={handleDeleteConfirmTextInput}
+                           autocomplete="off"
+                           placeholder="Type the group name exactly" />
+                    <template lwc:if={lifecycleError}>
+                        <p class="lifecycle-error" role="alert">{lifecycleError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button type="button"
+                                class="pill-btn ghost"
+                                onclick={handleDeleteGroupCancel}
+                                disabled={isLifecycleSubmitting}>
+                            Cancel
+                        </button>
+                        <button type="button"
+                                class="pill-btn danger"
+                                onclick={handleDeleteGroupConfirm}
+                                disabled={isDeleteConfirmDisabled}>
+                            <template lwc:if={isLifecycleSubmitting}>Sending&hellip;</template>
+                            <template lwc:else>Send delete request</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-relationship-setup-modal onsetupcomplete={handleSetupComplete}></c-fimby-relationship-setup-modal>
+    </div>
+</template>

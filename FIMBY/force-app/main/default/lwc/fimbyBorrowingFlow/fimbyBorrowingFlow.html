@@ -1,0 +1,211 @@
+<template>
+    <div class="fimby-borrowing-flow">
+        <c-fimby-page-header
+            page-title={pageTitle}
+            parent-label="Library"
+            parent-url="/library">
+        </c-fimby-page-header>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoadingState}>
+            <div class="state-container loading-state">
+                <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Unavailable State -->
+        <template lwc:if={isUnavailableState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:warning" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">This item is not available for lending.</h2>
+                <p class="state-message">Please check back later or browse other items.</p>
+                <button class="btn btn-primary" onclick={handleDone}>Back to Library</button>
+            </div>
+        </template>
+
+        <!-- Already Requested State -->
+        <template lwc:if={isAlreadyRequestedState}>
+            <div class="state-container warning-state">
+                <div class="state-icon warning-icon">
+                    <lightning-icon icon-name="utility:info" size="large"></lightning-icon>
+                </div>
+                <h2 class="state-title warning-title">You have already requested this item.</h2>
+                <p class="state-message">
+                    You are <strong>#{existingWaitlistPosition}</strong> on the waitlist.
+                </p>
+                <button class="btn btn-primary" onclick={handleDone}>Back to Library</button>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template lwc:if={isErrorState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">Something went wrong</h2>
+                <p class="state-message">{errorMessage}</p>
+                <button class="btn btn-primary" onclick={handleDone}>Back to Library</button>
+            </div>
+        </template>
+
+        <!-- Request Form State -->
+        <template lwc:if={isFormState}>
+            <div class="form-container">
+                <div class="form-content">
+                    <div class="form-layout">
+                        <!-- Left: Item Card -->
+                        <div class="form-left">
+                            <div class="item-card">
+                                <h3 class="item-name">{item.name}</h3>
+                                <template lwc:if={hasProcessedImage}>
+                                    <img src={processedImageUrl} alt={item.name} class="item-image">
+                                </template>
+                                <div class="item-detail">
+                                    <span class="detail-label">Status:</span>
+                                    <span class="detail-value">{item.status}</span>
+                                </div>
+                                <template lwc:if={showItemOnHold}>
+                                    <div class="item-detail">
+                                        <span class="detail-label">Estimated Available Date:</span>
+                                        <span class="detail-value">{item.expectedReturnDate}</span>
+                                    </div>
+                                </template>
+                                <div class="item-detail">
+                                    <span class="detail-label">Owner:</span>
+                                    <span class="detail-value">{item.ownerName}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Form Fields -->
+                        <div class="form-right">
+                            <template lwc:if={showIdentityBanner}>
+                                <div class="requesting-as">
+                                    <span class="requesting-as-label">Requesting as:</span>
+                                    <span class="requesting-as-name">{actingAsContactName}</span>
+                                </div>
+                            </template>
+
+                            <div class="form-fields">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pickup-date" class="form-label required">Requested Pickup Date (in the next week)</label>
+                                        <input
+                                            id="pickup-date"
+                                            type="date"
+                                            class="form-input"
+                                            min={todayDate}
+                                            max={maxDate}
+                                            value={requestedDate}
+                                            aria-describedby={dateErrorDescribedBy}
+                                            onchange={handleDateChange}>
+                                        <div class="field-help">
+                                            <span></span>
+                                            <template lwc:if={showDateError}>
+                                                <span id="pickup-date-error" class="error-text" role="alert">{dateValidationError}</span>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="days-needed" class="form-label required"># of Days Needed</label>
+                                        <input
+                                            id="days-needed"
+                                            type="number"
+                                            class="form-input"
+                                            min="1"
+                                            max={item.maxLendingDays}
+                                            value={daysNeeded}
+                                            aria-describedby={daysErrorDescribedBy}
+                                            onchange={handleDaysChange}
+                                            placeholder="Enter number of days">
+                                        <div class="field-help">
+                                            <span class="hint-text">{item.maxLendingDays} days max</span>
+                                            <template lwc:if={showDaysError}>
+                                                <span id="days-needed-error" class="error-text" role="alert">{daysValidationError}</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="field-label-row">
+                                        <label for="note-to-lender" class="form-label">Note to Lender (Optional)</label>
+                                        <span class={noteCountClass}>{noteLength}/255</span>
+                                    </div>
+                                    <textarea
+                                        id="note-to-lender"
+                                        class="form-textarea"
+                                        value={noteToLender}
+                                        oninput={handleNoteChange}
+                                        maxlength="255"
+                                        rows="3"
+                                        placeholder="Add a message to the owner..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="contact-notice">
+                                <lightning-icon icon-name="utility:info" size="x-small"></lightning-icon>
+                                <p><strong>Note:</strong> To borrow this item the system will <strong><em>automatically share your contact information</em></strong> with the lender so you both can easily coordinate logistics.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Footer -->
+                <div class="submit-footer">
+                    <button class="btn btn-secondary" onclick={handleBack}>Cancel</button>
+                    <button
+                        class="btn btn-primary"
+                        onclick={handleSubmitRequest}
+                        disabled={isFormInvalid}>
+                        <template lwc:if={isSubmitting}>
+                            <lightning-spinner alternative-text="Submitting..." size="small"></lightning-spinner>
+                            Submitting...
+                        </template>
+                        <template lwc:else>
+                            Submit Request
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success State (First in Line) -->
+        <template lwc:if={isSuccessState}>
+            <div class="state-container success-state">
+                <c-fimby-celebration action-type="borrow-request-sent"></c-fimby-celebration>
+                <h2 class="state-title success-title">Thanks for submitting your request.</h2>
+                <p class="state-message">
+                    The owner of the item has been emailed your contact details with a request to follow up with you.
+                </p>
+                <button class="btn btn-primary" onclick={handleDone}>Done</button>
+            </div>
+        </template>
+
+        <!-- Waitlisted State -->
+        <template lwc:if={isWaitlistedState}>
+            <div class="state-container success-state">
+                <div class="state-icon success-icon">
+                    <lightning-icon icon-name="utility:success" size="large"></lightning-icon>
+                </div>
+                <h2 class="state-title success-title">Thanks for submitting your request.</h2>
+                <p class="state-message">
+                    You are currently <strong>#{waitlistPosition}</strong> on the waitlist.
+                </p>
+                <p class="state-message">
+                    When your request reaches the top of the queue, we will email the owner of the item your contact details with a request to follow up with you.
+                </p>
+                <template lwc:if={estimatedAvailableDate}>
+                    <p class="state-message">
+                        Based on other requests in the queue, the item should become available (at the latest) on <strong>{estimatedAvailableDate}</strong>.
+                    </p>
+                </template>
+                <button class="btn btn-primary" onclick={handleDone}>Done</button>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "1e044498-bc0a-4b01-9ea8-5eee570d2fc6",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Feedback__c",
+  "id" : "0f5771eb-0caa-49d6-807d-3bc3a533593f",
+  "label" : "Feedback",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-feedback",
+  "type" : "route",
+  "urlPrefix" : "feedback"
+}

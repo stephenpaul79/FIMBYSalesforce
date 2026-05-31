@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Subtitle__c</fullName>
+    <description>Optional subtitle for OTD records. Typically a numeric date range with an en dash (e.g. "1897–1980", "1948", "b. 1934"). En dashes are intentional in numeric ranges and never appear in prose body text. Blank on evergreen reflection records.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Subtitle</label>
+    <length>40</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

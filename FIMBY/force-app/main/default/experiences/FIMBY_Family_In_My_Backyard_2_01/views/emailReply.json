@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "0eb42e2a-7a74-4ec9-8f10-d86e86750e41",
+  "label" : "Email Reply",
+  "regions" : [ {
+    "id" : "01c48bf0-ca9e-4cf1-9a21-ddb48340bd4f",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!recordId}\"}]",
+        "flowName" : "Response_Reply"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "f485f520-e3a2-40fe-8ff0-f0c9dc11dcb4",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "5e4b9207-0417-4863-b96f-3a9a9696d2eb",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "a7556260-0b7d-406b-9476-3c600c53a338",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Email Reply"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "53923581-2345-48d5-82dd-d09d21089e21",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "a87d9388-c175-40b3-bcbf-ebcbaf5601a9",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-email-reply"
+}

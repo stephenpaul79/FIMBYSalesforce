@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Image1__c</fullName>
+    <externalId>false</externalId>
+    <formula>IMAGE(Image_1_URL__c + $Organization.Id , &quot;&quot;,(VALUE(LEFT(Image_1_Ratio__c, FIND(&quot;X&quot;, Image_1_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_1_Ratio__c, LEN(Image_1_Ratio__c) - FIND(&quot;X&quot;, Image_1_Ratio__c))))* 0.5)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Image1</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

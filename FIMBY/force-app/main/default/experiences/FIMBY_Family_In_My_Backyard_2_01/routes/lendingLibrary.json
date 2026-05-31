@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "dda4b3df-9e4f-46f5-abe3-c7911f77e40c",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Lending_Library__c",
+  "id" : "19baac3c-0e7c-40fe-afa4-5f6190ef7b16",
+  "label" : "Lending Library",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-lending-library",
+  "type" : "route",
+  "urlPrefix" : "lending-library"
+}

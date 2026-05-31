@@ -1,0 +1,700 @@
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.fimby-bulk-buy-reservation {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+/* State Containers */
+.state-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    min-height: 60vh;
+}
+
+.state-icon {
+    margin-bottom: 1.5rem;
+}
+
+.success-icon {
+    color: var(--fimby-success);
+}
+
+.warning-icon {
+    color: var(--fimby-warning);
+}
+
+.error-icon {
+    color: var(--fimby-error);
+}
+
+.state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--fimby-text-strong);
+}
+
+.error-title {
+    color: var(--fimby-error);
+}
+
+.warning-title {
+    color: var(--fimby-warning);
+}
+
+.success-title {
+    color: var(--fimby-success);
+}
+
+.state-message {
+    color: var(--fimby-text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    max-width: 500px;
+}
+
+.loading-state {
+    padding: 4rem 2rem;
+}
+
+/* Blocked State — sympathetic, centered, neutral tone */
+.blocked-state {
+    gap: 1.5rem;
+}
+
+.blocked-message {
+    max-width: 500px;
+}
+
+.bulk-buy-history-section {
+    background: var(--fimby-surface-card);
+    padding: 1rem 1.5rem;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    margin: 0.5rem 0;
+}
+
+.history-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 12px;
+}
+
+.history-slots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.history-slot {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--fimby-radius-full);
+    flex-shrink: 0;
+}
+
+.history-slot[data-color="green"] {
+    background: var(--fimby-success);
+}
+
+.history-slot[data-color="red"] {
+    background: var(--fimby-error);
+}
+
+.history-slot[data-color="amber"] {
+    background: var(--fimby-warning);
+}
+
+.history-slot[data-color="neutral"] {
+    background: var(--fimby-border-default);
+}
+
+.history-helper {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.contact-link {
+    color: var(--fimby-brand-teal);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+
+.contact-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* Form Container */
+.form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-content {
+    padding: 16px 0;
+}
+
+.form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-left {
+    min-width: 0;
+}
+
+.form-right {
+    min-width: 0;
+    flex: 1;
+}
+
+/* Summary Card */
+.summary-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 1rem;
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+}
+
+.summary-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: var(--fimby-radius-sm);
+    margin-bottom: 0.75rem;
+    background: var(--fimby-surface-page);
+}
+
+.summary-image-placeholder {
+    width: 100%;
+    height: 120px;
+    background: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.placeholder-icon {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+}
+
+.summary-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.25rem;
+}
+
+/* Organiser row: avatar + name */
+.organiser-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.organiser-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--fimby-radius-full);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--fimby-surface-input);
+}
+
+.organiser-name {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.3;
+}
+
+/* Thermometer */
+.section-thermometer {
+    background: var(--fimby-surface-card);
+    padding: 16px 20px;
+    border-radius: var(--fimby-radius-md);
+    margin: 12px 0 0;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.thermometer-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.thermometer-bar-wrap {
+    height: 14px;
+    background: #C1DFE5;
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    display: flex;
+}
+
+.thermo-committed {
+    height: 100%;
+    background: #6CBCD1;
+    transition: width 0.3s ease;
+    flex-shrink: 0;
+}
+
+.thermo-selection {
+    height: 100%;
+    background: #F5C87A;
+    transition: width 0.3s ease;
+    flex-shrink: 0;
+}
+
+.thermometer-bar {
+    height: 100%;
+    background: #6CBCD1;
+    border-radius: var(--fimby-radius-md);
+    transition: width 0.3s ease;
+}
+
+/* Allocation pills (inside thermometer) */
+.alloc-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.alloc-pill {
+    display: inline-block;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    line-height: 1.5;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.pill-buyer {
+    background: var(--fimby-surface-input, #e8e4df);
+    color: var(--fimby-text-secondary, #8B8178);
+}
+
+.pill-reserved {
+    background: var(--fimby-brand-teal);
+    color: #ffffff;
+}
+
+.pill-available {
+    background: var(--fimby-success);
+    color: #ffffff;
+}
+
+.pill-zero {
+    opacity: 0.45;
+}
+
+/* Amount Selector */
+.form-group {
+    margin: 20px 0 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.amount-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    background: var(--fimby-surface-input);
+}
+
+.amount-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--fimby-text-strong);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.amount-btn:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.amount-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+}
+
+.amount-input {
+    width: 64px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    text-align: center;
+    border: none;
+    border-left: 1px solid var(--fimby-divider-default);
+    border-right: 1px solid var(--fimby-divider-default);
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-strong);
+}
+
+.amount-input:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+}
+
+.amount-hint {
+    font-size: 0.8125rem;
+    color: var(--fimby-text-secondary);
+    margin: 4px 0 0;
+}
+
+/* Notices strip: full width below both columns */
+.notices-strip {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-subtle, #e8e4df);
+    border-radius: var(--fimby-radius-sm);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.notice-item {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--fimby-text-secondary);
+}
+
+.notice-cost {
+    color: var(--fimby-text-primary);
+    font-weight: 500;
+}
+
+.notice-commit {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted);
+}
+
+/* Submit Footer */
+.submit-footer {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    margin-top: 12px;
+}
+
+.reserve-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: 48px;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.reserve-btn:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.reserve-btn:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.reserve-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.reserve-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.reserve-btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Compact state layout (success + alreadyReserved) */
+.compact-state {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.compact-state-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 20px;
+    text-align: center;
+}
+
+.compact-state-icon {
+    margin-bottom: 12px;
+}
+
+.state-impact-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.compact-state-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.compact-state-title.success-color {
+    color: var(--fimby-success);
+}
+
+.compact-state-message {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.celebration-wrapper {
+    margin-bottom: 8px;
+}
+
+/* Success thermometer: green segment for just-reserved */
+.success-bar-wrap {
+    background: #C1DFE5;
+}
+
+.thermo-just-reserved {
+    height: 100%;
+    background: var(--fimby-success, #3a8a5c);
+    transition: width 0.3s ease;
+    flex-shrink: 0;
+}
+
+.pill-success {
+    background: var(--fimby-success, #3a8a5c);
+    color: #ffffff;
+}
+
+.success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    min-width: 120px;
+    font-family: inherit;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--fimby-brand-teal);
+    color: var(--fimby-text-on-teal);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--fimby-brand-teal-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+    background: var(--fimby-brand-teal-pressed);
+}
+
+.btn-secondary {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
+}
+
+/* Responsive — mobile-first, max-width 600px centered */
+@media (min-width: 480px) {
+    .form-content {
+        padding: 24px 0;
+    }
+
+    .notice-item {
+        flex: 1;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-bulk-buy-reservation {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 24px 80px;
+    }
+
+    .form-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .form-left {
+        flex: 2;
+        position: sticky;
+        top: 80px;
+    }
+
+    .form-right {
+        flex: 3;
+    }
+
+    .summary-image {
+        max-height: 240px;
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-bulk-buy-reservation {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-bulk-buy-reservation {
+        max-width: 600px;
+    }
+}
+
+/* Focus Styles */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.amount-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .amount-btn,
+    .thermometer-bar {
+        transition: none;
+    }
+}

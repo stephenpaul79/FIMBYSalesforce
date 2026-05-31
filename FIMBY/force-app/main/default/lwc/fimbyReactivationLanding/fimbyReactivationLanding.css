@@ -1,0 +1,108 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.landing-page {
+    background-color: var(--fimby-surface-page);
+    padding: 32px 16px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .landing-page {
+        padding: 48px 24px 32px;
+    }
+}
+
+.landing-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 28px 24px;
+    width: 100%;
+    height: fit-content;
+    text-align: center;
+}
+
+.landing-icon {
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin: 4px auto 16px;
+}
+
+.landing-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+    line-height: 1.3;
+}
+
+.landing-lede {
+    color: var(--fimby-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 20px;
+}
+
+.landing-help {
+    color: var(--fimby-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 16px 0 12px;
+}
+
+.landing-help a,
+.landing-lede a {
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+}
+
+.landing-help a:hover,
+.landing-lede a:hover {
+    color: var(--fimby-brand-teal-hover);
+    text-decoration: underline;
+}
+
+.landing-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 10px 24px;
+    min-height: 44px;
+    margin-top: 8px;
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.landing-button:hover,
+.landing-button:focus {
+    background-color: var(--fimby-btn-primary-bg-hover);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.landing-button:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+    color: #ffffff;
+}
+
+.landing-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}

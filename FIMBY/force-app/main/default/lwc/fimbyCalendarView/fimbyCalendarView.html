@@ -1,0 +1,27 @@
+<template>
+    <div class="fimby-calendar-view">
+        <c-fimby-page-header page-title="Community Calendar"></c-fimby-page-header>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="nav-button" onclick={handlePrevMonth} aria-label="Previous month">
+                    <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                </button>
+                <h2 class="month-title">{currentMonthYear}</h2>
+                <button class="nav-button" onclick={handleNextMonth} aria-label="Next month">
+                    <lightning-icon icon-name="utility:chevronright" size="small"></lightning-icon>
+                </button>
+            </div>
+            <div class="calendar-grid">
+                <template for:each={calendarDays} for:item="day">
+                    <div key={day.id} class={day.cssClass} onclick={handleDayClick} data-date={day.date}>
+                        <span class="day-number">{day.dayNumber}</span>
+                        <template lwc:if={day.hasEvents}>
+                            <div class="event-indicator"></div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <c-fimby-bottom-navigation active-tab="calendar" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Bio_Post_Completed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Set true when the contact has posted (or skipped past) their auto-drafted Shared Life introduction. Drives the home-feed banner and the soft gate on Ask/Offer compose.</description>
+    <externalId>false</externalId>
+    <label>Bio Post Completed</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

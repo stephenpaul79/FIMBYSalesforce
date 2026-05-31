@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Body__c</fullName>
+    <description>1-3 sentence body of the anchor card. Lowercase i for first person, no exclamation marks, no em or en dashes in prose, Canadian spelling, faith-aware but welcoming.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Body</label>
+    <length>500</length>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

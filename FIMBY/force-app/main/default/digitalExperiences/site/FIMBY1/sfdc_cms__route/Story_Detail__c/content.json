@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Story Detail",
+  "contentBody" : {
+    "activeViewId" : "Story_Detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "detail-Story__c",
+    "urlPrefix" : "sharedlife"
+  },
+  "urlName" : "story-detail"
+}

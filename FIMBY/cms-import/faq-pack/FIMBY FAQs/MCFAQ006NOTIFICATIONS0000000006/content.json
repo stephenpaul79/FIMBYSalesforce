@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I change my notification settings?",
+  "contentBody" : {
+    "question" : "How do I change my notification settings?",
+    "answer" : "<p>Go to <strong>Settings</strong> (via the menu in the top-right corner) and scroll to the <strong>Notifications</strong> section. You can toggle:</p><ul><li>Push notifications on or off</li><li>Email summary preferences</li><li>Which types of updates you want to receive (messages, stories, asks and offers, library items)</li></ul>",
+    "sortOrder" : "060",
+    "category" : "Account"
+  },
+  "urlName" : "how-do-i-change-my-notification-settings"
+}

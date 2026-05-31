@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Response Reply",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"ff01a2b3-1111-4c5d-8e9f-111111111111\",\"columns\":[{\"UUID\":\"ff02b3c4-2222-4d6e-9f0a-222222222222\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[{\"componentType\":\"c:fimbyResponseThread\",\"definition\":\"c:fimbyResponseThread\",\"id\":\"response-reply-component\"}]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyResponseThread",
+              "id" : "67eec7e7-1df7-4a8f-8e7a-1304ca73cbce",
+              "type" : "component"
+            } ],
+            "id" : "ff02b3c4-2222-4d6e-9f0a-222222222222",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "ff01a2b3-1111-4c5d-8e9f-111111111111",
+          "type" : "component"
+        } ],
+        "id" : "ff03c4d5-3333-4e7f-0a1b-333333333333",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Response Reply",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "ff04d5e6-4444-4f8a-1b2c-444444444444",
+          "type" : "component"
+        } ],
+        "id" : "ff05e6f7-5555-4a9b-2c3d-555555555555",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "ff06f7a8-6666-4b0c-3d4e-666666666666",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-response-reply"
+  },
+  "urlName" : "response-reply"
+}

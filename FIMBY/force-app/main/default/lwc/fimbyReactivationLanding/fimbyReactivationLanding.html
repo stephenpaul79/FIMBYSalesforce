@@ -1,0 +1,56 @@
+<template>
+    <div class="landing-page">
+        <div class="landing-card">
+            <template lwc:if={isProcessing}>
+                <h1 class="landing-title">Restoring your account...</h1>
+                <p class="landing-lede">One moment.</p>
+            </template>
+
+            <template lwc:if={isRestored}>
+                <img src={restoredIconUrl} alt="" class="landing-icon">
+                <h1 class="landing-title">Welcome back</h1>
+                <p class="landing-lede">
+                    Your FIMBY account is restored. Your posts, library items,
+                    messages, and profile are all back where you left them.
+                </p>
+                <a class="landing-button" href="/login">Log in</a>
+            </template>
+
+            <template lwc:if={isExpiredOrUsed}>
+                <img src={warningIconUrl} alt="" class="landing-icon">
+                <h1 class="landing-title">This link can't be used</h1>
+                <p class="landing-lede">
+                    {expiredMessage}
+                </p>
+                <p class="landing-help">
+                    If your account is still inside its 30-day grace window, you can
+                    request a fresh restore link:
+                </p>
+                <a class="landing-button" href="/account-paused">Request a new link</a>
+            </template>
+
+            <template lwc:if={isPastGrace}>
+                <img src={pastGraceIconUrl} alt="" class="landing-icon">
+                <h1 class="landing-title">Your account is no longer recoverable</h1>
+                <p class="landing-lede">
+                    Your 30-day grace window has passed and your account has been
+                    permanently removed. We're sorry to see you go.
+                </p>
+                <p class="landing-help">
+                    You're welcome back any time. Sign up at&nbsp;<a href="https://fimby.com">fimby.com</a>&nbsp;to create a new account.
+                </p>
+            </template>
+
+            <template lwc:if={isNotFound}>
+                <img src={warningIconUrl} alt="" class="landing-icon">
+                <h1 class="landing-title">We couldn't find that link</h1>
+                <p class="landing-lede">
+                    This link may have been mistyped or it never existed.
+                </p>
+                <p class="landing-help">
+                    Need help? Email&nbsp;<a href="mailto:help@fimby.com">help@fimby.com</a>.
+                </p>
+            </template>
+        </div>
+    </div>
+</template>

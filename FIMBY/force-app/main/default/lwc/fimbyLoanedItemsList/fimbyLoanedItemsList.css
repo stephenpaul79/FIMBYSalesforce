@@ -1,0 +1,43 @@
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+.loaned-items-list-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+.loaned-items-list-page c-fimby-responsive-list {
+    display: block;
+    margin: 1rem 0;
+}
+
+@media (max-width: 480px) {
+    .loaned-items-list-page c-fimby-responsive-list {
+        margin: 0.5rem 0;
+    }
+}
+
+@media (min-width: 768px) {
+    .loaned-items-list-page {
+        padding: 0 24px 80px;
+    }
+}
+
+@media (min-width: 892px) {
+    .loaned-items-list-page {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .loaned-items-list-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-bottom: 24px;
+    }
+}

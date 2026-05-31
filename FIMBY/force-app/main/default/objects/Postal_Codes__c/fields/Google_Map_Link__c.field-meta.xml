@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Google_Map_Link__c</fullName>
+    <externalId>false</externalId>
+    <formula>HYPERLINK(&quot;https://www.google.com/maps/place/Vancouver,+BC+&quot; + Postal_Code_No_Spaces__c , &quot;Google Map - &quot; +  Name )</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Google Map Link</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

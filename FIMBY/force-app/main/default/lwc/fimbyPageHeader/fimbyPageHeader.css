@@ -1,0 +1,347 @@
+:host {
+    display: block;
+    margin-bottom: 12px;
+}
+
+/* FIMBY Page Header — Breadcrumb-based */
+.fimby-page-header {
+    position: sticky;
+    top: 0;
+    background-color: var(--fimby-surface-card);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: var(--fimby-shadow-card);
+    z-index: 900;
+    padding-top: env(safe-area-inset-top);
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    min-height: 48px;
+    max-width: 100%;
+    gap: 12px;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.breadcrumb-link {
+    color: var(--fimby-brand-teal);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+}
+
+.breadcrumb-link:hover {
+    color: var(--fimby-brand-teal-pressed);
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: var(--fimby-text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.breadcrumb-current {
+    color: var(--fimby-text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Right-side actions */
+.header-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Back button: positioned at far left, inherits .header-action sizing */
+.back-button {
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+/* Icon-only header buttons (search, notifications, kebab, legacy menu) */
+.header-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background-color: transparent;
+}
+
+.header-action:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.header-action:active {
+    transform: scale(0.95);
+    background-color: var(--fimby-pressed-bg);
+}
+
+.notification-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--fimby-error);
+    border-radius: 50%;
+    border: 2px solid var(--fimby-surface-card);
+}
+
+
+/* Progress bar */
+.progress-container {
+    padding: 0 16px 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background-color: var(--fimby-divider-default);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--fimby-brand-teal);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* ── menuItems: Inline pill buttons ──────────────── */
+
+.menu-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    min-height: 36px;
+    box-shadow: var(--fimby-btn-shadow);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.menu-inline-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.menu-inline-btn:active {
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.menu-inline-btn.primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    font-weight: 700;
+}
+
+.menu-inline-btn.primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.menu-inline-btn.danger:hover {
+    background-color: var(--fimby-error-tint);
+}
+
+.menu-item-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Responsive items: hidden on mobile, visible on desktop */
+.responsive-only {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .responsive-only {
+        display: inline-flex;
+    }
+}
+
+/* Kebab trigger icon */
+.kebab-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* ── Kebab dropdown menu ─────────────────────────── */
+
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+.menu-dropdown {
+    position: fixed;
+    z-index: 1000;
+    min-width: 200px;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-modal);
+    padding: 6px 0;
+    animation: menuSlideIn 0.15s ease;
+}
+
+@keyframes menuSlideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    font-family: inherit;
+    text-align: left;
+    transition: background-color 0.15s ease;
+    min-height: 44px;
+}
+
+.menu-dropdown-item:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.menu-dropdown-item.danger {
+    color: var(--fimby-error);
+}
+
+.menu-dropdown-item.danger:hover {
+    background-color: var(--fimby-error-tint);
+}
+
+/* ── Responsive adjustments ──────────────────────── */
+
+@media (max-width: 320px) {
+    .header-container {
+        padding: 10px 12px;
+        min-height: 40px;
+    }
+
+    .breadcrumb-nav {
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    .header-right {
+        gap: 4px;
+    }
+
+    .header-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+    }
+
+    .menu-inline-btn {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .header-container {
+        padding: 16px 24px;
+    }
+
+    .breadcrumb-nav {
+        font-size: 0.9rem;
+    }
+}
+
+/* ── Button resets ───────────────────────────────── */
+
+button.header-action {
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+}
+
+button.header-action:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.menu-inline-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.menu-dropdown-item:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+}
+
+/* Keyboard focus visibility */
+.breadcrumb-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .header-action,
+    .progress-fill,
+    .menu-inline-btn,
+    .menu-dropdown-item {
+        transition: none;
+    }
+
+    .menu-dropdown {
+        animation: none;
+    }
+}

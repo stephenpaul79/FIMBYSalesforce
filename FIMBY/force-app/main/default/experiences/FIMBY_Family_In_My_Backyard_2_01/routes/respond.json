@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "9ebbaf5b-750e-42a9-b979-2394022926d8",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Respond__c",
+  "id" : "35e2e94c-65bf-499a-9414-45635bb47eeb",
+  "label" : "Respond",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-respond",
+  "type" : "route",
+  "urlPrefix" : "respond"
+}

@@ -1,0 +1,14 @@
+---
+description: Do not change Experience Cloud network, site, or domain settings unless explicitly asked
+alwaysApply: true
+---
+
+# Experience Cloud — network & site guardrails
+
+**Do not edit, deploy, or change** `networks/*.network-meta.xml`, `sites/*.site-meta.xml`, custom domains, publish/preview/status, or page-override wiring — **unless the user explicitly asks for that exact change in the current message.**
+
+Includes: `networkPageOverrides`, site `changePasswordPage`, `active`/Live vs preview, `sf community publish`, domain settings, and guessing which network/site is production from repo files.
+
+When the user asks to brand or fix a **Visualforce page** (or email, CMS view, CSS): change **only those files**. Do not hook up VF via network/site metadata. Do not deploy unless they ask.
+
+Network/site mistakes have previously deactivated the domain and forced org-wide password resets. Leave network settings alone by default.

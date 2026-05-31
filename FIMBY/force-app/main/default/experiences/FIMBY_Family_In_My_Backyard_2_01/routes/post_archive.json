@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "aa11bb22-cc33-dd44-ee55-ff6677880011",
+  "appPageId" : "11223344-5566-7788-99aa-bbccddeeff00",
+  "configurationTags" : [ ],
+  "devName" : "Post_Archive",
+  "id" : "11aa22bb-33cc-44dd-55ee-66ff77889900",
+  "label" : "Post Archive",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post_archive",
+  "type" : "route",
+  "urlPrefix" : "post-archive"
+}

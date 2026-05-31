@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Borrowing",
+  "contentBody" : {
+    "activeViewId" : "My_Borrowing",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-borrowing",
+    "urlPrefix" : "my-borrowing"
+  },
+  "urlName" : "my-borrowing"
+}

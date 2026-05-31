@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Give_and_Receive_Totals__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( Active_User__c =FALSE, &quot;Not a FIMBY User&quot;,
+IF(LEFT(Household_Account__c,15) =  LEFT($User.HouseholdID__c,15) ||  LEFT($User.ProfileId,15) =&quot;00e5f000002g3Zx&quot;,  
+TEXT((Need_Postings_For_Self__c * -1)) + &quot;   Need Postings For Self (Receiving)&quot;
++ BR() +
+TEXT(Need_Postings_For_Others__c) + &quot;   Need Postings For Others (Giving)&quot;
++  BR() +
+TEXT(Need_Responses_For_Self__c) + &quot;   Need Responses For Self (Giving)&quot;
++ BR() +
+TEXT(Need_Responses_For_Others__c) + &quot;   Need Responses For Others (Giving)&quot;
++ BR() +
+TEXT(Offer_Postings_For_Self__c) + &quot;   Offer Postings For Self (Giving)&quot;
++ BR() +
+TEXT(Offer_Postings_For_Others__c) + &quot;   Offer Postings For Others (Giving)&quot;
++ BR() +
+TEXT((Offer_Responses_For_Self__c * -1)) + &quot;   Offer Responses For Self (Receiving)&quot;
++ BR() +
+TEXT(Offer_Responses_For_Others__c) + &quot;   Offer Responses For Others (Giving)&quot;, &quot;&lt;Private&gt;&quot;))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Give and Receive Totals</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Ask or Offer Post",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"f4e27f87-3b1f-4a0e-a716-df01ff1f992e\",\"columns\":[{\"UUID\":\"8608cb16-afe8-47f6-b235-b58146170e9a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyAskOfferComposer",
+              "id" : "03b18af8-8c86-4e99-9ed1-22bb379817cc",
+              "type" : "component"
+            } ],
+            "id" : "8608cb16-afe8-47f6-b235-b58146170e9a",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "f4e27f87-3b1f-4a0e-a716-df01ff1f992e",
+          "type" : "component"
+        } ],
+        "id" : "becf48ea-d8e6-4455-bf6d-7acd6dd635e1",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Ask or Offer Post",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "6fa2fb97-cbcf-464e-8665-d499a8a90782",
+          "type" : "component"
+        } ],
+        "id" : "dc340ed8-bd13-4c1e-9c79-771b221d259c",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "b6ccfbae-fa4f-4a05-bc52-a6f7988379d6",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-ask-or-offer-post"
+  },
+  "urlName" : "ask-or-offer-post"
+}

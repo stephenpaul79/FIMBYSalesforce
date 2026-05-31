@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Giver_Recipient_Type__c</fullName>
+    <description>Captures who the need is for</description>
+    <inlineHelpText>Additional Giver / Recipient Details are required when posting a need / offer for someone or some group other than yourself.</inlineHelpText>
+    <label>Giver / Recipient Type</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Self</fullName>
+                <default>true</default>
+                <label>Self</label>
+            </value>
+            <value>
+                <fullName>Another Person</fullName>
+                <default>false</default>
+                <label>Another Person</label>
+            </value>
+            <value>
+                <fullName>Another Organization</fullName>
+                <default>false</default>
+                <label>Another Organization</label>
+            </value>
+            <value>
+                <fullName>Household</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Household</label>
+            </value>
+            <value>
+                <fullName>Other Community (Domestic)</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Other Community (Domestic)</label>
+            </value>
+            <value>
+                <fullName>Other Community (International)</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Other Community (International)</label>
+            </value>
+            <value>
+                <fullName>Our Community</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Our Community</label>
+            </value>
+            <value>
+                <fullName>Our Neighbour (Single Household)</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Our Neighbour (Single Household)</label>
+            </value>
+            <value>
+                <fullName>Our Neighbourhood (Multiple Households)</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Our Neighbourhood (Multiple Households)</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

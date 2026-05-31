@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Hidden_By_Moderator__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The moderator (Contact) who hid this comment. Mirrors Story__c.Hidden_By_Moderator__c.</description>
+    <label>Hidden By Moderator</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Hidden Content (Story Comments)</relationshipLabel>
+    <relationshipName>Hidden_Story_Comments</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

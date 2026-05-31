@@ -1,0 +1,440 @@
+<template>
+    <div class="fimby-my-stuff">
+        <!-- Header card: breadcrumb + optional contacts sub-filters -->
+        <div class={headerCardClass}>
+            <nav class="breadcrumb-nav">
+                <a href="/" class="breadcrumb-link">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span class="breadcrumb-current">{sectionTitle}</span>
+            </nav>
+            <template lwc:if={showContacts}>
+                <div class="feed-sub-filters contacts-sub-row">
+                    <div class="filters-scroll">
+                        <button class={receivedFilterClass}
+                                title="People who have shared their contact info with you (email, phone, address)"
+                                onclick={handleContactsSubFilter}
+                                data-filter="received">
+                            <span>Received</span>
+                        </button>
+                        <button class={sharedFilterClass}
+                                title="People you have shared your contact info with — update or add more details anytime"
+                                onclick={handleContactsSubFilter}
+                                data-filter="shared">
+                            <span>Shared</span>
+                        </button>
+                        <button class={revokedFilterClass}
+                                title="Sharing you have revoked — you can restore it anytime"
+                                onclick={handleContactsSubFilter}
+                                data-filter="revoked">
+                            <span>Revoked</span>
+                        </button>
+                    </div>
+                        <button class="share-contact-pill" onclick={handleOpenShareModal}>
+                            <img src={shareIconUrl} alt="" class="share-pill-icon">
+                            Share Info
+                        </button>
+                </div>
+            </template>
+        </div>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="profile" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Content based on active filter -->
+        <template lwc:else>
+            <div class="content-section">
+                <!-- My Posts -->
+                <template lwc:if={showPosts}>
+                    <template lwc:if={hasPosts}>
+                        <template for:each={myPosts} for:item="post">
+                            <button type="button" class="list-row" key={post.Id} aria-label="View post" onclick={handlePostClick} data-record-id={post.Id}>
+                                <span class={post.typeBadgeClass}>
+                                    <img src={post.badgeIconUrl} alt="" class="badge-icon">
+                                    {post.displayTypeName}
+                                </span>
+                                <span class="list-row-title">{post.Name}</span>
+                                <span class={post.statusBadgeClass}>{post.Status__c}</span>
+                                <span class="list-row-date">{post.formattedDate}</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                            </button>
+                        </template>
+                        <div class="section-footer">
+                            <a href="/post-archive" class="archive-btn">
+                                <img src={archiveIconUrl} alt="" class="archive-btn-icon">
+                                Post Archive
+                            </a>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>You haven't posted any asks or offers yet.</p>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- My Shared Life -->
+                <template lwc:if={showStories}>
+                    <template lwc:if={hasStories}>
+                        <template for:each={myStories} for:item="story">
+                            <button type="button" class="list-row" key={story.Id} aria-label="View story" onclick={handleStoryClick} data-record-id={story.Id}>
+                                <span class={story.typeBadgeClass}>
+                                    <template lwc:if={story.badgeIconUrl}>
+                                        <img src={story.badgeIconUrl} alt="" class="badge-icon">
+                                    </template>
+                                    {story.displayTypeName}
+                                </span>
+                                <span class="list-row-title">{story.Name}</span>
+                                <span class="list-row-date">{story.formattedDate}</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                            </button>
+                        </template>
+                        <div class="section-footer">
+                            <a href="/story-archive" class="archive-btn">
+                                <img src={archiveIconUrl} alt="" class="archive-btn-icon">
+                                Shared Life Archive
+                            </a>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>You haven't shared any life moments yet.</p>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- My Library Items -->
+                <template lwc:if={showLibrary}>
+                    <template lwc:if={hasLibraryItems}>
+                        <template lwc:if={hasLoanedItems}>
+                            <h2 class="section-header">On Loan or Requested</h2>
+                            <template for:each={loanedItems} for:item="item">
+                                <button type="button" class="list-row" key={item.Id} aria-label="View item" onclick={handleLibraryItemClick} data-record-id={item.Id}>
+                                    <span class="type-badge" style={item.categoryBadgeStyle}>
+                                        <img src={item.categoryIconUrl} alt="" class="badge-icon">
+                                        {item.category}
+                                    </span>
+                                    <span class="list-row-title">{item.Name}</span>
+                                    <template lwc:if={item.loanInfo}>
+                                        <span class="list-row-meta">{item.loanInfo}</span>
+                                    </template>
+                                    <span class={item.statusBadgeClass}>{item.status}</span>
+                                    <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                                </button>
+                            </template>
+                        </template>
+                        <template lwc:if={hasAvailableItems}>
+                            <h2 class="section-header">Available</h2>
+                            <template for:each={availableItems} for:item="item">
+                                <button type="button" class="list-row" key={item.Id} aria-label="View item" onclick={handleLibraryItemClick} data-record-id={item.Id}>
+                                    <span class="type-badge" style={item.categoryBadgeStyle}>
+                                        <img src={item.categoryIconUrl} alt="" class="badge-icon">
+                                        {item.category}
+                                    </span>
+                                    <span class="list-row-title">{item.Name}</span>
+                                    <span class={item.statusBadgeClass}>{item.status}</span>
+                                    <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                                </button>
+                            </template>
+                        </template>
+                        <div class="section-footer">
+                            <a href="/my-items" class="archive-btn">
+                                <img src={archiveIconUrl} alt="" class="archive-btn-icon">
+                                Library Archive
+                            </a>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>You haven't listed any items in the library yet.</p>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- My Borrowed Items -->
+                <template lwc:if={showBorrowed}>
+                    <template lwc:if={hasBorrowedItems}>
+                        <template for:each={myBorrowedItems} for:item="loan">
+                            <button type="button" class="list-row" key={loan.Id} aria-label="View borrowed item" onclick={handleBorrowedItemClick} data-record-id={loan.itemId}>
+                                <template lwc:if={loan.category}>
+                                    <span class="type-badge" style={loan.categoryBadgeStyle}>
+                                        <img src={loan.categoryIconUrl} alt="" class="badge-icon">
+                                        {loan.category}
+                                    </span>
+                                </template>
+                                <span class="list-row-title">{loan.itemName}</span>
+                                <span class="list-row-meta">{loan.ownerName}</span>
+                                <span class={loan.dueBadgeClass}>Due: {loan.formattedDueDate}</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                            </button>
+                        </template>
+                        <div class="section-footer">
+                            <a href="/borrowing-history" class="archive-btn">
+                                <img src={archiveIconUrl} alt="" class="archive-btn-icon">
+                                Borrowing History
+                            </a>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>You're not currently borrowing any items.</p>
+                        </div>
+                        <div class="section-footer">
+                            <a href="/borrowing-history" class="archive-btn">
+                                <img src={archiveIconUrl} alt="" class="archive-btn-icon">
+                                Borrowing History
+                            </a>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- My Contacts -->
+                <template lwc:if={showContacts}>
+                    <!-- Search bar for contacts -->
+                    <div class="contacts-search">
+                        <input type="text"
+                               class="contacts-search-input"
+                               placeholder="Search contacts..."
+                               aria-label="Search contacts"
+                               value={contactSearchTerm}
+                               oninput={handleContactSearch} />
+                    </div>
+
+                    <template lwc:if={hasContacts}>
+                        <template for:each={filteredContacts} for:item="contact">
+                            <div key={contact.contactId} class={contact.cardClass}>
+                                <!-- Header row (always visible, clickable) -->
+                                <button type="button" class="contact-card-header"
+                                     aria-label="View contact"
+                                     onclick={handleContactClick}
+                                     data-contact-id={contact.contactId}>
+                                    <div class="contact-avatar-circle">{contact.initials}</div>
+                                    <div class="contact-card-body">
+                                        <span class="compact-card-title">{contact.name}</span>
+                                        <template lwc:if={contact.neighbourhood}>
+                                            <p class="compact-card-meta">{contact.neighbourhood}</p>
+                                        </template>
+                                    </div>
+                                    <template lwc:if={contact.showReciprocatePill}>
+                                        <template lwc:if={contact.showReciprocatedLabel}>
+                                            <span class="reciprocate-pill reciprocate-shared">Your Info Is Shared</span>
+                                        </template>
+                                        <template lwc:elseif={contact.showReciprocateAction}>
+                                            <button class="reciprocate-pill reciprocate-action"
+                                                    onclick={handleReciprocateShare}
+                                                    data-contact-id={contact.contactId}
+                                                    data-contact-name={contact.name}>
+                                                + Share Your Info
+                                            </button>
+                                        </template>
+                                    </template>
+                                    <lightning-icon icon-name={contact.chevronIcon}
+                                                    size="xx-small"
+                                                    class="contact-chevron"></lightning-icon>
+                                </button>
+
+                                <!-- Expanded details (inside same card) -->
+                                <template lwc:if={contact.isExpanded}>
+                                    <div class="contact-expand-body">
+                                        <div class="expanded-details">
+                                            <template lwc:if={contact.email}>
+                                                <div class="detail-row">
+                                                    <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                                                    <span>{contact.email}</span>
+                                                </div>
+                                            </template>
+                                            <template lwc:if={contact.phone}>
+                                                <div class="detail-row">
+                                                    <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                                                    <span>{contact.phone}</span>
+                                                </div>
+                                            </template>
+                                            <template lwc:if={contact.hasAddress}>
+                                                <div class="detail-row">
+                                                    <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                                    <span>{contact.fullAddress}</span>
+                                                </div>
+                                            </template>
+                                            <template lwc:if={contact.origin}>
+                                                <div class="detail-row">
+                                                    <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                                                    <span>Origin: {contact.origin}</span>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <div class="expanded-actions">
+                                            <button class="view-profile-btn"
+                                                    onclick={handleViewNeighbourProfile}
+                                                    data-contact-id={contact.contactId}>
+                                                <lightning-icon icon-name="utility:user" size="xx-small"></lightning-icon>
+                                                View Profile
+                                            </button>
+                                            <template lwc:if={contact.showRevokeBtn}>
+                                                <button class="revoke-shared-btn"
+                                                        onclick={handleRevokeSharedInfo}
+                                                        data-shared-info-id={contact.mySharedInfoId}
+                                                        data-contact-name={contact.name}>
+                                                    Revoke
+                                                </button>
+                                            </template>
+                                            <template lwc:if={contact.showUndoRevokeBtn}>
+                                                <button class="undo-revoke-btn"
+                                                        onclick={handleUndoRevoke}
+                                                        data-shared-info-id={contact.mySharedInfoId}
+                                                        data-contact-name={contact.name}>
+                                                    Restore Sharing
+                                                </button>
+                                            </template>
+                                            <template lwc:if={contact.showEditBtn}>
+                                                <button class="edit-shared-btn"
+                                                        onclick={handleEditSharedInfo}
+                                                        data-contact-id={contact.contactId}
+                                                        data-contact-name={contact.name}>
+                                                    <img src={editIconUrl} alt="" class="pill-btn-icon">
+                                                    Edit
+                                                </button>
+                                            </template>
+                                            <template lwc:if={contact.isNotRevoked}>
+                                                <button class="message-contact-btn"
+                                                        onclick={handleMessageContact}
+                                                        data-contact-id={contact.contactId}>
+                                                    <img src={chatIconUrl} alt="" class="pill-btn-icon">
+                                                    Message
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>{contactsEmptyMessage}</p>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </template>
+
+        <!-- Share Contact Info Modal -->
+        <template lwc:if={showShareModal}>
+            <section class="slds-modal slds-fade-in-open share-contact-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 id="share-modal-title" class="slds-modal__title slds-hyphenate">{shareModalTitle}</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close" onclick={handleCloseShareModal} title="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- Step 1: Search for neighbour (hidden in edit mode and when recipient selected) -->
+                        <template lwc:if={isNotShareModalEditMode}>
+                        <template lwc:if={shareRecipientNotSelected}>
+                        <div class="share-step">
+                            <label class="slds-form-element__label">Find a neighbour to share with</label>
+                            <div class="slds-form-element slds-m-bottom_small">
+                                <input type="text"
+                                       class="slds-input share-search-input"
+                                       placeholder="Search by name or email (min 2 characters)..."
+                                       value={shareSearchTerm}
+                                       oninput={handleShareSearch} />
+                            </div>
+                            <template lwc:if={shareSearchResults.length}>
+                                <div class="share-results-list">
+                                    <template for:each={shareSearchResults} for:item="person">
+                                        <button type="button" key={person.contactId}
+                                             class={person.resultClass}
+                                             onclick={handleSelectRecipient}
+                                             data-contact-id={person.contactId}
+                                             data-contact-name={person.contactName}>
+                                            <span class="result-name">{person.contactName}</span>
+                                            <template lwc:if={person.email}>
+                                                <span class="result-email">{person.email}</span>
+                                            </template>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:if={shareSearching}>
+                                <div class="share-loading">Searching...</div>
+                            </template>
+                        </div>
+                        </template>
+                        </template>
+
+                        <!-- Selected recipient pill + fields -->
+                        <template lwc:if={shareRecipientSelected}>
+                            <div class="share-step">
+                                <div class="share-recipient-row">
+                                    <span class="share-recipient-pill">
+                                        {selectedRecipientName}
+                                        <template lwc:if={isNotShareModalEditMode}>
+                                            <button class="share-recipient-remove" onclick={handleDeselectRecipient} title="Change recipient">
+                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                            </button>
+                                        </template>
+                                    </span>
+                                </div>
+                                <p class="slds-text-body_small slds-m-bottom_small slds-m-top_small">Select what to share:</p>
+
+                                <!-- Email -->
+                                <div class="share-field-row">
+                                    <lightning-input type="checkbox" label="Email" checked={shareEmail} onchange={handleShareEmailChange}></lightning-input>
+                                    <template lwc:if={shareEmail}>
+                                        <div class="share-field-input">
+                                            <lightning-input type="email" variant="label-hidden" label="Email" value={shareEmailValue} onchange={handleShareEmailValueChange} required placeholder="Enter email"></lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="share-field-row">
+                                    <lightning-input type="checkbox" label="Phone" checked={sharePhone} onchange={handleSharePhoneChange}></lightning-input>
+                                    <template lwc:if={sharePhone}>
+                                        <div class="share-field-input">
+                                            <lightning-input type="tel" variant="label-hidden" label="Phone" value={sharePhoneValue} onchange={handleSharePhoneValueChange} required placeholder="Enter phone"></lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="share-field-row share-field-row--address">
+                                    <lightning-input type="checkbox" label="Address" checked={shareAddress} onchange={handleShareAddressChange}></lightning-input>
+                                </div>
+                                <template lwc:if={shareAddress}>
+                                    <div class="share-address-grid">
+                                        <lightning-input variant="label-hidden" label="Street" value={shareStreetValue} onchange={handleShareStreetChange} placeholder="Street"></lightning-input>
+                                        <div class="share-address-pair">
+                                            <lightning-input variant="label-hidden" label="City" value={shareCityValue} onchange={handleShareCityChange} placeholder="City"></lightning-input>
+                                            <lightning-input variant="label-hidden" label="State/Province" value={shareStateValue} onchange={handleShareStateChange} placeholder="State/Province"></lightning-input>
+                                        </div>
+                                        <div class="share-address-pair">
+                                            <lightning-input variant="label-hidden" label="Postal Code" value={sharePostalCodeValue} onchange={handleSharePostalCodeChange} placeholder="Postal Code"></lightning-input>
+                                            <lightning-input variant="label-hidden" label="Country" value={shareCountryValue} onchange={handleShareCountryChange} placeholder="Country"></lightning-input>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick={handleCloseShareModal}>Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick={handleShareSubmit} disabled={isShareSubmitDisabled}>
+                            {shareSubmitLabel}
+                        </button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseShareModal}></div>
+        </template>
+    </div>
+</template>

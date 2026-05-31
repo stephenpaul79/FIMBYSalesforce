@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK(Image_1_URL__c),
+&quot;1. &quot;+ HYPERLINK(Image_1_URL__c + $Organization.Id,
+IMAGE(Image_1_URL__c + $Organization.Id , &quot;&quot;,(VALUE(LEFT(Image_1_Ratio__c, FIND(&quot;X&quot;, Image_1_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_1_Ratio__c, LEN(Image_1_Ratio__c) - FIND(&quot;X&quot;, Image_1_Ratio__c))))* 0.5),&quot;_self&quot;),&quot;&quot;)+ 
+
+IF(!ISBLANK(Image_2_URL__c),
+&quot; 2. &quot;+ HYPERLINK(Image_2_URL__c + $Organization.Id, &quot; &quot; +
+IMAGE(Image_2_URL__c + $Organization.Id, &quot;&quot;,(VALUE(LEFT(Image_2_Ratio__c, FIND(&quot;X&quot;, Image_2_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_2_Ratio__c, LEN(Image_2_Ratio__c) - FIND(&quot;X&quot;, Image_2_Ratio__c))))* 0.5),&quot;_parent&quot;),&quot;&quot;)+ 
+
+IF(ISBLANK(Image_1_URL__c)&amp;&amp;ISBLANK(Image_2_URL__c)&amp;&amp;ISBLANK(Image_3_URL__c)&amp;&amp;ISBLANK(Image_4_URL__c), IMAGE(&quot;/resource/Impact_Icons/NoPhoto.png&quot;, &quot;&quot; , 100,100), &quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Images</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

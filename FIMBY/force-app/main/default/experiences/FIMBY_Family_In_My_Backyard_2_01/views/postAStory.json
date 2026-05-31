@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "83507494-89c6-4026-a489-32e25f30cab5",
+  "label" : "Post a Story",
+  "regions" : [ {
+    "id" : "7104cd04-945e-4c6d-992b-2d7854c0dc75",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "",
+        "flowName" : "Post_a_Story"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "9bc91cdd-5974-4bb4-a24d-8916feab5419",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "6db82df9-06bc-4406-82ac-90048e0e95eb",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "4d2eebae-89b8-4325-94eb-b675e7be6333",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Post a Story"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "65bd1dcf-cbb7-4909-aea7-cc5b857e600d",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "1ea85b7d-42d3-420b-aa76-6e1cd3431dd2",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-post-a-story"
+}

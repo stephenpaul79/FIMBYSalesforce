@@ -1,0 +1,13 @@
+{
+  "componentVariants" : [ {
+    "id" : "d664be90-8f41-4273-b806-3cde7d53a8e5",
+    "propertyOverrides" : {
+      "isVisible" : true
+    },
+    "targetId" : "bc563ce9-4234-490b-a437-084c72e96d73",
+    "type" : "componentVariant"
+  } ],
+  "developerName" : "Responses_and_Replies_Flow_Component",
+  "id" : "0228cc14-761b-423e-ae05-de0ca052e5ec",
+  "type" : "experienceVariation"
+}

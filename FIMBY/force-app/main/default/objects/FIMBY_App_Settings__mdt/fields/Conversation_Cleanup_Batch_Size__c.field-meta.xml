@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Conversation_Cleanup_Batch_Size__c</fullName>
+    <defaultValue>5000</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Conversation Cleanup Batch Size</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum conversation and message records processed per conversation cleanup job execution.</inlineHelpText>
+</CustomField>

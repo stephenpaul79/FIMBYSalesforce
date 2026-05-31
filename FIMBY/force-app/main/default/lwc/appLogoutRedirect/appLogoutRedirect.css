@@ -1,0 +1,13 @@
+.wrap {
+    padding: 24px 16px;
+    text-align: center;
+  }
+  .title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+  }
+  .sub {
+    margin: 0 0 8px 0;
+    opacity: 0.85;
+  }

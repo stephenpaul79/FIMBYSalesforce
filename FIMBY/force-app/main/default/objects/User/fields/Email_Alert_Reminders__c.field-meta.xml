@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Alert_Reminders__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Email me for event reminders and overdue lending reminders.</description>
+    <externalId>false</externalId>
+    <label>Email Alert - Reminders</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

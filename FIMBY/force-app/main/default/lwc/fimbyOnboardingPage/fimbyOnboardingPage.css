@@ -1,0 +1,1228 @@
+/* ============================================================
+   PAGE SHELL - self-contained card, sized to fit viewport.
+   The body scrolls internally so the host page never scrolls.
+   ============================================================ */
+
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+}
+
+.page-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 880px;
+    margin: 16px auto;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+    box-sizing: border-box;
+
+    /* Shell sizes to its content. Caps at viewport-minus-chrome so the
+       host page never gets a scrollbar; the inner body scrolls instead. */
+    max-height: calc(100vh - var(--fimby-header-height, 78px) - 32px);
+    max-height: calc(100dvh - var(--fimby-header-height, 78px) - 32px);
+}
+
+@media (max-width: 767px) {
+    .page-shell {
+        margin: 8px;
+        max-width: none;
+        max-height: calc(100vh - var(--fimby-header-height, 78px) - 16px);
+        max-height: calc(100dvh - var(--fimby-header-height, 78px) - 16px);
+    }
+}
+
+.page-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50dvh;
+}
+
+/* ============================================================
+   HEADER / PROGRESS DOTS (top of card, lighter surface)
+   ============================================================ */
+
+.page-header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    background-color: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.page-header.walkthrough-header {
+    justify-content: space-between;
+}
+
+.progress-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    background-color: var(--fimby-border-default);
+    transition: background-color 0.25s ease, transform 0.25s ease;
+}
+
+.dot.active {
+    background-color: var(--fimby-btn-primary-bg);
+    transform: scale(1.2);
+}
+
+.dot.completed {
+    background-color: var(--fimby-text-secondary);
+}
+
+.close-button {
+    background-color: transparent;
+    border: none;
+    border-radius: var(--fimby-radius-full, 9999px);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--fimby-text-secondary);
+}
+
+.close-button:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+/* ============================================================
+   BODY (middle - page surface = visibly distinct, scrollable)
+   ============================================================ */
+
+.page-body {
+    flex: 1 1 auto;
+    min-height: 0; /* allows flex item to shrink so overflow-y can actually scroll */
+    overflow-y: auto;
+    background-color: var(--fimby-surface-page);
+    padding: 24px 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+    .page-body {
+        padding: 32px 32px;
+    }
+}
+
+.step-content {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   PHASE 1 - shared text + form styles
+   ============================================================ */
+
+.welcome-logo,
+.step-icon-lg {
+    width: 96px;
+    height: 96px;
+    display: block;
+    margin: 0 auto 16px;
+    object-fit: contain;
+}
+
+.step-icon {
+    width: 56px;
+    height: 56px;
+    display: block;
+    margin: 0 auto 12px;
+}
+
+.welcome-heading,
+.step-heading {
+    text-align: center;
+    margin: 0 0 8px;
+    font-size: 1.6rem;
+    line-height: 1.25;
+    color: var(--fimby-text-strong, #2a2820);
+}
+
+.welcome-subtext,
+.step-subtext {
+    text-align: center;
+    margin: 0 0 20px;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+}
+
+.about-counter {
+    text-align: center;
+    margin: -8px auto 16px;
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md);
+    padding: 10px 16px;
+    max-width: 540px;
+}
+
+.about-counter-met {
+    background-color: var(--fimby-success-tint);
+    border-color: var(--fimby-success);
+    color: var(--fimby-success);
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 640px) {
+    .form-grid-2col {
+        grid-template-columns: 1fr 1fr;
+    }
+    .form-grid-2col .full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+.field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--fimby-text-strong, #2a2820);
+}
+
+.required {
+    color: var(--fimby-error);
+}
+
+.field-input,
+.field-textarea {
+    width: 100%;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-strong);
+    box-sizing: border-box;
+}
+
+.field-textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.field-input:focus,
+.field-textarea:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 1px;
+    border-color: var(--fimby-focus-ring);
+}
+
+.checkbox-group,
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkbox-item,
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--fimby-radius-md);
+    cursor: pointer;
+}
+
+.checkbox-item:hover,
+.radio-item:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.checkbox-label,
+.radio-label {
+    font-size: 0.95rem;
+    color: var(--fimby-text-strong);
+}
+
+.care-question {
+    margin-bottom: 18px;
+}
+
+.vouch-hero {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.vouch-hero-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.vouch-submit-message {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: var(--fimby-radius-md);
+    background-color: var(--fimby-success-tint);
+    border: 1px solid var(--fimby-success);
+    color: var(--fimby-success);
+    font-size: 0.95rem;
+}
+
+.vouch-skip-link {
+    display: block;
+    margin: 18px auto 0;
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary);
+    text-decoration: underline;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.vouch-skip-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   PHASE 1 - Celebration screen
+   ============================================================ */
+
+.celebration-content {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 32px 0;
+}
+
+.celebration-heading {
+    margin: 16px 0 8px;
+    font-size: 1.7rem;
+    color: var(--fimby-text-strong);
+}
+
+.celebration-subtext {
+    margin: 0 0 16px;
+    font-size: 1.05rem;
+    color: var(--fimby-text-primary);
+}
+
+.celebration-fine-print {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+}
+
+.celebration-fine-print a {
+    color: var(--fimby-btn-primary-bg);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.save-error-banner {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    background-color: var(--fimby-error-tint, #fdecea);
+    color: var(--fimby-error, #a23a2c);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+/* ============================================================
+   FOOTER (bottom of card, lighter surface, rounded via shell)
+   ============================================================ */
+
+.page-footer {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--fimby-divider-default);
+    background-color: var(--fimby-surface-card);
+}
+
+.page-footer.walkthrough-footer {
+    justify-content: space-between;
+}
+
+.footer-right-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn {
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    padding: 10px 20px;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active);
+    transform: scale(0.97);
+}
+
+.btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.btn-neutral {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow);
+}
+
+.btn-neutral:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+}
+
+.btn-neutral:active:not(:disabled) {
+    background-color: var(--fimby-pressed-bg);
+    transform: scale(0.97);
+}
+
+.btn-neutral:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary);
+    text-decoration: underline;
+    font-weight: 600;
+    padding: 8px;
+    min-height: 44px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9375rem;
+}
+
+.btn-text:hover {
+    color: var(--fimby-text-primary);
+}
+
+/* ============================================================
+   PHASE 2 - Walkthrough screen (responsive composition)
+   ============================================================ */
+
+.walkthrough-body {
+    padding: 20px;
+}
+
+@media (min-width: 768px) {
+    .walkthrough-body { padding: 28px 32px; }
+}
+
+.wt-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .wt-screen {
+        flex-direction: row;
+        align-items: center;
+        gap: 32px;
+    }
+    .wt-screen .wt-hero-img { flex: 0 0 46%; }
+    .wt-screen .wt-text-col { flex: 1 1 54%; }
+}
+
+.wt-hero-img {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wt-photo {
+    width: 100%;
+    max-width: 320px;
+    max-height: 380px;
+    height: auto;
+    border-radius: var(--fimby-radius-lg);
+    object-fit: cover;
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.wt-text-col {
+    width: 100%;
+}
+
+.wt-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--fimby-text-strong);
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .wt-title { font-size: 1.65rem; }
+}
+
+/* Variant that lets an icon flow inline with the title text */
+.wt-title-with-icon {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.wt-title-inline-icon {
+    width: 1.4em;
+    height: 1.4em;
+    object-fit: contain;
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+
+.wt-subtitle {
+    font-style: italic;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 10px;
+}
+
+.wt-body {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--fimby-text-primary);
+}
+
+.wt-footer-note {
+    margin: 14px 0 0;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* ============================================================
+   Library nav hint - faux desktop header strip with the Library
+   tab lit + arrow pointing at it. Sizes match the real header
+   (28px nav icons, 38px create button, 3px teal indicator).
+   ============================================================ */
+
+.wt-nav-hint {
+    display: block;
+    margin-top: 16px;
+    padding: 8px 8px 10px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.wt-nav-hint-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: end;
+    gap: 4px;
+    padding: 6px 4px 0;
+}
+
+.wt-nav-hint-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 0 8px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+.wt-nav-hint-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+/* Create [+] keeps its teal circle treatment like the real header */
+.wt-nav-hint-item.create {
+    padding: 2px 0;
+}
+
+.wt-nav-hint-create-bubble {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wt-nav-hint-create-icon {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+}
+
+/* Active bottom indicator - matches fimbyUniversalHeader desktop nav */
+.wt-nav-hint-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background-color: transparent;
+}
+
+.wt-nav-hint-item.active .wt-nav-hint-indicator {
+    background-color: var(--fimby-btn-primary-bg);
+}
+
+/* Arrow row sits directly under the strip, aligned to column 2 (Library) */
+.wt-nav-hint-arrow-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 2px 4px 0;
+}
+
+.wt-nav-hint-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.wt-nav-hint-arrow {
+    color: var(--fimby-error);
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.wt-nav-hint-label {
+    margin: 4px 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+/* ============================================================
+   Screen 2 - Phone-frame feed mock (mirrors mobile fimbyHomeFeed)
+   ============================================================ */
+
+.phone-frame {
+    width: 100%;
+    max-width: 240px;
+    aspect-ratio: 9 / 18;
+    max-height: 480px;
+    border: 7px solid var(--fimby-text-strong);
+    border-radius: 26px;
+    background-color: var(--fimby-surface-page);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--fimby-shadow-modal);
+    position: relative;
+    box-sizing: border-box;
+}
+
+.phone-notch {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 5px;
+    border-radius: 999px;
+    background-color: var(--fimby-text-strong);
+    z-index: 2;
+}
+
+.phone-top-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 10px 8px;
+    background-color: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+/* Match the real header's proportions: wide rectangle, auto width.
+   See .fimby-logo-img in fimbyUniversalHeader.css. */
+.phone-top-logo {
+    height: 22px;
+    width: auto;
+    max-width: 80px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.phone-top-spacer { flex: 1 1 auto; }
+
+.phone-top-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.phone-filter-pills {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background-color: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    /* Let pills keep their natural width; the phone-frame clips the bleed. */
+    overflow: visible;
+}
+
+.phone-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 9px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-full, 9999px);
+    font-size: 0.65rem;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+    font-weight: 600;
+    /* Don't squeeze the label - better to bleed off the phone frame. */
+    flex-shrink: 0;
+}
+
+.phone-pill.active {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg);
+}
+
+.phone-pill-icon { width: 12px; height: 12px; object-fit: contain; }
+
+.phone-feed-region {
+    flex: 1 1 auto;
+    overflow: hidden;
+    padding: 8px;
+    background-color: var(--fimby-surface-page);
+}
+
+/* Stacked feed (Slide 4a): two compact cards inside the phone-frame */
+.phone-feed-region-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.phone-feed-card-sharedlife {
+    border-left-color: var(--fimby-earth-ochre, #7D6234);
+    padding-bottom: 6px;
+}
+
+.phone-feed-card-sharedlife .phone-feed-card-header { padding: 6px 8px 4px; }
+.phone-feed-card-sharedlife .phone-feed-body { margin: 0 8px 4px; }
+.phone-feed-card-sharedlife .phone-feed-title { margin: 0 8px 2px; }
+
+/* Badge override for sharedlife cards: gap between emoji and label */
+.phone-feed-card-sharedlife .phone-feed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.phone-feed-card {
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-left: 3px solid var(--fimby-earth-sage, #5B8760);
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.phone-feed-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+}
+
+.phone-feed-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    background-color: var(--fimby-earth-sage, #5B8760);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.55rem;
+}
+
+.phone-feed-meta { flex: 1 1 auto; min-width: 0; }
+.phone-feed-name { font-weight: 700; font-size: 0.7rem; color: var(--fimby-text-strong); }
+.phone-feed-time { font-size: 0.6rem; color: var(--fimby-text-muted); }
+
+.phone-feed-badge {
+    background-color: var(--fimby-earth-sage, #5B8760);
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.phone-feed-title {
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin: 0 8px 2px;
+    color: var(--fimby-text-strong);
+}
+
+.phone-feed-body {
+    font-size: 0.65rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.35;
+    margin: 0 8px 6px;
+}
+
+.phone-feed-photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.phone-bottom-nav {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 4px 4px 6px;
+    background-color: var(--fimby-surface-card);
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.phone-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    flex: 1 1 0;
+}
+
+.phone-nav-icon { width: 18px; height: 18px; object-fit: contain; }
+
+.phone-nav-label {
+    font-size: 0.5rem;
+    color: var(--fimby-text-muted);
+    font-weight: 600;
+}
+
+.phone-nav-item.active .phone-nav-label { color: var(--fimby-btn-primary-bg); }
+
+.phone-nav-item.create {
+    flex: 0 0 auto;
+}
+
+/* No background here - add.png is already a teal circle with white plus.
+   Mirrors fimbyBottomNavigation .create-button (transparent bg). */
+.phone-nav-create-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.phone-nav-create-button .phone-nav-icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* ============================================================
+   Screen 3 - Quick post mock
+   ============================================================ */
+
+.quickpost-mock {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px;
+    border-radius: var(--fimby-radius-lg);
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.quickpost-mock-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    text-align: center;
+    color: var(--fimby-text-strong);
+}
+
+.quickpost-mock-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.quickpost-mock-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: var(--fimby-radius-md);
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.quickpost-mock-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.quickpost-mock-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-align: center;
+    color: var(--fimby-text-strong, #2a2820);
+}
+
+/* ============================================================
+   Screen 4 - Carousel + Shared Life + Events mocks
+   ============================================================ */
+
+.wt-carousel {
+    flex-direction: column;
+}
+
+.carousel-viewport {
+    width: 100%;
+    overflow: hidden;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.3s ease;
+    width: 100%;
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+}
+
+.wt-carousel-slide-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .wt-carousel-slide-content {
+        flex-direction: row;
+        align-items: center;
+        gap: 32px;
+    }
+    .wt-carousel-slide-content .wt-hero-img { flex: 0 0 45%; }
+    .wt-carousel-slide-content .wt-text-col { flex: 1 1 55%; }
+}
+
+.carousel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 8px 0;
+}
+
+/* WCAG AA: solid dark fill with white icon.
+   Brand teal (--fimby-btn-primary-bg #3A7D8C) ~ 4.7:1 against white. */
+.carousel-arrow {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--fimby-btn-shadow);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.carousel-arrow:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.carousel-arrow:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active);
+    transform: scale(0.95);
+}
+
+.carousel-arrow:disabled {
+    background-color: var(--fimby-border-default);
+    color: var(--fimby-text-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.carousel-arrow lightning-icon {
+    --sds-c-icon-color-foreground-default: #ffffff;
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.carousel-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    background-color: var(--fimby-border-default);
+}
+
+.carousel-dot.active {
+    background-color: var(--fimby-btn-primary-bg);
+    transform: scale(1.25);
+}
+
+/* Slide 4a Shared Life now uses .phone-frame / .phone-feed-card-sharedlife
+   (defined alongside the Screen 2 phone mock above). The old
+   .sharedlife-mock-* styles have been removed. */
+
+.events-mock {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.events-mock-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-left: 3px solid var(--fimby-earth-sage, #5B8760);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.events-mock-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    object-fit: contain;
+}
+
+.events-mock-card-text {
+    flex: 1 1 auto;
+}
+
+.events-mock-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--fimby-text-strong);
+}
+
+.events-mock-card-desc {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.35;
+    margin-bottom: 6px;
+}
+
+.events-mock-tier-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: var(--fimby-btn-info-bg, #0166BA);
+    padding: 3px 8px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   Screen 5 - Library cards (mirrors fimbyCard horizontal layout)
+   ============================================================ */
+
+.library-mock {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.library-card {
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-left: 3px solid var(--fimby-earth-driftwood, #8D7B6A);
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    box-shadow: var(--fimby-shadow-card);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.library-card-photo {
+    width: 128px;
+    flex: 0 0 128px;
+    align-self: stretch;
+    object-fit: cover;
+    min-height: 128px;
+}
+
+.library-card-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.library-card-meta-top {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.library-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+}
+
+.library-card-badge-driftwood {
+    background-color: var(--fimby-earth-driftwood, #8D7B6A);
+}
+
+.library-card-badge-sage {
+    background-color: var(--fimby-earth-sage, #5B8760);
+}
+
+.library-card-badge-icon {
+    width: 10px;
+    height: 10px;
+}
+
+.library-card-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--fimby-text-strong);
+    line-height: 1.2;
+}
+
+.library-card-owner {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* Right-justified Borrow CTA - mirrors .response-pill in fimbyCard */
+.library-card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.library-card-borrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    min-height: 32px;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-primary-bg);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none; /* this is a static mockup, not a real button */
+}
+
+.library-card-borrow-icon {
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
+}

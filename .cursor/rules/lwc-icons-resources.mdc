@@ -1,0 +1,220 @@
+---
+description: FIMBY Impact Icons — full icon index, import patterns, utility vs Impact rules, and Custom Property Editor guidance
+globs: "**/lwc/**/*.js"
+alwaysApply: false
+---
+
+# FIMBY Impact Icons & Resources
+
+Use `Impact_Icons` for all **brand-specific, content-type, and navigational** icons — pills, chip filters, feed-type badges, tab bars, header/footer navigation, section headers, and story-type indicators.
+
+`<lightning-icon>` with `utility:*` is **acceptable** for generic, function-based UI affordances: back arrows, forward arrows, close/X buttons, chevrons, spinners, checkmarks, and similar standard controls.
+
+**Never use these utility icons in action buttons** — always use the Impact Icon equivalent:
+
+| Action | Impact Icon | Replaces |
+|--------|-------------|----------|
+| Edit | `edit.png` | `utility:edit` |
+| Photo / Upload | `photo.png` | `utility:image` |
+| Delete / Trash | `trash.png` | `utility:delete` |
+
+**Exception — inline edit pencils:** Small, icon-only edit hints (`.edit-pencil` pattern) should keep `<lightning-icon icon-name="utility:edit">` — the branded icon is too loud for that context.
+
+## Import & Usage Pattern
+
+```js
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+
+// Single icon
+get settingsIconUrl() { return `${IMPACT_ICONS}/gear.png`; }
+
+// Active/inactive pair (for tabs, filters, toggles)
+const TAB_ICONS = {
+    home: { active: 'NeighborhoodActive.png', inactive: 'NeighborhoodInactive.png' }
+};
+get homeIconUrl() {
+    const file = this.isActive ? TAB_ICONS.home.active : TAB_ICONS.home.inactive;
+    return `${IMPACT_ICONS}/${file}`;
+}
+```
+
+```html
+<img src={settingsIconUrl} alt="" class="section-icon">
+```
+
+## Icon Index
+
+### Navigation (Active / Inactive pairs)
+
+| Concept | Active | Inactive |
+|---------|--------|----------|
+| Home / Neighbourhood | `NeighborhoodActive.png` | `NeighborhoodInactive.png` |
+| Library / Toolbox | `ToolboxActive.png` | `ToolboxInactive.png` |
+| Messages | `SpeechBubbleActive.png` | `SpeechBubbleInactive.png` |
+| Profile / My Stuff | `ProfileActive.png` | `ProfileInactive.png` |
+| Notifications | `BellActive.png` | `BellInactive.png` |
+| Stories | `StoriesActive.png` | `StoriesInactive.png` |
+| Bulletin Board | `BulletinBoardActive.png` | `BulletinBoardInactive.png` |
+
+### Story Types (Active / Inactive pairs)
+
+| Type | Active | Inactive |
+|------|--------|----------|
+| Thank You | `ThankYouActive.png` | `ThankYouInactive.png` |
+| God Story | `GodStoryActive.png` | `GodStoryInactive.png` |
+| Prayer | `PrayActive.png` | `PrayInactive.png` |
+| Bio | `BioActive.png` | `BioInactive.png` |
+| Lament | `LamentActive.png` | `LamentInactive.png` |
+
+### Actions & UI
+
+| Concept | File |
+|---------|------|
+| Add / Create | `add.png` |
+| Search | `Magnify.png` |
+| More menu (kebab) | `Kebab.png` |
+| Comment | `comment.png` |
+| Reply | `reply.png` |
+| RSVP | `rsvp.png` |
+| Borrow | `borrow.png` |
+| Borrow (active) | `BorrowActive.png` |
+| Settings / Gear | `gear.png` |
+| Edit | `edit.png` |
+| Photo / Camera | `photo.png` |
+| Delete / Trash | `trash.png` |
+| Warning | `warning.png` |
+
+### People & Contact
+
+| Concept | File |
+|---------|------|
+| People / Group | `people.png` |
+| Contact / Sign | `sign.png` |
+| Chat / About | `chat.png` |
+| Care | `care.png` |
+| Accessibility | `accessibility.png` |
+| No Profile Photo | `NoProfilePhoto.png` |
+| No Photo | `NoPhoto.png` |
+
+### Settings & Account
+
+| Concept | File |
+|---------|------|
+| Account / Key | `key.png` |
+| Email | `email.png` |
+| Globe / Regional | `globe.png` |
+| Day & Night / Appearance | `day-and-night.png` |
+| Block User | `block-user.png` |
+| Deactivation | `deactivation.png` |
+| Lightbulb | `lightbulb.png` |
+
+### Ask & Offer
+
+| Concept | File |
+|---------|------|
+| Need | `needsm.png` |
+| Gift / Offer | `giftsm.png` |
+| Planner / Event | `plannersm.png` |
+
+### Status & Badges
+
+| Concept | File |
+|---------|------|
+| Member | `Member.png` |
+| Volunteer | `Volunteer.png` |
+| Donor | `Donor.png` |
+| Grantmaker | `Grantmaker.png` |
+| Major | `Major.png` |
+| Board | `Board.png` |
+| Matching | `Matching.png` |
+| Former Member | `FormerMember.png` |
+| Alive | `Alive.png` |
+| Deceased | `Deceased.png` |
+| Do Not Contact | `DoNotContact.png` |
+| Do Not Take Pictures | `DoNotTakePictures.png` |
+| No Photo Email | `NoPhotoEmail.png` |
+
+### Library Categories (Icons & Badge Colors)
+
+Shared config: `import { getCategoryIconUrl, getCategoryStyle, getCategoryColor, CATEGORY_COLORS } from 'c/fimbyLibraryCategoryConfig';`
+
+Per-category icons and badge colors are used on **library-specific pages**: `fimbyLibraryBrowser`, `fimbyLibraryItemDetail`, `fimbyLibraryItemCard`, `fimbyMyStuffPage` (library & borrowed items), and `fimbyBorrowHistory`. The **home feed** (`fimbyHomeFeed`) uses a single generic "Library" type badge (`ToolboxActive.png`, `rgba(141, 123, 106, 0.9)`) — not per-category styling.
+
+All badge colors are WCAG AA compliant with white (`#ffffff`) text.
+
+| Category | Icon File | Badge Color |
+|----------|-----------|-------------|
+| Art & Craft Supplies | `palette.png` | `#7D6234` |
+| Baby & Children | `onesie.png` | `#7A5270` |
+| Bikes | `bicycle.png` | `#357280` |
+| Books | `stack-of-books.png` | `#2E4466` |
+| Camping Gear | `camping.png` | `#5A6838` |
+| Clothing | `male-clothes.png` | `#6A5278` |
+| Electronics | `electronic-devices.png` | `#4E5E78` |
+| Fitness & Wellness | `sport.png` | `#2A6842` |
+| Games & Toys | `toys.png` | `#885840` |
+| Gardening | `gardening.png` | `#3A5C2C` |
+| Home Improvement & DIY | `remodeling.png` | `#8A5936` |
+| Household Items | `house-cleaning.png` | `#6B5E50` |
+| Kitchen Supplies | `cookware.png` | `#7A4340` |
+| Music Instruments | `music-instrument.png` | `#6E6530` |
+| Office Supplies | `stapler.png` | `#4E5858` |
+| Outdoors & Recreation (non-camping) | `deck-chair.png` | `#2E7460` |
+| Party & Events | `party.png` | `#7A4A5E` |
+| Pet Supplies | `pets.png` | `#7A4E52` |
+| Photography & AV | `music.png` | `#44406A` |
+| Sports Equipment | `sports.png` | `#3E6E48` |
+| Tools | `tools.png` | `#555048` |
+| Travel & Luggage | `luggage.png` | `#3A5E7A` |
+| Other / fallback | `unknown.png` | `#736B5C` |
+
+### Decorative / Misc
+
+| Concept | File |
+|---------|------|
+| FIMBY logo | `FIMBYwGrass.png` |
+| Confetti | `confetti.png` |
+| Thanks | `Thanks.png` |
+| Thanks People | `ThanksPeople.png` |
+| Thank You (small) | `thankyou.png` |
+| Biography | `biography.png` |
+| Pray | `pray.png` |
+| Sad | `sad.png` |
+| Green Circle | `GreenCircle.png` |
+| Red Circle | `RedCircle.png` |
+| Yellow Circle | `YellowCircle.png` |
+
+## Custom Property Editors (CPE) for Experience Builder
+
+When creating LWCs that expose `<property>` entries in `js-meta.xml`, evaluate whether a CPE would improve admin configuration. GA as of Spring '26.
+
+### When to build a CPE
+
+| Property pattern | CPE solution |
+|---|---|
+| String with fixed values (e.g. `cardType`) | Visual picker or button group |
+| String for icon reference | Icon picker / browser |
+| String for SF object/field API name | Schema-populated dropdown |
+| Integer with min/max range | Slider with labels |
+| Multiple related properties | Custom Property Type with tabs/accordions |
+| Conditionally visible property | CPE with conditional rendering |
+
+### Implementation
+
+- Target `lightning__PropertyEditor` in `js-meta.xml`
+- Public properties: `label`, `description`, `required`, `value`, `errors`, `schema`
+- Dispatch `CustomEvent('valuechange', { detail: { value } })` on change
+- For grouped panels: use `ExperiencePropertyTypeBundle` with `schema.json` + `design.json`
+
+### Existing CPE backlog
+
+| Priority | Component | Properties to improve |
+|---|---|---|
+| P1 | `fimbyRecordDetailCard` | `objectApiName`, field API names, group 13 props |
+| P1 | `fimbyCard` | `cardType` (visual picker) |
+| P2 | `fimbyImageUploader` | `objectApiName` dropdown, conditional `imageSlot` |
+| P2 | `fimbyInfiniteScroll` | Icon picker for `emptyStateIcon` |
+| P2 | `fimbyQuickPostForm` | `selectedType` visual selector |
+| P3 | `fimbyUniversalHeader`, `fimbyBottomNavigation` | `activeTab` button group |
+| P3 | `fimbyStoriesFeed` | `selectedCategory` dropdown |
+| P3 | `fimbyMessagesList` | `pageSize` slider |

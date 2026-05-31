@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>List_Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK( Library_Item__r.Image_URL__c ),
+HYPERLINK(&quot;/&quot;+ Id , IMAGE(Library_Item__r.Image_URL__c, &quot;&quot;,(VALUE(LEFT(Library_Item__r.Image_Ratio__c, FIND(&quot;X&quot;, Library_Item__r.Image_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Library_Item__r.Image_Ratio__c, LEN(Library_Item__r.Image_Ratio__c) - FIND(&quot;X&quot;, Library_Item__r.Image_Ratio__c)))* 0.5))),
+HYPERLINK(&quot;/&quot;+ Id ,IMAGE(&quot;/resource/Impact_Icons/NoPhotoEmail.png&quot;, &quot;&quot; , 75,75)) )</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>List Image</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

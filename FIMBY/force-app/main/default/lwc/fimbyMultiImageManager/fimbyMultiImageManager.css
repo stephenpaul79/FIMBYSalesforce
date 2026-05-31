@@ -1,0 +1,193 @@
+:host {
+    display: block;
+}
+
+.multi-image-manager {
+    width: 100%;
+}
+
+.hidden-file-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* Loading */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+/* Empty drop zone */
+.empty-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 120px;
+    border: 2px dashed var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md, 8px);
+    background: var(--fimby-surface-input, var(--fimby-surface-card));
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.empty-drop-zone:hover,
+.empty-drop-zone:focus-visible {
+    border-color: var(--fimby-info);
+    background: var(--fimby-info-tint, rgba(0, 120, 212, 0.04));
+}
+
+.empty-label {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+}
+
+/* Image grid: default 2-col on mobile */
+.image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* Wide layout (>=480px container): 4-col single row */
+.wide .image-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Compact mode: smaller cells */
+.compact .image-grid {
+    gap: 6px;
+}
+
+/* Individual cell */
+.image-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--fimby-radius-sm, 6px);
+    overflow: hidden;
+    background: var(--fimby-surface-page);
+    border: 1px solid var(--fimby-border-subtle);
+}
+
+.cell-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Remove button — neutral circle, colored trash icon shows through */
+.remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.88);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.15s;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.remove-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.remove-icon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+.remove-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* Add cell */
+.add-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--fimby-border-default);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.add-cell:hover,
+.add-cell:focus-visible {
+    border-color: var(--fimby-info);
+    background: var(--fimby-info-tint, rgba(0, 120, 212, 0.04));
+}
+
+/* Upload overlay on cell */
+.cell-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+/* Progress bar */
+.progress-bar {
+    height: 4px;
+    background: var(--fimby-border-subtle);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--fimby-info);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Error message */
+.error-message {
+    font-size: 13px;
+    color: var(--fimby-error, #d32f2f);
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--fimby-error-tint, rgba(211, 47, 47, 0.06));
+    border-radius: var(--fimby-radius-sm, 6px);
+}
+
+/* Focus management */
+.empty-drop-zone:focus-visible,
+.add-cell:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .empty-drop-zone,
+    .add-cell,
+    .remove-btn,
+    .progress-fill {
+        transition: none;
+    }
+
+    .remove-btn:hover {
+        transform: none;
+    }
+}

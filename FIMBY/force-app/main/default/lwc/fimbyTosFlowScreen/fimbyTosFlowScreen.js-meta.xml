@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="acceptanceCompleted" type="Boolean" role="outputOnly"
+                      label="Acceptance completed"
+                      description="True after the user has tapped the Terms of Service link, checked the agree box, and the server-side acceptance has been recorded." />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

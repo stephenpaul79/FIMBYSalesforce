@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://soap.sforce.com/2006/04/metadata">
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Recognition_Score__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Shared_Contact_Density__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Contact_Share_Rate__c</field>
+    </columns>
+    <columns>
+        <field>Neighbourhood_Health_Snapshot__c.Connection_Reciprocity__c</field>
+    </columns>
+    <format>Summary</format>
+    <groupingsDown>
+        <dateGranularity>Day</dateGranularity>
+        <field>Neighbourhood_Health_Snapshot__c.Neighbourhood__c</field>
+        <sortOrder>Asc</sortOrder>
+    </groupingsDown>
+    <name>Recognition Trend</name>
+    <reportType>CustomEntity$Neighbourhood_Health_Snapshot__c</reportType>
+    <scope>organization</scope>
+    <showDetails>true</showDetails>
+    <sortColumn>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</sortColumn>
+    <sortOrder>Desc</sortOrder>
+    <timeFrameFilter>
+        <dateColumn>Neighbourhood_Health_Snapshot__c.Snapshot_Date__c</dateColumn>
+        <interval>INTERVAL_CUSTOM</interval>
+    </timeFrameFilter>
+</Report>

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.fimby.app",
+      "sha256_cert_fingerprints": [
+        "A9:8E:9D:F3:74:D5:C3:7E:D5:02:6A:05:E9:DF:21:99:C0:4D:1C:8E:A1:87:1C:F5:A1:99:03:F8:4B:E9:15:60"
+      ]
+    }
+  }
+]

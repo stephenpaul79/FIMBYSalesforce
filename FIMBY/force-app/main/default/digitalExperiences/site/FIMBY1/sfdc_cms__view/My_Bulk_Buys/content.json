@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "My Bulk Buys",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"00afc4cf-5060-4d2b-b1b6-53ed9ec6650b\",\"columns\":[{\"UUID\":\"86030c25-c601-4fae-8d0b-501e99264eba\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyMyStuffPage",
+              "id" : "a3429dd6-5001-47ea-adc6-86c128c134bb",
+              "type" : "component"
+            } ],
+            "id" : "86030c25-c601-4fae-8d0b-501e99264eba",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "00afc4cf-5060-4d2b-b1b6-53ed9ec6650b",
+          "type" : "component"
+        } ],
+        "id" : "5139e5d3-ca42-4966-a7a0-145ddf559400",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "My Bulk Buys",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "7068b511-cab0-4580-91fc-461035ed2735",
+          "type" : "component"
+        } ],
+        "id" : "9b8110d3-14f5-4b8c-9be0-0686e7684a65",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "60ea79cf-a86b-4700-b90c-0a057690baa1",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-my-bulk-buys"
+  },
+  "urlName" : "my-bulk-buys"
+}

@@ -1,0 +1,46 @@
+<template>
+    <div class="contacts-list-page">
+        <!-- Page Header -->
+        <c-fimby-page-header
+            page-title="Contacts"
+            page-subtitle="Community members"
+            show-search="false"
+            onnotification={handleNotifications}>
+        </c-fimby-page-header>
+
+        <!-- Responsive List -->
+        <c-fimby-responsive-list
+            title="Neighbourhood Contacts"
+            subtitle={filterLabel}
+            object-api-name="Contact"
+            records={contacts}
+            columns={columns}
+            row-actions={rowActions}
+            show-header="true"
+            show-search="true"
+            search-placeholder="Search contacts..."
+            show-view-toggle="true"
+            default-view="auto"
+            primary-field="Name"
+            status-field="Active_User__c"
+            image-field-name="SmallPhotoUrl"
+            image-placeholder-icon="utility:user"
+            empty-state-icon="utility:groups"
+            empty-state-title="No Contacts Found"
+            empty-state-message="No contacts match your search criteria."
+            total-records={totalContacts}
+            show-load-more={hasMoreRecords}
+            onrowclick={handleContactClick}
+            onrowaction={handleRowAction}
+            onsearch={handleSearch}
+            onsort={handleSort}
+            onloadmore={handleLoadMore}>
+        </c-fimby-responsive-list>
+
+        <!-- Bottom Navigation -->
+        <c-fimby-bottom-navigation
+            active-tab="contacts"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

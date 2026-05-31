@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouches_Revoked_Last_12_Months__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>DLRS rollup target: counting revocations within the current 12-month window. DLRS rolls only Vouch_Record__c rows where Is_In_Current_Vouch_Window__c = true AND Counts_Toward_Voucher_Pause__c = true. Drives auto-pause threshold.</description>
+    <externalId>false</externalId>
+    <label>Vouches Revoked Last 12 Months</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

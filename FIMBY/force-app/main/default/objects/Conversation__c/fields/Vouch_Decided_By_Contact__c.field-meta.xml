@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouch_Decided_By_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The Contact who decided the vouch (recipient on approve/decline; requester on withdraw).</description>
+    <label>Vouch Decided By Contact</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Vouch Conversations Decided</relationshipLabel>
+    <relationshipName>Vouch_Conversations_Decided</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

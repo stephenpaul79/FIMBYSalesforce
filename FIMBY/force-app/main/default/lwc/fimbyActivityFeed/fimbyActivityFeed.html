@@ -1,0 +1,21 @@
+<template>
+    <div class="fimby-activity-feed">
+        <c-fimby-page-header page-title="Activity"></c-fimby-page-header>
+        <c-fimby-infinite-scroll class="activity-scroll" enable-pull-to-refresh="true" onloadmore={handleLoadMore} onrefresh={handleRefresh}>
+            <div class="activity-container">
+                <template for:each={activities} for:item="activity">
+                    <div key={activity.id} class="activity-item">
+                        <img src={activity.actorAvatar} alt={activity.actorName} class="activity-avatar">
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <strong>{activity.actorName}</strong> {activity.actionText}
+                            </div>
+                            <div class="activity-time">{activity.formattedTime}</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </c-fimby-infinite-scroll>
+        <c-fimby-bottom-navigation active-tab="activity" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

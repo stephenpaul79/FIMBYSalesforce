@@ -1,0 +1,294 @@
+---
+description: FIMBY component patterns — card badges, pill buttons, accessibility guardrails, form navigation, character counters, and form labels
+globs: "**/lwc/**/*.html,**/lwc/**/*.css"
+alwaysApply: false
+---
+
+# FIMBY Component Patterns
+
+After **LWC** (or other Salesforce metadata) edits in this repo, **deploy** per the **Salesforce Deployment Rules** (`salesforce-deployments.mdc`)—including the default **proactive deploy** when finishing a task.
+
+## Card Type Badge Colours (Pill Badges)
+
+Every feed card must show a **type badge** (pill) in the top-right corner. Primary badges use **white text** on coloured backgrounds from `--fimby-badge-*` tokens. Secondary badges (Reserved, Available) can use tint backgrounds if WCAG contrast is maintained.
+
+### Token → Badge Mapping
+
+| Badge | Token Variable | CSS Class | Icon |
+|-------|---------------|-----------|------|
+| **Story** (default) | `--fimby-badge-story` | `.story-badge` | `StoriesActive.png` |
+| **God Story** | `--fimby-badge-god-story` | `.godstory-badge` | `GodStoryActive.png` |
+| **Thank You** | `--fimby-badge-thank-you` | `.thankyou-badge` | `ThankYouActive.png` |
+| **Lament** | `--fimby-badge-lament` | `.lament-badge` | `LamentActive.png` |
+| **Prayer** | `--fimby-badge-prayer` | `.prayer-badge` | `PrayActive.png` |
+| **Bio** | `--fimby-badge-bio` | `.bio-badge` | `BioActive.png` |
+| **Ask & Offer** | `--fimby-badge-ask-offer` | `.ask-offer-badge` | `BulletinBoardActive.png` |
+| **Event** | `--fimby-badge-event` | `.event-badge` | `plannersm.png` |
+| **Library** | per-category inline style | per-category inline style | per-category icon (see `fimbyLibraryCategoryConfig`) |
+
+Library badges use **per-category icons and colors** from the shared `c/fimbyLibraryCategoryConfig` module instead of a single token/class. Import `getCategoryIconUrl`, `getCategoryStyle`, and `CATEGORY_COLORS`. See the **Library Categories (Icons & Badge Colors)** section in the Icon Index rule for the full 23-category mapping with hex colors. The **home feed** keeps a single generic "Library" type badge — do not apply per-category styling there.
+
+### CSS
+
+```css
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #ffffff;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.badge-icon { width: 18px; height: 18px; object-fit: contain; }
+
+.story-badge     { background-color: var(--fimby-badge-story); }
+.ask-offer-badge { background-color: var(--fimby-badge-ask-offer); }
+/* Library badges use inline style from getCategoryStyle() — no static class needed */
+```
+
+**Rules:** Badge label = content type, never status. All badges include matching Impact Icon + label. On small screens (≤ 480px), reduce padding to `3px 8px` and font-size to `0.65rem`.
+
+## Pill Action Buttons (Icon + Label)
+
+Action buttons pairing an Impact Icon with text use the **pill shape** — `border-radius: 9999px` with icon and label inline. Header actions (Edit, Photo, Delete, Flag, Block) belong in `fimbyPageHeader` via `menuItems` API. Body-level pills are for primary CTAs (Borrow, Respond, Message).
+
+### HTML
+
+```html
+<button class="action-btn" onclick={handleEdit}>
+    <img src={editIconUrl} alt="" class="action-btn-icon">
+    <span>Edit</span>
+</button>
+<button class="action-btn danger" onclick={handleDeleteClick}>
+    <img src={trashIconUrl} alt="" class="action-btn-icon">
+    <span>Delete</span>
+</button>
+```
+
+### CSS
+
+```css
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    min-height: 44px;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover { background-color: var(--fimby-hover-bg); border-color: var(--fimby-border-strong); }
+
+.action-btn-icon { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
+
+.action-btn.primary {
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    border-color: var(--fimby-brand-teal);
+    font-weight: 700;
+}
+
+.action-btn.danger:hover { background-color: var(--fimby-error-tint); }
+```
+
+### Rules
+
+1. Pill shape mandatory for all icon + label action buttons (`border-radius: 9999px`).
+2. Always `<img>` with Impact Icons for edit, photo, delete action buttons.
+3. **Do NOT apply `filter: brightness(0) invert(1)` to Impact Icons on primary buttons.** They are multi-colour artwork.
+4. Primary button text: explicit `color: #ffffff`, not `var(--fimby-text-on-teal)`.
+5. Minimum tap target 44px.
+
+## Accessibility Guardrails (WCAG)
+
+### Images & Icons
+
+- Every `<img>` must have `alt`. Decorative: `alt=""`.
+- Icon-only buttons must have `aria-label` or visually-hidden text.
+
+```html
+<button class="icon-btn" aria-label="Close modal" onclick={handleClose}>
+    <img src={closeIcon} alt="">
+</button>
+```
+
+### Semantic HTML
+
+- `<button>` for actions, `<a>` for navigation — never clickable `<div>` or `<span>`.
+- If custom element must behave as button: `role="button"` + `tabindex="0"`.
+
+### Keyboard Support
+
+- Every `onclick` on a non-button needs matching `onkeydown` (Enter/Space).
+- Modals must trap focus and return focus to trigger on close.
+
+### Focus Visibility
+
+- All interactive elements need `:focus-visible` using `--fimby-focus-ring`.
+- Never `outline: none` without alternative.
+
+```css
+.interactive:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+```
+
+### Colour & Contrast
+
+- Use `--fimby-*` tokens (pre-validated for AA).
+- Never colour as sole state indicator — pair with icon/text.
+- Warn on hardcoded colours.
+
+### Headings & Structure
+
+- Sequential heading hierarchy, no skipped levels.
+- One `<h1>` per page. Use landmark regions where appropriate.
+
+### Forms
+
+- Every input needs visible `<label>` or `aria-label`. Placeholder alone is not a label.
+- Errors linked via `aria-describedby`.
+- Group related fields with `<fieldset>` + `<legend>`.
+
+### Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    .animated-element { transition: none; animation: none; }
+}
+```
+
+## Multi-Page Form Navigation
+
+Forms with multiple pages must include `.form-navigation` footer on every page: "< Back" bottom-left, primary action bottom-right.
+
+| Position | Element | Style | Icon |
+|---|---|---|---|
+| Left | "< Back" | Neutral outlined | Left chevron before label |
+| Right (intermediate) | "Next >" | Brand teal fill | Right chevron after label |
+| Right (final) | Submit label | Brand teal fill | **No icon** |
+
+### HTML — intermediate page
+
+```html
+<div class="form-navigation">
+    <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back">
+        <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+        <span>Back</span>
+    </button>
+    <button class="nav-btn nav-next" onclick={handleNext} disabled={isNextDisabled} type="button">
+        <span>Next</span>
+        <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+    </button>
+</div>
+```
+
+### HTML — final page
+
+```html
+<div class="form-navigation">
+    <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back">
+        <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+        <span>Back</span>
+    </button>
+    <button class="nav-btn nav-next" onclick={handleSubmit} disabled={isSubmitDisabled} type="button">
+        <span>{submitLabel}</span>
+    </button>
+</div>
+```
+
+### CSS
+
+```css
+.form-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.nav-btn:hover { background-color: var(--fimby-hover-bg); border-color: var(--fimby-border-strong); }
+
+.nav-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.nav-next {
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    border-color: var(--fimby-brand-teal);
+}
+
+.nav-next:hover { background-color: var(--fimby-brand-teal-hover); border-color: var(--fimby-brand-teal-hover); }
+.nav-next:disabled { opacity: 0.5; cursor: not-allowed; }
+.nav-next lightning-icon { --lwc-colorTextIconDefault: #ffffff; }
+```
+
+### Rules
+
+1. Same place, every page. Users should never hunt for navigation controls.
+2. No `lightning-button` in form navigation — use custom `nav-btn` buttons.
+3. Chevron = more pages ahead. Final submit has no icon.
+4. Header is for breadcrumbs and actions — not form navigation.
+5. Single-page forms skip this pattern.
+
+## Character Counter Label Row
+
+Place counter on the **same row as the field label**, right-justified.
+
+```html
+<div class="field-label-row">
+    <label for="my-input" class="field-label">Title</label>
+    <span class="field-counter">{current}/{max}</span>
+</div>
+<lightning-input variant="label-hidden" ...></lightning-input>
+```
+
+```css
+.field-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.field-label-row .field-label, .field-label-row label { margin-bottom: 0; }
+.field-counter { font-size: 0.75rem; color: var(--fimby-text-secondary); padding: 0; }
+```
+
+**Rules:** Label left, counter right via `.field-label-row`. For `lightning-input`/`lightning-textarea`, use `variant="label-hidden"` + custom label row.
+
+## Form Input Labels — Always Bold
+
+All form input labels must be bold (`font-weight: 600` or `700`). Because `lightning-input`, `lightning-textarea`, and `lightning-combobox` render labels in shadow DOM, use `variant="label-hidden"` with a **custom label** above the component styled with `.field-label`.

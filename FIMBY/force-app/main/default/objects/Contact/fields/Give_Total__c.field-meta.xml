@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Give_Total__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( Active_User__c =FALSE, NULL,
+IF( LEFT(Household_Account__c ,15) = LEFT($User.HouseholdID__c,15) || LEFT($User.ProfileId,15) = &quot;00e5f000002g3Zx&quot;,
+
+Need_Postings_For_Others__c 
++
+Need_Responses_For_Others__c  
++
+Need_Responses_For_Self__c 
++
+Offer_Postings_For_Others__c 
++
+Offer_Postings_For_Self__c 
++
+Offer_Responses_For_Others__c  , NULL))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Give Total</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

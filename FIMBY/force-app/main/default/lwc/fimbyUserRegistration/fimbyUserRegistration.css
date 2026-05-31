@@ -1,0 +1,492 @@
+/* FIMBY User Registration - Mobile First */
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+.fimby-user-registration {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+/* Progress Steps */
+.progress-steps {
+    background: var(--fimby-surface-card);
+    padding: 16px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+    position: sticky;
+    top: 68px;
+    z-index: 500;
+}
+
+.steps-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    transition: all 0.3s ease;
+    margin-bottom: 4px;
+}
+
+.step-title {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    text-align: center;
+    line-height: 1;
+}
+
+.progress-step.active .step-number {
+    background: var(--fimby-brand-teal);
+    border-color: var(--fimby-brand-teal);
+    color: white;
+}
+
+.progress-step.active .step-title {
+    color: var(--fimby-brand-teal);
+    font-weight: 600;
+}
+
+.progress-step.completed .step-number {
+    background: var(--fimby-success);
+    border-color: var(--fimby-success);
+    color: white;
+}
+
+.progress-step.completed .step-title {
+    color: var(--fimby-success);
+}
+
+.step-connector {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    width: calc(100vw / 5 - 32px);
+    height: 2px;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    transition: background-color 0.3s ease;
+}
+
+.progress-step.completed .step-connector {
+    background: var(--fimby-success);
+}
+
+/* Registration Container */
+.registration-container {
+    flex: 1;
+    padding: 24px 16px;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.registration-step {
+    animation: slideIn 0.3s ease-out;
+}
+
+.step-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+    line-height: 1.2;
+}
+
+.step-subtitle {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-input {
+    margin-bottom: 16px;
+}
+
+.field-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+}
+
+.character-count {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    text-align: right;
+    margin-top: -12px;
+    margin-bottom: 16px;
+}
+
+.field-label-row .character-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+.form-field-with-count {
+    margin-bottom: 16px;
+}
+
+/* Interests Grid */
+.interests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.interest-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: var(--fimby-radius-md);
+    background: var(--fimby-surface-card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 80px;
+    justify-content: center;
+}
+
+.interest-chip:hover {
+    border-color: var(--fimby-brand-teal);
+    background: rgba(25, 118, 210, 0.05);
+}
+
+.interest-chip.selected {
+    border-color: var(--fimby-brand-teal);
+    background: var(--fimby-brand-teal);
+    color: white;
+}
+
+.interest-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.interest-chip.selected .interest-label {
+    color: white;
+}
+
+/* Photo Tips */
+.photo-tips {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(25, 118, 210, 0.05);
+    border-radius: var(--fimby-radius-sm);
+    border: 1px solid rgba(25, 118, 210, 0.2);
+}
+
+.tips-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fimby-brand-teal);
+    margin-bottom: 8px;
+}
+
+.tips-list {
+    margin: 0;
+    padding-left: 16px;
+    color: var(--fimby-text-primary);
+}
+
+.tips-list li {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+/* Review Card */
+.review-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.review-section {
+    margin-bottom: 20px;
+}
+
+.review-section:last-child {
+    margin-bottom: 0;
+}
+
+.review-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-label {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    font-weight: 500;
+}
+
+.review-value {
+    font-size: 13px;
+    color: var(--fimby-text-primary);
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+    margin-left: 16px;
+}
+
+.selected-interests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.interest-tag {
+    padding: 4px 8px;
+    background: var(--fimby-brand-teal);
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--fimby-radius-md);
+}
+
+/* Terms Section */
+.terms-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--fimby-radius-sm);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.terms-checkbox {
+    margin-top: 2px;
+}
+
+.terms-text {
+    font-size: 12px;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+}
+
+.terms-text a {
+    color: var(--fimby-brand-teal);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.terms-text a:hover {
+    text-decoration: underline;
+}
+
+/* Step Actions */
+.step-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.back-btn,
+.continue-btn,
+.create-btn {
+    flex: 1;
+    max-width: 160px;
+    font-weight: 600;
+}
+
+.create-btn {
+    background: var(--fimby-success);
+    border-color: var(--fimby-success);
+}
+
+.create-btn:hover {
+    background: var(--fimby-success);
+    border-color: var(--fimby-success);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: var(--fimby-surface-card);
+    padding: 32px;
+    border-radius: var(--fimby-radius-lg);
+    text-align: center;
+    max-width: 280px;
+    margin: 0 16px;
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 16px 0 8px;
+}
+
+.loading-subtext {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 320px) {
+    .registration-container {
+        padding: 16px 12px;
+    }
+
+    .step-title {
+        font-size: 20px;
+    }
+
+    .interests-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .interest-chip {
+        min-height: 70px;
+        padding: 12px 8px;
+    }
+
+    .interest-label {
+        font-size: 11px;
+    }
+}
+
+@media (min-width: 768px) {
+    .registration-container {
+        padding: 32px 24px;
+    }
+
+    .interests-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .step-actions {
+        justify-content: flex-end;
+    }
+
+    .back-btn,
+    .continue-btn,
+    .create-btn {
+        flex: 0 0 120px;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Keyboard focus visibility */
+.interest-chip:focus-visible,
+.back-btn:focus-visible,
+.continue-btn:focus-visible,
+.create-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .registration-step,
+    .step-number,
+    .interest-chip,
+    .step-connector {
+        animation: none;
+        transition: none;
+    }
+}

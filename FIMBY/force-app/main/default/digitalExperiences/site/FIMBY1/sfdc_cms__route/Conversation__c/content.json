@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Conversation",
+  "contentBody" : {
+    "activeViewId" : "Conversation",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-conversation",
+    "urlPrefix" : "conversation"
+  },
+  "urlName" : "conversation"
+}

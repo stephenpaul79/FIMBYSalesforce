@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>System_Message_Type__c</fullName>
+    <description>Type of system message. Only populated when Is_System_Message is true.</description>
+    <label>System Message Type</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Status_Change</fullName>
+                <default>false</default>
+                <label>Status Change</label>
+            </value>
+            <value>
+                <fullName>Amount_Change</fullName>
+                <default>false</default>
+                <label>Amount Change</label>
+            </value>
+            <value>
+                <fullName>Post_Expired</fullName>
+                <default>false</default>
+                <label>Post Expired</label>
+            </value>
+            <value>
+                <fullName>Post_Cancelled</fullName>
+                <default>false</default>
+                <label>Post Cancelled</label>
+            </value>
+            <value>
+                <fullName>Contact_Shared</fullName>
+                <default>false</default>
+                <label>Contact Shared</label>
+            </value>
+            <value>
+                <fullName>Thanks_Sent</fullName>
+                <default>false</default>
+                <label>Thanks Sent</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

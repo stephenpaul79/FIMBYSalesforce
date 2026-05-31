@@ -1,0 +1,65 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "08df7800-ec1e-466f-8f0a-a622269e22dd",
+  "label" : "Shared Contact Info Detail",
+  "regions" : [ {
+    "id" : "30178e98-f37a-4007-88d9-c994840909b7",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordHeadline",
+      "id" : "38d14ff5-8c46-4cde-ad81-5b05343f85cc",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "detailsTabLabel" : "Details",
+        "discussionsTabLabel" : "Feed",
+        "recordId" : "{!recordId}",
+        "relatedTabLabel" : "Related",
+        "tab1Type" : "details",
+        "tab2Type" : "related",
+        "tab3Type" : "chatter",
+        "tab4Type" : "none",
+        "timelineTabLabel" : "Activity"
+      },
+      "componentName" : "forceCommunity:recordHomeTabs",
+      "id" : "7ad9f3ee-611c-443c-80f3-0f4433da0bcd",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "7ce5fb5a-5ff5-4362-8496-e4eb435d4182",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "44727051-c44e-49a0-89e9-11af2bbf9eb7",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "{!Record._Object}: {!Record._Title}"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "ab72e41c-2114-40c0-8ad1-6a93dc003caa",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "259449b9-f17b-443f-ac63-4b7dab0726bb",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "detail-a1D"
+}

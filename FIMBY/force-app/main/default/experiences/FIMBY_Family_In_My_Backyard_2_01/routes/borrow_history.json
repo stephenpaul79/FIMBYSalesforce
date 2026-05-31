@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "a3a3b4b4-c5c5-d6d6-e7e7-f8f899000044",
+  "appPageId" : "44556677-8899-aabb-ccdd-eeff00112233",
+  "configurationTags" : [ ],
+  "devName" : "Borrow_History",
+  "id" : "44aa55bb-66cc-77dd-88ee-99ff00112233",
+  "label" : "Borrow History",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-borrow_history",
+  "type" : "route",
+  "urlPrefix" : "borrow-history"
+}

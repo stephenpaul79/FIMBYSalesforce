@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lending_Confirmation_Expiry_Days__c</fullName>
+    <defaultValue>3</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Lending Confirmation Expiry Days</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Days a borrower has to confirm they still want an item after being notified it is available. After this window, the request expires and the next person on the waitlist is promoted.</inlineHelpText>
+</CustomField>

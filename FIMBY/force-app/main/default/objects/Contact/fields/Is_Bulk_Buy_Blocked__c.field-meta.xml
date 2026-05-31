@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Bulk_Buy_Blocked__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Cached flag: true when user's last 3 resolved bulk buy participation events are ALL No_Follow_Through. Recalculated by scheduled jobs and follow-up controllers.</description>
+    <externalId>false</externalId>
+    <label>Is Bulk Buy Blocked</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

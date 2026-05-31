@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "New Message",
+  "contentBody" : {
+    "activeViewId" : "New_Message",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-new-message",
+    "urlPrefix" : "new-message"
+  },
+  "urlName" : "new-message"
+}

@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "f365153b-52cd-4b86-a750-c41523e668a9",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Post__c",
+  "id" : "7068835f-d5f6-4712-9a4f-843dcd676543",
+  "label" : "Post Menu",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post",
+  "type" : "route",
+  "urlPrefix" : "post"
+}

@@ -1,0 +1,173 @@
+<apex:page controller="FimbyAuthorizedSupporterFormController"
+           renderAs="pdf"
+           applyHtmlTag="true"
+           showHeader="false"
+           sidebar="false"
+           standardStylesheets="false"
+           docType="html-5.0"
+           cache="false"
+           contentType="application/pdf">
+<head>
+    <style type="text/css">
+        @page { size: letter; margin: 0.6in; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            color: #2a2a2a;
+            line-height: 1.45;
+        }
+        h1 { font-size: 18pt; margin: 0 0 6pt; }
+        h2 { font-size: 13pt; margin: 18pt 0 6pt; border-bottom: 1pt solid #999; padding-bottom: 2pt; }
+        .subhead { color: #555; margin: 0 0 18pt; font-size: 10pt; }
+        .ident { width: 100%; border-collapse: collapse; margin-bottom: 8pt; }
+        .ident td { vertical-align: top; padding: 4pt 6pt; border: 0.5pt solid #cfcfcf; font-size: 10pt; }
+        .ident td.label { background: #f4f4f4; font-weight: 600; width: 32%; }
+        .block {
+            border: 1pt solid #999;
+            border-radius: 4pt;
+            padding: 10pt 12pt;
+            margin: 8pt 0 14pt;
+        }
+        .block h3 { margin: 0 0 6pt; font-size: 12pt; }
+        .block p { margin: 0 0 6pt; }
+        .initials {
+            margin-top: 8pt;
+            border-top: 1pt dashed #999;
+            padding-top: 6pt;
+            font-size: 10pt;
+        }
+        .initials .line {
+            display: inline-block;
+            border-bottom: 1pt solid #2a2a2a;
+            width: 90pt;
+            min-height: 14pt;
+            margin: 0 6pt;
+        }
+        .sig-row {
+            margin-top: 22pt;
+            padding-top: 8pt;
+            border-top: 1pt solid #2a2a2a;
+        }
+        .sig-row .lbl { font-size: 9pt; color: #555; }
+        .sig-line {
+            border-bottom: 1pt solid #2a2a2a;
+            min-height: 22pt;
+            margin: 4pt 0 8pt;
+        }
+        .footer {
+            margin-top: 18pt;
+            font-size: 9pt;
+            color: #555;
+            border-top: 1pt solid #cfcfcf;
+            padding-top: 6pt;
+        }
+        .err { color: #b00020; font-weight: 600; }
+        ul { margin: 4pt 0 6pt 18pt; padding: 0; }
+        li { margin-bottom: 3pt; }
+    </style>
+</head>
+<body>
+<apex:outputPanel rendered="{!hasError}">
+    <p class="err">{!errorMessage}</p>
+</apex:outputPanel>
+
+<apex:outputPanel rendered="{!NOT(hasError)}">
+    <h1>FIMBY Authorized Supporter Form</h1>
+    <p class="subhead">
+        Use this form when a neighbour wants someone to use FIMBY on their behalf.
+        The supporter fills in identifiers below; the supportee signs in front of a witness if needed.
+        Once signed, the supporter scans or photographs each page and uploads the file in FIMBY.
+        Generated {!renderedDate}. Form references Terms of Service version {!tosVersion}<apex:outputText value=", effective {!tosEffectiveLabel}" rendered="{!tosEffectiveLabel != ''}"/>.
+    </p>
+
+    <h2>Block 1 — Identifiers</h2>
+    <table class="ident">
+        <tr><td class="label">Supporter (FIMBY user)</td><td>{!supporter.Name}</td></tr>
+        <tr><td class="label">Supporter address</td><td>{!supporterFullAddress}</td></tr>
+        <tr><td class="label">Supporter phone</td><td>{!supporter.Phone}</td></tr>
+        <tr><td class="label">Supporter email</td><td>{!supporter.Email}</td></tr>
+        <tr><td class="label">Neighbourhood</td><td>{!sr.Neighbourhood__r.Name}</td></tr>
+    </table>
+
+    <table class="ident">
+        <tr><td class="label">Supportee full name</td><td>{!supportee.Name}</td></tr>
+        <tr><td class="label">Supportee date of birth</td><td>{!supporteeBirthdateLabel}</td></tr>
+        <tr><td class="label">Supportee mailing address</td><td>{!supporteeFullAddress}</td></tr>
+        <tr><td class="label">Supportee phone</td><td>{!supportee.Phone}</td></tr>
+        <tr><td class="label">Supportee email</td><td>{!supportee.Email}</td></tr>
+        <tr><td class="label">Relationship to supporter</td><td>{!sr.Supportee_Relationship__c}</td></tr>
+    </table>
+
+    <h2>Block 2 — What an authorized supporter can and cannot do</h2>
+    <p><strong>An authorized supporter <em>can</em>:</strong></p>
+    <ul>
+        <li>Post asks, offers, and stories on the supportee's behalf</li>
+        <li>Reply to neighbours and arrange help on the supportee's behalf</li>
+        <li>Borrow and lend items from the FIMBY library on the supportee's behalf</li>
+        <li>Switch back to acting as themselves at any time</li>
+    </ul>
+    <p><strong>An authorized supporter <em>cannot</em>:</strong></p>
+    <ul>
+        <li>Change the supportee's password or delete their account</li>
+        <li>See messages between the supportee and other people that pre-date this relationship</li>
+        <li>Sign legal agreements, financial transactions, or anything else outside FIMBY</li>
+    </ul>
+    <p>Either side can end this relationship at any time by calling/texting the FIMBY team
+       at <strong>help@fimby.com</strong>. No reason needed.</p>
+
+    <h2>Block A — Designation</h2>
+    <div class="block">
+        <h3>I designate <strong>{!supporter.Name}</strong> as my authorized FIMBY supporter.</h3>
+        <p>I understand that they will see and act in FIMBY on my behalf, within the limits described in Block 2.</p>
+        <p class="initials">Supportee initials: <span class="line">&#160;</span></p>
+    </div>
+
+    <h2>Block B — Data sharing</h2>
+    <div class="block">
+        <h3>I agree that my supporter can see information I share in FIMBY going forward.</h3>
+        <p>This includes posts they make on my behalf, conversations they have on my behalf,
+           and library items linked to me. It does not retroactively expose private messages
+           that pre-date this relationship.</p>
+        <p class="initials">Supportee initials: <span class="line">&#160;</span></p>
+    </div>
+
+    <h2>Block C — Terms of Service and age confirmation</h2>
+    <div class="block">
+        <h3>Acknowledgement of FIMBY Terms of Service</h3>
+        <p>I have read FIMBY's Terms of Service version <strong>{!tosVersion}</strong><apex:outputText value=", effective {!tosEffectiveLabel}" rendered="{!tosEffectiveLabel != ''}"/>, and I agree to them.</p>
+        <p>The current Terms of Service are published at <strong>https://fimby.com/terms-of-service</strong>.
+           My supporter can show me the printed copy attached to this form on request.</p>
+        <p><strong>I am 19 years of age or older.</strong> FIMBY is a community for adult neighbours.</p>
+        <p class="initials">Supportee initials: <span class="line">&#160;</span></p>
+    </div>
+
+    <h2>Signatures</h2>
+    <div class="sig-row">
+        <p class="lbl">Supportee signature (or X with witness):</p>
+        <div class="sig-line">&#160;</div>
+        <p class="lbl">Date:</p>
+        <div class="sig-line" style="width: 30%; display: inline-block;">&#160;</div>
+    </div>
+
+    <div class="sig-row">
+        <p class="lbl">If signed with X — witness name and signature:</p>
+        <div class="sig-line">&#160;</div>
+        <p class="lbl">Witness phone (so we can confirm):</p>
+        <div class="sig-line" style="width: 60%; display: inline-block;">&#160;</div>
+    </div>
+
+    <div class="sig-row">
+        <p class="lbl">Supporter signature (confirming what is above is accurate):</p>
+        <div class="sig-line">&#160;</div>
+        <p class="lbl">Date:</p>
+        <div class="sig-line" style="width: 30%; display: inline-block;">&#160;</div>
+    </div>
+
+    <p class="footer">
+        Questions? Contact the FIMBY team at <strong>help@fimby.com</strong>.
+        We always check in with the supportee — not the supporter — when there is anything to confirm.
+        Form id: {!sr.Name}.
+    </p>
+</apex:outputPanel>
+</body>
+</apex:page>

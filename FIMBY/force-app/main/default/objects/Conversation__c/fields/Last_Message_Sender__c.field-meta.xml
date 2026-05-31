@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Message_Sender__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The actingAs contact who sent the last message.</description>
+    <label>Last Message Sender</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Conversations (Last Sender)</relationshipLabel>
+    <relationshipName>Conversations_Last_Sender</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

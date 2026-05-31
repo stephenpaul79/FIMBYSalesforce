@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Images2__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK(Image_3_URL__c),
+&quot; 3. &quot;+ HYPERLINK(Image_3_URL__c + $Organization.Id,
+IMAGE(Image_3_URL__c + $Organization.Id , &quot;&quot;,(VALUE(LEFT(Image_3_Ratio__c, FIND(&quot;X&quot;, Image_3_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_3_Ratio__c, LEN(Image_3_Ratio__c) - FIND(&quot;X&quot;, Image_3_Ratio__c))))* 0.5),&quot;_self&quot;),&quot;&quot;)+ 
+
+IF(!ISBLANK(Image_4_URL__c),
+&quot; 4. &quot;+ HYPERLINK(Image_4_URL__c + $Organization.Id, 
+IMAGE(Image_4_URL__c + $Organization.Id, &quot;&quot;,(VALUE(LEFT(Image_4_Ratio__c, FIND(&quot;X&quot;, Image_4_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_4_Ratio__c, LEN(Image_4_Ratio__c) - FIND(&quot;X&quot;, Image_4_Ratio__c))))* 0.5),&quot;_self&quot;),&quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Images</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

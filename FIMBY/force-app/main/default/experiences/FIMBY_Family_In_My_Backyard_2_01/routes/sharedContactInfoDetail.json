@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "08df7800-ec1e-466f-8f0a-a622269e22dd",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Shared_Contact_Info_Detail__c",
+  "id" : "8fd20a50-97f3-4dab-98f8-7b29dce85079",
+  "label" : "Shared Contact Info Detail",
+  "objectApiName" : "Shared_Contact_Info__c",
+  "routeType" : "detail-a1D",
+  "type" : "route",
+  "urlPrefix" : "shared-contact-info"
+}

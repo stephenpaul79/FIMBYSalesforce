@@ -1,0 +1,284 @@
+:host {
+    display: block;
+}
+
+.health-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Loading ──────────────────────────────────────────────────── */
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+/* ── Collapsible section ──────────────────────────────────────── */
+
+.health-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+}
+
+.section-header:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.section-header:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    background-color: var(--fimby-info-tint);
+    color: var(--fimby-info);
+    pointer-events: none;
+    user-select: none;
+}
+
+.section-body {
+    padding: 0 16px 16px;
+}
+
+/* ── Desktop table ────────────────────────────────────────────── */
+
+.table-wrapper {
+    display: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid var(--fimby-divider-default);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 10px;
+    color: var(--fimby-text-primary);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.action-cell {
+    white-space: nowrap;
+}
+
+.record-link {
+    color: var(--fimby-brand-teal);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.record-link:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.record-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.type-badge-inline {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: 1px 8px;
+    background-color: var(--fimby-info-tint);
+    color: var(--fimby-info);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+}
+
+/* ── Overdue severity ─────────────────────────────────────────── */
+
+.overdue-low {
+    color: var(--fimby-text-strong);
+    font-weight: 600;
+}
+
+.overdue-high {
+    color: var(--fimby-error);
+    font-weight: 700;
+}
+
+.inactive-days {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    white-space: nowrap;
+}
+
+/* ── Icon buttons ─────────────────────────────────────────────── */
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.icon-btn:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.icon-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* ── Mobile cards (default) ───────────────────────────────────── */
+
+.card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.data-card {
+    padding: 12px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm);
+}
+
+.card-row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    margin-bottom: 8px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+
+.empty-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    font-style: italic;
+    margin: 0;
+    padding: 8px 0;
+}
+
+/* ── Responsive: table on desktop ─────────────────────────────── */
+
+@media (min-width: 768px) {
+    .table-wrapper {
+        display: block;
+    }
+    .card-list {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .section-header,
+    .icon-btn,
+    .record-link {
+        transition: none;
+    }
+}

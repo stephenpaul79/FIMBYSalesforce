@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════
+   HAMBURGER MENU — Mobile Navigation
+   Add this block to Additional CSS
+   ═══════════════════════════════════════════════════ */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--fimby-text-primary);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  background: var(--fimby-surface-card);
+  border-top: 1px solid var(--fimby-border-subtle);
+  padding: 8px 0;
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav a {
+  display: block;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fimby-text-primary);
+}
+.mobile-nav a:hover { background: var(--fimby-hover-bg); }
+.mobile-nav .mobile-join {
+  margin: 8px 20px 12px;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: var(--fimby-btn-radius);
+  background: var(--fimby-btn-primary-bg);
+  color: var(--fimby-surface-card);
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .hamburger { display: flex; }
+}

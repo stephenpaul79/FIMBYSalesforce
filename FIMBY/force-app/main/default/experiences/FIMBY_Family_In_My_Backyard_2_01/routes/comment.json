@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "8fe93747-1397-4451-834a-95a20b7d77fd",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Comment__c",
+  "id" : "cba4ad32-6f08-4024-bd96-1bb5b8645df6",
+  "label" : "Comment",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-comment",
+  "type" : "route",
+  "urlPrefix" : "comment"
+}

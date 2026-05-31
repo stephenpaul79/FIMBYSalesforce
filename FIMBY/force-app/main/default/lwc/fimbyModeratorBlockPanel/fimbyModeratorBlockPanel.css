@@ -1,0 +1,387 @@
+:host {
+    display: block;
+}
+
+/* ── Panel Body ──────────────────────────────── */
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Block Summary ───────────────────────────── */
+
+.block-summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px 16px;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    flex-wrap: wrap;
+}
+
+.block-party {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.user-photo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
+.block-arrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--fimby-error);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 12px;
+    background-color: var(--fimby-error-tint);
+    border-radius: var(--fimby-badge-radius, 9999px);
+}
+
+.meta-text {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* ── Reason Card ─────────────────────────────── */
+
+.reason-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px;
+}
+
+.reason-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 8px;
+}
+
+.reason-text {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    margin: 0;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+}
+
+/* ── Other Blocks (Collapsible) ──────────────── */
+
+.other-blocks-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-sm);
+    overflow: hidden;
+}
+
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+}
+
+.collapsible-header:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.collapsible-header:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.collapsible-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.other-block-count {
+    font-weight: 400;
+    color: var(--fimby-text-secondary);
+}
+
+.other-blocks-list {
+    list-style: none;
+    padding: 0 16px 12px;
+    margin: 0;
+}
+
+.other-block-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--fimby-divider-default);
+    font-size: 0.85rem;
+}
+
+.other-block-item:last-child {
+    border-bottom: none;
+}
+
+.other-block-names {
+    color: var(--fimby-text-primary);
+    font-weight: 500;
+}
+
+.other-block-date {
+    color: var(--fimby-text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* ── Panel Footer ────────────────────────────── */
+
+.panel-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.footer-primary-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.footer-contact-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.footer-escalation-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Buttons (Tier 1 — Action) ───────────────── */
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    min-height: 44px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn-action:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+/* ── Contact buttons ─────────────────────────── */
+
+.btn-contact {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+    font-weight: 600;
+}
+
+.btn-contact:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.btn-contact:active {
+    transform: scale(0.97);
+}
+
+/* ── Escalation buttons (yellow → amber → red) ── */
+
+.btn-escalation-1 {
+    background-color: rgba(234, 179, 8, 0.12);
+    color: #92600a;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    font-weight: 600;
+}
+
+.btn-escalation-1:hover {
+    background-color: rgba(234, 179, 8, 0.22);
+    border-color: rgba(234, 179, 8, 0.5);
+}
+
+.btn-escalation-1:active {
+    transform: scale(0.97);
+}
+
+.btn-escalation-2 {
+    background-color: rgba(217, 119, 6, 0.12);
+    color: #7c4508;
+    border: 1px solid rgba(217, 119, 6, 0.35);
+    font-weight: 600;
+}
+
+.btn-escalation-2:hover {
+    background-color: rgba(217, 119, 6, 0.22);
+    border-color: rgba(217, 119, 6, 0.5);
+}
+
+.btn-escalation-2:active {
+    transform: scale(0.97);
+}
+
+.btn-escalation-3 {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+    border: 1px solid var(--fimby-error-border);
+    font-weight: 600;
+}
+
+.btn-escalation-3:hover {
+    background-color: rgba(192, 57, 43, 0.18);
+    border-color: var(--fimby-error);
+}
+
+.btn-escalation-3:active {
+    transform: scale(0.97);
+}
+
+.btn-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ── Inline Form ────────────────────────────── */
+
+.inline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inline-form-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+}
+
+.character-count {
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary);
+}
+
+.character-count.near-limit {
+    color: #92600a;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error);
+    font-weight: 700;
+}
+
+.inline-form-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.inline-form-textarea:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow);
+}
+
+.inline-form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ── Reduced Motion ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-action,
+    .collapsible-header {
+        transition: none;
+    }
+}

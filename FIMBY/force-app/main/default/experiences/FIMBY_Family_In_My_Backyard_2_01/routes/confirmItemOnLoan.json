@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "c514a5ea-8957-4992-bc04-109469176d14",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Confirm_Item_On_Loan__c",
+  "id" : "ec84f4e7-017f-4799-923f-a5078eef4339",
+  "label" : "Confirm Item On Loan",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-confirm-item-on-loan",
+  "type" : "route",
+  "urlPrefix" : "confirm-item-on-loan"
+}

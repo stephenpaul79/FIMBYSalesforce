@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Posted_By__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description>The represented identity this comment was created for. May differ from Submitted By (Contact__c) when acting on behalf of another identity. Matches Story__c convention since Story_Comment__c is a sub-record of a story.</description>
+    <label>Post Owner</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Story Comments (Post Owner)</relationshipLabel>
+    <relationshipName>Story_Comments</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

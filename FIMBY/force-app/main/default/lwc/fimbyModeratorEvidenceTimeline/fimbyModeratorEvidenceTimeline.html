@@ -1,0 +1,32 @@
+<template>
+    <div class="timeline-container">
+        <h3 class="timeline-title">Evidence &amp; Reports</h3>
+        <template lwc:if={hasItems}>
+            <ul class="timeline-list">
+                <template for:each={evidenceItems} for:item="item">
+                    <li key={item.Id} class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header-row">
+                                <span class={item._sourceClass}>{item._sourceLabel}</span>
+                                <span class="timeline-date">{item._formattedDate}</span>
+                            </div>
+                            <template lwc:if={item.Reporter__r}>
+                                <span class="timeline-reporter">Reported by {item.Reporter__r.Name}</span>
+                            </template>
+                            <template lwc:if={item.Reason_Code__c}>
+                                <span class="timeline-reason">{item.Reason_Code__c}</span>
+                            </template>
+                            <template lwc:if={item.Details__c}>
+                                <p class="timeline-details">{item.Details__c}</p>
+                            </template>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template lwc:if={isEmpty}>
+            <p class="empty-text">No evidence recorded.</p>
+        </template>
+    </div>
+</template>

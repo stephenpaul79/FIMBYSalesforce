@@ -1,0 +1,321 @@
+/* Record Detail Card Styles */
+.record-detail-card {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 1rem;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.loading-text {
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Error State */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    gap: 1rem;
+    text-align: center;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.error-text {
+    color: var(--fimby-error);
+    font-size: 0.95rem;
+    margin: 0;
+    max-width: 300px;
+}
+
+.retry-button {
+    background: var(--fimby-gradient-brand);
+    color: white;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Record Fields */
+.record-fields {
+    padding: 0;
+}
+
+.field-section {
+    margin-bottom: 1rem;
+}
+
+.field-section:last-child {
+    margin-bottom: 0;
+}
+
+.primary-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.field-value {
+    font-size: 0.95rem;
+    color: var(--fimby-text-strong);
+    overflow-wrap: break-word;
+}
+
+/* Secondary Fields (Collapsible) */
+.section-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 0;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--fimby-border-subtle);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.section-toggle:hover {
+    color: var(--fimby-text-strong);
+}
+
+.collapsible-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding-top: 1rem;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Status Badge */
+.status-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--fimby-radius-xl);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status Colors */
+.status-active,
+.status-available,
+.status-open {
+    background: var(--fimby-success-tint);
+    color: var(--fimby-success);
+}
+
+.status-pending,
+.status-in-progress,
+.status-on-loan {
+    background: var(--fimby-warning-tint);
+    color: var(--fimby-warning);
+}
+
+.status-completed,
+.status-closed,
+.status-returned {
+    background: var(--fimby-info-tint);
+    color: var(--fimby-info);
+}
+
+.status-inactive,
+.status-cancelled,
+.status-rejected {
+    background: var(--fimby-error-tint);
+    color: var(--fimby-error);
+}
+
+/* Card Footer */
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1rem 0;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-surface-card);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--fimby-btn-shadow);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.action-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.action-btn:active {
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.action-btn-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.edit-btn {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: var(--fimby-text-on-teal);
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.edit-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.edit-btn .action-btn-icon {
+    filter: brightness(0) invert(1);
+}
+
+.action-btn.secondary {
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-strong);
+}
+
+.action-btn.secondary:hover {
+    background: var(--fimby-border-subtle);
+}
+
+.action-btn.danger {
+    background: var(--fimby-error-tint);
+    color: var(--fimby-error);
+}
+
+.action-btn.danger:hover {
+    background: var(--fimby-error-tint);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .primary-fields,
+    .collapsible-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .field-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--fimby-surface-page);
+    }
+
+    .field-item:last-child {
+        border-bottom: none;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .footer-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Keyboard focus visibility */
+.section-toggle:focus-visible,
+.retry-button:focus-visible,
+.edit-btn:focus-visible,
+.action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .retry-button,
+    .section-toggle,
+    .collapsible-fields,
+    .action-btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}

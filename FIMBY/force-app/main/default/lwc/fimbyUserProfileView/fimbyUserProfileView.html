@@ -1,0 +1,508 @@
+<template>
+    <div class="fimby-profile-page">
+        <c-fimby-page-header
+            page-title="Profile"
+            onback={handleBack}>
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="profile" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={profile.contactId}>
+            <div class="detail-content">
+
+                <!-- ========== 1. IDENTITY CARD ========== -->
+                <div class="identity-card">
+                    <div class="avatar-section">
+                        <button type="button" class="avatar-wrapper" aria-label="Change profile photo" onclick={handleAvatarClick}>
+                            <template lwc:if={hasAvatar}>
+                                <img src={avatarUrl} alt={profile.fullName} class="profile-avatar">
+                            </template>
+                            <template lwc:else>
+                                <div class="avatar-initials">{initials}</div>
+                            </template>
+                            <div class="avatar-overlay">
+                                <lightning-icon icon-name="utility:photo" size="x-small"></lightning-icon>
+                            </div>
+                        </button>
+                        <template lwc:if={hasAvatar}>
+                            <button class="remove-avatar-btn" onclick={handleRemoveAvatar}>Remove photo</button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={showImageUploader}>
+                        <div class="uploader-inline">
+                            <c-fimby-image-uploader
+                                record-id={profile.contactId}
+                                object-api-name="Contact"
+                                label="Upload Profile Photo"
+                                onimageuploaded={handlePhotoUploaded}>
+                            </c-fimby-image-uploader>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isEditingIdentity}>
+                        <div class="edit-fields">
+                            <div class="field-row">
+                                <label class="field-label">First Name</label>
+                                <input type="text" class="field-input" value={editFirstName}
+                                       data-field="editFirstName" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Last Name</label>
+                                <input type="text" class="field-input" value={editLastName}
+                                       data-field="editLastName" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Pronouns</label>
+                                <input type="text" class="field-input" value={editPronouns}
+                                       data-field="editPronouns" maxlength="40"
+                                       placeholder="e.g. she/her, they/them"
+                                       onchange={handleInputChange}>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelIdentity} disabled={isSaving}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveIdentity} disabled={isSaving}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="identity-primary">
+                            <div class="identity-name-row">
+                                <h1 class="identity-name">{profile.fullName}</h1>
+                                <button class="edit-pencil" onclick={handleEditIdentity} title="Edit">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                </button>
+                            </div>
+                            <template lwc:if={hasPronouns}>
+                                <p class="identity-pronouns">{displayPronouns}</p>
+                            </template>
+                            <div class="identity-badges">
+                                <template lwc:if={isProfileModerator}>
+                                    <span class="moderator-badge">
+                                        <img src={moderatorBadgeIconUrl} alt="" class="badge-icon-sm">
+                                        Neighbourhood Moderator
+                                    </span>
+                                </template>
+                                <template lwc:if={showVouchChip}>
+                                    <span class={vouchChipClass} title={vouchChipHelper}>
+                                        <img src={vouchChipIconUrl} alt="" class="badge-icon-sm">
+                                        {vouchChipLabel}
+                                    </span>
+                                </template>
+                            </div>
+                            <template lwc:if={showVouchChipHelper}>
+                                <p class="vouch-chip-helper">
+                                    Once someone vouches for you, the lending library opens up.
+                                    <button type="button" class="vouch-chip-helper-link" onclick={handleOpenVouchModal}>Request a vouch &rarr;</button>
+                                </p>
+                            </template>
+                        </div>
+                        <div class="identity-secondary">
+                            <template lwc:if={profile.neighbourhood}>
+                                <p class="identity-meta">
+                                    <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                    {profile.neighbourhood}
+                                </p>
+                            </template>
+                            <template lwc:if={formattedMemberSince}>
+                                <p class="identity-meta">Member since {formattedMemberSince}</p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 2. CONTACT INFORMATION ========== -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <img src={contactIconUrl} alt="" class="section-icon">
+                            Contact Information
+                        </h3>
+                        <template lwc:if={isEditingContact}>
+                            <span></span>
+                        </template>
+                        <template lwc:else>
+                            <button class="edit-pencil" onclick={handleEditContact} title="Edit">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={isEditingContact}>
+                        <div class="edit-fields">
+                            <div class="field-row">
+                                <label class="field-label">Email</label>
+                                <input type="email" class="field-input" value={editEmail}
+                                       data-field="editEmail" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Phone</label>
+                                <input type="tel" class="field-input" value={editPhone}
+                                       data-field="editPhone" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Street</label>
+                                <input type="text" class="field-input" value={editStreet}
+                                       data-field="editStreet" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row-half">
+                                <div class="field-row">
+                                    <label class="field-label">City</label>
+                                    <input type="text" class="field-input" value={editCity}
+                                           data-field="editCity" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label">State/Province</label>
+                                    <input type="text" class="field-input" value={editState}
+                                           data-field="editState" onchange={handleInputChange}>
+                                </div>
+                            </div>
+                            <div class="field-row-half">
+                                <div class="field-row">
+                                    <label class="field-label">Postal Code</label>
+                                    <input type="text" class="field-input" value={editPostalCode}
+                                           data-field="editPostalCode" onchange={handleInputChange}>
+                                </div>
+                                <div class="field-row">
+                                    <label class="field-label">Country</label>
+                                    <input type="text" class="field-input" value={editCountry}
+                                           data-field="editCountry" onchange={handleInputChange}>
+                                </div>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelContact} disabled={isSaving}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveContact} disabled={isSaving}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="field-grid">
+                            <div class="field-item">
+                                <span class="field-label">Email</span>
+                                <span class="field-value">{displayEmail}</span>
+                            </div>
+                            <div class="field-item">
+                                <span class="field-label">Phone</span>
+                                <span class="field-value">{displayPhone}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Address</span>
+                                <span class="field-value">{displayAddress}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 3. ABOUT YOU ========== -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <img src={aboutIconUrl} alt="" class="section-icon">
+                            About You
+                        </h3>
+                        <template lwc:if={isEditingAbout}>
+                            <span></span>
+                        </template>
+                        <template lwc:else>
+                            <button class="edit-pencil" onclick={handleEditAbout} title="Edit">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+                    <template lwc:if={isEditingAbout}>
+                        <p class="section-helper">Optional. These help neighbours recognize and connect with you.</p>
+                        <div class="edit-fields">
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">How long have you been in the neighbourhood?</label>
+                                    <span class={tenureCountClass}>{tenureCharCount}</span>
+                                </div>
+                                <input type="text" class="field-input" value={editAboutTenure}
+                                       data-field="editAboutTenure" maxlength="40" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">What brought you here?</label>
+                                    <span class={broughtYouCountClass}>{broughtYouCharCount}</span>
+                                </div>
+                                <input type="text" class="field-input" value={editAboutBroughtYou}
+                                       data-field="editAboutBroughtYou" maxlength="120" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">One local place you love</label>
+                                    <span class={localPlaceCountClass}>{localPlaceCharCount}</span>
+                                </div>
+                                <input type="text" class="field-input" value={editAboutLocalPlace}
+                                       data-field="editAboutLocalPlace" maxlength="80" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">Something you enjoy doing</label>
+                                    <span class={enjoysCountClass}>{enjoysCharCount}</span>
+                                </div>
+                                <input type="text" class="field-input" value={editAboutEnjoys}
+                                       data-field="editAboutEnjoys" maxlength="100" onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">One small thing about you</label>
+                                    <span class={funFactCountClass}>{funFactCharCount}</span>
+                                </div>
+                                <input type="text" class="field-input" value={editAboutFunFact}
+                                       data-field="editAboutFunFact" maxlength="120"
+                                       placeholder="Fun fact, something you care about, or something neighbours might not expect."
+                                       onchange={handleInputChange}>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">Languages Spoken</label>
+                                <div class="checkbox-group">
+                                    <template for:each={languageOptions} for:item="opt">
+                                        <label key={opt.value} class="checkbox-item">
+                                            <input type="checkbox" checked={opt.checked}
+                                                   data-group="editLanguages" data-value={opt.value}
+                                                   onchange={handleCheckboxChange}>
+                                            <span class="checkbox-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelAbout} disabled={isSaving}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveAbout} disabled={isSaving}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="field-grid">
+                            <div class="field-item full-width">
+                                <span class="field-label">How long in the neighbourhood</span>
+                                <span class="field-value">{displayAboutTenure}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">What brought you here</span>
+                                <span class="field-value">{displayAboutBroughtYou}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">One local place you love</span>
+                                <span class="field-value">{displayAboutLocalPlace}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Something you enjoy doing</span>
+                                <span class="field-value">{displayAboutEnjoys}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">One small thing about you</span>
+                                <span class="field-value">{displayAboutFunFact}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Languages Spoken</span>
+                                <span class="field-value">{displayLanguages}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 4. ACCESSIBILITY & AVAILABILITY ========== -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <img src={accessibilityIconUrl} alt="" class="section-icon">
+                            Accessibility &amp; Availability
+                        </h3>
+                        <template lwc:if={isEditingAccessibility}>
+                            <span></span>
+                        </template>
+                        <template lwc:else>
+                            <button class="edit-pencil" onclick={handleEditAccessibility} title="Edit">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+                    <template lwc:if={isEditingAccessibility}>
+                        <div class="edit-fields">
+                            <div class="field-row">
+                                <div class="field-label-row">
+                                    <label class="field-label">Accessibility Notes</label>
+                                    <span class={accessibilityCountClass}>{accessibilityCharCount}</span>
+                                </div>
+                                <textarea class="field-textarea" value={editAccessibility}
+                                          data-field="editAccessibility" maxlength="200"
+                                          placeholder="e.g. I use a wheelchair"
+                                          onchange={handleInputChange}></textarea>
+                            </div>
+                            <div class="field-row">
+                                <label class="field-label">General Availability</label>
+                                <div class="checkbox-group">
+                                    <template for:each={availabilityOptions} for:item="opt">
+                                        <label key={opt.value} class="checkbox-item">
+                                            <input type="checkbox" checked={opt.checked}
+                                                   data-group="editAvailability" data-value={opt.value}
+                                                   onchange={handleCheckboxChange}>
+                                            <span class="checkbox-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelAccessibility} disabled={isSaving}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveAccessibility} disabled={isSaving}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="field-grid">
+                            <div class="field-item full-width">
+                                <span class="field-label">Accessibility Notes</span>
+                                <span class="field-value">{displayAccessibility}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">General Availability</span>
+                                <span class="field-value">{displayAvailability}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 5. CARE PREFERENCES ========== -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <img src={careIconUrl} alt="" class="section-icon">
+                            Care Preferences
+                        </h3>
+                        <template lwc:if={isEditingCare}>
+                            <span></span>
+                        </template>
+                        <template lwc:else>
+                            <button class="edit-pencil" onclick={handleEditCare} title="Edit">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+                    <template lwc:if={isEditingCare}>
+                        <p class="section-helper">Optional. Edit it anytime.</p>
+                        <div class="edit-fields">
+                            <div class="care-question">
+                                <label class="field-label">What kind of support is usually welcome?</label>
+                                <p class="field-helper">If life gets heavy, what kinds of care tend to help? Pick any that fit.</p>
+                                <div class="checkbox-group">
+                                    <template for:each={careWelcomeOptions} for:item="opt">
+                                        <label key={opt.value} class="checkbox-item">
+                                            <input type="checkbox" checked={opt.checked}
+                                                   data-group="editCareWelcome" data-value={opt.value}
+                                                   onchange={handleCheckboxChange}>
+                                            <span class="checkbox-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="care-question">
+                                <label class="field-label">What can feel unhelpful or overwhelming?</label>
+                                <p class="field-helper">This helps neighbours care well. No judgement, just clarity.</p>
+                                <div class="checkbox-group">
+                                    <template for:each={careUnhelpfulOptions} for:item="opt">
+                                        <label key={opt.value} class="checkbox-item">
+                                            <input type="checkbox" checked={opt.checked}
+                                                   data-group="editCareUnhelpful" data-value={opt.value}
+                                                   onchange={handleCheckboxChange}>
+                                            <span class="checkbox-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="care-question">
+                                <label class="field-label">How should someone ask before helping?</label>
+                                <p class="field-helper">What's the best first step so support feels respectful, not intrusive?</p>
+                                <div class="radio-group">
+                                    <template for:each={careHowToAskOptions} for:item="opt">
+                                        <label key={opt.value} class="radio-item">
+                                            <input type="radio" name="careHowToAsk" value={opt.value}
+                                                   checked={opt.checked}
+                                                   data-field="editCareHowToAsk"
+                                                   onchange={handleRadioChange}>
+                                            <span class="radio-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="care-question">
+                                <div class="field-label-row">
+                                    <label class="field-label">Any hard "no's"? (optional)</label>
+                                    <span class={hardNosCountClass}>{hardNosCharCount}</span>
+                                </div>
+                                <p class="field-helper">Anything you'd like neighbours to avoid. Short and clear is perfect.</p>
+                                <textarea class="field-textarea" value={editCareHardNos}
+                                          data-field="editCareHardNos" maxlength="200"
+                                          placeholder='Example: "Please don&apos;t drop by unannounced."'
+                                          onchange={handleInputChange}></textarea>
+                            </div>
+                            <div class="edit-actions">
+                                <button class="btn btn-neutral" onclick={handleCancelCare} disabled={isSaving}>Cancel</button>
+                                <button class="btn btn-primary" onclick={handleSaveCare} disabled={isSaving}>Save</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="field-grid">
+                            <div class="field-item full-width">
+                                <span class="field-label">Welcome support</span>
+                                <span class="field-value">{displayCareWelcome}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Can feel unhelpful</span>
+                                <span class="field-value">{displayCareUnhelpful}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">How to ask</span>
+                                <span class="field-value">{displayCareHowToAsk}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Hard no's</span>
+                                <span class="field-value">{displayCareHardNos}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== 6. TRUST HISTORY (BULK BUY + VOUCHING) ========== -->
+                <template lwc:if={contactId}>
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={trustHistoryIconUrl} alt="" class="section-icon">
+                                Trust History
+                            </h3>
+                        </div>
+                        <p class="section-helper">
+                            Small reminders of the trust you and your neighbours are building. Only you can see this.
+                        </p>
+                        <div class="trust-strips">
+                            <div class="trust-strip-wrap">
+                                <c-fimby-bulk-buy-history contact-id={contactId}></c-fimby-bulk-buy-history>
+                                <p class="trust-strip-caption">Your shared-purchase follow-through over the last three bulk buys.</p>
+                            </div>
+                            <div class="trust-strip-wrap">
+                                <c-fimby-vouching-history contact-id={contactId} is-paused={vouchingIsPaused}></c-fimby-vouching-history>
+                                <p class="trust-strip-caption">Your last five vouches given. Green = active, red = revoked.</p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Vouching Required Modal: launched from the helper link under the vouch chip -->
+        <c-fimby-vouching-required-modal></c-fimby-vouching-required-modal>
+    </div>
+</template>

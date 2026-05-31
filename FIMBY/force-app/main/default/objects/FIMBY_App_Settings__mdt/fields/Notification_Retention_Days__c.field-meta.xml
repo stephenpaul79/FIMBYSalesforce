@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Notification_Retention_Days__c</fullName>
+    <defaultValue>30</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Notification Retention Days</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Read notifications older than this many days are permanently deleted by the nightly cleanup job.</inlineHelpText>
+</CustomField>

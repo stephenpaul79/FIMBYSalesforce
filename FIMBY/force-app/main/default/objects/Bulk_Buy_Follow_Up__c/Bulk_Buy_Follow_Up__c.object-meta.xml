@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Tracks accountability check-ins and probationary restorations for bulk buy reservations</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <externalSharingModel>ReadWrite</externalSharingModel>
+    <label>Bulk Buy Follow-Up</label>
+    <nameField>
+        <displayFormat>BBFU-{00000}</displayFormat>
+        <label>Follow-Up Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Bulk Buy Follow-Ups</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+</CustomObject>

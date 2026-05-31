@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EmailTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <available>true</available>
+    <encodingKey>UTF-8</encodingKey>
+    <letterhead>Blank</letterhead>
+    <name>Experience Cloud: Welcome to FIMBY</name>
+    <style>freeForm</style>
+    <subject>Welcome to FIMBY</subject>
+    <textOnly>Welcome to FIMBY
+
+You are in
+
+Hi {!Receiving_User.FirstName},
+
+Welcome to FIMBY! Your username is {!Receiving_User.Username}. Open FIMBY to meet your neighbours.
+
+Open FIMBY: https://our.fimby.com
+
+Thanks,
+Team FIMBY
+
+Family In My Backyard</textOnly>
+    <type>html</type>
+    <uiType>Aloha</uiType>
+</EmailTemplate>

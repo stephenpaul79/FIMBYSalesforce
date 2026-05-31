@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Summary_Statement__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(Email_Summary_Count__c=1,&quot;is the new item that was&quot;, 
+IF(Email_Summary_Count__c&gt;1,&quot;are the &quot; + TEXT(Email_Summary_Count__c) + &quot; new items that were&quot;
+,&quot;&quot;))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Email Summary Statement</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

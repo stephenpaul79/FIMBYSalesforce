@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Boundary_Account__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Boundary Account</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Postal Codes</relationshipLabel>
+    <relationshipName>Postal_Codes</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,118 @@
+name: Playwright E2E
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "tests-e2e/**"
+      - "FIMBY/force-app/main/default/lwc/**"
+      - "FIMBY/force-app/main/default/classes/**"
+      - "FIMBY/force-app/main/default/objects/**"
+      - ".github/workflows/playwright.yml"
+  schedule:
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: "Tag filter (e.g. @smoke, @smoke|@regression). Empty runs everything."
+        required: false
+        default: "@smoke"
+      spec:
+        description: "Spec path filter (e.g. tests/lending-lifecycle.spec.ts). Empty runs all matching specs."
+        required: false
+        default: ""
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tests-e2e
+    env:
+      FIMBY_BASE_URL: ${{ secrets.FIMBY_BASE_URL }}
+      FIMBY_OWNER_EMAIL: ${{ secrets.FIMBY_OWNER_EMAIL }}
+      FIMBY_R1_EMAIL: ${{ secrets.FIMBY_R1_EMAIL }}
+      FIMBY_R2_EMAIL: ${{ secrets.FIMBY_R2_EMAIL }}
+      FIMBY_PERSONA_PASSWORD: ${{ secrets.FIMBY_PERSONA_PASSWORD }}
+      SF_ORG_ALIAS: fimby-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests-e2e/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli@latest
+
+      - name: Authenticate Salesforce CLI
+        env:
+          SF_AUTH_URL: ${{ secrets.SF_AUTH_URL }}
+        run: |
+          if [ -z "$SF_AUTH_URL" ]; then
+            echo "::error::SF_AUTH_URL secret is required for cleanup."
+            exit 1
+          fi
+          printf '%s' "$SF_AUTH_URL" > auth-url.txt
+          sf org login sfdx-url --sfdx-url-file auth-url.txt --alias fimby-prod --set-default
+          rm -f auth-url.txt
+
+      - name: Determine grep filter
+        id: grep
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "value=@smoke|@regression" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.grep }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=@smoke" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Playwright
+        env:
+          GREP: ${{ steps.grep.outputs.value }}
+          SPEC: ${{ inputs.spec }}
+        run: |
+          ARGS=()
+          if [ -n "$GREP" ]; then
+            ARGS+=(--grep "$GREP")
+          fi
+          if [ -n "$SPEC" ]; then
+            ARGS+=("$SPEC")
+          fi
+          echo "Running: npx playwright test ${ARGS[*]}"
+          npx playwright test "${ARGS[@]}"
+
+      - name: Sweep [E2E] residue
+        if: always()
+        run: npm run cleanup:dryrun || true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: tests-e2e/playwright-report
+          retention-days: 14
+
+      - name: Upload traces and test-results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-${{ github.run_id }}
+          path: tests-e2e/test-results
+          retention-days: 7

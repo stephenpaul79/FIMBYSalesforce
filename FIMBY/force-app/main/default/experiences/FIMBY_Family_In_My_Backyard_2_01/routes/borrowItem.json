@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "8a785333-0cb9-4c66-8a77-24973fa6ba23",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Borrow_Item__c",
+  "id" : "cc70d683-b9b8-4c4d-99b7-bedf71b31012",
+  "label" : "Borrow Item",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-borrow-item",
+  "type" : "route",
+  "urlPrefix" : "borrow-item"
+}

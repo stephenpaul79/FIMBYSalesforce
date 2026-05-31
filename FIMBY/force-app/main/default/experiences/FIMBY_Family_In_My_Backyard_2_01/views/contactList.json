@@ -1,0 +1,46 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "2b276ff7-3ad0-44ce-a682-5e0a69c87c7a",
+  "label" : "Contact List",
+  "regions" : [ {
+    "id" : "c4abe35a-1709-49fa-b9e6-29a17506c28d",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "enableInlineEdit" : false,
+        "filterName" : "All_Strathcona_DTES_Contacts",
+        "layout" : "FULL",
+        "pageSize" : 10,
+        "scope" : "Contact",
+        "showActionBar" : false,
+        "showChartsPanel" : false,
+        "showDisplay" : "grid",
+        "showFilterPanel" : false,
+        "showImageIcon" : true,
+        "showManualRefreshButton" : true,
+        "showObjectName" : true,
+        "showPinnedList" : true,
+        "showSearchBar" : true
+      },
+      "componentName" : "forceCommunity:objectHome",
+      "id" : "26bcd8ba-440c-4704-9048-c4c6764f50b9",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "27fd7edf-966b-4ecc-9c79-de28aad6dedf",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "8aca63c5-4a63-43fc-b749-cbaf9d1d9fb0",
+    "regionName" : "footer",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "list-003"
+}

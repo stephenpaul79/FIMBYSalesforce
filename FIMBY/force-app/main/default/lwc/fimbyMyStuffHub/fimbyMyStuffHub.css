@@ -1,0 +1,142 @@
+/* fimbyMyStuffHub — My Stuff landing page (colored pill buttons) */
+:host {
+    display: block;
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-my-stuff-hub {
+    min-height: 100%;
+    background-color: var(--fimby-surface-page);
+    box-sizing: border-box;
+    padding: 16px 16px 80px;
+}
+
+.hub-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.hub-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--fimby-radius-xl);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    text-align: left;
+    box-shadow: var(--fimby-btn-shadow);
+}
+
+.hub-pill:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.hub-pill:active {
+    opacity: 0.85;
+}
+
+.hub-pill-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.hub-pill-label {
+    flex: 1;
+}
+
+.hub-pill-count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 2px 8px;
+    border-radius: var(--fimby-radius-full);
+    min-width: 24px;
+    text-align: center;
+}
+
+/* Earth-toned pill variants (token with hex fallback for CDN cache) */
+.hub-pill-moderator {
+    background-color: var(--fimby-earth-terracotta, #A0522D);
+}
+
+.hub-pill-contacts {
+    background-color: var(--fimby-earth-teal, #357280);
+}
+
+.hub-pill-posts {
+    background-color: var(--fimby-earth-sage, #476B4C);
+}
+
+.hub-pill-shared-life {
+    background-color: var(--fimby-earth-ochre, #7D6234);
+}
+
+.hub-pill-library {
+    background-color: var(--fimby-earth-dusty-violet, #625A76);
+}
+
+.hub-pill-borrowing {
+    background-color: var(--fimby-earth-slate, #4E6878);
+}
+
+.hub-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* Match subpage (.fimby-my-stuff) width breakpoints */
+@media (min-width: 768px) {
+    .fimby-my-stuff-hub {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-my-stuff-hub {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-my-stuff-hub {
+        max-width: 800px;
+    }
+}
+
+/* Keyboard focus visibility */
+.hub-pill:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.hub-count-active {
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.hub-count-past {
+    background-color: rgba(255, 255, 255, 0.15);
+    font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hub-pill {
+        transition: none !important;
+        animation: none !important;
+    }
+}

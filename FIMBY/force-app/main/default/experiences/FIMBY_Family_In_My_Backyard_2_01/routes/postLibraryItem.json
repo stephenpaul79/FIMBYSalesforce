@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "ace9cb67-bdcb-44b5-bf29-705a7dbb2022",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Post_Library_Item__c",
+  "id" : "17a57fb8-ecad-48e8-994e-2b83feaa44c6",
+  "label" : "Post Library Item",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post-library-item",
+  "type" : "route",
+  "urlPrefix" : "post-library-item"
+}

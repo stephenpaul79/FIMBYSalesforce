@@ -1,0 +1,159 @@
+<template>
+    <div class="fimby-library-browser">
+
+        <!-- ========== Sticky Header: Breadcrumb + Filter ========== -->
+        <div class={stickyHeaderClass}>
+
+            <!-- Breadcrumb Navigation -->
+            <nav class="breadcrumb-nav">
+                <div class="breadcrumb-left">
+                    <a href="/" class="breadcrumb-link">Home</a>
+                    <span class="breadcrumb-separator">&rsaquo;</span>
+                    <span class="breadcrumb-current">Library</span>
+                </div>
+                <div class="view-toggle">
+                    <button class={gridToggleClass} onclick={handleGridView} aria-label="Grid view">
+                        <lightning-icon icon-name="utility:layout" size="xx-small"></lightning-icon>
+                    </button>
+                    <button class={listToggleClass} onclick={handleListView} aria-label="List view">
+                        <lightning-icon icon-name="utility:rows" size="xx-small"></lightning-icon>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Filter Bar: All → Filter dropdown → selected category -->
+            <div class="feed-filters">
+                <!-- All chip -->
+                <button class={allChipClass} onclick={handleAllChip}>
+                    <img src={filterIconUrl} alt="All" class="filter-icon">
+                    <span>All</span>
+                </button>
+
+                <!-- Filter dropdown (always next to All) -->
+                <div class="dropdown-container">
+                    <button class={dropdownButtonClass} onclick={handleToggleDropdown}>
+                        <lightning-icon icon-name="utility:filterList" size="xx-small"></lightning-icon>
+                        <span>Filter</span>
+                        <lightning-icon icon-name="utility:chevrondown" size="xx-small" class="chevron"></lightning-icon>
+                    </button>
+
+                    <template lwc:if={showDropdown}>
+                        <div class="dropdown-backdrop" onclick={handleCloseDropdown}></div>
+                        <div class="dropdown-menu">
+                            <template for:each={dropdownCategories} for:item="cat">
+                                <button
+                                    key={cat.value}
+                                    class="dropdown-item"
+                                    data-value={cat.value}
+                                    onclick={handleSelectCategory}>
+                                    <span class="color-dot" style={cat.dotStyle}></span>
+                                    <span class="dropdown-label">{cat.label}</span>
+                                    <template lwc:if={cat.isSelected}>
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="check-icon"></lightning-icon>
+                                    </template>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Selected category chip (desktop only, hidden on mobile via CSS) -->
+                <template lwc:if={hasSelectedCategory}>
+                    <button class="filter-chip selected-category" style={selectedCategoryStyle}>
+                        <span>{selectedCategoryLabel}</span>
+                        <span class="chip-close" onclick={handleClearCategory}>&times;</span>
+                    </button>
+                </template>
+            </div>
+
+        </div>
+
+        <!-- Settling-in banner: shown to non-vouched borrowers -->
+        <template lwc:if={isSettlingIn}>
+            <div class="settling-in-banner" role="status">
+                <img src={saplingIconUrl} alt="" class="settling-in-icon">
+                <div class="settling-in-content">
+                    <p class="settling-in-title">Welcome to the neighbourhood</p>
+                    <p class="settling-in-text">The lending library opens up once someone in your neighbourhood vouches for you.</p>
+                </div>
+                <button type="button" class="settling-in-cta btn-primary" onclick={handleOpenVouchingRequiredModal}>
+                    Request a vouch
+                </button>
+            </div>
+        </template>
+
+        <!-- ========== Feed with Infinite Scroll ========== -->
+        <c-fimby-infinite-scroll
+            class="library-scroll-container"
+            enable-pull-to-refresh="true"
+            has-more-data={displayHasMoreContent}
+            is-loading={isLoading}
+            show-empty-state={showEmptyState}
+            threshold="200"
+            empty-state-title="The shelves are bare!"
+            empty-state-message="Got something to lend? Your neighbours are waiting."
+            empty-state-icon="utility:package"
+            empty-state-image-url={emptyStateGifUrl}
+            show-empty-action="true"
+            empty-action-label="Add Item"
+            onloadmore={handleLoadMore}
+            onrefresh={handleRefresh}
+            onemptyaction={handleAddItem}>
+
+            <div class={feedSectionClass}>
+                <template for:each={displayItems} for:item="item">
+                    <div class="feed-card-wrapper" role="button" tabindex="0" key={item.id} data-record-id={item.id} aria-label="View library item" onclick={handleCardClick} onkeydown={handleCardKeydown}>
+                        <c-fimby-card
+                            card-type="library"
+                            layout={cardLayout}
+                            card-accent-color={item.categoryColor}
+                            title={item.name}
+                            description={item.description}
+                            show-header="true"
+                            show-avatar="true"
+                            show-menu={item.showCardMenu}
+                            user-name={item.ownerName}
+                            avatar-url={item.ownerAvatar}
+                            timestamp={item.createdDate}
+                            images={item.images}
+                            badge-label={item.category}
+                            badge-icon-url={item.categoryIconUrl}
+                            badge-style={item.categoryStyle}
+                            response-label={item.responseLabel}
+                            response-icon-url={item.responseIconUrl}
+                            response-pill-class={item.responsePillClass}
+                            allocation-pills={item.allocationPills}
+                            is-clickable="true"
+                            oncardrespond={handleCardRespond}
+                            oncardreport={handleCardReport}
+                            onimageclick={handleImageClick}>
+                        </c-fimby-card>
+                    </div>
+                </template>
+            </div>
+        </c-fimby-infinite-scroll>
+
+        <!-- ========== Bottom Navigation ========== -->
+        <c-fimby-bottom-navigation
+            active-tab="library"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Lightbox (rendered at browser level to avoid card overflow clipping) -->
+        <template lwc:if={showLightbox}>
+            <c-fimby-lightbox
+                images={lightboxImages}
+                start-index={lightboxStartIndex}
+                onclose={handleLightboxClose}>
+            </c-fimby-lightbox>
+        </template>
+
+        <!-- Quick Response Modal -->
+        <c-fimby-quick-response-modal onresponsesaved={handleResponseSaved}></c-fimby-quick-response-modal>
+
+        <!-- Vouching Required Modal -->
+        <c-fimby-vouching-required-modal></c-fimby-vouching-required-modal>
+
+        <c-fimby-report-content></c-fimby-report-content>
+    </div>
+</template>

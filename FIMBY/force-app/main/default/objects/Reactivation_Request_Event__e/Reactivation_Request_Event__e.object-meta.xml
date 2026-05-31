@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Platform Event for the public /account-paused restore-link flow. Guest users on the Experience Cloud site can publish this event but lack the permissions to read User/Contact, mint tokens, or send email. The subscriber (ReactivationRequestEventTrigger -&gt; FimbyReactivationRequestEventHandler) runs as the Automated Process user, which has system-level access, so all of that work happens after the guest transaction returns.</description>
+    <eventType>HighVolume</eventType>
+    <label>Reactivation Request Event</label>
+    <pluralLabel>Reactivation Request Events</pluralLabel>
+    <publishBehavior>PublishImmediately</publishBehavior>
+</CustomObject>

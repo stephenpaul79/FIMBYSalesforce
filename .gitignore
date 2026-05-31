@@ -1,0 +1,73 @@
+# ==========================================================================
+# FIMBY monorepo .gitignore
+# ==========================================================================
+
+# --- Secrets & credentials (NEVER commit) --------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.jks
+sf-jwt.key
+**/sf-jwt.key
+
+# --- Node / JavaScript ----------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+.yarn/
+
+# --- Salesforce (sfdx) ----------------------------------------------------
+.sfdx/
+.sf/
+.localdevserver/
+deploy-options.json
+**/.sfdx/
+
+# --- Expo / React Native --------------------------------------------------
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.jks
+*.p8
+*.mobileprovision
+*.orig.*
+
+# --- Build / output -------------------------------------------------------
+build/
+out/
+coverage/
+.next/
+.turbo/
+.cache/
+
+# --- Playwright / E2E test artifacts --------------------------------------
+playwright-report/
+playwright/.cache/
+test-results/
+*.smoke.log
+last-smoke.log
+
+# --- Local QA assets ------------------------------------------------------
+qa-fixtures/
+
+# --- Temp / scratch (often contain pasted access tokens) ------------------
+.tmp/
+temp_*
+**/temp_*
+*.tmp
+*.log
+
+# --- OS / editor cruft ----------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/

@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Need  Offer Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"f775e084-de46-4098-a8b0-f389721d3e26\",\"columns\":[{\"UUID\":\"ddac2aef-1ca5-4067-8428-d468fae4a90e\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyNeedOfferDetail",
+              "id" : "97fae931-4076-4bba-83e4-a1f7bb446368",
+              "type" : "component"
+            } ],
+            "id" : "ddac2aef-1ca5-4067-8428-d468fae4a90e",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "f775e084-de46-4098-a8b0-f389721d3e26",
+          "type" : "component"
+        } ],
+        "id" : "7ca8358a-5947-4058-9dd2-c6a525ae0165",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "{!Record._Object}: {!Record._Title}",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "1888080e-4306-4315-a817-80f7a77ac6eb",
+          "type" : "component"
+        } ],
+        "id" : "a0d9d707-37ef-4d82-a595-c35232e8cf18",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "db47e186-ec7e-4666-858a-2d700ed0ba1a",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "detail-Needs_Offers__c"
+  },
+  "urlName" : "need-offer-detail"
+}

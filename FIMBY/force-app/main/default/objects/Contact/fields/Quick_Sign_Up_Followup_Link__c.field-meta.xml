@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Quick_Sign_Up_Followup_Link__c</fullName>
+    <externalId>false</externalId>
+    <formula>SUBSTITUTE(&quot;https://fimby.my.site.com/s/sign-up?fn=&quot; +  FirstName + &quot;&amp;ln=&quot; +  LastName  + &quot;&amp;e=&quot; +  Email + &quot;&amp;connect=&quot; +  Connection_to_the_neighbourhood__c, &quot; &quot;, &quot;+&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Quick Sign Up Followup Link</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

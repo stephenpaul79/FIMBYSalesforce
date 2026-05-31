@@ -1,0 +1,195 @@
+/* =========================================================
+ * fimbyLightbox — Full-screen image viewer overlay
+ * ========================================================= */
+
+.lightbox-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.92);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.lightbox-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ----------------------------------------------------------
+ * Close button
+ * ---------------------------------------------------------- */
+.lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10002;
+    background: rgba(255, 255, 255, 0.12);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #ffffff;
+    transition: background 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.lightbox-close:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ----------------------------------------------------------
+ * Counter ("2 / 4")
+ * ---------------------------------------------------------- */
+.lightbox-counter {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10002;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    user-select: none;
+}
+
+/* ----------------------------------------------------------
+ * Content area
+ * ---------------------------------------------------------- */
+.lightbox-content-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 16px;
+}
+
+/* ----------------------------------------------------------
+ * Navigation arrows
+ * ---------------------------------------------------------- */
+.lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10001;
+    background: rgba(255, 255, 255, 0.12);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #ffffff;
+    transition: background 0.2s ease, transform 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.lightbox-nav:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.lightbox-nav:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.lightbox-prev {
+    left: 16px;
+}
+
+.lightbox-next {
+    right: 16px;
+}
+
+/* ----------------------------------------------------------
+ * Image
+ * ---------------------------------------------------------- */
+.lightbox-image-wrapper {
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-image {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* ----------------------------------------------------------
+ * Mobile adjustments
+ * ---------------------------------------------------------- */
+@media (max-width: 480px) {
+    .lightbox-nav {
+        width: 40px;
+        height: 40px;
+    }
+
+    .lightbox-prev {
+        left: 8px;
+    }
+
+    .lightbox-next {
+        right: 8px;
+    }
+
+    .lightbox-close {
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .lightbox-content-area {
+        padding: 48px 8px;
+    }
+
+    .lightbox-image-wrapper {
+        max-width: 96vw;
+    }
+}
+
+/* ----------------------------------------------------------
+ * Accessibility
+ * ---------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .lightbox-backdrop {
+        transition: none;
+    }
+
+    .lightbox-nav {
+        transition: none;
+    }
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Created_in_the_Last_2_Days__c</fullName>
+    <description>True if Created Yesterday or 2 Days ago, OR the 2nd of the month in months where the last month had 31 days, Created Yesterday or 2 Days ago or 3 Days ago</description>
+    <formula>IF(DAY(TODAY()) = 2 &amp;&amp; (MONTH(TODAY())=1 || MONTH(TODAY())=2 || MONTH(TODAY())=4 || MONTH(TODAY())=6 || MONTH(TODAY())=8 || MONTH(TODAY())=9 || MONTH(TODAY())=11), DATEVALUE(CreatedDate) = TODAY()-1 || DATEVALUE(CreatedDate) = TODAY()-2 || DATEVALUE(CreatedDate) = TODAY()-3, DATEVALUE(CreatedDate) = TODAY()-1 || DATEVALUE(CreatedDate) = TODAY()-2)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Created in the Last 2 / Days</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

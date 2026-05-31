@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "7b9df9fb-98b8-4ae4-94cc-26e71984054c",
+  "label" : "Post A Need",
+  "regions" : [ {
+    "id" : "1f910033-ebbe-495f-b36e-24103d68853c",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "",
+        "flowName" : "Post_A_Need"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "3d260121-b060-4bda-a6a6-bb7f59dc62dc",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "dea782e9-4802-47e4-b276-9b99ab57c1dd",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "cd228c8c-9098-45ba-b4f4-a6c79806f6a6",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Post A Need"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "d38254a7-4428-46b7-b580-db953f781c48",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "d7f0c023-1bca-4388-8f3b-0432989be4ef",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-post-a-need"
+}

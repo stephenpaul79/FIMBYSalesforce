@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Locked__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When true, no new messages can be sent. Set when bulk buy is completed/cancelled/expired.</description>
+    <externalId>false</externalId>
+    <label>Locked</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

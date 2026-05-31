@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Core_Neighbourhood__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description>The neighbourhood this adjacency record belongs to. Each adjacency is viewed from this account's perspective.</description>
+    <externalId>false</externalId>
+    <label>Core Neighbourhood</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Neighbourhood Adjacencies</relationshipLabel>
+    <relationshipName>Neighbourhood_Adjacencies</relationshipName>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <type>Lookup</type>
+</CustomField>

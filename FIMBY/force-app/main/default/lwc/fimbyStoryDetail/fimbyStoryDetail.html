@@ -1,0 +1,268 @@
+<template>
+    <div class="fimby-story-detail">
+        <c-fimby-page-header
+            page-title={detailPageTitle}
+            parent-label="Shared Life"
+            parent-url="/"
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:elseif={isRemoved}>
+            <div class="detail-content">
+                <div class="story-removed-card" role="status">
+                    <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
+                    <h2 class="story-removed-title">This story is no longer available</h2>
+                    <p class="story-removed-message">{removedMessage}</p>
+                    <button class="action-btn comment-btn" onclick={handleBack}>
+                        Back to Stories
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="detail-content">
+                <!-- Story Card -->
+                <article class="story-card">
+                    <template lwc:if={hasBadge}>
+                        <div class={badgeClass}>
+                            <img src={badgeIconUrl} alt="" class="badge-icon" />
+                            <span>{badgeLabel}</span>
+                        </div>
+                    </template>
+
+                    <!-- Author Header - Compact -->
+                    <div class="story-header">
+                        <div class="author-info">
+                            <template lwc:if={authorAvatar}>
+                                <img src={authorAvatar} alt={authorName} class="author-avatar">
+                            </template>
+                            <template lwc:else>
+                                <div class="avatar-placeholder">
+                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
+                                </div>
+                            </template>
+                            <div class="author-details">
+                                <span class="author-name">{authorName}</span>
+                                <span class="story-meta">
+                                    <template lwc:if={category}><span class="story-type">{category}</span> · </template>
+                                    <span class="story-date">{formattedDate}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Story Title -->
+                    <div class="story-content">
+                        <h1 class="story-title">{storyName}</h1>
+
+                        <!-- Truncated/Expandable Message -->
+                        <p class="story-message">{displayMessage}</p>
+
+                        <!-- Read More / Show Less Toggle -->
+                        <template lwc:if={showReadMore}>
+                            <button class="read-more-btn" onclick={handleToggleContent}>Read more</button>
+                        </template>
+                        <template lwc:if={showReadLess}>
+                            <button class="read-more-btn" onclick={handleToggleContent}>Show less</button>
+                        </template>
+                    </div>
+
+                    <!-- Story Image - Clickable for modal (positioned after truncated content) -->
+                    <template lwc:if={hasImage}>
+                        <button type="button" class="story-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
+                            <img src={imageUrl} alt={storyName} class="story-image">
+                            <div class="image-overlay">
+                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                            </div>
+                        </button>
+                    </template>
+
+                    <!-- Comment Action Button - Always visible -->
+                    <div class="story-actions">
+                        <button class="action-btn comment-btn" onclick={handleComment}>
+                            <img src={commentIconUrl} alt="" class="comment-icon">
+                            <span>Comment</span>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Comments Section -->
+                <div class="comments-section">
+                    <h3 class="comments-header">Comments ({commentCount})</h3>
+                    <template lwc:if={isLoadingComments}>
+                        <div class="comments-loading">
+                            <lightning-spinner alternative-text="Loading comments" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:elseif={hasComments}>
+                        <div class="comments-list">
+                            <template for:each={comments} for:item="comment">
+                                <div key={comment.id} class="comment-item">
+                                    <div class="comment-avatar">
+                                        <template lwc:if={comment.authorPhotoUrl}>
+                                            <img src={comment.authorPhotoUrl} alt={comment.authorName}>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
+                                        </template>
+                                    </div>
+                                    <div class="comment-content">
+                                        <div class="comment-meta">
+                                            <span class="comment-author">{comment.authorName}</span>
+                                            <span class="comment-date">{comment.formattedDate}{comment.editedSuffix}</span>
+                                        </div>
+                                        <p class="comment-body">{comment.body}</p>
+                                    </div>
+                                    <div class={comment.menuContainerClass}>
+                                        <button
+                                            type="button"
+                                            class="comment-menu-trigger"
+                                            data-comment-id={comment.id}
+                                            aria-haspopup="menu"
+                                            aria-expanded={comment.menuOpen}
+                                            aria-label="More comment actions"
+                                            onclick={handleCommentMenuToggle}>
+                                            <img src={menuIconUrl} alt="" class="comment-menu-icon">
+                                        </button>
+                                        <template lwc:if={comment.menuOpen}>
+                                            <div class="comment-menu" role="menu">
+                                                <template lwc:if={comment.canManage}>
+                                                    <button
+                                                        type="button"
+                                                        class="comment-menu-item"
+                                                        role="menuitem"
+                                                        data-comment-id={comment.id}
+                                                        onclick={handleCommentEdit}>
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        class="comment-menu-item comment-menu-item--danger"
+                                                        role="menuitem"
+                                                        data-comment-id={comment.id}
+                                                        onclick={handleCommentDeleteClick}>
+                                                        Remove
+                                                    </button>
+                                                </template>
+                                                <template lwc:if={comment.canReport}>
+                                                    <button
+                                                        type="button"
+                                                        class="comment-menu-item"
+                                                        role="menuitem"
+                                                        data-comment-id={comment.id}
+                                                        onclick={handleCommentReport}>
+                                                        Flag for follow-up
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <p class="comments-empty">Be the first to leave a kind word.</p>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Image Modal -->
+        <template lwc:if={showImageModal}>
+            <div class="image-modal" onclick={handleCloseImageModal} onkeydown={handleModalKeydown}>
+                <button class="modal-close-btn" onclick={handleCloseImageModal} aria-label="Close image">
+                    <lightning-icon icon-name="utility:close" size="medium" variant="inverse"></lightning-icon>
+                </button>
+                <div class="modal-image-container">
+                    <img src={imageUrl} alt={storyName} class="modal-image">
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="stories" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+
+        <!-- Comment Composer Modal -->
+        <c-fimby-comment-composer
+            record-id={effectiveRecordId}
+            oncommentposted={handleCommentPosted}
+            onclose={handleCommentClose}>
+        </c-fimby-comment-composer>
+
+        <!-- Edit modal only rendered if user is author -->
+        <template lwc:if={isAuthor}>
+            <c-fimby-record-edit-modal
+                record-id={effectiveRecordId}
+                object-api-name="Story__c"
+                field-set-name="FIMBY_Editable_Fields"
+                modal-title="Edit Post"
+                onsave={handleEditSave}
+                oncancel={handleEditCancel}>
+            </c-fimby-record-edit-modal>
+        </template>
+
+        <!-- Photo uploader modal for author -->
+        <template lwc:if={showPhotoUploader}>
+            <div class="photo-uploader-overlay" role="dialog" aria-modal="true" aria-label="Upload photo">
+                <div class="photo-uploader-card">
+                    <div class="photo-uploader-header">
+                        <h3>Manage Photo</h3>
+                        <button class="close-btn" onclick={handleClosePhotoUploader} aria-label="Close">&times;</button>
+                    </div>
+                    <c-fimby-image-uploader
+                        record-id={effectiveRecordId}
+                        object-api-name="Story__c"
+                        label="Upload Photo"
+                        onimageuploaded={handlePhotoUploaded}>
+                    </c-fimby-image-uploader>
+                </div>
+            </div>
+        </template>
+
+        <!-- Delete confirmation modal for author -->
+        <template lwc:if={showDeleteConfirm}>
+            <div class="delete-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+                <div class="delete-card">
+                    <h3 id="delete-title" class="delete-title">Delete Story?</h3>
+                    <p class="delete-message">This will permanently remove the story and all its comments. This action cannot be undone.</p>
+                    <div class="delete-actions">
+                        <button class="btn btn-secondary" onclick={handleDeleteCancel}>Cancel</button>
+                        <button class="btn btn-danger" onclick={handleDeleteConfirm} disabled={isDeleting}>
+                            <template lwc:if={isDeleting}>Deleting...</template>
+                            <template lwc:else>Delete</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Comment delete confirmation -->
+        <template lwc:if={showCommentDeleteConfirm}>
+            <div class="delete-overlay" role="dialog" aria-modal="true" aria-labelledby="comment-delete-title">
+                <div class="delete-card">
+                    <h3 id="comment-delete-title" class="delete-title">Remove this comment?</h3>
+                    <p class="delete-message">Your comment will no longer be visible to neighbours. This can't be undone.</p>
+                    <div class="delete-actions">
+                        <button class="btn btn-secondary" onclick={handleCommentDeleteCancel}>Keep it</button>
+                        <button class="btn btn-danger" onclick={handleCommentDeleteConfirm} disabled={isDeletingComment}>
+                            <template lwc:if={isDeletingComment}>Removing...</template>
+                            <template lwc:else>Remove</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Report content (flag) -->
+        <c-fimby-report-content></c-fimby-report-content>
+    </div>
+</template>

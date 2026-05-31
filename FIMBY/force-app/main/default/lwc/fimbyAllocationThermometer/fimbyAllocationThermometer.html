@@ -1,0 +1,26 @@
+<template>
+    <div class="thermometer-container" data-mode={displayMode}>
+        <template lwc:if={compact}>
+            <!-- Compact: single thin bar + text -->
+            <div class="thermometer-compact">
+                <div class="bar-track bar-track-compact" role="progressbar" aria-valuenow={reservedShares} aria-valuemin="0" aria-valuemax={totalShares} aria-label={reservedLabel}>
+                    <div class="bar-fill bar-fill-compact" style={compactFillStyle}></div>
+                </div>
+                <span class="compact-label">{reservedLabel}</span>
+            </div>
+        </template>
+        <template lwc:else>
+            <!-- Expanded: taller bar with notch dividers, user shares highlighted -->
+            <div class="thermometer-expanded">
+                <div class="bar-track bar-track-expanded" role="progressbar" aria-valuenow={reservedShares} aria-valuemin="0" aria-valuemax={totalShares} aria-label={reservedLabel}>
+                    <template for:each={filledSegments} for:item="seg">
+                        <div
+                            key={seg.index}
+                            class={seg.segmentClass}
+                        ></div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

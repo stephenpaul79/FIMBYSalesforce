@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Care_Hard_Nos__c</fullName>
+    <description>Any hard no's? Anything you'd like neighbours to avoid. Short and clear is perfect.</description>
+    <externalId>false</externalId>
+    <label>Hard No's</label>
+    <length>256</length>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

@@ -1,0 +1,741 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-story-detail {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.story-removed-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 32px 24px;
+    margin-top: 16px;
+}
+
+.story-removed-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.story-removed-message {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    max-width: 360px;
+    line-height: 1.5;
+}
+
+/* Story Card */
+.story-card {
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Type badge pill — top-right of story card */
+.card-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Per-type badge fills — matches fimbyHomeFeed.css badge tokens */
+.story-badge         { background-color: var(--fimby-badge-story,         rgba(163, 128,  69, 0.90)); }
+.godstory-badge      { background-color: var(--fimby-badge-god-story,     rgba(163, 128,  69, 0.90)); }
+.thankyou-badge      { background-color: var(--fimby-badge-thank-you,     rgba(176, 114,  72, 0.90)); }
+.lament-badge        { background-color: var(--fimby-badge-lament,        rgba( 94, 123, 146, 0.85)); }
+.prayer-badge        { background-color: var(--fimby-badge-prayer,        rgba(126, 116, 149, 0.90)); }
+.bio-badge           { background-color: var(--fimby-badge-bio,           rgba(107, 125,  84, 0.90)); }
+.neighbourhood-badge { background-color: var(--fimby-badge-neighbourhood, rgba(175, 130, 125, 0.90)); }
+
+.badge-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+/* Author header - compact */
+.story-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--fimby-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.author-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--fimby-text-strong);
+}
+
+.story-meta {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+.story-type {
+    color: var(--fimby-info);
+    font-weight: 500;
+}
+
+.story-date {
+    color: var(--fimby-text-secondary);
+}
+
+/* Story Image - Clickable */
+.story-image-container {
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--fimby-surface-page);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.story-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.image-overlay lightning-icon {
+    color: white;
+}
+
+.story-image-container:hover .image-overlay {
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+}
+
+/* Story Content */
+.story-content {
+    padding: 12px 16px 16px;
+}
+
+.story-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+    line-height: 1.3;
+}
+
+.story-message {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Read More / Show Less button */
+.read-more-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--fimby-info);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.read-more-btn:hover {
+    color: var(--fimby-info);
+    text-decoration: underline;
+}
+
+/* Engagement Stats */
+.engagement-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* Story Actions */
+.story-actions {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: var(--fimby-surface-page);
+    border-color: var(--fimby-border-strong);
+}
+
+.comment-btn {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.comment-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.comment-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.comment-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+/* Comments Section */
+.comments-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 16px;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.section-header {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.section-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.comments-placeholder {
+    text-align: center;
+    padding: 2rem;
+    color: var(--fimby-text-secondary);
+}
+
+.comments-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.comments-loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: var(--fimby-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.comment-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--fimby-text-strong);
+}
+
+.comment-date {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+}
+
+.comment-body {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+/* Empty-state copy for the comments section */
+.comments-empty {
+    margin: 0;
+    padding: 16px 0;
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Per-comment kebab + popover menu */
+.comment-menu-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.comment-menu-trigger {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fimby-text-secondary);
+    transition: background-color 0.15s ease;
+}
+
+.comment-menu-trigger:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.comment-menu-trigger:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.comment-menu-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.comment-menu {
+    position: absolute;
+    right: 0;
+    top: 36px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    box-shadow: var(--fimby-shadow-card-hover);
+    z-index: 50;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+}
+
+.comment-menu-item {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-height: 36px;
+}
+
+.comment-menu-item:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.comment-menu-item--danger {
+    color: var(--fimby-error);
+}
+
+/* Image Modal - Full screen overlay */
+.image-modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    transition: background-color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.modal-image-container {
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    cursor: default;
+}
+
+/* Button reset for semantic story-image-container button */
+button.story-image-container {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    width: 100%;
+    display: block;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .story-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        justify-content: center;
+        min-width: 80px;
+    }
+
+    .modal-close-btn {
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .card-type-badge {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+}
+
+/* Tablet+ */
+@media (min-width: 768px) {
+    .fimby-story-detail {
+        padding: 0 24px 80px;
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-story-detail {
+        padding-bottom: 24px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .fimby-story-detail {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-bottom: 24px;
+    }
+}
+
+/* Keyboard focus visibility */
+.header-btn:focus-visible,
+.story-image-container:focus-visible,
+.read-more-btn:focus-visible,
+.action-btn:focus-visible,
+.comment-btn:focus-visible,
+.modal-close-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Photo uploader overlay */
+.photo-uploader-overlay,
+.delete-overlay {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 16px;
+}
+
+.photo-uploader-card,
+.delete-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-modal);
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+}
+
+.photo-uploader-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.photo-uploader-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.close-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--fimby-text-muted);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.close-btn:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.delete-title {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.delete-message {
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 20px;
+}
+
+.delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    border: none;
+    cursor: pointer;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    font-family: inherit;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn-secondary {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+
+.btn-secondary:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.btn-secondary:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn-danger {
+    background-color: var(--fimby-btn-danger-bg, #C0392B);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.btn-danger:hover {
+    background-color: var(--fimby-btn-danger-bg-hover, #A93226);
+}
+.btn-danger:active {
+    background-color: var(--fimby-btn-danger-bg-active, #922B21);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .image-overlay,
+    .read-more-btn,
+    .action-btn,
+    .modal-close-btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}

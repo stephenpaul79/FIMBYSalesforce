@@ -1,0 +1,209 @@
+<template>
+    <div class="fimby-search">
+        <!-- Page Header -->
+        <c-fimby-page-header page-title="Search"></c-fimby-page-header>
+
+        <!-- Search Input + Filters -->
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <lightning-input
+                    type="search"
+                    placeholder="Search shared life, needs, offers, items, people..."
+                    value={searchTerm}
+                    onchange={handleSearchChange}
+                    class="search-input">
+                </lightning-input>
+                <button class="search-action-btn" onclick={handleSearchSubmit} aria-label="Search">
+                    <img src={searchHintIconUrl} alt="" class="search-action-icon" />
+                </button>
+            </div>
+
+            <!-- Filter Pills (Impact Icons) -->
+            <div class="search-filters">
+                <div class="filters-scroll">
+                    <template for:each={searchFilters} for:item="filter">
+                        <button
+                            key={filter.value}
+                            class={filter.cssClass}
+                            onclick={handleFilterSelect}
+                            data-filter={filter.value}>
+                            <img src={filter.iconUrl} alt="" class="filter-icon" />
+                            <span>{filter.label}{filter.countLabel}</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Recent Searches -->
+            <template lwc:if={showRecentSearches}>
+                <div class="recent-searches">
+                    <div class="section-header">
+                        <span class="section-title">Recent Searches</span>
+                        <button class="clear-all-btn" onclick={handleClearRecent}>Clear All</button>
+                    </div>
+                    <div class="recent-list">
+                        <template for:each={recentSearches} for:item="recentItem">
+                            <div role="button" tabindex="0" key={recentItem.id} class="recent-item" aria-label="Recent search" onclick={handleRecentClick} onkeydown={handleRecentKeydown} data-term={recentItem.term}>
+                                <span class="recent-clock">&#128339;</span>
+                                <span class="recent-term">{recentItem.term}</span>
+                                <span class="recent-type">{recentItem.type}</span>
+                                <button class="remove-recent" onclick={handleRemoveRecent} data-id={recentItem.id} aria-label="Remove">
+                                    <span class="remove-x">&times;</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Search Hint -->
+        <template lwc:if={showSearchHint}>
+            <div class="search-hint">
+                <img src={searchHintIconUrl} alt="" class="hint-icon" />
+                <h3>Search your neighbourhood</h3>
+                <p>Find shared life posts, needs, offers, library items, and neighbours.</p>
+                <div class="hint-suggestions">
+                    <span class="hint-label">Try searching for:</span>
+                    <span class="hint-example">lawn mower</span>
+                    <span class="hint-example">babysitting</span>
+                    <span class="hint-example">moving help</span>
+                    <span class="hint-example">books</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading State -->
+        <template lwc:if={isSearching}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Searching..." size="medium"></lightning-spinner>
+                <div class="loading-text">Searching...</div>
+            </div>
+        </template>
+
+        <!-- No Results State -->
+        <template lwc:if={showNoResults}>
+            <div class="no-results-state">
+                <img src={noResultsIconUrl} alt="" class="hint-icon" />
+                <h3>No results found</h3>
+                <p>No matches for &ldquo;{searchTerm}&rdquo;. Try different keywords or a broader filter.</p>
+            </div>
+        </template>
+
+        <!-- Search Results -->
+        <template lwc:if={showResults}>
+            <div class="search-results">
+                <!-- Results Header -->
+                <div class="results-header">
+                    <span class="results-count">{resultsCount} results for &ldquo;{searchTerm}&rdquo;</span>
+                    <div class="sort-container">
+                        <button class="sort-btn" onclick={handleSortToggle} aria-label="Sort results">
+                            <span>{currentSortLabel}</span>
+                            <span class="sort-chevron">&#9662;</span>
+                        </button>
+                        <template lwc:if={showSortDropdown}>
+                            <div class="sort-backdrop" onclick={handleSortBackdropClick}></div>
+                            <div class="sort-dropdown">
+                                <template for:each={sortOptions} for:item="option">
+                                    <button
+                                        key={option.value}
+                                        class="sort-option"
+                                        data-value={option.value}
+                                        onclick={handleSortSelect}>
+                                        {option.label}
+                                    </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+                <!-- Results Grid -->
+                <div class="search-results-grid">
+                    <template for:each={searchResults} for:item="result">
+                        <button type="button" key={result.recordId} class="result-item"
+                             data-id={result.recordId}
+                             data-type={result.resultType}
+                             data-shared={result.hasSharedContact}
+                             aria-label="View result"
+                             onclick={handleResultClick}>
+
+                            <!-- People Results -->
+                            <template lwc:if={result.isPeople}>
+                                <div class={result.peopleCssClass}>
+                                    <template lwc:if={result.processedImageUrl}>
+                                        <img src={result.processedImageUrl} alt={result.name} class="person-avatar" />
+                                    </template>
+                                    <template lwc:else>
+                                        <img src={noProfilePhotoUrl} alt="" class="person-avatar" />
+                                    </template>
+                                    <div class="person-info">
+                                        <div class="person-name">{result.name}</div>
+                                        <template lwc:if={result.subType}>
+                                            <div class="person-neighbourhood">{result.subType}</div>
+                                        </template>
+                                        <template lwc:if={result.shortDescription}>
+                                            <div class="person-bio">{result.shortDescription}</div>
+                                        </template>
+                                    </div>
+                                    <template lwc:if={result.hasSharedContact}>
+                                        <span class="shared-badge">
+                                            <img src={greenCircleUrl} alt="" class="badge-status-icon" />
+                                            <span>Contact Info Shared</span>
+                                        </span>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="locked-badge">
+                                            <img src={redCircleUrl} alt="" class="badge-status-icon" />
+                                            <span>No Contact Info Shared</span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Story / Ask & Offer / Library Results — shared card layout -->
+                            <template lwc:else>
+                                <div class="result-card">
+                                    <div class="result-card-header">
+                                        <template lwc:if={result.processedAvatarUrl}>
+                                            <img src={result.processedAvatarUrl} alt="" class="result-avatar" />
+                                        </template>
+                                        <template lwc:else>
+                                            <img src={noProfilePhotoUrl} alt="" class="result-avatar" />
+                                        </template>
+                                        <div class="result-header-text">
+                                            <span class="result-posted-by">{result.postedByName}</span>
+                                            <span class="result-meta">{result.formattedDate}</span>
+                                        </div>
+                                        <span class={result.badgeCssClass}>
+                                            <img src={result.badgeIconUrl} alt="" class="badge-icon" />
+                                            <span>{result.badgeLabel}</span>
+                                        </span>
+                                    </div>
+                                    <template lwc:if={result.processedImageUrl}>
+                                        <div class="result-image-wrapper">
+                                            <img src={result.processedImageUrl} alt={result.name} class="result-image" loading="lazy" />
+                                        </div>
+                                    </template>
+                                    <div class="result-card-body">
+                                        <h4 class="result-title">{result.name}</h4>
+                                        <p class="result-description">{result.shortDescription}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Load More -->
+                <template lwc:if={hasMore}>
+                    <div class="load-more-container">
+                        <button class="load-more-btn" onclick={handleLoadMoreResults}>
+                            Load More Results
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

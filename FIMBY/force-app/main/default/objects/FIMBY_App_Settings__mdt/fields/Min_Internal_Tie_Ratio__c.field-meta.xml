@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Min_Internal_Tie_Ratio__c</fullName>
+    <defaultValue>0.40</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Min Internal Tie Ratio</label>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <type>Number</type>
+    <inlineHelpText>Minimum ratio of internal interactions (0-1 scale)</inlineHelpText>
+</CustomField>

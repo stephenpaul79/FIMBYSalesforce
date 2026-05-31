@@ -1,0 +1,907 @@
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+/* ============================================================
+   Bio soft-gate banner - gentle nudge before posting
+   ============================================================ */
+
+.bio-gate-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    background-color: var(--fimby-info-tint);
+    border: 1px solid var(--fimby-info-border);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+    margin: 12px 0 16px;
+    box-sizing: border-box;
+}
+
+.bio-gate-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.bio-gate-content { flex: 1 1 auto; }
+
+.bio-gate-title {
+    margin: 0;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.bio-gate-text {
+    margin: 4px 0 0;
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.bio-gate-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bio-gate-skip {
+    background: none;
+    border: none;
+    color: var(--fimby-text-muted);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 8px 4px;
+    min-height: 44px;
+}
+
+.bio-gate-cta.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    padding: 10px 20px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.bio-gate-cta.btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.bio-gate-cta.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+@media (min-width: 768px) {
+    .bio-gate-banner {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+    }
+}
+
+/* FIMBY Ask & Offer Composer - Mobile First */
+/* Outer wrapper: padding constrains header + body to same width (per lwc-responsive-theming) */
+.fimby-ask-offer-composer {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+/* Form Navigation (Back / Next / Submit footer) */
+.form-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+/* Post Settings: compact nav — no divider, minimal gap */
+.form-section-with-nav .form-navigation {
+    margin-top: 4px;
+    padding-top: 0;
+    border-top: none;
+}
+
+.form-section-nav-only {
+    padding: 16px 20px;
+}
+
+.form-section-nav-only .form-navigation {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+/* When nav is inside a white card, Back button needs contrast so it doesn't blend */
+.post-type-section .nav-back,
+.form-section-with-nav .nav-back {
+    background-color: var(--fimby-surface-page);
+    border-color: var(--fimby-border-default);
+}
+
+.post-type-section .nav-back:hover,
+.form-section-with-nav .nav-back:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.nav-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.nav-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.nav-next {
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    border-color: var(--fimby-brand-teal);
+}
+
+.nav-next:hover {
+    background-color: var(--fimby-brand-teal-hover);
+    border-color: var(--fimby-brand-teal-hover);
+}
+
+.nav-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Post Type Selection */
+.post-type-section {
+    background: var(--fimby-surface-card);
+    padding: 24px 16px;
+    margin: 12px 0 0;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.post-type-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Section Headers with Icons */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 16px;
+}
+
+.section-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.type-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.type-button {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 2px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    background: var(--fimby-surface-card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.type-button:hover {
+    border-color: var(--fimby-info);
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.type-button.selected {
+    border-color: var(--fimby-info);
+    background: var(--fimby-info-tint);
+}
+
+.type-icon-img {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.type-icon-branded {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.type-content {
+    flex: 1;
+}
+
+.type-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 4px;
+}
+
+.type-description {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+
+/* Event Type Selector (Step 1.5) */
+.event-type-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.event-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    background: var(--fimby-surface-card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-family: inherit;
+    min-height: 44px;
+}
+
+.event-type-btn:hover {
+    border-color: var(--fimby-info);
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.event-type-btn.selected {
+    border-color: var(--fimby-info);
+    background: var(--fimby-info-tint);
+}
+
+.event-type-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.event-type-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.event-type-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.event-type-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.event-type-help {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.3;
+}
+
+.event-type-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--fimby-info-tint, rgba(0, 112, 210, 0.06));
+    border-radius: var(--fimby-radius-sm);
+    border-left: 3px solid var(--fimby-info, #0070d2);
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--fimby-text-secondary);
+}
+
+.info-banner-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    --slds-c-icon-color-foreground-default: var(--fimby-info, #0070d2);
+}
+
+/* Composer Form */
+.composer-form {
+    flex: 1;
+    padding: 0 0 24px;
+}
+
+.form-section {
+    background: var(--fimby-surface-card);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+/* (section-header/section-label replaced by section-title/section-icon above) */
+
+.form-field {
+    margin-bottom: 16px;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+.readonly-value {
+    padding: 10px 12px;
+    background: var(--fimby-surface-page);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--fimby-text-strong);
+    border: 1px solid var(--fimby-border-default);
+}
+
+/* Posting As — identity display (matches fimbyResponseReply .replying-as) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    margin-top: 16px;
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Native Date & Datetime-Local Inputs — DXP tokens for visuals, explicit sizing */
+.date-input,
+.datetime-input {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 3px 12px 2px;
+    min-height: 1.75rem;
+    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, 0.875rem)));
+    line-height: 1.5;
+    font-family: var(--dxp-s-form-element-text-font-family, var(--dxp-s-body-font-family, inherit));
+    background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));
+    color: var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast));
+    border-width: var(--dxp-s-form-element-width-border, 1px);
+    border-style: solid;
+    border-color: var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    border-radius: var(--dxp-s-form-element-radius-border, 4px);
+    box-shadow: var(--dxp-s-form-element-shadow);
+    box-sizing: border-box;
+    text-align: left;
+    transition: border-color 0.2s;
+}
+
+.date-input::-webkit-date-and-time-value,
+.datetime-input::-webkit-date-and-time-value {
+    text-align: left;
+}
+
+.date-input:focus,
+.datetime-input:focus {
+    outline: none;
+    background-color: var(--dxp-s-form-element-color-background-active, var(--dxp-s-form-element-color-background, var(--dxp-g-root)));
+    border-color: var(--dxp-s-form-element-color-border-focus, var(--dxp-g-brand));
+    box-shadow: var(--dxp-s-form-element-shadow-focus, 0 0 3px var(--dxp-g-brand-1));
+}
+
+/* Field label row (label left, character count right) */
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+    font-weight: 700 !important;
+}
+
+/* Label + help icon together (help at end of label) */
+.label-with-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.label-with-help .field-label {
+    display: inline;
+}
+
+.character-count {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    text-align: right;
+    margin-top: 4px;
+}
+
+.field-label-row .character-count {
+    font-size: 0.75rem;
+    margin-top: 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+/* Quantity Grid — align to top so field-level-help on Per Response Limit doesn't stretch the row */
+.quantity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+/* Two-column grids (side-by-side on desktop, stacked on mobile) */
+.date-grid,
+.expires-quantity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.expires-quantity-grid .form-field,
+.date-grid .form-field {
+    margin-bottom: 0;
+    min-width: 0;
+}
+
+.form-field:has(.date-input),
+.form-field:has(.datetime-input) {
+    min-width: 0;
+}
+
+.expires-quantity-grid .form-field:only-child {
+    grid-column: 1 / -1;
+}
+
+.quantity-grid .form-field:only-child {
+    grid-column: 1 / -1;
+}
+
+/* lightning-input is a custom element — constrain the element itself */
+.form-field lightning-input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Urgent Toggle */
+.urgent-toggle-row {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--fimby-warning-tint, rgba(189, 89, 65, 0.06));
+    border-radius: var(--fimby-radius-sm);
+    border-left: 3px solid var(--fimby-earth-terracotta, #B07248);
+}
+
+.urgent-help-text {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    margin: 6px 0 0;
+    line-height: 1.4;
+}
+
+/* Settings Section */
+.settings-help {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Confirmation Screen */
+.confirmation-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: var(--fimby-surface-page, #F0EBE3);
+    position: relative;
+    overflow: hidden;
+}
+
+.confetti-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.confirmation-content {
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-subtle);
+    padding: 40px 32px;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card-hover);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    z-index: 1;
+}
+
+.confirmation-gif {
+    max-width: 200px;
+    max-height: 150px;
+    margin-bottom: 24px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+.confirmation-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 32px;
+    line-height: 1.4;
+}
+
+.confirmation-title .highlight {
+    color: var(--fimby-brand-teal);
+    font-weight: 700;
+}
+
+.confirmation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-button {
+    width: 100%;
+}
+
+/* Photo Upload Step Screen */
+.photo-step-screen {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+.photo-step-content {
+    background: var(--fimby-surface-card);
+    padding: 40px 32px;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card-hover);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.photo-step-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.photo-step-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.photo-step-actions {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.continue-button {
+    min-width: 200px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-neutral {
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.btn-neutral:hover {
+    background: var(--fimby-hover-bg);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: var(--fimby-surface-card);
+    padding: 32px 40px;
+    border-radius: var(--fimby-radius-md);
+    text-align: center;
+    max-width: 280px;
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--fimby-text-strong);
+    margin-top: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .fimby-ask-offer-composer {
+        overflow-x: hidden;
+    }
+
+    .composer-form,
+    .form-section {
+        min-width: 0;
+    }
+
+    .post-type-section {
+        margin: 12px 0 0;
+        padding: 20px 16px;
+    }
+
+    .composer-form {
+        padding: 0 0 20px;
+    }
+
+    .form-section {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .quantity-grid,
+    .date-grid,
+    .expires-quantity-grid,
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .type-button {
+        padding: 16px;
+    }
+
+    .type-icon-img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .type-icon-branded {
+        width: 40px;
+        height: 40px;
+    }
+
+    .confirmation-content {
+        padding: 32px 24px;
+    }
+
+    .confirmation-title {
+        font-size: 18px;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-ask-offer-composer {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0 24px 80px;
+    }
+
+    .post-type-section {
+        margin: 12px 0 0;
+        padding: 32px;
+    }
+
+    .composer-form {
+        padding: 0 0 32px;
+    }
+
+    .type-buttons {
+        flex-direction: row;
+    }
+
+    .type-button {
+        flex: 1;
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+    }
+
+    .type-icon-img {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 12px;
+    }
+
+    .type-icon-branded {
+        width: 56px;
+        height: 56px;
+    }
+
+    .form-section {
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .confirmation-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .action-button {
+        width: auto;
+        min-width: 140px;
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-ask-offer-composer {
+        padding-bottom: 24px;
+    }
+}
+
+/* Keyboard focus visibility */
+.type-button:focus-visible,
+.date-input:focus-visible,
+.datetime-input:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .type-button,
+    .nav-btn,
+    .date-input,
+    .datetime-input {
+        transition: none;
+    }
+}

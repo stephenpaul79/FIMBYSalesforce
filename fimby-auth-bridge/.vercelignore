@@ -1,0 +1,18 @@
+# Never upload local secret material to a Vercel deployment.
+# Production secrets are configured as Vercel Environment Variables and read
+# from process.env only — none of these files need to ship.
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Salesforce JWT signing key (comes from SF_PRIVATE_KEY_BASE64 env var)
+sf-jwt.key
+*.key
+*.pem
+
+node_modules
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

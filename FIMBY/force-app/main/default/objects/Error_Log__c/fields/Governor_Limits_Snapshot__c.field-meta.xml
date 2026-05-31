@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Governor_Limits_Snapshot__c</fullName>
+    <label>Governor Limits Snapshot</label>
+    <length>32000</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>5</visibleLines>
+    <inlineHelpText>JSON snapshot of governor limit usage at time of logging: SOQL queries, DML statements, CPU time, heap size, DML rows, query rows.</inlineHelpText>
+</CustomField>

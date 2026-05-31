@@ -1,0 +1,65 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "9e233a5c-49cd-4e8a-ad8e-20d1f6fc0569",
+  "label" : "Record Detail",
+  "regions" : [ {
+    "id" : "39e22807-e22e-4a10-ad94-81aa82dabc2c",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordHeadline",
+      "id" : "b8b80ca9-a4c2-4464-a6da-8c342769e93d",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "detailsTabLabel" : "Details",
+        "discussionsTabLabel" : "",
+        "recordId" : "{!recordId}",
+        "relatedTabLabel" : "Related",
+        "tab1Type" : "details",
+        "tab2Type" : "related",
+        "tab3Type" : "none",
+        "tab4Type" : "none",
+        "timelineTabLabel" : ""
+      },
+      "componentName" : "forceCommunity:recordHomeTabs",
+      "id" : "fdc7ccb4-ed03-45ed-8171-d8c5f1e51142",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "d8106ae3-72db-4ae2-a70e-59d48c7713a3",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "6065f5f6-7f21-4a80-b458-76204dab4824",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "{!Record._Object}: {!Record._Title}"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "07eaa628-10f7-40c7-8341-80d3381c65d3",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "724baaf7-7a60-4ee2-ae84-36b3d4d3a591",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "detail"
+}

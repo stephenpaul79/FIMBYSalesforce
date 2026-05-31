@@ -1,0 +1,248 @@
+/* FIMBY Response Status Update Modal - Matches Response_Status_Update.flow */
+.fimby-response-status-update {
+    position: relative;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--fimby-scrim);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Modal Container */
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    min-height: 200px;
+}
+
+.loading-text {
+    margin-top: 16px;
+    color: var(--fimby-text-secondary);
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0;
+}
+
+.close-button {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--fimby-radius-xl);
+    border: none;
+    background: var(--fimby-hover-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fimby-text-secondary);
+    transition: all 0.2s ease;
+}
+
+.close-button:hover {
+    background: var(--fimby-divider-default);
+    color: var(--fimby-text-primary);
+}
+
+/* Error Screens */
+.error-screen,
+.confirmation-screen {
+    min-height: 250px;
+}
+
+.error-content,
+.confirmation-content {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.error-icon {
+    margin-bottom: 16px;
+}
+
+.error-icon lightning-icon {
+    --lwc-iconSize: 48px;
+}
+
+.error-message {
+    font-size: 16px;
+    color: var(--fimby-error);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Confirmation Screen */
+.success-icon {
+    margin-bottom: 16px;
+}
+
+.success-icon lightning-icon {
+    --lwc-iconSize: 48px;
+}
+
+.confirmation-message {
+    font-size: 18px;
+    color: var(--fimby-text-primary);
+    margin: 0 0 12px;
+}
+
+.new-status {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+}
+
+.new-status strong {
+    color: var(--fimby-success);
+}
+
+/* Status Form */
+.status-form {
+    padding: 24px 16px;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 16px;
+    border-top: 1px solid var(--fimby-divider-default);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    background: var(--fimby-surface-input);
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 12px 24px;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 100px;
+}
+
+.btn-secondary {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.btn-secondary:hover {
+    background: var(--fimby-surface-page);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: var(--fimby-info);
+    color: white;
+    border: 1px solid var(--fimby-info);
+}
+
+.btn-primary:hover {
+    background: var(--fimby-info);
+    border-color: var(--fimby-info);
+}
+
+.btn-primary:disabled {
+    background: var(--fimby-text-disabled);
+    border-color: var(--fimby-text-disabled);
+    cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .modal-backdrop {
+        top: var(--fimby-modal-inset-top, 86px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        align-items: center;
+        padding: 16px;
+    }
+
+    .modal-container {
+        border-radius: var(--fimby-radius-lg);
+        max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+        animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+}
+
+/* Keyboard focus visibility */
+.close-button:focus-visible,
+.btn-secondary:focus-visible,
+.btn-primary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .btn-secondary,
+    .btn-primary {
+        transition: none !important;
+        animation: none !important;
+    }
+}

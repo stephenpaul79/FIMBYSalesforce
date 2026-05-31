@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Adjacency_Type__c</fullName>
+    <description>Type of adjacency relationship. Split_Sibling is auto-created during cell division. Geographic_Neighbour is manually designated. Regional is a weaker bond within the same broader region.</description>
+    <externalId>false</externalId>
+    <label>Adjacency Type</label>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Split_Sibling</fullName>
+                <default>false</default>
+                <label>Split Sibling</label>
+            </value>
+            <value>
+                <fullName>Geographic_Neighbour</fullName>
+                <default>false</default>
+                <label>Geographic Neighbour</label>
+            </value>
+            <value>
+                <fullName>Regional</fullName>
+                <default>false</default>
+                <label>Regional</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

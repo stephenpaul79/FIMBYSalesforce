@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouching_Disabled__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True when this Contact&apos;s ability to vouch is paused (auto-pause from counting revocations, moderator manual pause, or account removal).</description>
+    <externalId>false</externalId>
+    <label>Vouching Disabled</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

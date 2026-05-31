@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Pilot_User_Ids__c</fullName>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Email Pilot User IDs</label>
+    <length>5000</length>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+    <inlineHelpText>Comma-separated User IDs for email alert pilot. Blank = all users.</inlineHelpText>
+</CustomField>

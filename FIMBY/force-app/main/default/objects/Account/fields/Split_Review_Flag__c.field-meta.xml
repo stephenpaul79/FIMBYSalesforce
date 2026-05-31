@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Split_Review_Flag__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Auto-set by FimbyNeighbourhoodHealthBatch when health thresholds are crossed (household count exceeds soft cap, recognition score drops, or lurker ratio spikes). Reset to false when metrics are healthy.</description>
+    <externalId>false</externalId>
+    <label>Split Review Needed</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

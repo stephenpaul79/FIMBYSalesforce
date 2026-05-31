@@ -1,0 +1,23 @@
+<template>
+    <template lwc:if={showSection}>
+        <section role="group" aria-label="Bulk Buy History" class="history-container">
+            <h3 class="section-title">Bulk Buy History</h3>
+            <div class="slots-row">
+                <template for:each={slotData} for:item="slot">
+                    <span
+                        key={slot.index}
+                        class={slot.cssClass}
+                        role="img"
+                        aria-label={slot.ariaLabel}
+                    ></span>
+                </template>
+            </div>
+            <p class="slots-axis" aria-hidden="true">&larr; Newest</p>
+            <template lwc:if={isBlocked}>
+                <p class="blocked-message">
+                    Your ability to participate in bulk buys is currently limited. Contact us if you have questions.
+                </p>
+            </template>
+        </section>
+    </template>
+</template>

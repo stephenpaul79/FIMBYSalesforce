@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Posts_Page_Size__c</fullName>
+    <defaultValue>20</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>My Posts Page Size</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Number of posts shown per page in My Stuff and My Posts.</inlineHelpText>
+</CustomField>

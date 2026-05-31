@@ -1,0 +1,157 @@
+/*
+ * Your global styles here
+ */
+html,
+body {
+    height: 100%;
+    background: var(--fimby-surface-page, var(--dxp-g-root)) !important;
+}
+
+body {
+    margin: 0;
+}
+
+/* Keep Experience Cloud section wrappers aligned with the FIMBY page background. */
+:root {
+    --dxp-c-section-image-overlay-color: transparent;
+    --dxp-c-section-background-color: var(--fimby-surface-page, var(--dxp-g-root));
+}
+
+community_layout-section {
+    --dxp-c-section-image-overlay-color: transparent !important;
+    --dxp-c-section-background-color: var(--fimby-surface-page, var(--dxp-g-root)) !important;
+}
+
+/* Final guardrail: if EC computes a concrete overlay color at runtime,
+   force the actual overlay element transparent. */
+community_layout-section .background-image-overlay {
+    background-color: transparent !important;
+}
+
+/*
+ * Dark mode: override DXP tokens + page/header/footer backgrounds.
+ * Ref: https://www.linkedin.com/pulse/dark-mode-experience-cloud-site-soliver-mazo-kfqte/
+ *
+ * Two blocks: @media for OS auto-detect, [data-theme] for manual toggle.
+ */
+
+/* ── OS auto-detect ──────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        /* Surfaces */
+        --dxp-g-root:            #14100D;
+        --dxp-g-root-contrast:   #FFFBF7;
+        --dxp-g-root-contrast-1: #FFFBF7;
+        --dxp-g-root-contrast-2: #F5F1ED;
+        --dxp-g-root-contrast-3: #D6CFC7;
+
+        /* Brand */
+        --dxp-g-brand:           #67BBD2;
+        --dxp-g-brand-contrast:  #261A11;
+
+        /* Borders & neutrals */
+        --dxp-g-neutral:         #3E312B;
+        --dxp-g-neutral-2:       #4B3B34;
+        --dxp-g-neutral-3:       #B3A79E;
+
+        /* Forms */
+        --dxp-s-form-element-color-background: #2F241F;
+        --dxp-s-form-element-color-border:     #3E312B;
+
+        /* Links */
+        --dxp-s-link-text-color-1: #67BBD2;
+
+        /* Status */
+        --dxp-g-success:   #27AE60;
+        --dxp-g-warning-1: #F59E0B;
+        --dxp-g-error:     #E74C3C;
+        --dxp-g-info:      #0176D3;
+    }
+
+    /* Page, header, and footer backgrounds */
+    html:not([data-theme="light"]),
+    html:not([data-theme="light"]) body {
+        background-color: #14100D !important;
+    }
+
+    /* Header region wrappers */
+    html:not([data-theme="light"]) [data-region-name="header"],
+    html:not([data-theme="light"]) [class*="comm-header"],
+    html:not([data-theme="light"]) [class*="forceCommunityTheme"],
+    html:not([data-theme="light"]) [class*="siteforceSlimHeader"],
+    html:not([data-theme="light"]) [class*="comm-navigation"] {
+        background-color: #1B1512 !important;
+    }
+
+    /* Footer region wrappers */
+    html:not([data-theme="light"]) [data-region-name="footer"],
+    html:not([data-theme="light"]) [class*="comm-footer"],
+    html:not([data-theme="light"]) [class*="forceCommunityFooter"] {
+        background-color: #1B1512 !important;
+    }
+
+    /* Content region wrappers */
+    html:not([data-theme="light"]) [data-region-name="content"],
+    html:not([data-theme="light"]) [class*="cCenterPanel"],
+    html:not([data-theme="light"]) [class*="siteforceContentArea"] {
+        background-color: #14100D !important;
+    }
+}
+
+/* ── Manual toggle ───────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+    /* Surfaces */
+    --dxp-g-root:            #14100D;
+    --dxp-g-root-contrast:   #FFFBF7;
+    --dxp-g-root-contrast-1: #FFFBF7;
+    --dxp-g-root-contrast-2: #F5F1ED;
+    --dxp-g-root-contrast-3: #D6CFC7;
+
+    /* Brand */
+    --dxp-g-brand:           #67BBD2;
+    --dxp-g-brand-contrast:  #261A11;
+
+    /* Borders & neutrals */
+    --dxp-g-neutral:         #3E312B;
+    --dxp-g-neutral-2:       #4B3B34;
+    --dxp-g-neutral-3:       #B3A79E;
+
+    /* Forms */
+    --dxp-s-form-element-color-background: #2F241F;
+    --dxp-s-form-element-color-border:     #3E312B;
+
+    /* Links */
+    --dxp-s-link-text-color-1: #67BBD2;
+
+    /* Status */
+    --dxp-g-success:   #27AE60;
+    --dxp-g-warning-1: #F59E0B;
+    --dxp-g-error:     #E74C3C;
+    --dxp-g-info:      #0176D3;
+}
+
+/* Page, header, and footer backgrounds (manual toggle) */
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+    background-color: #14100D !important;
+}
+
+html[data-theme="dark"] [data-region-name="header"],
+html[data-theme="dark"] [class*="comm-header"],
+html[data-theme="dark"] [class*="forceCommunityTheme"],
+html[data-theme="dark"] [class*="siteforceSlimHeader"],
+html[data-theme="dark"] [class*="comm-navigation"] {
+    background-color: #1B1512 !important;
+}
+
+html[data-theme="dark"] [data-region-name="footer"],
+html[data-theme="dark"] [class*="comm-footer"],
+html[data-theme="dark"] [class*="forceCommunityFooter"] {
+    background-color: #1B1512 !important;
+}
+
+html[data-theme="dark"] [data-region-name="content"],
+html[data-theme="dark"] [class*="cCenterPanel"],
+html[data-theme="dark"] [class*="siteforceContentArea"] {
+    background-color: #14100D !important;
+}

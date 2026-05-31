@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Care_How_To_Ask__c</fullName>
+    <description>How should someone ask before helping? What is the best first step so support feels respectful, not intrusive?</description>
+    <externalId>false</externalId>
+    <label>How To Ask</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Message me first</fullName>
+                <default>false</default>
+                <label>Message me first</label>
+            </value>
+            <value>
+                <fullName>Offer one specific thing</fullName>
+                <default>false</default>
+                <label>Offer one specific thing</label>
+            </value>
+            <value>
+                <fullName>Ask what would be helpful today</fullName>
+                <default>false</default>
+                <label>Ask what would be helpful today</label>
+            </value>
+            <value>
+                <fullName>Keep it simple</fullName>
+                <default>false</default>
+                <label>Keep it simple</label>
+            </value>
+            <value>
+                <fullName>Please don&apos;t reach out unless I&apos;ve asked</fullName>
+                <default>false</default>
+                <label>Please don&apos;t reach out unless I&apos;ve asked</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

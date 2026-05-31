@@ -1,0 +1,614 @@
+:host {
+    display: block;
+}
+
+.bulk-buy-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Section spacing (matches fimbyNeedOfferDetail) */
+.section {
+    background: var(--fimby-surface-card);
+    padding: 20px;
+    margin: 12px 0 0;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-sm);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+}
+
+/* Status section */
+.section-status {
+    padding: 12px 20px;
+}
+
+/* Thermometer (expanded allocation bar) */
+.section-thermometer {
+    padding: 16px 20px;
+}
+
+.thermometer-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.thermometer-bar-wrap {
+    height: 14px;
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    background: #C1DFE5;
+    transition: background 0.3s ease;
+}
+
+/* Allocation legend */
+.alloc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 2px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-buyer {
+    background: #8B8178;
+}
+
+.dot-reserved {
+    background: var(--fimby-brand-teal, #3A7D8C);
+}
+
+.dot-available {
+    background: #C1DFE5;
+    border: 1px solid var(--fimby-border-default, #d0cbc3);
+}
+
+.legend-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* Cost section */
+.section-cost {
+    background: var(--fimby-surface-card);
+}
+
+.cost-box {
+    background: var(--fimby-hover-bg);
+    padding: 12px 16px;
+    border-radius: var(--fimby-radius-md);
+    border: 1px solid var(--fimby-border-subtle);
+}
+
+.cost-per-share {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 4px;
+}
+
+.cost-total {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.cost-disclaimer {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Receipt section */
+.section-receipt {
+    padding: 16px 20px;
+}
+
+.receipt-image-wrap {
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+    max-width: 100%;
+    background: var(--fimby-surface-input);
+}
+
+.receipt-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* Action buttons */
+.section-actions {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    cursor: pointer;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.action-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.action-btn:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.action-btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Primary (Reserve A Share) - teal pill, white text, natural icon */
+.action-btn.primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    font-weight: 700;
+    padding: 10px 24px;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.action-btn.primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    color: #ffffff;
+}
+.action-btn.primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.action-btn.primary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Disabled reserve button */
+.action-btn.primary.disabled,
+.action-btn.primary:disabled {
+    opacity: 0.5;
+    background: var(--fimby-border-subtle);
+    border-color: var(--fimby-border-subtle);
+    color: var(--fimby-text-secondary);
+    cursor: not-allowed;
+    pointer-events: auto;
+}
+.action-btn.primary.disabled:hover,
+.action-btn.primary:disabled:hover {
+    background: var(--fimby-border-subtle);
+    color: var(--fimby-text-secondary);
+}
+
+.reserve-btn-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.reserve-helper-text {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
+}
+
+/* Organiser actions - neutral */
+.action-btn.organiser-btn {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border-color: var(--fimby-border-default);
+}
+
+.action-btn.organiser-btn.disabled,
+.action-btn.organiser-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-btn.organiser-btn.danger:hover {
+    background-color: var(--fimby-error-tint);
+    border-color: var(--fimby-error-tint);
+}
+
+/* Reservations list */
+.section-reservations {
+    padding: 16px 20px;
+}
+
+.reservations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reservation-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-md);
+    border: 1px solid var(--fimby-border-subtle);
+}
+
+.reservation-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: var(--fimby-text-on-teal, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.avatar-initial {
+    line-height: 1;
+}
+
+.reservation-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.reservation-name {
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    font-size: 0.95rem;
+}
+
+.reservation-amount {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+.reservation-action {
+    flex-shrink: 0;
+}
+
+/* Per-reserver check-in button states */
+.action-btn.per-reserver-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    min-height: 36px;
+}
+
+.action-btn.per-reserver-btn.btn-pending {
+    background: var(--fimby-warning-tint);
+    color: var(--fimby-warning);
+    border-color: var(--fimby-warning-tint);
+}
+
+.action-btn.per-reserver-btn.btn-escalated,
+.action-btn.per-reserver-btn.btn-disabled {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-muted);
+    border-color: var(--fimby-border-subtle);
+    cursor: not-allowed;
+}
+
+.action-btn.per-reserver-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Group chat link */
+.section-group-chat {
+    padding: 12px 20px;
+}
+
+
+/* Expiry section */
+.section-expiry {
+    padding: 12px 20px;
+}
+
+.expiry-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .section {
+        margin: 8px 0 0;
+        padding: 16px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .reservation-row {
+        flex-wrap: wrap;
+    }
+
+    .reservation-action {
+        width: 100%;
+    }
+
+    .action-btn.per-reserver-btn {
+        width: 100%;
+    }
+}
+
+/* Focus visibility */
+.action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Danger outline button (Cancel Reservation) */
+.action-btn.danger-outline {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-error, #c0392b);
+    border: 1px solid var(--fimby-error-tint, #f8d7da);
+}
+
+.action-btn.danger-outline:hover {
+    background: var(--fimby-error-tint, #f8d7da);
+    border-color: var(--fimby-error, #c0392b);
+}
+
+/* Cancel Reservation Modal */
+.cancel-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding-top: var(--fimby-modal-inset-top, 86px);
+}
+
+.cancel-modal {
+    background: var(--fimby-surface-card);
+    padding: 32px;
+    border-radius: var(--fimby-radius-lg);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.cancel-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.cancel-message {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.cancel-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-neutral {
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.btn-neutral:hover {
+    background: var(--fimby-border-subtle);
+}
+
+.btn-danger {
+    background: var(--fimby-error, #c0392b);
+    color: white;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========== PERSONA: ORGANISER EMPTY STATE ========== */
+.poster-empty-state {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-sm);
+    padding: 24px 20px;
+    margin: 12px 0 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.empty-state-message {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.post-health-text {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* ========== PERSONA: YOUR RESERVATION CARD ========== */
+.your-reservation-card {
+    background-color: var(--fimby-cta-strip-bg, #eaf6fa);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-sm),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+    padding: 16px 20px;
+    margin: 12px 0 0;
+}
+
+.your-reservation-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 10px;
+}
+
+.your-reservation-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reservation-amount-display {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.reservation-status-context {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+.your-reservation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* ========== PERSONA: VISITOR ACTION BLOCK ========== */
+.visitor-action-block {
+    background-color: var(--fimby-cta-strip-bg, #eaf6fa);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-sm),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+    padding: 16px 20px;
+    margin: 12px 0 0;
+    text-align: center;
+}
+
+.action-context-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.section-disclaimer {
+    border-top: 1px solid var(--fimby-border-subtle, #e5e0d8);
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.disclaimer-text {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted, #999);
+    font-style: italic;
+    line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .thermometer-bar-wrap,
+    .action-btn {
+        transition: none;
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recipient_Details_Required</fullName>
+    <active>true</active>
+    <description>Recipient Details must be populated if the need is for someone other than yourself or your household.</description>
+    <errorConditionFormula>TEXT(Giver_Recipient_Type__c) != &quot;Self&quot;
+&amp;&amp;
+TEXT(Giver_Recipient_Type__c) != &quot;Household&quot;
+&amp;&amp;
+ISBLANK(Giver_Recipient_Details__c)</errorConditionFormula>
+    <errorDisplayField>Giver_Recipient_Details__c</errorDisplayField>
+    <errorMessage>Please populate the Recipient Details if the need is for someone other than yourself or your household.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Share_on_Social_Media__c</fullName>
+    <defaultValue>false</defaultValue>
+    <inlineHelpText>If selected this posted maybe posted publically on FIMBY&apos;s social media accounts.</inlineHelpText>
+    <label>Share On Social Media</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

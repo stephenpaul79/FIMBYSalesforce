@@ -1,0 +1,154 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.reactivate-page {
+    background-color: var(--fimby-surface-page);
+    padding: 32px 16px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .reactivate-page {
+        padding: 48px 24px 32px;
+    }
+}
+
+.reactivate-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 28px 24px;
+    width: 100%;
+    height: fit-content;
+}
+
+.reactivate-icon {
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin: 4px auto 16px;
+}
+
+.reactivate-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.reactivate-lede {
+    color: var(--fimby-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.reactivate-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 6px;
+}
+
+.reactivate-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    font-size: 1rem;
+    color: var(--fimby-text-primary);
+    background-color: var(--fimby-surface-input);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    margin: 0 0 20px;
+}
+
+.reactivate-input:focus {
+    outline: none;
+    border-color: var(--fimby-focus-ring);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow);
+}
+
+.reactivate-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 24px;
+    min-height: 44px;
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.reactivate-button:hover:not(:disabled),
+.reactivate-button:focus:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+    color: #ffffff;
+}
+
+.reactivate-button:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.reactivate-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.reactivate-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.reactivate-help {
+    color: var(--fimby-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 20px 0 0;
+}
+
+.reactivate-help a {
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+}
+
+.reactivate-help a:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.reactivate-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+}
+
+.reactivate-link-button:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.reactivate-link-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+}

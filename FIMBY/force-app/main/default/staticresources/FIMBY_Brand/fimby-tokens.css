@@ -1,0 +1,672 @@
+/* ══════════════════════════════════════════════════════════════════
+   FIMBY Design Tokens v1.1
+   Central CSS custom properties for Experience Cloud + all LWCs.
+   Loaded at site level via Head Markup; cascades through Shadow DOM.
+
+   Dark mode strategy:
+     1. Light-mode defaults on :root
+     2. @media (prefers-color-scheme: dark) auto-detects OS preference
+        — :not([data-theme="light"]) prevents it overriding a manual choice
+     3. [data-theme="dark"] is the manual override (set via JS toggle)
+
+   Safari/WebKit compatibility:
+     @property registrations (below) declare each token's type so
+     Safari can validate `background: var(--token)` in shorthand
+     context at parse time.  The initial-value doubles as a fallback
+     when the :root declaration hasn't applied yet.
+     Requires Safari 16.4+ / iOS 16.4+ (March 2023); silently
+     ignored by older browsers.
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   @property Registrations
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Surfaces ──────────────────────────────────────────────────── */
+@property --fimby-surface-page     { syntax: '<color>'; inherits: true; initial-value: #F0EBE3; }
+@property --fimby-surface-section  { syntax: '<color>'; inherits: true; initial-value: #EBE6DD; }
+@property --fimby-surface-card     { syntax: '<color>'; inherits: true; initial-value: #FAF7F2; }
+@property --fimby-surface-raised   { syntax: '<color>'; inherits: true; initial-value: #FAF7F2; }
+@property --fimby-surface-popover  { syntax: '<color>'; inherits: true; initial-value: #FAF7F2; }
+@property --fimby-surface-input    { syntax: '<color>'; inherits: true; initial-value: #F7F3EB; }
+
+/* ── Borders ───────────────────────────────────────────────────── */
+@property --fimby-border-subtle    { syntax: '<color>'; inherits: true; initial-value: #E0D9CF; }
+@property --fimby-border-default   { syntax: '<color>'; inherits: true; initial-value: #D6CFC5; }
+@property --fimby-border-strong    { syntax: '<color>'; inherits: true; initial-value: #CCC5BB; }
+
+/* ── Dividers ──────────────────────────────────────────────────── */
+@property --fimby-divider-subtle   { syntax: '<color>'; inherits: true; initial-value: rgba(38, 26, 17, 0.06); }
+@property --fimby-divider-default  { syntax: '<color>'; inherits: true; initial-value: rgba(38, 26, 17, 0.10); }
+
+/* ── Text ──────────────────────────────────────────────────────── */
+@property --fimby-text-strong      { syntax: '<color>'; inherits: true; initial-value: #261A11; }
+@property --fimby-text-primary     { syntax: '<color>'; inherits: true; initial-value: #4A3526; }
+@property --fimby-text-secondary   { syntax: '<color>'; inherits: true; initial-value: #8B7355; }
+@property --fimby-text-muted       { syntax: '<color>'; inherits: true; initial-value: #B5A088; }
+@property --fimby-text-placeholder { syntax: '<color>'; inherits: true; initial-value: #B5A088; }
+@property --fimby-text-disabled    { syntax: '<color>'; inherits: true; initial-value: #CCC5BB; }
+
+/* ── Brand Accent ──────────────────────────────────────────────── */
+@property --fimby-brand-teal         { syntax: '<color>'; inherits: true; initial-value: #67BBD2; }
+@property --fimby-brand-teal-hover   { syntax: '<color>'; inherits: true; initial-value: #55A8BF; }
+@property --fimby-brand-teal-pressed { syntax: '<color>'; inherits: true; initial-value: #4A9EB3; }
+@property --fimby-text-on-teal       { syntax: '<color>'; inherits: true; initial-value: #261A11; }
+
+/* ── Interaction States ────────────────────────────────────────── */
+@property --fimby-hover-bg     { syntax: '<color>'; inherits: true; initial-value: #EBE6DD; }
+@property --fimby-pressed-bg   { syntax: '<color>'; inherits: true; initial-value: #E0D9CF; }
+@property --fimby-selected-bg  { syntax: '<color>'; inherits: true; initial-value: rgba(103, 187, 210, 0.12); }
+@property --fimby-disabled-bg  { syntax: '<color>'; inherits: true; initial-value: #F7F3EB; }
+
+/* ── Focus ─────────────────────────────────────────────────────── */
+@property --fimby-focus-ring   { syntax: '<color>'; inherits: true; initial-value: #67BBD2; }
+@property --fimby-focus-glow   { syntax: '<color>'; inherits: true; initial-value: rgba(103, 187, 210, 0.25); }
+@property --fimby-focus-error  { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.30); }
+
+/* ── Overlays ──────────────────────────────────────────────────── */
+@property --fimby-scrim          { syntax: '<color>'; inherits: true; initial-value: rgba(38, 26, 17, 0.50); }
+@property --fimby-elevated-edge  { syntax: '<color>'; inherits: true; initial-value: rgba(38, 26, 17, 0.08); }
+
+/* ── Semantic Status ───────────────────────────────────────────── */
+@property --fimby-success  { syntax: '<color>'; inherits: true; initial-value: #27AE60; }
+@property --fimby-warning  { syntax: '<color>'; inherits: true; initial-value: #F59E0B; }
+@property --fimby-error    { syntax: '<color>'; inherits: true; initial-value: #E74C3C; }
+@property --fimby-info     { syntax: '<color>'; inherits: true; initial-value: #0176D3; }
+
+/* ── Semantic Tints ────────────────────────────────────────────── */
+@property --fimby-success-tint  { syntax: '<color>'; inherits: true; initial-value: rgba(39, 174, 96, 0.10); }
+@property --fimby-warning-tint  { syntax: '<color>'; inherits: true; initial-value: rgba(245, 158, 11, 0.10); }
+@property --fimby-error-tint    { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.10); }
+@property --fimby-info-tint     { syntax: '<color>'; inherits: true; initial-value: rgba(1, 118, 211, 0.10); }
+
+/* ── Semantic Borders ──────────────────────────────────────────── */
+@property --fimby-success-border  { syntax: '<color>'; inherits: true; initial-value: rgba(39, 174, 96, 0.30); }
+@property --fimby-warning-border  { syntax: '<color>'; inherits: true; initial-value: rgba(245, 158, 11, 0.30); }
+@property --fimby-error-border    { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.30); }
+@property --fimby-info-border     { syntax: '<color>'; inherits: true; initial-value: rgba(1, 118, 211, 0.30); }
+
+/* ── CTA Button Fills ─────────────────────────────────────────── */
+@property --fimby-btn-primary-bg        { syntax: '<color>'; inherits: true; initial-value: #3A7D8C; }
+@property --fimby-btn-primary-bg-hover  { syntax: '<color>'; inherits: true; initial-value: #336F7D; }
+@property --fimby-btn-primary-bg-active { syntax: '<color>'; inherits: true; initial-value: #2B5F6D; }
+@property --fimby-btn-success-bg        { syntax: '<color>'; inherits: true; initial-value: #1A7B40; }
+@property --fimby-btn-success-bg-hover  { syntax: '<color>'; inherits: true; initial-value: #156B36; }
+@property --fimby-btn-danger-bg         { syntax: '<color>'; inherits: true; initial-value: #C0392B; }
+@property --fimby-btn-danger-bg-hover   { syntax: '<color>'; inherits: true; initial-value: #A93226; }
+@property --fimby-btn-info-bg           { syntax: '<color>'; inherits: true; initial-value: #0166BA; }
+
+/* ── CTA Attention Strip ─────────────────────────────────────── */
+@property --fimby-cta-strip-accent        { syntax: '<color>'; inherits: true; initial-value: #3A7D8C; }
+@property --fimby-cta-strip-bg            { syntax: '<color>'; inherits: true; initial-value: #eaf6fa; }
+@property --fimby-cta-strip-accent-urgent { syntax: '<color>'; inherits: true; initial-value: #E74C3C; }
+
+/* ── Form Validation ───────────────────────────────────────────── */
+@property --fimby-input-border-default  { syntax: '<color>'; inherits: true; initial-value: #E0D9CF; }
+@property --fimby-input-border-hover    { syntax: '<color>'; inherits: true; initial-value: #D6CFC5; }
+@property --fimby-input-border-error    { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.50); }
+@property --fimby-input-bg-error        { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.06); }
+@property --fimby-validation-text-error { syntax: '<color>'; inherits: true; initial-value: #C62828; }
+
+/* ── On-Behalf-Of ──────────────────────────────────────────────── */
+@property --fimby-on-behalf-solid      { syntax: '<color>'; inherits: true; initial-value: #7c4dff; }
+@property --fimby-on-behalf-tint       { syntax: '<color>'; inherits: true; initial-value: rgba(124, 77, 255, 0.08); }
+@property --fimby-on-behalf-border     { syntax: '<color>'; inherits: true; initial-value: rgba(124, 77, 255, 0.20); }
+@property --fimby-on-behalf-text       { syntax: '<color>'; inherits: true; initial-value: #7c4dff; }
+@property --fimby-on-behalf-banner     { syntax: '<color>'; inherits: true; initial-value: rgba(156, 39, 176, 0.08); }
+@property --fimby-on-behalf-banner-bdr { syntax: '<color>'; inherits: true; initial-value: rgba(156, 39, 176, 0.15); }
+
+/* ── Earth Tones (WCAG AA 4.5:1+ with white text) ─────────────── */
+@property --fimby-earth-teal          { syntax: '<color>'; inherits: true; initial-value: #357280; }
+@property --fimby-earth-sage          { syntax: '<color>'; inherits: true; initial-value: #476B4C; }
+@property --fimby-earth-ochre         { syntax: '<color>'; inherits: true; initial-value: #7D6234; }
+@property --fimby-earth-slate         { syntax: '<color>'; inherits: true; initial-value: #4E6878; }
+@property --fimby-earth-terracotta    { syntax: '<color>'; inherits: true; initial-value: #8A5936; }
+@property --fimby-earth-dusty-violet  { syntax: '<color>'; inherits: true; initial-value: #625A76; }
+@property --fimby-earth-moss          { syntax: '<color>'; inherits: true; initial-value: #566744; }
+@property --fimby-earth-driftwood     { syntax: '<color>'; inherits: true; initial-value: #6B5E50; }
+
+/* ── Feed-Type Badges ──────────────────────────────────────────── */
+@property --fimby-badge-story         { syntax: '<color>'; inherits: true; initial-value: rgba(163, 128, 69, 0.90); }
+@property --fimby-badge-god-story     { syntax: '<color>'; inherits: true; initial-value: rgba(163, 128, 69, 0.90); }
+@property --fimby-badge-thank-you     { syntax: '<color>'; inherits: true; initial-value: rgba(176, 114, 72, 0.90); }
+@property --fimby-badge-lament        { syntax: '<color>'; inherits: true; initial-value: rgba(94, 123, 146, 0.85); }
+@property --fimby-badge-prayer        { syntax: '<color>'; inherits: true; initial-value: rgba(126, 116, 149, 0.90); }
+@property --fimby-badge-bio           { syntax: '<color>'; inherits: true; initial-value: rgba(107, 125, 84, 0.90); }
+@property --fimby-badge-neighbourhood { syntax: '<color>'; inherits: true; initial-value: rgba(175, 130, 125, 0.90); }
+@property --fimby-badge-ask-offer     { syntax: '<color>'; inherits: true; initial-value: rgba(91, 135, 96, 0.90); }
+@property --fimby-badge-event         { syntax: '<color>'; inherits: true; initial-value: rgba(68, 142, 158, 0.90); }
+@property --fimby-badge-library       { syntax: '<color>'; inherits: true; initial-value: rgba(141, 123, 106, 0.90); }
+@property --fimby-badge-direct        { syntax: '<color>'; inherits: true; initial-value: rgba(94, 123, 146, 0.85); }
+
+/* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
+@property --fimby-vouch-solid   { syntax: '<color>'; inherits: true; initial-value: #925930; }
+@property --fimby-vouch-text    { syntax: '<color>'; inherits: true; initial-value: #925930; }
+@property --fimby-badge-vouch   { syntax: '<color>'; inherits: true; initial-value: rgba(146, 89, 48, 0.90); }
+@property --fimby-vouch-tint    { syntax: '<color>'; inherits: true; initial-value: rgba(146, 89, 48, 0.10); }
+@property --fimby-vouch-border  { syntax: '<color>'; inherits: true; initial-value: rgba(146, 89, 48, 0.30); }
+
+/* ── Status Chips ──────────────────────────────────────────────── */
+@property --fimby-chip-active-bg    { syntax: '<color>'; inherits: true; initial-value: #ecfdf5; }
+@property --fimby-chip-active-text  { syntax: '<color>'; inherits: true; initial-value: #065f46; }
+@property --fimby-chip-expired-bg   { syntax: '<color>'; inherits: true; initial-value: #fee2e2; }
+@property --fimby-chip-expired-text { syntax: '<color>'; inherits: true; initial-value: #991b1b; }
+@property --fimby-chip-draft-bg     { syntax: '<color>'; inherits: true; initial-value: #ffedd5; }
+@property --fimby-chip-draft-text   { syntax: '<color>'; inherits: true; initial-value: #92400e; }
+@property --fimby-chip-pending-bg   { syntax: '<color>'; inherits: true; initial-value: #dbeafe; }
+@property --fimby-chip-pending-text { syntax: '<color>'; inherits: true; initial-value: #1e40af; }
+@property --fimby-chip-prayer-bg    { syntax: '<color>'; inherits: true; initial-value: #f3e8ff; }
+@property --fimby-chip-prayer-text  { syntax: '<color>'; inherits: true; initial-value: #6b21a8; }
+@property --fimby-chip-thankyou-bg  { syntax: '<color>'; inherits: true; initial-value: #ffe4e6; }
+@property --fimby-chip-thankyou-text { syntax: '<color>'; inherits: true; initial-value: #9f1239; }
+@property --fimby-chip-lament-bg    { syntax: '<color>'; inherits: true; initial-value: #fef9c3; }
+@property --fimby-chip-lament-text  { syntax: '<color>'; inherits: true; initial-value: #854d0e; }
+@property --fimby-chip-neutral-bg   { syntax: '<color>'; inherits: true; initial-value: #f1f5f9; }
+@property --fimby-chip-neutral-text { syntax: '<color>'; inherits: true; initial-value: #94a3b8; }
+@property --fimby-chip-teal-bg      { syntax: '<color>'; inherits: true; initial-value: #eaf6fa; }
+
+
+/* ──────────────────────────────────────────────────────────────────
+   LIGHT MODE (defaults)
+   ────────────────────────────────────────────────────────────────── */
+:root {
+
+  /* ── Surfaces ─────────────────────────────────────────────────── */
+  --fimby-surface-page:     #F0EBE3;   /* Warm Grey  — page backgrounds           */
+  --fimby-surface-section:  #EBE6DD;   /* Oat        — alternating bands, pills    */
+  --fimby-surface-card:     #FAF7F2;   /* Cream      — cards, sticky headers       */
+  --fimby-surface-raised:   #FAF7F2;   /* Cream      — modals                      */
+  --fimby-surface-popover:  #FAF7F2;   /* Cream      — menus, popovers             */
+  --fimby-surface-input:    #F7F3EB;   /* Linen      — inputs, footers, chip bg    */
+
+  /* ── Borders ──────────────────────────────────────────────────── */
+  --fimby-border-subtle:    #E0D9CF;   /* Sandstone  — lightest borders             */
+  --fimby-border-default:   #D6CFC5;   /* Clay       — standard borders, dividers   */
+  --fimby-border-strong:    #CCC5BB;   /* Stone      — heavy emphasis borders       */
+
+  /* ── Dividers (rgba for transparency on any surface) ──────────── */
+  --fimby-divider-subtle:   rgba(38, 26, 17, 0.06);
+  --fimby-divider-default:  rgba(38, 26, 17, 0.10);
+
+  /* ── Text Hierarchy ───────────────────────────────────────────── */
+  --fimby-text-strong:      #261A11;   /* Espresso   — headings, h1–h2              */
+  --fimby-text-primary:     #4A3526;   /* Umber      — body text, labels            */
+  --fimby-text-secondary:   #8B7355;   /* Bronze     — secondary text, hints, icons */
+  --fimby-text-muted:       #B5A088;   /* Sandstone  — meta text, timestamps        */
+  --fimby-text-placeholder: #B5A088;   /* Sandstone  — input placeholders           */
+  --fimby-text-disabled:    #CCC5BB;   /* Stone      — disabled controls            */
+
+  /* ── Brand Accent ─────────────────────────────────────────────── */
+  --fimby-brand-teal:          #67BBD2;
+  --fimby-brand-teal-hover:    #55A8BF;   /* darker on light bg  */
+  --fimby-brand-teal-pressed:  #4A9EB3;
+  --fimby-text-on-teal:        #261A11;   /* WCAG-safe on #67BBD2 fill */
+
+  /* ── Interaction States ───────────────────────────────────────── */
+  --fimby-hover-bg:     #EBE6DD;                    /* Oat       */
+  --fimby-pressed-bg:   #E0D9CF;                    /* Sandstone */
+  --fimby-selected-bg:  rgba(103, 187, 210, 0.12);  /* teal wash */
+  --fimby-disabled-bg:  #F7F3EB;                    /* Linen     */
+
+  /* ── Focus (keyboard accessibility) ───────────────────────────── */
+  --fimby-focus-ring:   #67BBD2;
+  --fimby-focus-glow:   rgba(103, 187, 210, 0.25);
+  --fimby-focus-error:  rgba(231, 76, 60, 0.30);
+
+  /* ── Overlays ─────────────────────────────────────────────────── */
+  --fimby-scrim:          rgba(38, 26, 17, 0.50);   /* warm modal backdrop */
+  --fimby-elevated-edge:  rgba(38, 26, 17, 0.08);   /* subtle outline      */
+
+  /* ── Semantic Status (base) ───────────────────────────────────── */
+  --fimby-success:  #27AE60;
+  --fimby-warning:  #F59E0B;
+  --fimby-error:    #E74C3C;
+  --fimby-info:     #0176D3;
+
+  /* ── Semantic Tints (banner / callout / chip backgrounds) ─────── */
+  --fimby-success-tint:  rgba(39, 174,  96, 0.10);
+  --fimby-warning-tint:  rgba(245, 158, 11, 0.10);
+  --fimby-error-tint:    rgba(231,  76, 60, 0.10);
+  --fimby-info-tint:     rgba(1,   118, 211, 0.10);
+
+  /* ── Semantic Borders (inline alerts / input validation) ──────── */
+  --fimby-success-border:  rgba(39, 174,  96, 0.30);
+  --fimby-warning-border:  rgba(245, 158, 11, 0.30);
+  --fimby-error-border:    rgba(231,  76, 60, 0.30);
+  --fimby-info-border:     rgba(1,   118, 211, 0.30);
+
+  /* ── Form Validation ──────────────────────────────────────────── */
+  --fimby-input-border-default:  #E0D9CF;
+  --fimby-input-border-hover:    #D6CFC5;
+  --fimby-input-border-error:    rgba(231, 76, 60, 0.50);
+  --fimby-input-bg-error:        rgba(231, 76, 60, 0.06);
+  --fimby-validation-text-error: #C62828;
+
+  /* ── On-Behalf-Of Messaging Accent ────────────────────────────── */
+  --fimby-on-behalf-solid:      #7c4dff;                    /* Violet — sent bubble bg       */
+  --fimby-on-behalf-tint:       rgba(124, 77, 255, 0.08);   /* Violet wash — received bubble */
+  --fimby-on-behalf-border:     rgba(124, 77, 255, 0.20);   /* Violet border — received      */
+  --fimby-on-behalf-text:       #7c4dff;                    /* Violet — via labels            */
+  --fimby-on-behalf-banner:     rgba(156, 39, 176, 0.08);   /* Purple wash — banner bg       */
+  --fimby-on-behalf-banner-bdr: rgba(156, 39, 176, 0.15);   /* Purple — banner border        */
+
+  /* ── Earth-Tone Palette (WCAG AA 4.5:1+ with white text) ────────
+     8 muted nature-inspired tones used for card accents, badges,
+     and hub pills.  Dark-mode variants override below.            ── */
+  --fimby-earth-teal:          #357280;  /* Water       — Event, Contacts hub       */
+  --fimby-earth-sage:          #476B4C;  /* Forest      — Ask & Offer, Posts hub    */
+  --fimby-earth-ochre:         #7D6234;  /* Wheat       — God Story, Shared Life    */
+  --fimby-earth-slate:         #4E6878;  /* Morning sky — Lament                    */
+  --fimby-earth-terracotta:    #8A5936;  /* Clay        — Thank You, Borrowing hub  */
+  --fimby-earth-dusty-violet:  #625A76;  /* Contemplative — Prayer                 */
+  --fimby-earth-moss:          #566744;  /* New shoots  — Bio                       */
+  --fimby-earth-driftwood:     #6B5E50;  /* Shelf wood  — Library                   */
+
+  /* ── Feed-Type Badges (white text on all, shared across modes) ── */
+  --fimby-badge-story:      rgba(163, 128,  69, 0.90);  /* Ochre        */
+  --fimby-badge-god-story:  rgba(163, 128,  69, 0.90);  /* Ochre        */
+  --fimby-badge-thank-you:  rgba(176, 114,  72, 0.90);  /* Terracotta   */
+  --fimby-badge-lament:     rgba( 94, 123, 146, 0.85);  /* Slate        */
+  --fimby-badge-prayer:     rgba(126, 116, 149, 0.90);  /* Dusty Violet */
+  --fimby-badge-bio:        rgba(107, 125,  84, 0.90);  /* Moss         */
+  --fimby-badge-neighbourhood: rgba(175, 130, 125, 0.90);  /* Earthy blush — Neighbourhood Moment */
+  --fimby-badge-ask-offer:  rgba( 91, 135,  96, 0.90);  /* Sage         */
+  --fimby-badge-event:      rgba( 68, 142, 158, 0.90);  /* Teal         */
+  --fimby-badge-library:    rgba(141, 123, 106, 0.90);  /* Driftwood    */
+  --fimby-badge-direct:     rgba( 94, 123, 146, 0.85);  /* Slate — DMs  */
+
+  /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
+  --fimby-vouch-solid:    #925930;                       /* Copper — solid accent           */
+  --fimby-vouch-text:     #925930;                       /* Copper — text emphasis          */
+  --fimby-badge-vouch:    rgba(146, 89, 48, 0.90);       /* Copper badge, white text 4.65:1 */
+  --fimby-vouch-tint:     rgba(146, 89, 48, 0.10);       /* Banner background               */
+  --fimby-vouch-border:   rgba(146, 89, 48, 0.30);       /* Banner border                   */
+
+  /* ── Status Chips (bg + text pairs for status pills) ─────────── */
+  --fimby-chip-active-bg:    #ecfdf5;   --fimby-chip-active-text:    #065f46;
+  --fimby-chip-expired-bg:   #fee2e2;   --fimby-chip-expired-text:   #991b1b;
+  --fimby-chip-draft-bg:     #ffedd5;   --fimby-chip-draft-text:     #92400e;
+  --fimby-chip-pending-bg:   #dbeafe;   --fimby-chip-pending-text:   #1e40af;
+  --fimby-chip-prayer-bg:    #f3e8ff;   --fimby-chip-prayer-text:    #6b21a8;
+  --fimby-chip-thankyou-bg:  #ffe4e6;   --fimby-chip-thankyou-text:  #9f1239;
+  --fimby-chip-lament-bg:    #fef9c3;   --fimby-chip-lament-text:    #854d0e;
+  --fimby-chip-neutral-bg:   #f1f5f9;   --fimby-chip-neutral-text:   #94a3b8;
+  --fimby-chip-teal-bg:      #eaf6fa;
+
+  /* ── CTA Button Fills (WCAG AA 4.5:1+ with white text) ──────── */
+  --fimby-btn-primary-bg:         #3A7D8C;
+  --fimby-btn-primary-bg-hover:   #336F7D;
+  --fimby-btn-primary-bg-active:  #2B5F6D;
+
+  --fimby-btn-success-bg:         #1A7B40;
+  --fimby-btn-success-bg-hover:   #166D38;
+  --fimby-btn-success-bg-active:  #0F5A2E;
+
+  --fimby-btn-danger-bg:          #C0392B;
+  --fimby-btn-danger-bg-hover:    #A93226;
+  --fimby-btn-danger-bg-active:   #922B21;
+
+  --fimby-btn-info-bg:            #0166BA;
+
+  --fimby-btn-secondary-bg:       var(--fimby-surface-card);
+
+  /* ── CTA Attention Strip (pending-action surfaces) ────────── */
+  --fimby-cta-strip-accent:        var(--fimby-btn-primary-bg);
+  --fimby-cta-strip-bg:            var(--fimby-chip-teal-bg);
+  --fimby-cta-strip-border-width:  4px;
+  --fimby-cta-strip-accent-urgent: var(--fimby-error);
+
+  /* ── CTA Button Non-Color Tokens ───────────────────────────── */
+  --fimby-btn-radius:        var(--fimby-radius-md);
+  --fimby-btn-font-size:     0.9375rem;
+  --fimby-btn-shadow:        0 2px 4px rgba(0, 0, 0, 0.15);
+  --fimby-btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --fimby-btn-border-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.15);
+
+  /* ── Decorative Badge Non-Color Tokens ────────────────────── */
+  --fimby-badge-radius:      var(--fimby-radius-full);
+  --fimby-badge-font-size:   0.75rem;
+  --fimby-badge-padding:     2px 10px;
+  --fimby-badge-font-weight: 600;
+
+  /* ── Brand Gradient ─────────────────────────────────────────── */
+  --fimby-gradient-brand:  linear-gradient(135deg, #667eea, #764ba2);
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  --fimby-header-height: 70px;  /* Universal header height — single row, acting-as chip inline */
+  --fimby-bottom-nav-height: 70px;
+  --fimby-modal-top-gap: 16px;  /* breathing room below header on desktop modals */
+  --fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap));
+
+  /* ── Shared Non-Color Tokens ──────────────────────────────────── */
+  --fimby-radius-sm:    8px;
+  --fimby-radius-md:    12px;
+  --fimby-radius-lg:    16px;
+  --fimby-radius-xl:    20px;
+  --fimby-radius-full:  9999px;
+
+  --fimby-shadow-card:       0 2px 8px rgba(0, 0, 0, 0.08);
+  --fimby-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --fimby-shadow-modal:      0 8px 24px rgba(0, 0, 0, 0.20);
+}
+
+/* Force page & section backgrounds to follow our tokens.
+   SLDS base ships `html { background: #eef4ff }` and `body { background: 0 0 }`
+   which override var-based background-color.  Using the `background` shorthand
+   with !important ensures our warm grey wins over every SLDS/EC layer.
+   The section-overlay variable kills the tinted overlay EC paints behind
+   each page section — without it the bottom of short pages shows grey. */
+html,
+body {
+  background: var(--fimby-surface-page, #F0EBE3) !important;
+}
+
+:root {
+  --dxp-c-section-image-overlay-color: transparent;
+  --dxp-c-section-background-color: var(--fimby-surface-page, #F0EBE3);
+}
+
+
+/* ──────────────────────────────────────────────────────────────────
+   DARK MODE — OS auto-detection
+   Applies when the OS prefers dark AND the user hasn't forced light.
+   ────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+
+    /* ── Surfaces ─────────────────────────────────────────────── */
+    --fimby-surface-page:     #14100D;
+    --fimby-surface-section:  #17120F;
+    --fimby-surface-card:     #1B1512;
+    --fimby-surface-raised:   #231B17;
+    --fimby-surface-popover:  #2A201B;
+    --fimby-surface-input:    #2F241F;
+
+    /* ── Borders ──────────────────────────────────────────────── */
+    --fimby-border-subtle:    #342924;
+    --fimby-border-default:   #3E312B;
+    --fimby-border-strong:    #4B3B34;
+
+    /* ── Dividers ─────────────────────────────────────────────── */
+    --fimby-divider-subtle:   rgba(245, 245, 245, 0.08);
+    --fimby-divider-default:  rgba(245, 245, 245, 0.12);
+
+    /* ── Text ─────────────────────────────────────────────────── */
+    --fimby-text-strong:      #FFFBF7;
+    --fimby-text-primary:     #F5F1ED;
+    --fimby-text-secondary:   #D6CFC7;
+    --fimby-text-muted:       #B3A79E;
+    --fimby-text-placeholder: #8F8177;
+    --fimby-text-disabled:    #6F625A;
+
+    /* ── Brand Accent ─────────────────────────────────────────── */
+    --fimby-brand-teal:          #67BBD2;
+    --fimby-brand-teal-hover:    #7AC7DC;   /* lighter on dark bg */
+    --fimby-brand-teal-pressed:  #55A8BF;
+    --fimby-text-on-teal:        #261A11;
+
+    /* ── Interaction States ───────────────────────────────────── */
+    --fimby-hover-bg:     #241C18;
+    --fimby-pressed-bg:   #2B211C;
+    --fimby-selected-bg:  rgba(103, 187, 210, 0.18);
+    --fimby-disabled-bg:  #191411;
+
+    /* ── Focus ────────────────────────────────────────────────── */
+    --fimby-focus-ring:   #67BBD2;
+    --fimby-focus-glow:   rgba(103, 187, 210, 0.35);
+    --fimby-focus-error:  rgba(231, 76, 60, 0.45);
+
+    /* ── Overlays ─────────────────────────────────────────────── */
+    --fimby-scrim:          rgba(0, 0, 0, 0.65);
+    --fimby-elevated-edge:  rgba(255, 251, 247, 0.06);
+
+    /* ── Semantic Status (base — universal) ───────────────────── */
+    --fimby-success:  #27AE60;
+    --fimby-warning:  #F59E0B;
+    --fimby-error:    #E74C3C;
+    --fimby-info:     #0176D3;
+
+    /* ── Semantic Tints ───────────────────────────────────────── */
+    --fimby-success-tint:  rgba(39, 174,  96, 0.18);
+    --fimby-warning-tint:  rgba(245, 158, 11, 0.18);
+    --fimby-error-tint:    rgba(231,  76, 60, 0.18);
+    --fimby-info-tint:     rgba(1,   118, 211, 0.18);
+
+    /* ── Semantic Borders ─────────────────────────────────────── */
+    --fimby-success-border:  rgba(39, 174,  96, 0.40);
+    --fimby-warning-border:  rgba(245, 158, 11, 0.40);
+    --fimby-error-border:    rgba(231,  76, 60, 0.40);
+    --fimby-info-border:     rgba(1,   118, 211, 0.40);
+
+    /* ── Form Validation ──────────────────────────────────────── */
+    --fimby-input-border-default:  #3E312B;
+    --fimby-input-border-hover:    #4B3B34;
+    --fimby-input-border-error:    rgba(231, 76, 60, 0.55);
+    --fimby-input-bg-error:        rgba(231, 76, 60, 0.12);
+    --fimby-validation-text-error: #FF8A80;
+
+    /* ── Earth-Tone Palette (WCAG AA 4.5:1+ with white, visible on dark) */
+    --fimby-earth-teal:          #3D8494;
+    --fimby-earth-sage:          #4F7655;
+    --fimby-earth-ochre:         #886D3C;
+    --fimby-earth-slate:         #56728A;
+    --fimby-earth-terracotta:    #96643F;
+    --fimby-earth-dusty-violet:  #6D6480;
+    --fimby-earth-moss:          #5F7250;
+    --fimby-earth-driftwood:     #756858;
+
+    /* ── On-Behalf-Of (boosted alpha for dark surfaces) ────────── */
+    --fimby-on-behalf-solid:      #9e7bff;                    /* Lighter violet on dark       */
+    --fimby-on-behalf-tint:       rgba(158, 123, 255, 0.15);  /* Visible wash on dark cards   */
+    --fimby-on-behalf-border:     rgba(158, 123, 255, 0.30);  /* Stronger border              */
+    --fimby-on-behalf-text:       #b49aff;                    /* Readable violet on dark      */
+    --fimby-on-behalf-banner:     rgba(186, 104, 200, 0.12);  /* Purple wash, higher alpha    */
+    --fimby-on-behalf-banner-bdr: rgba(186, 104, 200, 0.22);  /* Purple border, higher alpha  */
+
+    /* ── Vouch / Settling-in (dark surface contrast) ─────────────── */
+    --fimby-vouch-solid:    #B07347;                       /* Lifted for dark surfaces        */
+    --fimby-vouch-text:     #C68A5E;                       /* Lifted text on dark, 6.23:1     */
+    --fimby-badge-vouch:    rgba(176, 115, 71, 0.90);      /* Brighter base for dark, 4.64:1  */
+    --fimby-vouch-tint:     rgba(176, 115, 71, 0.18);      /* Boosted alpha for dark surfaces */
+    --fimby-vouch-border:   rgba(176, 115, 71, 0.40);      /* Boosted alpha for dark surfaces */
+
+    /* ── Status Chips (darker bg, lighter text for dark mode) ──── */
+    --fimby-chip-active-bg:    rgba(39, 174,  96, 0.18);  --fimby-chip-active-text:    #6ee7b7;
+    --fimby-chip-expired-bg:   rgba(231,  76, 60, 0.18);  --fimby-chip-expired-text:   #fca5a5;
+    --fimby-chip-draft-bg:     rgba(245, 158, 11, 0.18);  --fimby-chip-draft-text:     #fcd34d;
+    --fimby-chip-pending-bg:   rgba(1,   118, 211, 0.18); --fimby-chip-pending-text:   #93c5fd;
+    --fimby-chip-prayer-bg:    rgba(155,  89, 182, 0.18); --fimby-chip-prayer-text:    #d8b4fe;
+    --fimby-chip-thankyou-bg:  rgba(255, 107, 107, 0.18); --fimby-chip-thankyou-text:  #fda4af;
+    --fimby-chip-lament-bg:    rgba(245, 158, 11, 0.15);  --fimby-chip-lament-text:    #fde68a;
+    --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
+    --fimby-chip-teal-bg:      rgba(103, 187, 210, 0.15);
+
+    /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
+    --fimby-btn-primary-bg:         #3A7D8C;
+    --fimby-btn-primary-bg-hover:   #336F7D;
+    --fimby-btn-primary-bg-active:  #2B5F6D;
+
+    --fimby-btn-success-bg:         #1A7B40;
+    --fimby-btn-success-bg-hover:   #166D38;
+    --fimby-btn-success-bg-active:  #0F5A2E;
+
+    --fimby-btn-danger-bg:          #C0392B;
+    --fimby-btn-danger-bg-hover:    #A93226;
+    --fimby-btn-danger-bg-active:   #922B21;
+
+    --fimby-btn-info-bg:            #0166BA;
+
+    --fimby-btn-secondary-bg:       var(--fimby-surface-card);
+
+    /* ── CTA Attention Strip ──────────────────────────────────── */
+    --fimby-cta-strip-accent:        var(--fimby-btn-primary-bg);
+    --fimby-cta-strip-bg:            var(--fimby-chip-teal-bg);
+    --fimby-cta-strip-border-width:  4px;
+    --fimby-cta-strip-accent-urgent: var(--fimby-error);
+
+    --fimby-btn-shadow:        0 2px 4px rgba(0, 0, 0, 0.30);
+    --fimby-btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --fimby-btn-border-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
+
+    /* ── Brand Gradient (slightly lighter for dark) ──────────── */
+    --fimby-gradient-brand:  linear-gradient(135deg, #7b93ff, #8b5fbf);
+
+    /* ── Shadows (heavier for dark surfaces) ──────────────────── */
+    --fimby-shadow-card:       0 2px 8px rgba(0, 0, 0, 0.30);
+    --fimby-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.40);
+    --fimby-shadow-modal:      0 8px 24px rgba(0, 0, 0, 0.50);
+  }
+}
+
+
+/* ──────────────────────────────────────────────────────────────────
+   DARK MODE — Manual override via data-theme attribute
+   Applied when user explicitly toggles dark in FIMBY settings.
+   Duplicates the media-query block so the toggle works regardless
+   of OS preference.
+   ────────────────────────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+
+  /* ── Surfaces ───────────────────────────────────────────────── */
+  --fimby-surface-page:     #14100D;
+  --fimby-surface-section:  #17120F;
+  --fimby-surface-card:     #1B1512;
+  --fimby-surface-raised:   #231B17;
+  --fimby-surface-popover:  #2A201B;
+  --fimby-surface-input:    #2F241F;
+
+  /* ── Borders ────────────────────────────────────────────────── */
+  --fimby-border-subtle:    #342924;
+  --fimby-border-default:   #3E312B;
+  --fimby-border-strong:    #4B3B34;
+
+  /* ── Dividers ───────────────────────────────────────────────── */
+  --fimby-divider-subtle:   rgba(245, 245, 245, 0.08);
+  --fimby-divider-default:  rgba(245, 245, 245, 0.12);
+
+  /* ── Text ───────────────────────────────────────────────────── */
+  --fimby-text-strong:      #FFFBF7;
+  --fimby-text-primary:     #F5F1ED;
+  --fimby-text-secondary:   #D6CFC7;
+  --fimby-text-muted:       #B3A79E;
+  --fimby-text-placeholder: #8F8177;
+  --fimby-text-disabled:    #6F625A;
+
+  /* ── Brand Accent ───────────────────────────────────────────── */
+  --fimby-brand-teal:          #67BBD2;
+  --fimby-brand-teal-hover:    #7AC7DC;
+  --fimby-brand-teal-pressed:  #55A8BF;
+  --fimby-text-on-teal:        #261A11;
+
+  /* ── Interaction States ─────────────────────────────────────── */
+  --fimby-hover-bg:     #241C18;
+  --fimby-pressed-bg:   #2B211C;
+  --fimby-selected-bg:  rgba(103, 187, 210, 0.18);
+  --fimby-disabled-bg:  #191411;
+
+  /* ── Focus ──────────────────────────────────────────────────── */
+  --fimby-focus-ring:   #67BBD2;
+  --fimby-focus-glow:   rgba(103, 187, 210, 0.35);
+  --fimby-focus-error:  rgba(231, 76, 60, 0.45);
+
+  /* ── Overlays ───────────────────────────────────────────────── */
+  --fimby-scrim:          rgba(0, 0, 0, 0.65);
+  --fimby-elevated-edge:  rgba(255, 251, 247, 0.06);
+
+  /* ── Semantic Status ────────────────────────────────────────── */
+  --fimby-success:  #27AE60;
+  --fimby-warning:  #F59E0B;
+  --fimby-error:    #E74C3C;
+  --fimby-info:     #0176D3;
+
+  /* ── Semantic Tints ─────────────────────────────────────────── */
+  --fimby-success-tint:  rgba(39, 174,  96, 0.18);
+  --fimby-warning-tint:  rgba(245, 158, 11, 0.18);
+  --fimby-error-tint:    rgba(231,  76, 60, 0.18);
+  --fimby-info-tint:     rgba(1,   118, 211, 0.18);
+
+  /* ── Semantic Borders ───────────────────────────────────────── */
+  --fimby-success-border:  rgba(39, 174,  96, 0.40);
+  --fimby-warning-border:  rgba(245, 158, 11, 0.40);
+  --fimby-error-border:    rgba(231,  76, 60, 0.40);
+  --fimby-info-border:     rgba(1,   118, 211, 0.40);
+
+  /* ── Form Validation ────────────────────────────────────────── */
+  --fimby-input-border-default:  #3E312B;
+  --fimby-input-border-hover:    #4B3B34;
+  --fimby-input-border-error:    rgba(231, 76, 60, 0.55);
+  --fimby-input-bg-error:        rgba(231, 76, 60, 0.12);
+  --fimby-validation-text-error: #FF8A80;
+
+  /* ── Earth-Tone Palette (WCAG AA 4.5:1+ with white, visible on dark) */
+  --fimby-earth-teal:          #3D8494;
+  --fimby-earth-sage:          #4F7655;
+  --fimby-earth-ochre:         #886D3C;
+  --fimby-earth-slate:         #56728A;
+  --fimby-earth-terracotta:    #96643F;
+  --fimby-earth-dusty-violet:  #6D6480;
+  --fimby-earth-moss:          #5F7250;
+  --fimby-earth-driftwood:     #756858;
+
+  /* ── On-Behalf-Of (boosted alpha for dark surfaces) ────────── */
+  --fimby-on-behalf-solid:      #9e7bff;
+  --fimby-on-behalf-tint:       rgba(158, 123, 255, 0.15);
+  --fimby-on-behalf-border:     rgba(158, 123, 255, 0.30);
+  --fimby-on-behalf-text:       #b49aff;
+  --fimby-on-behalf-banner:     rgba(186, 104, 200, 0.12);
+  --fimby-on-behalf-banner-bdr: rgba(186, 104, 200, 0.22);
+
+  /* ── Vouch / Settling-in (dark surface contrast) ─────────────── */
+  --fimby-vouch-solid:    #B07347;                       /* Lifted for dark surfaces        */
+  --fimby-vouch-text:     #C68A5E;                       /* Lifted text on dark, 6.23:1     */
+  --fimby-badge-vouch:    rgba(176, 115, 71, 0.90);      /* Brighter base for dark, 4.64:1  */
+  --fimby-vouch-tint:     rgba(176, 115, 71, 0.18);      /* Boosted alpha for dark surfaces */
+  --fimby-vouch-border:   rgba(176, 115, 71, 0.40);      /* Boosted alpha for dark surfaces */
+
+  /* ── Status Chips (darker bg, lighter text for dark mode) ──── */
+  --fimby-chip-active-bg:    rgba(39, 174,  96, 0.18);  --fimby-chip-active-text:    #6ee7b7;
+  --fimby-chip-expired-bg:   rgba(231,  76, 60, 0.18);  --fimby-chip-expired-text:   #fca5a5;
+  --fimby-chip-draft-bg:     rgba(245, 158, 11, 0.18);  --fimby-chip-draft-text:     #fcd34d;
+  --fimby-chip-pending-bg:   rgba(1,   118, 211, 0.18); --fimby-chip-pending-text:   #93c5fd;
+  --fimby-chip-prayer-bg:    rgba(155,  89, 182, 0.18); --fimby-chip-prayer-text:    #d8b4fe;
+  --fimby-chip-thankyou-bg:  rgba(255, 107, 107, 0.18); --fimby-chip-thankyou-text:  #fda4af;
+  --fimby-chip-lament-bg:    rgba(245, 158, 11, 0.15);  --fimby-chip-lament-text:    #fde68a;
+  --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
+  --fimby-chip-teal-bg:      rgba(103, 187, 210, 0.15);
+
+  /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
+  --fimby-btn-primary-bg:         #3A7D8C;
+  --fimby-btn-primary-bg-hover:   #336F7D;
+  --fimby-btn-primary-bg-active:  #2B5F6D;
+
+  --fimby-btn-success-bg:         #1A7B40;
+  --fimby-btn-success-bg-hover:   #166D38;
+  --fimby-btn-success-bg-active:  #0F5A2E;
+
+  --fimby-btn-danger-bg:          #C0392B;
+  --fimby-btn-danger-bg-hover:    #A93226;
+  --fimby-btn-danger-bg-active:   #922B21;
+
+  --fimby-btn-info-bg:            #0166BA;
+
+  --fimby-btn-secondary-bg:       var(--fimby-surface-card);
+
+  /* ── CTA Attention Strip ──────────────────────────────────── */
+  --fimby-cta-strip-accent:        var(--fimby-btn-primary-bg);
+  --fimby-cta-strip-bg:            var(--fimby-chip-teal-bg);
+  --fimby-cta-strip-border-width:  4px;
+  --fimby-cta-strip-accent-urgent: var(--fimby-error);
+
+  --fimby-btn-shadow:        0 2px 4px rgba(0, 0, 0, 0.30);
+  --fimby-btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --fimby-btn-border-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
+
+  /* ── Brand Gradient (slightly lighter for dark) ──────────── */
+  --fimby-gradient-brand:  linear-gradient(135deg, #7b93ff, #8b5fbf);
+
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --fimby-shadow-card:       0 2px 8px rgba(0, 0, 0, 0.30);
+  --fimby-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.40);
+  --fimby-shadow-modal:      0 8px 24px rgba(0, 0, 0, 0.50);
+}

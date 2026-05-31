@@ -1,0 +1,19 @@
+node_modules
+
+# Environment files (all variants — never commit any of these)
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Salesforce JWT signing key (must come from SF_PRIVATE_KEY_BASE64 env var)
+sf-jwt.key
+*.key
+*.pem
+
+# Vercel
+.vercel
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

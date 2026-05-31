@@ -1,0 +1,61 @@
+<template>
+    <div class="panel-body">
+        <!-- Original task summary -->
+        <div class="summary-card">
+            <div class="summary-header">
+                <span class="category-badge">{panelData.originalCategory}</span>
+            </div>
+            <p class="summary-text">{panelData.summary}</p>
+        </div>
+
+        <!-- Escalation reason -->
+        <div class="reason-section">
+            <h4 class="section-label">Escalation reason</h4>
+            <p class="reason-text">{panelData.escalationReason}</p>
+        </div>
+
+        <!-- Escalated to + date -->
+        <div class="detail-card">
+            <div class="detail-row">
+                <span class="detail-label">Escalated to</span>
+                <span class="detail-value">{panelData.escalatedToName}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Escalated on</span>
+                <span class="detail-value">{panelData.escalatedDate}</span>
+            </div>
+        </div>
+
+        <!-- Resolution (if resolved) -->
+        <template lwc:if={panelData.isResolved}>
+            <div class="resolution-card">
+                <div class="resolution-header">
+                    <span class="resolved-badge">Resolved</span>
+                    <span class="resolution-date">{panelData.resolutionDate}</span>
+                </div>
+                <template lwc:if={panelData.resolutionNotes}>
+                    <p class="resolution-text">{panelData.resolutionNotes}</p>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <div class="footer-actions">
+            <template lwc:if={showFollowUp}>
+                <button class="btn-primary" onclick={handleFollowUp}>
+                    Follow Up
+                </button>
+            </template>
+            <template lwc:if={showReopen}>
+                <button class="btn-secondary" onclick={handleReopen}>
+                    Reopen
+                </button>
+            </template>
+            <button class="btn-secondary" onclick={handleTransferOwnership}>
+                Transfer Ownership
+            </button>
+        </div>
+    </div>
+</template>

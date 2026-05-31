@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Created_From_Split__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Tracks whether this adjacency was auto-created during a neighbourhood split.</description>
+    <externalId>false</externalId>
+    <label>Created From Split</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

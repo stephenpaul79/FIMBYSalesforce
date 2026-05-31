@@ -1,0 +1,5 @@
+{
+  "apiName" : "Ask_or_Offer_Post__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

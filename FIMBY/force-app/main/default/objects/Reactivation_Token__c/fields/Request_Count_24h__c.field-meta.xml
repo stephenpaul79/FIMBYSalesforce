@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Request_Count_24h__c</fullName>
+    <defaultValue>1</defaultValue>
+    <description>Rolling counter incremented when a new token is requested for the same Contact within 24h. Used by FimbyReactivationController to throttle abuse (max 3 / 24h).</description>
+    <externalId>false</externalId>
+    <label>Request Count 24h</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

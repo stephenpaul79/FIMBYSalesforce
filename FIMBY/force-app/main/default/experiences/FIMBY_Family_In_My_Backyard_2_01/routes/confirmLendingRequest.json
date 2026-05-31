@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "eb02b43c-3d3c-44d7-bfab-65883e402ce3",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Confirm_Lending_Request__c",
+  "id" : "3d097fa4-68bc-40b3-b4a8-7d78464d88d6",
+  "label" : "Confirm Lending Request",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-confirm-lending-request",
+  "type" : "route",
+  "urlPrefix" : "confirm-lending-request"
+}

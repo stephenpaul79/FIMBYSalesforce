@@ -1,0 +1,66 @@
+<template>
+    <div class="task-list-container">
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="moderator" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={showEmptyState}>
+            <div class="empty-state">
+                <img src={analysisIconUrl} alt="" class="empty-icon">
+                <h3 class="empty-title">{emptyTitle}</h3>
+                <p class="empty-message">{emptyMessage}</p>
+            </div>
+        </template>
+
+        <template lwc:if={hasTasks}>
+            <ul class="task-rows" role="list">
+                <template for:each={processedTasks} for:item="task">
+                    <li key={task.Id} class="task-row" role="listitem">
+                        <div class="task-row-top">
+                            <span class={task._categoryClass}>{task._categoryLabel}</span>
+                            <span class="task-summary">{task._displaySummary}</span>
+                            <span class={task._ageClass}>{task._age}</span>
+                        </div>
+                        <div class="task-row-bottom">
+                            <div class="task-meta">
+                                <template lwc:if={task._isOverdue}>
+                                    <span class="overdue-badge" title="Open more than 24 hours">Overdue</span>
+                                </template>
+                                <template lwc:if={task._reportCountLabel}>
+                                    <span class="report-count">{task._reportCountLabel}</span>
+                                </template>
+                            </div>
+                            <div class="task-actions">
+                                <template for:each={task._ctas} for:item="cta">
+                                    <button key={cta.action}
+                                            class={cta.btnClass}
+                                            type="button"
+                                            data-task-id={task.Id}
+                                            data-action={cta.action}
+                                            onclick={handleCtaClick}
+                                            title={cta.label}>
+                                        <img lwc:if={cta.icon} src={cta.iconUrl} alt="" class="cta-icon">
+                                        <span class="cta-label">{cta.label}</span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+
+            <template lwc:if={showLoadMore}>
+                <div class="load-more-container">
+                    <button class="load-more-btn" onclick={handleLoadMore} disabled={isLoadingMore}>
+                        <template lwc:if={isLoadingMore}>
+                            <lightning-spinner alternative-text="Loading more..." size="small"></lightning-spinner>
+                        </template>
+                        <template lwc:else>Load More</template>
+                    </button>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

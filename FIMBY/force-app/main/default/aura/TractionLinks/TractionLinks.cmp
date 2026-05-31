@@ -1,0 +1,16 @@
+<aura:component controller="TractionLinksController" implements="force:appHostable,flexipage:availableForAllPageTypes">
+
+<aura:handler name="init" value="{!this}" action="{!c.init}" />
+<aura:attribute name="links" type="List"/>
+	
+  <header class="slds-card__header slds-grid">
+    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+      <div class="slds-media__figure">
+			<aura:iteration items="{!v.links}" var="link">
+				<a href="{!link.Link__c}">{!link.Name}</a> <br/>
+			</aura:iteration>
+      	</div>
+      </div>
+  </header>
+
+</aura:component>

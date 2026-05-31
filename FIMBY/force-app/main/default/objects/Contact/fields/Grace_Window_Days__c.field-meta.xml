@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Grace_Window_Days__c</fullName>
+    <description>Per-contact grace window override (days). FimbyGraceExpiryBatch falls back to FIMBY_App_Settings__mdt.Default_Grace_Window_Days__c (default 30) when this is null. Lets a sys admin extend or shorten an individual neighbour's window without a code change.</description>
+    <externalId>false</externalId>
+    <label>Grace Window Days</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,466 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Set up a new connection" onkeydown={handleKeydown}>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <template lwc:if={resumeMode}>Upload signed form</template>
+                        <template lwc:else>Set Up Connection</template>
+                    </h2>
+                    <button type="button" class="close-x" onclick={close} aria-label="Close">&times;</button>
+                </div>
+
+                <!-- Resume mode: paper-form upload -->
+                <template lwc:if={resumeMode}>
+                    <div class="step-content">
+                        <template lwc:if={uploadSubmitted}>
+                            <p class="step-label">Got it — thanks!</p>
+                            <div class="review-card">
+                                <p>We've received the signed form. Our team will review it and reach out to the supportee
+                                   to confirm everything is good. Watch your email — we'll let you know when this
+                                   relationship is active.</p>
+                            </div>
+                            <button type="button" class="nav-btn nav-next" onclick={handleResumeDoneClose}>Done</button>
+                        </template>
+
+                        <template lwc:else>
+                            <p class="step-label">Upload the signed form</p>
+                            <p class="helper-text helper-text--quiet">A clear photo or PDF of every page works fine — we just need to be able to read the signatures.</p>
+                            <c-fimby-image-uploader
+                                allow-documents={documentUploadEnabled}
+                                onimageuploaded={handleUploadComplete}
+                                onimageselected={handleUploadSelected}>
+                            </c-fimby-image-uploader>
+                            <template lwc:if={error}>
+                                <div class="error-msg" role="alert">{error}</div>
+                            </template>
+                            <button type="button" class="nav-btn nav-next" disabled={isSubmitting} onclick={handleSubmitUpload}>
+                                <template lwc:if={isSubmitting}>Submitting…</template>
+                                <template lwc:else>Submit signed form</template>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+
+                <template lwc:else>
+
+                <!-- Step 1: Type Selection -->
+                <template lwc:if={isTypeStep}>
+                    <div class="step-content">
+                        <p class="step-label">What kind of connection?</p>
+                        <div class="type-cards">
+                            <button type="button" class={supportTypeClass} data-type="Support_Person" onclick={handleSelectType}>
+                                <img src={careIconUrl} alt="" class="type-icon" />
+                                <span class="type-label">Support a neighbour</span>
+                            </button>
+                            <button type="button" class={groupTypeClass} data-type="Community_Group_Rep" onclick={handleSelectType}>
+                                <img src={communityIconUrl} alt="" class="type-icon" />
+                                <span class="type-label">Represent a community group</span>
+                            </button>
+                        </div>
+
+                        <template lwc:if={showPaperPathToggle}>
+                            <label class="paper-toggle">
+                                <input type="checkbox" checked={usePaperPath} onchange={handlePaperPathToggle} />
+                                <span>This person will not be using FIMBY directly — collect their consent on paper.</span>
+                            </label>
+                            <p class="helper-text helper-text--quiet">
+                                If you check this, we'll guide you through collecting their identifiers,
+                                emailing you a printable form, and uploading the signed scan.
+                            </p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Paper path: identifier collection -->
+                <template lwc:if={isPaperIdentifiersStep}>
+                    <div class="step-content">
+                        <p class="step-label">Tell us about the person you'll support</p>
+                        <p class="helper-text">We'll print these onto the paper form so the right person can sign in front of a witness if they need one.</p>
+
+                        <div class="form-row">
+                            <label class="form-field">
+                                <span>First name</span>
+                                <input type="text" data-field="paperFirstName"
+                                       value={paperFirstName} oninput={handlePaperFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Last name</span>
+                                <input type="text" data-field="paperLastName"
+                                       value={paperLastName} oninput={handlePaperFieldChange} />
+                            </label>
+                        </div>
+                        <label class="form-field">
+                            <span>Date of birth (optional)</span>
+                            <input type="date" data-field="paperBirthdate"
+                                   value={paperBirthdate} oninput={handlePaperFieldChange} />
+                        </label>
+                        <label class="form-field">
+                            <span>Mailing street</span>
+                            <input type="text" data-field="paperStreet"
+                                   value={paperStreet} oninput={handlePaperFieldChange} />
+                        </label>
+                        <div class="form-row">
+                            <label class="form-field">
+                                <span>City</span>
+                                <input type="text" data-field="paperCity"
+                                       value={paperCity} oninput={handlePaperFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Postal code</span>
+                                <input type="text" data-field="paperPostalCode"
+                                       value={paperPostalCode} oninput={handlePaperFieldChange} />
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-field">
+                                <span>Phone</span>
+                                <input type="tel" data-field="paperPhone"
+                                       value={paperPhone} oninput={handlePaperFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Email</span>
+                                <input type="email" data-field="paperEmail"
+                                       value={paperEmail} oninput={handlePaperFieldChange} />
+                            </label>
+                        </div>
+                        <p class="helper-text helper-text--quiet">A phone or an email is required so our team can verify with them.</p>
+
+                        <label class="form-field">
+                            <span>Your relationship to this person</span>
+                            <select data-field="paperRelationship"
+                                    value={paperRelationship} onchange={handlePaperFieldChange}>
+                                <option value="">Choose one…</option>
+                                <option value="Neighbour">Neighbour</option>
+                                <option value="Family member">Family member</option>
+                                <option value="Friend">Friend</option>
+                                <option value="Client through my work">Client through my work</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </label>
+
+                        <label class="form-field">
+                            <span>Anything we should know?</span>
+                            <textarea data-field="notes" maxlength="500"
+                                      value={notes} oninput={handleNotesInput}></textarea>
+                        </label>
+                    </div>
+                </template>
+
+                <!-- Step 2: Identity Search -->
+                <template lwc:if={isIdentityStep}>
+                    <div class="step-content">
+                        <p class="step-label">
+                            <template lwc:if={isSupportPerson}>Who would you like to support?</template>
+                            <template lwc:elseif={isCommunityGroup}>Which community group?</template>
+                        </p>
+                        <div class="identity-lookup-container">
+                            <template lwc:if={selectedIdentity}>
+                                <div class="selected-pill">
+                                    <span class="pill-label">{selectedIdentityName}</span>
+                                    <button type="button" class="pill-clear" onclick={handleClearIdentity} aria-label="Clear selection">&times;</button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <input type="text" class="search-input" placeholder="Start typing a name..." value={searchTerm} oninput={handleSearchInput} aria-label="Search" />
+                            </template>
+                            <template lwc:if={searchResults.length}>
+                                <div class="search-results" role="listbox">
+                                    <template for:each={searchResults} for:item="result">
+                                        <button key={result.id} type="button" class="search-result-item" role="option" data-id={result.id} onclick={handleSelectIdentity}>
+                                            {result.name}
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:if={showAddYourGroup}>
+                                <p class="helper-text">Don't see your group?</p>
+                                <button type="button" class="nav-btn nav-next add-group-btn" onclick={handleAddYourGroup}>
+                                    Add your group
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Create new organization -->
+                <template lwc:if={isCreateOrgStep}>
+                    <div class="step-content">
+                        <p class="step-label">Tell us about your group</p>
+                        <p class="helper-text">A neighbourhood moderator will review this before your group goes live.</p>
+
+                        <label class="form-field">
+                            <span>Organization name</span>
+                            <input type="text" data-field="orgName" value={orgName} oninput={handleOrgFieldChange} />
+                        </label>
+                        <label class="form-field">
+                            <span>Street address</span>
+                            <input type="text" data-field="orgStreet" value={orgStreet} oninput={handleOrgFieldChange} />
+                        </label>
+                        <div class="form-row">
+                            <label class="form-field">
+                                <span>City</span>
+                                <input type="text" data-field="orgCity" value={orgCity} oninput={handleOrgFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Province</span>
+                                <input type="text" data-field="orgState" value={orgState} oninput={handleOrgFieldChange} />
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-field">
+                                <span>Postal code</span>
+                                <input type="text" data-field="orgPostalCode" value={orgPostalCode} oninput={handleOrgFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Country</span>
+                                <input type="text" data-field="orgCountry" value={orgCountry} oninput={handleOrgFieldChange} />
+                            </label>
+                        </div>
+                        <label class="form-field">
+                            <span>What kind of group is this?</span>
+                            <select data-field="orgType" value={orgType} onchange={handleOrgFieldChange}>
+                                <template for:each={orgTypeOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </label>
+                        <label class="form-field">
+                            <span>Your role at this organization</span>
+                            <input type="text" data-field="requesterOrgRole" value={requesterOrgRole} oninput={handleOrgFieldChange}
+                                   placeholder="e.g. Pastor, Director, volunteer coordinator" />
+                        </label>
+                        <label class="form-field">
+                            <span>Website (optional)</span>
+                            <input type="url" data-field="orgWebsite" value={orgWebsite} oninput={handleOrgFieldChange} />
+                        </label>
+                        <label class="form-field">
+                            <span>Public description (optional)</span>
+                            <textarea data-field="orgDescription" value={orgDescription} oninput={handleOrgFieldChange}></textarea>
+                        </label>
+
+                        <label class="paper-toggle">
+                            <input type="checkbox" checked={isRegisteredCharity} data-field="isRegisteredCharity" onchange={handleOrgFieldChange} />
+                            <span>Registered charity?</span>
+                        </label>
+
+                        <template lwc:if={isRegisteredCharity}>
+                            <label class="form-field">
+                                <span>CRA charity listing URL</span>
+                                <input type="url" data-field="charityVerificationUrl" value={charityVerificationUrl} oninput={handleOrgFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Charity / BN registration number</span>
+                                <input type="text" data-field="charityRegistrationNumber" value={charityRegistrationNumber} oninput={handleOrgFieldChange} />
+                            </label>
+                            <p class="helper-text helper-text--quiet">Provide a CRA listing URL or registration number so a moderator can verify.</p>
+                        </template>
+                        <template lwc:else>
+                            <p class="helper-text">Provide at least one way to verify your group:</p>
+                            <label class="form-field">
+                                <span>Organization phone</span>
+                                <input type="tel" data-field="orgPhone" value={orgPhone} oninput={handleOrgFieldChange} />
+                            </label>
+                            <label class="form-field">
+                                <span>Organization email</span>
+                                <input type="email" data-field="orgEmail" value={orgEmail} oninput={handleOrgFieldChange} />
+                            </label>
+                            <c-fimby-image-uploader allow-documents={documentUploadEnabled} onimageselected={handleVerificationDocSelected}></c-fimby-image-uploader>
+                            <p class="helper-text helper-text--quiet">A letter, photo, or PDF works — optional if phone or email is provided.</p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Step 3: Neighbourhood (community groups only) -->
+                <template lwc:if={isNeighbourhoodStep}>
+                    <div class="step-content">
+                        <p class="step-label">Which neighbourhood will you represent them in?</p>
+                        <template lwc:if={neighbourhoodsLoading}>
+                            <p class="helper-text">Loading neighbourhoods...</p>
+                        </template>
+                        <template lwc:else>
+                            <template lwc:if={neighbourhoodOptions.length}>
+                                <template lwc:if={selectedNeighbourhood}>
+                                    <div class="neighbourhood-selected-container">
+                                        <div class="selected-pill">
+                                            <span class="pill-label">{selectedNeighbourhoodName}</span>
+                                            <button type="button" class="pill-clear" onclick={handleClearNeighbourhood} aria-label="Clear neighbourhood selection">&times;</button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="radio-list">
+                                        <template for:each={neighbourhoodOptions} for:item="opt">
+                                            <button key={opt.id} type="button" class="radio-item" data-id={opt.id} onclick={handleNeighbourhoodSelect}>
+                                                {opt.name}
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <p class="helper-text">This organisation isn't linked to any neighbourhoods yet. An admin needs to add the organisation to one or more neighbourhoods before you can represent them here.</p>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Step 4: Authorization -->
+                <template lwc:if={isAuthStep}>
+                    <div class="step-content">
+                        <div class="auth-header">
+                            <img src={trustIconUrl} alt="" class="step-icon" />
+                            <p class="step-label">Help us verify your connection</p>
+                        </div>
+                        <template lwc:if={isCommunityGroup}>
+                            <p class="helper-text">Upload a photo or PDF of a letter, email, or other document that confirms your relationship to this community group.</p>
+                        </template>
+                        <template lwc:elseif={isSupportPerson}>
+                            <p class="helper-text">Upload a photo or PDF of a letter, email, or other document that shows you have permission / authority to use FIMBY on this person's behalf.</p>
+                        </template>
+                        <c-fimby-image-uploader allow-documents={documentUploadEnabled} onimageuploaded={handleImageUploaded} onimageselected={handleImageSelected}></c-fimby-image-uploader>
+                        <template lwc:if={authImageUploading}>
+                            <p class="helper-text">Uploading...</p>
+                        </template>
+                        <template lwc:if={authImageError}>
+                            <p class="error-msg" role="alert">{authImageError}</p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Step 5: Notes -->
+                <template lwc:if={isNotesStep}>
+                    <div class="step-content">
+                        <p class="step-label">Anything you'd like us to know?</p>
+                        <textarea class="notes-input" maxlength="500" placeholder="Optional context about your connection..." value={notes} oninput={handleNotesInput}></textarea>
+                    </div>
+                </template>
+
+                <!-- Step 6: Review -->
+                <template lwc:if={isReviewStep}>
+                    <div class="step-content">
+                        <template lwc:if={orgSubmitted}>
+                            <p class="step-label">Submitted for review</p>
+                            <div class="review-card">
+                                <p>Thanks — we've received your request for <strong>{reviewSummary.identity}</strong>.</p>
+                                <p>A neighbourhood moderator will review your group and your representative request.
+                                   We'll let you know when you can start acting as this organization on FIMBY.</p>
+                            </div>
+                        </template>
+
+                        <template lwc:elseif={paperDraftSubmitted}>
+                            <p class="step-label">Check your inbox</p>
+                            <div class="review-card">
+                                <p>We've emailed you the printable Authorized Supporter Form for
+                                    <strong>{reviewSummary.identity}</strong>.</p>
+                                <p>Print it, walk it through with them, and once it's signed,
+                                   come back to FIMBY to upload a scan or photo. The email has the
+                                   exact link to pick up where you left off.</p>
+                                <p class="helper-text helper-text--quiet">If you can't find the email,
+                                   you'll also find this draft in My Stuff → Your support relationships.</p>
+                            </div>
+                        </template>
+
+                        <template lwc:else>
+                            <p class="step-label">Review your request</p>
+                            <div class="review-card">
+                                <p><strong>Type:</strong> {reviewSummary.type}</p>
+                                <p><strong>Identity:</strong> {reviewSummary.identity}</p>
+                                <template lwc:if={reviewSummary.neighbourhood}>
+                                    <p><strong>Neighbourhood:</strong> {reviewSummary.neighbourhood}</p>
+                                </template>
+                                <template lwc:if={isNotPaperPath}>
+                                    <p><strong>Authorization:</strong>
+                                        <template lwc:if={reviewSummary.hasAuth}> Uploaded</template>
+                                        <template lwc:else> Not provided</template>
+                                    </p>
+                                </template>
+                                <template lwc:if={reviewSummary.hasNotes}>
+                                    <p><strong>Notes:</strong> {notes}</p>
+                                </template>
+                                <template lwc:if={reviewSummary.paperPath}>
+                                    <p class="helper-text helper-text--quiet">
+                                        After you submit, we'll email you a printable consent form
+                                        with all of these details pre-filled.
+                                    </p>
+                                </template>
+                            </div>
+
+                            <template lwc:if={isCommunityGroup}>
+                                <div class="agreement-block">
+                                    <h3>Community Group Agreement</h3>
+                                    <p>Version <strong>{cgaVersion}</strong>
+                                        <template lwc:if={effectiveCgaDateLabel}>
+                                            , effective {effectiveCgaDateLabel}
+                                        </template>.
+                                    </p>
+                                    <p>
+                                        <a href={cgaUrl} target="_blank" rel="noopener noreferrer"
+                                           onclick={handleCgaLinkTap}>
+                                            Open the Community Group Agreement in a new tab
+                                        </a>
+                                    </p>
+                                    <label class="form-field form-field--check">
+                                        <input type="checkbox" disabled={cgaCheckboxDisabled}
+                                               checked={cgaChecked} onchange={handleCgaCheckChange} />
+                                        <span>On behalf of this organization, I have read and agree to the FIMBY
+                                              Community Group Agreement.</span>
+                                    </label>
+                                </div>
+                            </template>
+
+                            <template lwc:if={usePaperPath}>
+                                <div class="agreement-block">
+                                    <h3>Supporter responsibilities</h3>
+                                    <p>
+                                        <a href={tosUrl} target="_blank" rel="noopener noreferrer"
+                                           onclick={handleTosLinkTap}>
+                                            Open the FIMBY Terms of Service in a new tab
+                                        </a>
+                                    </p>
+                                    <label class="form-field form-field--check">
+                                        <input type="checkbox" disabled={tosCheckboxDisabled}
+                                               checked={tosChecked} onchange={handleTosCheckChange} />
+                                        <span>I have read the FIMBY Terms of Service and I'll only use
+                                              this account to act for the person I named above.</span>
+                                    </label>
+                                </div>
+                            </template>
+
+                            <template lwc:if={submitHint}>
+                                <p class="helper-text helper-text--quiet">{submitHint}</p>
+                            </template>
+                            <template lwc:if={error}>
+                                <div class="error-msg" role="alert">{error}</div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <div class="modal-footer">
+                    <div class="footer-left">
+                        <template lwc:if={showFooterBack}>
+                            <button type="button" class="nav-btn nav-back" onclick={handleBack} aria-label="Go back">&lt; Back</button>
+                        </template>
+                    </div>
+                    <div class="footer-right">
+                        <template lwc:if={showFooterDone}>
+                            <button type="button" class="nav-btn nav-next" onclick={handleSuccessDoneClose}>Done</button>
+                        </template>
+                        <template lwc:if={showNext}>
+                            <button type="button" class="nav-btn nav-next" disabled={cannotProceed} onclick={handleNext}>Next &gt;</button>
+                        </template>
+                        <template lwc:if={showSubmit}>
+                            <button type="button" class="nav-btn nav-next" disabled={submitDisabled} onclick={handleSubmit}>
+                                <template lwc:if={isSubmitting}>Submitting...</template>
+                                <template lwc:else>Submit</template>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

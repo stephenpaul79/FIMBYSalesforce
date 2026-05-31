@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Neighbour__c</fullName>
+    <formula>$User.Neighbourhood_Account_ID__c = Account.Id
+&amp;&amp;
+!ISBLANK(AccountId)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>My Neighbour</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

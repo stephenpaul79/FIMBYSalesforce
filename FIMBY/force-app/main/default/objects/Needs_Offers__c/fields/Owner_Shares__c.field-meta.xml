@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Owner_Shares__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>Number of shares the organiser is keeping for themselves. Subtracted from Total_Quantity__c to determine shares available for reservation.</description>
+    <externalId>false</externalId>
+    <label>Owner Shares</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,54 @@
+---
+description: Profile permission reminders — never deploy profiles; list items for manual sys admin updates
+alwaysApply: true
+---
+
+# Salesforce Profile Permissions
+
+## Never Deploy Profiles
+
+**Do not deploy Profile metadata.** Profile deployments often overwrite or wipe out existing permission customizations. The sys admin manages profile permissions manually.
+
+## After Successful Deployment: List Items for Manual Profile Update
+
+As the **final step** after any successful deployment, explicitly list all **net new** items that require manual profile permission updates. Modified items already have correct permissions; only newly created components need to be added to profiles. The sys admin will apply these in the org.
+
+### Items to List (when created)
+
+| Metadata Type | What to List | Example |
+|---------------|--------------|---------|
+| **Apex Classes** | Class API names | `MyNewController`, `MyService` |
+| **Apex Triggers** | Trigger API names | `AccountTrigger`, `CaseTrigger` |
+| **Custom Objects** | Object API names | `My_Custom_Object__c` |
+| **Custom Fields** | Object + field (if FLS matters) | `Account.My_Field__c` |
+| **Custom Metadata** | Type + record names | `My_Setting__mdt.MyRecord` |
+| **Tabs** | Tab API names | `My_Custom_Tab` |
+| **Pages** | Page API names | `My_Lightning_Page` |
+| **Flows** | Flow API names | `My_Flow` |
+| **Visualforce Pages** | Page API names | `MyVFPage` |
+| **External Services** | Named credential / external cred | `My_Named_Credential` |
+
+### Output Format
+
+Group items by metadata type under headers; list each item on its own row. After deployment succeeds, output a clear section like:
+
+```
+---
+## Manual Profile Updates Required
+
+The following net new items were deployed. A sys admin should add them to profile permissions as needed:
+
+**Apex Classes:**
+- MyNewController
+- MyService
+**Custom Objects:**
+- My_Custom_Object__c
+**Custom Fields:**
+- Account.My_Field__c (if FLS needed)
+
+---
+```
+
+## When Creating New Components
+
+When creating any new Salesforce component (LWC, Apex, custom object, etc.), remember to include it in the final "Manual Profile Updates Required" list after deployment — even if you don't deploy in the same session. Document it so the sys admin knows what to configure.

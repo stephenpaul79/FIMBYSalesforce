@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>List_Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>HYPERLINK(&quot;/&quot;+ Id ,
+IF(!ISBLANK(Image_1_URL__c),
+
+IMAGE( Image_1_URL__c + $Organization.Id + &quot;&amp;dpt=null&amp;viewId=&quot;, &quot;Test&quot;,(VALUE(LEFT(Image_1_Ratio__c, FIND(&quot;X&quot;, Image_1_Ratio__c) - 1)) * 0.5),(VALUE(RIGHT(Image_1_Ratio__c, LEN(Image_1_Ratio__c) - FIND(&quot;X&quot;, Image_1_Ratio__c))))* 0.5),IMAGE(
+&quot;https://fimby.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_PNG&amp;versionId=068OL0000070F6H&amp;operationContext=DELIVERY&amp;contentId=05TOL0000093ZEJ&amp;page=0&amp;d=/a/OL000004AQzp/sADXk_xAd38TtaqqIBlJDuG86pNzwAVhxD_EglFUVII&amp;oid=00D5f000006NDkr&quot;,
+&quot;Default image&quot;,
+100,
+100
+)),&quot;_top&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>List Image</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

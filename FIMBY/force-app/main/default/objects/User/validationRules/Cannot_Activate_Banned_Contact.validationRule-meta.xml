@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cannot_Activate_Banned_Contact</fullName>
+    <active>true</active>
+    <description>Blocks IsActive=true while Contact.Status__c=&apos;Banned User&apos;. Pairs with Deactivate_User_On_Contact_Ban flow. Lift the ban on the Contact before reactivating.</description>
+    <errorConditionFormula>ISCHANGED( IsActive )
+&amp;&amp; IsActive = TRUE
+&amp;&amp; TEXT( Contact.Status__c ) = &quot;Banned User&quot;</errorConditionFormula>
+    <errorDisplayField>IsActive</errorDisplayField>
+    <errorMessage>This user&apos;s Contact is marked as a Banned User. Lift the ban (set Contact Status to a non-banned value) before reactivating the user.</errorMessage>
+</ValidationRule>

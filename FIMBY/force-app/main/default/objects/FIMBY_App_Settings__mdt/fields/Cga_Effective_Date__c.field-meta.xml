@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cga_Effective_Date__c</fullName>
+    <description>Date the current Community Group Agreement version took effect. Rendered next to the version number on the in-app acknowledgement. Update in lockstep with Cga_Current_Version__c.</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>CGA Effective Date</label>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

@@ -1,0 +1,49 @@
+<header class="site-header">
+    <div class="container site-header-inner">
+      <div class="brand">
+        <a href="/" aria-label="FIMBY home">
+          <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="brand-logo" />
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="/" style="font-weight:600;">Home</a>
+        <a href="/how-it-works/" style="font-weight:600;">How it works</a>
+        <a href="/our-approach/" style="font-weight:600;">Our approach</a>
+        <a href="/vision/" style="font-weight:600;">Our vision</a>
+        <a href="/faq/" style="font-weight:600;">FAQ</a>
+        <a href="https://www.paypal.com/donate/?hosted_button_id=8YHZ53BYBSFWQ" class="btn btn-secondary btn-pill" style="border-color:var(--fimby-earth-teal);color:var(--fimby-earth-teal);">Donate</a>
+        <a href="#join" class="btn btn-primary btn-pill cta-bridge">Join FIMBY</a>
+      </nav>
+      <button class="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <nav class="mobile-nav">
+      <a href="/">Home</a>
+      <a href="/how-it-works/">How it works</a>
+      <a href="/our-approach/">Our approach</a>
+      <a href="/vision/">Our vision</a>
+      <a href="/faq/">FAQ</a>
+      <a href="#" class="cta-bridge mobile-join">Join FIMBY</a>
+      <a href="https://www.paypal.com/donate/?hosted_button_id=8YHZ53BYBSFWQ">Donate</a>
+    </nav>
+  </header>
+
+  <script>
+  var hamburger = document.querySelector('.hamburger');
+  var mobileNav = document.querySelector('.mobile-nav');
+  if (hamburger && mobileNav) {
+    hamburger.addEventListener('click', function() {
+      hamburger.classList.toggle('active');
+      mobileNav.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', mobileNav.classList.contains('open'));
+    });
+    mobileNav.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        hamburger.classList.remove('active');
+        mobileNav.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+  </script>

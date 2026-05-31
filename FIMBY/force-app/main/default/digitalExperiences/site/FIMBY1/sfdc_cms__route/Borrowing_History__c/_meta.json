@@ -1,0 +1,5 @@
+{
+  "apiName" : "Borrowing_History__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

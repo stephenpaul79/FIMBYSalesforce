@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Portal_Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK(Image_URL__c),
+HYPERLINK(&quot;https://fimby.force.com/s/library-item/&quot;+ Id ,
+IMAGE(Image_URL__c + $Organization.Id , &quot;&quot;,(VALUE(LEFT(Image_Ratio__c, FIND(&quot;X&quot;, Image_Ratio__c) - 1))*0.5),(VALUE(RIGHT(Image_Ratio__c, LEN(Image_Ratio__c) - FIND(&quot;X&quot;, Image_Ratio__c))))*0.5)
+,&quot;_self&quot; ),
+HYPERLINK(&quot;https://fimby.force.com/s/library-item/&quot;+ Id ,IMAGE(&quot;https://fimby.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_PNG&amp;versionId=068OL000009lQ6k&amp;operationContext=DELIVERY&amp;contentId=05TOL00000CRQbx&amp;page=0&amp;d=/a/OL000005fMmU/x1LoxtMryt9QgofjTw8JVZhEV9qyTuuS0v11plvEYcg&amp;oid=00D5f000006NDkr&quot;, &quot;&quot; , 100,100),&quot;_self&quot; ))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Image</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

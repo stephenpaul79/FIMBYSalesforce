@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shared_Contact_Info__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Shared Contact Info</label>
+    <referenceTo>Shared_Contact_Info__c</referenceTo>
+    <relationshipLabel>Response Contact Info</relationshipLabel>
+    <relationshipName>Response_Contact_Info</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

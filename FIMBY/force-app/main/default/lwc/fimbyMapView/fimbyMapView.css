@@ -1,0 +1,92 @@
+.fimby-map-view {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+.map-container {
+    flex: 1;
+    position: relative;
+}
+
+.map-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.map-icon {
+    color: var(--fimby-brand-teal);
+    margin-bottom: 16px;
+}
+
+.map-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.map-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+}
+
+.map-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-lg);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-chip.active {
+    background-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.filter-chip:hover {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-brand-teal);
+}
+
+/* Keyboard focus visibility */
+.filter-chip:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (min-width: 1024px) {
+    .fimby-map-view {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filter-chip {
+        transition: none !important;
+        animation: none !important;
+    }
+}

@@ -1,0 +1,105 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-backdrop"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="vouch-revoke-title"
+             onclick={handleBackdrop}
+             onkeydown={handleKeydown}>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2 id="vouch-revoke-title" class="modal-title">Revoke this vouch</h2>
+                    <button type="button" class="close-btn" aria-label="Close" onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <template lwc:if={isBlockedByActingAs}>
+                        <div class="acting-as-block" role="alert">
+                            <lightning-icon icon-name="utility:info" size="small" alternative-text="Identity required"></lightning-icon>
+                            <p>{actingAsBlockMessage}</p>
+                        </div>
+                    </template>
+                    <p class="modal-subtext">
+                        Only for-cause revocations count against the voucher.
+                        Administrative removals preserve the audit trail but do not affect the voucher's standing.
+                    </p>
+
+                    <fieldset class="category-group">
+                        <legend class="group-legend">Counts against the voucher</legend>
+                        <template for:each={countingOptions} for:item="opt">
+                            <label key={opt.value} class="category-item">
+                                <input type="radio"
+                                       name="revokeCategory"
+                                       id={opt.inputId}
+                                       value={opt.value}
+                                       checked={opt.checked}
+                                       onchange={handleCategoryChange}>
+                                <span class="category-label">{opt.label}</span>
+                            </label>
+                        </template>
+                    </fieldset>
+
+                    <fieldset class="category-group">
+                        <legend class="group-legend">Administrative (does not count)</legend>
+                        <template for:each={nonCountingOptions} for:item="opt">
+                            <label key={opt.value} class="category-item">
+                                <input type="radio"
+                                       name="revokeCategory"
+                                       id={opt.inputId}
+                                       value={opt.value}
+                                       checked={opt.checked}
+                                       onchange={handleCategoryChange}>
+                                <span class="category-label">{opt.label}</span>
+                            </label>
+                        </template>
+                    </fieldset>
+
+                    <div class="details-field">
+                        <div class="field-label-row">
+                            <label for="revokeDetails" class="field-label">
+                                Details
+                                <template lwc:if={detailsRequired}>
+                                    <span class="required-mark"> (required)</span>
+                                </template>
+                            </label>
+                            <span class={detailsCountClass}>{detailsCharCount}/1000</span>
+                        </div>
+                        <textarea id="revokeDetails"
+                                  class="details-input"
+                                  maxlength="1000"
+                                  rows="4"
+                                  value={details}
+                                  oninput={handleDetailsInput}></textarea>
+                    </div>
+
+                    <template lwc:if={errorMessage}>
+                        <p class="modal-error" role="alert">{errorMessage}</p>
+                    </template>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="nav-btn nav-back"
+                            onclick={handleCancel}
+                            disabled={isSubmitting}>
+                        <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button"
+                            class="nav-btn nav-danger"
+                            onclick={handleSubmit}
+                            disabled={isSubmitDisabled}>
+                        <template lwc:if={isSubmitting}>
+                            <span>Revoking...</span>
+                        </template>
+                        <template lwc:else>
+                            <span>Revoke vouch</span>
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

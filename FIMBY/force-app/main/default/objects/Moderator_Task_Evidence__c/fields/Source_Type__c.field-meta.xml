@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Source_Type__c</fullName>
+    <label>Source Type</label>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>Content_Report</fullName><default>false</default><label>Content Report</label></value>
+            <value><fullName>Moderator_Flag</fullName><default>false</default><label>Moderator Flag</label></value>
+            <value><fullName>Block_Report</fullName><default>false</default><label>Block Report</label></value>
+            <value><fullName>System_Alert</fullName><default>false</default><label>System Alert</label></value>
+            <value><fullName>Manual_Note</fullName><default>false</default><label>Manual Note</label></value>
+            <value><fullName>Lifecycle_Request</fullName><default>false</default><label>Lifecycle Request</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

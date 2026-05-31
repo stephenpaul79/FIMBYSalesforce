@@ -1,0 +1,255 @@
+/* FIMBY Infinite Scroll - Mobile First */
+:host {
+    display: block;
+    height: 100%;
+}
+
+.fimby-infinite-scroll {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.pull-refresh-indicator {
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(250, 247, 242, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    transition: transform 0.3s ease;
+}
+
+.refresh-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.refresh-indicator.active {
+    color: var(--fimby-brand-teal);
+}
+
+.refresh-text {
+    transition: all 0.2s ease;
+}
+
+.scroll-container {
+    height: 100%;
+    width: 100%;
+    overflow: hidden auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    transition: transform 0.2s ease;
+}
+
+.scroll-content {
+    padding: 0;
+}
+
+/* Loading indicator — position: relative keeps lightning-spinner contained;
+   min-height prevents overflow: hidden ancestors from clipping the spinner */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    gap: 12px;
+    position: relative;
+    min-height: 200px;
+}
+
+.loading-text {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    font-weight: 500;
+}
+
+/* End message */
+.end-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    border-top: 1px solid var(--fimby-divider-default);
+    margin-top: 16px;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    text-align: center;
+}
+
+.empty-state-gif {
+    max-width: 260px;
+    width: 100%;
+    height: auto;
+    border-radius: var(--fimby-radius-md, 12px);
+    margin-bottom: 8px;
+    opacity: 0.92;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 8px 0 4px;
+}
+
+.empty-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.empty-action {
+    margin-top: 0;
+}
+
+/* Error state */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    min-height: 40vh;
+}
+
+.error-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 16px 0 8px;
+}
+
+.error-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.error-action {
+    margin-top: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 320px) {
+    .loading-indicator,
+    .end-message {
+        padding: 16px 12px;
+    }
+
+    .empty-state,
+    .error-state {
+        padding: 16px 12px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+    }
+
+    .error-title {
+        font-size: 16px;
+    }
+}
+
+@media (min-width: 768px) {
+    .loading-indicator {
+        padding: 32px 24px;
+    }
+
+    .empty-state,
+    .error-state {
+        padding: 24px;
+    }
+
+    .empty-title {
+        font-size: 24px;
+    }
+
+    .error-title {
+        font-size: 20px;
+    }
+}
+
+/* Scrollbar styling for desktop */
+@media (min-width: 768px) {
+    .scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .pull-refresh-indicator,
+    .scroll-container,
+    .refresh-text {
+        transition: none;
+    }
+
+    .scroll-container {
+        scroll-behavior: auto;
+    }
+}
+
+/* Focus styles for accessibility */
+.scroll-container:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+}
+
+/* Loading animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-indicator,
+.empty-state,
+.error-state {
+    animation: fadeInUp 0.3s ease-out;
+}

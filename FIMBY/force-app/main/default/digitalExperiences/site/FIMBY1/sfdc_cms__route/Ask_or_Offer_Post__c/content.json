@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Ask or Offer Post",
+  "contentBody" : {
+    "activeViewId" : "Ask_or_Offer_Post",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-ask-or-offer-post",
+    "urlPrefix" : "ask-or-offer-post"
+  },
+  "urlName" : "ask-or-offer-post"
+}

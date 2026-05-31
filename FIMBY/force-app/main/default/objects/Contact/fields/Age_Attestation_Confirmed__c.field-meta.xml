@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Age_Attestation_Confirmed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>The Contact self-attested at sign-up that they are 19 years of age or older and able to agree to the FIMBY Terms. Required eligibility gate per BC age of majority. Captured on the public /sign-up flow; do not edit manually except for documented admin backfill.</description>
+    <externalId>false</externalId>
+    <label>Age Attestation Confirmed (19+)</label>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Title__c</fullName>
+    <description>Anchor card title. Populated for date-anchored OTD records (e.g. "Dorothy Day"). Left blank on evergreen reflection records (Devotional / Reflection / Neighbouring_Tip / How_To).</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Title</label>
+    <length>80</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

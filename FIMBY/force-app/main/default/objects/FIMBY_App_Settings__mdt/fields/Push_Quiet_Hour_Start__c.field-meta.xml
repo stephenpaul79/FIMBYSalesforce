@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Push_Quiet_Hour_Start__c</fullName>
+    <defaultValue>22</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Push Quiet Hour Start</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Hour in 24-hour format (0-23) when push notification quiet hours begin. During quiet hours, push notifications are held. Default 22 means 10:00 PM.</inlineHelpText>
+</CustomField>

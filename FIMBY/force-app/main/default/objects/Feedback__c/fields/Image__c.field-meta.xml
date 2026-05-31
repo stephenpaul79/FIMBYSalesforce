@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK(Image_URL__c),
+HYPERLINK(Image_URL__c,
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Rectangle (Tall)&quot; ),IMAGE(Image_URL__c, &quot;&quot;,99,66),
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Rectangle (Wide)&quot;),IMAGE(Image_URL__c, &quot;&quot;,66,99),
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Square&quot; ), IMAGE(Image_URL__c, &quot;&quot;,100,100), &quot;&quot;)))),
+IMAGE(&quot;/resource/Impact_Icons/NoPhoto.png&quot;, &quot;&quot; , 100,100)
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Image</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

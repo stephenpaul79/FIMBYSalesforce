@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "1d542f10-d15b-4a11-9200-b8245e4dfba7",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Response_Share_Contact__c",
+  "id" : "9127a6ed-0b18-42f3-b434-17e9121366fc",
+  "label" : "Response Share Contact",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-response-share-contact",
+  "type" : "route",
+  "urlPrefix" : "response-share-contact"
+}

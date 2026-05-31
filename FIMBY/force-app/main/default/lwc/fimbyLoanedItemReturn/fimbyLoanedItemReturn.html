@@ -1,0 +1,160 @@
+<template>
+    <!-- Loading Spinner -->
+    <template lwc:if={isLoading}>
+        <div class="loading-container">
+            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+        </div>
+    </template>
+
+    <!-- Not Authorized Error -->
+    <template lwc:if={showNotAuthorizedError}>
+        <div class="error-container">
+            <div class="error-message">
+                <p><strong>You are not the owner or the borrower of this item.</strong></p>
+            </div>
+            <div class="button-container">
+                <lightning-button
+                    label="Go to Library"
+                    onclick={handleGoToLibraryItem}
+                    variant="brand">
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Already Returned Error -->
+    <template lwc:if={showAlreadyReturnedError}>
+        <div class="error-container">
+            <div class="error-message">
+                <p><strong>This item has already been returned.</strong></p>
+            </div>
+            <div class="button-container">
+                <lightning-button
+                    label="Go to Library"
+                    onclick={handleGoToLibraryItem}
+                    variant="brand">
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Generic Error -->
+    <template lwc:if={showGenericError}>
+        <div class="error-container">
+            <div class="error-message">
+                <p><strong>An error occurred. Please try again.</strong></p>
+            </div>
+            <div class="button-container">
+                <lightning-button
+                    label="Go to Library"
+                    onclick={handleGoToLibraryItem}
+                    variant="brand">
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Confirmation Screen -->
+    <template lwc:if={showConfirmation}>
+        <div class="confirmation-container">
+            <template lwc:if={isDamaged}>
+                <div class="confirmation-icon">😔</div>
+            </template>
+            <template lwc:else>
+                <c-fimby-celebration action-type="return"></c-fimby-celebration>
+            </template>
+
+            <p class="confirmation-message">{confirmationMessage}</p>
+
+            <div class="button-container">
+                <lightning-button
+                    label="Go to Library Item"
+                    onclick={handleGoToLibraryItem}
+                    variant="brand">
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Main Form -->
+    <template lwc:if={showMainForm}>
+        <div class="form-container">
+            <h2 class="form-title">Item Return: {itemName}</h2>
+
+            <div class="form-section">
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <!-- Left Column -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <lightning-radio-group
+                            label="Has the item been returned to the owner?"
+                            options={returnStatusOptions}
+                            value={returnStatus}
+                            onchange={handleReturnStatusChange}
+                            required>
+                        </lightning-radio-group>
+
+                        <lightning-input
+                            type="date"
+                            label="Date Returned"
+                            value={dateReturned}
+                            onchange={handleDateChange}
+                            required
+                            class="slds-m-top_medium">
+                        </lightning-input>
+
+                        <!-- Owner-only: Condition upon return -->
+                        <template lwc:if={isOwner}>
+                            <lightning-combobox
+                                label="Condition Upon Return"
+                                value={conditionUponReturn}
+                                options={conditionOptions}
+                                onchange={handleConditionChange}
+                                required
+                                class="slds-m-top_medium">
+                            </lightning-combobox>
+                        </template>
+                    </div>
+
+                    <!-- Right Column - Feedback -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <!-- Owner feedback -->
+                        <template lwc:if={isOwner}>
+                            <p class="feedback-header">Borrower Feedback (Optional)</p>
+                            <lightning-radio-group
+                                label="Would you lend to them again?"
+                                options={yesNoOptions}
+                                value={wouldLendAgain}
+                                onchange={handleLendAgainChange}>
+                            </lightning-radio-group>
+                        </template>
+
+                        <!-- Borrower feedback -->
+                        <template lwc:if={isBorrower}>
+                            <template lwc:if={isOwner}>
+                                <!-- If both owner and borrower, don't show borrower feedback -->
+                            </template>
+                            <template lwc:else>
+                                <p class="feedback-header">Lender Feedback (Optional)</p>
+                                <lightning-radio-group
+                                    label="Would you borrow from them again?"
+                                    options={yesNoOptions}
+                                    value={wouldBorrowAgain}
+                                    onchange={handleBorrowAgainChange}>
+                                </lightning-radio-group>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <lightning-button
+                    label="Submit"
+                    onclick={handleSubmit}
+                    variant="brand"
+                    disabled={isSubmitDisabled}>
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+</template>

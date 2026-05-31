@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Date_Or_Sort_Order_Required</fullName>
+    <active>true</active>
+    <description>Anchor records must be either date-anchored (Month + Day populated, Sort Order blank) OR evergreen (Sort Order populated, Month + Day blank). Partial dates, double-anchored records, and orphan records are not allowed.</description>
+    <errorConditionFormula>OR(
+  AND(
+    OR(ISBLANK(Month__c), ISBLANK(Day__c)),
+    NOT(AND(ISBLANK(Month__c), ISBLANK(Day__c)))
+  ),
+  AND(
+    NOT(ISBLANK(Month__c)),
+    NOT(ISBLANK(Day__c)),
+    NOT(ISBLANK(Sort_Order__c))
+  ),
+  AND(
+    ISBLANK(Month__c),
+    ISBLANK(Day__c),
+    ISBLANK(Sort_Order__c)
+  )
+)</errorConditionFormula>
+    <errorMessage>Anchor records must be either date-anchored (Month + Day populated, Sort Order blank) OR evergreen (Sort Order populated, Month + Day blank). Partial dates, double-anchored records, and orphan records are not allowed.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EmailTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <available>true</available>
+    <encodingKey>UTF-8</encodingKey>
+    <letterhead>Blank</letterhead>
+    <name>Experience Cloud: Headless Registration Verification Email</name>
+    <style>freeForm</style>
+    <subject>Verify your identity in {!Community.Name}</subject>
+    <textOnly>Confirm your registration
+
+Hello {!HeadlessAuth.FirstName} {!HeadlessAuth.LastName},
+
+Enter this one-time password where prompted to confirm {!HeadlessAuth.Username} in {!Community.Name}:
+
+{!Verification.Code}
+
+Thanks,
+Team FIMBY
+
+Family In My Backyard</textOnly>
+    <type>html</type>
+    <uiType>Aloha</uiType>
+</EmailTemplate>

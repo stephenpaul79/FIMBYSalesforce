@@ -1,0 +1,1530 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.task-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    padding: 0 16px 120px;
+    box-sizing: border-box;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+/* ================================================================
+   Back Chevron (in header)
+   ================================================================ */
+.back-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: transparent;
+    color: var(--fimby-earth-teal);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.1s ease;
+    margin-right: 4px;
+}
+
+.back-chevron:hover {
+    background-color: var(--fimby-selected-bg);
+}
+
+.back-chevron lightning-icon {
+    --lwc-colorTextIconDefault: var(--fimby-brand-teal);
+}
+
+/* ================================================================
+   Loading & Error
+   ================================================================ */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 64px 0;
+}
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 64px 24px;
+    gap: 12px;
+}
+
+.error-icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    opacity: 0.6;
+    margin-bottom: 4px;
+}
+
+.error-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.error-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    max-width: 400px;
+    margin: 0;
+}
+
+.back-btn-inline {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+}
+
+.back-btn-inline:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+/* ================================================================
+   Task Header
+   ================================================================ */
+.task-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md, 12px);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+.header-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.category-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fimby-text-primary);
+    margin-bottom: 2px;
+}
+
+.header-summary-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.task-summary-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    line-height: 1.35;
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 700);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.priority-urgent {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-validation-text-error);
+    border: 1px solid var(--fimby-error-border);
+}
+
+.task-age {
+    font-size: 0.75rem;
+    color: var(--fimby-text-primary);
+    white-space: nowrap;
+}
+
+.header-decision-btns {
+    display: none;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    min-height: 36px;
+    font-size: 0.8rem;
+}
+
+/* ================================================================
+   Stage Prompt
+   ================================================================ */
+.stage-prompt {
+    padding: 12px 16px;
+    margin: 8px 0 16px;
+    background-color: var(--fimby-surface-input);
+    border-left: 3px solid var(--fimby-brand-teal);
+    border-radius: 0 var(--fimby-radius-sm, 8px) var(--fimby-radius-sm, 8px) 0;
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.45;
+}
+
+/* ================================================================
+   Review Layout — 2-column desktop
+   ================================================================ */
+.review-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ================================================================
+   Section Cards
+   ================================================================ */
+.page-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md, 12px);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 20px;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.section-active {
+    border-left: 4px solid var(--fimby-brand-teal);
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.section-completed {
+    opacity: 0.85;
+    box-shadow: none;
+}
+
+.section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fimby-text-strong);
+    margin-bottom: 12px;
+}
+
+.section-helper {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+    margin-bottom: 12px;
+    margin-top: -4px;
+}
+
+/* ================================================================
+   Top Row — What Happened + Decision side by side
+   ================================================================ */
+.top-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ================================================================
+   Content Type Badge
+   ================================================================ */
+.content-type-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 700);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    line-height: 1;
+    white-space: nowrap;
+    background-color: var(--fimby-info-tint);
+    color: var(--fimby-info);
+    border: 1px solid var(--fimby-info-border);
+    margin-bottom: 8px;
+}
+
+/* ================================================================
+   Content Styles
+   ================================================================ */
+.content-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin-bottom: 8px;
+}
+
+.body-text {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.read-more-btn {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: var(--fimby-earth-teal);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.read-more-btn:hover {
+    text-decoration: underline;
+}
+
+/* ================================================================
+   Image Grid
+   ================================================================ */
+.image-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.image-thumb-btn {
+    padding: 0;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: transparent;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.image-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    display: block;
+}
+
+/* ================================================================
+   Decision Actions
+   ================================================================ */
+.decision-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ================================================================
+   People Grid
+   ================================================================ */
+.people-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.person-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.person-row-1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.person-row-2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-left: 46px;
+}
+
+.person-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.person-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.person-role {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fimby-text-primary);
+}
+
+.person-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.person-meta {
+    font-size: 0.7rem;
+    color: var(--fimby-text-primary);
+    flex: 1;
+}
+
+/* ================================================================
+   History Badges (inline in person cards)
+   ================================================================ */
+.history-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.history-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1.3;
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-subtle);
+}
+
+.history-badge-reporter {
+    background-color: var(--fimby-info-tint);
+    color: var(--fimby-btn-info-bg);
+    border-color: var(--fimby-info-border);
+}
+
+/* ================================================================
+   Action Status Indicators
+   ================================================================ */
+.log-action-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.log-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.action-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.action-status-done {
+    color: var(--fimby-btn-success-bg);
+}
+
+.action-status-escalated {
+    color: var(--fimby-btn-danger-bg);
+}
+
+/* ================================================================
+   Buttons
+   ================================================================ */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.btn-action:disabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+}
+
+.btn-action:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.btn-success {
+    background-color: var(--fimby-btn-success-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-success-bg);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: var(--fimby-btn-success-bg-hover);
+}
+
+.btn-danger {
+    background-color: var(--fimby-btn-danger-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-danger-bg);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover);
+}
+
+.btn-secondary {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+}
+
+.btn-contact {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    min-height: 36px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-earth-teal);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+}
+
+.btn-contact:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.btn-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: var(--fimby-earth-teal);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Escalation-ladder button variants */
+.btn-escalation-1 {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border-color: var(--fimby-border-default);
+}
+
+.btn-escalation-1:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+}
+
+.btn-escalation-2 {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-text-strong);
+    border-color: var(--fimby-warning-border, var(--fimby-border-default));
+}
+
+.btn-escalation-2:hover:not(:disabled) {
+    background-color: var(--fimby-warning-tint);
+    opacity: 0.9;
+}
+
+.btn-escalation-3 {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-btn-danger-bg);
+    border-color: var(--fimby-error-border);
+}
+
+.btn-escalation-3:hover:not(:disabled) {
+    background-color: var(--fimby-error-tint);
+    opacity: 0.9;
+}
+
+.escalation-numeral {
+    font-style: italic;
+    opacity: 0.7;
+    margin-right: 2px;
+}
+
+/* ================================================================
+   Ask for Help Section
+   ================================================================ */
+.ask-for-help-section {
+    background-color: var(--fimby-error-tint);
+    border-radius: var(--fimby-radius-sm, 8px);
+    padding: 16px;
+}
+
+.ask-for-help-section .section-label {
+    color: var(--fimby-btn-danger-bg);
+}
+
+/* ================================================================
+   Inline Form
+   ================================================================ */
+.inline-form {
+    margin-top: 12px;
+    padding: 16px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.inline-form-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin-bottom: 12px;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.character-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-primary);
+}
+
+.character-count.near-limit {
+    color: var(--fimby-chip-draft-text);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-validation-text-error);
+    font-weight: 600;
+}
+
+.inline-form-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.inline-form-textarea:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    border-color: var(--fimby-brand-teal);
+}
+
+.inline-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* ================================================================
+   Block Report Styles
+   ================================================================ */
+.block-visual {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.block-arrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fimby-btn-danger-bg);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.block-names {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 8px;
+}
+
+.block-arrow-text {
+    font-size: 0.75rem;
+    color: var(--fimby-text-primary);
+    font-weight: 400;
+}
+
+.block-meta {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+    margin-bottom: 12px;
+}
+
+.block-reason-box {
+    padding: 12px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm, 8px);
+    margin-bottom: 8px;
+}
+
+.block-reason-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fimby-text-primary);
+    margin-bottom: 4px;
+}
+
+.block-reason-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.other-blocks-label {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+}
+
+/* ================================================================
+   Support & Detail Rows
+   ================================================================ */
+.detail-row {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+}
+
+.auth-image-thumb {
+    max-width: 120px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    border: 1px solid var(--fimby-border-subtle);
+    display: block;
+}
+
+.auth-image-btn {
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Shared document preview — uncropped thumbnail + lightbox tap target */
+.document-image-btn {
+    padding: 0;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card, #fff);
+    cursor: pointer;
+    overflow: hidden;
+    display: inline-block;
+    line-height: 0;
+}
+
+.document-image-thumb {
+    max-width: 160px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.document-file-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card, #fff);
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.image-view-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--fimby-text-primary);
+}
+
+.section-label--sub {
+    margin-top: 20px;
+}
+
+.verification-doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.verification-doc-link {
+    color: var(--fimby-brand-teal);
+    font-size: 0.85rem;
+    text-decoration: underline;
+}
+
+.btn-contact--decision {
+    margin-top: 16px;
+}
+
+/* ================================================================
+   Concern & Escalation Boxes
+   ================================================================ */
+.concern-summary-box,
+.escalation-reason-box,
+.report-message-box {
+    padding: 12px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm, 8px);
+    margin: 8px 0;
+}
+
+.concern-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fimby-text-primary);
+    margin-bottom: 4px;
+}
+
+.concern-text,
+.report-message-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.recent-activity {
+    margin-top: 12px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.8rem;
+}
+
+.activity-type {
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.activity-summary {
+    color: var(--fimby-text-primary);
+}
+
+/* ================================================================
+   Alert Banners
+   ================================================================ */
+.alert-banner {
+    padding: 10px 14px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.alert-warning {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-chip-draft-text);
+    border: 1px solid var(--fimby-warning-border, var(--fimby-border-default));
+}
+
+.alert-danger {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-btn-danger-bg);
+    border: 1px solid var(--fimby-error-border);
+}
+
+/* ================================================================
+   Escalation Page
+   ================================================================ */
+.escalation-summary {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    margin: 0 0 12px;
+}
+
+.resolution-box {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm, 8px);
+    border: 1px solid var(--fimby-success-border);
+}
+
+.resolution-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 700);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    background-color: var(--fimby-btn-success-bg);
+    color: #ffffff;
+    margin-right: 8px;
+}
+
+.resolution-date {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+}
+
+.resolution-notes {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    margin: 8px 0 0;
+}
+
+.escalation-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ================================================================
+   Bulk Buy Styles
+   ================================================================ */
+.bulk-buy-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.bulk-buy-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.reason-subtype-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 700);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-chip-draft-text);
+    border: 1px solid var(--fimby-warning-border, var(--fimby-border-default));
+    margin-bottom: 8px;
+}
+
+/* ================================================================
+   Sidebar Cards (Follow-Up Timeline & Evidence only)
+   ================================================================ */
+.sidebar-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md, 12px);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px;
+}
+
+.sidebar-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.sidebar-card-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.sidebar-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ================================================================
+   Inline History Cards (Subject & Reporter)
+   ================================================================ */
+.history-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md, 12px);
+    border: 1px solid var(--fimby-divider-default);
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+}
+
+.history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 44px;
+    transition: background-color 0.15s ease;
+}
+
+.history-card-header:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.history-card-header:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.history-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.history-card-body {
+    padding: 0 16px 16px;
+}
+
+.history-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.stats-grid-inline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.stat-item-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 4px;
+    background-color: var(--fimby-surface-input);
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.stat-value-inline {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.stat-label-inline {
+    font-size: 0.6rem;
+    color: var(--fimby-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: center;
+}
+
+.recent-cases-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 8px 0 6px;
+}
+
+.recent-cases-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.recent-case-item {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    font-size: 0.8rem;
+}
+
+.recent-case-item:last-child {
+    border-bottom: none;
+}
+
+.recent-case-date {
+    color: var(--fimby-text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 60px;
+}
+
+.recent-case-summary {
+    color: var(--fimby-text-primary);
+}
+
+.no-history-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    font-style: italic;
+    margin: 0;
+}
+
+/* ================================================================
+   Timeline (Bulk Buy sidebar)
+   ================================================================ */
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.timeline-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.timeline-entry:last-child {
+    border-bottom: none;
+}
+
+.timeline-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    text-transform: capitalize;
+}
+
+.timeline-date {
+    font-size: 0.7rem;
+    color: var(--fimby-text-primary);
+    margin-left: 8px;
+}
+
+.timeline-notes {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+    margin: 4px 0 0;
+}
+
+/* ================================================================
+   Mobile Sticky Decision Bar (< 768px only)
+   ================================================================ */
+.sticky-decision-bar {
+    display: none;
+}
+
+/* ================================================================
+   Focus
+   ================================================================ */
+.back-chevron:focus-visible,
+.back-btn-inline:focus-visible,
+.btn-action:focus-visible,
+.btn-contact:focus-visible,
+.btn-link:focus-visible,
+.document-image-btn:focus-visible {
+    outline: 2px solid var(--fimby-earth-teal);
+    outline-offset: 2px;
+}
+
+.image-thumb-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ================================================================
+   Reduced Motion
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .back-chevron,
+    .back-btn-inline,
+    .btn-action,
+    .btn-contact,
+    .page-section {
+        transition: none;
+    }
+}
+
+/* ================================================================
+   Mobile (< 768px)
+   ================================================================ */
+@media (max-width: 767px) {
+    .task-page {
+        padding-bottom: 100px;
+    }
+
+    .sticky-decision-bar {
+        display: flex;
+        gap: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px 16px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        background-color: var(--fimby-surface-card);
+        border-top: 1px solid var(--fimby-divider-default);
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+        z-index: 100;
+        justify-content: center;
+    }
+
+    .sticky-decision-bar .btn-action {
+        flex: 1;
+        max-width: 180px;
+    }
+
+    .person-row-2 {
+        padding-left: 0;
+    }
+}
+
+/* ================================================================
+   Tablet (768px+)
+   ================================================================ */
+@media (min-width: 768px) {
+    .task-page {
+        padding: 0 24px 40px;
+    }
+
+    .people-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .people-grid-three {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================================================
+   Desktop (1024px+) — 3-column grid
+   ================================================================ */
+.closed-summary-card {
+    margin: 0 0 16px;
+    padding: 16px 20px;
+    border-radius: var(--fimby-radius-md);
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.closed-summary-dismissed {
+    border-left-color: var(--fimby-border-strong);
+    background-color: var(--fimby-chip-neutral-bg);
+}
+
+.closed-summary-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin-bottom: 12px;
+}
+
+.closed-summary-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.closed-summary-label {
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    min-width: 72px;
+}
+
+.closed-summary-value {
+    color: var(--fimby-text-primary);
+    text-transform: capitalize;
+}
+
+.closed-summary-meta {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+}
+
+.closed-summary-notes {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-page);
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+}
+
+.closed-reopen-confirm {
+    margin: 14px 0 12px;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+}
+
+.closed-reopen-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.closed-reopen-btn {
+    margin-top: 12px;
+}
+
+.decision-actions--org {
+    gap: 10px;
+}
+
+.decision-actions--org .btn-action {
+    width: 100%;
+    max-width: none;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+}
+
+.btn-contact-grid {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-earth-teal);
+    border-color: var(--fimby-border-default);
+}
+
+.btn-contact-grid:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+}
+
+@media (min-width: 1024px) {
+    .decision-actions--org {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .decision-actions--org .btn-action {
+        width: auto;
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .task-page--org-approval .header-decision-btns {
+        display: none;
+    }
+
+    .review-main.review-main--org {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .review-main.review-main--org .top-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        grid-column: 1 / -1;
+    }
+
+    .review-main.review-main--org .top-row > .page-section {
+        width: 100%;
+    }
+
+    .review-main.review-main--org .top-row > .page-section:last-child {
+        display: block;
+    }
+
+    .task-page--org-approval .stage-prompt {
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .task-page--org-approval .task-header,
+    .task-page--org-approval .closed-summary-card {
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .review-layout {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .review-sidebar {
+        width: 280px;
+        min-width: 280px;
+        position: sticky;
+        top: 90px;
+        align-self: flex-start;
+    }
+
+    .review-main {
+        display: grid;
+        grid-template-columns: 3fr 2fr 2fr;
+        gap: 12px;
+    }
+
+    .top-row { grid-column: 1; grid-row: 1; }
+    .grid-col-whos { grid-column: 2; grid-row: 1; }
+    .history-subject { grid-column: 3; grid-row: 1; align-self: start; }
+    .grid-col-log { grid-column: 1; grid-row: 2; }
+    .grid-col-ask { grid-column: 2; grid-row: 2; }
+    .history-reporter { grid-column: 3; grid-row: 2; align-self: start; }
+
+    .header-decision-btns {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .top-row > .page-section:last-child {
+        display: none;
+    }
+
+    .review-main.review-main--org .top-row > .page-section:last-child {
+        display: block;
+    }
+
+    .person-row-2 {
+        padding-left: 46px;
+    }
+}

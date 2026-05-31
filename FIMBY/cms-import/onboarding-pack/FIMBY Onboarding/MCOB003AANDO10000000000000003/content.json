@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Asks and Offers",
+  "contentBody" : {
+    "title" : "Asks and Offers",
+    "body" : "<p>Need something? Have something to share? The <strong>Asks and Offers</strong> board makes it easy to exchange goods, services, and event invitations with your neighbours.</p>",
+    "pageOrder" : "030",
+    "slideOrder" : "010",
+    "pageTitle" : "Asks and Offers"
+  },
+  "urlName" : "asks-and-offers-overview"
+}

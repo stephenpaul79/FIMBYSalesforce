@@ -1,0 +1,31 @@
+DeveloperName,Subject,HtmlValue,Body
+CommunityChangePasswordEmailTemplate,Your new {!Community_Name} password,,"
+            Hi {!Receiving_User.FirstName},
+
+            Your password has been reset for {!Community_Name}. Go to:
+
+            {!Community_Url}
+
+            Thanks,
+            {!Organization.Name}
+        "
+CommunityForgotPasswordEmailTemplate,Your new {!Community_Name} password,,"
+            Hi {!Receiving_User.FirstName},
+
+            Your password has been reset for {!Community_Name}. Go to:
+
+            {!Community_Url}
+
+            Thanks,
+            {!Organization.Name}
+        "
+CommunityWelcomeEmailTemplate,Welcome to {!Community_Name},,"
+            Hi {!Receiving_User.FirstName},
+
+            Welcome to {!Community_Name}! To get started, go to {!Community_Url}
+
+            Username: {!Receiving_User.Username}
+
+            Thanks,
+            {!Organization.Name}
+        "

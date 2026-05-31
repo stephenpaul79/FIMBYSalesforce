@@ -1,0 +1,98 @@
+<template>
+    <div class="fimby-shared-contact-detail">
+        <c-fimby-page-header
+            page-title="Shared Contact"
+            page-subtitle="Contact info shared with you"
+            show-back="true">
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="neighbour" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="detail-content">
+                <!-- Contact Card -->
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <div class="avatar-container">
+                            <img lwc:if={contactAvatar} src={contactAvatar} alt={contactName} class="contact-avatar">
+                            <div lwc:else class="avatar-placeholder">
+                                <lightning-icon icon-name="standard:contact" size="large"></lightning-icon>
+                            </div>
+                        </div>
+                        <h1 class="contact-name">{contactName}</h1>
+                        <p class="shared-by">Shared by {sharedByName}</p>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button lwc:if={email} class="action-btn" onclick={handleEmail}>
+                            <lightning-icon icon-name="utility:email" size="small"></lightning-icon>
+                            <span>Email</span>
+                        </button>
+                        <button lwc:if={phone} class="action-btn" onclick={handleCall}>
+                            <lightning-icon icon-name="utility:call" size="small"></lightning-icon>
+                            <span>Call</span>
+                        </button>
+                        <button lwc:if={address} class="action-btn" onclick={handleMap}>
+                            <lightning-icon icon-name="utility:location" size="small"></lightning-icon>
+                            <span>Map</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contact Details Card -->
+                <div class="details-card">
+                    <div class="card-header">
+                        <h2>Contact Information</h2>
+                    </div>
+                    <div class="details-list">
+                        <div lwc:if={email} class="detail-row">
+                            <div class="detail-icon">
+                                <lightning-icon icon-name="utility:email" size="small"></lightning-icon>
+                            </div>
+                            <div class="detail-text">
+                                <span class="detail-label">Email</span>
+                                <a href={emailLink} class="detail-value link">{email}</a>
+                            </div>
+                        </div>
+                        <div lwc:if={phone} class="detail-row">
+                            <div class="detail-icon">
+                                <lightning-icon icon-name="utility:call" size="small"></lightning-icon>
+                            </div>
+                            <div class="detail-text">
+                                <span class="detail-label">Phone</span>
+                                <a href={phoneLink} class="detail-value link">{phone}</a>
+                            </div>
+                        </div>
+                        <div lwc:if={address} class="detail-row">
+                            <div class="detail-icon">
+                                <lightning-icon icon-name="utility:location" size="small"></lightning-icon>
+                            </div>
+                            <div class="detail-text">
+                                <span class="detail-label">Address</span>
+                                <span class="detail-value">{address}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shared Info Card -->
+                <div class="shared-info-card">
+                    <div class="card-header">
+                        <h2>Sharing Details</h2>
+                    </div>
+                    <div class="shared-details">
+                        <p><strong>Shared by:</strong> {sharedByName}</p>
+                        <p><strong>Shared on:</strong> {formattedDate}</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="profile" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

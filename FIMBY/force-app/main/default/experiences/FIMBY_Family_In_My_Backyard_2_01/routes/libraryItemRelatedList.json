@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "987d89c8-288a-4c48-ac5a-28376eda895c",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Library_Item_Related_List__c",
+  "id" : "3d4f254b-65ea-46ac-9654-adee4371bbce",
+  "label" : "Library Item Related List",
+  "objectApiName" : "Library_Item__c",
+  "routeType" : "relatedlist-a1J",
+  "type" : "route",
+  "urlPrefix" : "library-item"
+}

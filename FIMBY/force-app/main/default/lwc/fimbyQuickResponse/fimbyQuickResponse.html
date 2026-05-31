@@ -1,0 +1,198 @@
+<template>
+    <div class="fimby-quick-response">
+        <c-fimby-page-header
+            page-title={pageTitle}
+            parent-label="Asks & Offers"
+            parent-url="/asks-offers">
+        </c-fimby-page-header>
+
+        <!-- Loading -->
+        <template lwc:if={isLoadingState}>
+            <div class="state-container loading-state">
+                <c-fimby-loading-message context="general" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- No Record ID -->
+        <template lwc:if={isNoRecordIdState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">No Ask or Offer selected</h2>
+                <p class="state-message">Please select a post from the feed to respond to.</p>
+                <button class="btn btn-primary" onclick={handleBack}>Go Back</button>
+            </div>
+        </template>
+
+        <!-- None Available -->
+        <template lwc:if={isNoneAvailableState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:warning" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">Oh No!</h2>
+                <template lwc:if={errorMessage}>
+                    <p class="state-message">{errorMessage}</p>
+                </template>
+                <template lwc:else>
+                    <p class="state-message">This post has already been spoken for.</p>
+                </template>
+                <button class="btn btn-primary" onclick={handleBackToNeedOffer}>Back to Post</button>
+            </div>
+        </template>
+
+        <!-- Existing Response -->
+        <template lwc:if={isExistingResponseState}>
+            <div class="state-container warning-state">
+                <div class="state-icon warning-icon">
+                    <lightning-icon icon-name="utility:info" size="large"></lightning-icon>
+                </div>
+                <h2 class="state-title warning-title">Someone in your household has already responded</h2>
+                <p class="state-message">
+                    Please check the status of your response or chat feed.
+                </p>
+                <div class="state-actions">
+                    <button class="btn btn-secondary" onclick={handleBack}>Cancel</button>
+                    <button class="btn btn-primary" onclick={handleViewExistingResponse}>View Response</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Load Error -->
+        <template lwc:if={isLoadErrorState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">Something went wrong</h2>
+                <p class="state-message">{errorMessage}</p>
+                <button class="btn btn-primary" onclick={handleBack}>Go Back</button>
+            </div>
+        </template>
+
+        <!-- Form -->
+        <template lwc:if={isFormState}>
+            <div class="form-container">
+                <div class="form-content">
+                    <div class="form-layout">
+                        <!-- Left: Item Card -->
+                        <div class="form-left">
+                            <div class="item-card">
+                                <h3 class="item-name">{needOffer.name}</h3>
+                                <template lwc:if={hasProcessedImage}>
+                                    <img src={processedImageUrl} alt={needOffer.name} class="item-image">
+                                </template>
+                                <template lwc:if={needOffer.details}>
+                                    <p class="item-details">{needOffer.details}</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Right: Form Fields -->
+                        <div class="form-right">
+                            <template lwc:if={respondingAsName}>
+                                <div class="responding-as">
+                                    <lightning-icon icon-name="utility:user" size="x-small"></lightning-icon>
+                                    <span class="responding-as-label">Responding as:</span>
+                                    <span class="responding-as-name">{respondingAsName}</span>
+                                </div>
+                            </template>
+
+                            <div class="form-fields">
+                                <div class="form-section">
+                                    <div class="field-label-row">
+                                        <label class="form-label required">Subject</label>
+                                        <span class={subjectCountClass}>{subjectLength}/80</span>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        value={subject}
+                                        oninput={handleSubjectChange}
+                                        maxlength="80"
+                                        placeholder="Enter a subject">
+                                    <template lwc:if={subjectExceeded}>
+                                        <span class="error-text">Reduce by {subjectOverBy} characters</span>
+                                    </template>
+                                </div>
+
+                                <div class="form-section">
+                                    <div class="field-label-row">
+                                        <label class="form-label required">Response Details</label>
+                                        <span class={detailsCountClass}>{detailsLength}/255</span>
+                                    </div>
+                                    <textarea
+                                        class="form-textarea"
+                                        value={responseDetails}
+                                        oninput={handleDetailsChange}
+                                        rows="4"
+                                        maxlength="255"
+                                        placeholder="Enter your response details"></textarea>
+                                    <template lwc:if={detailsExceeded}>
+                                        <span class="error-text">Reduce by {detailsOverBy} characters</span>
+                                    </template>
+                                </div>
+
+                                <template lwc:if={showAmountField}>
+                                    <div class="form-section amount-section">
+                                        <p class="amount-available">
+                                            Amount / Spots Available: <strong>{needOffer.totalAvailable}</strong>
+                                        </p>
+                                        <label class="form-label required">Amount Requested</label>
+                                        <input
+                                            type="number"
+                                            class="form-input amount-input"
+                                            value={amountRequested}
+                                            onchange={handleAmountChange}
+                                            min="0"
+                                            max={maxAmount}>
+                                        <template lwc:if={amountInvalid}>
+                                            <p class="field-error">Cannot exceed available amount or per-response limit.</p>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <div class="form-section checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" checked={decline} onchange={handleDeclineChange}>
+                                        <span>Decline Post (send a message without meeting the need or accepting the offer)</span>
+                                    </label>
+                                </div>
+
+                                <!-- Submit Actions -->
+                                <div class="submit-footer">
+                                    <button class="btn btn-secondary" onclick={handleBack}>Cancel</button>
+                                    <button
+                                        class="btn btn-primary"
+                                        onclick={handleSubmit}
+                                        disabled={isFormInvalid}>
+                                        <template lwc:if={isSubmitting}>
+                                            <lightning-spinner alternative-text="Submitting..." size="small"></lightning-spinner>
+                                            Submitting...
+                                        </template>
+                                        <template lwc:else>
+                                            Submit Response
+                                        </template>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success -->
+        <template lwc:if={isSuccessState}>
+            <div class="state-container success-state">
+                <c-fimby-celebration action-type="response"></c-fimby-celebration>
+                <h2 class="state-title success-title">Response Sent</h2>
+                <div class="state-actions">
+                    <button class="btn btn-primary" onclick={handleViewNewResponse}>View Response</button>
+                    <button class="btn btn-secondary" onclick={handleDone}>Back to Post</button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

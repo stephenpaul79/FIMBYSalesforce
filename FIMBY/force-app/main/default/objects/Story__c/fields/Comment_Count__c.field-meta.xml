@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Comment_Count__c</fullName>
+    <description>Roll-up count of Active Story_Comment__c children that are not moderator-hidden. Powers engagement counts on feed cards and the story detail page. Replaces the hardcoded engagementCount = 0 path that existed when comments were Chatter FeedItems.</description>
+    <externalId>false</externalId>
+    <label>Comment Count</label>
+    <summaryFilterItems>
+        <field>Story_Comment__c.Status__c</field>
+        <operation>equals</operation>
+        <value>Active</value>
+    </summaryFilterItems>
+    <summaryFilterItems>
+        <field>Story_Comment__c.Moderation_Status__c</field>
+        <operation>notEqual</operation>
+        <value>Hidden_By_Moderator</value>
+    </summaryFilterItems>
+    <summaryForeignKey>Story_Comment__c.Story__c</summaryForeignKey>
+    <summaryOperation>count</summaryOperation>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

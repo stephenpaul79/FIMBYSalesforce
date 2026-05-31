@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Notification_Cleanup_Batch_Size__c</fullName>
+    <defaultValue>10000</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Notification Cleanup Batch Size</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum notification records processed per cleanup job execution. Increase if the cleanup job runs but leaves stale records behind.</inlineHelpText>
+</CustomField>

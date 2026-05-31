@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Type__c</fullName>
+    <description>Drives the section header text on the anchor card. OTD records use Birth / Death / Feast_Day / Event. Evergreen reflection records use Devotional / Reflection / Neighbouring_Tip / How_To.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Type</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Birth</fullName>
+                <default>false</default>
+                <label>Birth</label>
+            </value>
+            <value>
+                <fullName>Death</fullName>
+                <default>false</default>
+                <label>Death</label>
+            </value>
+            <value>
+                <fullName>Feast_Day</fullName>
+                <default>false</default>
+                <label>Feast Day</label>
+            </value>
+            <value>
+                <fullName>Event</fullName>
+                <default>false</default>
+                <label>Event</label>
+            </value>
+            <value>
+                <fullName>Devotional</fullName>
+                <default>false</default>
+                <label>Devotional</label>
+            </value>
+            <value>
+                <fullName>Reflection</fullName>
+                <default>false</default>
+                <label>Reflection</label>
+            </value>
+            <value>
+                <fullName>Neighbouring_Tip</fullName>
+                <default>false</default>
+                <label>Neighbouring Tip</label>
+            </value>
+            <value>
+                <fullName>How_To</fullName>
+                <default>false</default>
+                <label>How To</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

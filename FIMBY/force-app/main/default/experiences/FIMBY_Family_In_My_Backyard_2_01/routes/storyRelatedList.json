@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "ea301794-eee6-4fc7-b710-1f9a81b446fe",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Story_Related_List__c",
+  "id" : "6a04301f-0a9b-4397-981a-d6ace16246a2",
+  "label" : "Story Related List",
+  "objectApiName" : "Story__c",
+  "routeType" : "relatedlist-a1F",
+  "type" : "route",
+  "urlPrefix" : "story"
+}

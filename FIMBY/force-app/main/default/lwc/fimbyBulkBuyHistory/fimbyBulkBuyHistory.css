@@ -1,0 +1,72 @@
+:host {
+    display: block;
+}
+
+.history-container {
+    max-width: 200px;
+    margin: 0;
+    text-align: left;
+}
+
+.section-title {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.slots-row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+
+.slot {
+    width: 32px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    pointer-events: none;
+    user-select: none;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slot {
+        transition: none;
+    }
+}
+
+.slot-neutral {
+    background: transparent;
+    border: 1px dashed var(--fimby-border-subtle);
+}
+
+.slot-green {
+    background: var(--fimby-success);
+}
+
+.slot-red {
+    background: var(--fimby-error);
+}
+
+.slot-amber {
+    background: var(--fimby-earth-ochre, #d4a035);
+}
+
+.slots-axis {
+    margin: 6px 0 0;
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+}
+
+.blocked-message {
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}

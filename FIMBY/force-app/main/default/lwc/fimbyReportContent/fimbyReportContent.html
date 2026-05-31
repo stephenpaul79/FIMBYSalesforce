@@ -1,0 +1,114 @@
+<template>
+    <template lwc:if={showModal}>
+        <div class="modal-backdrop centered-modal" onclick={handleBackdropClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Success/Confirmation State -->
+                <template lwc:if={showConfirmation}>
+                    <div class="modal-header">
+                        <h2 class="modal-title">Thanks for the heads-up</h2>
+                        <button class="close-button" onclick={handleClose} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="confirmation-container">
+                            <div class="confirmation-icon">
+                                <lightning-icon icon-name="utility:success" size="large" variant="success"></lightning-icon>
+                            </div>
+                            <h3 class="confirmation-title">We&rsquo;ll take a look</h3>
+                            <p class="confirmation-message">A moderator will review this within 24 hours and follow up if needed.</p>
+                            <p class="confirmation-note">Your report is private &mdash; the person you reported is not told who flagged the content.</p>
+                            <a href="/community-guidelines" class="need-help-link">Read the Community Guidelines</a>
+                            <a href="/help-and-support" class="need-help-link">Need help? Contact your neighbourhood moderator</a>
+                            <a href="mailto:safety@fimby.ca" class="need-help-link">Urgent safety concern? Email safety@fimby.ca</a>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="submit-button" onclick={handleClose}>Done</button>
+                    </div>
+                </template>
+
+                <!-- Already reported — reassuring duplicate state (matches confirmation branding) -->
+                <template lwc:elseif={showAlreadyReported}>
+                    <div class="modal-header">
+                        <h2 class="modal-title">Thanks for checking in</h2>
+                        <button class="close-button" onclick={handleClose} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="confirmation-container">
+                            <div class="confirmation-icon">
+                                <lightning-icon icon-name="utility:success" size="large" variant="success"></lightning-icon>
+                            </div>
+                            <h3 class="confirmation-title">We&rsquo;ve got this one</h3>
+                            <p class="confirmation-message">{alreadyReportedMessage}</p>
+                            <p class="confirmation-note">{alreadyReportedNote}</p>
+                            <a href="/community-guidelines" class="need-help-link">Read the Community Guidelines</a>
+                            <a href="/help-and-support" class="need-help-link">Need help? Contact your neighbourhood moderator</a>
+                            <a href="mailto:safety@fimby.ca" class="need-help-link">Urgent safety concern? Email safety@fimby.ca</a>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="submit-button" onclick={handleClose}>Done</button>
+                    </div>
+                </template>
+
+                <!-- Report Form -->
+                <template lwc:else>
+                    <div class="modal-header">
+                        <h2 class="modal-title">Help us keep FIMBY safe</h2>
+                        <button class="close-button" onclick={handleClose} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Reporting as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <p class="report-intro">Tell us what&rsquo;s not feeling right. Your report is private &mdash; the person you reported is not told who flagged this.</p>
+
+                        <template lwc:if={errorMessage}>
+                            <div class="error-banner" role="alert">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{errorMessage}</span>
+                            </div>
+                        </template>
+
+                        <div class="report-reasons">
+                            <template for:each={reportReasons} for:item="reason">
+                                <label key={reason.id} class="reason-option">
+                                    <input type="radio" name="reason" value={reason.id} onchange={handleReasonChange} class="radio-input">
+                                    <span class="radio-custom"></span>
+                                    <span class="reason-text">{reason.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                        <textarea
+                            class="additional-info"
+                            placeholder="Tell us more about what happened (optional)"
+                            value={additionalInfo}
+                            onchange={handleInfoChange}
+                            maxlength="500">
+                        </textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="cancel-button" onclick={handleCancel}>Cancel</button>
+                        <button class="submit-button" onclick={handleSubmitReport} disabled={isSubmitDisabled}>
+                            <template lwc:if={isSubmitting}>
+                                <lightning-spinner alternative-text="Sending report..." size="small"></lightning-spinner>
+                            </template>
+                            <template lwc:else>
+                                Send report
+                            </template>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

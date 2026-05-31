@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Library Item Detail",
+  "contentBody" : {
+    "activeViewId" : "Library_Item_Detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "detail-Library_Item__c",
+    "urlPrefix" : "library-item"
+  },
+  "urlName" : "library-item-detail"
+}

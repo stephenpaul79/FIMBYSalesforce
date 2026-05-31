@@ -1,0 +1,268 @@
+<template>
+    <div class="fimby-home-feed">
+
+        <!-- Filter Bar (sticky — matches library browser behavior) -->
+        <div class={stickyFilterClass}>
+            <!-- Level 1 Content Type Filter Pills -->
+            <div class="feed-filters">
+                <div class="filters-scroll">
+                    <button class={allFilterClass} onclick={handleFilterAll} data-filter="all">
+                        <img src={allFilterIconUrl} alt="All" class="filter-icon" />
+                        <span>All</span>
+                    </button>
+                    <button class={storiesFilterClass} onclick={handleFilterStories} data-filter="story">
+                        <img src={storiesFilterIconUrl} alt="Shared Life" class="filter-icon" />
+                        <span>Shared Life</span>
+                    </button>
+                    <button class={askOfferFilterClass} onclick={handleFilterAskOffer} data-filter="askOffer">
+                        <img src={askOfferFilterIconUrl} alt="Ask & Offer" class="filter-icon" />
+                        <span>Ask &amp; Offer</span>
+                    </button>
+                </div>
+                <button class={refreshButtonClass} onclick={handleRefresh} aria-label="Refresh feed">
+                    <img src={refreshIconUrl} alt="" class="refresh-icon" />
+                    <span>Refresh</span>
+                </button>
+            </div>
+
+            <!-- Level 2 Sub-type Filter Pills (contextual) -->
+            <template lwc:if={showSubFilters}>
+                <div class="feed-sub-filters">
+                    <div class="filters-scroll">
+                        <template for:each={subFilterOptions} for:item="opt">
+                            <button key={opt.value}
+                                    class={opt.cssClass}
+                                    onclick={handleSubFilterClick}
+                                    data-value={opt.value}>
+                                <template lwc:if={opt.iconUrl}>
+                                    <img src={opt.iconUrl} alt={opt.label} class="filter-icon" />
+                                </template>
+                                <span>{opt.label}</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Say-hi banner: shown until the user posts (or skips past) their bio intro -->
+        <template lwc:if={showBioBanner}>
+            <div class="say-hi-banner" role="status">
+                <img src={bioBannerIconUrl} alt="" class="say-hi-icon">
+                <div class="say-hi-content">
+                    <p class="say-hi-title">Say hi to your neighbours</p>
+                    <p class="say-hi-text">A quick intro post helps people know who's new to FIMBY. We'll draft one from your profile.</p>
+                </div>
+                <button type="button" class="say-hi-cta btn-primary" onclick={handleOpenBioModal}>
+                    Post my intro
+                </button>
+            </div>
+        </template>
+
+        <!-- Intro post modal (lazy-mounted when banner CTA is tapped) -->
+        <template lwc:if={showIntroPostModal}>
+            <c-fimby-intro-post-modal
+                onbioposted={handleBioPosted}
+                onbioskipped={handleBioSkipped}>
+            </c-fimby-intro-post-modal>
+        </template>
+
+        <!-- Feed Content with Infinite Scroll -->
+        <c-fimby-infinite-scroll
+            class="home-scroll-container"
+            enable-pull-to-refresh="true"
+            has-more-data={displayHasMoreContent}
+            is-loading={isLoading}
+            show-empty-state={showEmptyState}
+            threshold="200"
+            empty-state-title="Your neighbours are waiting!"
+            empty-state-message="Be the first to share something."
+            empty-state-icon="utility:groups"
+            empty-state-image-url={emptyStateGifUrl}
+            show-empty-action="true"
+            empty-action-label="Get Started"
+            onloadmore={handleLoadMore}
+            onrefresh={handleRefresh}
+            onemptyaction={handleGetStarted}>
+
+            <!-- Greeting (scrolls with feed content) -->
+            <template lwc:if={greetingText}>
+                <div class="greeting-section">
+                    <template lwc:if={showWelcomeBack}>
+                        <div class="welcome-back-banner">
+                            <span class="welcome-back-text">{welcomeBackText}</span>
+                            <button class="welcome-back-dismiss" onclick={dismissWelcomeBack} aria-label="Dismiss">
+                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </template>
+                    <h2 class="greeting-text">{greetingText}</h2>
+                    <template lwc:if={greetingSubtext}>
+                        <p class="greeting-subtext">{greetingSubtext}</p>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Feed Cards (hidden when empty to avoid padding ghost) -->
+            <template lwc:if={hasFeedItems}>
+            <div class="feed-section">
+                <template for:each={displayFeedItems} for:item="feedItem">
+                    <!-- Story Cards -->
+                    <template lwc:if={feedItem.isStory}>
+                        <button type="button" class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick}>
+                            <c-fimby-card
+                                card-type="story"
+                                card-accent-color={feedItem.accentColor}
+                                title={feedItem.name}
+                                description={feedItem.description}
+                                truncate-description="true"
+                                description-max-lines="3"
+                                show-header="true"
+                                show-avatar="true"
+                                show-menu={feedItem.showCardMenu}
+                                user-name={feedItem.postedByName}
+                                avatar-url={feedItem.avatarUrl}
+                                is-org-poster={feedItem.isOrgPoster}
+                                poster-profile-url={feedItem.orgProfileUrl}
+                                timestamp={feedItem.createdDate}
+                                images={feedItem.images}
+                                response-label={feedItem.responseLabel}
+                                response-icon-url={feedItem.responseIconUrl}
+                                engagement-count={feedItem.engagementCount}
+                                engagement-label={feedItem.engagementLabel}
+                                is-clickable="true"
+                                oncardrespond={handleCardRespond}
+                                oncardreport={handleCardReport}
+                                onavatarclick={handleAvatarNavigation}
+                                onimageclick={handleImageClick}>
+                                <div slot="badge" class={feedItem.badgeClass} style={feedItem.badgeStyle}>
+                                    <img src={feedItem.badgeIconUrl} alt={feedItem.badgeLabel} class="badge-icon" />
+                                    <span>{feedItem.badgeLabel}</span>
+                                </div>
+                            </c-fimby-card>
+                        </button>
+                    </template>
+
+                    <!-- Ask & Offer Cards (includes Events) -->
+                    <template lwc:if={feedItem.isAskOffer}>
+                        <button type="button" class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick}>
+                            <c-fimby-card
+                                card-type="askOffer"
+                                card-accent-color={feedItem.accentColor}
+                                title={feedItem.name}
+                                description={feedItem.description}
+                                event-date-time={feedItem.eventDateTime}
+                                event-location={feedItem.eventLocation}
+                                event-link-url={feedItem.eventLinkUrl}
+                                show-header="true"
+                                show-avatar="true"
+                                show-menu={feedItem.showCardMenu}
+                                user-name={feedItem.postedByName}
+                                avatar-url={feedItem.avatarUrl}
+                                is-org-poster={feedItem.isOrgPoster}
+                                poster-profile-url={feedItem.orgProfileUrl}
+                                timestamp={feedItem.createdDate}
+                                images={feedItem.images}
+                                response-label={feedItem.responseLabel}
+                                response-icon-url={feedItem.responseIconUrl}
+                                response-pill-class={feedItem.responsePillClass}
+                                engagement-count={feedItem.engagementCount}
+                                engagement-label={feedItem.engagementLabel}
+                                allocation-pills={feedItem.allocationPills}
+                                is-clickable="true"
+                                oncardrespond={handleCardRespond}
+                                oncardreport={handleCardReport}
+                                onavatarclick={handleAvatarNavigation}
+                                onimageclick={handleImageClick}>
+                                <div slot="badge" class={feedItem.badgeClass} style={feedItem.badgeStyle}>
+                                    <template lwc:if={feedItem.isUrgent}>
+                                        <img src={urgentIconUrl} alt="Urgent" class="badge-icon-urgent" />
+                                    </template>
+                                    <img src={feedItem.badgeIconUrl} alt={feedItem.badgeLabel} class="badge-icon" />
+                                    <span>{feedItem.badgeLabel}</span>
+                                    <template lwc:if={feedItem.isUrgent}>
+                                        <img src={urgentIconUrl} alt="" class="badge-icon-urgent" />
+                                    </template>
+                                </div>
+                            </c-fimby-card>
+                        </button>
+                    </template>
+
+                    <!-- Library "Just Listed" Cards -->
+                    <template lwc:if={feedItem.isLibrary}>
+                        <div class={feedItem.libraryWrapperClass} role="button" tabindex="0" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick} onkeydown={handleCardKeydown}>
+                            <div class="library-just-listed-card" style={feedItem.libraryCardStyle}>
+                                <div class="library-listed-header">
+                                    <div class={feedItem.libraryAvatarClass}
+                                         onclick={handleLibraryAvatarClick}
+                                         data-url={feedItem.orgProfileUrl}>
+                                        <img src={feedItem.avatarUrl} alt="" class="library-listed-avatar" />
+                                    </div>
+                                    <div class="library-listed-info">
+                                        <span class="library-listed-text">
+                                            <strong>{feedItem.postedByName}</strong> added <strong>{feedItem.name}</strong> to the Library
+                                        </span>
+                                        <span class="library-listed-meta">{feedItem.category}</span>
+                                    </div>
+                                    <template lwc:if={feedItem.showCardMenu}>
+                                        <button type="button" class="library-card-menu" aria-label="Report this item" data-record-id={feedItem.recordId} onclick={handleLibraryCardReport}>
+                                            <img src={kebabBeigeIconUrl} alt="" class="library-card-menu-icon">
+                                        </button>
+                                    </template>
+                                </div>
+                                <div class="library-listed-body">
+                                    <template lwc:if={feedItem.showImage}>
+                                        <div class="library-listed-media">
+                                            <img src={feedItem.imageUrl} alt={feedItem.name} class="library-listed-thumb" />
+                                        </div>
+                                    </template>
+                                    <div class="library-listed-content">
+                                        <span class="library-listed-item-name">{feedItem.name}</span>
+                                        <span class="library-listed-item-category">{feedItem.category}</span>
+                                    </div>
+                                </div>
+                                <div class="library-listed-footer">
+                                    <template lwc:if={feedItem.isPoster}>
+                                        <button class="library-view-btn" onclick={handleCardClick}>
+                                            <img src={viewPostIconUrl} alt="" class="borrow-btn-icon" />
+                                            <span>View Post</span>
+                                        </button>
+                                    </template>
+                                    <template lwc:else>
+                                        <button class="library-borrow-btn" onclick={handleLibraryBorrow}>
+                                            <img src={borrowIconUrl} alt="" class="borrow-btn-icon" />
+                                            <span>Borrow</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="card-type-badge library-badge" style={libraryBadgeStyle}>
+                                <img src={libraryBadgeIconUrl} alt="Library Item" class="badge-icon" />
+                                <span>LIBRARY ITEM</span>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+            </template>
+        </c-fimby-infinite-scroll>
+
+        <!-- Lightbox (rendered at feed level to avoid card overflow clipping) -->
+        <template lwc:if={showLightbox}>
+            <c-fimby-lightbox
+                images={lightboxImages}
+                start-index={lightboxStartIndex}
+                onclose={handleLightboxClose}>
+            </c-fimby-lightbox>
+        </template>
+
+        <!-- Quick Response Modal (rendered at feed level for all CTA interactions) -->
+        <c-fimby-quick-response-modal onresponsesaved={handleResponseSaved}></c-fimby-quick-response-modal>
+
+        <!-- Vouching Required Modal (gates borrow on home-feed library cards) -->
+        <c-fimby-vouching-required-modal></c-fimby-vouching-required-modal>
+
+        <!-- Content report modal (feed-card kebab → Report) -->
+        <c-fimby-report-content></c-fimby-report-content>
+    </div>
+</template>

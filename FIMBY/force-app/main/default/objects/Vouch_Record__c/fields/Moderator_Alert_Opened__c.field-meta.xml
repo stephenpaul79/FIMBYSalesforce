@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Moderator_Alert_Opened__c</fullName>
+    <defaultValue>false</defaultValue>
+    <externalId>false</externalId>
+    <label>Moderator Alert Opened</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+    <description>True once FimbyVouchReminderJob has opened a Moderator_Task__c for a stuck pending vouch, so we do not file duplicate tasks.</description>
+</CustomField>

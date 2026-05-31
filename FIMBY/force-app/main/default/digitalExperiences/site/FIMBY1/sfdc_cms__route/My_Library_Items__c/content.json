@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Library Items",
+  "contentBody" : {
+    "activeViewId" : "My_Library_Items",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-library-items",
+    "urlPrefix" : "my-library-items"
+  },
+  "urlName" : "my-library-items"
+}

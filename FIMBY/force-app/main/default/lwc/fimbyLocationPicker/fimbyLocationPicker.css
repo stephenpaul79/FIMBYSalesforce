@@ -1,0 +1,240 @@
+/* FIMBY Location Picker - Mobile First */
+.fimby-location-picker {
+    width: 100%;
+}
+
+.location-input-container {
+    margin-bottom: 16px;
+}
+
+.location-search {
+    width: 100%;
+}
+
+.location-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.current-location-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-xl);
+    background: var(--fimby-surface-card);
+    color: var(--fimby-brand-teal);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.current-location-btn:hover {
+    background: var(--fimby-brand-teal);
+    color: white;
+}
+
+.current-location-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.location-results {
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.location-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--fimby-hover-bg);
+    transition: background 0.2s ease;
+}
+
+.location-option:hover {
+    background: rgba(25, 118, 210, 0.05);
+}
+
+.location-option:last-child {
+    border-bottom: none;
+}
+
+.location-icon {
+    margin-right: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+.location-info {
+    flex: 1;
+}
+
+.location-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    margin-bottom: 2px;
+}
+
+.location-details {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+.location-distance {
+    font-size: 11px;
+    color: var(--fimby-brand-teal);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.selected-indicator {
+    margin-left: 12px;
+}
+
+.no-results {
+    padding: 24px;
+    text-align: center;
+    color: var(--fimby-text-secondary);
+}
+
+.no-results-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 8px 0 4px;
+}
+
+.no-results-subtext {
+    font-size: 12px;
+}
+
+.popular-locations {
+    margin-top: 16px;
+}
+
+.popular-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 8px;
+}
+
+.popular-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.popular-chip {
+    padding: 6px 12px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-lg);
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.popular-chip:hover {
+    background: var(--fimby-brand-teal);
+    color: white;
+    border-color: var(--fimby-brand-teal);
+}
+
+.selected-location {
+    background: rgba(25, 118, 210, 0.05);
+    border: 1px solid rgba(25, 118, 210, 0.2);
+    border-radius: var(--fimby-radius-sm);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.selected-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fimby-brand-teal);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.selected-info {
+    display: flex;
+    align-items: center;
+}
+
+.selected-icon {
+    margin-right: 12px;
+}
+
+.selected-details {
+    flex: 1;
+}
+
+.selected-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    margin-bottom: 2px;
+}
+
+.selected-description {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+.change-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--fimby-brand-teal);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: transparent;
+    color: var(--fimby-brand-teal);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--fimby-btn-shadow);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.change-location:active {
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.change-location-icon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+.change-location:hover {
+    background: var(--fimby-brand-teal);
+    color: white;
+}
+
+.change-location:hover .change-location-icon {
+    filter: brightness(0) invert(1);
+}
+
+/* Keyboard focus visibility */
+.current-location-btn:focus-visible,
+.location-option:focus-visible,
+.popular-chip:focus-visible,
+.change-location:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}

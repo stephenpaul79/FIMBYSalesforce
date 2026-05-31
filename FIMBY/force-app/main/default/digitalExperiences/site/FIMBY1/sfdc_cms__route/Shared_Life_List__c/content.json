@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Shared Life List",
+  "contentBody" : {
+    "activeViewId" : "Shared_Life_List",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-shared-life-list",
+    "urlPrefix" : "shared-life-list"
+  },
+  "urlName" : "shared-life-list"
+}

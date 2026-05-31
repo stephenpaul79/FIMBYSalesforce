@@ -1,0 +1,58 @@
+<template>
+    <div class="snapshot-container">
+        <button class="snapshot-header" onclick={toggleExpanded}
+                aria-expanded={ariaExpanded} aria-controls="snapshot-body">
+            <div class="snapshot-header-left">
+                <img src={infoIconUrl} alt="" class="header-icon">
+                <h3 class="snapshot-title">About this person</h3>
+            </div>
+            <lightning-icon icon-name={chevronIcon} size="xx-small"></lightning-icon>
+        </button>
+
+        <template lwc:if={isExpanded}>
+            <div id="snapshot-body" class="snapshot-body">
+                <div class="subject-card">
+                    <img src={photoUrl} alt="" class="subject-photo">
+                    <div class="subject-info">
+                        <span class="subject-name">{subjectData.name}</span>
+                        <template lwc:if={subjectData.pronouns}>
+                            <span class="subject-pronouns">{subjectData.pronouns}</span>
+                        </template>
+                        <span class="subject-meta">Member since {subjectData.memberSince}</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value">{subjectData.reportCount}</span>
+                        <span class="stat-label">Reports</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{subjectData.concernCount}</span>
+                        <span class="stat-label">Concerns</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{subjectData.blockCount}</span>
+                        <span class="stat-label">Blocks</span>
+                    </div>
+                </div>
+
+                <template lwc:if={hasRecentHistory}>
+                    <h4 class="recent-title">Recent moderation history</h4>
+                    <ul class="recent-list">
+                        <template for:each={subjectData.recentHistory} for:item="item">
+                            <li key={item.id} class="recent-item">
+                                <span class="recent-date">{item.date}</span>
+                                <span class="recent-summary">{item.summary}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+
+                <template lwc:if={noHistory}>
+                    <p class="no-history">No prior moderation history.</p>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

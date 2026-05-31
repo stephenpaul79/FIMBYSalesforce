@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>FIMBY Public Website URL</label>
+    <pluralLabel>FIMBY Public Website URLs</pluralLabel>
+    <visibility>Public</visibility>
+    <description>Configurable public-website URLs (fimby.com explainers, terms, privacy, etc.) used by emails and other FIMBY-generated content. Admin-editable via Setup with zero Apex deploy. NOT affected by the Experience Cloud host swap — use FIMBY_URL__mdt for routes inside the Experience Cloud site.</description>
+</CustomObject>

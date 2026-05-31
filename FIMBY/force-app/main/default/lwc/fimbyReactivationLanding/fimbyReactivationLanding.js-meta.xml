@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FIMBY Reactivation Landing</masterLabel>
+    <description>Public-page LWC at /reactivate that reads ?token=... from the URL, calls FimbyReactivationController.consumeReactivationToken, and shows restored / expired / used / not-found / past-grace states.</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+</LightningComponentBundle>

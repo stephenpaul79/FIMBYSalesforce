@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Related_Contact_Or_Organization_Required</fullName>
+    <active>true</active>
+    <errorConditionFormula>(ISBLANK(Related_Contact__c) &amp;&amp; ISBLANK(Related_Organization__c)) || (!ISBLANK(Related_Contact__c) &amp;&amp; !ISBLANK(Related_Organization__c))</errorConditionFormula>
+    <errorMessage>Please select either a supported person or a community group, but not both.</errorMessage>
+</ValidationRule>

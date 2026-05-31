@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Response_Thread_Cleanup_Days__c</fullName>
+    <defaultValue>180</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Response Thread Cleanup Days</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Ask/Offer response threads with no activity for this many days are permanently deleted by the nightly cleanup job. Set to 0 to disable. Default 180.</inlineHelpText>
+</CustomField>

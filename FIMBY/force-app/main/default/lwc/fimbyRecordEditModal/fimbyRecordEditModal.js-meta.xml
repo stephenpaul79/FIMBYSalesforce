@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://lwc.dev/v1.0.0">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FIMBY Record Edit Modal</masterLabel>
+    <description>Generic modal for editing records using field sets</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="fieldSetName" type="String" default="FIMBY_Editable_Fields" label="Field Set Name" description="Name of the field set containing editable fields"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

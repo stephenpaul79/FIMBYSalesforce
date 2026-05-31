@@ -1,0 +1,206 @@
+<template>
+    <lightning-card title="Share Contact Info">
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="slds-p-around_large slds-align_absolute-center">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template lwc:if={showError}>
+            <div class="slds-p-around_large">
+                <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <h2 class="slds-text-align_center slds-text-color_error slds-text-heading_small">
+                        {error}
+                    </h2>
+                </div>
+                <div class="slds-p-top_medium slds-text-align_center">
+                    <lightning-button
+                        label="Go Back"
+                        onclick={handleFinish}
+                        variant="neutral">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success State -->
+        <template lwc:if={showSuccess}>
+            <div class="slds-p-around_large">
+                <div class="slds-illustration slds-illustration_small">
+                    <div class="slds-text-align_center">
+                        <lightning-icon
+                            icon-name="utility:success"
+                            size="large"
+                            variant="success"
+                            class="slds-m-bottom_medium">
+                        </lightning-icon>
+                        <h3 class="slds-text-heading_medium slds-m-bottom_small">
+                            Contact Info Shared!
+                        </h3>
+                        <p class="slds-text-body_regular slds-text-color_weak">
+                            Your contact information has been sent to {recipientFullName}.
+                        </p>
+                    </div>
+                </div>
+                <div class="slds-p-top_medium slds-text-align_center">
+                    <lightning-button
+                        label="Go to Response"
+                        onclick={handleFinish}
+                        variant="brand">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Form State -->
+        <template lwc:if={showForm}>
+            <div class="slds-p-around_medium">
+                <template lwc:if={showIdentityBanner}>
+                    <div class="posting-as">
+                        <img src={posterIconUrl} alt="" class="posting-as-icon">
+                        <span class="posting-as-label">Sharing as:</span>
+                        <span class="posting-as-value">{actingAsName}</span>
+                    </div>
+                </template>
+
+                <!-- Instructions -->
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                    Please select which contact info you would like to share:
+                </p>
+
+                <!-- Checkboxes Section -->
+                <div class="slds-form-element slds-m-bottom_medium">
+                    <lightning-input
+                        type="checkbox"
+                        label="Email"
+                        checked={shareEmail}
+                        onchange={handleEmailCheckbox}>
+                    </lightning-input>
+                </div>
+
+                <div class="slds-form-element slds-m-bottom_medium">
+                    <lightning-input
+                        type="checkbox"
+                        label="Phone"
+                        checked={sharePhone}
+                        onchange={handlePhoneCheckbox}>
+                    </lightning-input>
+                </div>
+
+                <div class="slds-form-element slds-m-bottom_medium">
+                    <lightning-input
+                        type="checkbox"
+                        label="Address"
+                        checked={shareAddress}
+                        onchange={handleAddressCheckbox}>
+                    </lightning-input>
+                </div>
+
+                <!-- Conditional Email Field -->
+                <template lwc:if={shareEmail}>
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <lightning-input
+                            type="email"
+                            label="Email Address"
+                            value={emailValue}
+                            onchange={handleEmailChange}
+                            required>
+                        </lightning-input>
+                    </div>
+                </template>
+
+                <!-- Conditional Phone Field -->
+                <template lwc:if={sharePhone}>
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <lightning-input
+                            type="tel"
+                            label="Phone Number"
+                            value={phoneValue}
+                            onchange={handlePhoneChange}
+                            required>
+                        </lightning-input>
+                    </div>
+                </template>                <!-- Conditional Address Fields -->
+                <template lwc:if={shareAddress}>
+                    <div class="address-section slds-box slds-p-around_small slds-m-bottom_medium">
+                        <div class="slds-form-element slds-m-bottom_small">
+                            <lightning-input
+                                label="Street"
+                                value={streetValue}
+                                onchange={handleStreetChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-grid slds-gutters_small slds-m-bottom_small">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input
+                                    label="City"
+                                    value={cityValue}
+                                    onchange={handleCityChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input
+                                    label="State/Province"
+                                    value={stateValue}
+                                    onchange={handleStateChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters_small slds-m-bottom_small">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input
+                                    label="Postal Code"
+                                    value={postalCodeValue}
+                                    onchange={handlePostalCodeChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input
+                                    label="Country"
+                                    value={countryValue}
+                                    onchange={handleCountryChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-form-element">
+                            <lightning-textarea
+                                label="Address Notes (Buzz, Unit, Access Info, etc.)"
+                                value={additionalInfoValue}
+                                onchange={handleAdditionalInfoChange}
+                                max-length="255">
+                            </lightning-textarea>
+                        </div>
+                    </div>
+                </template>                <!-- Validation Error -->
+                <template lwc:if={showValidationError}>
+                    <div class="slds-text-color_error slds-m-bottom_medium">
+                        <strong>{validationError}</strong>
+                    </div>
+                </template>                <!-- Confirmation Message -->
+                <div class="slds-box slds-box_x-small slds-theme_shade slds-m-bottom_medium slds-text-align_center">
+                    <p>{confirmationMessage}</p>
+                </div>                <!-- Action Buttons -->
+                <div class="slds-grid slds-grid_align-center slds-gutters">
+                    <div class="slds-col">
+                        <lightning-button
+                            label="Cancel"
+                            onclick={handleCancel}
+                            variant="neutral">
+                        </lightning-button>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button
+                            label={submitButtonLabel}
+                            onclick={handleSubmit}
+                            variant="brand"
+                            disabled={isSubmitDisabled}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+</template>

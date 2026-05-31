@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Display_Status__c</fullName>
+    <description>Single source of truth for UI status rendering on Bulk Buy posts. Combines lifecycle status with reservation availability.</description>
+    <externalId>false</externalId>
+    <formula>IF(ISPICKVAL(Status__c, &apos;Cancelled&apos;), &apos;Cancelled&apos;,
+IF(ISPICKVAL(Status__c, &apos;Expired&apos;), &apos;Expired&apos;,
+IF(ISPICKVAL(Status__c, &apos;Completed (Offer Accepted / Need Met)&apos;), &apos;Completed&apos;,
+IF(ISPICKVAL(Status__c, &apos;Pickup_Ready&apos;), &apos;Pickup Ready&apos;,
+IF(Total_Available__c &lt;= 0, &apos;Fully Reserved&apos;,
+IF(Total_Reserved__c &gt; 0, &apos;Shares Available&apos;,
+&apos;Available&apos;))))))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Display Status</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

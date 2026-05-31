@@ -1,0 +1,79 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "profile",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"cd7d5fa6-4cdf-4e68-8ba5-eea8abb582cd\",\"columns\":[{\"UUID\":\"9f64173a-fd08-4a2d-843e-b47ba4d92bee\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyUserProfileView",
+              "id" : "f1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "type" : "component"
+            }, {
+              "attributes" : {
+                "activeTab" : "profile",
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyBottomNavigation",
+              "id" : "f2b2c3d4-e5f6-7890-abcd-ef1234567891",
+              "type" : "component"
+            } ],
+            "id" : "6e64173a-fd08-4a2d-843e-b47ba4d92bee",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "cd7d5fa6-4cdf-4e68-8ba5-eea8abb582cd",
+          "type" : "component"
+        } ],
+        "id" : "6d449052-58b6-4a99-bc9d-275a43c7b30a",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "profile",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "5d686ddd-f2aa-4d59-8bbb-174aaff49dff",
+          "type" : "component"
+        } ],
+        "id" : "4bd62944-fa5d-4598-86c2-cd7b84d1da5b",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "afe8a9a9-3280-45ce-a965-b75c3809bd1f",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-profile"
+  },
+  "urlName" : "profile"
+}

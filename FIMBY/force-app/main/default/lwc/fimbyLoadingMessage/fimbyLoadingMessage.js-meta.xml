@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightningCommunity__Default</target>
+        <target>lightningCommunity__Page</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="context" type="String" label="Context" default="general" description="Loading context: general, home, library, search, posting, stories, messages, profile, lending"/>
+            <property name="size" type="String" label="Spinner Size" default="medium" description="Spinner size: small, medium, large"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,10 @@
+<template>
+    <template lwc:if={hasDisplayStatus}>
+        <span class={badgeClass} role="status" aria-label={badgeLabel}>
+            <template lwc:if={statusIcon}>
+                <lightning-icon icon-name={statusIcon} alternative-text="" size="xx-small" class="badge-icon"></lightning-icon>
+            </template>
+            <span class="badge-text">{badgeLabel}</span>
+        </span>
+    </template>
+</template>

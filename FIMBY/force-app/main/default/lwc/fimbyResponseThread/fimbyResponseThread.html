@@ -1,0 +1,674 @@
+<template>
+    <div class="fimby-response-thread">
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="messages" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template lwc:elseif={error}>
+            <div class="error-container">
+                <lightning-icon icon-name="utility:warning" size="small"></lightning-icon>
+                <p class="error-text">{error}</p>
+                <button class="back-link" onclick={handleBack}>Go back</button>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template lwc:else>
+
+                <!-- Unified Header: back | post context | status/actions -->
+                <div class={stickyHeaderClass}>
+                    <button class="back-button" onclick={handleBack} aria-label="Go back">
+                        <lightning-icon icon-name="utility:chevronleft" size="medium"></lightning-icon>
+                    </button>
+                    <div class="header-post-link" onclick={handlePostClick} role="button" tabindex="0">
+                        <template lwc:if={postImageUrl}>
+                            <div class="header-post-thumb">
+                                <img src={postImageUrl} alt={post.name} class="header-post-img" />
+                            </div>
+                        </template>
+                        <div class="header-post-info">
+                            <span class="header-post-name">{post.name}</span>
+                            <span class="header-post-meta">
+                                <span class="post-type-badge">{post.type}</span>
+                                <template lwc:if={tracksQuantity}>
+                                    &middot; {post.totalAvailable} of {post.totalQuantity}
+                                </template>
+                                <template lwc:if={isPostInactive}>
+                                    &middot; <span class="post-inactive-badge">{postStatusDisplay}</span>
+                                </template>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <template lwc:if={showHeaderPills}>
+                            <span class={statusBadgeClass}>{response.status}</span>
+                            <template lwc:if={tracksQuantity}>
+                                <button class="header-amount" onclick={handleEditAmount}
+                                        disabled={isAmountEditDisabled}
+                                        aria-label="Edit amount">
+                                    <span>{amountDisplay}</span>
+                                    <template lwc:if={showEditAmountButton}>
+                                        <lightning-icon icon-name="utility:edit" size="xx-small" class="amount-edit-icon"></lightning-icon>
+                                    </template>
+                                </button>
+                            </template>
+                        </template>
+                        <template lwc:if={showAcceptDecline}>
+                            <button class="action-btn action-accept" onclick={handleAccept}>Accept</button>
+                            <button class="action-btn action-decline" onclick={handleDecline}>Decline</button>
+                        </template>
+                        <template lwc:if={showComplete}>
+                            <button class="action-btn action-complete" onclick={handleComplete}>Complete</button>
+                        </template>
+                        <template lwc:if={showCancelForResponder}>
+                            <button class="action-btn action-cancel" onclick={handleCancel}>Cancel</button>
+                        </template>
+                        <!-- A3: Block/Report kebab — matches fimbyConversationView.
+                             Opens the combined Block + optional Report modal. -->
+                        <button class="menu-button"
+                                type="button"
+                                onclick={handleMenuClick}
+                                title="Block or report"
+                                aria-label="Block or report">
+                            <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <template lwc:if={showNonThreadedNotice}>
+                    <div class="non-threaded-notice" role="status">
+                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                        <p class="notice-text">{nonThreadedEventMessage}</p>
+                        <button class="action-btn action-back-to-event" type="button" onclick={handlePostClick}>
+                            Back to event
+                        </button>
+                    </div>
+                </template>
+                <template lwc:else>
+                <div class="thread-body">
+                <!-- Scrollable Content Area -->
+                <div class="messages-container">
+
+                    <!-- Share Contact Prompt (after acceptance) -->
+                    <template lwc:if={showShareContactPrompt}>
+                        <div class="share-contact-prompt">
+                            <p class="share-prompt-text">Response accepted! Share your contact info with {otherPartyName}?</p>
+                            <div class="share-prompt-actions">
+                                <button class="action-btn action-share" onclick={handleShareContact}>Share</button>
+                                <button class="action-btn-subtle" onclick={handleDismissSharePrompt}>Dismiss</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Complete Banner (top of thread, same format as share prompt) -->
+                    <template lwc:if={showCompleteBanner}>
+                        <div class="complete-clue-prompt">
+                            <p class="complete-banner-text">{terminalBannerMessage}</p>
+                            <template lwc:if={contactNotShared}>
+                                <div class="share-prompt-actions">
+                                    <button class="action-btn action-share" onclick={handleShareContact}>Share Contact Info</button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Messages List -->
+                    <div class={messagesListClass}>
+                        <template lwc:if={hasMoreMessages}>
+                            <div class="load-more-container">
+                                <button class="load-more-button" onclick={handleLoadMore}>
+                                    <template lwc:if={isLoadingMore}>
+                                        <div class="loading-dots">
+                                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+                                        Load earlier messages
+                                    </template>
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- All-expanded mode (fewer than 5 real messages) -->
+                        <template lwc:if={useZones}>
+                            <!-- Zoned mode (5+ real messages) -->
+                            <!-- System messages before first user message (e.g. amount pill) -->
+                            <template for:each={headerSystemMessages} for:item="hsm">
+                                <template lwc:if={hsm.isThanksMessage}>
+                                    <div key={hsm.id} class="message-item thanks-message">
+                                        <div class="thanks-card-inline">
+                                            <div class="thanks-card-header">
+                                                <img src={thanksIconUrl} alt="" class="thanks-icon">
+                                                <span class="thanks-sender">Thanks from {hsm.senderDisplayName}</span>
+                                            </div>
+                                            <template lwc:if={hsm.body}>
+                                                <p class="thanks-body">{hsm.body}</p>
+                                            </template>
+                                            <span class="thanks-time">{hsm.formattedTimeShort}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div key={hsm.id} class="message-item system-message">
+                                        <div class="system-bubble">
+                                            <span class="system-text">{hsm.body}</span>
+                                            <span class="system-time">{hsm.formattedTimeShort}<span class="relative-hint">{hsm.formattedTimeRelative}</span></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <!-- Zone 1: First message — collapsed by default -->
+                            <div data-msg-id={firstMessage.id}
+                                 role="button" tabindex="0"
+                                 onclick={handleExpandMessage}
+                                 onkeydown={handleExpandMessageKey}
+                                 style="cursor: pointer;">
+                                <template lwc:if={isFirstExpanded}>
+                                    <div class={firstMessage.cardClass}>
+                                        <div class="message-card-header">
+                                            <div class="card-avatar">
+                                                <template lwc:if={firstMessage.hasAvatarImage}>
+                                                    <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
+                                                </template>
+                                                <template lwc:else>
+                                                    {firstMessage.senderInitials}
+                                                </template>
+                                            </div>
+                                            <span class="card-sender">{firstMessage.senderDisplayName}</span>
+                                            <span class="card-timestamp">{firstMessage.formattedTime}</span>
+                                        </div>
+                                        <div class="message-card-body">
+                                            <p class="message-text">{firstMessage.body}</p>
+                                        </div>
+                                        <template lwc:if={firstMessage.showViaLabel}>
+                                            <div class="via-label">{firstMessage.viaLabel}</div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="msg-collapsed zone-first">
+                                        <span class="msg-collapsed-avatar">
+                                            <template lwc:if={firstMessage.hasAvatarImage}>
+                                                <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
+                                            </template>
+                                            <template lwc:else>
+                                                {firstMessage.senderInitials}
+                                            </template>
+                                        </span>
+                                        <span class="msg-collapsed-sender">{firstMessage.senderDisplayName}</span>
+                                        <span class="msg-collapsed-snippet">{firstMessage.snippetText}</span>
+                                        <span class="msg-collapsed-time">{firstMessage.formattedTimeShort}<span class="relative-hint">{firstMessage.formattedTimeRelative}</span></span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Zone 2: Middle messages — pill or collapsed rows -->
+                            <template lwc:if={hasMiddleMessages}>
+                                <template lwc:if={middleRevealed}>
+                                    <template for:each={middleMessages} for:item="mid">
+                                        <template lwc:if={mid.isSystemMessage}>
+                                            <template lwc:if={mid.isThanksMessage}>
+                                                <div key={mid.id} class="message-item thanks-message">
+                                                    <div class="thanks-card-inline">
+                                                        <div class="thanks-card-header">
+                                                            <img src={thanksIconUrl} alt="" class="thanks-icon">
+                                                            <span class="thanks-sender">Thanks from {mid.senderDisplayName}</span>
+                                                        </div>
+                                                        <template lwc:if={mid.body}>
+                                                            <p class="thanks-body">{mid.body}</p>
+                                                        </template>
+                                                        <span class="thanks-time">{mid.formattedTimeShort}</span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div key={mid.id} class="message-item system-message">
+                                                    <div class="system-bubble">
+                                                        <span class="system-text">{mid.body}</span>
+                                                        <span class="system-time">{mid.formattedTimeShort}<span class="relative-hint">{mid.formattedTimeRelative}</span></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template lwc:else>
+                                            <div key={mid.id} data-msg-id={mid.id}
+                                                 role="button" tabindex="0"
+                                                 onclick={handleExpandMessage}
+                                                 onkeydown={handleExpandMessageKey}
+                                                 style="cursor: pointer;">
+                                                <template lwc:if={mid.isExpanded}>
+                                                    <div class={mid.cardClass}>
+                                                        <div class="message-card-header">
+                                                            <div class="card-avatar">
+                                                                <template lwc:if={mid.hasAvatarImage}>
+                                                                    <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    {mid.senderInitials}
+                                                                </template>
+                                                            </div>
+                                                            <span class="card-sender">{mid.senderDisplayName}</span>
+                                                            <span class="card-timestamp">{mid.formattedTime}</span>
+                                                        </div>
+                                                        <div class="message-card-body">
+                                                            <p class="message-text">{mid.body}</p>
+                                                        </div>
+                                                        <template lwc:if={mid.showViaLabel}>
+                                                            <div class="via-label">{mid.viaLabel}</div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="msg-collapsed">
+                                                        <span class="msg-collapsed-avatar">
+                                                            <template lwc:if={mid.hasAvatarImage}>
+                                                                <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
+                                                            </template>
+                                                            <template lwc:else>
+                                                                {mid.senderInitials}
+                                                            </template>
+                                                        </span>
+                                                        <span class="msg-collapsed-sender">{mid.senderDisplayName}</span>
+                                                        <span class="msg-collapsed-snippet">{mid.snippetText}</span>
+                                                        <span class="msg-collapsed-time">{mid.formattedTimeShort}<span class="relative-hint">{mid.formattedTimeRelative}</span></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <template lwc:if={middleCount}>
+                                        <div class="collapsed-pill-line">
+                                            <div class="collapsed-count-pill" role="button" tabindex="0"
+                                                 onclick={handleRevealMiddle} onkeydown={handleRevealMiddleKey}>
+                                                {middleCount}
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <!-- System messages always visible below the pill -->
+                                    <template for:each={middleSystemMessages} for:item="msm">
+                                        <template lwc:if={msm.isThanksMessage}>
+                                            <div key={msm.id} class="message-item thanks-message">
+                                                <div class="thanks-card-inline">
+                                                    <div class="thanks-card-header">
+                                                        <img src={thanksIconUrl} alt="" class="thanks-icon">
+                                                        <span class="thanks-sender">Thanks from {msm.senderDisplayName}</span>
+                                                    </div>
+                                                    <template lwc:if={msm.body}>
+                                                        <p class="thanks-body">{msm.body}</p>
+                                                    </template>
+                                                    <span class="thanks-time">{msm.formattedTimeShort}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <div key={msm.id} class="message-item system-message">
+                                                <div class="system-bubble">
+                                                    <span class="system-text">{msm.body}</span>
+                                                    <span class="system-time">{msm.formattedTimeShort}<span class="relative-hint">{msm.formattedTimeRelative}</span></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </template>
+                            </template>
+
+                            <!-- Zone 3: Last 2 messages — always expanded -->
+                            <template for:each={lastMessages} for:item="last">
+                                <div key={last.id}>
+                                    <template lwc:if={last.isSystemMessage}>
+                                        <template lwc:if={last.isThanksMessage}>
+                                            <div class="message-item thanks-message">
+                                                <div class="thanks-card-inline">
+                                                    <div class="thanks-card-header">
+                                                        <img src={thanksIconUrl} alt="" class="thanks-icon">
+                                                        <span class="thanks-sender">Thanks from {last.senderDisplayName}</span>
+                                                    </div>
+                                                    <template lwc:if={last.body}>
+                                                        <p class="thanks-body">{last.body}</p>
+                                                    </template>
+                                                    <span class="thanks-time">{last.formattedTimeShort}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <div class="message-item system-message">
+                                                <div class="system-bubble">
+                                                    <span class="system-text">{last.body}</span>
+                                                    <span class="system-time">{last.formattedTimeShort}<span class="relative-hint">{last.formattedTimeRelative}</span></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class={last.cardClass}>
+                                            <div class="message-card-header">
+                                                <div class="card-avatar">
+                                                    <template lwc:if={last.hasAvatarImage}>
+                                                        <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
+                                                    </template>
+                                                    <template lwc:else>
+                                                        {last.senderInitials}
+                                                    </template>
+                                                </div>
+                                                <span class="card-sender">{last.senderDisplayName}</span>
+                                                <span class="card-timestamp">{last.formattedTime}</span>
+                                            </div>
+                                            <div class="message-card-body">
+                                                <p class="message-text">{last.body}</p>
+                                            </div>
+                                            <template lwc:if={last.showViaLabel}>
+                                                <div class="via-label">{last.viaLabel}</div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <template for:each={processedMessages} for:item="item">
+                                <div key={item.id}>
+                                    <template lwc:if={item.isDateSeparator}>
+                                        <div class="date-separator">
+                                            <span class="date-text">{item.dateText}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:elseif={item.isOriginalResponse}>
+                                        <div class={item.cardClass}>
+                                            <div class="message-card-header">
+                                                <div class="card-avatar">
+                                                    <template lwc:if={item.hasAvatarImage}>
+                                                        <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
+                                                    </template>
+                                                    <template lwc:else>
+                                                        {item.senderInitials}
+                                                    </template>
+                                                </div>
+                                                <span class="card-sender">{item.senderDisplayName}</span>
+                                                <span class="card-timestamp">{item.formattedTime}</span>
+                                            </div>
+                                            <div class="message-card-body">
+                                                <p class="message-text">{item.body}</p>
+                                            </div>
+                                            <template lwc:if={item.showViaLabel}>
+                                                <div class="via-label">{item.viaLabel}</div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template lwc:elseif={item.isSystemMessage}>
+                                        <template lwc:if={item.isThanksMessage}>
+                                            <div class="message-item thanks-message">
+                                                <div class="thanks-card-inline">
+                                                    <div class="thanks-card-header">
+                                                        <img src={thanksIconUrl} alt="" class="thanks-icon">
+                                                        <span class="thanks-sender">Thanks from {item.senderDisplayName}</span>
+                                                    </div>
+                                                    <template lwc:if={item.body}>
+                                                        <p class="thanks-body">{item.body}</p>
+                                                    </template>
+                                                    <span class="thanks-time">{item.formattedTimeShort}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <div class="message-item system-message">
+                                                <div class="system-bubble">
+                                                    <span class="system-text">{item.body}</span>
+                                                    <span class="system-time">{item.formattedTimeShort}<span class="relative-hint">{item.formattedTimeRelative}</span></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class={item.cardClass}>
+                                            <div class="message-card-header">
+                                                <div class="card-avatar">
+                                                    <template lwc:if={item.hasAvatarImage}>
+                                                        <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
+                                                    </template>
+                                                    <template lwc:else>
+                                                        {item.senderInitials}
+                                                    </template>
+                                                </div>
+                                                <span class="card-sender">{item.senderDisplayName}</span>
+                                                <span class="card-timestamp">{item.formattedTime}</span>
+                                            </div>
+                                            <div class="message-card-body">
+                                                <p class="message-text">{item.body}</p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Reply Area -->
+                <template lwc:if={showReplyArea}>
+                    <div class="reply-container">
+                            <template lwc:if={showCompose}>
+                                <template lwc:if={showIdentityBanner}>
+                                    <div class="posting-as">
+                                        <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                        <span class="posting-as-label">Replying as:</span>
+                                        <span class="posting-as-value">{myContactName}</span>
+                                    </div>
+                                </template>
+                                <div class="compose-area">
+                                    <textarea class="compose-input" placeholder="Write a reply..."
+                                              value={messageText} oninput={handleMessageInput} rows="3"></textarea>
+                                    <div class="compose-actions">
+                                        <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
+                                        <button class="compose-send" onclick={handleSendMessage}
+                                                disabled={isSendDisabled}>
+                                            <template lwc:if={isSending}>Sending…</template>
+                                            <template lwc:else>Send</template>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <button class="reply-trigger" onclick={handleShowCompose}>
+                                    <lightning-icon icon-name="utility:reply" size="x-small"></lightning-icon>
+                                    <span>Reply</span>
+                                </button>
+                            </template>
+                        </div>
+                </template>
+
+                <!-- Terminal State Banner -->
+                <template lwc:if={showTerminalBanner}>
+                    <div class="terminal-banner">
+                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                        <span>{terminalBannerMessage}</span>
+                    </div>
+                </template>
+                </div>
+                </template>
+
+        </template>
+
+        <!-- Confirmation Dialog -->
+        <template lwc:if={showConfirmDialog}>
+            <section class="confirm-overlay" role="dialog" aria-modal="true">
+                <div class="confirm-dialog">
+                    <h3 class="confirm-title">{confirmTitle}</h3>
+                    <p class="confirm-message">{confirmMessage}</p>
+                    <div class="confirm-actions">
+                        <button class="confirm-btn-secondary" onclick={handleConfirmDialogClose}>Go Back</button>
+                        <button class="confirm-btn-primary" onclick={handleConfirmDialogConfirm}>{confirmButtonLabel}</button>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <!-- Edit Amount Sheet -->
+        <template lwc:if={showEditAmount}>
+            <section class="confirm-overlay" role="dialog" aria-modal="true">
+                <div class="confirm-dialog">
+                    <h3 class="confirm-title">Edit {amountLabel}</h3>
+                    <div class="edit-amount-field">
+                        <label class="edit-amount-label">New amount</label>
+                        <input type="number" class="edit-amount-input" min="1"
+                               value={editAmountValue}
+                               oninput={handleEditAmountInput} />
+                        <template lwc:if={editAmountError}>
+                            <span class="edit-amount-error">{editAmountError}</span>
+                        </template>
+                    </div>
+                    <div class="confirm-actions">
+                        <button class="confirm-btn-secondary" onclick={handleEditAmountClose}>Cancel</button>
+                        <button class="confirm-btn-primary" onclick={handleEditAmountSave}>Save</button>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <!-- Share Contact Sheet -->
+        <template lwc:if={showShareContact}>
+            <section class="confirm-overlay" role="dialog" aria-modal="true">
+                <div class="share-dialog">
+                    <h3 class="confirm-title">Share Contact Info</h3>
+                    <p class="share-subtitle">Choose what to share with {otherPartyName}</p>
+
+                    <div class="share-field-group">
+                        <label class="share-toggle">
+                            <input type="checkbox" checked={shareEmail} onchange={handleShareEmailToggle} />
+                            <span>Email</span>
+                        </label>
+                        <template lwc:if={shareEmail}>
+                            <input type="email" class="share-input" value={shareEmailValue} oninput={handleShareEmailInput} />
+                        </template>
+                    </div>
+
+                    <div class="share-field-group">
+                        <label class="share-toggle">
+                            <input type="checkbox" checked={sharePhone} onchange={handleSharePhoneToggle} />
+                            <span>Phone</span>
+                        </label>
+                        <template lwc:if={sharePhone}>
+                            <input type="tel" class="share-input" value={sharePhoneValue} oninput={handleSharePhoneInput} />
+                        </template>
+                    </div>
+
+                    <div class="share-field-group">
+                        <label class="share-toggle">
+                            <input type="checkbox" checked={shareAddress} onchange={handleShareAddressToggle} />
+                            <span>Address</span>
+                        </label>
+                        <template lwc:if={shareAddress}>
+                            <input type="text" class="share-input" placeholder="Street" value={shareStreet} oninput={handleShareStreetInput} />
+                            <input type="text" class="share-input" placeholder="City" value={shareCity} oninput={handleShareCityInput} />
+                            <div class="share-row">
+                                <input type="text" class="share-input share-half" placeholder="Province/State" value={shareState} oninput={handleShareStateInput} />
+                                <input type="text" class="share-input share-half" placeholder="Postal Code" value={sharePostalCode} oninput={handleSharePostalCodeInput} />
+                            </div>
+                        </template>
+                    </div>
+
+                    <template lwc:if={shareContactError}>
+                        <p class="share-error">{shareContactError}</p>
+                    </template>
+
+                    <div class="confirm-actions">
+                        <button class="confirm-btn-secondary" onclick={handleShareContactClose}>Cancel</button>
+                        <button class="confirm-btn-primary" onclick={handleShareContactSubmit} disabled={isShareSubmitting}>
+                            <template lwc:if={isShareSubmitting}>Sharing…</template>
+                            <template lwc:else>Share</template>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <!-- A3: Combined Block + optional Report modal — mirrors
+             fimbyConversationView's .block-modal pattern so the experience
+             is consistent across DMs and response threads. One submit calls
+             FimbyConversationController.blockContact, which writes
+             Blocked_Contact__c and (when "Report" is checked) creates a
+             Moderator_Task__c through FimbyModeratorTaskService. -->
+        <template lwc:if={showBlockModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true"
+                     aria-labelledby="block-modal-title">
+                <div class="slds-modal__container block-modal-container">
+                    <div class="block-modal-header">
+                        <h2 id="block-modal-title" class="block-modal-title">Block {otherPartyFirstName}?</h2>
+                        <button class="modal-close-btn"
+                                type="button"
+                                onclick={handleCloseBlockModal}
+                                aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="block-modal-body">
+                        <p class="block-warning">
+                            You won't see each other's posts or messages. You can unblock {otherPartyFirstName} later in Settings.
+                        </p>
+
+                        <div class="block-field">
+                            <label class="block-label" for="block-reason">Reason (optional)</label>
+                            <input type="text"
+                                   id="block-reason"
+                                   class="block-input"
+                                   value={blockReason}
+                                   oninput={handleBlockReasonChange}
+                                   placeholder="What's prompting this?" />
+                        </div>
+
+                        <div class="report-toggle">
+                            <label class="report-label">
+                                <input type="checkbox"
+                                       checked={isReporting}
+                                       onchange={handleReportToggle} />
+                                Also report to moderators
+                            </label>
+                        </div>
+
+                        <template lwc:if={isReporting}>
+                            <div class="block-field">
+                                <label class="block-label" for="block-report-details">Report details</label>
+                                <textarea id="block-report-details"
+                                          class="report-textarea"
+                                          value={reportDetails}
+                                          oninput={handleReportDetailsChange}
+                                          placeholder="What happened? Moderators review every report within 24 hours."
+                                          rows="3"></textarea>
+                            </div>
+                        </template>
+
+                        <template lwc:if={blockError}>
+                            <p class="block-warning" role="alert" style="color: var(--fimby-error);">
+                                {blockError}
+                            </p>
+                        </template>
+                    </div>
+
+                    <div class="block-modal-footer">
+                        <button class="cancel-btn"
+                                type="button"
+                                onclick={handleCloseBlockModal}
+                                disabled={isBlockSubmitting}>
+                            Cancel
+                        </button>
+                        <button class="block-btn"
+                                type="button"
+                                onclick={handleConfirmBlock}
+                                disabled={isBlockSubmitDisabled}>
+                            <template lwc:if={isBlockSubmitting}>Blocking…</template>
+                            <template lwc:else>Block</template>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
+        </template>
+    </div>
+</template>

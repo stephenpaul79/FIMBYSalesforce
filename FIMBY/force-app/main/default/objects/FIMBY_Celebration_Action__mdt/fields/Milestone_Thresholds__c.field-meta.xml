@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Milestone_Thresholds__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Milestone Thresholds</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <description>Comma-separated count thresholds that trigger this milestone celebration, e.g. 5,10,25,50. Only used on Milestone occasion records.</description>
+</CustomField>

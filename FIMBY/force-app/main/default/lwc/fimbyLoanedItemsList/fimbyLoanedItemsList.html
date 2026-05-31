@@ -1,0 +1,43 @@
+<template>
+    <div class="loaned-items-list-page">
+        <c-fimby-page-header
+            page-title="Loaned Items"
+            parent-label="My Stuff"
+            parent-url="/my-stuff"
+            onnotification={handleNotifications}>
+        </c-fimby-page-header>
+
+        <c-fimby-responsive-list
+            title="Library Loans"
+            subtitle={filterLabel}
+            object-api-name="Loaned_Item__c"
+            records={loanedItems}
+            columns={columns}
+            row-actions={rowActions}
+            show-header="true"
+            show-search="true"
+            search-placeholder="Search loans..."
+            show-view-toggle="true"
+            default-view="auto"
+            primary-field="Name"
+            status-field="Status__c"
+            image-field-name="List_Image__c"
+            image-placeholder-icon="utility:package"
+            empty-state-icon="utility:package"
+            empty-state-title="No Loaned Items"
+            empty-state-message="No items are currently on loan."
+            total-records={totalRecords}
+            show-load-more={hasMoreRecords}
+            onrowclick={handleItemClick}
+            onrowaction={handleRowAction}
+            onsearch={handleSearch}
+            onsort={handleSort}
+            onloadmore={handleLoadMore}>
+        </c-fimby-responsive-list>
+
+        <c-fimby-bottom-navigation
+            active-tab="library"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

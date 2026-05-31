@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Quiet_Hours_Preference__c</fullName>
+    <description>User-chosen quiet hours window for push notifications. NONE means no quiet hours. Synced to the mobile app via postMessage bridge.</description>
+    <externalId>false</externalId>
+    <label>Quiet Hours Preference</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>9PM_5AM</fullName>
+                <default>false</default>
+                <label>9 PM – 5 AM</label>
+            </value>
+            <value>
+                <fullName>10PM_6AM</fullName>
+                <default>true</default>
+                <label>10 PM – 6 AM</label>
+            </value>
+            <value>
+                <fullName>11PM_7AM</fullName>
+                <default>false</default>
+                <label>11 PM – 7 AM</label>
+            </value>
+            <value>
+                <fullName>12AM_8AM</fullName>
+                <default>false</default>
+                <label>12 AM – 8 AM</label>
+            </value>
+            <value>
+                <fullName>NONE</fullName>
+                <default>false</default>
+                <label>No quiet hours</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

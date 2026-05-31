@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>About_Fun_Fact__c</fullName>
+    <description>One small thing about you. Fun fact, something you care about, or something neighbours might not expect.</description>
+    <externalId>false</externalId>
+    <label>Fun Fact</label>
+    <length>120</length>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

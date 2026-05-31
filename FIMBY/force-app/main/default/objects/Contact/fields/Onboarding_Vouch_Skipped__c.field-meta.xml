@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Onboarding_Vouch_Skipped__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True when the user chose &quot;Skip for now&quot; on the Meet Your Introducer step. Used to drive once-per-session reminder banner.</description>
+    <externalId>false</externalId>
+    <label>Onboarding Vouch Skipped</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

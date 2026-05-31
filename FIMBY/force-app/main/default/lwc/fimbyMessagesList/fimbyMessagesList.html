@@ -1,0 +1,246 @@
+<template>
+    <div class="messages-page">
+        <div class="fimby-messages-list">
+
+        <!-- Header row: breadcrumb + Compose -->
+        <div class={stickyHeaderClass}>
+            <c-fimby-page-header
+                page-title="Inbox"
+                menu-items={headerMenuItems}
+                onmenuaction={handleHeaderMenuAction}
+                onsearch={handleSearch}>
+            </c-fimby-page-header>
+        </div>
+
+        <!-- Acting As Banner -->
+        <template lwc:if={showActingAsBanner}>
+            <div class="posting-as">
+                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                <span class="posting-as-label">Messaging as:</span>
+                <span class="posting-as-value">{actingAsContactName}</span>
+            </div>
+        </template>
+
+        <!-- Type Filter Chips -->
+        <div class="message-filters">
+            <div class="filter-chips">
+                <template for:each={typeFilters} for:item="filter">
+                    <button key={filter.key}
+                            class={filter.cssClass}
+                            data-filter-key={filter.key}
+                            onclick={handleFilterChange}>
+                        {filter.label}
+                    </button>
+                </template>
+                <button type="button" class="filter-new-btn" onclick={handleNewMessage}>
+                    <img src={chatIconUrl} alt="" class="filter-new-icon" />
+                    New
+                </button>
+            </div>
+        </div>
+
+        <!-- Thread List -->
+        <c-fimby-infinite-scroll
+            class="messages-scroll-container"
+            enable-pull-to-refresh="true"
+            has-more-data={hasMore}
+            is-loading={isLoading}
+            show-empty-state={showEmptyState}
+            empty-state-title="No messages yet"
+            empty-state-message="Start a conversation with your neighbours!"
+            empty-state-icon="utility:chat"
+            show-empty-action="true"
+            empty-action-label="Send Message"
+            onloadmore={handleLoadMore}
+            onrefresh={handleRefresh}
+            onemptyaction={handleNewMessage}>
+
+            <div class="inbox-list">
+                <template for:each={threads} for:item="thread">
+                    <div key={thread.threadId}
+                         class="thread-row-wrapper"
+                         data-thread-id={thread.threadId}
+                         ontouchstart={handleSwipeStart}
+                         ontouchmove={handleSwipeMove}
+                         ontouchend={handleSwipeEnd}>
+
+                        <!-- Left action (read/unread toggle) — revealed on swipe right, auto-commits -->
+                        <button type="button"
+                                class={thread.readSwipeClass}
+                                data-thread-id={thread.threadId}
+                                data-thread-type={thread.threadType}
+                                data-action={thread.readStatusAction}
+                                onclick={handleSwipeActionClick}
+                                aria-label={thread.readStatusAriaLabel}>
+                            <img src={thread.readStatusIconUrl} alt="" class="swipe-action-icon" />
+                            <span class="swipe-action-prefix">Mark as</span>
+                            <span class="swipe-action-label">{thread.readStatusLabel}</span>
+                        </button>
+
+                        <!-- Right action (archive/unarchive) — revealed on swipe left, reveal+tap -->
+                        <button type="button"
+                                class="swipe-action swipe-action-right"
+                                data-thread-id={thread.threadId}
+                                data-thread-type={thread.threadType}
+                                data-action={thread.archiveAction}
+                                onclick={handleSwipeActionClick}
+                                aria-label={thread.archiveLabel}>
+                            <img src={trashIconUrl} alt="" class="swipe-action-icon" />
+                            <span class="swipe-action-prefix">Tap to</span>
+                            <span class="swipe-action-label">{thread.archiveLabel}</span>
+                        </button>
+
+                        <div class="swipe-foreground">
+                            <div role="button" tabindex="0"
+                                 class={thread.rowClass}
+                                 aria-label="Open conversation"
+                                 onclick={handleThreadClick}
+                                 onkeydown={handleThreadKeydown}
+                                 data-thread-id={thread.threadId}
+                                 data-thread-type={thread.threadType}
+                                 data-action-url={thread.actionUrl}>
+                                <div class={thread.avatarClass}>
+                                    <template lwc:if={thread.hasParticipantImage}>
+                                        <img src={thread.participantImageUrl} alt="" class="thread-avatar-img" onerror={handleAvatarError} />
+                                        <span class="thread-avatar-initials" style="display:none">{thread.participantInitials}</span>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="thread-avatar-initials">{thread.participantInitials}</span>
+                                    </template>
+                                </div>
+                                <div class="thread-content">
+                                    <div class="thread-row-top">
+                                        <span class="inbox-who">
+                                            {thread.participantName}
+                                            <template lwc:if={thread.showMessageCount}>
+                                                <span class="inbox-count">({thread.messageCountDisplay})</span>
+                                            </template>
+                                        </span>
+                                        <span class={thread.badgeCssClass}>{thread.badgeLabel}</span>
+                                        <span class="inbox-date">{thread.formattedDate}</span>
+                                    </div>
+                                    <template lwc:if={thread.hasSecondLine}>
+                                        <div class="thread-row-bottom">
+                                            <template lwc:if={thread.subjectLine}>
+                                                <span class="inbox-subject">{thread.subjectLine}</span>
+                                            </template>
+                                            <template lwc:if={thread.showPreview}>
+                                                <span class="inbox-preview">{thread.previewText}</span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Desktop kebab trigger -->
+                                <div class="thread-kebab-container">
+                                    <button type="button"
+                                            class="thread-kebab"
+                                            data-thread-id={thread.threadId}
+                                            data-thread-type={thread.threadType}
+                                            onclick={handleKebabClick}
+                                            aria-label="Thread options"
+                                            aria-haspopup="true">
+                                        <lightning-icon icon-name="utility:threedots" size="x-small"></lightning-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Retention disclaimer — flows after last loaded message -->
+            <template lwc:if={retentionDisclaimerText}>
+                <div class="inbox-disclaimer">
+                    <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                    <span>{retentionDisclaimerText}</span>
+                </div>
+            </template>
+        </c-fimby-infinite-scroll>
+
+        <!-- Desktop kebab dropdown — rendered outside the scroll container -->
+        <template lwc:if={showKebabMenu}>
+            <div class="kebab-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+            <div class="kebab-menu" style={kebabMenuStyle}>
+                <button type="button"
+                        class="kebab-menu-item"
+                        data-action={kebabMenuReadAction}
+                        onclick={handleMenuActionClick}>
+                    <img src={kebabMenuReadIconUrl} alt="" class="kebab-menu-icon" />
+                    {kebabMenuReadLabel}
+                </button>
+                <button type="button"
+                        class="kebab-menu-item kebab-menu-item-danger"
+                        data-action={kebabMenuArchiveAction}
+                        onclick={handleMenuActionClick}>
+                    <img src={trashIconUrl} alt="" class="kebab-menu-icon" />
+                    {kebabMenuArchiveLabel}
+                </button>
+            </div>
+        </template>
+
+        <!-- New Message Contact Picker Modal -->
+        <template lwc:if={showNewMessageModal}>
+            <section class="slds-modal slds-fade-in-open new-message-modal" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Compose</h2>
+                        <button class="modal-close" onclick={handleCloseNewMessage} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="contact-search">
+                            <input type="text"
+                                   class="contact-search-input"
+                                   placeholder="Search contacts..."
+                                   aria-label="Search contacts"
+                                   value={contactSearchTerm}
+                                   oninput={handleContactSearch}
+                                   onkeydown={handleContactSearchKeydown} />
+                        </div>
+
+                        <template lwc:if={isLoadingContacts}>
+                            <div class="contact-loading">Searching...</div>
+                        </template>
+
+                        <template lwc:if={showSearchHint}>
+                            <div class="contact-hint">Type at least 3 characters to search</div>
+                        </template>
+
+                        <div class="contact-list">
+                            <template for:each={messageableContacts} for:item="contact">
+                                <button type="button" key={contact.contactId}
+                                     class="contact-item"
+                                     aria-label="Select contact"
+                                     onclick={handleContactSelect}
+                                     data-contact-id={contact.contactId}>
+                                    <div class={contact.contactAvatarClass}>
+                                        <template lwc:if={contact.hasAvatar}>
+                                            <img src={contact.avatarUrl} alt="" class="contact-avatar-img" onerror={handleAvatarError} />
+                                            <span class="contact-avatar-initials" style="display:none">{contact.initials}</span>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="contact-avatar-initials">{contact.initials}</span>
+                                        </template>
+                                    </div>
+                                    <div class="contact-name">{contact.contactName}</div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseNewMessage}></div>
+        </template>
+
+        <!-- Bottom Navigation -->
+        <c-fimby-bottom-navigation
+            active-tab="messages"
+            unread-count={hasUnreadMessages}
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+        </div>
+    </div>
+</template>

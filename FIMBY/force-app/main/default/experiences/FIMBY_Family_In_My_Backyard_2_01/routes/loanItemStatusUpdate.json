@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "be8bf05e-278b-4bb9-9fd5-107645f4dd6b",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Loan_Item_Status_Update__c",
+  "id" : "494ab26a-041e-4e95-a6bb-e8dd7170f758",
+  "label" : "Loan Item Status Update",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-loan-item-status-update",
+  "type" : "route",
+  "urlPrefix" : "loan-item-status-update"
+}

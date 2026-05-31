@@ -1,0 +1,587 @@
+@isTest
+public class FimbyAskOfferControllerTest {
+
+    @TestSetup
+    static void setupTestData() {
+        Account neighbourhood = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact testContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
+        User testUser = FimbyTestDataFactory.createCommunityUser(testContact.Id, null, true);
+
+        Account orgAccount = new Account(Name = 'Test Community Organization', Type = 'Organization');
+        try {
+            Id orgRecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Organization').getRecordTypeId();
+            orgAccount.RecordTypeId = orgRecordTypeId;
+        } catch (Exception e) {}
+        insert orgAccount;
+    }
+
+    private static User getTestUser() {
+        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+    }
+
+    private static Contact getTestContact() {
+        return [SELECT Id, AccountId, Logged_In_As_Contact__c FROM Contact WHERE Email LIKE '%@fimby.test.com' LIMIT 1];
+    }
+
+    @isTest
+    static void testGetNeedsOffersTypePicklist() {
+        Test.startTest();
+        List<Map<String, String>> types = FimbyAskOfferController.getNeedsOffersTypePicklist();
+        Test.stopTest();
+
+        System.assertNotEquals(null, types, 'Should return types list');
+        System.assert(types.size() > 0, 'Should have at least one type');
+        Map<String, String> firstType = types[0];
+        System.assert(firstType.containsKey('label'), 'Type should have label');
+        System.assert(firstType.containsKey('value'), 'Type should have value');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_Need() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Test Need Title',
+            'description' => 'Test need description',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1,
+            'autoAcceptResponses' => false,
+            'autoShareContactInfo' => false
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        System.assertNotEquals(null, result.get('recordId'), 'Should return recordId');
+
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Contact__c, Posted_By__c, Giver_Recipient_Type__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals(testUser.ContactId, created.Contact__c, 'Contact__c should be the acting-as contact');
+        System.assertEquals(testUser.ContactId, created.Posted_By__c, 'Posted_By__c should be the real contact');
+        System.assertEquals('Self', created.Giver_Recipient_Type__c, 'Giver_Recipient_Type__c should be Self');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_Offer() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Test Offer Title',
+            'description' => 'Test offer description',
+            'type' => 'Services - Paid',
+            'quantity' => 5,
+            'perResponseLimit' => 2,
+            'autoAcceptResponses' => true,
+            'autoShareContactInfo' => true
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_NoOrgPickerNeeded() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Simple Offer',
+            'description' => 'No org picker fields in payload',
+            'type' => 'Services - Paid',
+            'quantity' => 10,
+            'perResponseLimit' => 5
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Giver_Recipient_Type__c, Organization__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals('Self', created.Giver_Recipient_Type__c, 'Should always set Giver_Recipient_Type__c to Self');
+        System.assertEquals(null, created.Organization__c, 'Organization should not be set');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_Event() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(7)) + 'T10:00';
+        String endIso = String.valueOf(Date.today().addDays(7)) + 'T14:30';
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Neighbourhood Picnic',
+            'description' => 'A community picnic event',
+            'type' => 'Event',
+            'quantity' => 50,
+            'perResponseLimit' => 5,
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'eventStart' => startIso,
+            'eventEnd' => endIso,
+            'location' => 'Community Center'
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Start_Date__c, Start_Time__c, Start_Time_Text__c, End_Time__c, End_Time_Text__c, Location__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals(Date.today().addDays(7), created.Start_Date__c, 'Start date should be parsed from event ISO');
+        System.assertEquals(Time.newInstance(10, 0, 0, 0), created.Start_Time__c, 'Start_Time__c should be set from ISO');
+        System.assertEquals('10:00 am', created.Start_Time_Text__c, 'Start time should be formatted from ISO');
+        System.assertEquals(Time.newInstance(14, 30, 0, 0), created.End_Time__c, 'End_Time__c should be set from ISO');
+        System.assertEquals('2:30 pm', created.End_Time_Text__c, 'End time should be formatted from ISO');
+        System.assertEquals('Community Center', created.Location__c, 'Location should be saved');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_OpenEvent() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(7)) + 'T10:00';
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Block Party on Elm St',
+            'description' => 'Come one come all',
+            'type' => 'Event',
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'eventStart' => startIso,
+            'location' => 'Elm Street',
+            'eventType' => 'Open_Event',
+            'expectedAttendance' => 50,
+            'eventNotes' => 'Bring a lawn chair'
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Event_Type__c, Expected_Attendance__c, Event_Notes__c, Auto_Accept_Responses__c, Total_Quantity__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals('Open_Event', created.Event_Type__c, 'Event type should be Open_Event');
+        System.assertEquals(50, created.Expected_Attendance__c, 'Expected attendance should be saved');
+        System.assertEquals('Bring a lawn chair', created.Event_Notes__c, 'Event notes should be saved');
+        System.assertEquals(true, created.Auto_Accept_Responses__c, 'Open Event should force auto-accept');
+        System.assertEquals(null, created.Total_Quantity__c, 'Open Event should have no capacity limit');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_CommunityEvent() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(14)) + 'T18:00';
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Fireworks Show Downtown',
+            'description' => 'Annual fireworks show at the waterfront',
+            'type' => 'Event',
+            'endDate' => String.valueOf(Date.today().addDays(21)),
+            'eventStart' => startIso,
+            'eventType' => 'Community_Event',
+            'eventNotes' => 'Parking available at lot B',
+            'eventLink' => 'https://example.com/fireworks'
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Event_Type__c, Event_Notes__c, Event_Link__c, Total_Quantity__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals('Community_Event', created.Event_Type__c, 'Event type should be Community_Event');
+        System.assertEquals('Parking available at lot B', created.Event_Notes__c, 'Event notes should be saved');
+        System.assertEquals('https://example.com/fireworks', created.Event_Link__c, 'Event link should be saved');
+        System.assertEquals(null, created.Total_Quantity__c, 'Community Event should have no capacity limit');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_AskQuantityDefaults() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Ask Without Quantity',
+            'description' => 'Should default quantity to 1'
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Total_Quantity__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals(1, created.Total_Quantity__c, 'Ask quantity should default to 1');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_LongDescription() {
+        User testUser = getTestUser();
+
+        String longDescription = '';
+        for (Integer i = 0; i < 300; i++) {
+            longDescription += 'X';
+        }
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Long Description Test',
+            'description' => longDescription,
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should handle long descriptions');
+    }
+
+    @isTest
+    static void testGetResponsesForNeedOffer() {
+        User testUser = getTestUser();
+
+        // Create a need first
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Need For Responses Test',
+            'description' => 'Testing responses list',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+
+        Map<String, Object> createResult;
+        System.runAs(testUser) {
+            createResult = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        String needId = (String) createResult.get('recordId');
+
+        Test.startTest();
+        List<Map<String, Object>> responses;
+        System.runAs(testUser) {
+            responses = FimbyAskOfferController.getResponsesForNeedOffer(needId);
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, responses, 'Should return responses list');
+        // No responses created, so list should be empty
+        System.assertEquals(0, responses.size(), 'Should have no responses initially');
+    }
+
+    @isTest
+    static void testDeleteNeedsOffersPost() {
+        User testUser = getTestUser();
+
+        // Create a need first
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Need To Delete',
+            'description' => 'Testing delete',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+
+        Map<String, Object> createResult;
+        System.runAs(testUser) {
+            createResult = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        String needId = (String) createResult.get('recordId');
+
+        Test.startTest();
+        Map<String, Object> deleteResult;
+        System.runAs(testUser) {
+            deleteResult = FimbyAskOfferController.deleteNeedsOffersPost(needId);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, deleteResult.get('success'), 'Should return success');
+        // Verify deleted
+        List<Needs_Offers__c> remaining = [SELECT Id FROM Needs_Offers__c WHERE Id = :needId];
+        System.assertEquals(0, remaining.size(), 'Record should be deleted');
+    }
+
+    @isTest
+    static void testDeleteNeedsOffersPost_NotifiesResponders() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact responderContact = new Contact(
+            FirstName = 'Delete',
+            LastName = 'NotifyResponder',
+            AccountId = posterContact.AccountId,
+            Email = 'delete.notify.responder@fimby.test.com'
+        );
+        insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Need Delete Notify Test',
+            'description' => 'Testing delete notifications',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+
+        Map<String, Object> createResult;
+        System.runAs(posterUser) {
+            createResult = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        String needId = (String) createResult.get('recordId');
+
+        Response__c resp = new Response__c(
+            Name = 'Delete Notify Response',
+            Need_Offer_Responded_To__c = needId,
+            Contact__c = responderContact.Id,
+            On_Behalf_Of_Contact__c = responderContact.Id,
+            Reply_To_Contact__c = posterContact.Id,
+            Status__c = 'New',
+            Amount_Requested__c = 1
+        );
+        System.runAs(responderUser) {
+            insert resp;
+        }
+
+        Test.startTest();
+        System.runAs(posterUser) {
+            FimbyAskOfferController.deleteNeedsOffersPost(needId);
+        }
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Id, Title__c, Contact__c
+            FROM Notification__c
+            WHERE Contact__c = :responderContact.Id
+              AND Title__c LIKE '%removed a post you responded to%'
+        ];
+        System.assert(!notifs.isEmpty(), 'Responder should be notified when post with pending response is deleted');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_UrgentNeed() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Urgent Help Needed',
+            'description' => 'I need help moving furniture today',
+            'type' => 'Services - Free',
+            'isUrgent' => true
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Is_Urgent__c, Visibility_Scope__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals(true, created.Is_Urgent__c, 'Is_Urgent__c should be true');
+        System.assertEquals('Adjacent', created.Visibility_Scope__c, 'Urgent needs should get Adjacent scope');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_GatheringScope() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(7)) + 'T18:00';
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Dinner Party',
+            'description' => 'Join us for dinner',
+            'type' => 'Event',
+            'quantity' => 8,
+            'perResponseLimit' => 2,
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'eventStart' => startIso,
+            'location' => '123 Maple Ave',
+            'eventType' => 'Gathering'
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        String recordId = (String) result.get('recordId');
+        Needs_Offers__c created = [SELECT Visibility_Scope__c, Event_Type__c FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals('Gathering', created.Event_Type__c, 'Event type should be Gathering');
+        System.assertEquals('Neighbourhood', created.Visibility_Scope__c, 'Gatherings should get Neighbourhood scope');
+    }
+
+    @isTest
+    static void testGetNeedOfferVisibility_NullId() {
+        Test.startTest();
+        FimbyAskOfferController.VisibilityResult result = FimbyAskOfferController.getNeedOfferVisibility(null);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Result should not be null');
+        System.assertEquals(true, result.removed, 'Null id should return removed stub');
+        System.assertEquals(false, result.visible, 'Null id should not be visible');
+    }
+
+    @isTest
+    static void testGetNeedOfferVisibility_Visible() {
+        User testUser = getTestUser();
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Visibility Test Offer',
+            'description' => 'Test',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+        Map<String, Object> created;
+        System.runAs(testUser) {
+            created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Id recordId = (Id) created.get('recordId');
+
+        Test.startTest();
+        FimbyAskOfferController.VisibilityResult result = FimbyAskOfferController.getNeedOfferVisibility(recordId);
+        Test.stopTest();
+
+        System.assertEquals(true, result.visible, 'Newly created visible post should be visible');
+        System.assertEquals(false, result.removed, 'Visible post should not be reported as removed');
+    }
+
+    @isTest
+    static void testGetNeedOfferVisibility_Hidden() {
+        User testUser = getTestUser();
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Visibility Test Hidden',
+            'description' => 'Test',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+        Map<String, Object> created;
+        System.runAs(testUser) {
+            created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Id recordId = (Id) created.get('recordId');
+
+        Needs_Offers__c hide = new Needs_Offers__c(Id = recordId, Moderation_Status__c = 'Hidden_By_Moderator');
+        update hide;
+
+        Test.startTest();
+        FimbyAskOfferController.VisibilityResult result = FimbyAskOfferController.getNeedOfferVisibility(recordId);
+        Test.stopTest();
+
+        System.assertEquals(true, result.removed, 'Hidden post should be reported as removed');
+        System.assertEquals(false, result.visible, 'Hidden post should not be visible');
+        System.assertNotEquals(null, result.message, 'Removed stub should include a message');
+    }
+
+    @isTest
+    static void testGetNeedOfferVisibility_ReturnsGroupConversationId() {
+        User testUser = getTestUser();
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Group Chat Visibility Offer',
+            'description' => 'Test',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+        Map<String, Object> created;
+        System.runAs(testUser) {
+            created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        Id recordId = (Id) created.get('recordId');
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Group Chat Visibility Offer',
+            Status__c = FimbyConstants.CONVERSATION_ACTIVE
+        );
+        insert conv;
+        update new Needs_Offers__c(Id = recordId, Group_Conversation__c = conv.Id);
+
+        Test.startTest();
+        FimbyAskOfferController.VisibilityResult result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.getNeedOfferVisibility(recordId);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.visible, 'Post should be visible');
+        System.assertEquals(conv.Id, result.groupConversationId, 'Should return linked group conversation');
+        System.assertEquals(conv.Id, FimbyAskOfferController.getGroupConversationIdForPost(recordId));
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_InvalidRecordType() {
+        User testUser = getTestUser();
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'InvalidType',
+            'title' => 'Test',
+            'description' => 'Test',
+            'type' => 'Services - Paid'
+        };
+
+        Test.startTest();
+        try {
+            System.runAs(testUser) {
+                FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+            }
+            System.assert(false, 'Should have thrown an exception');
+        } catch (AuraHandledException e) {
+            // Either record type error or other error is acceptable
+            System.assert(e.getMessage() != null, 'Should have thrown an exception with a message');
+        }
+        Test.stopTest();
+    }
+}

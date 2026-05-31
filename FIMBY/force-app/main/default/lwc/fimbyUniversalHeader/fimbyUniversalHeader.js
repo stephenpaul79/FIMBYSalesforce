@@ -1,0 +1,666 @@
+import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import basePath from '@salesforce/community/basePath';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
+import recordAppOpen from '@salesforce/apex/FimbyContactController.recordAppOpen';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
+import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
+import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { getModeratorContext } from 'c/fimbyModeratorContext';
+
+const LOGO_FILE = 'FIMBYwGrass.png';
+const LOGO_SQUARE = 'FwithGrass.png';
+const CREATE_ICON = 'add.png';
+const BELL_ACTIVE = 'BellActive.png';
+const BELL_INACTIVE = 'BellInactive.png';
+const SEARCH_ICON = 'Magnify.png';
+const MENU_ICON = 'Kebab.png';
+
+const BADGE_COOLDOWN_MS = 30000;
+
+const MENU_ICONS = {
+    profile:  'ProfileActive.png',
+    settings: 'gear.png',
+    help:     'lightbulb.png',
+    feedback: 'feedback.png',
+    logout:   'deactivation.png',
+    switch:   'switch.png',
+    people:   'people.png'
+};
+
+const MAX_KEBAB_IDENTITIES = 3;
+const NO_PROFILE_PHOTO = 'NoProfilePhoto.png';
+const NO_ORG_PHOTO = 'NoOrgPhoto.png';
+
+/* ---------------------------------------------------------------
+ * Route-prefix → tab mapping.
+ * Matches the consolidated 5-tab navigation.
+ * Legacy story/askOffer routes map to the home tab since those
+ * feeds have been absorbed into the cascading-filter home feed.
+ * --------------------------------------------------------------- */
+const TAB_ROUTES = [
+    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item'] },
+    { tab: 'messages', prefixes: ['/messages', '/conversation', '/new-message'] },
+    { tab: 'mine',     prefixes: ['/mine', '/my-stuff', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/moderator-dashboard', '/moderator-task-archive', '/help-and-support', '/community-guidelines', '/feedback'] },
+    { tab: 'home',     prefixes: ['/shared-life-list', '/stories', '/story', '/create-story', '/shared-life-post', '/ask-offer-list', '/ask-or-offer-post', '/asks-offers', '/needs-offers', '/quick-post', '/respond', '/response-detail', '/response-reply'] }
+];
+
+/* Icon file-name map (inside the Impact_Icons static resource zip) */
+const TAB_ICONS = {
+    home:     { active: 'NeighborhoodActive.png',  inactive: 'NeighborhoodInactive.png' },
+    library:  { active: 'ToolboxActive.png',        inactive: 'ToolboxInactive.png' },
+    messages: { active: 'SpeechBubbleActive.png',   inactive: 'SpeechBubbleInactive.png' },
+    mine:     { active: 'ProfileActive.png',        inactive: 'ProfileInactive.png' }
+};
+
+export default class FimbyUniversalHeader extends NavigationMixin(LightningElement) {
+    @api activeTab = 'home';
+    @track hasUnread = false;
+    @track messageCount = 0;
+    @track hasNotifications = false;
+    @track notificationCount = 0;
+    @track showMenuOverlay = false;
+    @track showSearchModal = false;
+    @track searchModalTerm = '';
+
+    @track isActingAsSelf = true;
+    @track actingAsDisplayName = '';
+    @track actingAsAvatarUrl = '';
+    @track selfMenuItem = null;
+    @track otherIdentityMenuItems = [];
+    @track _identitySwitching = false;
+    @track _isOrgContact = false;
+    @track _orgAccountId = null;
+    @track _isModerator = false;
+    @track _moderatorTaskCount = 0;
+    @track showTosModal = false;
+
+    /* --- Lifecycle ------------------------------------------------- */
+
+    connectedCallback() {
+        this.activeTab = this._detectActiveTab();
+        this._pollBadgeCounts();
+        this._recordAppOpenAndSyncQuietHours();
+        this._checkOnboarding();
+        this._loadIdentityContext();
+        this._loadModeratorContext();
+
+        this._openQuickPostHandler = () => this.handleNewClick();
+        window.addEventListener('fimbyopenquickpost', this._openQuickPostHandler);
+
+        this._refreshRequestHandler = () => this._pollBadgeCounts();
+        window.addEventListener('fimbyrequestbadgerefresh', this._refreshRequestHandler);
+
+        this._visibilityHandler = () => {
+            if (document.visibilityState === 'visible') {
+                this._pollBadgeCountsIfStale();
+            }
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+    }
+
+    disconnectedCallback() {
+        if (this._openQuickPostHandler) {
+            window.removeEventListener('fimbyopenquickpost', this._openQuickPostHandler);
+        }
+        if (this._refreshRequestHandler) {
+            window.removeEventListener('fimbyrequestbadgerefresh', this._refreshRequestHandler);
+        }
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+        }
+    }
+
+    _pollBadgeCounts() {
+        this._lastBadgeFetch = Date.now();
+        getBadgeCounts()
+            .then(result => {
+                this.notificationCount = result.notifications || 0;
+                this.hasNotifications = this.notificationCount > 0;
+                this.messageCount = result.messages || 0;
+                this.hasUnread = this.messageCount > 0;
+                this._broadcastCounts();
+            })
+            .catch(err => {
+                console.error('Error fetching badge counts:', err);
+            });
+    }
+
+    get notificationBadgeLabel() {
+        if (this.notificationCount <= 0) return '';
+        return this.notificationCount > 9 ? '9+' : String(this.notificationCount);
+    }
+
+    get notificationAriaLabel() {
+        const count = this.notificationCount;
+        if (count <= 0) return 'Notifications';
+        return `Notifications — ${count} unread`;
+    }
+
+    get messageBadgeLabel() {
+        if (this.messageCount <= 0) return '';
+        return this.messageCount > 9 ? '9+' : String(this.messageCount);
+    }
+
+    get messagesAriaLabel() {
+        const count = this.messageCount;
+        if (count <= 0) return 'Messages';
+        return `Messages — ${count} unread`;
+    }
+
+    _pollBadgeCountsIfStale() {
+        if (this._lastBadgeFetch && (Date.now() - this._lastBadgeFetch) < BADGE_COOLDOWN_MS) {
+            return;
+        }
+        this._pollBadgeCounts();
+    }
+
+    _broadcastCounts() {
+        window.dispatchEvent(new CustomEvent('fimbybadgecounts', {
+            detail: {
+                hasNotifications: this.hasNotifications,
+                notificationCount: this.notificationCount,
+                hasUnread: this.hasUnread,
+                messageCount: this.messageCount
+            }
+        }));
+    }
+
+    /* --- Logo & Create icon ---------------------------------------- */
+
+    get logoUrl() {
+        return this.isActingAsSelf
+            ? `${IMPACT_ICONS}/${LOGO_FILE}`
+            : `${IMPACT_ICONS}/${LOGO_SQUARE}`;
+    }
+
+    get logoImgClass() {
+        return this.isActingAsSelf ? 'fimby-logo-img' : 'fimby-logo-img fimby-logo-img-compact';
+    }
+
+    get createIconUrl() {
+        return `${IMPACT_ICONS}/${CREATE_ICON}`;
+    }
+
+    get bellIconUrl() {
+        return this.hasNotifications
+            ? `${IMPACT_ICONS}/${BELL_ACTIVE}`
+            : `${IMPACT_ICONS}/${BELL_INACTIVE}`;
+    }
+
+    get searchIconUrl() {
+        return `${IMPACT_ICONS}/${SEARCH_ICON}`;
+    }
+
+    get menuIconUrl() {
+        return `${IMPACT_ICONS}/${MENU_ICON}`;
+    }
+
+    get profileMenuIconUrl()  { return `${IMPACT_ICONS}/${MENU_ICONS.profile}`; }
+    get settingsMenuIconUrl() { return `${IMPACT_ICONS}/${MENU_ICONS.settings}`; }
+    get helpMenuIconUrl()     { return `${IMPACT_ICONS}/${MENU_ICONS.help}`; }
+    get feedbackMenuIconUrl() { return `${IMPACT_ICONS}/${MENU_ICONS.feedback}`; }
+    get logoutMenuIconUrl()   { return `${IMPACT_ICONS}/${MENU_ICONS.logout}`; }
+    get switchIconUrl()       { return `${IMPACT_ICONS}/${MENU_ICONS.switch}`; }
+    get peopleIconUrl()       { return `${IMPACT_ICONS}/${MENU_ICONS.people}`; }
+    get defaultAvatarUrl()    { return `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`; }
+
+    get showActingAsChip() { return !this.isActingAsSelf; }
+    get hasAvailableIdentities() { return this.otherIdentityMenuItems.length > 0; }
+    get actingAsAriaLabel() { return `Acting as ${this.actingAsDisplayName}. Click to switch back.`; }
+    get selfIsActive() { return this.selfMenuItem?.isActive ?? true; }
+    get switchBackAriaLabel() { return this.selfMenuItem ? `Switch back to ${this.selfMenuItem.name}` : 'Switch back to self'; }
+
+    _loadIdentityContext() {
+        Promise.all([getActingAsContact(), getAvailableIdentities(), getOrganizationId()])
+            .then(([actingResult, identitiesResult, orgId]) => {
+                this._sfOrgId = orgId;
+
+                const raw = (identitiesResult || []).map(id => ({
+                    ...id,
+                    avatarUrl: this._completeImageUrl(id.avatarUrl, orgId)
+                        || (id.type === 'Support_Person'
+                            ? `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`
+                            : `${IMPACT_ICONS}/${NO_ORG_PHOTO}`)
+                }));
+
+                const selfAvatarUrl = this._completeImageUrl(actingResult.realContactAvatarUrl, orgId)
+                    || this.defaultAvatarUrl;
+                this.selfMenuItem = {
+                    name: actingResult.realContactName,
+                    avatarUrl: selfAvatarUrl,
+                    isActive: actingResult.isActingAsSelf
+                };
+                this.isActingAsSelf = actingResult.isActingAsSelf;
+                this.showTosModal = actingResult.tosReacceptanceRequired === true
+                    && actingResult.isActingAsSelf === true;
+                if (!actingResult.isActingAsSelf) {
+                    this.actingAsDisplayName = actingResult.actingAsContactName;
+                    this.actingAsAvatarUrl = this._completeImageUrl(actingResult.actingAsAvatarUrl, orgId)
+                        || (actingResult.isOrganizationContact
+                            ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
+                            : this.defaultAvatarUrl);
+                    this._isOrgContact = actingResult.isOrganizationContact === true;
+                    this._orgAccountId = actingResult.organizationAccountId || null;
+                }
+
+                const actingAsContactId = actingResult.actingAsContactId;
+                const activeIdx = actingResult.isActingAsSelf ? -1 : raw.findIndex(id =>
+                    String(id.targetContactId) === String(actingAsContactId));
+
+                let activeRow = null;
+                let others = raw;
+                if (activeIdx >= 0) {
+                    activeRow = { ...raw[activeIdx], isActive: true };
+                    others = raw.filter((_, i) => i !== activeIdx);
+                }
+
+                const seen = new Set();
+                const deduped = others.filter(id => {
+                    const key = id.relationshipId;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+
+                this.otherIdentityMenuItems = [];
+                if (activeRow) this.otherIdentityMenuItems.push(activeRow);
+                const remaining = deduped.slice(0, Math.max(0, MAX_KEBAB_IDENTITIES - this.otherIdentityMenuItems.length));
+                remaining.forEach(id => this.otherIdentityMenuItems.push({
+                    ...id,
+                    isActive: false,
+                    switchAriaLabel: `Switch to ${id.name}`
+                }));
+            })
+            .catch(() => { /* silent */ });
+    }
+
+    handleTosComplete() {
+        this.showTosModal = false;
+    }
+
+    _completeImageUrl(url, orgId) {
+        if (!url) return null;
+        if (!orgId) return url;
+        if (url.includes(orgId)) return url;
+        return url + orgId;
+    }
+
+    handleIdentitySwitch(event) {
+        if (this._identitySwitching) return;
+        this._identitySwitching = true;
+        const relId = event.currentTarget.dataset.id;
+        if (!relId) {
+            console.error('Identity switch: no relationship ID found on element');
+            this._identitySwitching = false;
+            return;
+        }
+        switchIdentity({ relationshipId: relId })
+            .then(() => {
+                this._clearFeedCaches();
+                this.showMenuOverlay = false;
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Identity switch failed:', JSON.stringify(error));
+                this._identitySwitching = false;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Unable to switch',
+                    message: error?.body?.message || 'Something went wrong. Please try again.',
+                    variant: 'error',
+                    mode: 'pester'
+                }));
+            });
+    }
+
+    handleSwitchBack() {
+        if (this._identitySwitching) return;
+        this._identitySwitching = true;
+        switchToSelf()
+            .then(() => {
+                this._clearFeedCaches();
+                this.showMenuOverlay = false;
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Switch back failed:', JSON.stringify(error));
+                this._identitySwitching = false;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Unable to switch back',
+                    message: error?.body?.message || 'Something went wrong. Please try again.',
+                    variant: 'error',
+                    mode: 'pester'
+                }));
+            });
+    }
+
+    handleManageIdentitiesClick() {
+        this.showMenuOverlay = false;
+        location.href = '/manage-identities';
+    }
+
+    /* --- Moderator context ----------------------------------------- */
+
+    _loadModeratorContext() {
+        getModeratorContext()
+            .then(ctx => {
+                this._isModerator = ctx.isModerator;
+                this._moderatorTaskCount = ctx.taskCount;
+            })
+            .catch(() => { /* silent — non-moderators see nothing */ });
+    }
+
+    get moderatorIconUrl() {
+        return this._moderatorTaskCount > 0
+            ? `${IMPACT_ICONS}/moderatoractive.png`
+            : `${IMPACT_ICONS}/moderatorinactive.png`;
+    }
+
+    get hasModeratorTasks() { return this._moderatorTaskCount > 0; }
+
+    get moderatorAriaLabel() {
+        const count = this._moderatorTaskCount;
+        return count > 0
+            ? `Moderator Dashboard — ${count} open task${count !== 1 ? 's' : ''}`
+            : 'Moderator Dashboard';
+    }
+
+    handleModeratorClick() {
+        location.href = '/moderator-dashboard';
+    }
+
+    _clearFeedCaches() {
+        try {
+            sessionStorage.removeItem('fimby-home-feed-state');
+            sessionStorage.removeItem('fimby-library-state');
+        } catch (e) { /* ignore */ }
+    }
+
+    /* ---------------------------------------------------------------
+     * URL-based active-tab detection
+     * --------------------------------------------------------------- */
+    _detectActiveTab() {
+        try {
+            const fullPath = window.location.pathname;
+            let pagePath = fullPath;
+            if (basePath && fullPath.startsWith(basePath)) {
+                pagePath = fullPath.substring(basePath.length);
+            }
+            if (!pagePath.startsWith('/')) {
+                pagePath = '/' + pagePath;
+            }
+            pagePath = pagePath.split('?')[0].split('#')[0];
+
+            if (pagePath === '/' || pagePath === '' || pagePath === '/home') {
+                return 'home';
+            }
+
+            for (const route of TAB_ROUTES) {
+                for (const prefix of route.prefixes) {
+                    if (pagePath === prefix || pagePath.startsWith(prefix + '/')) {
+                        return route.tab;
+                    }
+                }
+            }
+
+            return 'home';
+        } catch (e) {
+            return 'home';
+        }
+    }
+
+    /* ---------------------------------------------------------------
+     * Icon URL getters
+     * --------------------------------------------------------------- */
+    _iconUrl(tab) {
+        const icons = TAB_ICONS[tab];
+        const file = this.activeTab === tab ? icons.active : icons.inactive;
+        return `${IMPACT_ICONS}/${file}`;
+    }
+
+    get homeIconUrl()     { return this._iconUrl('home'); }
+    get libraryIconUrl()  { return this._iconUrl('library'); }
+    get messagesIconUrl() { return this._iconUrl('messages'); }
+    get mineIconUrl()     { return this._iconUrl('mine'); }
+
+    /* --- Active-state indicator classes ----------------------------- */
+
+    get homeIndicator()     { return this.activeTab === 'home'     ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get libraryIndicator()  { return this.activeTab === 'library'  ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get messagesIndicator() { return this.activeTab === 'messages' ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get mineIndicator()     { return this.activeTab === 'mine'     ? 'desktop-indicator active' : 'desktop-indicator'; }
+
+    /* --- Active CSS class on desktop nav items ---------------------- */
+
+    get homeDesktopClass()     { return this.activeTab === 'home'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get libraryDesktopClass()  { return this.activeTab === 'library'  ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get messagesDesktopClass() { return this.activeTab === 'messages' ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get mineDesktopClass()     { return this.activeTab === 'mine'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+
+    get hasUnreadMessages() { return this.messageCount > 0; }
+
+    /* --- Desktop nav click handler --------------------------------- */
+
+    handleNavClick(event) {
+        const selectedTab = event.currentTarget.dataset.tab;
+        this.activeTab = selectedTab;
+        this.dispatchEvent(new CustomEvent('tabchange', { detail: { tab: selectedTab } }));
+        this.navigateToPage(selectedTab);
+    }
+
+    /* --- Header action handlers ------------------------------------ */
+
+    handleLogoClick() {
+        this.navigateToPage('home');
+    }
+
+    handleNewClick() {
+        const quickPostForm = this.template.querySelector('c-fimby-quick-post-form');
+        if (quickPostForm) {
+            quickPostForm.show();
+        }
+    }
+
+    handleQuickPostClose() {
+        // Modal closed
+    }
+
+    get searchOverlayClass() {
+        return this.showSearchModal
+            ? 'search-overlay search-overlay-visible'
+            : 'search-overlay search-overlay-hidden';
+    }
+
+    handleSearchClick() {
+        this.searchModalTerm = '';
+        this.showSearchModal = true;
+        const input = this.template.querySelector('[data-id="search-modal-input"]');
+        if (input) input.focus();
+    }
+
+    handleSearchModalInput(event) {
+        this.searchModalTerm = event.target.value;
+    }
+
+    handleSearchModalKeydown(event) {
+        if (event.key === 'Enter' && this.searchModalTerm.trim().length > 0) {
+            this._navigateToSearchResults();
+        }
+        if (event.key === 'Escape') {
+            this.showSearchModal = false;
+        }
+    }
+
+    handleSearchModalSubmit() {
+        if (this.searchModalTerm.trim().length > 0) {
+            this._navigateToSearchResults();
+        }
+    }
+
+    handleSearchModalClear() {
+        this.searchModalTerm = '';
+        const input = this.template.querySelector('[data-id="search-modal-input"]');
+        if (input) input.focus();
+    }
+
+    handleSearchOverlayClick() {
+        this.showSearchModal = false;
+    }
+
+    handleSearchModalClick(event) {
+        event.stopPropagation();
+    }
+
+    _navigateToSearchResults() {
+        const term = encodeURIComponent(this.searchModalTerm.trim());
+        this.showSearchModal = false;
+        location.href = '/search?q=' + term;
+    }
+
+    handleMenuClick() {
+        this.showMenuOverlay = true;
+    }
+
+    handleMenuClose() {
+        this.showMenuOverlay = false;
+    }
+
+    handleOverlayClick() {
+        this.showMenuOverlay = false;
+    }
+
+    handleMenuContentClick(event) {
+        event.stopPropagation();
+    }
+
+    /* --- Menu item handlers ------------------------------------------ */
+
+    handleProfileClick() {
+        this.showMenuOverlay = false;
+        if (this._isOrgContact && this._orgAccountId) {
+            location.href = `/organization-profile?id=${this._orgAccountId}`;
+        } else {
+            this.navigateToPage('profile');
+        }
+    }
+
+    handleNotificationsClick() {
+        this.showMenuOverlay = false;
+        this.navigateToPage('notifications');
+    }
+
+    handleSettingsClick() {
+        this.showMenuOverlay = false;
+        this.navigateToPage('settings');
+    }
+
+    handleHelpClick() {
+        this.showMenuOverlay = false;
+        this.navigateToPage('help-support');
+    }
+
+    handleFeedbackClick() {
+        this.showMenuOverlay = false;
+        this.navigateToPage('feedback');
+    }
+
+    handleLogoutClick() {
+        this.showMenuOverlay = false;
+        const sitePrefix = basePath.replace(/\/s$/i, '');
+        const logoutUrl = sitePrefix + '/secur/logout.jsp';
+        window.location.href = logoutUrl;
+    }
+
+    /* --- Shared navigation helper ---------------------------------- */
+
+    navigateToPage(tab) {
+        const validPages = {
+            'home': '/',
+            'library': '/library-list',
+            'messages': '/messages',
+            'mine': '/my-stuff',
+            'profile': '/profile',
+            'search': '/search',
+            'notifications': '/notifications',
+            'settings': '/settings',
+            'help': '/help-support',
+            'help-support': '/help-support',
+            'feedback': '/feedback',
+            'create-story': '/create-story',
+            'create-post': '/ask-or-offer-post',
+            'add-library-item': '/add-library-item',
+            'ask-post': '/ask-or-offer-post?type=Need',
+            'offer-post': '/ask-or-offer-post?type=Offer',
+            'shared-life-post': '/shared-life-post',
+            'library-item-post': '/library-item-post',
+            'responses': '/responses',
+            'loaned-items': '/loaned-items',
+            'shared-contacts': '/shared-contacts'
+        };
+
+        if (validPages[tab]) {
+            location.href = validPages[tab];
+        } else {
+            location.href = '/';
+        }
+    }
+
+    /* --- Public API ------------------------------------------------ */
+
+    @api
+    updateUnreadCount(count) {
+        this.messageCount = count || 0;
+        this.hasUnread = this.messageCount > 0;
+    }
+
+    @api
+    updateNotificationCount(count) {
+        this.notificationCount = count || 0;
+        this.hasNotifications = this.notificationCount > 0;
+    }
+
+    @api
+    setActiveTab(tab) {
+        this.activeTab = tab;
+    }
+
+    /* --- App-open tracking + quiet hours sync ----------------------- */
+
+    _recordAppOpenAndSyncQuietHours() {
+        recordAppOpen()
+            .then(result => {
+                if (result?.quietHoursPreference && window.ReactNativeWebView) {
+                    window.ReactNativeWebView.postMessage(
+                        JSON.stringify({
+                            type: 'quietHours',
+                            window: result.quietHoursPreference
+                        })
+                    );
+                }
+            })
+            .catch(err => {
+                console.error('Error recording app open:', err);
+            });
+    }
+
+    /* --- Onboarding ------------------------------------------------ */
+
+    _checkOnboarding() {
+        // Auto-show was previously handled by an embedded onboarding modal.
+        // Onboarding now lives at /onboarding, and fimbyHomeFeed.connectedCallback
+        // redirects users without a completed profile straight there. The header
+        // no longer needs to nudge.
+    }
+
+    @api
+    launchWalkthrough() {
+        // Replay tour entry point. Onboarding lives on a dedicated page; flag-driven
+        // routing inside fimbyOnboardingPage decides whether to land on Phase 1 or
+        // Phase 2 based on the user's existing onboarding state.
+        window.location.href = '/onboarding';
+    }
+}

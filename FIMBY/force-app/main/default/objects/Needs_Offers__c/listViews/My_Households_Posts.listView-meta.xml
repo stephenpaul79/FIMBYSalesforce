@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Households_Posts</fullName>
+    <columns>List_Image__c</columns>
+    <columns>NAME</columns>
+    <columns>Posting_Details__c</columns>
+    <columns>Details__c</columns>
+    <columns>Status__c</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>My_Houshold_s_Posts__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>My Household&apos;s Posts</label>
+</ListView>

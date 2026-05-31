@@ -1,0 +1,111 @@
+<template>
+    <div class="fimby-image-uploader">
+        <!-- Label -->
+        <div lwc:if={displayLabel} class="upload-label">{displayLabel}</div>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Upload Area (no image) -->
+        <template lwc:if={showUploadArea}>
+            <div class={uploadAreaClass}
+                 onclick={handleUploadClick}
+                 ondragover={handleDragOver}
+                 ondragleave={handleDragLeave}
+                 ondrop={handleDrop}>
+                <div class="upload-content">
+                    <div class="upload-icon">
+                        <img src={photoIconUrl} alt="" class="upload-impact-icon">
+                    </div>
+                    <div class="upload-text">
+                        <div class="primary-text">{primaryUploadText}</div>
+                        <div class="secondary-text">or drag and drop</div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Image Preview (has image) -->
+        <template lwc:if={showImagePreview}>
+            <div class="image-preview-container">
+                <div class="image-preview">
+                    <img src={displayImageUrl} alt="Uploaded image" class="preview-image">
+                    <div class="image-overlay">
+                        <button class="overlay-btn remove-btn"
+                                onclick={handleRemoveImage}
+                                title="Remove file"
+                                disabled={isUploading}>
+                            <img src={trashIconUrl} alt="" class="overlay-icon">
+                        </button>
+                        <button class="overlay-btn change-btn"
+                                onclick={handleUploadClick}
+                                title="Change file"
+                                disabled={isUploading}>
+                            <img src={editIconUrl} alt="" class="overlay-icon">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- PDF / document preview -->
+        <template lwc:if={showDocumentPreview}>
+            <div class="document-preview-container">
+                <div class="document-preview">
+                    <lightning-icon icon-name="doctype:pdf" size="large" alternative-text="PDF"></lightning-icon>
+                    <div class="document-name">{uploadedFileName}</div>
+                    <div class="document-actions">
+                        <button type="button" class="overlay-btn remove-btn"
+                                onclick={handleRemoveImage}
+                                title="Remove file"
+                                disabled={isUploading}>
+                            <img src={trashIconUrl} alt="" class="overlay-icon">
+                        </button>
+                        <button type="button" class="overlay-btn change-btn"
+                                onclick={handleUploadClick}
+                                title="Change file"
+                                disabled={isUploading}>
+                            <img src={editIconUrl} alt="" class="overlay-icon">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Hidden File Input -->
+        <input type="file"
+               class="file-input slds-hide"
+               accept={acceptTypes}
+               onchange={handleFileSelect}>
+
+        <!-- Upload Progress -->
+        <template lwc:if={isUploading}>
+            <div class="upload-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style={progressStyle}></div>
+                </div>
+                <div class="progress-text">Uploading... {uploadProgress}%</div>
+            </div>
+        </template>
+
+        <!-- Error Message -->
+        <template lwc:if={errorMessage}>
+            <div class="message error-message">
+                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                <span>{errorMessage}</span>
+            </div>
+        </template>
+
+        <!-- Success Message -->
+        <template lwc:if={successMessage}>
+            <div class="message success-message">
+                <lightning-icon icon-name="utility:success" size="x-small" variant="success"></lightning-icon>
+                <span>{successMessage}</span>
+            </div>
+        </template>
+    </div>
+</template>

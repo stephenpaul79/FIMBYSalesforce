@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "96c4c8c4-3726-465c-9884-3ab5f999e52e",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Response_Detail__c",
+  "id" : "6a951aba-b409-4d7d-a7d1-45f7a5b0ff7e",
+  "label" : "Response Detail",
+  "objectApiName" : "Response__c",
+  "routeType" : "detail-a0z",
+  "type" : "route",
+  "urlPrefix" : "response"
+}

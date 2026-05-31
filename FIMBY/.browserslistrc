@@ -1,0 +1,22 @@
+# FIMBY browser targets — ordered by priority
+#
+# Tier 1: In-app WebView (primary)
+#   iOS WKWebView = system Safari engine (auto-updates with iOS)
+#   Android WebView = Chromium (auto-updates via Play Store)
+#
+# Tier 2: Desktop web (Experience Cloud login)
+#   Chrome, Safari, Edge
+#
+# Tier 3: Mobile web — BLOCKED
+#   Mobile browser users are redirected to the app via
+#   UA detection in Experience Cloud Head Markup.
+
+# Covers both WKWebView (iOS) and desktop Safari
+last 2 Safari versions
+last 2 iOS versions
+
+# Covers both Android WebView (Chromium) and desktop Chrome
+last 2 Chrome versions
+
+# Desktop Edge
+last 2 Edge versions

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Search_Results_Limit__c</fullName>
+    <defaultValue>200</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Search Results Limit</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum results per object type in search for stories, needs/offers, and library items.</inlineHelpText>
+</CustomField>

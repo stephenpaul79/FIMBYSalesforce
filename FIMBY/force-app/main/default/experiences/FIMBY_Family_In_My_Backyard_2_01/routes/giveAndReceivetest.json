@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "e6d5cd11-d81a-4a7b-9da6-7af99555a1bf",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Give_and_Receivetest__c",
+  "id" : "a4681a92-cb77-4539-b3b3-cdb601b3f6fa",
+  "label" : "Give and Receivetest",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-give-and-receivetest",
+  "type" : "route",
+  "urlPrefix" : "give-and-receivetest"
+}

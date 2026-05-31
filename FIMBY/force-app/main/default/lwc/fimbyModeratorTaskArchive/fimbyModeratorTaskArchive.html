@@ -1,0 +1,130 @@
+<template>
+    <div class="fimby-archive-page">
+        <c-fimby-page-header
+            page-title="Closed Tasks"
+            parent-label="Moderator Dashboard"
+            parent-url="/moderator-dashboard">
+        </c-fimby-page-header>
+
+        <template lwc:if={accessDenied}>
+            <div class="access-denied">
+                <img src={emptyIconUrl} alt="" class="empty-icon-img">
+                <h2 class="denied-title">Access Required</h2>
+                <p>You need an active moderator assignment to view closed tasks.</p>
+            </div>
+        </template>
+
+        <template lwc:if={isAuthorized}>
+            <template lwc:if={showNeighbourhoodToggle}>
+                <div class="neighbourhood-toggle">
+                    <template for:each={assignmentsWithToggleClass} for:item="a">
+                        <button key={a.Id}
+                                type="button"
+                                class={a._toggleClass}
+                                data-id={a.Neighbourhood__c}
+                                onclick={handleNeighbourhoodChange}>
+                            {a.Neighbourhood__r.Name}
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="neighbourhood-label">{singleNeighbourhoodName}</div>
+            </template>
+
+            <div class="header-card">
+                <div class="feed-filters" role="group" aria-label="Filter by status">
+                    <div class="filters-scroll">
+                        <template for:each={processedStatusFilters} for:item="filter">
+                            <button key={filter.value}
+                                    type="button"
+                                    class={filter.cssClass}
+                                    data-value={filter.value}
+                                    aria-pressed={filter.ariaPressed}
+                                    onclick={handleStatusFilterClick}>
+                                {filter.label}
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <div class="feed-sub-filters" role="group" aria-label="Filter by category">
+                    <div class="filters-scroll">
+                        <template for:each={processedCategoryFilters} for:item="filter">
+                            <button key={filter.value}
+                                    type="button"
+                                    class={filter.cssClass}
+                                    data-value={filter.value}
+                                    aria-pressed={filter.ariaPressed}
+                                    onclick={handleCategoryFilterClick}>
+                                {filter.label}
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <template lwc:if={isLoading}>
+                <div class="loading-container">
+                    <c-fimby-loading-message context="moderator" size="medium"></c-fimby-loading-message>
+                </div>
+            </template>
+
+            <template lwc:elseif={hasItems}>
+                <div class="content-section">
+                    <div class="list-card">
+                        <template for:each={items} for:item="item">
+                            <button type="button"
+                                    class="list-row"
+                                    key={item.id}
+                                    data-url={item.taskUrl}
+                                    aria-label={item.ariaLabel}
+                                    onclick={handleRowClick}>
+                                <span class={item.categoryBadgeClass}>{item.categoryLabel}</span>
+                                <span class="list-row-title">{item.summary}</span>
+                                <template lwc:if={item.closedByLine}>
+                                    <span class="list-row-meta">{item.closedByLine}</span>
+                                </template>
+                                <span class={item.statusBadgeClass}>{item.statusLabel}</span>
+                                <span class="list-row-date">{item.closedDate}</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                            </button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={showPagination}>
+                        <div class="pagination-controls">
+                            <button type="button"
+                                    class="pagination-btn"
+                                    disabled={isPrevDisabled}
+                                    aria-label="Previous page"
+                                    onclick={handlePrevPage}>Previous</button>
+                            <span class="page-info">Page {currentPage} of {totalPages}</span>
+                            <button type="button"
+                                    class="pagination-btn"
+                                    disabled={isNextDisabled}
+                                    aria-label="Next page"
+                                    onclick={handleNextPage}>Next</button>
+                        </div>
+                    </template>
+
+                    <div class="section-footer">
+                        <a href="/moderator-dashboard" class="archive-btn">Back to dashboard</a>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <div class="empty-section">
+                    <img src={emptyIconUrl} alt="" class="empty-icon-img">
+                    <h2>Nothing closed yet</h2>
+                    <p>When you resolve or dismiss tasks for this neighbourhood, they will show up here.</p>
+                </div>
+                <div class="section-footer">
+                    <a href="/moderator-dashboard" class="archive-btn">Back to dashboard</a>
+                </div>
+            </template>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="mine" ontabchange={handleBottomTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

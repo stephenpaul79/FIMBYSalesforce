@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Conversation",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"d90c263f-398f-40e0-bc2b-b467c13c0d73\",\"columns\":[{\"UUID\":\"563c3e6f-be5f-46ca-a7b5-4918fc63cd5f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[{\"componentType\":\"c:fimbyConversationRouter\",\"definition\":\"c:fimbyConversationRouter\",\"id\":\"conversation-component\"}]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyConversationRouter",
+              "id" : "74fdb4cc-c818-46ee-8a7a-b02ae697541c",
+              "type" : "component"
+            } ],
+            "id" : "563c3e6f-be5f-46ca-a7b5-4918fc63cd5f",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "d90c263f-398f-40e0-bc2b-b467c13c0d73",
+          "type" : "component"
+        } ],
+        "id" : "8368ad97-98fe-42af-a4f2-05aaf5c9d2a3",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Conversation",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "84f5e9cd-8932-40b4-b494-051975f38388",
+          "type" : "component"
+        } ],
+        "id" : "8730af66-7496-4947-b054-f424185b39b3",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "df9a3b95-1e6a-43c0-b1bf-b71e18422d8d",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-conversation"
+  },
+  "urlName" : "conversation"
+}

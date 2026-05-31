@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Offer or Request Help",
+  "contentBody" : {
+    "title" : "Offer or Request Help",
+    "body" : "<p>Whether it is help moving furniture, a ride to an appointment, or tutoring - post a service ask or offer and connect with neighbours who can help.</p>",
+    "pageOrder" : "030",
+    "slideOrder" : "030",
+    "pageTitle" : "Asks and Offers"
+  },
+  "urlName" : "asks-and-offers-services"
+}

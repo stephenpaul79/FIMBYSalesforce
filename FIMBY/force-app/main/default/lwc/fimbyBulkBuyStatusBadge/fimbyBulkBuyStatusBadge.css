@@ -1,0 +1,47 @@
+/* Base badge: pill-shaped, compact inline display */
+.fimby-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.badge-icon {
+    flex-shrink: 0;
+}
+
+.badge-text {
+    line-height: 1.2;
+}
+
+/* Status color variants using FIMBY design tokens */
+.badge-green {
+    background: var(--fimby-success-tint);
+    color: var(--fimby-chip-active-text, #065f46);
+}
+
+.badge-teal {
+    background: var(--fimby-chip-teal-bg, #eaf6fa);
+    color: var(--fimby-brand-teal);
+}
+
+.badge-amber {
+    background: var(--fimby-warning-tint);
+    color: var(--fimby-earth-ochre, #A38045);
+}
+
+.badge-blue {
+    background: var(--fimby-info-tint);
+    color: var(--fimby-chip-pending-text, #1e40af);
+}
+
+.badge-grey {
+    background: var(--fimby-chip-neutral-bg, #f1f5f9);
+    color: var(--fimby-text-primary, #4A3526);
+}

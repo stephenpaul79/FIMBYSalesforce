@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Blocked__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The actingAs contact who has been blocked.</description>
+    <label>Blocked</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Blocked Contacts (Blocked)</relationshipLabel>
+    <relationshipName>Blocked_Contacts_Blocked</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

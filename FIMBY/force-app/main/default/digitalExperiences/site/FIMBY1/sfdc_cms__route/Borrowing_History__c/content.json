@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Borrowing History",
+  "contentBody" : {
+    "activeViewId" : "Borrowing_History",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-borrowing-history",
+    "urlPrefix" : "borrowing-history"
+  },
+  "urlName" : "borrowing-history"
+}

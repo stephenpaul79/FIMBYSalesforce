@@ -1,0 +1,535 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.moderator-dashboard {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+/* ================================================================
+   Dashboard Body Card
+   ================================================================ */
+.dashboard-body {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg, 16px);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 20px 16px;
+    margin-top: 4px;
+}
+
+/* ================================================================
+   Access Denied
+   ================================================================ */
+.access-denied {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 24px;
+    gap: 12px;
+}
+
+.denied-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    opacity: 0.6;
+    margin-bottom: 8px;
+}
+
+.denied-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.access-denied p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    max-width: 320px;
+}
+
+/* ================================================================
+   Loading
+   ================================================================ */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+}
+
+/* ================================================================
+   Neighbourhood Toggle (Tier 2 — pill toggle controls)
+   ================================================================ */
+.neighbourhood-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+.toggle-btn:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+    background-color: var(--fimby-selected-bg);
+}
+
+.toggle-btn.active {
+    background-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.neighbourhood-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ================================================================
+   What Needs You Now — Triage Card
+   ================================================================ */
+.triage-card {
+    background-color: var(--fimby-surface-input);
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-md, 12px);
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.triage-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin-bottom: 6px;
+}
+
+.triage-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.triage-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.triage-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    min-height: 44px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.triage-btn.escalated {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+    border: 1px solid var(--fimby-error-border);
+}
+
+.triage-btn.escalated:hover {
+    background-color: var(--fimby-error);
+    color: #ffffff;
+}
+
+.triage-btn.urgent {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-text-strong);
+    border: 1px solid var(--fimby-warning-border);
+}
+
+.triage-btn.urgent:hover {
+    background-color: var(--fimby-warning);
+    color: var(--fimby-text-strong);
+}
+
+/* ================================================================
+   Main Panel — full-width stacked sections
+   ================================================================ */
+.main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ================================================================
+   Priority Section Cards
+   ================================================================ */
+.priority-section {
+    border-radius: var(--fimby-radius-md, 12px);
+    border: 1px solid var(--fimby-divider-default);
+    background-color: var(--fimby-surface-card);
+    overflow: hidden;
+    transition: box-shadow 0.15s ease;
+}
+
+.priority-section.accent-adminEscalations {
+    border-left: 4px solid var(--section-border-color, var(--fimby-error));
+}
+
+.priority-section.accent-attention {
+    border-left: 4px solid var(--section-border-color, var(--fimby-warning));
+}
+
+.priority-section.accent-daily {
+    border-left: 4px solid var(--section-border-color, var(--fimby-info));
+}
+
+.priority-section.expanded {
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.priority-section.empty-section {
+    opacity: 0.85;
+}
+
+/* ================================================================
+   Section Header
+   ================================================================ */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 44px;
+    transition: background-color 0.1s ease;
+}
+
+.section-header:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.section-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
+.section-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    line-height: 1;
+}
+
+/* ================================================================
+   Quiet Row (empty sections)
+   ================================================================ */
+.section-quiet-row {
+    padding: 0;
+}
+
+.section-header.quiet {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 44px;
+    justify-content: flex-start;
+}
+
+.section-header.quiet:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.section-header.quiet .section-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.section-empty-hint {
+    font-size: 0.8rem;
+    color: var(--fimby-text-primary);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* ================================================================
+   Section Body
+   ================================================================ */
+.section-body {
+    padding: 0 16px 16px;
+}
+
+.section-helper {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.35;
+}
+
+/* ================================================================
+   Tab Bar — Mobile (pill toggles)
+   ================================================================ */
+.section-tab-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.section-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    min-height: 44px;
+    border-radius: var(--fimby-radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--fimby-border-subtle);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    transition: all 0.15s ease;
+}
+
+.section-tab:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+}
+
+.section-tab.active {
+    background-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-brand-teal);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.section-tab.muted {
+    opacity: 0.55;
+}
+
+.section-tab.muted:hover {
+    opacity: 0.8;
+}
+
+.tab-label {
+    white-space: nowrap;
+}
+
+.tab-count {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+/* ================================================================
+   Section Task Content
+   ================================================================ */
+.section-task-content {
+    min-height: 80px;
+}
+
+/* ================================================================
+   Archive Entry — matches quiet section row pattern
+   ================================================================ */
+.archive-entry-section {
+    margin-top: 12px;
+}
+
+button.section-header.quiet.archive-entry-link {
+    text-align: left;
+}
+
+.section-header.quiet.archive-entry-link .section-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.section-header.quiet.archive-entry-link .section-empty-hint {
+    font-size: 0.8rem;
+    font-weight: 400;
+    font-style: italic;
+    font-family: inherit;
+    color: var(--fimby-text-primary);
+}
+
+.archive-entry-chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--fimby-text-muted);
+}
+
+.archive-entry-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ================================================================
+   Focus Visibility
+   ================================================================ */
+.toggle-btn:focus-visible,
+.section-header:focus-visible,
+.section-tab:focus-visible,
+.triage-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ================================================================
+   Reduced Motion
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .toggle-btn,
+    .section-header,
+    .section-tab,
+    .priority-section,
+    .triage-btn {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* ================================================================
+   Responsive — Tablet (768px+)
+   ================================================================ */
+@media (min-width: 768px) {
+    .moderator-dashboard {
+        padding: 0 24px 80px;
+    }
+
+    /* Desktop tab shape: classic tab with border-radius top */
+    .section-tab-bar {
+        gap: 0;
+        flex-wrap: nowrap;
+        border-bottom: 2px solid var(--fimby-border-subtle);
+        margin-bottom: 16px;
+    }
+
+    .section-tab {
+        border-radius: var(--fimby-radius-md, 12px) var(--fimby-radius-md, 12px) 0 0;
+        border: 1px solid var(--fimby-border-subtle);
+        border-bottom: 2px solid var(--fimby-border-subtle);
+        margin-bottom: -2px;
+        background-color: var(--fimby-surface-input);
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+    }
+
+    .section-tab.active {
+        background-color: var(--fimby-surface-card);
+        border-color: var(--fimby-border-subtle);
+        border-bottom-color: var(--fimby-surface-card);
+        color: var(--fimby-brand-teal);
+        font-weight: 700;
+    }
+
+    .section-tab.active .tab-count {
+        color: var(--fimby-brand-teal);
+    }
+
+    .section-tab:not(.active) {
+        color: var(--fimby-text-secondary);
+    }
+
+    .section-tab:not(.active):hover {
+        background-color: var(--fimby-hover-bg);
+        color: var(--fimby-text-strong);
+        border-color: var(--fimby-border-subtle);
+    }
+}
+
+@media (min-width: 892px) {
+    .moderator-dashboard {
+        padding-bottom: 24px;
+    }
+}
+
+/* ================================================================
+   Responsive — Desktop (1024px+)
+   ================================================================ */
+@media (min-width: 1024px) {
+    .moderator-dashboard {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .section-body {
+        padding: 0 20px 20px;
+    }
+
+    .section-header {
+        padding: 16px 20px;
+    }
+}

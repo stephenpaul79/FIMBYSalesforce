@@ -1,0 +1,38 @@
+{
+  "appPageId" : "44556677-8899-aabb-ccdd-eeff00112233",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "a3a3b4b4-c5c5-d6d6-e7e7-f8f899000044",
+  "label" : "Borrow History",
+  "regions" : [ {
+    "id" : "b4b4c5c5-d6d6-e7e7-f8f8-990000115544",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "id" : "c5c5d6d6-e7e7-f8f8-9900-001122336677",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "d6d6e7e7-f8f8-9900-0011-223344557799",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "History of all items I have borrowed",
+        "title" : "Borrow History"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "e7e7f8f8-9900-0011-2233-445566779911",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "f8f89900-0011-2233-4455-667788001122",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-borrow_history"
+}

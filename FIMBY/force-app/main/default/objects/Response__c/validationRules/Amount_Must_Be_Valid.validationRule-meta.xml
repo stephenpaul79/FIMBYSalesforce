@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Amount_Must_Be_Valid</fullName>
+    <active>true</active>
+    <errorConditionFormula>ISNEW()
+&amp;&amp;
+(Amount_Requested__c &lt; 0
+||
+(
+Amount_Requested__c &gt; Need_Offer_Responded_To__r.Total_Available__c
+&amp;&amp; Need_Offer_Responded_To__r.RecordType.DeveloperName &lt;&gt; &apos;Need&apos;
+))</errorConditionFormula>
+    <errorDisplayField>Amount_Requested__c</errorDisplayField>
+    <errorMessage>Please select a valid amount: 0 or more.  Less or Equal to the Total Available. Less or Equal to the Per Response Limit.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Attributes__c</fullName>
+    <externalId>false</externalId>
+    <formula>/* Donor Icon */
+IF( AND(npo02__TotalOppAmount__c&gt;0, npo02__TotalOppAmount__c&lt;$Setup.NPBP_Options__c.Major_Donor_Threshold__c),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Donations_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Account_Donations_Report_ID__c,15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/Donor.png&quot;,&quot;Donor&quot;,35, 35),&quot;&quot;)+ &quot; &quot;, NULL)+
+
+/* Major Donor Icon */
+IF( npo02__TotalOppAmount__c&gt;=$Setup.NPBP_Options__c.Major_Donor_Threshold__c,
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Donations_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Account_Donations_Report_ID__c,15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/Major.png&quot;,&quot;Major Donor&quot;,35, 35)+ &quot; &quot;,&quot;&quot;), NULL)+
+
+/* Grantmaking Icon */
+IF( npsp__Grantmaker__c = TRUE,
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Grants_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Account_Grants_Report_ID__c,15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/Grantmaker.png&quot;,&quot;Grant Maker&quot;,35, 35)+ &quot; &quot;,&quot;&quot;), NULL)+
+
+/* Matching Gifts Icon */
+IF( npsp__Matching_Gift_Company__c = TRUE,
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Matching_Gifts_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Account_Matching_Gifts_Report_ID__c,15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/Matching.png&quot;,&quot;Matching Gifts&quot;,35, 35)+ &quot; &quot;,&quot;&quot;), NULL)+
+
+/* Current Membership Icon */
+IF(npo02__MembershipEndDate__c &gt;= TODAY(),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Memberships_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Account_Memberships_Report_ID__c, 15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/Member.png&quot;,&quot;Member&quot;,35, 35)+ &quot; &quot;,&quot;&quot;),NULL)+
+
+/* Lapsed Membership Icon */
+IF(npo02__MembershipEndDate__c&lt;TODAY(),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Account_Memberships_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot;+Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Contact_Memberships_Report_ID__c, 15) &amp; &quot;?pv0=&quot;+Id),
+IMAGE(&quot;/resource/Impact_Icons/FormerMember.png&quot;,&quot;Past Member&quot;,35, 35)+ &quot; &quot;,&quot;&quot;),NULL)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText>1. Donor = Gift (Click for Report)
+2. Major Donor = Gold Gift (Click for Report)
+3. Grantmaker = Coins (Click for Report)
+4. Matching Gift = People (Click for Report)
+5. Current Member = Blue Bookmark (Click for Report)
+6. Lapsed Member = Grey Bookmark (Click for Report)</inlineHelpText>
+    <label>Attributes</label>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

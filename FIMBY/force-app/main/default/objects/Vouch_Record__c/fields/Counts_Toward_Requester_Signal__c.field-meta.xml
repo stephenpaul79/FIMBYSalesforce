@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Counts_Toward_Requester_Signal__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True for concerning declines (Decision_Reason__c = Concerning_Request). False for wrong-person / not-the-right-reference declines. Used for requester-side moderation signal aggregation.</description>
+    <externalId>false</externalId>
+    <label>Counts Toward Requester Signal</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

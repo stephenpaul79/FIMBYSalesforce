@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Revocation_Details__c</fullName>
+    <description>Free-text revocation details from the moderator; required when category is Other_For_Cause.</description>
+    <externalId>false</externalId>
+    <label>Revocation Details</label>
+    <length>1000</length>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Occasion__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Occasion</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <description>When this celebration fires: Normal (every time), First_Time (user's first action of this type), or Milestone (user hits a count threshold)</description>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Normal</fullName>
+                <default>true</default>
+                <label>Normal</label>
+            </value>
+            <value>
+                <fullName>Milestone</fullName>
+                <default>false</default>
+                <label>Milestone</label>
+            </value>
+            <value>
+                <fullName>First_Time</fullName>
+                <default>false</default>
+                <label>First Time</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

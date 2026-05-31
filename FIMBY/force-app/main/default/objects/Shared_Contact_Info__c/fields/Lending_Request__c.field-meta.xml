@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lending_Request__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Lending Request</label>
+    <referenceTo>Lending_Request__c</referenceTo>
+    <relationshipLabel>Shared Contact Info</relationshipLabel>
+    <relationshipName>Shared_Contact_Info</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

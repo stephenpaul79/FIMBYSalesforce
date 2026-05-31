@@ -1,0 +1,39 @@
+<template>
+    <div class="shared-contacts-list-page">
+        <c-fimby-page-header
+            page-title="Shared Contacts"
+            page-subtitle="Contact info shared with you"
+            onnotification={handleNotifications}>
+        </c-fimby-page-header>
+
+        <c-fimby-responsive-list
+            title="Shared Contact Info"
+            object-api-name="Shared_Contact_Info__c"
+            records={sharedContacts}
+            columns={columns}
+            row-actions={rowActions}
+            show-header="true"
+            show-search="true"
+            search-placeholder="Search contacts..."
+            show-view-toggle="true"
+            default-view="auto"
+            primary-field="ContactName"
+            image-placeholder-icon="utility:user"
+            empty-state-icon="utility:share"
+            empty-state-title="No Shared Contacts"
+            empty-state-message="No one has shared their contact info with you yet."
+            total-records={totalRecords}
+            show-load-more={hasMoreRecords}
+            onrowclick={handleItemClick}
+            onrowaction={handleRowAction}
+            onsearch={handleSearch}
+            onsort={handleSort}
+            onloadmore={handleLoadMore}>
+        </c-fimby-responsive-list>
+
+        <c-fimby-bottom-navigation
+            active-tab="profile"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

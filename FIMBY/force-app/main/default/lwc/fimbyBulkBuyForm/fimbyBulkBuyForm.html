@@ -1,0 +1,240 @@
+<template>
+    <div class="bulk-buy-form">
+        <!-- Your Bulk Buy Section -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <img src={postDetailsIconUrl} alt="" class="section-icon">
+                Your Bulk Buy
+            </h3>
+
+            <div class="form-field">
+                <div class="field-label-row">
+                    <label class="field-label" for="bulkbuy-title">Title <abbr class="slds-required" title="required">*</abbr></label>
+                    <span class={titleCountClass}>{titleCharacterCount}</span>
+                </div>
+                <lightning-input
+                    id="bulkbuy-title"
+                    type="text"
+                    variant="label-hidden"
+                    value={title}
+                    onchange={handleTitleChange}
+                    max-length="80"
+                    required>
+                </lightning-input>
+            </div>
+
+            <div class="form-field">
+                <div class="field-label-row">
+                    <label class="field-label" for="bulkbuy-description">Description</label>
+                    <span class={descriptionCountClass}>{descriptionCharacterCount}</span>
+                </div>
+                <lightning-textarea
+                    id="bulkbuy-description"
+                    variant="label-hidden"
+                    value={description}
+                    onchange={handleDescriptionChange}
+                    max-length="2000"
+                    placeholder="Describe what you're ordering and any relevant details">
+                </lightning-textarea>
+            </div>
+
+            <template lwc:if={showIdentityBanner}>
+                <div class="posting-as">
+                    <img src={posterIconUrl} alt="" class="posting-as-icon">
+                    <span class="posting-as-label">Posting as:</span>
+                    <span class="posting-as-value">{postingAsDisplayName}</span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Shares Section -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <img src={sharesIconUrl} alt="" class="section-icon">
+                Shares
+            </h3>
+
+            <div class="shares-grid">
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label class="field-label" for="total-quantity">Total units you're purchasing <abbr class="slds-required" title="required">*</abbr></label>
+                    </div>
+                    <lightning-input
+                        id="total-quantity"
+                        type="number"
+                        variant="label-hidden"
+                        value={totalQuantity}
+                        onchange={handleTotalQuantityChange}
+                        min="1"
+                        required
+                        title="The full amount you're ordering, including what you're keeping.">
+                    </lightning-input>
+                </div>
+
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label class="field-label" for="owner-shares">Units you're keeping</label>
+                    </div>
+                    <lightning-input
+                        id="owner-shares"
+                        type="number"
+                        variant="label-hidden"
+                        value={ownerShares}
+                        onchange={handleOwnerSharesChange}
+                        min="0"
+                        max={ownerSharesMax}
+                        title="How many of the total are for you? The rest are available for neighbours.">
+                    </lightning-input>
+                </div>
+
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label class="field-label" for="unit-label">Unit Label</label>
+                    </div>
+                    <lightning-input
+                        id="unit-label"
+                        type="text"
+                        variant="label-hidden"
+                        value={unitLabel}
+                        onchange={handleUnitLabelChange}
+                        placeholder="e.g. ~5lb portion">
+                    </lightning-input>
+                </div>
+
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label class="field-label" for="per-person-limit">Per Person Limit</label>
+                    </div>
+                    <lightning-input
+                        id="per-person-limit"
+                        type="number"
+                        variant="label-hidden"
+                        value={perResponseLimit}
+                        onchange={handlePerResponseLimitChange}
+                        min="1"
+                        max={availableForNeighbours}
+                        message-when-range-overflow={perPersonLimitOverflowMessage}
+                        title="Optional. Limit how many shares each person can reserve.">
+                    </lightning-input>
+                </div>
+            </div>
+
+            <template lwc:if={showSharesPreview}>
+                <div class="shares-preview-callout">
+                    <span class="shares-preview-text">{sharesPreviewText}</span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Availability Section -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <img src={availabilityIconUrl} alt="" class="section-icon">
+                Availability
+            </h3>
+
+            <div class="form-field">
+                <label class="field-label">When does this close?</label>
+                <div class="pill-radio-group" role="group" aria-label="Availability rule">
+                    <template for:each={availabilityOptions} for:item="opt">
+                        <button
+                            key={opt.value}
+                            type="button"
+                            class={opt.pillClass}
+                            aria-pressed={opt.selected}
+                            data-value={opt.value}
+                            onclick={handleAvailabilityPillClick}>
+                            {opt.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <template lwc:if={isExpiryVisible}>
+                <div class="form-field">
+                    <label class="field-label" for="expiry-datetime">Expiry Date &amp; Time <abbr class="required" title="required">*</abbr></label>
+                    <input
+                        id="expiry-datetime"
+                        type="datetime-local"
+                        class="form-input"
+                        value={expiryDateTime}
+                        onchange={handleExpiryDateTimeChange}
+                        required={isExpiryVisible}
+                        aria-required={isExpiryVisible}
+                    />
+                </div>
+            </template>
+        </div>
+
+        <!-- Cost Reference Section -->
+        <div class="form-section cost-section">
+            <h3 class="section-title">
+                <img src={costIconUrl} alt="" class="section-icon">
+                Cost Reference
+            </h3>
+            <p class="section-help">Optional. Helps respondents understand approximate cost per share.</p>
+
+            <div class="form-field">
+                <div class="field-label-row">
+                    <label class="field-label" for="total-cost">Total Estimated Cost ($)</label>
+                </div>
+                <lightning-input
+                    id="total-cost"
+                    type="number"
+                    variant="label-hidden"
+                    value={totalEstimatedCost}
+                    onchange={handleTotalEstimatedCostChange}
+                    step="0.01"
+                    min="0"
+                    placeholder="Optional">
+                </lightning-input>
+            </div>
+
+            <template lwc:if={estimatedCostDisplay}>
+                <div class="cost-per-share">{estimatedCostDisplay}</div>
+            </template>
+
+            <p class="cost-disclaimer">This is an estimate only — FIMBY does not handle payments.</p>
+        </div>
+
+        <!-- Pickup Window Section (includes submit button - photo step follows) -->
+        <div class="form-section form-section-with-submit">
+            <h3 class="section-title">
+                <img src={settingsIconUrl} alt="" class="section-icon">
+                Pickup Window
+            </h3>
+            <p class="section-help">After you notify everyone that pickup is ready, how many days should people have to collect their shares before the post wraps up automatically?</p>
+
+            <div class="form-field">
+                <label class="field-label">Pickup window</label>
+                <div class="pill-radio-group" role="group" aria-label="Pickup window">
+                    <template for:each={autoLockOptions} for:item="opt">
+                        <button
+                            key={opt.value}
+                            type="button"
+                            class={opt.pillClass}
+                            aria-pressed={opt.selected}
+                            data-value={opt.value}
+                            onclick={handleAutoLockPillClick}>
+                            {opt.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="form-navigation">
+                <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back to type selection">&lt; Back&nbsp;&nbsp;</button>
+                <button class="nav-btn nav-next" onclick={handleSubmit} disabled={isSubmitDisabled} type="button">{submitLabel}</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <template lwc:if={isPosting}>
+            <div class="loading-overlay">
+                <div class="loading-content">
+                    <c-fimby-loading-message context="posting" size="medium"></c-fimby-loading-message>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

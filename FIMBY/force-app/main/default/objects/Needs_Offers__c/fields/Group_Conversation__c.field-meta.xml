@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Group_Conversation__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Link to the group chat conversation for this bulk buy</description>
+    <label>Group Conversation</label>
+    <referenceTo>Conversation__c</referenceTo>
+    <relationshipLabel>Bulk Buys</relationshipLabel>
+    <relationshipName>Bulk_Buys</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

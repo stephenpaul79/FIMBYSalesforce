@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rejection_Reason_Detail__c</fullName>
+    <description>Admin's free-text supplement to the Rejection_Reason__c picklist. Stays internal — the supporter only sees the picklist category in the notification.</description>
+    <externalId>false</externalId>
+    <label>Rejection Reason Detail</label>
+    <length>255</length>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

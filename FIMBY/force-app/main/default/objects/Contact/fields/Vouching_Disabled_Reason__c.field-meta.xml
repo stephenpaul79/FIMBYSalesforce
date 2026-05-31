@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouching_Disabled_Reason__c</fullName>
+    <description>Why this Contact&apos;s vouching ability is disabled.</description>
+    <label>Vouching Disabled Reason</label>
+    <required>false</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Auto_Threshold</fullName>
+                <default>false</default>
+                <label>Auto Threshold</label>
+            </value>
+            <value>
+                <fullName>Moderator</fullName>
+                <default>false</default>
+                <label>Moderator</label>
+            </value>
+            <value>
+                <fullName>Account_Removed</fullName>
+                <default>false</default>
+                <label>Account Removed</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

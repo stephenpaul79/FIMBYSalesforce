@@ -1,0 +1,478 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+.paper-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.paper-pill--draft {
+    background-color: var(--fimby-warning-bg, #fef3c7);
+    color: var(--fimby-warning-text, #78350f);
+}
+.paper-pill--pending {
+    background-color: var(--fimby-info-bg, #dbeafe);
+    color: var(--fimby-info-text, #1e3a8a);
+}
+.paper-pill--inactive {
+    background-color: var(--fimby-surface-muted, #f3f4f6);
+    color: var(--fimby-text-tertiary, #6b6b6b);
+}
+.manage-identities-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+@media (min-width: 768px) {
+    .manage-identities-page { padding: 0 24px 80px; }
+}
+@media (min-width: 892px) {
+    .manage-identities-page { padding-bottom: 24px; }
+}
+@media (min-width: 1024px) {
+    .manage-identities-page { max-width: 800px; margin: 0 auto; }
+}
+
+/* Page header styles removed — using c-fimby-page-header with menuItems */
+
+.identity-section {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+    margin-top: 12px;
+}
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.section-icon {
+    width: 28px;
+    height: 28px;
+}
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.identity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+/* Desktop: distinct columns */
+.identity-row {
+    display: grid;
+    grid-template-columns: 44px 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-page);
+}
+.identity-row.muted {
+    opacity: 0.6;
+}
+.row-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.row-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.row-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.row-neighbourhood {
+    font-size: 0.8rem;
+    color: var(--fimby-text-muted);
+}
+.helper-text {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted);
+    font-style: italic;
+}
+/* Status in its own column — fit-content so it doesn't flex */
+.status-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+}
+.row-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    width: fit-content;
+    flex-shrink: 0;
+    pointer-events: none;
+    user-select: none;
+}
+.status-pill.approved {
+    background-color: var(--fimby-success);
+    color: #fff;
+}
+.status-pill.pending {
+    background-color: var(--fimby-warning);
+    color: #fff;
+}
+.status-pill.inactive {
+    background-color: var(--fimby-text-muted);
+    color: #fff;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+}
+
+.pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-weight: 700;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    border: none;
+    cursor: pointer;
+    min-height: 36px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.pill-btn.primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #fff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+.pill-btn.primary:hover { background-color: var(--fimby-btn-primary-bg-hover, #336F7D); }
+.pill-btn.primary:active { background-color: var(--fimby-btn-primary-bg-active, #2B5F6D); box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12)); transform: scale(0.97); }
+.pill-btn.secondary {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-strong);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+.pill-btn.secondary:hover { background-color: var(--fimby-hover-bg); border-color: var(--fimby-border-strong); }
+.pill-btn.secondary:active { background-color: var(--fimby-pressed-bg); box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12)); transform: scale(0.97); }
+.pill-btn.danger {
+    background-color: var(--fimby-error-tint, #fef2f2);
+    color: var(--fimby-error, #dc2626);
+    border: 1px solid var(--fimby-error, #dc2626);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+.pill-btn.confirm {
+    background-color: var(--fimby-btn-success-bg, #1A7B40);
+    color: #fff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+.pill-btn.confirm:hover { background-color: var(--fimby-btn-success-bg-hover, #166D38); }
+.pill-btn.confirm:active { background-color: var(--fimby-btn-success-bg-active, #0F5A2E); box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12)); transform: scale(0.97); }
+.pill-btn.ghost {
+    background: none;
+    color: var(--fimby-text-strong);
+    border: 1px solid var(--fimby-border-subtle);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+.pill-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+.btn-icon {
+    width: 16px;
+    height: 16px;
+}
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.text-btn:hover {
+    text-decoration: underline;
+}
+
+.confirmed-badge {
+    color: var(--fimby-success);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.setup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.setup-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.setup-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.setup-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--fimby-text-muted);
+}
+
+.error-banner {
+    background-color: var(--fimby-error-tint, #fef2f2);
+    color: var(--fimby-error, #dc2626);
+    padding: 12px 16px;
+    border-radius: var(--fimby-radius-sm);
+    margin-bottom: 12px;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 16px;
+}
+.modal-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-modal);
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+}
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+}
+.modal-body {
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 20px;
+}
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+.close-x {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--fimby-text-muted);
+    padding: 4px 8px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.detail-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.detail-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+.detail-line {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+}
+.view-profile-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 20px;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    text-decoration: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.view-profile-link:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+/* Mobile: status wraps under name, buttons centered */
+@media (max-width: 767px) {
+    .identity-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .row-avatar {
+        flex-shrink: 0;
+    }
+    .row-info {
+        flex: 1;
+        min-width: 0;
+    }
+    /* Status wraps underneath name */
+    .status-cell {
+        width: 100%;
+        order: 3;
+        justify-content: flex-start;
+        margin-top: -4px;
+    }
+    .status-cell .status-pill {
+        width: fit-content;
+    }
+    .row-actions {
+        width: 100%;
+        order: 4;
+        justify-content: center;
+        padding-top: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ──────────────────────────────────────────────────────────
+   A2: Community Group lifecycle modal additions.
+   Stacked-action layout for the Detail Modal when the user is
+   a Community Group rep, plus textarea/input styling for the
+   Close/Delete request modals.
+   ────────────────────────────────────────────────────────── */
+.modal-actions-stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.pill-btn.full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Always Show Identity hint inside lifecycle modals. */
+.acting-as-label {
+    color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin: -4px 0 12px;
+}
+
+.lifecycle-field-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 12px 0 4px;
+}
+
+.lifecycle-textarea,
+.lifecycle-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+    background-color: var(--fimby-surface-input, var(--fimby-surface-card));
+    box-sizing: border-box;
+    margin-bottom: 4px;
+}
+
+.lifecycle-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    min-height: 60px;
+}
+
+.lifecycle-input:focus,
+.lifecycle-textarea:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow);
+}
+
+.lifecycle-error {
+    color: var(--fimby-error);
+    font-size: 0.85rem;
+    margin: 8px 0 0;
+}

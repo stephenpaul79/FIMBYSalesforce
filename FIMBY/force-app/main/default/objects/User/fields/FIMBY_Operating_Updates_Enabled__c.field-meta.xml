@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>FIMBY_Operating_Updates_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>User preference: receive occasional updates about FIMBY itself, including operating-cost requests from Strathcona Vineyard Church. Default true (opt-out model) under the CASL registered-charity exemption (Section 6(6)(a)). If counsel later confirms the exemption does not apply, change default to false (express opt-in) and add a UI prompt to confirm consent. Future operating-update senders must check this field before delivering.</description>
+    <externalId>false</externalId>
+    <label>FIMBY Operating Updates Enabled</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Posting_Details__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF((ISBLANK(Posted_For_Organization__c) &amp;&amp; ISBLANK(Posted_For_Person__c)) || Posted_For_Person__c = Posted_By__c, 
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName + IF(RIGHT(Posted_By__r.LastName,1)=&quot;s&quot;,&quot;&apos;&quot;,&quot;&apos;s&quot;)) + &quot; &quot; + TEXT( Type__c) ,
+
+IF(!ISBLANK(Posted_For_Organization__c), 
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName) + &quot; posted on behalf of &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/detail/&quot; + Posted_For_Organization__r.Id, Posted_For_Organization__r.Name) ,
+
+IF(!ISBLANK(Posted_For_Person__c), 
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName) + &quot; posted on behalf of &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_For_Person__r.Id,  Posted_For_Person__r.FirstName + &quot; &quot; + Posted_For_Person__r.LastName) , &quot;&quot;)))+
+
+IF(!ISBLANK( Dedicated_To_Household_Organization__c ),
+&quot; dedicated to the &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/detail/&quot; + Dedicated_To_Household_Organization__r.Id, Dedicated_To_Household_Organization__r.Name) ,
+
+IF(!ISBLANK( Dedicated_To_Person__c ),
+&quot; dedicated to &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Dedicated_To_Person__r.Id, Dedicated_To_Person__r.FirstName + &quot; &quot; + Dedicated_To_Person__r.LastName) , &quot;&quot;))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Posting Details</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

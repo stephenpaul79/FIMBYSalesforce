@@ -1,0 +1,57 @@
+<template>
+    <div class="fimby-bottom-nav">
+        <div class="nav-container">
+            <!-- Home -->
+            <button type="button" class={homeItemClass} onclick={handleNavClick} data-tab="home" aria-label="Home">
+                <span class="nav-icon">
+                    <img src={homeIconUrl} alt="" class="nav-icon-img" />
+                </span>
+                <span class="nav-label">Home</span>
+                <span class={homeIndicator}></span>
+            </button>
+
+            <!-- Library -->
+            <button type="button" class={libraryItemClass} onclick={handleNavClick} data-tab="library" aria-label="Library">
+                <span class="nav-icon">
+                    <img src={libraryIconUrl} alt="" class="nav-icon-img" />
+                </span>
+                <span class="nav-label">Library</span>
+                <span class={libraryIndicator}></span>
+            </button>
+
+            <!-- Create [+] -->
+            <button type="button" class="nav-item create-item" onclick={handleCreateClick} data-tab="create" aria-label="Create new post">
+                <span class="create-button">
+                    <img src={createIconUrl} alt="" class="create-icon-img" />
+                </span>
+            </button>
+
+            <!-- Messages -->
+            <button type="button" class={messagesItemClass} onclick={handleNavClick} data-tab="messages" aria-label={messagesAriaLabel}>
+                <span class="nav-icon">
+                    <img src={messagesIconUrl} alt="" class="nav-icon-img" />
+                    <template lwc:if={hasUnreadMessages}>
+                        <span class="nav-count-badge" aria-hidden="true">{messageBadgeLabel}</span>
+                    </template>
+                </span>
+                <span class="nav-label">Messages</span>
+                <span class={messagesIndicator}></span>
+            </button>
+
+            <!-- My Stuff -->
+            <button type="button" class={mineItemClass} onclick={handleNavClick} data-tab="mine" aria-label="My Stuff">
+                <span class="nav-icon">
+                    <img src={mineIconUrl} alt="" class="nav-icon-img" />
+                </span>
+                <span class="nav-label">My Stuff</span>
+                <span class={mineIndicator}></span>
+            </button>
+        </div>
+
+        <!-- Quick Post Modal -->
+        <c-fimby-quick-post-form
+            is-modal="true"
+            onclose={handleQuickPostClose}>
+        </c-fimby-quick-post-form>
+    </div>
+</template>

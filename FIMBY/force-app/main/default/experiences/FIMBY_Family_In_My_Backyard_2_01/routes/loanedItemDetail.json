@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "8d1b799d-8c7e-46d8-88aa-acf53308a5ff",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Loaned_Item_Detail__c",
+  "id" : "69681602-284a-449f-8734-e40efc3f5b23",
+  "label" : "Loaned Item Detail",
+  "objectApiName" : "Loaned_Item__c",
+  "routeType" : "detail-a1L",
+  "type" : "route",
+  "urlPrefix" : "loaned-item"
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HomePageComponent xmlns="http://soap.sforce.com/2006/04/metadata">
+    <links>NPBP_NPSP_3_0_Documentation</links>
+    <links>NPBP_NPSP_Power_of_Us</links>
+    <links>NPBP_NPSP_Release_Announcements</links>
+    <links>NPBP_NPSP_Starter_Pack_Workbook</links>
+    <pageComponentType>links</pageComponentType>
+</HomePageComponent>

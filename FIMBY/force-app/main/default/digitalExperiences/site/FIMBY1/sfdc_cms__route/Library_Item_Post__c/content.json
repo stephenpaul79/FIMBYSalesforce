@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Library Item Post",
+  "contentBody" : {
+    "activeViewId" : "Library_Item_Post",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-library-item-post",
+    "urlPrefix" : "library-item-post"
+  },
+  "urlName" : "library-item-post"
+}

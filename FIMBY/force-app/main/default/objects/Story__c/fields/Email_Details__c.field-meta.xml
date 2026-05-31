@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Details__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(ISBLANK(Posted_For_Organization__c) &amp;&amp; ISBLANK(Posted_For_Person__c),
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName) + &quot; posted a &quot; + LOWER(TEXT(Type__c)) + &quot; for you.&quot; ,
+
+IF(!ISBLANK(Posted_For_Organization__c),
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName) + &quot; posted a &quot; + LOWER(TEXT(Type__c)) + &quot; for you on behalf of &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/detail/&quot; + Posted_For_Organization__r.Id, Posted_For_Organization__r.Name)+&quot;.&quot; ,
+
+IF(!ISBLANK(Posted_For_Person__c),
+HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_By__r.Id, Posted_By__r.FirstName + &quot; &quot; + Posted_By__r.LastName) + &quot; posted a &quot; + LOWER(TEXT(Type__c)) + &quot; for you on behalf of &quot; + HYPERLINK(&quot;https://fimby.my.site.com/s/contact/&quot;+ Posted_For_Person__r.Id, Posted_For_Person__r.FirstName + &quot; &quot; + Posted_For_Person__r.LastName)+ &quot;.&quot; , &quot;&quot;)))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Email Details</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

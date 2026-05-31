@@ -1,0 +1,44 @@
+{
+  "site_name": "FIMBY",
+  "site_description": "A tool for knowing and loving the Christian neighbours in your parish.",
+  "site_url": "https://fimby.com",
+  "home_url": "https://fimby.com",
+  "language": "en-CA",
+  "wordpress_version": "6.9.4",
+  "php_version": "8.2.30",
+  "mysql_version": "8.0.37",
+  "is_multisite": false,
+  "page_builder": "Gutenberg (core 6.9.4)",
+  "active_theme": {
+    "name": "Twenty Twenty-Two",
+    "version": "2.1",
+    "template": "twentytwentytwo"
+  },
+  "active_plugins": [
+    { "name": "All in One SEO", "version": "4.9.5.1" },
+    { "name": "CoBlocks", "version": "3.1.17" },
+    { "name": "Redirection", "version": "5.7.5" },
+    { "name": "Respira for WordPress", "version": "5.0.1" }
+  ],
+  "pages": {
+    "published": [
+      { "id": 26,  "title": "Family In My Backyard", "slug": "family-in-my-backyard", "url": "/", "file": "pages/home.md" },
+      { "id": 30,  "title": "How It Works", "slug": "how-it-works", "url": "/family-in-my-backyard/how-it-works/", "file": "pages/how-it-works.md" },
+      { "id": 431, "title": "Our Approach", "slug": "our-approach", "url": "/family-in-my-backyard/our-approach/", "file": "pages/our-approach.md" },
+      { "id": 59,  "title": "Frequently Asked Questions (FAQ)", "slug": "faq", "url": "/family-in-my-backyard/faq/", "file": "pages/faq.md" },
+      { "id": 210, "title": "Contact", "slug": "contact-us", "url": "/family-in-my-backyard/contact-us/", "file": "pages/contact-us.md" }
+    ],
+    "drafts": [
+      { "id": 568, "title": "Vision", "slug": "vision", "file": "pages/vision.md" },
+      { "id": 2,   "title": "Mission, Vision, Values", "slug": "values", "file": "pages/values.md" },
+      { "id": 103, "title": "Theology Behind FIMBY", "slug": "theology-behind-fimby", "file": "pages/drafts/theology.md" }
+    ]
+  },
+  "posts": [],
+  "menus": [],
+  "social": {
+    "facebook": "https://www.facebook.com/profile.php?id=100083517094655",
+    "instagram": "https://www.instagram.com/fimby.family/"
+  },
+  "snapshot_date": "2026-03-28"
+}

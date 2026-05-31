@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "55e502a2-afb8-4478-9b53-37455753b23e",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Responses_and_Replies__c",
+  "id" : "322a8c92-e9bd-4cc4-8d99-b7bcd67e27f5",
+  "label" : "Responses and Replies",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-responses-and-replies",
+  "type" : "route",
+  "urlPrefix" : "responses-and-replies"
+}

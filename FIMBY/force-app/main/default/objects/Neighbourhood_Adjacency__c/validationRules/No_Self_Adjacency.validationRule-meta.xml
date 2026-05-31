@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>No_Self_Adjacency</fullName>
+    <active>true</active>
+    <description>A neighbourhood cannot be adjacent to itself.</description>
+    <errorConditionFormula>Core_Neighbourhood__c = Adjacent_Neighbour__c</errorConditionFormula>
+    <errorDisplayField>Adjacent_Neighbour__c</errorDisplayField>
+    <errorMessage>A neighbourhood cannot be adjacent to itself. Please select a different neighbourhood.</errorMessage>
+</ValidationRule>

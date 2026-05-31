@@ -1,0 +1,450 @@
+:host {
+    display: block;
+}
+
+/* ── Panel Body ──────────────────────────────── */
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Info Card ───────────────────────────────── */
+
+.info-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    font-weight: 600;
+}
+
+/* ── User Row ────────────────────────────────── */
+
+.user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-photo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* ── Block Badge (Tier 3 — decorative) ───────── */
+
+.block-badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: var(--fimby-badge-padding, 3px 10px);
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+    border: 1px solid var(--fimby-error-border);
+}
+
+/* ── Block Indicator ─────────────────────────── */
+
+.block-indicator {
+    background-color: var(--fimby-error-tint);
+    border: 1px solid var(--fimby-error-border);
+    border-radius: var(--fimby-radius-md);
+    padding: 12px 16px;
+}
+
+.block-indicator-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fimby-error);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+}
+
+.block-indicator-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-primary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ── Timeline Section ────────────────────────── */
+
+.timeline-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 12px;
+}
+
+.timeline-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-entry {
+    display: flex;
+    gap: 12px;
+    padding: 0 0 16px;
+    position: relative;
+}
+
+.timeline-entry:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-entry:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 14px;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--fimby-divider-default);
+}
+
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--fimby-brand-teal);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.timeline-entry-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.timeline-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.timeline-date {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.timeline-notes {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    margin: 4px 0 0;
+    line-height: 1.4;
+}
+
+/* ── Status Badges (Tier 3 — decorative) ────── */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.7rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: 1px 8px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    background-color: var(--fimby-info-tint);
+    color: var(--fimby-info);
+}
+
+.status-badge.warning {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-text-strong);
+}
+
+.status-badge.error {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+}
+
+.status-badge.success {
+    background-color: var(--fimby-success-tint);
+    color: var(--fimby-success);
+}
+
+.empty-text {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    font-style: italic;
+    margin: 0;
+}
+
+/* ── Panel Footer ────────────────────────────── */
+
+.panel-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.footer-contact-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.footer-escalation-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Buttons (Tier 1 — Action) ───────────────── */
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    min-height: 44px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn-action:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ── Contact buttons ─────────────────────────── */
+
+.btn-contact {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+    font-weight: 600;
+}
+
+.btn-contact:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.btn-contact:active {
+    transform: scale(0.97);
+}
+
+/* ── Escalation buttons (yellow → amber → red) ── */
+
+.btn-escalation-1 {
+    background-color: rgba(234, 179, 8, 0.12);
+    color: #92600a;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    font-weight: 600;
+}
+
+.btn-escalation-1:hover {
+    background-color: rgba(234, 179, 8, 0.22);
+    border-color: rgba(234, 179, 8, 0.5);
+}
+
+.btn-escalation-1:active {
+    transform: scale(0.97);
+}
+
+.btn-escalation-2 {
+    background-color: rgba(217, 119, 6, 0.12);
+    color: #7c4508;
+    border: 1px solid rgba(217, 119, 6, 0.35);
+    font-weight: 600;
+}
+
+.btn-escalation-2:hover {
+    background-color: rgba(217, 119, 6, 0.22);
+    border-color: rgba(217, 119, 6, 0.5);
+}
+
+.btn-escalation-2:active {
+    transform: scale(0.97);
+}
+
+.btn-escalation-3 {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+    border: 1px solid var(--fimby-error-border);
+    font-weight: 600;
+}
+
+.btn-escalation-3:hover {
+    background-color: rgba(192, 57, 43, 0.18);
+    border-color: var(--fimby-error);
+}
+
+.btn-escalation-3:active {
+    transform: scale(0.97);
+}
+
+.btn-link {
+    background-color: transparent;
+    color: var(--fimby-brand-teal);
+    font-weight: 600;
+    text-decoration: underline;
+    padding: 10px 12px;
+}
+
+.btn-link:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.btn-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ── Inline Form ────────────────────────────── */
+
+.inline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inline-form-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+}
+
+.character-count {
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary);
+}
+
+.character-count.near-limit {
+    color: #92600a;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error);
+    font-weight: 700;
+}
+
+.inline-form-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.inline-form-textarea:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow);
+}
+
+.inline-form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ── Reduced Motion ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-action {
+        transition: none;
+    }
+}

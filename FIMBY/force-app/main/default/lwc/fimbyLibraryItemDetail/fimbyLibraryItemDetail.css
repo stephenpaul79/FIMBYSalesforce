@@ -1,0 +1,932 @@
+/* ── Host ───────────────────────────────────────────────────────── */
+:host {
+    display: block;
+    width: 100%;
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-library-item-detail {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+/* ── Detail Content ─────────────────────────────────────────────── */
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.content-removed-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 32px 24px;
+    margin-top: 16px;
+}
+
+.content-removed-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.content-removed-message {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    max-width: 360px;
+    line-height: 1.5;
+}
+
+/* ── Item Card ──────────────────────────────────────────────────── */
+.item-card {
+    background-color: var(--fimby-surface-card);
+    box-shadow: var(--fimby-shadow-card);
+    border-radius: var(--fimby-radius-md);
+    overflow: hidden;
+}
+
+/* ── Card Layout (Quick Response 2-column pattern) ───────────── */
+.card-layout {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-left {
+    min-width: 0;
+}
+
+.card-left-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--fimby-surface-card);
+}
+
+.card-right {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-right-top {
+    flex: 1;
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Compact Header: title+meta left, owner right ────────────── */
+.post-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.post-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.item-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.poster-info-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.poster-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.poster-name {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--fimby-text-strong);
+    white-space: nowrap;
+}
+
+.post-meta {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+.post-type-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: middle;
+}
+.post-type-badge-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.post-type {
+    color: var(--fimby-info);
+    font-weight: 500;
+}
+
+.item-content {
+    padding: 8px 16px 12px;
+}
+
+.item-description {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ── Item Image ─────────────────────────────────────────────────── */
+.item-image-container {
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--fimby-surface-card);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Button reset for semantic <button> */
+button.item-image-container {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    width: 100%;
+    display: block;
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.image-overlay lightning-icon {
+    color: var(--fimby-text-on-teal);
+}
+
+.item-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fimby-surface-card);
+}
+
+.placeholder-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    opacity: 0.5;
+}
+
+.status-badge {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    background-color: var(--fimby-success-tint);
+    color: var(--fimby-success);
+    pointer-events: none;
+    user-select: none;
+}
+
+.status-badge[data-status="On Loan"],
+.status-badge[data-status="Unavailable"],
+.status-badge[data-status="Removed from Library"] {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
+}
+
+.status-badge[data-status="Reserved"] {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-warning);
+}
+
+.expiration {
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* ── Action Buttons ─────────────────────────────────────────────── */
+.item-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--fimby-border-subtle);
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    cursor: pointer;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.action-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.action-btn:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.action-btn.primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    font-weight: 700;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.action-btn.primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    border-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.action-btn.primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.action-btn.danger:hover {
+    background-color: var(--fimby-error-tint);
+}
+
+.action-btn.flag-btn {
+    color: var(--fimby-error);
+    border-color: var(--fimby-error-tint);
+    background-color: var(--fimby-surface-card);
+}
+
+.action-btn.flag-btn:hover {
+    background-color: var(--fimby-error-tint);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ── Info Sections ──────────────────────────────────────────────── */
+.info-section {
+    background-color: var(--fimby-surface-card);
+    padding: 16px;
+    margin: 8px 0 0;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 12px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+}
+
+.section-header-row .section-title {
+    margin: 0;
+}
+
+.section-close-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: var(--fimby-surface-section);
+    color: var(--fimby-text-secondary);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+
+.section-close-btn:hover {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+.section-close-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.photo-uploader-section {
+    margin-bottom: 12px;
+}
+
+.section-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ── Field Grid ────────────────────────────────────────────────── */
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.field-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.field-value {
+    font-size: 0.85rem;
+    color: var(--fimby-text-strong);
+}
+
+/* ── Delete Confirmation Modal ─────────────────────────────────── */
+.delete-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding-top: var(--fimby-modal-inset-top, 86px);
+}
+
+.delete-modal {
+    background-color: var(--fimby-surface-card);
+    padding: 32px;
+    border-radius: var(--fimby-radius-lg);
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.delete-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.delete-message {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn-neutral {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+
+.btn-neutral:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.btn-neutral:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn-danger {
+    background-color: var(--fimby-btn-danger-bg, #C0392B);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.btn-danger:hover {
+    background-color: var(--fimby-btn-danger-bg-hover, #A93226);
+}
+.btn-danger:active {
+    background-color: var(--fimby-btn-danger-bg-active, #922B21);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Image Modal ────────────────────────────────────────────────── */
+.image-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 44px; height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    transition: background 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.modal-image-container {
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    cursor: default;
+}
+
+/* ── Breakpoints (mobile-first) ─────────────────────────────────── */
+@media (min-width: 480px) {
+    .info-section {
+        padding: 20px;
+        margin: 12px 0 0;
+    }
+
+    .field-grid {
+        gap: 12px;
+    }
+
+    .field-label {
+        font-size: 0.75rem;
+    }
+
+    .field-value {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-library-item-detail {
+        padding: 0 24px 80px;
+    }
+
+    .item-card {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .card-left {
+        background-color: var(--fimby-surface-card);
+        border-radius: var(--fimby-radius-md);
+        box-shadow: var(--fimby-shadow-card);
+        overflow: hidden;
+    }
+
+    .card-right {
+        background-color: var(--fimby-surface-card);
+        border-radius: var(--fimby-radius-md);
+        box-shadow: var(--fimby-shadow-card);
+        overflow: hidden;
+    }
+
+    .info-section {
+        margin: 16px 0 0;
+    }
+
+    .card-layout-horizontal {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .card-layout-horizontal .card-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-height: 320px;
+    }
+
+    .card-layout-horizontal .card-right {
+        flex: 2;
+        align-self: stretch;
+    }
+
+    .card-layout-horizontal .item-image-container {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        padding: 0;
+        margin: 0 12px 12px;
+    }
+
+    .card-layout-horizontal .item-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--fimby-radius-md);
+    }
+
+    .card-layout-horizontal .item-placeholder {
+        flex: 1;
+        min-height: 0;
+        margin: 0 12px 12px;
+        border-radius: var(--fimby-radius-md);
+    }
+
+    .card-layout-horizontal .image-overlay {
+        border-radius: var(--fimby-radius-md);
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-library-item-detail {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-library-item-detail {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-bottom: 24px;
+    }
+}
+
+@media (hover: hover) {
+    .item-image-container:hover .image-overlay {
+        background: rgba(0,0,0,0.3);
+        opacity: 1;
+    }
+}
+
+/* ── Keyboard focus visibility ─────────────────────────────────── */
+.item-image-container:focus-visible,
+.action-btn:focus-visible,
+.btn-neutral:focus-visible,
+.btn-danger:focus-visible,
+.modal-close-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ── Requester Section (info-section card variant) ───────────── */
+.requester-section-warning {
+    background-color: var(--fimby-error-tint, #FDECEA);
+}
+
+/* ── CTA Attention Strip tiers ───────────────────────────────── */
+.cta-strip-urgent {
+    box-shadow: var(--fimby-shadow-card),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent-urgent, #E74C3C);
+}
+.cta-strip-strong {
+    background-color: var(--fimby-cta-strip-bg, #eaf6fa);
+    box-shadow: var(--fimby-shadow-card),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+}
+.cta-strip-subtle {
+    box-shadow: var(--fimby-shadow-card),
+                inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent, #3A7D8C);
+}
+
+.overdue-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background-color: var(--fimby-error, #C0392B);
+    color: #ffffff;
+    margin-bottom: 6px;
+}
+.banner-message {
+    margin: 0 0 8px 0;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: var(--fimby-text-primary, #4A3526);
+}
+.banner-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.banner-actions .action-btn {
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+/* ── Removal Modal ─────────────────────────────────────────────── */
+.remove-reason-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+.remove-reason-input:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+    border-color: transparent;
+}
+
+.btn-warning {
+    background-color: var(--fimby-warning, #E65100);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--fimby-radius-sm, 8px);
+    padding: 8px 20px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-warning:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Banner Cancel Button ──────────────────────────────────────── */
+.action-btn-muted {
+    color: var(--fimby-text-secondary, #8B7355);
+    background: none;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+}
+
+/* ── Borrower History ───────────────────────────────────────────── */
+.borrower-history-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+
+.borrower-history-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+}
+.borrower-history-item:last-child {
+    border-bottom: none;
+}
+
+.borrower-history-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.borrower-history-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.borrower-history-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.borrower-history-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.borrower-history-meta,
+.borrower-history-condition {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary, #8B7355);
+}
+
+.borrower-history-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.bh-msg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: var(--fimby-btn-radius, 12px);
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    min-height: 36px;
+    border: 1px solid var(--fimby-earth-teal, #448E9E);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-earth-teal, #448E9E);
+    font-family: inherit;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    transition: background-color 0.15s ease;
+}
+.bh-msg-btn:hover {
+    background-color: var(--fimby-selected-bg, rgba(103, 187, 210, 0.12));
+    text-decoration: none;
+}
+
+.bh-msg-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .borrower-history-row {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .borrower-history-user {
+        flex: 1;
+    }
+
+    .borrower-history-actions {
+        flex-direction: row;
+        align-items: center;
+        flex-shrink: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .action-btn,
+    .btn,
+    .modal-close-btn,
+    .section-close-btn,
+    .image-overlay {
+        transition: none;
+    }
+}

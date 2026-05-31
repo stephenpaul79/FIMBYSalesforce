@@ -1,0 +1,159 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-backdrop"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="vouching-required-title"
+             onclick={handleBackdrop}
+             onkeydown={handleKeydown}>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2 id="vouching-required-title" class="modal-title">
+                        <template lwc:if={isExplainer}>The lending library opens up soon</template>
+                        <template lwc:if={isForm}>Ask someone to vouch for you</template>
+                    </h2>
+                    <button type="button"
+                            class="close-btn"
+                            aria-label="Close"
+                            onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <template lwc:if={isBlockedByActingAs}>
+                        <div class="acting-as-block" role="alert">
+                            <lightning-icon icon-name="utility:info" size="small" alternative-text="Identity required"></lightning-icon>
+                            <p>{actingAsBlockMessage}</p>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isExplainer}>
+                        <div class="hero">
+                            <img src={saplingIconUrl} alt="" class="hero-icon">
+                        </div>
+                        <p class="explainer-body">
+                            FIMBY's lending library is for neighbours who have been welcomed in.
+                            A peer or a community group rep just needs to vouch for you.
+                        </p>
+                    </template>
+
+                    <template lwc:if={isForm}>
+                        <div class="hero">
+                            <img src={waveIconUrl} alt="" class="hero-icon">
+                        </div>
+                        <p class="form-intro">
+                            Pick a neighbour or community group who can vouch for you.
+                            They will see that you are asking them to vouch for you.
+                        </p>
+
+                        <div class="voucher-toggle" role="radiogroup" aria-label="Who can vouch for you?">
+                            <button type="button"
+                                    class={peerToggleClass}
+                                    role="radio"
+                                    aria-checked={isPeerType}
+                                    data-type="peer"
+                                    onclick={handleSelectType}>
+                                Neighbour
+                            </button>
+                            <button type="button"
+                                    class={cgToggleClass}
+                                    role="radio"
+                                    aria-checked={isCommunityGroupType}
+                                    data-type="community_group"
+                                    onclick={handleSelectType}>
+                                Community group
+                            </button>
+                        </div>
+
+                        <div class="voucher-lookup">
+                            <template lwc:if={selectedVoucher}>
+                                <div class="selected-pill">
+                                    <div class="selected-pill-text">
+                                        <span class="selected-pill-name">{selectedVoucher.name}</span>
+                                        <span class="selected-pill-subtitle">{selectedVoucher.subtitle}</span>
+                                    </div>
+                                    <button type="button"
+                                            class="pill-clear"
+                                            aria-label="Clear selection"
+                                            onclick={handleClearSelection}>&times;</button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <input type="text"
+                                       class="search-input"
+                                       placeholder={searchPlaceholder}
+                                       value={searchTerm}
+                                       oninput={handleSearchInput}
+                                       autocomplete="off"
+                                       aria-label="Search vouchers">
+                                <template lwc:if={showResults}>
+                                    <div class="search-results" role="listbox">
+                                        <template for:each={searchResults} for:item="result">
+                                            <button key={result.id}
+                                                    type="button"
+                                                    class="search-result-item"
+                                                    role="option"
+                                                    data-id={result.id}
+                                                    onclick={handleSelectResult}>
+                                                <span class="result-name">{result.name}</span>
+                                                <span class="result-subtitle">{result.subtitle}</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:if={showNoResults}>
+                                    <p class="no-results" role="status">No matches in your neighbourhood.</p>
+                                </template>
+                            </template>
+                        </div>
+
+                        <template lwc:if={submitMessage}>
+                            <p class="submit-message">{submitMessage}</p>
+                        </template>
+
+                        <template lwc:if={errorMessage}>
+                            <p class="modal-error" role="alert">{errorMessage}</p>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="modal-footer">
+                    <template lwc:if={isExplainer}>
+                        <button type="button"
+                                class="nav-btn nav-back"
+                                onclick={handleClose}>
+                            <span>Maybe later</span>
+                        </button>
+                        <button type="button"
+                                class="nav-btn nav-next"
+                                onclick={handleRequestVouchClick}
+                                disabled={isBlockedByActingAs}>
+                            <span>Request a vouch</span>
+                        </button>
+                    </template>
+                    <template lwc:if={isForm}>
+                        <button type="button"
+                                class="nav-btn nav-back"
+                                onclick={handleBackToExplainer}
+                                disabled={isSubmitting}>
+                            <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                            <span>Back</span>
+                        </button>
+                        <button type="button"
+                                class="nav-btn nav-next"
+                                onclick={handleSubmit}
+                                disabled={isSubmitDisabled}>
+                            <template lwc:if={isSubmitting}>
+                                <span>Sending...</span>
+                            </template>
+                            <template lwc:else>
+                                <span>Request vouch</span>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

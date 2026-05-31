@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reference_Contact__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description>The peer or CG rep being asked to vouch. In CG path this is the rep&apos;s real Contact, not the Organization Contact. Lookup (not MD) because Salesforce forbids two MD relationships from the same child object to the same parent.</description>
+    <label>Reference Contact</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Vouches as Reference</relationshipLabel>
+    <relationshipName>Vouches_As_Reference</relationshipName>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

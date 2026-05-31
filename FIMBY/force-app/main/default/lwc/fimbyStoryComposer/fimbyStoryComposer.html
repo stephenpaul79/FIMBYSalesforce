@@ -1,0 +1,171 @@
+<template>
+    <div class="fimby-story-composer">
+        <c-fimby-page-header
+            page-title="Share a Story"
+            parent-label="Shared Life"
+            parent-url="/">
+        </c-fimby-page-header>
+
+        <!-- Composer Form -->
+        <template lwc:if={showForm}>
+            <div class="composer-form">
+                <template lwc:if={showIdentityBanner}>
+                    <div class="posting-as">
+                        <img src={posterIconUrl} alt="" class="posting-as-icon">
+                        <span class="posting-as-label">Posting as:</span>
+                        <span class="posting-as-value">{actingAsName}</span>
+                    </div>
+                </template>
+
+                <!-- Choose Story Type Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={storyTypeIconUrl} alt="Post type" class="section-icon">
+                        Choose a Type
+                    </h3>
+
+                    <div class="story-types-grid">
+                        <template for:each={storyTypesList} for:item="type">
+                            <button
+                                key={type.value}
+                                type="button"
+                                class={type.cssClass}
+                                onclick={handleTypeSelection}
+                                aria-pressed={type.selected}
+                                data-type={type.value}>
+                                <img src={type.iconUrl} alt="" class="story-type-icon">
+                                <div class="story-type-details">
+                                    <div class="story-type-name">{type.label}</div>
+                                    <div class="story-type-desc">{type.description}</div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Story Details Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={storyDetailsIconUrl} alt="Details" class="section-icon">
+                        Details
+                    </h3>
+
+                    <!-- Title Input -->
+                    <div class="form-field">
+                        <div class="field-label-row">
+                            <label class="field-label" for="story-title">Title <abbr class="slds-required">*</abbr></label>
+                            <span class={titleCountClass}>{storyTitleCharacterCount}</span>
+                        </div>
+                        <lightning-input
+                            variant="label-hidden"
+                            id="story-title"
+                            placeholder="Give your story a title..."
+                            value={storyTitle}
+                            onchange={handleTitleChange}
+                            max-length="80"
+                            required>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="form-field">
+                        <div class="field-label-row">
+                            <label class="field-label" for="story-message">Your Message <abbr class="slds-required">*</abbr></label>
+                            <span class={messageCountClass}>{messageCharacterCount}</span>
+                        </div>
+                        <lightning-textarea
+                            variant="label-hidden"
+                            id="story-message"
+                            placeholder="Share your thoughts, experience, or a slice of life..."
+                            value={storyMessage}
+                            onchange={handleMessageChange}
+                            max-length="2000"
+                            required>
+                        </lightning-textarea>
+                    </div>
+                </div>
+
+                <!-- Posting Options Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={optionsIconUrl} alt="Options" class="section-icon">
+                        Posting Options
+                    </h3>
+
+                    <div class="form-field">
+                        <lightning-input
+                            type="checkbox"
+                            label="I'm okay with FIMBY reposting this on their social media (Facebook &amp; Instagram) to help spread the word about our neighbourhood."
+                            checked={shareOnSocial}
+                            onchange={handleShareOnSocialChange}>
+                        </lightning-input>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="submit-section">
+                    <lightning-button
+                        label={submitLabel}
+                        variant="brand"
+                        onclick={handlePost}
+                        disabled={isPostDisabled}
+                        class="submit-button">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Photo Upload Step (shown after submit, before success) -->
+        <template lwc:elseif={showPhotoStep}>
+            <div class="photo-step-screen">
+                <div class="photo-step-content">
+                    <h2 class="photo-step-title">Add a Photo</h2>
+                    <p class="photo-step-message">A photo helps your story come to life. You can always add one later.</p>
+
+                    <c-fimby-image-uploader
+                        record-id={createdStoryId}
+                        object-api-name="Story__c"
+                        label="Upload Photo"
+                        onimageuploaded={handlePhotoUploaded}>
+                    </c-fimby-image-uploader>
+
+                    <div class="photo-step-actions">
+                        <button class="btn btn-neutral" onclick={handleSkipPhoto}>
+                            Skip &amp; Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success Screen -->
+        <template lwc:elseif={showSuccess}>
+            <div class="success-screen">
+                <div class="success-content">
+                    <c-fimby-celebration action-type="story" preloaded-gif-url={_preloadedGifUrl}></c-fimby-celebration>
+
+                    <h2 class="success-title">Shared!</h2>
+                    <p class="success-message">Your post is now visible to your community.</p>
+
+                    <div class="success-actions">
+                        <lightning-button
+                            label="View Post"
+                            variant="brand"
+                            onclick={handleViewStory}
+                            class="action-button">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading Overlay -->
+        <template lwc:if={isPosting}>
+            <div class="loading-overlay">
+                <div class="loading-content">
+                    <c-fimby-loading-message context="posting" size="large"></c-fimby-loading-message>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

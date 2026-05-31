@@ -1,0 +1,268 @@
+<template>
+    <div class="fimby-neighbour-profile">
+        <c-fimby-page-header
+            page-title="Neighbour"
+            show-back="true"
+            menu-items={headerMenuItems}
+            onmenuaction={handleHeaderMenuAction}>
+        </c-fimby-page-header>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="neighbour" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:if={profile.contactId}>
+            <div class="detail-content">
+
+                <!-- ========== 1. IDENTITY CARD ========== -->
+                <div class="identity-card">
+                    <div class="avatar-section">
+                        <div class="avatar-wrapper">
+                            <template lwc:if={hasAvatar}>
+                                <img src={avatarUrl} alt={profile.fullName} class="profile-avatar">
+                            </template>
+                            <template lwc:else>
+                                <div class="avatar-initials">{initials}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="identity-info">
+                        <h1 class="identity-name">{profile.fullName}</h1>
+                        <template lwc:if={isProfileModerator}>
+                            <span class="moderator-badge">
+                                <img src={moderatorBadgeIconUrl} alt="" class="badge-icon-sm">
+                                Neighbourhood Moderator
+                            </span>
+                        </template>
+                        <p class="identity-pronouns">{displayPronouns}</p>
+                        <template lwc:if={profile.neighbourhood}>
+                            <p class="identity-meta">
+                                <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                {profile.neighbourhood}
+                            </p>
+                        </template>
+                        <template lwc:if={formattedMemberSince}>
+                            <p class="identity-meta">Member since {formattedMemberSince}</p>
+                        </template>
+                    </div>
+
+                    <template lwc:if={hasSharedContactInfo}>
+                        <div class="identity-actions">
+                            <button class="btn btn-primary message-btn" onclick={handleMessage}>
+                                <lightning-icon icon-name="utility:chat" size="xx-small"></lightning-icon>
+                                Message
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ========== BULK BUY TRUST INDICATOR ========== -->
+                <template lwc:if={completedBulkBuysText}>
+                    <div class="trust-indicator">
+                        <lightning-icon icon-name="utility:check" size="xx-small" variant="success"></lightning-icon>
+                        <span>{completedBulkBuysText}</span>
+                    </div>
+                </template>
+
+                <!-- ========== 2. CONTACT INFORMATION (shared only) ========== -->
+                <template lwc:if={hasSharedContactInfo}>
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={contactIconUrl} alt="" class="section-icon">
+                                Contact Information
+                            </h3>
+                        </div>
+                        <div class="field-grid">
+                            <template lwc:if={hasSharedEmail}>
+                                <div class="field-item">
+                                    <span class="field-label">Email</span>
+                                    <span class="field-value">
+                                        <a href={emailHref} class="contact-link">{sharedEmail}</a>
+                                    </span>
+                                </div>
+                            </template>
+                            <template lwc:if={hasSharedPhone}>
+                                <div class="field-item">
+                                    <span class="field-label">Phone</span>
+                                    <span class="field-value">
+                                        <a href={phoneHref} class="contact-link">{sharedPhone}</a>
+                                    </span>
+                                </div>
+                            </template>
+                            <template lwc:if={hasSharedAddress}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Address</span>
+                                    <span class="field-value">{sharedAddress}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="info-section info-section-muted">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={contactIconUrl} alt="" class="section-icon">
+                                Contact Information
+                            </h3>
+                        </div>
+                        <p class="empty-hint">This neighbour hasn't shared their contact details with you yet.</p>
+                    </div>
+                </template>
+
+                <!-- ========== 3. ABOUT ========== -->
+                <template lwc:if={hasAboutContent}>
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={aboutIconUrl} alt="" class="section-icon">
+                                About
+                            </h3>
+                        </div>
+                        <div class="field-grid">
+                            <template lwc:if={profile.aboutNeighbourhoodTenure}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">How long in the neighbourhood</span>
+                                    <span class="field-value">{profile.aboutNeighbourhoodTenure}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.aboutWhatBroughtYou}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">What brought them here</span>
+                                    <span class="field-value">{profile.aboutWhatBroughtYou}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.aboutLocalPlace}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">One local place they love</span>
+                                    <span class="field-value">{profile.aboutLocalPlace}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.aboutEnjoysDoing}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Something they enjoy doing</span>
+                                    <span class="field-value">{profile.aboutEnjoysDoing}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.aboutFunFact}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">One small thing about them</span>
+                                    <span class="field-value">{profile.aboutFunFact}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.languagesSpoken}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Languages Spoken</span>
+                                    <span class="field-value">{displayLanguages}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ========== 4. ACCESSIBILITY & AVAILABILITY ========== -->
+                <template lwc:if={hasAccessibilityContent}>
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={accessibilityIconUrl} alt="" class="section-icon">
+                                Accessibility &amp; Availability
+                            </h3>
+                        </div>
+                        <div class="field-grid">
+                            <template lwc:if={profile.accessibilityNotes}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Accessibility Notes</span>
+                                    <span class="field-value">{profile.accessibilityNotes}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.generalAvailability}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">General Availability</span>
+                                    <span class="field-value">{displayAvailability}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ========== 5. CARE PREFERENCES ========== -->
+                <template lwc:if={hasCareContent}>
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <img src={careIconUrl} alt="" class="section-icon">
+                                Care Preferences
+                            </h3>
+                        </div>
+                        <div class="field-grid">
+                            <template lwc:if={profile.careWelcomeSupport}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Welcome support</span>
+                                    <span class="field-value">{displayCareWelcome}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.careUnhelpfulThings}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Can feel unhelpful</span>
+                                    <span class="field-value">{displayCareUnhelpful}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.careHowToAsk}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">How to ask</span>
+                                    <span class="field-value">{profile.careHowToAsk}</span>
+                                </div>
+                            </template>
+                            <template lwc:if={profile.careHardNos}>
+                                <div class="field-item full-width">
+                                    <span class="field-label">Hard no's</span>
+                                    <span class="field-value">{profile.careHardNos}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Disclaimer -->
+                <p class="profile-disclaimer">Only sections completed by this neighbour are shown.</p>
+
+            </div>
+        </template>
+
+        <template lwc:if={showNotFound}>
+            <div class="empty-state">
+                <p>Neighbour not found. The link may be invalid or you may not have access.</p>
+                <button class="btn btn-neutral" onclick={handleBack}>Go Back</button>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Block confirmation modal -->
+        <template lwc:if={showBlockConfirm}>
+            <div class="block-overlay" role="dialog" aria-modal="true" aria-labelledby="block-title">
+                <div class="block-card">
+                    <h3 id="block-title" class="block-title">Block this neighbour?</h3>
+                    <p class="block-message">
+                        Blocking removes all visibility between you and this person. Neither of you will see each other's content or be able to message.
+                    </p>
+                    <div class="block-actions">
+                        <button class="btn btn-secondary" onclick={handleBlockCancel}>Cancel</button>
+                        <button class="btn btn-danger" onclick={handleBlockConfirm} disabled={isBlocking}>
+                            <template lwc:if={isBlocking}>Blocking...</template>
+                            <template lwc:else>Block</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

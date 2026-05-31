@@ -1,0 +1,369 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Modal Backdrop — starts below universal header */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Modal Container */
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-modal);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Header — warm surface tone */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-section);
+    color: var(--fimby-text-strong);
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--fimby-text-strong);
+}
+
+.modal-title-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.close-button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: var(--fimby-text-secondary);
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.close-button lightning-icon {
+    --lwc-colorTextIconDefault: var(--fimby-text-secondary);
+}
+
+/* Modal Body */
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 1rem;
+}
+
+.loading-text {
+    color: var(--fimby-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Error State */
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    gap: 1rem;
+    text-align: center;
+}
+
+.error-message {
+    color: var(--fimby-error);
+    font-size: 0.95rem;
+    margin: 0;
+    max-width: 400px;
+}
+
+.retry-button {
+    background: var(--fimby-brand-teal);
+    color: var(--fimby-text-on-teal);
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.retry-button:hover {
+    background: var(--fimby-brand-teal-hover);
+}
+
+/* Form Fields — single column mobile, two columns desktop */
+.form-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.field-container {
+    width: 100%;
+}
+
+.field-container lightning-input-field {
+    --slds-c-input-radius-border: var(--fimby-radius-sm);
+}
+
+/* Hidden submit button */
+.form-actions-hidden {
+    position: absolute;
+    left: -9999px;
+    visibility: hidden;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-section);
+}
+
+.cancel-button {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    padding: 0.625rem 1.25rem;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    min-height: 44px;
+}
+
+.cancel-button:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.cancel-button:active:not(:disabled) {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.save-button {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    padding: 0.625rem 1.5rem;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    min-width: 140px;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.save-button:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.save-button:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.save-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.save-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.save-button lightning-spinner {
+    --lwc-colorBackground: transparent;
+}
+
+/* Desktop: two-column form fields */
+@media (min-width: 768px) {
+    .form-fields {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Mobile Responsive — bottom sheet */
+@media (max-width: 480px) {
+    .modal-backdrop {
+        padding: 0;
+        padding-top: var(--fimby-header-height, 70px);
+        align-items: flex-end;
+    }
+
+    .modal-container {
+        max-width: 100%;
+        max-height: calc(100vh - var(--fimby-header-height, 70px));
+        max-height: calc(100dvh - var(--fimby-header-height, 70px));
+        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        animation: slideUpMobile 0.3s ease-out;
+    }
+
+    @keyframes slideUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: 1rem 1.25rem;
+    }
+
+    .modal-title {
+        font-size: 1.1rem;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.25rem;
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    .cancel-button,
+    .save-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Keyboard focus visibility */
+.close-button:focus-visible,
+.cancel-button:focus-visible,
+.save-button:focus-visible,
+.retry-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .retry-button,
+    .cancel-button,
+    .save-button {
+        transition: none !important;
+        animation: none !important;
+    }
+}

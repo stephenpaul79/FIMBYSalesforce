@@ -1,0 +1,63 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsTwoCol48Layout",
+  "dataProviders" : [ ],
+  "id" : "4831d2e5-1d36-4532-9194-6ad31abb98df",
+  "label" : "Sign Up",
+  "regions" : [ {
+    "id" : "e39b25eb-2931-40ca-b3ee-0ff6c455768a",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p><img class=\"sfdcCbImage\" src=\"{!contentAsset.VanSkyline_Grey11.1}\" alt=\"\"></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "5ed554a3-a023-476c-9e2f-1b7ca456c2b9",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "abf4b9a5-835c-4dc8-9c2d-7d2fb1c39505",
+    "regionName" : "sidebar",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"connect\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!connect}\"},{\"label\":\"e\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!e}\"},{\"label\":\"fn\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!fn}\"},{\"label\":\"ln\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!ln}\"}]",
+        "flowName" : "FIMBY_Public_Signup_Page"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "cddc8be9-f61c-4a16-9028-81f86e7cfdc2",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "ac31113a-0d18-4084-950c-a4916b928592",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "f36805c7-cfc5-41f6-8054-7265ee035c63",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "Request to join the FIMBY Family.",
+        "title" : "Sign Up"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "77ba9baa-12dd-44f7-b80e-021db0c8fee1",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "df26f41e-85a2-4ead-9a6d-7215f1b4cd93",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "j4VT9gTkExK6bVFxew1vr5HEnPe4os",
+  "type" : "view",
+  "viewType" : "custom-sign-up"
+}

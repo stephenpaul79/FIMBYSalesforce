@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Approved_Community_Group__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Admin-toggled approval gate for community groups. When checked, triggers auto-creation of Organization Contact.</description>
+    <label>Approved Community Group</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,277 @@
+<template>
+    <div class="fimby-response-reply">
+        <template lwc:if={showModal}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal-container" onclick={handleModalClick}>
+
+                    <!-- Loading State -->
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container">
+                            <c-fimby-loading-message context="messages" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Error: Not Authorized -->
+                    <template lwc:elseif={isNotAuthorized}>
+                        <div class="error-screen">
+                            <div class="modal-header">
+                                <h2 class="modal-title">Reply</h2>
+                                <button class="close-button" onclick={handleClose}>
+                                    <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="error-content">
+                                <p class="error-message warning">
+                                    <strong>You are not able to reply as this is not your response or post.</strong>
+                                </p>
+                                <p class="error-help">
+                                    Navigate to the <a href={needOfferUrl}><strong>Offer or Ask</strong></a> and create your own response.
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-primary" onclick={handleGoToResponse}>Back to Response</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Success: Confirmation Screen -->
+                    <template lwc:elseif={showConfirmation}>
+                        <div class="confirmation-screen">
+                            <div class="modal-header">
+                                <h2 class="modal-title">Reply Sent</h2>
+                                <button class="close-button" onclick={handleClose}>
+                                    <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="confirmation-content">
+                                <div class="success-icon">
+                                    <lightning-icon icon-name="utility:success" size="large" variant="success"></lightning-icon>
+                                </div>
+                                <p class="confirmation-message">Your reply has been sent!</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-primary" onclick={handleGoToResponse}>View Response</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Non-authorized errors that aren't "Not Authorized" render nothing (matches legacy behavior) -->
+                    <template lwc:elseif={hasError}></template>
+
+                    <!-- Main Form -->
+                    <template lwc:else>
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h2 class="modal-title">{modalTitle}</h2>
+                            <div class="modal-header-actions">
+                                <!-- A3: Block / Report kebab — opens the same combined modal
+                                     pattern fimbyConversationView and fimbyResponseThread use. -->
+                                <button class="menu-button"
+                                        type="button"
+                                        onclick={handleMenuClick}
+                                        title="Block or report"
+                                        aria-label="Block or report">
+                                    <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                                </button>
+                                <button class="close-button" onclick={handleClose} aria-label="Close">
+                                    <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Reply Form (Gathering and standard responses) -->
+                        <template lwc:if={isNonThreadedEvent}>
+                            <div class="non-threaded-notice" role="status">
+                                <p class="notice-text">{nonThreadedEventMessage}</p>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                        <div class="reply-form">
+                            <!-- Reply To Info -->
+                            <div class="reply-to-info">
+                                <p class="reply-to-label">Reply to <strong>{replyToName}</strong>:</p>
+                            </div>
+
+                            <template lwc:if={showIdentityBanner}>
+                                <div class="replying-as">
+                                    <template lwc:if={respondingAsAvatarUrl}>
+                                        <img src={respondingAsAvatarUrl} alt="" class="replying-as-avatar" />
+                                    </template>
+                                    <span class="replying-as-label">Replying as:</span>
+                                    <span class="replying-as-name">{respondingAsName}</span>
+                                </div>
+                            </template>
+
+                            <!-- Subject -->
+                            <div class="form-group">
+                                <div class="field-label-row">
+                                    <label class="form-label" for="subject">
+                                        Subject <span class="required">*</span>
+                                    </label>
+                                    <span class={subjectCountClass}>{subjectLength}/80</span>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="subject"
+                                    class="form-input"
+                                    value={subject}
+                                    oninput={handleSubjectChange}
+                                    maxlength="80"
+                                    placeholder="Enter a subject">
+                                <template lwc:if={subjectExceeded}>
+                                    <span class="error-text">Subject exceeds maximum length</span>
+                                </template>
+                            </div>
+
+                            <!-- Message -->
+                            <div class="form-group">
+                                <div class="field-label-row">
+                                    <label class="form-label" for="message">
+                                        Message <span class="required">*</span>
+                                    </label>
+                                    <span class={messageCountClass}>{messageLength}/255</span>
+                                </div>
+                                <textarea
+                                    id="message"
+                                    class="form-textarea"
+                                    value={message}
+                                    oninput={handleMessageChange}
+                                    rows="4"
+                                    maxlength="255"
+                                    placeholder="Enter your message"></textarea>
+                                <template lwc:if={messageExceeded}>
+                                    <span class="error-text">Messages have a max length of 255 characters.</span>
+                                </template>
+                            </div>
+
+                            <!-- Status Update (only for poster) -->
+                            <template lwc:if={showStatusUpdate}>
+                                <div class="form-group status-group">
+                                    <lightning-combobox
+                                        name="status"
+                                        label="Update Response Status"
+                                        value={selectedStatus}
+                                        options={statusOptions}
+                                        onchange={handleStatusChange}>
+                                    </lightning-combobox>
+                                </div>
+                            </template>
+
+                            <!-- Share Contact Info -->
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={shareContactInfo}
+                                        onchange={handleShareContactInfoChange}>
+                                    <span class="checkbox-text">Share Contact Info</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick={handleClose}>Cancel</button>
+                            <button
+                                class="btn-primary"
+                                onclick={handleSubmit}
+                                disabled={isFormInvalid}>
+                                <template lwc:if={isSubmitting}>
+                                    <lightning-spinner alternative-text="Posting..." size="small"></lightning-spinner>
+                                    Posting...
+                                </template>
+                                <template lwc:else>
+                                    Post
+                                </template>
+                            </button>
+                        </div>
+                        </template>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+
+        <!-- A3: Combined Block + optional Report modal — mirrors
+             fimbyConversationView. One submit lands through
+             FimbyConversationController.blockContact, which writes
+             Blocked_Contact__c and (when "Report" is checked) creates a
+             Moderator_Task__c via FimbyModeratorTaskService. -->
+        <template lwc:if={showBlockModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true"
+                     aria-labelledby="reply-block-modal-title">
+                <div class="slds-modal__container block-modal-container">
+                    <div class="block-modal-header">
+                        <h2 id="reply-block-modal-title" class="block-modal-title">Block {otherPartyFirstName}?</h2>
+                        <button class="modal-close-btn"
+                                type="button"
+                                onclick={handleCloseBlockModal}
+                                aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="block-modal-body">
+                        <p class="block-warning">
+                            You won't see each other's posts or messages. You can unblock {otherPartyFirstName} later in Settings.
+                        </p>
+
+                        <div class="block-field">
+                            <label class="block-label" for="reply-block-reason">Reason (optional)</label>
+                            <input type="text"
+                                   id="reply-block-reason"
+                                   class="block-input"
+                                   value={blockReason}
+                                   oninput={handleBlockReasonChange}
+                                   placeholder="What's prompting this?" />
+                        </div>
+
+                        <div class="report-toggle">
+                            <label class="report-label">
+                                <input type="checkbox"
+                                       checked={isReporting}
+                                       onchange={handleReportToggle} />
+                                Also report to moderators
+                            </label>
+                        </div>
+
+                        <template lwc:if={isReporting}>
+                            <div class="block-field">
+                                <label class="block-label" for="reply-block-report-details">Report details</label>
+                                <textarea id="reply-block-report-details"
+                                          class="report-textarea"
+                                          value={reportDetails}
+                                          oninput={handleReportDetailsChange}
+                                          placeholder="What happened? Moderators review every report within 24 hours."
+                                          rows="3"></textarea>
+                            </div>
+                        </template>
+
+                        <template lwc:if={blockError}>
+                            <p class="block-warning" role="alert" style="color: var(--fimby-error);">
+                                {blockError}
+                            </p>
+                        </template>
+                    </div>
+
+                    <div class="block-modal-footer">
+                        <button class="cancel-btn"
+                                type="button"
+                                onclick={handleCloseBlockModal}
+                                disabled={isBlockSubmitting}>
+                            Cancel
+                        </button>
+                        <button class="block-btn"
+                                type="button"
+                                onclick={handleConfirmBlock}
+                                disabled={isBlockSubmitDisabled}>
+                            <template lwc:if={isBlockSubmitting}>Blocking…</template>
+                            <template lwc:else>Block</template>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
+        </template>
+    </div>
+</template>

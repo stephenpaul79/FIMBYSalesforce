@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Need  Offer Detail",
+  "contentBody" : {
+    "activeViewId" : "Need_Offer_Detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "detail-Needs_Offers__c",
+    "urlPrefix" : "asks-offers"
+  },
+  "urlName" : "need-offer-detail"
+}

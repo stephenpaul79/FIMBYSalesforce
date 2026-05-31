@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>View_Post__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+!ISBLANK(Image_1_URL__c),
+HYPERLINK(
+&quot;/s/needs-offers/&quot; &amp; CASESAFEID(Id) &amp; &quot;/&quot;,
+IMAGE(
+Image_1_URL__c + $Organization.Id ,
+&quot;Image&quot;,(
+VALUE(LEFT(Image_1_Ratio__c, FIND(&quot;X&quot;, Image_1_Ratio__c) - 1))*0.5),
+(VALUE(RIGHT(Image_1_Ratio__c, LEN(Image_1_Ratio__c) - FIND(&quot;X&quot;, Image_1_Ratio__c)))*0.5)
+),
+&quot;_self&quot;
+),
+HYPERLINK(
+&quot;/s/needs-offers/&quot; &amp; CASESAFEID(Id) &amp; &quot;/&quot;,IMAGE(
+&quot;https://fimby.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_PNG&amp;versionId=068OL000009Oljm&amp;operationContext=DELIVERY&amp;contentId=05TOL00000C0Jmv&amp;page=0&amp;d=/a/OL000005Sw7r/OKDNFyj75aMsfE_GlPJ8TPNveNWr_59xEBJ8YWwQk0s&amp;oid=00D5f000006NDkr&quot;,
+&quot;Default image&quot;,
+100,
+100
+),
+&quot;_self&quot;
+)
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>View Post</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

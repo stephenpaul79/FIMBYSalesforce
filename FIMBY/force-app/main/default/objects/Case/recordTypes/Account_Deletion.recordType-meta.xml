@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account_Deletion</fullName>
+    <active>true</active>
+    <businessProcess>FIMBY_Account_Deletion_Process</businessProcess>
+    <description>Email-to-Case-driven account deletion requests. Cases of this type drive the FimbyDeletionController flow: verification email, CONFIRM DELETE / CANCEL parsing, 24-hour safeguard, and final enqueue of FimbyDeactivateUserQueueable.</description>
+    <label>Account Deletion</label>
+</RecordType>

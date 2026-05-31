@@ -1,0 +1,94 @@
+{
+    "content": [
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "welcome-to-fimby",
+            "body": {
+                "title": "Welcome to FIMBY!",
+                "body": "<p>FIMBY (<strong>Family In My Backyard</strong>) connects you with the people who live closest to you. Share stories, lend a hand, borrow what you need, and build real relationships with your neighbours.</p><p>Let us show you around so you can get the most out of your neighbourhood community.</p>",
+                "pageOrder": "010",
+                "slideOrder": "010",
+                "pageTitle": "Welcome"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "stories-feed",
+            "body": {
+                "title": "Your Neighbourhood Feed",
+                "body": "<p>The <strong>Stories</strong> tab is your neighbourhood\u2019s heartbeat. Here you will find:</p><ul><li>Updates and photos from neighbours</li><li>Local happenings and announcements</li><li>Conversations about life on your street</li></ul><p>Share a story of your own \u2013 introduce yourself, post a photo, or ask a question!</p>",
+                "pageOrder": "020",
+                "slideOrder": "010",
+                "pageTitle": "Stories"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "asks-and-offers-overview",
+            "body": {
+                "title": "Asks and Offers",
+                "body": "<p>Need something? Have something to share? The <strong>Asks and Offers</strong> board makes it easy to exchange goods, services, and event invitations with your neighbours.</p>",
+                "pageOrder": "030",
+                "slideOrder": "010",
+                "pageTitle": "Asks and Offers"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "asks-and-offers-goods",
+            "body": {
+                "title": "Share Goods",
+                "body": "<p>Post perishable or non-perishable items you would like to give away or that you are looking for. From extra garden produce to household items \u2013 one person\u2019s extra is another\u2019s treasure.</p>",
+                "pageOrder": "030",
+                "slideOrder": "020",
+                "pageTitle": "Asks and Offers"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "asks-and-offers-services",
+            "body": {
+                "title": "Offer or Request Help",
+                "body": "<p>Whether it is help moving furniture, a ride to an appointment, or tutoring \u2013 post a service ask or offer and connect with neighbours who can help.</p>",
+                "pageOrder": "030",
+                "slideOrder": "030",
+                "pageTitle": "Asks and Offers"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "library-feature",
+            "body": {
+                "title": "The Neighbourhood Library",
+                "body": "<p>Why buy when you can borrow? The <strong>Library</strong> is a shared lending shelf for your neighbourhood.</p><ul><li>Browse items your neighbours are willing to lend</li><li>Add your own items \u2013 tools, books, games, kitchen gear</li><li>Request to borrow with a single tap</li></ul><p>It saves money, reduces waste, and gives you a reason to meet the people next door.</p>",
+                "pageOrder": "040",
+                "slideOrder": "010",
+                "pageTitle": "Library"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "messaging-feature",
+            "body": {
+                "title": "Direct Messages",
+                "body": "<p>Have a private conversation with any neighbour using <strong>Messages</strong>. Coordinate a borrow, follow up on an offer, or just say hello.</p><p>Your messages are private \u2013 only you and the other person can see them.</p>",
+                "pageOrder": "050",
+                "slideOrder": "010",
+                "pageTitle": "Messages"
+            }
+        },
+        {
+            "type": "fimby_onboarding_slide",
+            "urlName": "your-profile-and-settings",
+            "body": {
+                "title": "Your Profile and Settings",
+                "body": "<p>Make FIMBY yours! From the menu you can:</p><ul><li>Update your <strong>profile</strong> \u2013 photo, bio, and care preferences</li><li>Adjust <strong>notification settings</strong> so you only hear about what matters to you</li><li>Visit <strong>Help and Support</strong> any time you need a hand</li></ul><p>You are all set! Go explore your neighbourhood. \ud83c\udfe1</p>",
+                "pageOrder": "060",
+                "slideOrder": "010",
+                "pageTitle": "You're All Set!",
+                "buttonLabel": "Explore FIMBY",
+                "buttonUrl": "/"
+            }
+        }
+    ]
+}

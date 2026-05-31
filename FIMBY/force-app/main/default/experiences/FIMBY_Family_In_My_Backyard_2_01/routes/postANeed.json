@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "7b9df9fb-98b8-4ae4-94cc-26e71984054c",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "PostNeed__c",
+  "id" : "85bf120b-20b0-4437-90c2-2d6f4b821515",
+  "label" : "Post A Need",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post-a-need",
+  "type" : "route",
+  "urlPrefix" : "post-a-need"
+}

@@ -1,0 +1,370 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+/* Report Content Modal - Centered Dialog */
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--fimby-scrim);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Centered Modal - stays centered on all screen sizes */
+.modal-backdrop.centered-modal {
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 40px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: scaleIn 0.2s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--fimby-text-primary);
+}
+
+.close-button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    color: var(--fimby-text-secondary);
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.modal-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.report-intro {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 20px;
+    line-height: 1.5;
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--fimby-error-tint);
+    border: 1px solid var(--fimby-error-tint);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-error);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.report-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.reason-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: var(--fimby-radius-sm);
+    transition: background 0.2s ease;
+}
+
+.reason-option:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.radio-input {
+    display: none;
+}
+
+.radio-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--fimby-border-default);
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+}
+
+.radio-input:checked + .radio-custom {
+    border-color: var(--fimby-brand-teal);
+}
+
+.radio-input:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 10px;
+    height: 10px;
+    background: var(--fimby-brand-teal);
+    border-radius: 50%;
+}
+
+.reason-text {
+    font-size: 15px;
+    color: var(--fimby-text-primary);
+}
+
+.additional-info {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.additional-info:focus-visible {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+}
+
+.modal-actions {
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-divider-default);
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.cancel-button,
+.submit-button {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.cancel-button {
+    background: transparent;
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.cancel-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.submit-button {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    min-height: 44px;
+    font-weight: 700;
+}
+
+.submit-button:disabled {
+    background-color: var(--fimby-border-strong);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.submit-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.submit-button:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.submit-button:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+/* Confirmation Screen */
+.confirmation-container {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.confirmation-icon {
+    width: 64px;
+    height: 64px;
+    background-color: var(--fimby-success-tint);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.confirmation-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 12px;
+}
+
+.confirmation-message {
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+
+.confirmation-note {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+}
+
+/* Mobile - Keep centered (not bottom sheet) */
+@media (max-width: 480px) {
+    .modal-backdrop {
+        padding: 16px;
+    }
+
+    .modal-container {
+        max-height: 90vh;
+    }
+}
+
+/* Keyboard focus visibility */
+.close-button:focus-visible,
+.reason-option:focus-visible,
+.cancel-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.need-help-link {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+    text-align: center;
+}
+
+.need-help-link:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.need-help-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .reason-option,
+    .radio-custom,
+    .additional-info,
+    .cancel-button,
+    .submit-button {
+        transition: none !important;
+        animation: none !important;
+    }
+}

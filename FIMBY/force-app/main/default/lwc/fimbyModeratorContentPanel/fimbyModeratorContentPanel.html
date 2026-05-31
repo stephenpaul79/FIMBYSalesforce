@@ -1,0 +1,90 @@
+<template>
+    <div class="panel-body">
+        <span class="record-type-badge">{panelData.recordType}</span>
+
+        <!-- Content preview card -->
+        <div class="content-card">
+            <h3 class="content-title">{panelData.contentTitle}</h3>
+            <div class="content-body-wrap">
+                <p class="body-text">{displayBody}</p>
+                <template lwc:if={isBodyLong}>
+                    <button class="read-more-btn" onclick={toggleReadMore}>
+                        {readMoreLabel}
+                    </button>
+                </template>
+            </div>
+            <template lwc:if={hasImages}>
+                <div class="image-grid">
+                    <template for:each={panelData.imageUrls} for:item="url" for:index="idx">
+                        <button key={url} class="image-thumb-btn" onclick={handleImageClick}
+                                data-index={idx} aria-label="View image">
+                            <img src={url} alt="Content image" class="image-thumb">
+                        </button>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Author info row -->
+        <div class="author-row">
+            <img src={authorPhoto} alt="" class="user-photo">
+            <div class="author-details">
+                <span class="user-name">{panelData.authorName}</span>
+                <span class="meta-text">{panelData.postDate}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <template lwc:if={isFormActive}>
+            <div class="inline-form">
+                <h4 class="inline-form-title">{formTitle}</h4>
+                <div class="field-label-row">
+                    <label for="form-note" class="field-label">Note</label>
+                    <span class={noteCountClass}>{noteLength}/500</span>
+                </div>
+                <textarea id="form-note" class="inline-form-textarea" value={formNote}
+                          oninput={handleFormNoteChange} maxlength="500" rows="4"
+                          placeholder={formPlaceholder}></textarea>
+                <div class="inline-form-actions">
+                    <button class={formConfirmClass} type="button" onclick={handleFormConfirm}>
+                        {formConfirmLabel}
+                    </button>
+                    <button class="btn-action btn-contact" type="button" onclick={handleFormCancel}>Cancel</button>
+                </div>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="footer-primary-group">
+                <button class="btn-action btn-primary" type="button" onclick={handleRepublish}>Republish</button>
+                <button class="btn-action btn-danger" type="button" onclick={handleKeepHidden}>Keep Hidden</button>
+            </div>
+            <div class="footer-contact-group">
+                <button class="btn-action btn-contact" type="button" onclick={handleContactAuthor}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Author</span>
+                </button>
+                <button class="btn-action btn-contact" type="button" onclick={handleContactReporter}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Reporter</span>
+                </button>
+            </div>
+            <div class="footer-escalation-group">
+                <button class="btn-action btn-escalation-1" type="button" onclick={handleCheckIn}>
+                    <img src={checkInIconUrl} alt="" class="btn-icon">
+                    <span>i. Send Check-In</span>
+                </button>
+                <button class="btn-action btn-escalation-2" type="button" onclick={handleRecordConcern}>
+                    <img src={dangerSignIconUrl} alt="" class="btn-icon">
+                    <span>ii. Record Concern</span>
+                </button>
+                <button class="btn-action btn-escalation-3" type="button" onclick={handleEscalate}>
+                    <img src={lifesaverIconUrl} alt="" class="btn-icon">
+                    <span>iii. Ask for Help</span>
+                </button>
+            </div>
+            <button class="btn-action btn-link" type="button" onclick={handleViewOriginal}>View Original Post</button>
+        </template>
+    </div>
+</template>

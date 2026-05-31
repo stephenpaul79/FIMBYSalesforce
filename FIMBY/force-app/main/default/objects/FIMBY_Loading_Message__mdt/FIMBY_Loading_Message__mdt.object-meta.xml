@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>FIMBY Loading Message</label>
+    <pluralLabel>FIMBY Loading Messages</pluralLabel>
+    <visibility>Public</visibility>
+    <description>Witty loading messages displayed while data loads in FIMBY. Grouped by context (home, library, search, etc.).</description>
+</CustomObject>

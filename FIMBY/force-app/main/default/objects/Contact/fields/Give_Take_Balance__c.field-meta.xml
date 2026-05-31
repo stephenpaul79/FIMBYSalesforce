@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Give_Take_Balance__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( Active_User__c =FALSE, &quot;Not a FIMBY User&quot;, 
+IF( LEFT(Household_Account__c ,15) =  LEFT($User.HouseholdID__c,15) ||  LEFT($User.ProfileId,15) = &quot;00e5f000002g3Zx&quot;,
+
+IF(Give_Take_Count__c  &lt;= -6, IMAGE(&quot;/resource/Impact_Icons/RedCircle.png&quot;,&quot;Red Light&quot;, 18,18) + &quot;  &quot; + IF(Give_Take_Count__c  &gt;= 0, &quot; &quot;,&quot;&quot;) + TEXT(Give_Take_Count__c),
+IF(Give_Take_Count__c  &lt; 0, IMAGE(&quot;/resource/Impact_Icons/YellowCircle.png&quot;,&quot;Yellow Light&quot;, 18,18)+ &quot;  &quot; + IF(Give_Take_Count__c  &gt;= 0, &quot; &quot;,&quot;&quot;) +TEXT(Give_Take_Count__c),
+IF(Give_Take_Count__c   &gt;= 0, IMAGE(&quot;/resource/Impact_Icons/GreenCircle.png&quot;,&quot;Green Light&quot;, 18,18)+ &quot;  &quot; + IF(Give_Take_Count__c  &gt;= 0, &quot; &quot;,&quot;&quot;) +TEXT(Give_Take_Count__c), &quot;&quot;))), &quot;&lt;Private&gt;&quot;))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText>The &apos;Give &amp; Receive Balance&apos; totals up all Posting &amp; Reponses you have made for yourself and others to help you know if you are giving and receiveing in equal measure.    Note: You can only see your own household&apos;s totals, no one else&apos;s.
+
+Calucation Process: Need Postings for your &apos;Self&apos; and accepted Responses to Offers for your &apos;Self&apos; decrease your total (Receiving) while all other Post and Response types (Giving) increase your total.</inlineHelpText>
+    <label>Give &amp; Receive Balance</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

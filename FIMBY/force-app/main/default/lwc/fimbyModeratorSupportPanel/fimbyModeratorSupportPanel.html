@@ -1,0 +1,145 @@
+<template>
+    <div class="panel-body">
+        <!-- Two-person card (both modes) -->
+        <div class="person-pair-card">
+            <div class="person-col">
+                <img src={helperPhoto} alt="" class="person-photo">
+                <span class="person-label">Helper</span>
+                <span class="person-name">{panelData.helperName}</span>
+            </div>
+            <div class="pair-connector">
+                <lightning-icon icon-name="utility:forward" size="x-small"></lightning-icon>
+            </div>
+            <div class="person-col">
+                <img src={subjectPhoto} alt="" class="person-photo">
+                <span class="person-label">Subject</span>
+                <span class="person-name">{panelData.subjectName}</span>
+            </div>
+        </div>
+
+        <!-- APPROVAL MODE -->
+        <template lwc:if={isApprovalMode}>
+            <!-- Prior revocation warning -->
+            <template lwc:if={panelData.hasPriorRevocation}>
+                <div class="warning-badge" role="alert">
+                    <img src={warningIconUrl} alt="" class="warning-icon">
+                    <span>Prior support relationship was revoked</span>
+                </div>
+            </template>
+
+            <!-- Relationship details -->
+            <div class="detail-card">
+                <div class="detail-row">
+                    <span class="detail-label">Relationship type</span>
+                    <span class="detail-value">{panelData.relationshipType}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Consent method</span>
+                    <span class="detail-value">{panelData.consentMethod}</span>
+                </div>
+                <template lwc:if={panelData.notes}>
+                    <div class="detail-row">
+                        <span class="detail-label">Notes</span>
+                        <span class="detail-value">{panelData.notes}</span>
+                    </div>
+                </template>
+                <div class="detail-row">
+                    <span class="detail-label">Submitted</span>
+                    <span class="detail-value">{panelData.submissionDate}</span>
+                </div>
+            </div>
+
+            <!-- Authorization document -->
+            <template lwc:if={panelData.authorizationImageUrl}>
+                <div class="auth-section">
+                    <span class="section-label">Authorization document</span>
+                    <button class="screenshot-btn" onclick={handleAuthImageClick}
+                            aria-label="View authorization document">
+                        <img src={panelData.authorizationImageUrl} alt="Authorization document"
+                             class="auth-thumb">
+                    </button>
+                </div>
+            </template>
+        </template>
+
+        <!-- CONCERN MODE -->
+        <template lwc:if={isConcernMode}>
+            <!-- Active relationship info -->
+            <template lwc:if={panelData.activeRelationship}>
+                <div class="detail-card">
+                    <div class="detail-row">
+                        <span class="detail-label">Active relationship</span>
+                        <span class="detail-value">{panelData.activeRelationship}</span>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Concern summary -->
+            <div class="concern-card">
+                <h4 class="concern-heading">Concern summary</h4>
+                <p class="concern-text">{panelData.concernSummary}</p>
+            </div>
+
+            <!-- Helper recent activity -->
+            <template lwc:if={hasRecentActivity}>
+                <div class="activity-section">
+                    <h4 class="section-heading">Recent activity as {panelData.subjectName}</h4>
+                    <ul class="activity-list">
+                        <template for:each={panelData.helperRecentActivity} for:item="item">
+                            <li key={item.id} class="activity-item">
+                                <span class="activity-type-badge">{item.type}</span>
+                                <span class="activity-summary">{item.summary}</span>
+                                <span class="activity-date">{item.date}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </template>
+        </template>
+    </div>
+
+    <!-- Footer actions: approval mode -->
+    <template lwc:if={isApprovalMode}>
+        <div class="panel-footer">
+            <div class="footer-actions">
+            <button class="btn-secondary" onclick={handleRequestMoreInfo}>
+                Request More Info
+            </button>
+            <button class="btn-secondary" onclick={handleContactSubject}>
+                Contact Subject
+            </button>
+            <button class="btn-danger" onclick={handleDecline}>
+                Decline
+            </button>
+            <button class="btn-success" onclick={handleApprove}>
+                Approve
+            </button>
+            <button class="btn-escalate" onclick={handleEscalate}>
+                <img src={lifesaverIconUrl} alt="" class="btn-icon">
+                <span>Ask for Help</span>
+            </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Footer actions: concern mode -->
+    <template lwc:if={isConcernMode}>
+        <div class="panel-footer">
+            <div class="footer-actions">
+            <button class="btn-secondary" onclick={handleNoAction}>
+                No Action Needed
+            </button>
+            <button class="btn-secondary" onclick={handleContactHelper}>
+                Contact Helper
+            </button>
+            <button class="btn-primary" onclick={handleWelfareCheck}>
+                Welfare Check
+            </button>
+            <button class="btn-urgent" onclick={handleEscalateUrgent}>
+                <img src={lifesaverIconUrl} alt="" class="btn-icon">
+                <span>Urgent: Ask for Help</span>
+            </button>
+            </div>
+        </div>
+    </template>
+</template>

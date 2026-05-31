@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All</fullName>
+    <columns>NAME</columns>
+    <columns>Need_Offer_Responded_To__c</columns>
+    <columns>Status__c</columns>
+    <columns>Contact__c</columns>
+    <columns>Sent_By_First_Name__c</columns>
+    <columns>Reply_To_Contact__c</columns>
+    <columns>Reply_To_First_Name__c</columns>
+    <columns>On_Behalf_Of_Contact__c</columns>
+    <columns>Response_Details__c</columns>
+    <columns>Response_Posting_Details__c</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <label>All</label>
+    <sharedTo>
+        <allInternalUsers></allInternalUsers>
+    </sharedTo>
+</ListView>

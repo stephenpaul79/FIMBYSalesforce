@@ -1,0 +1,71 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "effca9e3-d14d-4dfb-8a8c-c4e05af03c09",
+  "label" : "Our Story",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><strong style=\"font-size: 28px;\">Our Stories</strong></p>\n<p style=\"text-align: center;\">A place to share introductions, thank yous,</p>\n<p style=\"text-align: center;\">God stories, laments and prayers.</p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><a href=\"/s/post-a-story\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.PostStoryCirclepng.1}\" style=\"width: 83.4px; height: 83.4px;\"></a></p>\n<p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\"><br></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "c4db7e68-4984-4227-b277-7449590c87b8",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "0b104104-30e9-4cc5-9cfb-514d73421918",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "enableInlineEdit" : false,
+        "filterName" : "All",
+        "layout" : "FULL",
+        "pageSize" : 25,
+        "scope" : "Story__c",
+        "showActionBar" : false,
+        "showChartsPanel" : false,
+        "showDisplay" : "grid",
+        "showFilterPanel" : false,
+        "showImageIcon" : false,
+        "showManualRefreshButton" : false,
+        "showObjectName" : false,
+        "showPinnedList" : true,
+        "showSearchBar" : true
+      },
+      "componentName" : "forceCommunity:objectHome",
+      "id" : "8411fef1-72f8-4d35-9bb5-657dbae57a9d",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "f717c084-9d10-494d-9bb0-13aff8324fbd",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "3fde58e1-e0b3-4bc9-b2b4-e29896d045cd",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Stories"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "86a53a1c-172c-4e3d-9d22-942e1c4168e3",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "e9702ab3-c6df-4ae1-92b6-e4e073425963",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-our-story"
+}

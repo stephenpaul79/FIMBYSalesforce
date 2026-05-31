@@ -1,0 +1,2103 @@
+﻿sf :  ┬╗   Warning: @salesforce/cli update available from 2.96.4 to 2.134.6.
+At C:\Users\srathjen\AppData\Local\Temp\1\ps-script-36a0a6f3-84f7-4c4f-a766-2836951b53b4.ps1:86 char:9
++ $json = sf apex list log --json 2>&1; $json | Out-File -FilePath "log ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( ┬╗   Warning: ...6.4 to 2.134.6.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+{
+  "status": 0,
+  "result": [
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIApt2AH"
+      },
+      "Id": "07LOL00000FIApt2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 42323532,
+      "Location": "SystemLog",
+      "LogLength": 9887,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Push Batch 15",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:15:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAoH2AX"
+      },
+      "Id": "07LOL00000FIAoH2AX",
+      "Application": "Browser",
+      "DurationMilliseconds": 292,
+      "Location": "SystemLog",
+      "LogLength": 527,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:12:08+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAmf2AH"
+      },
+      "Id": "07LOL00000FIAmf2AH",
+      "Application": "Browser",
+      "DurationMilliseconds": 55,
+      "Location": "SystemLog",
+      "LogLength": 522,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:12:04+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAl32AH"
+      },
+      "Id": "07LOL00000FIAl32AH",
+      "Application": "Browser",
+      "DurationMilliseconds": 84,
+      "Location": "SystemLog",
+      "LogLength": 527,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:12:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI9ic2AD"
+      },
+      "Id": "07LOL00000FI9ic2AD",
+      "Application": "Browser",
+      "DurationMilliseconds": 80,
+      "Location": "SystemLog",
+      "LogLength": 527,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:11:57+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAjR2AX"
+      },
+      "Id": "07LOL00000FIAjR2AX",
+      "Application": "Browser",
+      "DurationMilliseconds": 323,
+      "Location": "SystemLog",
+      "LogLength": 535,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:11:53+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAhp2AH"
+      },
+      "Id": "07LOL00000FIAhp2AH",
+      "Application": "Browser",
+      "DurationMilliseconds": 73,
+      "Location": "SystemLog",
+      "LogLength": 527,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:11:49+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAgD2AX"
+      },
+      "Id": "07LOL00000FIAgD2AX",
+      "Application": "Browser",
+      "DurationMilliseconds": 97,
+      "Location": "SystemLog",
+      "LogLength": 535,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/changemgmt/monitorDeployment.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T23:11:46+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAeb2AH"
+      },
+      "Id": "07LOL00000FIAeb2AH",
+      "Application": "Browser",
+      "DurationMilliseconds": 62562,
+      "Location": "SystemLog",
+      "LogLength": 2066592,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "Async Metadata",
+      "Request": "Api",
+      "StartTime": "2026-05-20T23:10:58+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIAMr2AP"
+      },
+      "Id": "07LOL00000FIAMr2AP",
+      "Application": "Unknown",
+      "DurationMilliseconds": 38764708,
+      "Location": "SystemLog",
+      "LogLength": 9870,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Push Batch 15",
+      "Request": "Application",
+      "StartTime": "2026-05-20T22:15:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI9H92AL"
+      },
+      "Id": "07LOL00000FI9H92AL",
+      "Application": "Browser",
+      "DurationMilliseconds": 182,
+      "Location": "SystemLog",
+      "LogLength": 26893,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "Platform Event Trigger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T22:14:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FIALF2A5"
+      },
+      "Id": "07LOL00000FIALF2A5",
+      "Application": "Browser",
+      "DurationMilliseconds": 2351,
+      "Location": "SystemLog",
+      "LogLength": 535,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/udd/Profile/editProfile.apexp",
+      "Request": "Application",
+      "StartTime": "2026-05-20T22:14:37+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI5Wr2AL"
+      },
+      "Id": "07LOL00000FI5Wr2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 4075,
+      "Location": "SystemLog",
+      "LogLength": 93152,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:25:05+0000",
+      "Status": "Assertion Failed: Reactivation email should fire exactly once for a valid in-grace contact: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI5Gj2AL"
+      },
+      "Id": "07LOL00000FI5Gj2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 7473,
+      "Location": "SystemLog",
+      "LogLength": 93219,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:23:43+0000",
+      "Status": "Assertion Failed: Reactivation email should fire exactly once for a valid in-grace contact: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI53p2AD"
+      },
+      "Id": "07LOL00000FI53p2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 3342,
+      "Location": "SystemLog",
+      "LogLength": 92693,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:21:32+0000",
+      "Status": "Assertion Failed: Reactivation email should fire exactly once for a valid in-grace contact: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI52D2AT"
+      },
+      "Id": "07LOL00000FI52D2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 7571,
+      "Location": "SystemLog",
+      "LogLength": 92914,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:21:17+0000",
+      "Status": "Assertion Failed: Reactivation email should fire exactly once for a valid in-grace contact: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI4qv2AD"
+      },
+      "Id": "07LOL00000FI4qv2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 2405,
+      "Location": "SystemLog",
+      "LogLength": 86971,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:18:41+0000",
+      "Status": "Assertion Failed: Contact lookup should match. linkedContactId=[0035f000008pLQKAA2] pausedContactId=[003OL00000uzJqHYAU] sameContact=false totalContactsInOrg=1: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHTPy2AP"
+      },
+      "Id": "07LOL00000FHTPy2AP",
+      "Application": "Unknown",
+      "DurationMilliseconds": 8141,
+      "Location": "SystemLog",
+      "LogLength": 87189,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:17:51+0000",
+      "Status": "Assertion Failed: Contact lookup should match. linkedContactId=[0035f000008pLQKAA2] pausedContactId=[003OL00000uyzl8YAA] sameContact=false totalContactsInOrg=1: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI4nh2AD"
+      },
+      "Id": "07LOL00000FI4nh2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 6591,
+      "Location": "SystemLog",
+      "LogLength": 86541,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:16:29+0000",
+      "Status": "Assertion Failed: Contact lookup should match: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FI4cP2AT"
+      },
+      "Id": "07LOL00000FI4cP2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 5620,
+      "Location": "SystemLog",
+      "LogLength": 87326,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/runTestsSynchronous",
+      "Request": "Api",
+      "StartTime": "2026-05-20T21:13:26+0000",
+      "Status": "Assertion Failed: Reactivation email should fire exactly once for a valid in-grace contact: Expected: 1, Actual: 0"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHzzL2AT"
+      },
+      "Id": "07LOL00000FHzzL2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 323425485,
+      "Location": "SystemLog",
+      "LogLength": 9871,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Push Batch 45",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:45:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHBb82AH"
+      },
+      "Id": "07LOL00000FHBb82AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 29123437,
+      "Location": "SystemLog",
+      "LogLength": 9446,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Email Alert 35",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:35:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHuLJ2A1"
+      },
+      "Id": "07LOL00000FHuLJ2A1",
+      "Application": "Unknown",
+      "DurationMilliseconds": 28711754,
+      "Location": "SystemLog",
+      "LogLength": 9867,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Push Batch 30",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:30:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHpwj2AD"
+      },
+      "Id": "07LOL00000FHpwj2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 321925411,
+      "Location": "SystemLog",
+      "LogLength": 9447,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Email Alert 20",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:20:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHp8j2AD"
+      },
+      "Id": "07LOL00000FHp8j2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 27819652,
+      "Location": "SystemLog",
+      "LogLength": 9870,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Push Batch 15",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:15:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnyA2AT"
+      },
+      "Id": "07LOL00000FHnyA2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 251,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHQ3x2AH"
+      },
+      "Id": "07LOL00000FHQ3x2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 290,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHmu32AD"
+      },
+      "Id": "07LOL00000FHmu32AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 238,
+      "Location": "SystemLog",
+      "LogLength": 585,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHo1O2AT"
+      },
+      "Id": "07LOL00000FHo1O2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 251,
+      "Location": "SystemLog",
+      "LogLength": 575,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnzm2AD"
+      },
+      "Id": "07LOL00000FHnzm2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 404,
+      "Location": "SystemLog",
+      "LogLength": 557,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:44+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHny92AD"
+      },
+      "Id": "07LOL00000FHny92AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 91,
+      "Location": "SystemLog",
+      "LogLength": 4238,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHmu22AD"
+      },
+      "Id": "07LOL00000FHmu22AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 86,
+      "Location": "SystemLog",
+      "LogLength": 6324,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHo1N2AT"
+      },
+      "Id": "07LOL00000FHo1N2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 149,
+      "Location": "SystemLog",
+      "LogLength": 9988,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnzl2AD"
+      },
+      "Id": "07LOL00000FHnzl2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 104,
+      "Location": "SystemLog",
+      "LogLength": 2973,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHfqy2AD"
+      },
+      "Id": "07LOL00000FHfqy2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 175,
+      "Location": "SystemLog",
+      "LogLength": 587,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHfqx2AD"
+      },
+      "Id": "07LOL00000FHfqx2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 67,
+      "Location": "SystemLog",
+      "LogLength": 6080,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHQ3w2AH"
+      },
+      "Id": "07LOL00000FHQ3w2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 126,
+      "Location": "SystemLog",
+      "LogLength": 15287,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:43+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHffh2AD"
+      },
+      "Id": "07LOL00000FHffh2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 172,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHffg2AD"
+      },
+      "Id": "07LOL00000FHffg2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 82,
+      "Location": "SystemLog",
+      "LogLength": 11796,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHntJ2AT"
+      },
+      "Id": "07LOL00000FHntJ2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 74,
+      "Location": "SystemLog",
+      "LogLength": 26593,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHntK2AT"
+      },
+      "Id": "07LOL00000FHntK2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 169,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnuv2AD"
+      },
+      "Id": "07LOL00000FHnuv2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 135,
+      "Location": "SystemLog",
+      "LogLength": 15309,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnuw2AD"
+      },
+      "Id": "07LOL00000FHnuw2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 297,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnwX2AT"
+      },
+      "Id": "07LOL00000FHnwX2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 329,
+      "Location": "SystemLog",
+      "LogLength": 594966,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnwY2AT"
+      },
+      "Id": "07LOL00000FHnwY2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 518,
+      "Location": "SystemLog",
+      "LogLength": 1021,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:33+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHmxG2AT"
+      },
+      "Id": "07LOL00000FHmxG2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 53,
+      "Location": "SystemLog",
+      "LogLength": 2973,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnmr2AD"
+      },
+      "Id": "07LOL00000FHnmr2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 55,
+      "Location": "SystemLog",
+      "LogLength": 4242,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnms2AD"
+      },
+      "Id": "07LOL00000FHnms2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 168,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnoT2AT"
+      },
+      "Id": "07LOL00000FHnoT2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 126,
+      "Location": "SystemLog",
+      "LogLength": 9957,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnoU2AT"
+      },
+      "Id": "07LOL00000FHnoU2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 286,
+      "Location": "SystemLog",
+      "LogLength": 575,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnq52AD"
+      },
+      "Id": "07LOL00000FHnq52AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 112,
+      "Location": "SystemLog",
+      "LogLength": 15260,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnq62AD"
+      },
+      "Id": "07LOL00000FHnq62AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 272,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnrh2AD"
+      },
+      "Id": "07LOL00000FHnrh2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 146,
+      "Location": "SystemLog",
+      "LogLength": 34658,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnri2AD"
+      },
+      "Id": "07LOL00000FHnri2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 302,
+      "Location": "SystemLog",
+      "LogLength": 569,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHSbz2AH"
+      },
+      "Id": "07LOL00000FHSbz2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 83,
+      "Location": "SystemLog",
+      "LogLength": 6324,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHSc02AH"
+      },
+      "Id": "07LOL00000FHSc02AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 202,
+      "Location": "SystemLog",
+      "LogLength": 585,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHkLz2AL"
+      },
+      "Id": "07LOL00000FHkLz2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 79,
+      "Location": "SystemLog",
+      "LogLength": 6084,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHmxH2AT"
+      },
+      "Id": "07LOL00000FHmxH2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 145,
+      "Location": "SystemLog",
+      "LogLength": 557,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHkM02AL"
+      },
+      "Id": "07LOL00000FHkM02AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 174,
+      "Location": "SystemLog",
+      "LogLength": 587,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:32+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHni12AD"
+      },
+      "Id": "07LOL00000FHni12AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 112102234,
+      "Location": "SystemLog",
+      "LogLength": 9461,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "FIMBY Email Alert 05",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:05:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHndB2AT"
+      },
+      "Id": "07LOL00000FHndB2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 103,
+      "Location": "SystemLog",
+      "LogLength": 9952,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHndC2AT"
+      },
+      "Id": "07LOL00000FHndC2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 265,
+      "Location": "SystemLog",
+      "LogLength": 575,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnen2AD"
+      },
+      "Id": "07LOL00000FHnen2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 120,
+      "Location": "SystemLog",
+      "LogLength": 15287,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHneo2AD"
+      },
+      "Id": "07LOL00000FHneo2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 423,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHbYp2AL"
+      },
+      "Id": "07LOL00000FHbYp2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 259,
+      "Location": "SystemLog",
+      "LogLength": 585,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHetH2AT"
+      },
+      "Id": "07LOL00000FHetH2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 329,
+      "Location": "SystemLog",
+      "LogLength": 6138,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHetI2AT"
+      },
+      "Id": "07LOL00000FHetI2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 431,
+      "Location": "SystemLog",
+      "LogLength": 587,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHHwk2AH"
+      },
+      "Id": "07LOL00000FHHwk2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 262,
+      "Location": "SystemLog",
+      "LogLength": 557,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHHwj2AH"
+      },
+      "Id": "07LOL00000FHHwj2AH",
+      "Application": "Unknown",
+      "DurationMilliseconds": 97,
+      "Location": "SystemLog",
+      "LogLength": 2973,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnbZ2AT"
+      },
+      "Id": "07LOL00000FHnbZ2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 85,
+      "Location": "SystemLog",
+      "LogLength": 4242,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnba2AD"
+      },
+      "Id": "07LOL00000FHnba2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 184,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHbYo2AL"
+      },
+      "Id": "07LOL00000FHbYo2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 104,
+      "Location": "SystemLog",
+      "LogLength": 6324,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:29+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHFTU2A5"
+      },
+      "Id": "07LOL00000FHFTU2A5",
+      "Application": "Unknown",
+      "DurationMilliseconds": 692,
+      "Location": "SystemLog",
+      "LogLength": 1021,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:03+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHdvb2AD"
+      },
+      "Id": "07LOL00000FHdvb2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 250,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHdva2AD"
+      },
+      "Id": "07LOL00000FHdva2AD",
+      "Application": "Unknown",
+      "DurationMilliseconds": 131,
+      "Location": "SystemLog",
+      "LogLength": 15290,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnWj2AL"
+      },
+      "Id": "07LOL00000FHnWj2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 159,
+      "Location": "SystemLog",
+      "LogLength": 26630,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHFTT2A5"
+      },
+      "Id": "07LOL00000FHFTT2A5",
+      "Application": "Unknown",
+      "DurationMilliseconds": 516,
+      "Location": "SystemLog",
+      "LogLength": 596206,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnYM2A1"
+      },
+      "Id": "07LOL00000FHnYM2A1",
+      "Application": "Unknown",
+      "DurationMilliseconds": 306,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnWk2AL"
+      },
+      "Id": "07LOL00000FHnWk2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 278,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnYL2A1"
+      },
+      "Id": "07LOL00000FHnYL2A1",
+      "Application": "Unknown",
+      "DurationMilliseconds": 128,
+      "Location": "SystemLog",
+      "LogLength": 11794,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:02+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHJC82AP"
+      },
+      "Id": "07LOL00000FHJC82AP",
+      "Application": "Unknown",
+      "DurationMilliseconds": 234,
+      "Location": "SystemLog",
+      "LogLength": 569,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnRu2AL"
+      },
+      "Id": "07LOL00000FHnRu2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 256,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHh6P2AT"
+      },
+      "Id": "07LOL00000FHh6P2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 246,
+      "Location": "SystemLog",
+      "LogLength": 557,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnV82AL"
+      },
+      "Id": "07LOL00000FHnV82AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 326,
+      "Location": "SystemLog",
+      "LogLength": 587,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnTW2A1"
+      },
+      "Id": "07LOL00000FHnTW2A1",
+      "Application": "Unknown",
+      "DurationMilliseconds": 1064,
+      "Location": "SystemLog",
+      "LogLength": 563,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHhzF2AT"
+      },
+      "Id": "07LOL00000FHhzF2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 255,
+      "Location": "SystemLog",
+      "LogLength": 585,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHMYB2A5"
+      },
+      "Id": "07LOL00000FHMYB2A5",
+      "Application": "Unknown",
+      "DurationMilliseconds": 300,
+      "Location": "SystemLog",
+      "LogLength": 575,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:01+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnRt2AL"
+      },
+      "Id": "07LOL00000FHnRt2AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 137,
+      "Location": "SystemLog",
+      "LogLength": 15293,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Script-thrown exception"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHhzE2AT"
+      },
+      "Id": "07LOL00000FHhzE2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 134,
+      "Location": "SystemLog",
+      "LogLength": 6358,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHh6O2AT"
+      },
+      "Id": "07LOL00000FHh6O2AT",
+      "Application": "Unknown",
+      "DurationMilliseconds": 108,
+      "Location": "SystemLog",
+      "LogLength": 2976,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnTV2A1"
+      },
+      "Id": "07LOL00000FHnTV2A1",
+      "Application": "Unknown",
+      "DurationMilliseconds": 899,
+      "Location": "SystemLog",
+      "LogLength": 11824,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHJC72AP"
+      },
+      "Id": "07LOL00000FHJC72AP",
+      "Application": "Unknown",
+      "DurationMilliseconds": 114,
+      "Location": "SystemLog",
+      "LogLength": 34631,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHMYA2A5"
+      },
+      "Id": "07LOL00000FHMYA2A5",
+      "Application": "Unknown",
+      "DurationMilliseconds": 134,
+      "Location": "SystemLog",
+      "LogLength": 9955,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHnV72AL"
+      },
+      "Id": "07LOL00000FHnV72AL",
+      "Application": "Unknown",
+      "DurationMilliseconds": 151,
+      "Location": "SystemLog",
+      "LogLength": 6082,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "UniversalPerfLogger",
+      "Request": "Application",
+      "StartTime": "2026-05-20T19:04:00+0000",
+      "Status": "Success"
+    },
+    {
+      "attributes": {
+        "type": "ApexLog",
+        "url": "/services/data/v66.0/tooling/sobjects/ApexLog/07LOL00000FHZQY2A5"
+      },
+      "Id": "07LOL00000FHZQY2A5",
+      "Application": "Unknown",
+      "DurationMilliseconds": 565,
+      "Location": "SystemLog",
+      "LogLength": 3425,
+      "LogUser": {
+        "attributes": {
+          "type": "Name",
+          "url": "/services/data/v66.0/tooling/sobjects/User/0055f000005dZ1fAAE"
+        },
+        "Name": "FIMBY"
+      },
+      "Operation": "/services/data/v66.0/tooling/executeAnonymous/",
+      "Request": "Api",
+      "StartTime": "2026-05-20T19:03:37+0000",
+      "Status": "Success"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,136 @@
+<template>
+    <div class="fimby-help-page">
+        <c-fimby-page-header
+            page-title="Help & Support"
+            onback={handleBack}>
+        </c-fimby-page-header>
+
+        <div class="page-content">
+
+            <!-- Getting Started -->
+            <div class="help-section highlight-section">
+                <div class="section-icon-row">
+                    <img src={lightbulbIconUrl} alt="" class="section-icon">
+                    <h2 class="section-title">Getting Started</h2>
+                </div>
+                <p class="section-description">New here? Take a quick tour of what FIMBY has to offer.</p>
+                <button class="btn btn-primary" onclick={handleTakeTour}>
+                    <img src={walkthroughIconUrl} alt="" class="btn-icon">
+                    Take the Tour
+                </button>
+            </div>
+
+            <!-- About -->
+            <div class="help-section">
+                <h2 class="section-title">About FIMBY</h2>
+                <div class="link-grid">
+                    <button class="link-card" onclick={handleGoFimby}>
+                        <img src={fimbyLinkIconUrl} alt="" class="link-icon">
+                        <span class="link-label">FIMBY.com</span>
+                        <span class="link-hint">Our mission, vision, and values</span>
+                    </button>
+                    <button class="link-card" onclick={handleGoStrathcona}>
+                        <img src={svLinkIconUrl} alt="" class="link-icon">
+                        <span class="link-label">Strathcona Vineyard</span>
+                        <span class="link-hint">The sponsoring church behind FIMBY</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="help-section">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+
+                <template lwc:if={isLoadingFaq}>
+                    <div class="faq-loading">
+                        <lightning-spinner alternative-text="Loading FAQ" size="small"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template lwc:if={hasFaqItems}>
+                    <div class="faq-list">
+                        <template for:each={faqItems} for:item="faq">
+                            <div key={faq.id} class="faq-item">
+                                <button class="faq-question" onclick={handleToggleFaq}
+                                        data-id={faq.id} aria-expanded={faq.expanded}>
+                                    <span>{faq.question}</span>
+                                    <lightning-icon icon-name={faq.chevronIcon} size="x-small"></lightning-icon>
+                                </button>
+                                <template lwc:if={faq.expanded}>
+                                    <div class="faq-answer">
+                                        <template lwc:if={faq.isRichText}>
+                                            <lightning-formatted-rich-text value={faq.answer}></lightning-formatted-rich-text>
+                                        </template>
+                                        <template lwc:else>
+                                            <p>{faq.answer}</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Your Neighbourhood Moderator -->
+            <template lwc:if={hasModerator}>
+                <div class="help-section moderator-section">
+                    <div class="section-icon-row">
+                        <img src={moderatorSectionIconUrl} alt="" class="section-icon">
+                        <h2 class="section-title">Your Neighbourhood Moderator</h2>
+                    </div>
+                    <div class="moderator-card">
+                        <img src={moderatorPhotoUrl} alt="" class="moderator-photo">
+                        <div class="moderator-info">
+                            <span class="moderator-name">{moderatorName}</span>
+                            <template lwc:if={moderatorPronouns}>
+                                <span class="moderator-pronouns">{moderatorPronouns}</span>
+                            </template>
+                            <span class="moderator-role">Neighbourhood Moderator</span>
+                        </div>
+                    </div>
+                    <p class="section-description">Your moderator helps keep the neighbourhood safe and welcoming. If you need support with something that affects the community, they're here to help.</p>
+                    <button class="btn btn-neutral" onclick={handleMessageModerator}>
+                        <img src={chatIconUrl} alt="" class="btn-icon">
+                        Message Your Moderator
+                    </button>
+                </div>
+            </template>
+
+            <!-- Community Guidelines & Safety -->
+            <div class="help-section">
+                <div class="section-icon-row">
+                    <img src={careIconUrl} alt="" class="section-icon">
+                    <h2 class="section-title">Community Guidelines &amp; Safety</h2>
+                </div>
+                <p class="section-description">How we treat each other on FIMBY, what isn't allowed, and how reports are handled. Reports are reviewed within 24 hours.</p>
+                <div class="safety-actions">
+                    <a href="/community-guidelines" class="btn btn-neutral">
+                        <img src={careIconUrl} alt="" class="btn-icon">
+                        Read the Guidelines
+                    </a>
+                    <a href="mailto:safety@fimby.ca" class="btn btn-neutral">
+                        <img src={emailIconUrl} alt="" class="btn-icon">
+                        Email Safety Team
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact Support -->
+            <div class="help-section">
+                <h2 class="section-title">Need More Help?</h2>
+                <p class="section-description">If you can't find what you're looking for, reach out to the FIMBY team.</p>
+                <a href="mailto:support@fimby.ca" class="btn btn-neutral">
+                    <img src={emailIconUrl} alt="" class="btn-icon">
+                    Contact Support
+                </a>
+            </div>
+
+        </div>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

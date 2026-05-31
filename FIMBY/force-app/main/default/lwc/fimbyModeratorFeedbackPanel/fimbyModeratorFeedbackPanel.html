@@ -1,0 +1,63 @@
+<template>
+    <div class="panel-body">
+        <!-- Type badge + title -->
+        <div class="title-row">
+            <span class={typeBadgeClass}>{panelData.type}</span>
+            <h3 class="feedback-title">{panelData.title}</h3>
+        </div>
+
+        <!-- Submitter -->
+        <div class="submitter-row">
+            <img src={submitterPhoto} alt="" class="submitter-photo">
+            <div class="submitter-info">
+                <span class="submitter-name">{panelData.submitterName}</span>
+                <span class="submitter-date">{panelData.date}</span>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="description-section">
+            <p class="description-text">{panelData.description}</p>
+        </div>
+
+        <!-- Screenshot -->
+        <template lwc:if={panelData.screenshotUrl}>
+            <div class="screenshot-section">
+                <button class="screenshot-btn" onclick={handleScreenshotClick}
+                        aria-label="View full screenshot">
+                    <img src={panelData.screenshotUrl} alt="Screenshot" class="screenshot-thumb">
+                </button>
+            </div>
+        </template>
+
+        <!-- Related record -->
+        <template lwc:if={panelData.relatedRecordLink}>
+            <a href={panelData.relatedRecordLink} class="related-link">
+                <img src={linkIconUrl} alt="" class="related-icon">
+                <span>View related record</span>
+            </a>
+        </template>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <div class="footer-actions">
+        <button class="btn-secondary" onclick={handleTriageTraining}>
+            Training Needed
+        </button>
+        <button class="btn-secondary" onclick={handleTriageEnhancement}>
+            Enhancement
+        </button>
+        <button class="btn-secondary" onclick={handleTriageNotActionable}>
+            Not Actionable
+        </button>
+        <button class="btn-primary" onclick={handleRespondToUser}>
+            Respond to User
+        </button>
+        <button class="btn-escalate" onclick={handleEscalate}>
+            <img src={lifesaverIconUrl} alt="" class="btn-icon">
+            <span>Send to Platform Team</span>
+        </button>
+        </div>
+    </div>
+</template>

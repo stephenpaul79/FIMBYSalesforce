@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FIMBY pre-auth preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root { font-family: 'Nunito', -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  button, a, p, div, span { font-family: inherit; }
+  body {
+    margin: 0;
+    background: #c9c4bc;
+    padding: 32px;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .row-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #222;
+    letter-spacing: 0.5px;
+    margin: 8px 0 16px;
+  }
+  .label {
+    text-align: center;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Phone frame ~ iPhone logical size 393 x 852 */
+  .phone {
+    width: 393px;
+    height: 852px;
+    border-radius: 44px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* container: flex column, paddingVertical 16 */
+  .screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    box-sizing: border-box;
+  }
+
+  /* three equal flex:1 regions, each centering its content */
+  .section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  .upper  { padding: 0 24px; }
+  .middle { padding: 0 32px; width: 100%; }
+  .lower  { padding: 0 32px; width: 100%; }
+
+  /* logo: 72% width, max 300, aspect 1024/358 */
+  .logo {
+    height: 104px;
+    width: auto;
+    max-width: 92%;
+    aspect-ratio: 1024 / 358;
+    object-fit: contain;
+    margin-bottom: 16px;
+  }
+
+  .tagline {
+    font-size: 17px;
+    line-height: 25px;
+    text-align: center;
+    padding: 0 16px;
+    margin: 0;
+  }
+
+  /* Sign In: filled teal #3A7D8C, white text */
+  .signin {
+    background: #3A7D8C;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
+    padding: 16px 48px;
+    border-radius: 12px;
+    min-width: 200px;
+    text-align: center;
+    border: none;
+  }
+
+  .status {
+    font-size: 15px;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  /* Sign Up: outline */
+  .signup {
+    border-width: 1.5px;
+    border-style: solid;
+    background: transparent;
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  /* footer Help . FAQ */
+  .footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 28px;
+  }
+  .footer a {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 10px 18px;
+    text-decoration: none;
+  }
+  .bullet { font-size: 16px; padding: 0 2px; }
+
+  /* ---- Light theme ---- */
+  .light .screen { background: #FAF7F2; }
+  .light .tagline,
+  .light .status,
+  .light .footer a,
+  .light .bullet { color: #8B7355; }
+  .light .signup { border-color: #4B3627; color: #4B3627; }
+
+  /* ---- Dark theme ---- */
+  .dark .screen { background: #14100D; }
+  .dark .tagline,
+  .dark .status,
+  .dark .footer a,
+  .dark .bullet { color: #D6CFC7; }
+  .dark .signup { border-color: #D6CFC7; color: #D6CFC7; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    // Hero logo swaps by device local time; background swaps by theme. Independent.
+    const TIMES = [
+      { key: "morning", label: "Morning (5:00-10:59)", logo: "FIMBYLogoTransparentLight.png" },
+      { key: "day",     label: "Day (11:00-18:59)",    logo: "FIMBYLogoTransparent.png" },
+      { key: "evening", label: "Evening (19:00-4:59)", logo: "FIMBYLogoTransparentDark.png" },
+    ];
+    const THEMES = [
+      { cls: "light", title: "Light background (cream)" },
+      { cls: "dark",  title: "Dark background (espresso)" },
+    ];
+
+    function frame(theme, t) {
+      return `
+        <div>
+          <div class="label">${t.label}</div>
+          <div class="phone ${theme.cls}">
+            <div class="screen">
+              <section class="section upper">
+                <img class="logo" src="./assets/images/${t.logo}" alt="FIMBY" />
+                <p class="tagline">Turning the place you live<br/>into a place you belong.</p>
+              </section>
+              <section class="section middle">
+                <button class="signin">Sign In</button>
+                <div class="status">Neighbours are waiting.</div>
+              </section>
+              <section class="section lower">
+                <button class="signup">Sign Up</button>
+                <div class="footer">
+                  <a href="#">HELP</a>
+                  <span class="bullet">&middot;</span>
+                  <a href="#">FAQ</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById("root").innerHTML = THEMES.map((theme) => `
+      <div class="row-title">${theme.title}</div>
+      <div class="row">${TIMES.map((t) => frame(theme, t)).join("")}</div>
+    `).join("");
+  </script>
+</body>
+</html>

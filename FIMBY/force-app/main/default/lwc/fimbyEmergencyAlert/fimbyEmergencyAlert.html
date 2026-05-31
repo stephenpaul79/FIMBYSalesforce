@@ -1,0 +1,16 @@
+<template>
+    <div class="fimby-emergency-alert">
+        <template lwc:if={showAlert}>
+            <div class="emergency-banner">
+                <lightning-icon icon-name="utility:warning" size="small" class="warning-icon"></lightning-icon>
+                <div class="alert-content">
+                    <div class="alert-title">Emergency Alert</div>
+                    <div class="alert-message">{alertMessage}</div>
+                </div>
+                <button class="dismiss-button" onclick={handleDismiss}>
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+            </div>
+        </template>
+    </div>
+</template>

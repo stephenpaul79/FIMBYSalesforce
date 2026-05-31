@@ -1,0 +1,62 @@
+---
+description: FIMBY core design principles — identity, privacy, trust, language, and tone
+alwaysApply: true
+---
+
+# FIMBY Core Principles
+
+FIMBY is built for neighbours who may be vulnerable, low-tech, or new to digital community. Every decision should serve **belonging over performance**, **dignity over efficiency**, **clarity over cleverness**.
+
+## Always Show Identity (Multi-Identity Users Only)
+
+Forms that create or modify records must call `getActingAsContact()` and display who the user is acting as: "Posting as:", "Responding as:", "Messaging as:", "Requesting as:". Never silently assume identity.
+
+The green identity banner is **gated on `hasMultipleIdentities`** — fetched via `getAvailableIdentities()` (`FimbySupportRelationshipController`). Users with a single identity never see the banner; users with switchable identities always see it (even when acting as themselves) so the represented identity is unambiguous on every submit.
+
+Canonical reference: `fimbyAskOfferComposer`. Copy the `.posting-as` markup and CSS (green `--fimby-success-tint` background, `border-left: 4px solid var(--fimby-success)`) inline into each form — do not share a child component for this.
+
+## Dual-Stamp Every Action
+
+Every record that captures an action must record both **who clicked** (`realContactId`) and **who it's for** (`actingAsContactId`). This is non-negotiable for safety, audit trails, and authorization dual-checks. See `fimby-architecture` rule for the per-object field mapping (Post Owner vs Submitted By, plus lending audit-trail fields `Requested_By_Real_Contact__c` and `Loaned_To_Real_Contact__c`).
+
+Resolve both IDs from `FimbyIdentityRepository` server-side; never trust a single ID from the client. Authorization checks must accept access via **either** path (real submitted it OR represented identity matches), or users acting on behalf of another identity will get false-deny errors.
+
+## Vouching Is Personal
+
+Vouching is a personal social signal — never an organizational one. All vouch actions (request, approve, decline, withdraw, revoke, override, re-enable) require the user be acting as **their own identity**. `FimbyVouchController.enforceOwnIdentityForVouching()` is the canonical server guard. Vouch modals also surface a friendly "switch back to yourself" blocker when `isActingAsSelf === false`.
+
+## Neighbourhood Is the Trust Boundary
+
+Everything is scoped to neighbourhood. Always stamp records with `Neighbourhood__c` and filter by `getNeighbourhoodId()`. Users must never encounter content from outside their neighbourhood.
+
+## Privacy as Consent
+
+- Care preferences: optional, editable, set during onboarding
+- Contact sharing: granular per-field, explicit preview, revocable
+- Blocking: bidirectional, never forces re-contact
+- Deactivation: right to be forgotten
+- Push notifications: quiet hours + per-category preferences
+
+## Language & Tone
+
+Non-punitive, warm, grounded. Like a neighbour over a fence, not a platform issuing instructions.
+
+| Instead of | Use |
+|-----------|-----|
+| Report / Flag / Violation | Check-in / Follow-up |
+| Escalate | Ask for Help |
+| Penalty / Consequence | Recorded in Bulk Buy History |
+| "You failed to..." | "Were you able to sort things out?" |
+| No-show | "No response was received" |
+
+Error states should be empathetic, not robotic. Loading messages use neighbourhood metaphors.
+
+## Whimsy With Purpose
+
+Celebrations and loading messages reinforce that small acts matter. Scale by occasion (first-time → bigger fanfare; milestones → ordinal labels). Always respect `prefers-reduced-motion`. Offer opt-out in Settings.
+
+## Build on What Exists
+
+Before creating new components, check reusable primitives (`fimbyCard`, `fimbyInfiniteScroll`, `fimbyResponsiveList`, `fimbyImageUploader`, `fimbyRecordEditModal`, etc.). See the `fimby-lwc-patterns` rule for the full list.
+
+> **Detailed patterns**: see `fimby-ui-patterns` rule (accessibility, forms, navigation, persona-first pages), `fimby-lwc-patterns` rule (technical component patterns), and `fimby-notification-patterns` rule (notification voice, title/body shape, actor + URL conventions, push payload metadata, when notifications fire vs. stay silent, and Vouch_* as system messages).

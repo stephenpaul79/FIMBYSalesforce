@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Active_Follow_Ups</fullName>
+    <columns>NAME</columns>
+    <columns>Reported_User__c</columns>
+    <columns>Reporter__c</columns>
+    <columns>Bulk_Buy__c</columns>
+    <columns>Status__c</columns>
+    <columns>Reason_Subtype__c</columns>
+    <columns>Reported_Date__c</columns>
+    <columns>Resolution_Date__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>notEqual</operation>
+        <value>Expired</value>
+    </filters>
+    <label>All Active Follow-Ups</label>
+    <language>en_US</language>
+</ListView>

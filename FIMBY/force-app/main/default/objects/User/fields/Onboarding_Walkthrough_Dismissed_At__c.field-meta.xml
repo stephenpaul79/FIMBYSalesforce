@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Onboarding_Walkthrough_Dismissed_At__c</fullName>
+    <description>Timestamp of the last temporary walkthrough dismissal. When the user clicks "Not now", this is set to the current time. If more than 12 hours have passed since this timestamp, the walkthrough is shown again on next login.</description>
+    <externalId>false</externalId>
+    <label>Onboarding Walkthrough Dismissed At</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>DateTime</type>
+</CustomField>

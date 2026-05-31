@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Image__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK(Image_URL__c),
+HYPERLINK(Image_URL__c,
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Rectangle (Tall)&quot; ),IMAGE(Image_URL__c, &quot;&quot;,198,132),
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Rectangle (Wide)&quot;),IMAGE(Image_URL__c, &quot;&quot;,132,198),
+IF(ISPICKVAL( Image_Dimensions__c, &quot;Square&quot; ), IMAGE(Image_URL__c, &quot;&quot;,200,200), &quot;&quot;)))),&quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Image</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

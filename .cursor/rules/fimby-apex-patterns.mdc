@@ -1,0 +1,113 @@
+---
+description: FIMBY Apex patterns — identity framework details, support relationships, privacy infrastructure, rate limits, data retention, and controller/service conventions
+globs: "**/*.cls,**/*.trigger"
+alwaysApply: false
+---
+
+# FIMBY Apex Patterns
+
+## Identity Framework Details
+
+`FimbyIdentityRepository` resolves identity per transaction:
+
+1. If `Logged_In_As_Contact__c` set + Approved `Support_Relationship__c` → use that Contact + its neighbourhood
+2. Otherwise → user's own Contact + `AccountId`
+
+Both `Logged_In_As_Contact__c` and `Logged_In_As_Neighbourhood__c` have Field History Tracking. Cache cleared via `FimbyIdentityRepository.clearCache()` + `sessionStorage` on switch.
+
+### Support Relationships (`Support_Relationship__c`)
+
+Master-detail → Contact (helper). Key fields:
+
+| Field | Purpose |
+|-------|---------|
+| `Contact__c` | Helper (master-detail) |
+| `Supported_Contact__c` | Person being supported (Lookup → Contact) |
+| `Organization__c` | Community group represented (Lookup → Account, Organization RT) |
+| `Neighbourhood__c` | Scope (required Lookup → Account) |
+| `Relationship_Type__c` | `Support_Person` or `Community_Group_Rep` |
+| `Status__c` | `Pending` → `Approved` → `Inactive` / `Revoked` |
+| `Consent_Method__c` | Verbal, Written, Guardian, Org_Admin |
+| `Authorization_Image_URL__c` | Uploaded auth letter |
+
+**Lifecycle**: Pending → admin approves → Approved. Deactivation → Inactive. Revocation → Revoked + clears `Logged_In_As_*` via `FimbySupportRelationshipQueueable`. No reactivation — must create new request.
+
+**Duplicate guard**: Before-insert trigger prevents duplicate Pending/Approved for same Contact + target + Neighbourhood + Type.
+
+**Push prefs**: `Push_Posts__c`, `Push_Messages__c`, `Push_Library__c` on relationship record.
+
+### Community Groups
+
+`Organization` Account RT with `Type = 'Community Group'`. Key Account fields: `Is_Approved_Community_Group__c`, `Organization_Contact__c` (Lookup → Contact), `Logo_URL__c`. `Community_Group_Neighbourhood__c` links org to neighbourhoods; `Is_Primary__c` designates primary (enforced). Organization Contact gets `AccountId` set to primary neighbourhood.
+
+## Privacy & Trust
+
+- **Contact sharing**: `Shared_Contact_Info__c` — granular per-field, explicit preview, revocable
+- **Blocking**: `Blocked_Contact__c` bidirectional — both lose visibility; unblock checks reverse blocks
+- **Deactivation**: Phase 1: `FimbyDeactivateUserQueueable` locks out. Phase 2: `FimbyAccountDeactivationBatch` (nightly) obfuscates/deletes/anonymizes
+- **Push notifications**: Humane Push two-gate doorbell model (see below)
+- **Care preferences**: structured support boundaries stored on Contact
+
+## Humane Push Notification System
+
+Push uses a **batched two-gate doorbell model**. Gate checks at notification creation time, batch dispatch every 15 minutes.
+
+### Two gates
+
+- **DM gate** (`Push_Messages__c`) — 1:1 DMs, response thread replies
+- **Activity gate** (`Push_Needs_Offers__c`) — RSVPs, event chat, bulk buy updates, library, stories, reminders
+
+A gate is **open** when: never pushed before, OR user logged in since last push, OR new calendar day (unless fatigue dampener active). Gate **closes** when push is delivered (Queueable stamps `Last_DM_Push_At__c` / `Last_Activity_Push_At__c`). One push per user per batch cycle max.
+
+### Adding a new notification type (wiring checklist)
+
+Every new notification type requires **all four** of these:
+
+1. **`FimbyConstants.cls`** — add `NOTIF_YOUR_TYPE` constant
+2. **`Notification__c Type__c` picklist** — add the value (restricted picklist)
+3. **`FimbyNotificationService.cls` `PUSH_TYPE_MAP`** — map constant → `NotificationType` enum (determines which gate: `MESSAGE` → DM gate, anything else → Activity gate)
+4. **`FimbyNotificationService.cls` `ACTION_VERB_MAP`** — add aggregation text (e.g., `'responded to your event'`)
+
+Missing any of these causes silent failures (notification created but never pushed, or aggregation text blank).
+
+### skipPush API
+
+Use the 9-param `createNotification()` overload with `skipPush = true` for in-app-only notifications that should never trigger a push (e.g., event withdrawals on popular events). The notification is visible in-app but `Push_Status__c` stays `null`.
+
+### Bulk vs single API
+
+Use `createNotifications(List<Notification__c>)` for multi-recipient scenarios (group chat messages, event reminders). The single `createNotification()` costs 2 SOQL per recipient (aggregation + user query); the bulk API uses 1 SOQL total. For a 20-person chat, that's 40 vs 1 SOQL.
+
+## Rate Limiting
+
+| Protection | Mechanism |
+|-----------|-----------|
+| Conversations | Max 5/day (`FIMBY_App_Settings__mdt`) |
+| Profile updates | Field allowlists (`ALLOWED_CONTACT_FIELDS`, `ALLOWED_USER_*_FIELDS`) — unlisted fields throw |
+| Sort params | Safe-sort whitelist (SOQL injection prevention) |
+| Search input | `String.escapeSingleQuotes()` |
+| Query caps | Configurable: search 200, messageable 200, story comments 50 |
+| Bulk ops | Mark-all-read 1K, delete-all-notifications 2K, push batch 100 |
+
+## Data Retention Jobs
+
+| Job | Cadence | Default TTL |
+|-----|---------|-------------|
+| `FimbyNotificationCleanupJob` | Daily | 30 days (read) |
+| `FimbyConversationCleanupJob` | Daily | 90d DM / 180d threads |
+| `FimbyBulkBuyExpiryJob` | Hourly | Per-post expiry |
+| `FimbyFollowUpExpiryJob` | Weekly | 180 days |
+| `FimbyFollowUpAutoFinalizeJob` | Scheduled | 48 hours |
+| `FimbyAccountDeactivationBatch` | Daily midnight | Immediate |
+
+All TTLs from `FIMBY_App_Settings__mdt` with fallback defaults.
+
+## Controller & Service Patterns
+
+- **Controllers** (`Fimby*Controller`): `@AuraEnabled` for LWC. Most use `private without sharing` inner helper for elevated DML (e.g., `IdentityHelper`, `RelationshipHelper`, `NotificationHelper`)
+- **Triggers**: handler pattern (e.g., `FimbySupportRelationshipTrigger` → `FimbySupportRelationshipTriggerHandler`; before insert: duplicate guard; after update: status-change notifications + identity cleanup)
+- **Queueables**: cross-object DML separated from trigger context (e.g., `FimbySupportRelationshipQueueable`)
+- **Services**: `FimbyNotificationService` (in-app + push, creation-time gate check), `FimbyPushNotificationService` (HTTP → auth bridge → Expo push), `FimbyPushBatchJob` (15-min Schedulable dispatcher, zero DML), `FimbyPushQueueable` (batch callout + post-delivery DML), `FimbyCacheService` (org cache), `FimbyVCardService` (REST endpoint)
+- **Scheduled jobs**: `FimbyPushBatchJob` (every 15 min — push dispatch), `FimbyEventReminderJob` (daily — event reminders)
+- **Utilities**: `FimbySettings` (typed `FIMBY_App_Settings__mdt` / `FIMBY_URL__mdt`), `FimbyConstants` (status values, record types), `FimbyIdentityRepository` (cached identity with `clearCache()`), `FimbyLogger` (publishes `Error_Log_Event__e`)
+- **Test data**: `FimbyTestDataFactory` creates neighbourhoods, contacts, users, stories, etc.

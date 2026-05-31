@@ -1,0 +1,5 @@
+{
+  "apiName" : "Library_Item_Post",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

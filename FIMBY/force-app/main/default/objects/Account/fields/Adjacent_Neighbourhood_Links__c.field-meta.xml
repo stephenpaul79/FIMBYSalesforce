@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Adjacent_Neighbourhood_Links__c</fullName>
+    <description>Clickable HTML links to adjacent neighbourhood accounts. Maintained by flow on Neighbourhood_Adjacency__c. Provides one-click navigation from the Account layout.</description>
+    <externalId>false</externalId>
+    <label>Adjacent Neighbourhoods</label>
+    <length>32768</length>
+    <trackHistory>false</trackHistory>
+    <type>Html</type>
+    <visibleLines>10</visibleLines>
+</CustomField>

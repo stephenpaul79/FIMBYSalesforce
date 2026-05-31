@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Unified_Feed_Min_Query_Limit__c</fullName>
+    <defaultValue>50</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Unified Feed Min Query Limit</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Minimum SOQL query limit for unified feed queries. Controls the floor for dynamic pagination.</inlineHelpText>
+</CustomField>

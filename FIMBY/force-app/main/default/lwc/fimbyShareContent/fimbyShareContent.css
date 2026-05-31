@@ -1,0 +1,67 @@
+/* Share Contact Info Component Styles */
+
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.address-section {
+    background-color: var(--fimby-surface-section);
+    border-radius: var(--fimby-radius-sm);
+}
+
+/* Success state styling */
+.slds-illustration lightning-icon {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Validation error styling */
+.slds-text-color_error {
+    padding: 8px 12px;
+    background-color: var(--fimby-error-tint);
+    border-radius: 4px;
+    border-left: 3px solid var(--fimby-error);
+}
+
+/* Confirmation box */
+.slds-theme_shade {
+    background-color: var(--fimby-surface-section);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .slds-grid.slds-gutters_small .slds-col.slds-size_1-of-2 {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

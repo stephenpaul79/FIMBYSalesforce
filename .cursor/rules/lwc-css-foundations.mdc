@@ -1,0 +1,519 @@
+---
+description: FIMBY CSS foundations — Safari compatibility, brand tokens, light/dark mode, page layout conventions, responsive design, box shadows, and `:host` patterns
+globs: "**/lwc/**/*.css"
+alwaysApply: false
+---
+
+# FIMBY LWC — CSS Foundations
+
+## Safari / WebKit Compatibility
+
+FIMBY is served via WKWebView (Safari's engine) on iOS. Safari handles CSS custom properties in shorthand contexts more strictly than Chrome.
+
+### `background-color:` not `background:`
+
+When setting a solid colour background via a custom property, **always use `background-color:`** instead of the `background:` shorthand. Safari can drop the entire `background: var(--token)` declaration.
+
+```css
+/* WRONG — Safari may drop this */
+.my-card { background: var(--fimby-surface-card); }
+
+/* CORRECT */
+.my-card { background-color: var(--fimby-surface-card); }
+```
+
+**When to keep `background:` shorthand:** Only for multiple background sub-properties (gradient, image + position, etc.) or overriding SLDS with `!important`.
+
+### `@property` Registrations
+
+All `--fimby-*` colour tokens are registered via `@property` at the top of `fimby-tokens.css` (`syntax: '<color>'`). The `initial-value` doubles as a built-in fallback. Requires Safari 16.4+.
+
+**When adding a new colour token:**
+
+1. Add `@property` registration at top of `fimby-tokens.css`
+2. Add `:root` declaration (light mode default)
+3. Add dark mode override in both `@media (prefers-color-scheme: dark)` and `:root[data-theme="dark"]`
+
+```css
+@property --fimby-my-new-token { syntax: '<color>'; inherits: true; initial-value: #F0EBE3; }
+```
+
+### `-webkit-backdrop-filter`
+
+Safari requires the `-webkit-` prefix for `backdrop-filter`. Always include both:
+
+```css
+.my-badge {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+```
+
+### Inline Fallbacks on Critical Components
+
+For above-the-fold components (`fimbyUniversalHeader`, `fimbyHomeFeed`, `fimbyCard`, `fimbyBottomNavigation`), include inline hex fallbacks for pre-16.4 iOS:
+
+```css
+.fimby-card { background-color: var(--fimby-surface-card, #FAF7F2); }
+```
+
+New components don't need inline fallbacks if they use `background-color:` and the token has an `@property` registration.
+
+## Brand Tokens Are Mandatory
+
+Every LWC must use `--fimby-*` custom properties from `FIMBY_Brand/fimby-tokens.css`. Never hardcode colours, shadows, or radii.
+
+| Purpose | Token examples |
+|---------|---------------|
+| Backgrounds | `--fimby-surface-page`, `--fimby-surface-card`, `--fimby-surface-input` |
+| Text | `--fimby-text-strong`, `--fimby-text-primary`, `--fimby-text-secondary`, `--fimby-text-muted` |
+| Borders | `--fimby-border-subtle`, `--fimby-border-default`, `--fimby-divider-default` |
+| Brand accent | `--fimby-brand-teal`, `--fimby-brand-teal-hover`, `--fimby-text-on-teal` |
+| Interaction | `--fimby-hover-bg`, `--fimby-pressed-bg`, `--fimby-selected-bg` |
+| Focus | `--fimby-focus-ring`, `--fimby-focus-glow` |
+| Radii | `--fimby-radius-sm` (8px) / `-md` (12px) / `-lg` (16px) / `-xl` (20px) / `-full` |
+| Shadows | `--fimby-shadow-card`, `--fimby-shadow-card-hover`, `--fimby-shadow-modal` |
+| Status | `--fimby-success`, `--fimby-warning`, `--fimby-error`, `--fimby-info` + `-tint` / `-border` variants |
+| Layout | `--fimby-header-height` (70px), `--fimby-modal-inset-top` (86px), `--fimby-bottom-nav-height` (70px) |
+
+## Button Token System (`--fimby-btn-*`)
+
+CTA buttons use dedicated `--fimby-btn-*` tokens for WCAG AA compliant fills. **Do not** use brand tokens (`--fimby-brand-teal`, `--fimby-success`, `--fimby-error`) for button backgrounds — those are for text links, focus rings, tints, and borders.
+
+| Variant | Background | Hover | Contrast |
+|---|---|---|---|
+| Primary (teal) | `--fimby-btn-primary-bg` (#3A7D8C) | `--fimby-btn-primary-bg-hover` | ~4.7:1 w/ white |
+| Success (green) | `--fimby-btn-success-bg` (#1A7B40) | `--fimby-btn-success-bg-hover` | ~4.9:1 w/ white |
+| Danger (red) | `--fimby-btn-danger-bg` (#C0392B) | `--fimby-btn-danger-bg-hover` | ~5.4:1 w/ white |
+| Info (blue) | `--fimby-btn-info-bg` (#0166BA) | — | ~5.4:1 w/ white |
+
+Non-color tokens: `--fimby-btn-shadow`, `--fimby-btn-shadow-active`, `--fimby-btn-border-bottom`, `--fimby-btn-font-size` (0.9375rem / 15px), `--fimby-btn-radius` (`var(--fimby-radius-md)` / 12px — rounded rectangle, not pill).
+
+### Universal CTA button pattern
+
+```css
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    padding: 10px 20px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover { background-color: var(--fimby-btn-primary-bg-hover); }
+.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+```
+
+Class names vary per component — each file keeps its existing class names but must use the token values. Tier 2 toggle controls (filter chips, segmented controls, radio pills) keep pill shape — see Shape Hierarchy below. Icon-only buttons are untouched.
+
+## Button vs Badge Shape Hierarchy
+
+Three tiers govern every rounded interactive or decorative element. Shape alone must distinguish actions from labels.
+
+| Tier | Element | Shape | Radius Token | Required Traits | Forbidden Traits |
+|------|---------|-------|--------------|-----------------|------------------|
+| 1 — Action Button | CTAs, page/modal/card/row actions, header menu buttons | Rounded rectangle | `--fimby-btn-radius` (12px) | `box-shadow`, `hover`, `active`, `cursor: pointer`, `min-height: 44px`, bold weight | — |
+| 2 — Toggle Control | Filter chips, segmented controls, radio pills, selection chips | Pill | `--fimby-radius-full` (9999px) | Grouped layout, clear selected/unselected state change | Must not look like a standalone CTA |
+| 3 — Decorative Badge | Status, type, category, allocation, count labels | Pill, flat | `--fimby-badge-radius` (9999px) | Small text, compact padding, flat fill, no interactivity | `box-shadow`, `hover`, `cursor: pointer`, `transition`, `min-height: 44px` |
+
+**Never use `border-radius: 9999px` (or `var(--fimby-radius-full)`) on an action button.** The only interactive elements that keep pill shape are Tier 2 toggle controls.
+
+### Universal decorative badge pattern
+
+```css
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: var(--fimby-badge-radius);
+    font-size: var(--fimby-badge-font-size);
+    font-weight: var(--fimby-badge-font-weight);
+    padding: var(--fimby-badge-padding);
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+```
+
+Class names vary per component (`.status-badge`, `.type-badge`, `.card-type-badge`, `.fimby-badge`, etc.) — each file keeps its existing class names but must use the `--fimby-badge-*` token values. Colour comes from `--fimby-badge-*` or `--fimby-chip-*` colour tokens.
+
+## Button Reset Specificity
+
+When a `<button>` is used as a semantic container, a generic reset can silently override component styles due to cascade order.
+
+### The problem
+
+```css
+/* Component style — comes first */
+button.bulk-buy-image-container { padding: 16px; background: var(--fimby-surface-input); }
+
+/* Generic reset — comes later, same specificity, WINS */
+button.post-image-container { padding: 0; background: none; border: none; }
+```
+
+### The fix
+
+Place component-specific overrides AFTER the generic reset. Use a compound selector for higher specificity:
+
+```css
+/* Generic button reset */
+button.post-image-container { padding: 0; background: none; border: none; cursor: pointer; width: 100%; }
+
+/* Component override — AFTER reset, compound selector wins */
+button.post-image-container.bulk-buy-image-container {
+    padding: 16px;
+    background: var(--fimby-surface-input, #f5f2ec);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+```
+
+## Card Surfaces & Box Shadow
+
+Every card-level container **must** use `box-shadow: var(--fimby-shadow-card)` for visual depth.
+
+| Element | Shadow token |
+|---------|-------------|
+| Feed cards, detail cards | `--fimby-shadow-card` |
+| Elevated on hover | `--fimby-shadow-card-hover` |
+| Modals, overlays | `--fimby-shadow-modal` |
+| Inline sections | `--fimby-shadow-sm` or `--fimby-shadow-card` |
+
+```css
+.my-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+}
+```
+
+**Rules:** Every `background: var(--fimby-surface-card)` element should also have `box-shadow` (unless child of already-shadowed parent). Always use `--fimby-shadow-*` tokens. Sticky footers use shadow + radius, not flat strips. Stacked sections use `border-top` dividers, not individual shadows.
+
+## Light / Dark Mode
+
+Tokens swap via three layers in `fimby-tokens.css`:
+
+1. `:root` — light defaults
+2. `@media (prefers-color-scheme: dark)` on `:root:not([data-theme="light"])` — OS auto-detect
+3. `:root[data-theme="dark"]` — manual toggle
+
+**Do not** add `@media (prefers-color-scheme)` in component CSS. For dark-mode-only adjustments:
+
+```css
+:host-context([data-theme="dark"]) .my-element,
+:host-context(:root:not([data-theme="light"])) .my-element { /* dark-only override */ }
+```
+
+## Mobile-First Responsive Design
+
+Base styles for small screens (≤ 480 px), then `min-width` breakpoints:
+
+| Breakpoint | Target | Use for |
+|------------|--------|---------|
+| *(base)* | Phones ≤ 480 px | Single-column, stacked, touch-friendly (≥ 44 px) |
+| `@media (min-width: 480px)` | Large phones | Slightly wider padding/gaps |
+| `@media (min-width: 768px)` | Tablets / small desktop | Two-column, side-by-side cards |
+| `@media (min-width: 1024px)` | Desktop | Multi-column, max-width containers |
+
+### Pattern — responsive container
+
+```css
+:host { display: block; background-color: var(--fimby-surface-page); }
+
+.page-container { width: 100%; padding: 0 16px; box-sizing: border-box; }
+
+@media (min-width: 768px)  { .page-container { padding: 0 24px; } }
+@media (min-width: 1024px) { .page-container { max-width: 800px; margin: 0 auto; padding: 0 32px; } }
+```
+
+### Pattern — responsive grid
+
+```css
+.card-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+@media (min-width: 768px)  { .card-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+@media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+```
+
+## `:host` Background on Page-Level Components
+
+Every page-level LWC **must** set `display: block` and `background` on `:host`. Without this, the EC theme background shows on the sides and below content.
+
+### EC Section overlay
+
+The site-wide `fimby-tokens.css` overrides the EC section overlay:
+
+```css
+:root {
+  --dxp-c-section-image-overlay-color: transparent;
+  --dxp-c-section-background-color: var(--fimby-surface-page);
+}
+html, body { background: var(--fimby-surface-page) !important; }
+```
+
+The `background` shorthand (not `background-color`) is required because SLDS ships `html { background: #eef4ff }`. **Never change these overrides** without checking page backgrounds.
+
+### Experience Builder stylesheet guardrail
+
+`digitalExperiences/site/FIMBY1/sfdc_cms__styles/styles_css/styles.css` can override head-markup resources. Never set `html { background: white; }` there. Keep aligned with token overrides:
+
+```css
+html, body { background: var(--fimby-surface-page, var(--dxp-g-root)) !important; }
+:root { --dxp-c-section-image-overlay-color: transparent; --dxp-c-section-background-color: var(--fimby-surface-page, var(--dxp-g-root)); }
+community_layout-section { --dxp-c-section-image-overlay-color: transparent !important; --dxp-c-section-background-color: var(--fimby-surface-page, var(--dxp-g-root)) !important; }
+community_layout-section .background-image-overlay { background-color: transparent !important; }
+```
+
+### Required pattern
+
+```css
+:host { display: block; background-color: var(--fimby-surface-page); }
+.my-page { background-color: var(--fimby-surface-page); }
+```
+
+Surface mapping:
+
+| Inner wrapper background | `:host` background |
+|---|---|
+| `var(--fimby-surface-page)` | `var(--fimby-surface-page)` (default for all page-level LWCs) |
+| `var(--fimby-surface-section)` | `var(--fimby-surface-section)` (only for intentional full-page tinted views) |
+| `var(--fimby-surface-input)` | `var(--fimby-surface-input)` |
+| Gradient / special | Solid fallback matching dominant color |
+
+**Rules:** `:host` is always the first rule. No `min-height`, `max-width`, or `padding` on `:host`. Embedded/child components don't need `:host` background.
+
+## Page-Level Layout Conventions
+
+### Standard desktop width: 800 px
+
+All standard pages: `max-width: 800px; margin: 0 auto;` at `@media (min-width: 1024px)` on the **outer wrapper**.
+
+### Width tiers
+
+| Tier | Tablet (768px+) | Desktop (1024px+) | Use for |
+|------|-----------------|-------------------|---------|
+| Standard | `600px` | `800px` | Feeds, detail pages, lists, search |
+| Narrow | `640px` all viewports | `640px` | Settings, profile, composer, forms |
+| Very narrow | `400–500px` all viewports | `400–500px` | Registration, signup |
+
+### Header-body width matching
+
+**Never** set `max-width` on `c-fimby-page-header` independently. Set `max-width` on the **outer wrapper** containing both header and body.
+
+### Container padding — not child margins
+
+Set horizontal padding on the **outer wrapper**, never as side-margins on children.
+
+| Viewport | Outer wrapper `padding` |
+|----------|------------------------|
+| Base (mobile) | `padding: 0 16px <bottom>` |
+| 768px+ (tablet) | `padding: 0 24px <bottom>` |
+
+Where `<bottom>` is typically `80px` (bottom-nav clearance), reduced to `24px` at `≥ 892px`.
+
+**Rules:** `box-sizing: border-box` on outer wrapper. Child elements use only vertical margins. Don't duplicate `max-width` on inner wrappers.
+
+### Spacing between header and body
+
+`fimbyPageHeader` has built-in `margin-bottom: 12px`. Do not add extra spacing.
+
+### Pattern — standard page layout
+
+```css
+:host { display: block; background-color: var(--fimby-surface-page); }
+
+.my-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px)  { .my-page { padding: 0 24px 80px; } }
+@media (min-width: 892px)  { .my-page { padding-bottom: 24px; } }
+@media (min-width: 1024px) { .my-page { max-width: 800px; margin: 0 auto; } }
+```
+
+### Pattern — narrow form page layout
+
+```css
+:host { display: block; background-color: var(--fimby-surface-page); }
+
+.my-form-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+@media (min-width: 892px) { .my-form-page { padding-bottom: 24px; } }
+```
+
+## Modal Positioning (Desktop)
+
+`fimbyUniversalHeader` is **sticky** at a fixed single-row height (`--fimby-header-height: 70px`). Modals use `position: fixed` at z-index 9999+ and must **not** vertically center in the full viewport — that places tall dialogs under the header.
+
+**Required layout tokens** (in `fimby-tokens.css`):
+
+- `--fimby-header-height: 70px` — page layout + mobile bottom-sheet clearance
+- `--fimby-modal-top-gap: 16px` — visible breathing room below header
+- `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` — desktop modal top offset (86px)
+
+Layout tokens do **not** need `@property` registration (color tokens only).
+
+**Canonical desktop backdrop** — reference: `fimbyQuickResponseModal.css`:
+
+```css
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 9999;
+}
+.modal-container {
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+}
+```
+
+**Full-viewport scrim variant** (delete/cancel overlays, SLDS sections):
+
+```css
+.confirm-overlay,
+section[role="dialog"].slds-modal {
+    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+```
+
+**Mobile bottom sheets** (`max-width: 480px`): reset `top: 0`, `align-items: flex-end`. Use `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header.
+
+**Anti-patterns:**
+
+- `inset: 0` + `align-items: center` on desktop without `--fimby-modal-inset-top`
+- `top: 50%; transform: translate(-50%, -50%)` for dialogs
+- SLDS `<section class="slds-modal">` without `padding-top: var(--fimby-modal-inset-top)`
+
+## Full-Viewport Height Components
+
+Components filling remaining viewport must account for header + bottom nav (mobile) or header-only (desktop ≥ 892px).
+
+```css
+.my-full-page {
+    height: calc(100vh - var(--fimby-header-height, 78px) - var(--fimby-bottom-nav-height, 70px));
+    height: calc(100dvh - var(--fimby-header-height, 78px) - var(--fimby-bottom-nav-height, 70px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@media (min-width: 892px) {
+    .my-full-page {
+        height: calc(100vh - var(--fimby-header-height, 78px));
+        height: calc(100dvh - var(--fimby-header-height, 78px));
+    }
+}
+```
+
+Always use `100dvh` as progressive enhancement. Use `overflow: hidden` on outer container; let inner scroll region handle scrolling.
+
+## Rounded Corners (All Viewports)
+
+Every distinct visual section **must** have rounded corners using `--fimby-radius-md` (12px) or `--fimby-radius-lg` (16px). Use `overflow: hidden` when child content might bleed. When sections stack, wrap in a single rounded parent. No square corners unless intentionally full-bleed at ≤ 320px.
+
+## Native Date & Datetime-Local Inputs
+
+`lightning-input` does not support `type="datetime-local"`. When a datetime picker is needed (e.g., event start/end), use a native `<input type="datetime-local">`. For date-only fields where `lightning-input type="date"` renders with unwanted alignment (iOS centers the value), use `<input type="date">` instead.
+
+Native date inputs are **not styled by SLDS automatically** — they must be manually styled to match `lightning-input`. The DXP `.slds-input` sizing tokens (`--dxp-s-form-element-spacing-block-start`, `line-height`) resolve correctly inside `lightning-input`'s shadow DOM but **not** on bare native inputs in component light DOM, so explicit padding is required.
+
+### Required CSS pattern
+
+Use DXP tokens for visual styling (colors, border, radius, shadow, font) but explicit values for sizing:
+
+```css
+.date-input,
+.datetime-input {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 3px 12px 2px;
+    min-height: 1.75rem;
+    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, 0.875rem)));
+    line-height: 1.5;
+    font-family: var(--dxp-s-form-element-text-font-family, var(--dxp-s-body-font-family, inherit));
+    background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));
+    color: var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast));
+    border-width: var(--dxp-s-form-element-width-border, 1px);
+    border-style: solid;
+    border-color: var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    border-radius: var(--dxp-s-form-element-radius-border, 4px);
+    box-shadow: var(--dxp-s-form-element-shadow);
+    box-sizing: border-box;
+    text-align: left;
+    transition: border-color 0.2s;
+}
+
+.date-input::-webkit-date-and-time-value,
+.datetime-input::-webkit-date-and-time-value {
+    text-align: left;
+}
+
+.date-input:focus,
+.datetime-input:focus {
+    outline: none;
+    background-color: var(--dxp-s-form-element-color-background-active, var(--dxp-s-form-element-color-background, var(--dxp-g-root)));
+    border-color: var(--dxp-s-form-element-color-border-focus, var(--dxp-g-brand));
+    box-shadow: var(--dxp-s-form-element-shadow-focus, 0 0 3px var(--dxp-g-brand-1));
+}
+```
+
+### Why each property matters
+
+| Property | Why |
+|---|---|
+| `-webkit-appearance: none` | Strips iOS Safari native chrome so custom styles apply. Without this, iOS overrides background, border, and height. |
+| `padding: 3px 12px 2px` | Explicit vertical padding required — DXP block-spacing tokens resolve to `0` outside shadow DOM, collapsing the input on iOS. Asymmetric (3px top / 2px bottom) compensates for the line-height descender gap — date values have no descending characters, so 1px less bottom keeps text visually centered. |
+| `min-height: 1.75rem` | Safety net preventing iOS datetime-local collapse when `appearance: none` strips default sizing. |
+| `line-height: 1.5` | Drives content height. DXP `--dxp-s-form-element-text-line-height` may not resolve outside shadow DOM. |
+| `::-webkit-date-and-time-value { text-align: left }` | iOS Safari ignores `text-align` on date inputs — this pseudo-element is the only way to left-align date values. |
+| `--dxp-s-form-element-color-*` tokens | These are the same tokens `lightning-input` reads via SLDS, so background, border, and focus states stay in sync with the Experience Cloud theme (including dark mode). |
+
+### Common pitfalls
+
+- **Do NOT use `--fimby-surface-input` or `--fimby-border-default`** for native inputs — `lightning-input` uses DXP/SLDS tokens internally, which resolve to different colours. Using FIMBY tokens creates a visible mismatch.
+- **Do NOT use `overflow: hidden`** on the parent `.form-section` or `.form-field` when they contain date inputs — it clips the right border on mobile viewports.
+- **Do NOT omit `min-height`** — without it, `appearance: none` on iOS causes datetime-local inputs to render as a thin line with no visible box.
+
+## Desktop Optimisations
+
+- Cap content to `max-width: 800px` / `640px` (see layout conventions above)
+- Horizontal layouts for cards/forms above 768px (`fimbyCard` `.card-horizontal`)
+- `:hover` and `:focus-visible` states inside `@media (hover: hover)` when they conflict with touch
+- `scrollbar-width: thin` for visible scroll areas on desktop

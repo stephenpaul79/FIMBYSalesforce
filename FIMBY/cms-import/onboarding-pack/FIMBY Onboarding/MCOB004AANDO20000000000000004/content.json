@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Share Goods",
+  "contentBody" : {
+    "title" : "Share Goods",
+    "body" : "<p>Post perishable or non-perishable items you would like to give away or that you are looking for. From extra garden produce to household items - one person's extra is another's treasure.</p>",
+    "pageOrder" : "030",
+    "slideOrder" : "020",
+    "pageTitle" : "Asks and Offers"
+  },
+  "urlName" : "asks-and-offers-goods"
+}

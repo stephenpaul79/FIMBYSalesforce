@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Supportee_Relationship__c</fullName>
+    <description>How the supporter knows the supportee on the paper-form path. Captured at Draft creation and gives the admin an at-a-glance plausibility check during review. Distinct from Relationship_Type__c, which categorises the SR record itself (Support_Person vs Community_Group_Rep).</description>
+    <label>Supportee Relationship</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Neighbour</fullName>
+                <default>false</default>
+                <label>Neighbour</label>
+            </value>
+            <value>
+                <fullName>Family member</fullName>
+                <default>false</default>
+                <label>Family member</label>
+            </value>
+            <value>
+                <fullName>Friend</fullName>
+                <default>false</default>
+                <label>Friend</label>
+            </value>
+            <value>
+                <fullName>Client through my work</fullName>
+                <default>false</default>
+                <label>Client through my work</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

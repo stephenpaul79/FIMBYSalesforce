@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "d1e6f5cf-e598-4acb-8ceb-06695fdb66cd",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Post_An_Offer__c",
+  "id" : "dcb3b1c2-34a0-4ae6-b7c0-1c75c4b91099",
+  "label" : "Post An Offer",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-post-an-offer",
+  "type" : "route",
+  "urlPrefix" : "post-an-offer"
+}

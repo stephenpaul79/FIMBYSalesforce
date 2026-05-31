@@ -1,0 +1,112 @@
+<template>
+    <div class="panel-body">
+        <!-- Block summary -->
+        <div class="block-summary">
+            <div class="block-party">
+                <img src={blockerPhoto} alt="" class="user-photo">
+                <span class="user-name">{panelData.blockerName}</span>
+            </div>
+            <span class="block-arrow" aria-hidden="true">blocked</span>
+            <div class="block-party">
+                <img src={blockedPhoto} alt="" class="user-photo">
+                <span class="user-name">{panelData.blockedName}</span>
+            </div>
+        </div>
+
+        <!-- Block date -->
+        <template lwc:if={panelData.date}>
+            <span class="meta-text">{panelData.date}</span>
+        </template>
+
+        <!-- Reason card -->
+        <template lwc:if={panelData.reason}>
+            <div class="reason-card">
+                <h4 class="reason-title">Reason</h4>
+                <p class="reason-text">{panelData.reason}</p>
+            </div>
+        </template>
+
+        <!-- Report details -->
+        <template lwc:if={panelData.reportDetails}>
+            <div class="reason-card">
+                <h4 class="reason-title">Report Details</h4>
+                <p class="reason-text">{panelData.reportDetails}</p>
+            </div>
+        </template>
+
+        <!-- Other blocks involving either party -->
+        <template lwc:if={hasOtherBlocks}>
+            <div class="other-blocks-section">
+                <button class="collapsible-header" onclick={toggleOtherBlocks}
+                        aria-expanded={ariaExpanded} aria-controls="other-blocks-list">
+                    <span class="collapsible-label">
+                        Other blocks involving either party
+                        <span class="other-block-count">({panelData.otherBlockCount})</span>
+                    </span>
+                    <lightning-icon icon-name={chevronIcon} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={_showOtherBlocks}>
+                    <ul id="other-blocks-list" class="other-blocks-list">
+                        <template for:each={panelData.otherBlocks} for:item="block">
+                            <li key={block.id} class="other-block-item">
+                                <span class="other-block-names">{block.blockerName} &rarr; {block.blockedName}</span>
+                                <span class="other-block-date">{block.date}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <template lwc:if={isFormActive}>
+            <div class="inline-form">
+                <h4 class="inline-form-title">{formTitle}</h4>
+                <div class="field-label-row">
+                    <label for="form-note" class="field-label">Note</label>
+                    <span class={noteCountClass}>{noteLength}/500</span>
+                </div>
+                <textarea id="form-note" class="inline-form-textarea" value={formNote}
+                          oninput={handleFormNoteChange} maxlength="500" rows="4"
+                          placeholder={formPlaceholder}></textarea>
+                <div class="inline-form-actions">
+                    <button class={formConfirmClass} type="button" onclick={handleFormConfirm}>
+                        {formConfirmLabel}
+                    </button>
+                    <button class="btn-action btn-contact" type="button" onclick={handleFormCancel}>Cancel</button>
+                </div>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="footer-primary-group">
+                <button class="btn-action btn-primary" type="button" onclick={handleMarkReviewed}>Mark Reviewed</button>
+            </div>
+            <div class="footer-contact-group">
+                <button class="btn-action btn-contact" type="button" onclick={handleContactBlocker}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Blocker</span>
+                </button>
+                <button class="btn-action btn-contact" type="button" onclick={handleContactBlocked}>
+                    <img src={chatIconUrl} alt="" class="btn-icon">
+                    <span>Contact Blocked</span>
+                </button>
+            </div>
+            <div class="footer-escalation-group">
+                <button class="btn-action btn-escalation-1" type="button" onclick={handleCheckIn}>
+                    <img src={checkInIconUrl} alt="" class="btn-icon">
+                    <span>i. Send Check-In</span>
+                </button>
+                <button class="btn-action btn-escalation-2" type="button" onclick={handleRecordConcern}>
+                    <img src={dangerSignIconUrl} alt="" class="btn-icon">
+                    <span>ii. Record Concern</span>
+                </button>
+                <button class="btn-action btn-escalation-3" type="button" onclick={handleEscalate}>
+                    <img src={lifesaverIconUrl} alt="" class="btn-icon">
+                    <span>iii. Ask for Help</span>
+                </button>
+            </div>
+        </template>
+    </div>
+</template>

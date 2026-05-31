@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Onboarding_Profile_Completed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Tracks whether the user has completed the required onboarding profile setup wizard. Set to true when the user finishes the initial profile steps (name, avatar, etc.).</description>
+    <externalId>false</externalId>
+    <label>Onboarding Profile Completed</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

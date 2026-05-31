@@ -1,0 +1,90 @@
+<template>
+    <div class="fimby-location-picker">
+        <!-- Location Input -->
+        <div class="location-input-container">
+            <lightning-input
+                type="search"
+                label={label}
+                placeholder="Search for your neighborhood..."
+                value={searchTerm}
+                onchange={handleSearchChange}
+                class="location-search">
+            </lightning-input>
+            
+            <!-- Current Location Button -->
+            <div class="location-actions">
+                <button class="current-location-btn" onclick={handleCurrentLocation} disabled={isGettingLocation}>
+                    <lightning-icon 
+                        icon-name="utility:location" 
+                        size="small" 
+                        variant="brand">
+                    </lightning-icon>
+                    <span lwc:if={isGettingLocation}>Getting Location...</span>
+                    <span lwc:else>Use Current Location</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div lwc:if={showResults} class="location-results">
+            <template for:each={filteredLocations} for:item="location">
+                <div key={location.value} 
+                     class="location-option" 
+                     onclick={handleLocationSelect}
+                     data-location={location.value}>
+                    <div class="location-icon">
+                        <lightning-icon icon-name="utility:location" size="small"></lightning-icon>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-name">{location.label}</div>
+                        <div class="location-details">{location.details}</div>
+                        <div lwc:if={location.distance} class="location-distance">{location.distance} km away</div>
+                    </div>
+                    <div lwc:if={location.isSelected} class="selected-indicator">
+                        <lightning-icon icon-name="utility:check" size="small" variant="success"></lightning-icon>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- No Results -->
+            <div lwc:if={showNoResults} class="no-results">
+                <lightning-icon icon-name="utility:search" size="medium" variant="neutral"></lightning-icon>
+                <div class="no-results-text">No neighborhoods found</div>
+                <div class="no-results-subtext">Try a different search term</div>
+            </div>
+        </div>
+
+        <!-- Popular Neighborhoods -->
+        <div lwc:if={showPopular} class="popular-locations">
+            <div class="popular-title">Popular Neighborhoods</div>
+            <div class="popular-grid">
+                <template for:each={popularLocations} for:item="location">
+                    <button key={location.value} 
+                            class="popular-chip"
+                            onclick={handleLocationSelect}
+                            data-location={location.value}>
+                        {location.label}
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Selected Location Display -->
+        <div lwc:if={selectedLocation} class="selected-location">
+            <div class="selected-header">Selected Neighborhood</div>
+            <div class="selected-info">
+                <div class="selected-icon">
+                    <lightning-icon icon-name="utility:location" size="medium" variant="success"></lightning-icon>
+                </div>
+                <div class="selected-details">
+                    <div class="selected-name">{selectedLocationLabel}</div>
+                    <div class="selected-description">{selectedLocationDetails}</div>
+                </div>
+                <button class="change-location" onclick={handleChangeLocation}>
+                    <img src={editIconUrl} alt="" class="change-location-icon">
+                    Change
+                </button>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Organization Profile",
+  "contentBody" : {
+    "activeViewId" : "Organization_Profile",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-organization-profile",
+    "urlPrefix" : "organization-profile"
+  },
+  "urlName" : "organization-profile"
+}

@@ -1,0 +1,58 @@
+:host { display: block; }
+
+.history-container {
+    max-width: 240px;
+    margin: 0;
+    text-align: left;
+}
+
+.section-title {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.slots-row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+
+.slot {
+    width: 32px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    pointer-events: none;
+    user-select: none;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+}
+
+.slot-neutral {
+    background-color: transparent;
+    border: 1px dashed var(--fimby-border-subtle);
+}
+.slot-green   { background-color: var(--fimby-success); }
+.slot-red     { background-color: var(--fimby-error); }
+
+.slots-axis {
+    margin: 6px 0 0;
+    font-size: 0.7rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+}
+
+.paused-message {
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slot { transition: none; }
+}

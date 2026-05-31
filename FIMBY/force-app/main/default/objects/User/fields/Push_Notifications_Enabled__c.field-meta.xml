@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Push_Notifications_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Master toggle for mobile push notifications. When disabled, no push notifications will be sent to this user&apos;s mobile device regardless of other settings.</description>
+    <externalId>false</externalId>
+    <label>Push Notifications Enabled</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

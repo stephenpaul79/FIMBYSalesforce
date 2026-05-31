@@ -1,0 +1,209 @@
+<template>
+    <div class="org-profile-page">
+        <template lwc:if={isLoading}>
+            <c-fimby-loading-message context="neighbour"></c-fimby-loading-message>
+        </template>
+
+        <template lwc:if={error}>
+            <div class="error-banner" role="alert">{error}</div>
+        </template>
+
+        <template lwc:if={org}>
+            <!-- Hero / Header Card -->
+            <div class="org-hero-card">
+                <div class="logo-section">
+                    <template lwc:if={canEdit}>
+                        <button type="button" class="logo-wrapper" aria-label="Change organization logo" onclick={handleLogoClick}>
+                            <img src={orgLogoUrl} alt="" class="org-logo" />
+                            <div class="logo-overlay">
+                                <lightning-icon icon-name="utility:photo" size="x-small"></lightning-icon>
+                            </div>
+                            <span class="logo-edit-badge" aria-hidden="true">
+                                <lightning-icon icon-name="utility:photo" size="xx-small"></lightning-icon>
+                            </span>
+                        </button>
+                        <template lwc:if={hasLogo}>
+                            <button class="remove-logo-btn" onclick={handleRemoveLogo}>Remove logo</button>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <img src={orgLogoUrl} alt="" class="org-logo" />
+                    </template>
+                </div>
+
+                <template lwc:if={showImageUploader}>
+                    <div class="uploader-inline">
+                        <c-fimby-image-uploader
+                            label="Upload Organization Logo"
+                            onimageselected={handleImageSelected}>
+                        </c-fimby-image-uploader>
+                    </div>
+                </template>
+
+                <template lwc:if={isEditing}>
+                    <div class="edit-fields">
+                        <div class="field-row">
+                            <label class="field-label">Organization name</label>
+                            <input type="text" class="field-input" value={editName}
+                                   data-field="editName" maxlength="255" onchange={handleInputChange}>
+                        </div>
+                        <div class="field-row">
+                            <label class="field-label">Description</label>
+                            <textarea class="field-textarea" value={editDescription}
+                                      data-field="editDescription" maxlength="32000"
+                                      placeholder="What does this group do?"
+                                      onchange={handleInputChange}></textarea>
+                        </div>
+                        <div class="field-row">
+                            <label class="field-label">Website</label>
+                            <input type="url" class="field-input" value={editWebsite}
+                                   data-field="editWebsite" maxlength="255"
+                                   placeholder="https://..."
+                                   onchange={handleInputChange}>
+                        </div>
+                        <div class="field-row">
+                            <label class="field-label">Email</label>
+                            <input type="email" class="field-input" value={editEmail}
+                                   data-field="editEmail" maxlength="255"
+                                   placeholder="contact@example.org"
+                                   onchange={handleInputChange}>
+                        </div>
+                        <div class="field-row">
+                            <label class="field-label">Phone</label>
+                            <input type="tel" class="field-input" value={editPhone}
+                                   data-field="editPhone" maxlength="40"
+                                   placeholder="(555) 123-4567"
+                                   onchange={handleInputChange}>
+                        </div>
+                        <div class="field-row">
+                            <label class="field-label">Street address</label>
+                            <input type="text" class="field-input" value={editBillingStreet}
+                                   data-field="editBillingStreet" maxlength="255"
+                                   onchange={handleInputChange}>
+                        </div>
+                        <div class="field-row field-row-inline">
+                            <div class="field-col">
+                                <label class="field-label">City</label>
+                                <input type="text" class="field-input" value={editBillingCity}
+                                       data-field="editBillingCity" maxlength="40"
+                                       onchange={handleInputChange}>
+                            </div>
+                            <div class="field-col field-col-sm">
+                                <label class="field-label">State</label>
+                                <input type="text" class="field-input" value={editBillingState}
+                                       data-field="editBillingState" maxlength="20"
+                                       onchange={handleInputChange}>
+                            </div>
+                            <div class="field-col field-col-sm">
+                                <label class="field-label">Postcode</label>
+                                <input type="text" class="field-input" value={editBillingPostalCode}
+                                       data-field="editBillingPostalCode" maxlength="20"
+                                       onchange={handleInputChange}>
+                            </div>
+                        </div>
+                        <div class="edit-advisory">
+                            <lightning-icon icon-name="utility:info" size="xx-small" class="advisory-icon"></lightning-icon>
+                            Information you add here will be visible to all neighbours in your neighbourhood.
+                        </div>
+                        <div class="edit-actions">
+                            <button class="btn btn-neutral" onclick={handleCancelEdit} disabled={isSaving}>Cancel</button>
+                            <button class="btn btn-primary" onclick={handleSaveEdit} disabled={isSaving}>Save</button>
+                        </div>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <h1 class="org-name">{orgName}</h1>
+                    <div class="org-type-row">
+                        <span class="org-type-pill">{orgType}</span>
+                        <template lwc:if={isApproved}>
+                            <img src={shieldIconUrl} alt="Verified" class="verified-badge" title="Approved Community Group" />
+                        </template>
+                    </div>
+                    <template lwc:if={hasDescription}>
+                        <p class="org-description">{orgDescription}</p>
+                    </template>
+                    <div class="post-actions">
+                        <template lwc:if={canEdit}>
+                            <button class="action-btn" onclick={handleEditClick}>
+                                <img src={editIconUrl} alt="" class="action-btn-icon">
+                                <span>Edit</span>
+                            </button>
+                            <button class="action-btn" onclick={handleLogoClick}>
+                                <img src={photoIconUrl} alt="" class="action-btn-icon">
+                                <span>Photo</span>
+                            </button>
+                        </template>
+                        <template lwc:if={showMessageButton}>
+                            <button class="btn btn-primary message-btn" onclick={handleMessage} disabled={isMessaging}>
+                                <lightning-icon icon-name="utility:chat" size="xx-small"></lightning-icon>
+                                Message
+                            </button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Details Card -->
+            <div class="org-details-card">
+                <template lwc:if={hasWebsite}>
+                    <div class="detail-row">
+                        <img src={globeIconUrl} alt="" class="detail-icon" />
+                        <a href={orgWebsite} target="_blank" rel="noopener noreferrer" class="detail-link">{orgWebsite}</a>
+                    </div>
+                </template>
+                <template lwc:if={hasContactInfo}>
+                    <div class="contact-info-section">
+                        <h3 class="sub-heading">Contact information</h3>
+                        <template lwc:if={hasEmail}>
+                            <div class="detail-row">
+                                <img src={emailIconUrl} alt="" class="detail-icon" />
+                                <a href={orgEmailHref} class="detail-link">{orgEmail}</a>
+                            </div>
+                        </template>
+                        <template lwc:if={hasPhone}>
+                            <div class="detail-row">
+                                <lightning-icon icon-name="utility:call" size="xx-small" class="detail-icon-svg"></lightning-icon>
+                                <a href={orgPhoneHref} class="detail-link">{orgPhone}</a>
+                            </div>
+                        </template>
+                        <template lwc:if={hasAddress}>
+                            <div class="detail-row">
+                                <lightning-icon icon-name="utility:location" size="xx-small" class="detail-icon-svg"></lightning-icon>
+                                <span class="detail-text">{orgAddress}</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:if={hasNeighbourhoods}>
+                    <div class="neighbourhood-list">
+                        <h3 class="sub-heading">Neighbourhoods served</h3>
+                        <template for:each={neighbourhoods} for:item="n">
+                            <span key={n.id} class="neighbourhood-tag">{n.name}</span>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- People Card -->
+            <div class="org-people-card">
+                <div class="card-header">
+                    <img src={communityIconUrl} alt="" class="card-icon" />
+                    <h3 class="sub-heading">Neighbours connected to this group</h3>
+                </div>
+                <template lwc:if={hasPeople}>
+                    <div class="people-list">
+                        <template for:each={peopleWithAvatarUrls} for:item="person">
+                            <div key={person.id} class="person-row">
+                                <img src={person.avatarUrl} alt="" class="person-avatar" />
+                                <span class="person-name">{person.name}</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <p class="empty-text">No neighbours connected yet.</p>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

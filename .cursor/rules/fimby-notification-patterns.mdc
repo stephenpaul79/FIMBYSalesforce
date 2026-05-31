@@ -1,0 +1,158 @@
+---
+description: FIMBY notification contract — voice, title/body shape, actor convention, URL convention, push payload metadata, content edit/delete coverage, vouching as system
+globs:
+  - "FIMBY/force-app/main/default/classes/Fimby*Notification*.cls"
+  - "FIMBY/force-app/main/default/classes/Fimby*Controller.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyEmailAlert*.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyTransactionalEmailService.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyEmailHtmlBuilder.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyDigestEmailBuilder.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyPush*.cls"
+  - "FIMBY/force-app/main/default/classes/FimbySettings.cls"
+  - "FIMBY/force-app/main/default/classes/FimbyPublicWebsiteLinks.cls"
+  - "FIMBY/force-app/main/default/classes/Fimby*ReminderJob.cls"
+  - "FIMBY/force-app/main/default/lwc/fimbyNotifications*/**"
+  - "FIMBY/force-app/main/default/lwc/fimbyUniversalHeader/**"
+  - "FIMBY/force-app/main/default/lwc/fimbySettingsView/**"
+  - "FIMBY/force-app/main/default/customMetadata/FIMBY_URL.*"
+  - "FIMBY/force-app/main/default/customMetadata/FIMBY_Public_Website_URL.*"
+  - "FIMBY/force-app/main/default/customMetadata/FIMBY_Email_Template.*"
+---
+
+# FIMBY Notification Patterns
+
+Cross-references: `fimby-design-philosophy.mdc` (voice), `fimby-architecture.mdc` (identity stamping, neighbourhood scoping, NOTIF_* constants), `fimby-apex-patterns.mdc` + `salesforce-apex-cursor-rules_apex-best-practices.mdc` (bulkification, repository pattern, no SOQL in loops).
+
+---
+
+## 1. Voice — neighbour, not platform
+
+Notifications inherit the FIMBY voice from `fimby-design-philosophy.mdc`. Specifics for notification copy:
+
+| Rule | Example |
+|------|---------|
+| Active voice, present tense | `Maya replied to your offer` not `A reply has been posted` |
+| Lowercase first-person pronouns (`i`, `my`) | `i wanted to check in` not `I wanted to check in` |
+| Recipient-aware second person (`you` / `your`) | `Maya wants to borrow your drill` not `A neighbour requested an item` |
+| Non-punitive language | `Maya didn't respond yet` not `Maya failed to respond` |
+| No exclamation marks | `Pickup is ready for Maple Co-op` not `Pickup is ready!` |
+| No em dashes or en dashes | Use periods, commas, or new sentences. Em dashes are AI tells |
+| No "Community Member", "User", "Member" labels | These read corporate. Use names; fall back to `'A neighbour'` |
+
+## 2. Title shape
+
+Three canonical patterns:
+
+```
+"{actor display name} {verb} {object phrase}"      // actor-initiated
+"{thing} {state change}"                            // state-initiated, no actor
+"Your {thing} {state change}"                       // state change targeting recipient
+```
+
+- `Title__c` **≤ 80 chars** (iOS lock-screen ceiling for push display)
+- Never duplicate `actorName` inside the title text when `Actor_Name__c` is also set — the LWC renders both, doubling it reads broken
+
+## 3. Body shape
+
+- One sentence carrying the **deciding context** (date, quantity, location, deadline) so the recipient can decide whether to act without opening
+- `Body__c` **≤ 140 chars**
+- Empty string allowed when the title is fully self-contained; **never `null`**
+
+## 4. Actor convention (mandatory)
+
+`Actor_Name__c` is **always one of**:
+
+1. **A human display name** resolved from the **represented identity** (`Posted_By__c` / `On_Behalf_Of__c` / acting-as Contact per the dual-stamp table in `fimby-architecture.mdc`).
+   - Prefer **full name** by default
+   - Use **first name only** when intimacy outweighs disambiguation — lending and bulk-buy domains
+2. **A neighbourhood-team label**:
+   - `'Neighbourhood team'` for moderator actions, vouch revoke/pause, support relationship lifecycle
+   - `'FIMBY'` for system-initiated platform messages (auto-handoff, waitlist promotion, event reminders, bulk-buy broadcasts, system events)
+3. **A documented icon token** *only* when it semantically replaces a person:
+
+   | Token | Where used | LWC rendering |
+   |-------|-----------|---------------|
+   | `'care'` | Support relationship lifecycle | `fimbyNotificationsList` renders the support/care icon instead of initials |
+   | `'system'` | Reserved for future platform-level messages | Same pattern as `'care'` — icon, not initials |
+
+`null` and `''` are **banned outright**. The LWC initials avatar treats `''` as a missing name (renders blank) and `'care'` as initials `CA` (confusing) unless the token is documented above and the LWC opts into icon rendering by type.
+
+## 5. URL convention (mandatory — enables the host swap)
+
+**Strict separation by destination — both surfaces are CMDT-backed so admins can edit any URL via Setup → Custom Metadata Types without an Apex deploy.**
+
+| Destination | Source CMDT | Apex helper | Rationale |
+|-------------|-------------|-------------|-----------|
+| Experience Cloud site (`our.fimby.com` today, `app.fimby.com` after universal-links) | `FIMBY_URL__mdt` (`Base_URL__c` + `Path__c`) | `FimbySettings.getUrl(devName, recordId?, querySuffix?)` | Single host-swap surface; **every record shares one `Base_URL__c` value** |
+| Public website (`fimby.com/family-in-my-backyard/...` — explainers, terms, privacy, etc.) | `FIMBY_Public_Website_URL__mdt` (`Full_URL__c`) | `FimbyPublicWebsiteLinks.getUrl(devName)` | Outside Experience Cloud, **not affected by host swap** |
+
+### Rules
+
+- Every `Action_URL__c` on a notification → `FimbySettings.getUrl(...)`. **Never** hardcoded, **never** relative, **never** a public-website URL.
+- Every Experience Cloud CTA in an email → `FimbySettings.getUrl(...)`. Same.
+- Every public-website link in an email → `FimbyPublicWebsiteLinks.getUrl(...)`. **Never** via `FimbySettings.getUrl(...)`. **Never** a `FIMBY_URL__mdt` record.
+- `FIMBY_URL__mdt` contract: every record's `Base_URL__c` is the same value. If you ever feel like adding a record with a different `Base_URL__c`, the URL belongs in `FIMBY_Public_Website_URL__mdt` instead.
+- No hardcoded URL strings in Apex outside the two helper classes (`FimbySettings`, `FimbyPublicWebsiteLinks`).
+
+### API
+
+```apex
+// Experience Cloud
+FimbySettings.getUrl(developerName)                                  // page route, no record id
+FimbySettings.getUrl(developerName, recordId)                        // record detail
+FimbySettings.getUrl(developerName, recordId, querySuffix)           // record + query string (e.g. '?action=reviewRequest&requestId=...')
+
+// Public website
+FimbyPublicWebsiteLinks.getUrl(developerName)                        // returns Full_URL__c
+```
+
+### Email CTA double-prefix bug — historical context
+
+`FimbyEmailHtmlBuilder.buildCtaUrl()` historically prepended `https://our.fimby.com` to `Action_URL__c` unconditionally. Once notifications started using `FimbySettings.getUrl()` (absolute URLs), email cards rendered `https://our.fimby.com/https://our.fimby.com/library-item/...`. The fix: if `Action_URL__c` is already absolute (`startsWithIgnoreCase('http')`), pass it through unchanged. New code should never depend on `buildCtaUrl()` performing host stitching.
+
+## 6. Push payload deep-link metadata (server-only, dormant)
+
+`FimbyPushNotificationService.PushPayload.data` carries two optional fields on every single-notification push:
+
+- `action_url` — the same value stored in `Notification__c.Action_URL__c`
+- `notification_id` — the `Notification__c.Id`
+
+Batched pushes (one generic push per gate per user) include `action_url` **only when the batch covers exactly one underlying notification**.
+
+**Mobile behavior is unchanged.** `resolvePushRoute()` in the mobile app currently routes to `/messages` (DM gate) or `/notifications` (activity gate) based on `channelId`. It does **not** read `action_url`. Per-target push routing is a separate product decision. The dormant payload exists so that decision becomes a 5-line mobile change later, not a coordinated SF + mobile release.
+
+Push content (title / body) stays generic per the humane-push system: `"New message"`, `"Neighbourhood activity"`, panda messages. **Per-notification specifics live in the in-app inbox row and the email card, not in the push.**
+
+## 7. Coverage rules — what produces a notification
+
+These rules constrain which user actions produce a notification. They prevent gap-fill audits from growing rows we deliberately want silent.
+
+- **Content edits do not notify.** Editing a story, post, library item, comment, profile field, etc. never produces a notification to anyone. The author owns the artifact; followers see the change next time they view.
+- **Content deletes do not notify when nothing is pending.** Deleting a story with comments — no notification (no pending action). Deleting a closed/fulfilled post — no notification.
+- **Content deletes DO notify when something is pending.** Deleting a library item with active borrow requests, archiving an asks/offers post with un-resolved responders, cancelling an event with RSVPs — these notify because the affected party expected to act.
+- **Actions taken on behalf of the recipient always notify** (dual-stamp rule from `fimby-architecture.mdc` — the represented identity gets the notification, not just the real actor).
+- **System-driven state changes notify** when the recipient lost an option (waitlist promotion, request lapsed, capacity reached).
+
+## 8. Vouching is system messaging (no opt-out)
+
+Vouching is trust infrastructure. All `Vouch_*` notification types are treated like account-safety messages — **no per-category toggle, no opt-out, bypass every standard gate** (master push toggle, per-category toggles, doorbell fatigue, quiet hours).
+
+Affected types: `Vouch_Request_Received`, `Vouch_Request_Reminder`, `Vouch_Approved`, `Vouch_Declined`, `Vouch_Revoked`, `Voucher_Paused`.
+
+Implementation:
+- Push side: members of `FimbyNotificationService.SECURITY_BYPASS_PUSH_TYPES`
+- Email side: members of `FimbyEmailAlertService.SECURITY_BYPASS_EMAIL_TYPES`
+- Settings UI: covered by the static "Account & Safety" line, no toggle
+
+## 9. Dual-check ownership (per `fimby-architecture.mdc`)
+
+When deciding whether a viewer can see a notification or click through, accept access via **either**:
+
+- `Notification__c.Contact__c == actingAsContactId` (the represented identity), **OR**
+- The notification's related record's real-actor field matches `realContactId`
+
+Single-field checks break for users acting as another identity. Use `FimbyIdentityRepository` to resolve both IDs.
+
+## 10. Blocking
+
+Notification list queries must filter by `FimbyBlockingHelper.getBidirectionalBlocks(viewerContactId)` against both the **represented identity** field and the **real actor** field on the related record. Do not re-implement bidirectional block queries inline.

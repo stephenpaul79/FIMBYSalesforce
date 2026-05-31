@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Expo_Push_Token__c</fullName>
+    <description>Expo Push Notification token for the FIMBY mobile app. This token is registered when the user signs into the mobile app and is used to send push notifications to their device.</description>
+    <externalId>false</externalId>
+    <label>Expo Push Token</label>
+    <length>255</length>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

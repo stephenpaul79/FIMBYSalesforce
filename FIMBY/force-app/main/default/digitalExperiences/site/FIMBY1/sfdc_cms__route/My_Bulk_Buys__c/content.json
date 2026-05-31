@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Bulk Buys",
+  "contentBody" : {
+    "activeViewId" : "My_Bulk_Buys",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-bulk-buys",
+    "urlPrefix" : "my-bulk-buys"
+  },
+  "urlName" : "my-bulk-buys"
+}

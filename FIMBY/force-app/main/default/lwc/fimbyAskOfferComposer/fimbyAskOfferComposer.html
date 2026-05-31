@@ -1,0 +1,493 @@
+<template>
+    <div class="fimby-ask-offer-composer">
+        <!-- Loading State -->
+        <template lwc:if={isLoadingContact}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="general" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Breadcrumb Header -->
+        <template lwc:if={showPageHeader}>
+            <c-fimby-page-header page-title="Create a Post"></c-fimby-page-header>
+        </template>
+
+        <!-- Bio soft-gate: gentle nudge to introduce yourself before asking neighbours for help -->
+        <template lwc:if={showBioGate}>
+            <div class="bio-gate-banner" role="status">
+                <img src={bioGateIconUrl} alt="" class="bio-gate-icon">
+                <div class="bio-gate-content">
+                    <p class="bio-gate-title">Say hi first?</p>
+                    <p class="bio-gate-text">Posting an ask or offer goes over much better when neighbours know who's reaching out. A quick intro post takes a minute &mdash; we'll draft it from your profile.</p>
+                </div>
+                <div class="bio-gate-actions">
+                    <button type="button" class="bio-gate-skip" onclick={handleBioGateDismiss}>Maybe later</button>
+                    <button type="button" class="bio-gate-cta btn-primary" onclick={handleBioGateOpenModal}>Post my intro</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Intro post modal (lazy-mounted from the soft-gate CTA) -->
+        <template lwc:if={showIntroPostModal}>
+            <c-fimby-intro-post-modal
+                onbioposted={handleBioPosted}
+                onbioskipped={handleBioSkipped}>
+            </c-fimby-intro-post-modal>
+        </template>
+
+        <!-- ======================================== -->
+        <!-- STEP 1: Type Selection                   -->
+        <!-- ======================================== -->
+        <template lwc:if={showTypeSelection}>
+            <div class="post-type-section">
+                <div class="post-type-title">What would you like to post?</div>
+                <div class="type-buttons">
+                    <button class={needButtonClass} onclick={handleNeedSelect}>
+                        <div class="type-icon-img">
+                            <img src={needIconUrl} alt="" class="type-icon-branded">
+                        </div>
+                        <div class="type-content">
+                            <div class="type-title">Ask</div>
+                            <div class="type-description">Request something you need</div>
+                        </div>
+                    </button>
+
+                    <button class={offerButtonClass} onclick={handleOfferSelect}>
+                        <div class="type-icon-img">
+                            <img src={offerIconUrl} alt="" class="type-icon-branded">
+                        </div>
+                        <div class="type-content">
+                            <div class="type-title">Offer</div>
+                            <div class="type-description">Share something you can give</div>
+                        </div>
+                    </button>
+
+                    <button class={eventButtonClass} onclick={handleEventSelect}>
+                        <div class="type-icon-img">
+                            <img src={eventDetailsIconUrl} alt="" class="type-icon-branded">
+                        </div>
+                        <div class="type-content">
+                            <div class="type-title">Event</div>
+                            <div class="type-description">Post an upcoming event</div>
+                        </div>
+                    </button>
+
+                    <button class={bulkBuyButtonClass} onclick={handleBulkBuySelect}>
+                        <div class="type-icon-img">
+                            <img src={bulkBuyIconUrl} alt="" class="type-icon-branded">
+                        </div>
+                        <div class="type-content">
+                            <div class="type-title">Bulk Buy</div>
+                            <div class="type-description">Coordinate a shared purchase</div>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="form-navigation">
+                    <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back">&lt; Back&nbsp;&nbsp;</button>
+                    <button class="nav-btn nav-next" onclick={handleNext} disabled={isNextDisabled} type="button">&nbsp;&nbsp;Next &gt;</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ======================================== -->
+        <!-- STEP 2: Ask / Offer / Event Form         -->
+        <!-- ======================================== -->
+        <template lwc:if={showForm}>
+            <div class="composer-form">
+
+                <!-- Event Type Selector (Step 1.5 — only for Events) -->
+                <template lwc:if={isEventType}>
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <img src={eventDetailsIconUrl} alt="" class="section-icon">
+                            Event Type
+                        </h3>
+                        <div class="event-type-buttons">
+                            <button class={gatheringButtonClass} data-event-type="Gathering" onclick={handleEventTypeSelect}>
+                                <img src={diningTableIconUrl} alt="" class="event-type-icon">
+                                <div class="event-type-content">
+                                    <span class="event-type-label">Gathering</span>
+                                    <span class="event-type-help">A small event you're hosting</span>
+                                </div>
+                            </button>
+                            <button class={openEventButtonClass} data-event-type="Open_Event" onclick={handleEventTypeSelect}>
+                                <img src={peopleIconUrl} alt="" class="event-type-icon">
+                                <div class="event-type-content">
+                                    <span class="event-type-label">Open Event</span>
+                                    <span class="event-type-help">A larger event you're hosting or organizing</span>
+                                </div>
+                            </button>
+                            <button class={communityEventButtonClass} data-event-type="Community_Event" onclick={handleEventTypeSelect}>
+                                <img src={cityscapeIconUrl} alt="" class="event-type-icon">
+                                <div class="event-type-content">
+                                    <span class="event-type-label">Community Event</span>
+                                    <span class="event-type-help">An event someone else is hosting that you want neighbours to know about</span>
+                                </div>
+                            </button>
+                        </div>
+                        <template lwc:if={showEventTypeInfoBanner}>
+                            <div class="event-type-info-banner" role="note">
+                                <lightning-icon icon-name="utility:info" size="xx-small" class="info-banner-icon"></lightning-icon>
+                                <span>{eventTypeInfoText}</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Post Details Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <img src={postDetailsIconUrl} alt="" class="section-icon">
+                        {formSectionTitle}
+                    </h3>
+
+                    <!-- Title -->
+                    <div class="form-field form-field-with-count">
+                        <div class="field-label-row">
+                            <label class="field-label" for="post-title-input">Post Title <abbr class="slds-required" title="required">*</abbr></label>
+                            <span class={titleCountClass}>{titleCharacterCount}</span>
+                        </div>
+                        <lightning-input
+                            id="post-title-input"
+                            type="text"
+                            variant="label-hidden"
+                            value={postTitle}
+                            onchange={handleTitleChange}
+                            max-length="80"
+                            required>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-field form-field-with-count">
+                        <div class="field-label-row">
+                            <label class="field-label" for="post-description-input">Description <abbr class="slds-required" title="required">*</abbr></label>
+                            <span class={descriptionCountClass}>{descriptionCharacterCount}</span>
+                        </div>
+                        <lightning-textarea
+                            id="post-description-input"
+                            variant="label-hidden"
+                            value={postDescription}
+                            onchange={handleDescriptionChange}
+                            max-length="2000"
+                            required>
+                        </lightning-textarea>
+                    </div>
+
+                    <!-- End Date + Quantity (side-by-side on desktop, stacked on mobile) -->
+                    <div class="expires-quantity-grid">
+                        <div class="form-field">
+                            <div class="field-label-row">
+                                <label class="field-label" for="end-date-input">{endDateLabel} <abbr class="slds-required" title="required">*</abbr></label>
+                            </div>
+                            <input
+                                id="end-date-input"
+                                type="date"
+                                class="date-input"
+                                value={endDate}
+                                onchange={handleEndDateChange}
+                                required
+                            />
+                        </div>
+
+                        <template lwc:if={showQuantityField}>
+                            <div class="form-field">
+                                <div class="field-label-row">
+                                    <label class="field-label" for="quantity-input">{quantityLabel} <abbr class="slds-required" title="required">*</abbr></label>
+                                </div>
+                                <lightning-input
+                                    id="quantity-input"
+                                    type="number"
+                                    variant="label-hidden"
+                                    value={quantity}
+                                    onchange={handleQuantityChange}
+                                    min="1"
+                                    required>
+                                </lightning-input>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Per Response Limit (below the grid, Offer or Gathering only) -->
+                    <template lwc:if={showQuantityField}>
+                        <template lwc:if={showPerResponseLimit}>
+                            <div class="form-field">
+                                <div class="field-label-row">
+                                    <span class="label-with-help">
+                                        <label class="field-label" for="per-response-input">{perResponseLimitLabel}</label>
+                                        <lightning-helptext content="Limit how much each person can claim"></lightning-helptext>
+                                    </span>
+                                </div>
+                                <lightning-input
+                                    id="per-response-input"
+                                    type="number"
+                                    variant="label-hidden"
+                                    value={perResponseLimit}
+                                    onchange={handlePerResponseLimitChange}
+                                    min="1">
+                                </lightning-input>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Expected Attendance (Open Event only) -->
+                    <template lwc:if={showExpectedAttendance}>
+                        <div class="form-field">
+                            <div class="field-label-row">
+                                <span class="label-with-help">
+                                    <label class="field-label" for="expected-attendance-input">Expected Attendance</label>
+                                    <lightning-helptext content="Roughly how many people do you expect? This helps neighbours know the vibe — it won't limit who can come."></lightning-helptext>
+                                </span>
+                            </div>
+                            <lightning-input
+                                id="expected-attendance-input"
+                                type="number"
+                                variant="label-hidden"
+                                value={expectedAttendance}
+                                onchange={handleExpectedAttendanceChange}
+                                min="1"
+                                placeholder="e.g., 50">
+                            </lightning-input>
+                        </div>
+                    </template>
+
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Posting as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Event Details Section (When & Where — Events only) -->
+                <template lwc:if={isEventType}>
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <img src={eventDetailsIconUrl} alt="" class="section-icon">
+                            When &amp; Where
+                        </h3>
+
+                        <div class="date-grid">
+                            <div class="form-field">
+                                <label class="field-label">Event Start <abbr class="slds-required" title="required">*</abbr></label>
+                                <input
+                                    type="datetime-local"
+                                    class="datetime-input"
+                                    value={eventStart}
+                                    onchange={handleEventStartChange}
+                                />
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Event End</label>
+                                <input
+                                    type="datetime-local"
+                                    class="datetime-input"
+                                    value={eventEnd}
+                                    onchange={handleEventEndChange}
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <div class="field-label-row">
+                                <label class="field-label" for="location-input">Location
+                                    <template lwc:if={isGathering}><abbr class="slds-required" title="required">*</abbr></template>
+                                    <template lwc:if={isOpenEvent}><abbr class="slds-required" title="required">*</abbr></template>
+                                </label>
+                            </div>
+                            <lightning-input
+                                id="location-input"
+                                type="text"
+                                variant="label-hidden"
+                                value={location}
+                                onchange={handleLocationChange}
+                                placeholder="e.g., Community Centre, 123 Main St">
+                            </lightning-input>
+                        </div>
+
+                        <!-- Event Notes (Open Event + Community Event) -->
+                        <template lwc:if={showEventNotes}>
+                            <div class="form-field">
+                                <div class="field-label-row">
+                                    <label class="field-label" for="event-notes-input">{eventNotesLabel}</label>
+                                </div>
+                                <lightning-input
+                                    id="event-notes-input"
+                                    type="text"
+                                    variant="label-hidden"
+                                    value={eventNotes}
+                                    onchange={handleEventNotesChange}
+                                    max-length="255"
+                                    placeholder={eventNotesPlaceholder}>
+                                </lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- Event Link (Community Event only) -->
+                        <template lwc:if={showEventLink}>
+                            <div class="form-field">
+                                <div class="field-label-row">
+                                    <span class="label-with-help">
+                                        <label class="field-label" for="event-link-input">Event Link</label>
+                                        <lightning-helptext content="Link to the event page, ticket site, or organizer's page so neighbours can get the latest details."></lightning-helptext>
+                                    </span>
+                                </div>
+                                <lightning-input
+                                    id="event-link-input"
+                                    type="url"
+                                    variant="label-hidden"
+                                    value={eventLink}
+                                    onchange={handleEventLinkChange}
+                                    placeholder="https://...">
+                                </lightning-input>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Post Settings Section (Gathering + Ask/Offer only) -->
+                <template lwc:if={showPostSettingsSection}>
+                    <div class="form-section form-section-with-nav">
+                        <h3 class="section-title">
+                            <img src={settingsIconUrl} alt="" class="section-icon">
+                            Post Settings
+                        </h3>
+                        <template lwc:if={isNeed}>
+                            <div class="urgent-toggle-row">
+                                <lightning-input
+                                    type="toggle"
+                                    label="Mark as Urgent"
+                                    checked={isUrgent}
+                                    onchange={handleUrgentChange}
+                                    message-toggle-active="Urgent"
+                                    message-toggle-inactive="">
+                                </lightning-input>
+                                <p class="urgent-help-text">Urgent asks are visible to adjacent neighbourhoods so more neighbours can help.</p>
+                            </div>
+                        </template>
+
+                        <p class="settings-help">If you are comfortable, auto-accepting and auto-sharing your contact info with those who respond can make things quicker &amp; easier for you.</p>
+
+                        <div class="settings-grid">
+                            <template lwc:if={showAutoAcceptSection}>
+                                <div class="form-field">
+                                    <lightning-input
+                                        type="checkbox"
+                                        label={autoAcceptLabel}
+                                        checked={autoAcceptResponses}
+                                        onchange={handleAutoAcceptChange}>
+                                    </lightning-input>
+                                </div>
+                            </template>
+
+                            <template lwc:if={showAutoShareSection}>
+                                <div class="form-field">
+                                    <lightning-input
+                                        type="checkbox"
+                                        label="Auto-Share Contact Info"
+                                        checked={autoShareContactInfo}
+                                        onchange={handleAutoShareChange}>
+                                    </lightning-input>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="form-navigation">
+                            <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back to type selection">&lt; Back&nbsp;&nbsp;</button>
+                            <button class="nav-btn nav-next" onclick={handlePost} disabled={isSubmitDisabled} type="button">{navNextLabel}</button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Nav-only card (Open Event + Community Event — no user-facing settings) -->
+                <template lwc:if={showPostSettingsSection}>
+                </template>
+                <template lwc:else>
+                    <div class="form-section form-section-nav-only">
+                        <div class="form-navigation">
+                            <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back to type selection">&lt; Back&nbsp;&nbsp;</button>
+                            <button class="nav-btn nav-next" onclick={handlePost} disabled={isSubmitDisabled} type="button">{navNextLabel}</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ======================================== -->
+        <!-- STEP 2 (alt): Bulk Buy Form              -->
+        <!-- ======================================== -->
+        <template lwc:if={showBulkBuyForm}>
+            <c-fimby-bulk-buy-form
+                onsubmit={handleBulkBuySubmit}
+                onback={handleBack}>
+            </c-fimby-bulk-buy-form>
+        </template>
+
+        <!-- ======================================== -->
+        <!-- STEP 3: Photo Upload                     -->
+        <!-- ======================================== -->
+        <template lwc:if={showPhotoStep}>
+            <div class="photo-step-screen">
+                <div class="photo-step-content">
+                    <h2 class="photo-step-title">Add Photos</h2>
+                    <p class="photo-step-message">Photos help your post stand out. You can add up to 4 and manage them later.</p>
+
+                    <c-fimby-multi-image-manager
+                        record-id={createdRecordId}
+                        object-api-name="Needs_Offers__c"
+                        max-slots="4"
+                        mode="full">
+                    </c-fimby-multi-image-manager>
+
+                    <div class="photo-step-actions">
+                        <lightning-button
+                            label="Continue"
+                            variant="brand"
+                            onclick={handlePhotoUploaded}
+                            class="continue-button">
+                        </lightning-button>
+                        <button class="btn btn-neutral" onclick={handleSkipPhoto}>
+                            Skip for now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ======================================== -->
+        <!-- STEP 4: Confirmation                     -->
+        <!-- ======================================== -->
+        <template lwc:if={showConfirmation}>
+            <div class="confirmation-screen">
+                <div class="confirmation-content">
+                    <c-fimby-celebration action-type={celebrationActionType}></c-fimby-celebration>
+
+                    <h2 class="confirmation-title">
+                        Your new {confirmationTypeLabel} "<span class="highlight">{confirmationTitle}</span>" has been posted.
+                    </h2>
+
+                    <div class="confirmation-actions">
+                        <lightning-button
+                            label="View Post"
+                            variant="brand"
+                            onclick={handleViewPost}
+                            class="action-button">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading Overlay -->
+        <template lwc:if={isPosting}>
+            <div class="loading-overlay">
+                <div class="loading-content">
+                    <c-fimby-loading-message context="posting" size="large"></c-fimby-loading-message>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

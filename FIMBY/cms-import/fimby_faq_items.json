@@ -1,0 +1,94 @@
+{
+    "content": [
+        {
+            "type": "fimby_faq_item",
+            "urlName": "what-is-fimby",
+            "body": {
+                "question": "What is FIMBY?",
+                "answer": "<p>FIMBY (<strong>Family In My Backyard</strong>) is a neighbourhood platform that helps you connect with your neighbours through shared stories, asks and offers, a lending library, and direct messaging. It was built to make it easy for people living near each other to share life, lend a hand, and look out for one another.</p>",
+                "sortOrder": "010",
+                "category": "Getting Started"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "how-do-i-update-my-profile",
+            "body": {
+                "question": "How do I update my profile?",
+                "answer": "<p>Tap the <strong>menu icon</strong> in the top-right corner and select <strong>Profile</strong>. From there you can edit your name, photo, pronouns, bio, and care preferences. You can also update your profile at any time from the My Stuff tab.</p>",
+                "sortOrder": "020",
+                "category": "Getting Started"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "what-are-asks-and-offers",
+            "body": {
+                "question": "What are Asks and Offers?",
+                "answer": "<p>Asks and Offers is a bulletin board where neighbours can post things they need (asks) or things they want to share (offers). This includes:</p><ul><li><strong>Goods</strong> \u2013 perishable and non-perishable items</li><li><strong>Services</strong> \u2013 free or paid help</li><li><strong>Events</strong> \u2013 neighbourhood gatherings and activities</li></ul><p>Browse what your neighbours have posted, or create your own listing from the Create button.</p>",
+                "sortOrder": "030",
+                "category": "Features"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "how-does-the-library-work",
+            "body": {
+                "question": "How does the Library work?",
+                "answer": "<p>The Library lets you share items you are willing to lend to neighbours \u2013 tools, books, games, and more. You can:</p><ul><li><strong>Browse</strong> items available in your neighbourhood</li><li><strong>Add your own items</strong> for others to borrow</li><li><strong>Request to borrow</strong> something you need</li></ul><p>It is like a neighbourhood sharing shelf, managed right from the app.</p>",
+                "sortOrder": "040",
+                "category": "Features"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "who-can-see-my-profile-and-posts",
+            "body": {
+                "question": "Who can see my profile and posts?",
+                "answer": "<p>Your profile and posts are visible only to <strong>other members in your neighbourhood</strong>. FIMBY is a private community \u2013 only registered neighbours can access the platform. Your information is never shared outside your neighbourhood group.</p>",
+                "sortOrder": "050",
+                "category": "Privacy"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "how-do-i-change-my-notification-settings",
+            "body": {
+                "question": "How do I change my notification settings?",
+                "answer": "<p>Go to <strong>Settings</strong> (via the menu in the top-right corner) and scroll to the <strong>Notifications</strong> section. You can toggle:</p><ul><li>Push notifications on or off</li><li>Email summary preferences</li><li>Which types of updates you want to receive (messages, stories, asks and offers, library items)</li></ul>",
+                "sortOrder": "060",
+                "category": "Account"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "how-do-i-send-a-message",
+            "body": {
+                "question": "How do I send a message to a neighbour?",
+                "answer": "<p>You can message any neighbour directly from their profile or from any post they have made. Tap their name or avatar, then select <strong>Message</strong>. All your conversations are in the <strong>Messages</strong> tab, accessible from the bottom navigation bar.</p>",
+                "sortOrder": "070",
+                "category": "Features"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "what-are-stories",
+            "body": {
+                "question": "What are Stories?",
+                "answer": "<p>Stories are short posts you share with your neighbourhood \u2013 updates, photos, thoughts, or things happening on your street. Think of it as a neighbourhood bulletin board where everyone can share what matters to them. Stories appear in the main feed for all neighbours to see and respond to.</p>",
+                "sortOrder": "080",
+                "category": "Features"
+            }
+        },
+        {
+            "type": "fimby_faq_item",
+            "urlName": "how-do-i-report-a-problem",
+            "body": {
+                "question": "How do I report a problem or concern?",
+                "answer": "<p>If you see content that is inappropriate or experience an issue with the app, tap the <strong>three-dot menu</strong> on any post and select <strong>Report</strong>. For general app feedback or support, visit this Help page and use the contact options below. Our team reviews all reports promptly.</p>",
+                "sortOrder": "090",
+                "category": "Account"
+            }
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+<template>
+    <div class="panel-body">
+        <!-- New member card -->
+        <div class="member-card">
+            <img src={contactPhoto} alt="" class="member-photo">
+            <div class="member-info">
+                <span class="member-name">{panelData.contactName}</span>
+                <template lwc:if={panelData.pronouns}>
+                    <span class="member-pronouns">{panelData.pronouns}</span>
+                </template>
+                <span class="member-meta">Signed up {panelData.signupDate}</span>
+            </div>
+        </div>
+
+        <!-- Join reason -->
+        <template lwc:if={panelData.joinReason}>
+            <div class="reason-card">
+                <h4 class="reason-title">Why do you want to join?</h4>
+                <p class="reason-text">{panelData.joinReason}</p>
+            </div>
+        </template>
+
+        <!-- Onboarding status -->
+        <div class="onboarding-status">
+            <span class="status-label">Onboarding</span>
+            <span class={onboardingBadgeClass}>{onboardingStatusLabel}</span>
+        </div>
+
+        <!-- Vouching status -->
+        <div class="vouching-status">
+            <div class="vouching-row">
+                <span class="status-label">Vouching</span>
+                <span class={vouchingBadgeClass}>{vouchingStatusLabel}</span>
+            </div>
+            <template lwc:if={hasPendingVouchRequest}>
+                <p class="vouching-detail">{pendingVouchSummary}</p>
+            </template>
+            <template lwc:if={canOverrideVouch}>
+                <div class="vouching-actions">
+                    <button type="button"
+                            class="btn-action btn-secondary"
+                            onclick={handleOverrideVouchClick}>
+                        Override-vouch
+                    </button>
+                </div>
+            </template>
+            <template lwc:if={vouchingError}>
+                <p class="vouching-error" role="alert">{vouchingError}</p>
+            </template>
+        </div>
+
+        <!-- Welcome message textarea -->
+        <div class="welcome-field">
+            <div class="field-label-row">
+                <label for="welcome-msg" class="field-label">Welcome Message</label>
+                <span class={messageCountClass}>{messageLength}/1000</span>
+            </div>
+            <textarea id="welcome-msg" class="welcome-textarea" value={welcomeMessage}
+                      oninput={handleMessageChange} maxlength="1000" rows="6"></textarea>
+        </div>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="panel-footer">
+        <div class="footer-primary-group">
+            <button class="btn-action btn-primary" onclick={handleSendWelcome}>Send Welcome</button>
+            <button class="btn-action btn-secondary" onclick={handleMarkWelcomed}>Mark Welcomed</button>
+        </div>
+        <button class="btn-action btn-link" onclick={handleViewProfile}>View Profile</button>
+    </div>
+</template>

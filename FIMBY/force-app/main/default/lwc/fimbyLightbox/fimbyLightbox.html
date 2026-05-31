@@ -1,0 +1,62 @@
+<template>
+    <template lwc:if={isVisible}>
+        <div class={backdropClass}
+             role="dialog"
+             aria-modal="true"
+             aria-label="Image viewer"
+             onclick={handleBackdropClick}
+             ontouchstart={handleTouchStart}
+             ontouchend={handleTouchEnd}>
+
+            <!-- Close button -->
+            <button class="lightbox-close"
+                    onclick={handleClose}
+                    aria-label="Close image viewer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <!-- Counter -->
+            <template lwc:if={showCounter}>
+                <div class="lightbox-counter" aria-live="polite">{counterText}</div>
+            </template>
+
+            <!-- Content area -->
+            <div class="lightbox-content-area">
+
+                <!-- Previous arrow -->
+                <template lwc:if={showPrev}>
+                    <button class="lightbox-nav lightbox-prev"
+                            onclick={handlePrev}
+                            aria-label="Previous image">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </template>
+
+                <!-- Image -->
+                <template lwc:if={currentImage}>
+                    <div class="lightbox-image-wrapper" onclick={handleImageClick}>
+                        <img src={currentImage.url}
+                             alt={currentImage.alt}
+                             class="lightbox-image">
+                    </div>
+                </template>
+
+                <!-- Next arrow -->
+                <template lwc:if={showNext}>
+                    <button class="lightbox-nav lightbox-next"
+                            onclick={handleNext}
+                            aria-label="Next image">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

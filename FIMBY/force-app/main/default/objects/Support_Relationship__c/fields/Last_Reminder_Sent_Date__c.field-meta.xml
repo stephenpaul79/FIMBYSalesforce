@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Reminder_Sent_Date__c</fullName>
+    <description>Most recent Day-14 / Day-30 reminder email send. Reminder batch checks this to avoid double-sending in a single cadence window.</description>
+    <externalId>false</externalId>
+    <label>Last Reminder Sent Date</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

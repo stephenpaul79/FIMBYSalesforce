@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Action_Key__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Action Key</label>
+    <length>40</length>
+    <required>true</required>
+    <type>Text</type>
+    <description>Lowercase key matching the actionType passed to fimbyCelebration, e.g. ask, offer, event, story, library, response, return, borrow, confirm-lend, welcome</description>
+</CustomField>

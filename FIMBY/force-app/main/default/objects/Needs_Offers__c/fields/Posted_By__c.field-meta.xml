@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Posted_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The person who physically created this post at the keyboard. May differ from Post Owner (Contact__c) when acting on behalf of another identity.</description>
+    <label>Submitted By</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Needs / Offers (Submitted By)</relationshipLabel>
+    <relationshipName>Needs_Offers</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Company</fullName>
+    <description>Repurposed for FIMBY: stores the neighbourhood / area / organization name the lead supplied at sign-up. For one-off waitlist leads, store the neighbourhood text (or &quot;Unknown neighbourhood - {PostalCode}&quot;). For startup leads connected to a group, store the organization name.</description>
+    <trackFeedHistory>false</trackFeedHistory>
+</CustomField>

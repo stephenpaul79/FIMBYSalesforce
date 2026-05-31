@@ -1,0 +1,65 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "96436aa2-995f-4dbe-852b-18aa711cdfdd",
+  "label" : "Story Detail",
+  "regions" : [ {
+    "id" : "5343b77c-0ecd-451f-ab67-61102d22100e",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordHeadline",
+      "id" : "dae22be8-fb5f-4f2c-952c-2a5f58736c91",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "detailsTabLabel" : "Details",
+        "discussionsTabLabel" : "Feed",
+        "recordId" : "{!recordId}",
+        "relatedTabLabel" : "Comments",
+        "tab1Type" : "details",
+        "tab2Type" : "none",
+        "tab3Type" : "none",
+        "tab4Type" : "chatter",
+        "timelineTabLabel" : "Activity"
+      },
+      "componentName" : "forceCommunity:recordHomeTabs",
+      "id" : "94927ea1-4fdd-4e7a-9f44-e3c978798739",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "d49031f6-ef30-49ba-ab80-335ab70fdaed",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "cf6d8cbf-6f83-4838-b293-aadbf787fe8d",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "{!Record._Object}: {!Record._Title}"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "0ade188a-5ea2-497d-ba90-502a14741c27",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "8a9f7854-1ad5-43ce-8fe3-37958a3a73b3",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "detail-a1F"
+}

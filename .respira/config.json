@@ -1,0 +1,11 @@
+{
+  "sites": [
+    {
+      "id": "SV",
+      "name": "SV Website",
+      "url": "https://977.e3a.myftpupload.com/",
+      "apiKey": "respira_181cd65f-737c-4aff-a487-f2b212da9d1b",
+      "default": false
+    }
+  ]
+}

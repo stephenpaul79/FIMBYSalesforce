@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Token__c</fullName>
+    <caseSensitive>true</caseSensitive>
+    <description>Opaque random 36-character token shipped in the reactivation magic link. Indexed unique for fast lookup. Case-sensitive so token entropy isn't halved.</description>
+    <externalId>true</externalId>
+    <label>Token</label>
+    <length>64</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

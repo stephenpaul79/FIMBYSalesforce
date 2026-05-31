@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Story_Feed_TTL_Days__c</fullName>
+    <defaultValue>90</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Story Feed TTL Days</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Stories older than this many days are hidden from the home feed. They remain accessible via My Stuff and direct links. Set to 0 to show all stories.</inlineHelpText>
+</CustomField>

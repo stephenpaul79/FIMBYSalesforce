@@ -1,0 +1,99 @@
+<template>
+    <div class="fimby-page-header">
+        <div class="header-container">
+            <!-- Back button (opt-in via show-back) -->
+            <button lwc:if={showBack}
+                    type="button"
+                    class="header-action back-button"
+                    aria-label="Go back"
+                    onclick={handleBackClick}>
+                <lightning-icon icon-name="utility:chevronleft" size="small" variant="neutral"></lightning-icon>
+            </button>
+
+            <!-- Left: Breadcrumb trail -->
+            <nav class="breadcrumb-nav">
+                <a href="/" class="breadcrumb-link">Home</a>
+                <template lwc:if={hasParent}>
+                    <span class="breadcrumb-separator">&rsaquo;</span>
+                    <a href={parentUrl} class="breadcrumb-link">{parentLabel}</a>
+                </template>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span class="breadcrumb-current">{pageTitle}</span>
+            </nav>
+
+            <!-- Right: Actions -->
+            <div class="header-right">
+                <!-- menuItems: inline (always visible) -->
+                <template for:each={inlineItems} for:item="item">
+                    <button key={item.key}
+                            class={item.inlineBtnClass}
+                            type="button"
+                            data-key={item.key}
+                            onclick={handleMenuItemClick}>
+                        <img lwc:if={item.iconUrl} src={item.iconUrl} alt="" class="menu-item-icon">
+                        <span>{item.label}</span>
+                    </button>
+                </template>
+
+                <!-- menuItems: responsive (desktop-only inline pills, CSS hides on mobile) -->
+                <template for:each={responsiveItems} for:item="item">
+                    <button key={item.key}
+                            class={item.inlineBtnClass}
+                            type="button"
+                            data-key={item.key}
+                            onclick={handleMenuItemClick}>
+                        <img lwc:if={item.iconUrl} src={item.iconUrl} alt="" class="menu-item-icon">
+                        <span>{item.label}</span>
+                    </button>
+                </template>
+
+                <!-- Search (preserved) -->
+                <button lwc:if={showSearch} type="button" class="header-action" aria-label="Search" onclick={handleSearchClick}>
+                    <lightning-icon icon-name="utility:search" size="medium" variant="neutral"></lightning-icon>
+                </button>
+
+                <!-- Notifications (preserved) -->
+                <button lwc:if={showNotifications} type="button" class="header-action" aria-label="Notifications" onclick={handleNotificationClick}>
+                    <lightning-icon icon-name="utility:notification" size="medium" variant="neutral"></lightning-icon>
+                    <div lwc:if={hasNotifications} class="notification-dot"></div>
+                </button>
+
+                <!-- Kebab trigger (menuItems-driven) -->
+                <button lwc:if={showKebab}
+                        type="button"
+                        class="header-action kebab-trigger"
+                        aria-label="More actions"
+                        aria-haspopup="menu"
+                        aria-expanded={kebabExpanded}
+                        onclick={handleKebabToggle}>
+                    <img src={kebabIconUrl} alt="" class="kebab-icon">
+                </button>
+            </div>
+        </div>
+
+        <!-- Optional progress bar -->
+        <div lwc:if={showProgress} class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style={progressStyle}></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kebab dropdown (rendered outside .fimby-page-header to avoid overflow:hidden / backdrop-filter clipping) -->
+    <template lwc:if={_menuOpen}>
+        <div class="menu-backdrop" onclick={handleMenuClose}></div>
+        <div class="menu-dropdown" role="menu" style={menuPositionStyle}>
+            <template for:each={dropdownItems} for:item="item">
+                <button key={item.key}
+                        class={item.dropdownItemClass}
+                        role="menuitem"
+                        type="button"
+                        data-key={item.key}
+                        onclick={handleMenuItemClick}>
+                    <img lwc:if={item.iconUrl} src={item.iconUrl} alt="" class="menu-item-icon">
+                    <span>{item.label}</span>
+                </button>
+            </template>
+        </div>
+    </template>
+</template>

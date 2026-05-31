@@ -1,0 +1,108 @@
+<template>
+    <div class="fimby-response-status-update">
+        <template lwc:if={showModal}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal-container" onclick={handleModalClick}>
+
+                    <!-- Loading State -->
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container">
+                            <c-fimby-loading-message context="messages" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Error: No Access -->
+                    <template lwc:elseif={isNoAccess}>
+                        <div class="error-screen">
+                            <div class="modal-header">
+                                <h2 class="modal-title">Update Status</h2>
+                                <button class="close-button" onclick={handleClose}>
+                                    <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="error-content">
+                                <div class="error-icon">
+                                    <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                                </div>
+                                <p class="error-message">
+                                    <strong>You do not have the correct access level to update the status on this record.</strong>
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-primary" onclick={handleClose}>Close</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Success: Confirmation Screen -->
+                    <template lwc:elseif={showConfirmation}>
+                        <div class="confirmation-screen">
+                            <div class="modal-header">
+                                <h2 class="modal-title">Status Updated</h2>
+                                <button class="close-button" onclick={handleClose}>
+                                    <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="confirmation-content">
+                                <div class="success-icon">
+                                    <lightning-icon icon-name="utility:success" size="large" variant="success"></lightning-icon>
+                                </div>
+                                <p class="confirmation-message">Status has been updated!</p>
+                                <p class="new-status">New status: <strong>{selectedStatus}</strong></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-primary" onclick={handleClose}>Done</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Non-access errors render nothing (matches legacy behavior) -->
+                    <template lwc:elseif={hasError}></template>
+
+                    <!-- Main Form -->
+                    <template lwc:else>
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h2 class="modal-title">Update Status</h2>
+                            <button class="close-button" onclick={handleClose}>
+                                <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                            </button>
+                        </div>
+
+                        <!-- Status Form -->
+                        <div class="status-form">
+                            <div class="form-group">
+                                <lightning-combobox
+                                    name="status"
+                                    label="Status"
+                                    value={selectedStatus}
+                                    options={statusOptions}
+                                    onchange={handleStatusChange}
+                                    required>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick={handleClose}>Cancel</button>
+                            <button
+                                class="btn-primary"
+                                onclick={handleSubmit}
+                                disabled={isStatusUnchanged}>
+                                <template lwc:if={isSubmitting}>
+                                    <lightning-spinner alternative-text="Updating..." size="small"></lightning-spinner>
+                                    Updating...
+                                </template>
+                                <template lwc:else>
+                                    Update
+                                </template>
+                            </button>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email_Alerts_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Master toggle for immediate email alerts. When disabled, no email alerts will be sent regardless of per-category settings.</description>
+    <externalId>false</externalId>
+    <label>Email Alerts Enabled</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

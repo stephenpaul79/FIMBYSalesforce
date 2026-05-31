@@ -1,0 +1,69 @@
+<template>
+    <div class="fimby-infinite-scroll">
+        <!-- Loading indicator at top for pull-to-refresh -->
+        <div lwc:if={showPullRefresh} class="pull-refresh-indicator">
+            <div class={pullRefreshClasses}>
+                <lightning-icon icon-name="utility:refresh" size="small"></lightning-icon>
+                <span class="refresh-text">{pullRefreshText}</span>
+            </div>
+        </div>
+
+        <!-- Scroll container -->
+        <div class="scroll-container"
+             onscroll={handleScroll}
+             ontouchstart={handleTouchStart}
+             ontouchmove={handleTouchMove}
+             ontouchend={handleTouchEnd}>
+
+            <!-- Content slot -->
+            <div class="scroll-content">
+                <slot></slot>
+            </div>
+
+            <!-- Loading indicator at bottom -->
+            <div lwc:if={isLoading} class="loading-indicator">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                <div class="loading-text">Loading more...</div>
+            </div>
+
+            <!-- End of results indicator -->
+            <div lwc:if={showEndMessage} class="end-message">
+                <lightning-icon icon-name="utility:check" size="small" variant="success"></lightning-icon>
+                <span>You're all caught up!</span>
+            </div>
+
+            <!-- Empty state -->
+            <div lwc:if={showEmptyState} class="empty-state">
+                <template lwc:if={emptyStateImageUrl}>
+                    <img src={emptyStateImageUrl} alt="" class="empty-state-gif" />
+                </template>
+                <template lwc:else>
+                    <lightning-icon icon-name={emptyStateIcon} size="large" variant="neutral"></lightning-icon>
+                </template>
+                <div class="empty-title">{emptyStateTitle}</div>
+                <div class="empty-message">{emptyStateMessage}</div>
+                <div lwc:if={showEmptyAction} class="empty-action">
+                    <lightning-button
+                        label={emptyActionLabel}
+                        variant="brand"
+                        onclick={handleEmptyAction}>
+                    </lightning-button>
+                </div>
+            </div>
+
+            <!-- Error state -->
+            <div lwc:if={showError} class="error-state">
+                <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                <div class="error-title">Something went wrong</div>
+                <div class="error-message">{errorMessage}</div>
+                <div class="error-action">
+                    <lightning-button
+                        label="Try Again"
+                        variant="neutral"
+                        onclick={handleRetry}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

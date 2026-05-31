@@ -1,0 +1,223 @@
+Id,Name,DeveloperName,Subject,TemplateType,HtmlValue,Body
+00X5f000000hR7aEAE,Experience Cloud: New Member Welcome Email,CommunityWelcomeEmailTemplate,Welcome to {!Community_Name},text,"<!DOCTYPE html>
+<html lang=""en"">
+<head><meta charset=""UTF-8""/><meta name=""viewport"" content=""width=device-width,initial-scale=1.0""/></head>
+<body style=""margin:0;padding:0;background-color:#F0EBE3;font-family:Verdana,Geneva,sans-serif;"">
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%"" style=""background-color:#F0EBE3;"">
+<tr><td align=""center"" style=""padding:24px 12px;"">
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""600"" style=""max-width:600px;width:100%;"">
+<tr><td style=""background-color:#FAF7F2;padding:14px 24px;border-radius:8px 8px 0 0;border-bottom:1px solid #E8E0D6;"">
+<a href=""https://our.fimby.com"" style=""text-decoration:none;""><img src=""https://our.fimby.com/sfsites/c/resource/Impact_Icons/FIMBYwGrass.png"" height=""40"" alt=""FIMBY"" style=""border:0;display:block;""/></a>
+</td></tr>
+<tr><td style=""background-color:#FAF7F2;padding:20px 24px 16px;border-radius:0 0 8px 8px;"">
+<p style=""margin:0;font-family:Verdana,Geneva,sans-serif;font-size:20px;font-weight:600;color:#2D2D2D;"">Welcome to {!Community_Name}</p>
+</td></tr>
+<tr><td style=""padding:16px 24px 20px;"">
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%""><tr><td style=""background:#FFFFFF;border-radius:8px;padding:14px 16px;border:1px solid #E8E0D6;border-left:3px solid #5B8760;"">
+<span style=""display:inline-block;background:#5B8760;color:#FFFFFF;font-family:Verdana,Geneva,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;padding:4px 10px;border-radius:10px;margin-bottom:8px;"">WELCOME</span>
+<p style=""margin:0 0 8px;font-family:Verdana,Geneva,sans-serif;font-size:16px;font-weight:600;color:#2D2D2D;"">You are in</p>
+<p style=""margin:0 0 10px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;"">Hi {!Receiving_User.FirstName},</p>
+<p style=""margin:0 0 10px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;"">Your username is <strong>{!Receiving_User.Username}</strong>. Open FIMBY to meet your neighbours.</p>
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%"" style=""margin-top:14px;""><tr><td align=""center"">
+<table cellpadding=""0"" cellspacing=""0"" border=""0""><tr><td style=""background:#3A7D8C;border-radius:12px;padding:12px 28px;"">
+<a href=""{!Community_Url}"" style=""color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;font-family:Verdana,Geneva,sans-serif;"">Open FIMBY</a>
+</td></tr></table></td></tr></table>
+</td></tr></table>
+</td></tr>
+<tr><td style=""background-color:#FAF7F2;padding:16px 24px;border-radius:8px;border-top:1px solid #E8E0D6;"">
+<p style=""margin:0;font-family:Verdana,Geneva,sans-serif;font-size:13px;color:#6B6B6B;""><a href=""https://fimby.com"" style=""color:#3A7D8C;text-decoration:none;"">Family In My Backyard</a></p>
+</td></tr>
+</table></td></tr></table>
+</body></html>","Hi {!Receiving_User.FirstName},
+
+Welcome to {!Community_Name}! To get started, go to {!Community_Url}
+
+Username: {!Receiving_User.Username}
+
+Thanks,
+{!Organization.Name}"
+00X5f000000hsH6EAI,Experience Cloud: Welcome to FIMBY,Experience_Cloud_Welcome_to_FIMBY,Welcome to FIMBY,html,"<table border=""0"" cellpadding=""5"" width=""550"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<div style=""""><font face=""Arial, sans-serif"">Hi {!Receiving_User.FirstName},</font></div><div style=""""><font face=""Arial, sans-serif""><br></font></div><div style=""""><font face=""Arial, sans-serif"">Welcome to FIMBY! To get started,&nbsp;<a href=""{!Community_Url}""><b>click here</b></a>.</font></div><div style=""""><font face=""Arial, sans-serif""><br></font></div><div style=""""><font face=""Arial, sans-serif"">Your username is: {!Receiving_User.Username}</font></div><div style=""""><font face=""Arial, sans-serif""><br></font></div><div style=""""><font face=""Arial, sans-serif"">Thanks,</font></div><div style=""""><font face=""Arial, sans-serif"">Team FIMBY</font></div>]]></td>
+</tr>
+</table>","Hi {!Receiving_User.FirstName},
+
+Welcome to FIMBY! To get started, click here: {!Community_Url}.
+
+Your username is: {!Receiving_User.Username}
+
+Thanks,
+Team FIMBY"
+00X5f000000hsHBEAY,Experience Cloud: Forgot Password FIMBY,Experience_Cloud_Forgot_Password_FIMBY,Your new FIMBY password.,html,"<table border=""0"" cellpadding=""5"" width=""550"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<div style=""""><font face=""arial"">Hi {!Receiving_User.FirstName},</font></div><div style=""""><font face=""arial""><br></font></div><div style=""""><font face=""arial"">Your FIMBY password has been reset.&nbsp; Head to FIMBY by <a href=""{!Community_Url}"">clicking here</a>.</font></div><div style=""""><br></div><div style=""""><font face=""arial"">Thanks,</font></div><div style=""""><font face=""arial"">The FIMBY Team</font></div>]]></td>
+</tr>
+</table>","Hi {!Receiving_User.FirstName},
+
+Your FIMBY password has been reset.  Head to FIMBY by clicking here: {!Community_Url}.
+
+Thanks,
+The FIMBY Team"
+00X5f000000hsHGEAY,Experience Cloud: Changed Password FIMBY,Experience_Cloud_Changed_Password_FIMBY,Your new FIMBY password,html,"<table border=""0"" cellpadding=""5"" width=""550"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<span style=""font-family: Arial, Helvetica, sans-serif; background-color: rgb(255, 255, 255);"">Hi {!Receiving_User.FirstName},</span><br style=""font-family: Arial, Helvetica, sans-serif;""><br style=""font-family: Arial, Helvetica, sans-serif;""><span style=""font-family: Arial, Helvetica, sans-serif; background-color: rgb(255, 255, 255);"">Your FIMBY password has been reset. Head to FIMBY by <a href=""{!Community_Url}"">clicking here</a>.</span><br style=""font-family: Arial, Helvetica, sans-serif;""><br style=""font-family: Arial, Helvetica, sans-serif;""><span style=""font-family: Arial, Helvetica, sans-serif; background-color: rgb(255, 255, 255);"">Thanks,</span><br style=""font-family: Arial, Helvetica, sans-serif;""><font face=""Arial, Helvetica, sans-serif""><span style=""background-color: rgb(255, 255, 255);"">The FIMBY Team</span></font>]]></td>
+</tr>
+</table>","Hi {!Receiving_User.FirstName},
+
+Your FIMBY password has been reset. Head to FIMBY by clicking here: {!Community_Url}.
+
+Thanks,
+The FIMBY Team"
+00XJA000000LyIC2A0,FIMBY Daily Summary,FIMBY_Daily_Summary,{!Contact.Summary_Subject__c},html,"<table border=""0"" cellpadding=""5"" width=""960"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<font style=""""><font face=""arial"" style=""font-size: 12pt; color: rgb(0, 0, 0); font-family: arial;""><span style=""font-size: 12pt;"">Hi {!Contact.FirstName},</span></font><br style=""""><br style=""""><font face=""arial"" style=""font-size: 12pt; color: rgb(0, 0, 0); font-family: arial;""><span style=""font-size: 12pt;"">Here&nbsp;</span>{!Contact.Email_Summary_Statement__c}<span style=""font-size: 12pt;"">&nbsp;recently posted.&nbsp;</span></font><span style=""font-size: 12pt; color: rgb(13, 13, 13); font-family: ui-sans-serif, -apple-system, system-ui, &quot;Segoe UI&quot;, Roboto, Ubuntu, Cantarell, &quot;Noto Sans&quot;, sans-serif, Helvetica, &quot;Apple Color Emoji&quot;, Arial, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; white-space-collapse: preserve; background-color: rgb(255, 255, 255);"">✨  </span><span style=""font-size: 12pt; color: rgb(0, 0, 0); font-family: arial;"">Take a moment to consider how you might love and be loved by your neighbours as you read what they have shared.</span><br style=""""><br style=""""><font face=""arial"" style=""font-size: 12pt;"">{!Contact.All_Items_Summary__c}</font><font face=""arial"" style=""font-size: 12pt;"">{!Contact.All_NeedsSummary__c}</font><font face=""arial"" style=""font-size: 12pt;"">{!Contact.All_Offers_Summary__c}</font><font face=""arial"" style=""font-size: 12pt;"">{!Contact.All_Library_Items_Summary__c}</font><br style=""""><br style=""""><div style=""font-size: 12pt; color: rgb(0, 0, 0); font-family: arial; text-align: center;""><em style=""font-size: 12pt;"">""By this everyone will know that you are my disciples, if you love one another.""</em></div><span style=""color: rgb(0, 0, 0); font-family: arial;""><div style=""font-size: 12pt; text-align: center;""><span style=""font-size: 12pt;"">John 13:35 (NIV)</span></div><div style=""font-size: 12pt; text-align: center;""><span style=""font-size: 12pt;""><br></span></div><div style=""font-size: 12pt; text-align: center;""><span style=""font-size: 12pt;""><img src=""https://fimby.file.force.com/servlet/servlet.ImageServer?id=015JA00000090xu&amp;oid=00D5f000006NDkr"" border=""0"" align=""center"" alt=""""><br></span></div><div style=""font-size: 12pt; text-align: center;""><span style=""font-size: 12pt;""><br></span></div><div style=""font-size: 12pt; text-align: center;""><span style=""font-family: Arial, Helvetica, sans-serif; text-align: start; background-color: rgb(255, 255, 255);"">🔗&nbsp;</span><a href=""https://fimby.my.site.com/login"" rel=""noreferrer"" target=""_new"" style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; text-align: start; background-color: rgb(255, 255, 255);"">Login to FIMBY</a></div><div style=""text-align: center;""><span style=""font-size: x-small;"">Username: <b>{!Contact.Email_Username__c}&nbsp;</b></span></div><div style=""text-align: center;""><span style=""font-size: x-small;"">(remove spaces)</span></div><div style=""text-align: center;""><font size=""1""><b><a href=""mailto:fimby@strathconavineyard.com?subject=Password Reset for {!Contact.FIMBY_Username__c}&amp;body=Please reset the password for {!Contact.FIMBY_Username__c}. Thanks, {!Contact.FirstName}"">Reset Password</a></b></font></div></span></font>]]></td>
+</tr>
+</table>","Hi {!Contact.FirstName},Here's a run down of the {!Contact.Email_Summary_Count__c} new posts recently added to the {!Contact.Account_Name_Text__c} neighourbhood on FIMBY.Take a moment to consider how you might love your neighbours, or how they might be able to love you by responding to the needs and offers you find below.{!Contact.All_Items_Summary__c}""By this everyone will know that you are my disciples, if you love one another.""John 13:35 (NIV)"
+00XJA000000M0ad2AC,FIMBY Story Summary,FIMBY_Story_Summary,"Our Voices, Our Journey",html,"<table border=""0"" cellpadding=""5"" width=""960"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; text-align: left;""><span style=""font-size: 12pt;"">Hey {!Contact.FirstName},</span></div><div style=""text-align: left;""><div style=""""><font face=""arial"" style=""""><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><br></div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><span style=""font-size: medium;"">I'm excited to share the latest stories from our neighbourhood. This week, we have&nbsp;</span>{!Contact.Email_Story_Summary_Count__c} new&nbsp;<span style=""background-color: rgb(255, 255, 255);"">{!Contact.Story_Phrase__c}</span><span style=""font-size: 12pt; background-color: rgb(255, 255, 255);"">&nbsp;</span>the heartbeat of our community.</div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><span style=""font-size: medium;""><br></span></div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><span style=""font-size: medium;"">Take a moment to listen to the voices of your neighbours—their joys, prayers, thank-yous, and reflections. These stories are the living expressions of those we walk beside:</span></div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><br></div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><span style=""font-size: 12pt;"">{!Contact.All_Stories_Summary__c}</span></div><div style=""""><div style="""">If something moves you, please leave a comment to encourage them. Your words can be a warm hug, a pat on the back, or a hand to hold.</div><div style=""""><br></div><div style="""">Together, we're building a community of faith, love, and good deeds. Let's keep uplifting and inspiring one another as we journey together.</div></div><div style=""color: rgb(0, 0, 0); font-family: arial; font-size: 12pt;""><div style=""text-align: center; font-size: 12pt;""><font face=""arial""><i>""And let us consider how we may spur one another on toward love and good deeds""&nbsp;&nbsp;</i></font></div><div style=""text-align: center; font-size: 12pt;"">Hebrews 10:24 (NIV)</div><div style=""text-align: center; font-size: 12pt;""><br></div><div style=""text-align: center; font-size: 12pt;""><div style=""font-size: 12pt;""><span style=""font-size: 12pt;""><img src=""https://fimby.file.force.com/servlet/servlet.ImageServer?id=015JA00000090xu&amp;oid=00D5f000006NDkr"" border=""0"" align=""center"" alt=""""><br></span></div><div style=""font-size: 12pt;""><span style=""font-size: 12pt;""><br></span></div><div style=""font-size: 12pt;""><span style=""font-family: Arial, Helvetica, sans-serif; text-align: start; background-color: rgb(255, 255, 255);"">🔗&nbsp;</span><a href=""https://fimby.my.site.com/login"" rel=""noreferrer"" target=""_new"" style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; text-align: start; background-color: rgb(255, 255, 255);"">Login to FIMBY</a></div><div><span style=""font-size: x-small;"">Username:&nbsp;<b>{!Contact.Email_Username__c}&nbsp;</b></span></div><div><span style=""font-size: x-small;"">(remove spaces)</span></div><div><font size=""1""><b><a href=""mailto:fimby@strathconavineyard.com?subject=Password%20Reset%20for%20{!Contact.FIMBY_Username__c}&amp;body=Please%20reset%20the%20password%20for%20{!Contact.FIMBY_Username__c}.%20Thanks,%20{!Contact.FirstName}"">Reset Password</a></b></font></div></div></div></font></div></div>]]></td>
+</tr>
+</table>","Hey {!Contact.FirstName},
+
+I'm excited to share the latest stories from our neighbourhood. This week, we have {!Contact.Email_Story_Summary_Count__c} new {!Contact.Story_Phrase__c} the heartbeat of our community.
+
+Take a moment to listen to the voices of your neighbours—their joys, prayers, thank-yous, and reflections. These stories are the living expressions of those we walk beside:
+
+{!Contact.All_Stories_Summary__c}
+If something moves you, please leave a comment to encourage them. Your words can be a warm hug, a pat on the back, or a hand to hold.
+
+Together, we're building a community of faith, love, and good deeds. Let's keep uplifting and inspiring one another as we journey together.
+""And let us consider how we may spur one another on toward love and good deeds""
+Hebrews 10:24 (NIV)
+
+🔗 Login to FIMBY
+Username: {!Contact.Email_Username__c}
+(remove spaces)
+Reset Password"
+00XJA000000M2rq2AC,Welcome Email,Welcome_Email_1677257535650,"🌱 Welcome to FIMBY, {{{Recipient.FirstName}}}! 🏡 Let's Grow Together 🌳",custom,"<!DOCTYPE html><html> <head>  <meta http-equiv=""Content-Type"" content=""text/html; charset=UTF-8"" />  <meta name=""viewport"" content=""width=device-width, initialscale=1.0"" />  <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />  <style type=""text/css"">@media screen and (max-width: 480px) {slot[style] {margin-right: 0 !important;}.columnDiv {margin-right: 0 !important;}}@media screen and (min-width: 480px) {slot[style] {margin-bottom: 0 !important;}.columnDiv {margin-bottom: 0 !important;}}</style>  <style type=""text/css"">@media screen and (max-width: 480px) {.contentbuilderBaseColumnRow .columnCell {display:inline-block;width:100%}}</style>  <style type=""text/css"">.contentpageDefaultEmailTemplatePageTemplate .contentRoot {width: 600px;}@media only screen and (max-width: 480px) {.contentpageDefaultEmailTemplatePageTemplate .contentRoot {width: 320px;}}</style> </head> <body>  <table class=""contentpageDefaultEmailTemplatePageTemplate"" style=""background-color: #E9EAEC;"" role=""presentation"" id=""contentpage_emailTemplateBodyContent"" width=""100%"" cellpadding=""0"" cellspacing=""0"">       <tr>     <td width=""100%"" align=""center"">      <table class=""contentRoot"" style=""background-color: #FFFFFF;"" role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"">               <tr>         <td style=""padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;"">          <table class=""contentbuilderBaseColumnRow"" style=""align-items: flex-start; width: 100%; background-color:;"" role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"">                       <tr valign=""top"">             <td width=""100%"" class=""columnCell"" style=""vertical-align: top;display: inline-block; float:left"">              <table cellpadding=""0"" cellspacing=""0"" style=""width: 100%; border-collapse: collapse; word-break:break-word;"">                               <tr>                 <td>                  <table style=""width:100%; border-collapse: collapse; word-break:break-word;"" id=""contentRegion"" role=""presentation"" cellspacing=""0"" cellpadding=""0"" locked=""0"">                                       <tr>                     <td align=""Center""><img style=""width: 100%; display: block; border: none; max-width: 100%; object-fit: fill;"" src=""https://fimby.file.force.com/servlet/servlet.ImageServer?id=015JA00000090xp&amp;oid=00D5f000006NDkr&amp;lastMod=1671720270000"" alt="""" width=""600"" /></td>                    </tr>                                     </table></td>                </tr>                             </table></td>            </tr>                     </table>          <table class=""contentbuilderBaseColumnRow"" style=""align-items: flex-start; width: 100%; background-color:;"" role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"">                       <tr valign=""top"">             <td width=""100%"" class=""columnCell"" style=""vertical-align: top;display: inline-block; float:left"">              <table cellpadding=""0"" cellspacing=""0"" style=""width: 100%; border-collapse: collapse; word-break:break-word;"">                               <tr>                 <td>                  <table style=""width: 100%; border-collapse: collapse; word-break: break-word; font-size: 14px"" id=""contentRegion"" role=""presentation"" cellspacing=""0"" cellpadding=""0"" locked=""0"">                                       <tr>                     <td style=""font-family: Arial, Helvetica, sans-serif;""><p><span style=""font-size:16px;"">Hi {{{Recipient.FirstName}}}! 🌱</span></p><p><span style=""font-size:16px;"">Welcome to FIMBY 🏡— your new tool for connecting with neighbors, sharing resources, and growing in faith. We’re thrilled you’ve joined us! 🌈🤝<br /><br /> Here’s what FIMBY can do for you:</span></p><p><span style=""font-size:16px;""><strong>Promote Spiritual Growth:</strong> Integrate hospitality, service, and stewardship into everyday life, helping you (and your neighbors) grow spiritually. 🕊️🌟</span></p><p><span style=""font-size:16px;""><strong>Build Local Connections:</strong> Foster meaningful relationships by connecting you with fellow believers and community members right where you live. 👥💬</span></p><p><span style=""font-size:16px;""><strong>Combat Consumerism and Bias:</strong> Share resources, widen your perspective, and practice generosity—together we can nurture empathy in our communities. 🔄🌍</span></p><p><span style=""font-size:16px;""><strong>Foster a ‘We’ not ‘Me’ Culture:</strong> Put unity into action by identifying and meeting collective needs in your neighborhood. 🤲❤️</span></p><p><span style=""font-size:16px;""><strong>Democratize Access:</strong> Everyone’s welcome—FIMBY doesn’t require the latest tech or extensive online skills, ensuring inclusivity for all. 🌐🚪</span></p><p><strong><span style=""font-size:16px;"">Ready to Dive In?&nbsp;</span></strong><span style=""font-size:16px;"">🤿&nbsp;Click below to start exploring:</span></p><p><span style=""font-size:16px;"">🔗 <strong><a href=""https://fimby.my.site.com/login"" rel=""noreferrer"" target=""_new"">Login to FIMBY</a></strong></span></p><p><span style=""font-size:16px;""><strong>Username:</strong> {{{Recipient.FIMBY_Username__c}}}</span></p><p><span style=""font-size:16px;""><strong>Password:</strong> {{{Recipient.Current_Password__c}}}</span></p><p><span style=""font-size:16px;""><strong>Reset Email:</strong> {{{Recipient.FIMBY_Reset_Email__c}}}</span></p><p><span style=""font-size:16px;"">📌 <strong>Note:</strong> Your entire household shares this account. Bookmark the login page, store your password securely, and if needed, request a reset link from the email above.<br /><br /><strong>Need a Quick Tour?&nbsp;</strong></span>📽️🎬<br /><span style=""font-size:16px;"">Check out our 15-minute FIMBY Fundamentals <a href=""https://youtu.be/f6nf5oKDZLk?si=HnPQdbxFSoRX0IIK"">YouTube video</a> for a walkthrough of all the essentials. You’ll be sowing seeds of love in no time!<br /><br /> With hope and gratitude,<br /> Stephen Rathjen 🌳</span><br /><span style=""font-size:14px;"">FIMBY Founder</span></p><p style=""text-align: center;""><span style=""font-size:16px;"">“<em>With great power comes great responsibility.</em>” Uncle Ben 😉🌱</span></p><p><span style=""font-size:16px;""><strong>P.S.</strong> Reach out anytime if you have questions, feedback, or just want to say hi!&nbsp;</span><br /> &nbsp;</p></td>                    </tr>                                     </table></td>                </tr>                                              <tr>                 <td>                  <table style=""width:100%; border-collapse: collapse; word-break:break-word;"" id=""contentRegion"" role=""presentation"" cellspacing=""0"" cellpadding=""0"" locked=""0"">                                       <tr>                     <td align=""Center""><a href=""https://fimby.my.site.com/login"" target=""_blank""><img style=""width: 100%; display: block; border: none; max-width: 100%; object-fit: fill;"" src=""https://fimby.file.force.com/servlet/servlet.ImageServer?id=015JA00000090xu&amp;oid=00D5f000006NDkr&amp;lastMod=1671721072000"" alt="""" width=""600"" /></a></td>                    </tr>                                     </table></td>                </tr>                                              <tr>                 <td>                  <table style=""width: 100%; border-collapse: collapse; word-break: break-word; font-size: 14px"" id=""contentRegion"" role=""presentation"" cellspacing=""0"" cellpadding=""0"" locked=""0"">                                       <tr>                     <td style=""font-family: Arial, Helvetica, sans-serif;"">                      <div style=""text-align: center;"">                       <br /><em>""Keep your eyes open, hold tight to your convictions,<br /> give it all you’ve got, be resolute, and love without stopping.""<br /><br /><span style=""font-size:12px;"">1 Cor 16:13-14 The Message</span></em>                      </div></td>                    </tr>                                     </table></td>                </tr>                             </table></td>            </tr>                     </table></td>        </tr>             </table></td>    </tr>     </table> </body></html>","Hi {{{Recipient.FirstName}}}! 🌱
+
+Welcome to FIMBY 🏡— your new tool for connecting with neighbors, sharing resources, and growing in faith. We’re thrilled you’ve joined us! 🌈🤝
+
+Here’s what FIMBY can do for you:
+
+Promote Spiritual Growth:Integrate hospitality, service, and stewardship into everyday life, helping you (and your neighbors) grow spiritually. 🕊️🌟
+
+Build Local Connections:Foster meaningful relationships by connecting you with fellow believers and community members right where you live. 👥💬
+
+Combat Consumerism and Bias:Share resources, widen your perspective, and practice generosity—together we can nurture empathy in our communities. 🔄🌍
+
+Foster a ‘We’ not ‘Me’ Culture:Put unity into action by identifying and meeting collective needs in your neighborhood. 🤲❤️
+
+Democratize Access:Everyone’s welcome—FIMBY doesn’t require the latest tech or extensive online skills, ensuring inclusivity for all. 🌐🚪
+
+Ready to Dive In? 🤿 Click below to start exploring:
+
+🔗 Login to FIMBY < https://fimby.my.site.com/login > 
+
+Username:{{{Recipient.FIMBY_Username__c}}}
+
+Password:{{{Recipient.Current_Password__c}}}
+
+Reset Email:{{{Recipient.FIMBY_Reset_Email__c}}}
+
+📌 Note:Your entire household shares this account. Bookmark the login page, store your password securely, and if needed, request a reset link from the email above.
+
+Need a Quick Tour? 📽️🎬
+
+Check out our 15-minute FIMBY Fundamentals YouTube video < https://youtu.be/f6nf5oKDZLk?si=HnPQdbxFSoRX0IIK > for a walkthrough of all the essentials. You’ll be sowing seeds of love in no time!
+
+With hope and gratitude,
+
+Stephen Rathjen 🌳
+
+FIMBY Founder
+
+“With great power comes great responsibility.” Uncle Ben 😉🌱
+
+P.S.Reach out anytime if you have questions, feedback, or just want to say hi! 
+
+ < https://fimby.my.site.com/login > 
+
+""Keep your eyes open, hold tight to your convictions,
+
+give it all you’ve got, be resolute, and love without stopping.""
+
+1 Cor 16:13-14 The Message"
+00XJA000000MACu2AO,Classic New User Welcome,Classic_New_User_Welcome,"🌱 Welcome to FIMBY, {!Contact.FirstName}! 🏡 Let's Grow Together 🌳",html,"<table border=""0"" cellpadding=""5"" width=""550"" cellspacing=""5"" height=""400"" >
+<tr valign=""top"" height=""400"" >
+<td tEditID=""c1r1"" style="" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"" aEditID=""c1r1"" locked=""0"" >
+<![CDATA[<p style=""background-color: rgb(255, 255, 255);""><font face=""Arial, Helvetica, sans-serif"">Hi there, {!Contact.FirstName}! 🌱</font></p><p style=""background-color: rgb(255, 255, 255);""><font face=""Arial, Helvetica, sans-serif""><br></font></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">Welcome to the FIMBY family! 🏡 We're all about stitching parishes together and helping Christian neighbours know and love one another. Ready to dive in? Great! But before we do, let's take a short moment to ground ourselves.<br><br><strong>🌟 Why should I use FIMBY?</strong><br><br>In a time where technology often emphasizes surface-level connections, FIMBY looks to offer a deeper, more meaningful engagement with those around us. 🌍&nbsp;&nbsp;While many tools might mesmerize us with their impressive interfaces and content, they frequently bypass the pressing issues of our age: unchecked capitalism, individualism, climate change, and a pervasive sense of social isolation. 📱❌&nbsp; FIMBY, though perhaps not as polished as some apps, is a conscious choice to prioritize love, faith, and community. ❤️🙏🏼🤝&nbsp; It's more than just a tool; it's a way to nurture genuine community and help manifest the Kingdom of God on Earth right where we are. 🌱🕊️&nbsp; As Marshall McLuhan insightfully said, “<strong><em>We shape our tools, and thereafter our tools shape us.</em></strong>” 🛠️➡️❤️&nbsp; Choosing FIMBY is not just about using another platform; it's about embracing a vision where our most profound values come to life, shaping a world that reflects the heart of God. 🌎💖&nbsp; &nbsp;<br><br>So are we good? We like that? Alright! Let's dive in!!&nbsp;</span>🤿</p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;""><strong><br></strong></span></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;""><strong>Login Details</strong>:</span></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;""><br></span></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">🔗&nbsp;<strong>Login URL</strong>:&nbsp;<a href=""https://fimby.my.site.com/login"" target=""_new"">https://fimby.my.site.com/login</a></span></p><p style=""background-color: rgb(255, 255, 255);""><span style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 16px;"">👤&nbsp;<strong>Username</strong>:&nbsp;</span><font face=""Arial, Helvetica, sans-serif"">{!Contact.FIMBY_Username__c}</font></p><p style=""background-color: rgb(255, 255, 255);""><span style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 16px;"">🔐&nbsp;<strong>Password</strong>:&nbsp;</span><font face=""Arial, Helvetica, sans-serif"">{!Contact.Current_Password__c}</font></p><p style=""background-color: rgb(255, 255, 255);""><span style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 16px;"">📧&nbsp;<strong>Reset Email</strong>:&nbsp;</span><font face=""Arial, Helvetica, sans-serif"">{!Contact.FIMBY_Reset_Email__c}</font><br><font face=""Arial, Helvetica, sans-serif""><span style=""font-size: 14px;"">&nbsp;</span></font></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">📌 Pro-tip: Bookmark that Login URL and save the password in your browser. It'll make life easier, especially in bustling households. Remember, your entire clan shares this account, so any ""Forgot Password?"" adventures will send a reset link to the email above.</span></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;""><br></span></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">Feel free to explore FIMBY's digital backyard, but tread lightly! 🚶‍♂️ The site is alive and kicking. Post a need or offer, and it'll make a grand appearance in tomorrow's daily summary email for all our FIMBY folks. And if you hit a snag logging in, give me a shout.&nbsp;&nbsp;Remember, as Uncle Ben from Spider-Man said,&nbsp;<em>""With great power comes great responsibility.""&nbsp;</em></span>😉</p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><br></p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">As you embark on this journey with FIMBY, know that you're not just joining a platform, but becoming more deeply connected to your neighbours who believe in the power of community, faith, and love. Together, we'll grow, learn, and shape a world that resonates with the heart of God.&nbsp;🌱<br><br>With hope and gratitude,<br>Stephen Rathjen 🌳</span><br>&nbsp;</p><hr style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><br>📽️&nbsp;<span style=""font-size: 16px;""><strong>FIMBY Fundamentals</strong></span>🎬</p><p style=""color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);""><span style=""font-size: 16px;"">Need a guide through our digital garden? Here's a short&nbsp;<a href=""https://youtu.be/f6nf5oKDZLk?si=HnPQdbxFSoRX0IIK"">YouTube video</a></span><span style=""font-size: 16px;"">&nbsp;(15m)&nbsp;that'll walk you through the basics and get you sowing seeds of love in no time.&nbsp;</span>🌻</p>]]></td>
+</tr>
+</table>","Hi there, {!Contact.FirstName}! 🌱
+
+Welcome to the FIMBY family! 🏡 We're all about stitching parishes together and helping Christian neighbours know and love one another. Ready to dive in? Great! But before we do, let's take a short moment to ground ourselves.
+
+🌟 Why should I use FIMBY?
+
+In a time where technology often emphasizes surface-level connections, FIMBY looks to offer a deeper, more meaningful engagement with those around us. 🌍  While many tools might mesmerize us with their impressive interfaces and content, they frequently bypass the pressing issues of our age: unchecked capitalism, individualism, climate change, and a pervasive sense of social isolation. 📱❌  FIMBY, though perhaps not as polished as some apps, is a conscious choice to prioritize love, faith, and community. ❤️🙏🏼🤝  It's more than just a tool; it's a way to nurture genuine community and help manifest the Kingdom of God on Earth right where we are. 🌱🕊️  As Marshall McLuhan insightfully said, “We shape our tools, and thereafter our tools shape us.” 🛠️➡️❤️  Choosing FIMBY is not just about using another platform; it's about embracing a vision where our most profound values come to life, shaping a world that reflects the heart of God. 🌎💖
+
+So are we good? We like that? Alright! Let's dive in!! 🤿
+
+Login Details:
+
+🔗 Login URL: https://fimby.my.site.com/login
+
+👤 Username: {!Contact.FIMBY_Username__c}
+
+🔐 Password: {!Contact.Current_Password__c}
+
+📧 Reset Email: {!Contact.FIMBY_Reset_Email__c}
+
+📌 Pro-tip: Bookmark that Login URL and save the password in your browser. It'll make life easier, especially in bustling households. Remember, your entire clan shares this account, so any ""Forgot Password?"" adventures will send a reset link to the email above.
+
+Feel free to explore FIMBY's digital backyard, but tread lightly! 🚶‍♂️ The site is alive and kicking. Post a need or offer, and it'll make a grand appearance in tomorrow's daily summary email for all our FIMBY folks. And if you hit a snag logging in, give me a shout.  Remember, as Uncle Ben from Spider-Man said, ""With great power comes great responsibility."" 😉
+
+As you embark on this journey with FIMBY, know that you're not just joining a platform, but becoming more deeply connected to your neighbours who believe in the power of community, faith, and love. Together, we'll grow, learn, and shape a world that resonates with the heart of God. 🌱
+
+With hope and gratitude,
+Stephen Rathjen 🌳
+
+
+📽️ FIMBY Fundamentals🎬
+
+Need a guide through our digital garden? Here's a short YouTube video (15m) that'll walk you through the basics and get you sowing seeds of love in no time. 🌻 https://youtu.be/6Lf0dIJAOJo?si=_2iVryS3tUoa_bwq"
+00XOL000002R32H2AS,FIMBY Daily Summary (Lightning),FIMBY_Daily_Summary_Lightning_1716849195094,{{{Recipient.Summary_Subject__c}}},custom,"<html>
+<head>
+	<title></title>
+</head>
+<body style=""height: auto; min-height: auto;""><font face=""arial""><font style=""color:#000000; font-family:arial; font-size:12pt; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial""><span style=""font-size:12pt"">Hi {{{Recipient.FirstName}}},</span></font></font><br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<font face=""arial""><font style=""color:#000000; font-family:arial; font-size:12pt; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial""><span style=""font-size:12pt"">Here's a run down of the {{{Recipient.Email_Summary_Statement__c}}}&nbsp;recently added to our&nbsp; {{{Recipient.Account_Name_Text__c}}} neighourbhood.</span></font></font><br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<span style=""font-size:12pt; text-align:start""><span style=""color:#000000""><span style=""font-family:arial""><span style=""font-style:normal""><span style=""font-variant-ligatures:normal""><span style=""font-weight:400""><span style=""white-space:normal""><span style=""text-decoration-thickness:initial""><span style=""text-decoration-style:initial""><span style=""text-decoration-color:initial"">Take a moment to consider how you might love your neighbours, or how they might be able to love you by responding to the needs and offers you find below.</span></span></span></span></span></span></span></span></span></span><br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+<font face=""arial""><font style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"">{{{Recipient.All_Items_Summary__c}}}{{{Recipient.All_NeedsSummary__c}}}{{{Recipient.All_Offers_Summary__c}}}{{{Recipient.All_Library_Items_Summary__c}}}</font></font><br style=""color:#000000; font-family:arial; font-size:16px; font-style:normal; font-variant-ligatures:normal; font-weight:400; text-align:start; white-space:normal; text-decoration-thickness:initial; text-decoration-style:initial; text-decoration-color:initial"" />
+&nbsp;
+<div style=""text-align:center""><span style=""font-size:12pt""><span style=""color:#000000""><span style=""font-family:arial""><span style=""font-style:normal""><span style=""font-variant-ligatures:normal""><span style=""font-weight:400""><span style=""white-space:normal""><span style=""text-decoration-thickness:initial""><span style=""text-decoration-style:initial""><span style=""text-decoration-color:initial""><em style=""font-size:12pt"">""By this everyone will know that you are my disciples, if you love one another.""</em></span></span></span></span></span></span></span></span></span></span></div>
+
+<div style=""text-align:center""><span style=""font-size:12pt; text-align:start""><span style=""color:#000000""><span style=""font-family:arial""><span style=""font-style:normal""><span style=""font-variant-ligatures:normal""><span style=""font-weight:400""><span style=""white-space:normal""><span style=""text-decoration-thickness:initial""><span style=""text-decoration-style:initial""><span style=""text-decoration-color:initial""><span style=""font-size:12pt"">John 13:35 (NIV)</span></span></span></span></span></span></span></span></span></span></span></div>
+</body>
+</html>",
+00XOL000002ouCL2AY,FIMBY Story Summary (Lightning),FIMBY_Story_Summary_Lightning_1720367679964,"Our Voices, Our Journey",custom,"<html>
+<head>
+	<title></title>
+</head>
+<body style=""height: auto; min-height: auto;""><span style=""font-size:16px;""><span style=""font-family:Arial,Helvetica,sans-serif;"">Hello {{{Recipient.Account_Name_Text__c}}} family,<br />
+<br />
+I'm excited to share the latest stories from our neighbourhood. This week, we have {{{Recipient.Email_Story_Summary_Count__c}}} new {{{Recipient.Story_Phrase__c}}} the heartbeat of our community. Take a moment to listen to the voices of your neighbours—their joys, prayers, thank-yous, and reflections. These stories are the living expressions of those we walk beside:<br />
+<br />
+{{{Recipient.All_Stories_Summary__c}}}<br />
+<br />
+If something touches your heart, please reach out and encourage them with a comment. Your words can be a warm embrace, a pat on the back, or a hand to hold. Together, we are weaving a tapestry of faith, love, and good deeds in our neighbourhood. Let's continue to uplift and inspire one another, just as we're reminded:</span></span><br />
+&nbsp;
+<div style=""text-align: center;""><span style=""font-size:16px;""><span style=""font-family:Arial,Helvetica,sans-serif;""><em>""And let us consider how we may spur one another on toward love and good deeds""&nbsp;&nbsp;</em><br />
+Hebrews 10:24 (NIV)</span></span></div>
+
+<div style=""text-align: center;"">&nbsp;</div>
+</body>
+</html>",

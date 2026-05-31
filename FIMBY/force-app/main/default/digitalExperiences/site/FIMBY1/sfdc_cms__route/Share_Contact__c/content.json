@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Share Contact Info",
+  "contentBody" : {
+    "activeViewId" : "Share_Contact",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-share-contact",
+    "urlPrefix" : "share-contact"
+  },
+  "urlName" : "share-contact"
+}

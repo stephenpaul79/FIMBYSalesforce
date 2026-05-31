@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Care_Unhelpful_Things__c</fullName>
+    <description>What can feel unhelpful or overwhelming? This helps neighbours care well.</description>
+    <externalId>false</externalId>
+    <label>Unhelpful Things</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Unannounced drop-ins</fullName>
+                <default>false</default>
+                <label>Unannounced drop-ins</label>
+            </value>
+            <value>
+                <fullName>Lots of questions at once</fullName>
+                <default>false</default>
+                <label>Lots of questions at once</label>
+            </value>
+            <value>
+                <fullName>Advice too quickly</fullName>
+                <default>false</default>
+                <label>Advice too quickly</label>
+            </value>
+            <value>
+                <fullName>Big group attention</fullName>
+                <default>false</default>
+                <label>Big group attention</label>
+            </value>
+            <value>
+                <fullName>Being posted about publicly</fullName>
+                <default>false</default>
+                <label>Being posted about publicly</label>
+            </value>
+            <value>
+                <fullName>Gifts with expectations</fullName>
+                <default>false</default>
+                <label>Gifts with expectations</label>
+            </value>
+            <value>
+                <fullName>Just pushing through talk</fullName>
+                <default>false</default>
+                <label>Just pushing through talk</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+</CustomField>

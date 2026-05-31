@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reason_Subtype__c</fullName>
+    <description>Internal-only categorization of the check-in reason. Never shown to the flagged user.</description>
+    <label>Reason Subtype</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Missed_Pickup_Window</fullName>
+                <default>false</default>
+                <label>Missed Pickup Window</label>
+            </value>
+            <value>
+                <fullName>Stopped_Replying</fullName>
+                <default>false</default>
+                <label>Stopped Replying</label>
+            </value>
+            <value>
+                <fullName>Payment_Not_Settled</fullName>
+                <default>false</default>
+                <label>Payment Not Settled</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

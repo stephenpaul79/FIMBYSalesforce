@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "1b6ea0a7-a7f8-4f78-a563-74b179e1476b",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Response_List__c",
+  "id" : "fde51c43-eff6-456d-90ee-02acef5c7e6b",
+  "label" : "Response List",
+  "objectApiName" : "Response__c",
+  "routeType" : "list-a0z",
+  "type" : "route",
+  "urlPrefix" : "response"
+}

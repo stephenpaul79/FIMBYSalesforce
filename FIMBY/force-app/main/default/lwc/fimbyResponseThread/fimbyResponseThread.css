@@ -1,0 +1,1323 @@
+/* fimbyResponseThread — Gmail-style thread */
+.fimby-response-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Loading / Error */
+.loading-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 200px;
+}
+
+.error-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.non-threaded-notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 32px 24px;
+    margin: 16px;
+    text-align: center;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.non-threaded-notice .notice-text {
+    font-size: 15px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 420px;
+}
+
+.action-back-to-event {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    padding: 10px 20px;
+    min-height: 44px;
+    font-size: var(--fimby-btn-font-size);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.action-back-to-event:hover {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.error-text {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+}
+
+.back-link {
+    background: none;
+    border: none;
+    color: var(--fimby-brand-teal);
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Unified Header */
+.thread-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    min-height: 52px;
+    flex-shrink: 0;
+    gap: 8px;
+    position: sticky;
+    top: var(--sticky-top, 0px);
+    z-index: 200;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+/* ── Thread Body ─────────────────────────────────── */
+.thread-body {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    .thread-header {
+        flex-wrap: wrap;
+        padding: 8px 10px;
+        gap: 6px;
+        transition: transform 0.3s ease;
+    }
+    .thread-header.header-hidden {
+        transform: translateY(calc(-100% - var(--sticky-top, 0px)));
+        pointer-events: none;
+    }
+    .back-button {
+        width: 32px;
+        height: 32px;
+    }
+    .header-post-link {
+        flex: 1;
+        min-width: 0;
+    }
+    .header-post-thumb {
+        width: 30px;
+        height: 30px;
+    }
+    .header-post-name {
+        font-size: 13px;
+    }
+    .header-post-meta {
+        font-size: 10px;
+    }
+    .header-right {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 6px;
+        padding-left: 38px;
+    }
+    .action-btn {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+    .relative-hint {
+        display: none;
+    }
+}
+
+.back-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+}
+
+.back-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.header-post-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    border-radius: var(--fimby-radius-sm, 6px);
+    padding: 4px;
+    transition: background 0.15s ease;
+}
+
+.header-post-link:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.header-post-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--fimby-radius-sm, 6px);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.header-post-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.header-post-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.header-post-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.header-post-meta {
+    font-size: 11px;
+    color: var(--fimby-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.header-amount {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--fimby-hover-bg, #f5f5f5);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+}
+
+.header-amount:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    text-transform: capitalize;
+    pointer-events: none;
+    user-select: none;
+}
+
+.status-new { background: var(--fimby-info-tint, #e3f2fd); color: var(--fimby-info, #1976d2); }
+.status-accepted { background: var(--fimby-success-tint, #e8f5e9); color: var(--fimby-success, #2e7d32); }
+.status-declined { background: var(--fimby-error-tint, #ffebee); color: var(--fimby-error, #c62828); }
+.status-cancelled { background: var(--fimby-hover-bg, #f5f5f5); color: var(--fimby-text-secondary, #666); }
+.status-expired { background: var(--fimby-hover-bg, #f5f5f5); color: var(--fimby-text-secondary, #666); }
+.status-completed { background: var(--fimby-success-tint, #e8f5e9); color: var(--fimby-success, #2e7d32); }
+
+/* Messages Container — scrollable middle */
+.messages-container {
+    padding: 0 24px 16px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+}
+
+.post-type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--fimby-brand-teal);
+    letter-spacing: 0.5px;
+}
+
+.post-inactive-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fimby-error, #c62828);
+}
+
+.amount-edit-icon {
+    color: var(--fimby-brand-teal);
+}
+
+/* Action Buttons */
+.action-btn {
+    padding: 6px 16px;
+    border-radius: var(--fimby-radius-md, 8px);
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.action-btn:hover { opacity: 0.85; }
+
+.action-accept { background: var(--fimby-success, #2e7d32); color: white; }
+.action-decline { background: transparent; border: 1px solid var(--fimby-error, #c62828); color: var(--fimby-error, #c62828); }
+.action-complete { background: var(--fimby-brand-teal); color: white; }
+.action-cancel { background: transparent; border: 1px solid var(--fimby-text-secondary); color: var(--fimby-text-secondary); }
+.action-share { background: var(--fimby-brand-teal); color: white; }
+
+.action-btn-subtle {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 6px 8px;
+}
+
+/* Share Contact Prompt */
+.share-contact-prompt {
+    background: var(--fimby-info-tint, #e3f2fd);
+    border: 1px solid var(--fimby-info-border, rgba(25,118,210,0.2));
+    border-radius: var(--fimby-radius-lg, 12px);
+    padding: 12px 16px;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.share-prompt-text {
+    font-size: 13px;
+    color: var(--fimby-text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+.share-prompt-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Complete clue prompt (same format as share-contact-prompt, green) */
+.complete-clue-prompt {
+    background: var(--fimby-success-tint, #e8f5e9);
+    border: 1px solid var(--fimby-success-border, rgba(46,125,50,0.2));
+    border-radius: var(--fimby-radius-lg, 12px);
+    padding: 12px 16px;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.complete-clue-prompt .share-prompt-actions {
+    justify-content: center;
+}
+
+.complete-banner-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fimby-success, #2e7d32);
+    margin: 0;
+}
+
+.orig-amount-inline {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    margin: 4px 0 0;
+}
+
+/* Messages */
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.load-more-container {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.load-more-button {
+    background: transparent;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--fimby-brand-teal);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 140px;
+}
+
+.loading-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.dot {
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: dotPulse 1.4s infinite ease-in-out;
+}
+.dot:nth-child(1) { animation-delay: -0.32s; }
+.dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+}
+
+.date-separator {
+    display: none;
+}
+
+.message-item.system-message {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    margin: 0;
+}
+
+/* Gmail-style flat messages */
+.message-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: 0;
+    padding: 20px 0 16px;
+}
+
+.message-card.from-me {
+    background: transparent;
+}
+
+.message-card.zone-first {
+    border-bottom: none;
+}
+
+.message-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.from-me .card-avatar {
+    background: var(--fimby-earth-driftwood, #8D7B6A);
+}
+
+.card-sender {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #261A11);
+    line-height: 1.4;
+}
+
+.card-timestamp {
+    font-size: 12px;
+    color: var(--fimby-text-muted, #B5A088);
+    margin-left: auto;
+    white-space: nowrap;
+    line-height: 1.4;
+    padding-top: 2px;
+}
+
+.message-card-body {
+    padding-left: 52px;
+    padding-top: 2px;
+}
+
+.via-label {
+    font-size: 11px;
+    color: var(--fimby-on-behalf-text);
+    margin-top: 4px;
+    padding-left: 52px;
+    font-style: italic;
+}
+
+.system-bubble {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.system-text {
+    grid-column: 2;
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    font-style: italic;
+    background: var(--fimby-hover-bg);
+    border-radius: 12px;
+    padding: 4px 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.system-time {
+    grid-column: 3;
+    font-size: 12px;
+    color: var(--fimby-text-muted, #B5A088);
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Thanks system message — celebratory terracotta card */
+.thanks-message {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--fimby-divider-default, rgba(0,0,0,0.06));
+}
+.thanks-card-inline {
+    position: relative;
+    max-width: 360px;
+    margin: 8px auto;
+    padding: 16px 18px;
+    background-image: linear-gradient(135deg, rgba(176, 114, 72, 0.16), rgba(176, 114, 72, 0.06));
+    background-color: rgba(176, 114, 72, 0.08);
+    border: 1px solid rgba(176, 114, 72, 0.35);
+    border-radius: var(--fimby-radius-md, 12px);
+    box-shadow: var(--fimby-shadow-card, 0 2px 8px rgba(0,0,0,0.08));
+    text-align: left;
+    overflow: hidden;
+}
+.thanks-card-inline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--fimby-badge-thank-you, rgba(176, 114, 72, 0.9));
+    opacity: 0.8;
+}
+.thanks-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.thanks-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.thanks-sender {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgba(176, 114, 72, 1);
+}
+.thanks-body {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    margin: 10px 0 4px;
+    line-height: 1.5;
+}
+.thanks-time {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted, #B5A088);
+    display: block;
+    margin-top: 8px;
+}
+
+/* Confetti — opt-in only when the user has not requested reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    .thanks-card-inline::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+            radial-gradient(circle at 12% 18%, rgba(176, 114, 72, 0.6) 0 3px, transparent 4px),
+            radial-gradient(circle at 88% 26%, rgba(163, 128, 69, 0.55) 0 3px, transparent 4px),
+            radial-gradient(circle at 22% 78%, rgba(126, 116, 149, 0.55) 0 2px, transparent 3px),
+            radial-gradient(circle at 78% 82%, rgba(91, 135, 96, 0.5) 0 2px, transparent 3px),
+            radial-gradient(circle at 50% 12%, rgba(68, 142, 158, 0.5) 0 2px, transparent 3px);
+        opacity: 0;
+        animation: thanks-confetti 1600ms ease-out 200ms 1 forwards;
+    }
+
+    @keyframes thanks-confetti {
+        0%   { opacity: 0; transform: translateY(-4px); }
+        15%  { opacity: 1; transform: translateY(0); }
+        70%  { opacity: 0.85; transform: translateY(2px); }
+        100% { opacity: 0; transform: translateY(6px); }
+    }
+}
+
+.message-text {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    color: var(--fimby-text-primary);
+}
+
+/* ── Collapsed pill with double-line extending right ── */
+/* Remove border from first message when pill is shown (avoids extra line above pill) */
+.messages-list:has(.collapsed-pill-line) .msg-collapsed.zone-first {
+    border-bottom: none;
+}
+
+.collapsed-pill-line {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.collapsed-pill-line::after {
+    content: '';
+    flex: 1;
+    border-top: 3px double var(--fimby-border-subtle, #E0D9CF);
+    margin-left: 12px;
+}
+
+.collapsed-count-pill {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-surface-input, #F7F3EB);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    flex-shrink: 0;
+}
+
+.collapsed-count-pill:hover {
+    background: var(--fimby-hover-bg, #EBE6DD);
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+/* ── Collapsed message row ──────────────────────── */
+.msg-collapsed {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    transition: background 0.12s ease;
+    font-size: 14px;
+}
+
+.msg-collapsed:hover {
+    background: var(--fimby-hover-bg, #EBE6DD);
+    margin: 0 -24px;
+    padding: 10px 24px;
+}
+
+.msg-collapsed-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.msg-collapsed-sender {
+    font-weight: 600;
+    flex-shrink: 0;
+    color: var(--fimby-text-strong, #261A11);
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msg-collapsed-snippet {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--fimby-text-muted, #B5A088);
+}
+
+.msg-collapsed-time {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--fimby-text-muted, #B5A088);
+    white-space: nowrap;
+}
+
+/* Remove border from last message (avoids extra divider above reply) */
+.messages-list > div:last-child .message-card,
+.messages-list > div:last-child.message-card,
+.messages-list > div:last-child .message-item.system-message,
+.messages-list > div:last-child.message-item.system-message {
+    border-bottom: none;
+}
+
+/* When thread is complete, remove line below last message (no reply area) */
+.messages-list.complete-thread > div:last-child .message-card,
+.messages-list.complete-thread > div:last-child .message-item.system-message {
+    border-bottom: none;
+}
+
+/* Reply Compose */
+.reply-container {
+    border-top: none;
+    padding: 4px 24px 12px;
+    padding-left: 76px;
+    flex-shrink: 0;
+}
+
+.reply-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reply-trigger:hover {
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-brand-teal);
+}
+
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.compose-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.compose-input {
+    width: 100%;
+    min-height: 80px;
+    max-height: 200px;
+    padding: 12px 16px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md);
+    font-size: 16px;
+    font-family: inherit;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    line-height: 1.4;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    touch-action: manipulation;
+}
+
+.compose-input:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+}
+
+.compose-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.compose-cancel {
+    padding: 8px 16px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md);
+    background: transparent;
+    color: var(--fimby-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.compose-cancel:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.compose-send {
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--fimby-radius-md);
+    background: var(--fimby-brand-teal);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.compose-send:hover {
+    background: var(--fimby-brand-teal-pressed);
+}
+
+.compose-send:disabled {
+    background: var(--fimby-border-subtle, #E0D9CF);
+    color: var(--fimby-text-muted, #B5A088);
+    cursor: not-allowed;
+}
+
+/* Terminal / Complete Banners */
+.terminal-banner,
+.complete-banner {
+    position: fixed;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    max-width: 600px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.terminal-banner {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-secondary);
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.complete-banner {
+    background: var(--fimby-success-tint, #e8f5e9);
+    color: var(--fimby-success, #2e7d32);
+    border-top: 1px solid var(--fimby-success-border, rgba(46,125,50,0.2));
+}
+
+.banner-share-btn {
+    background: var(--fimby-brand-teal);
+    color: white;
+    border: none;
+    border-radius: var(--fimby-radius-md, 8px);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Confirmation Dialog */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+}
+
+.confirm-dialog,
+.share-dialog {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg, 12px);
+    padding: 24px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.share-dialog {
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.confirm-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 20px;
+    line-height: 1.4;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirm-btn-secondary {
+    padding: 8px 20px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md, 8px);
+    background: transparent;
+    color: var(--fimby-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.confirm-btn-primary {
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--fimby-radius-md, 8px);
+    background: var(--fimby-brand-teal);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.confirm-btn-primary:hover { opacity: 0.9; }
+.confirm-btn-secondary:hover { background: var(--fimby-hover-bg); }
+
+/* Edit Amount */
+.edit-amount-field {
+    margin: 0 0 20px;
+}
+
+.edit-amount-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fimby-text-primary);
+    margin-bottom: 6px;
+}
+
+.edit-amount-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md, 8px);
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.edit-amount-input:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+}
+
+.edit-amount-error {
+    display: block;
+    font-size: 12px;
+    color: var(--fimby-error, #c62828);
+    margin-top: 4px;
+}
+
+/* Share Contact */
+.share-subtitle {
+    font-size: 13px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 16px;
+}
+
+.share-field-group {
+    margin-bottom: 12px;
+}
+
+.share-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+    margin-bottom: 6px;
+}
+
+.share-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-md, 8px);
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 6px;
+}
+
+.share-input:focus {
+    outline: none;
+    border-color: var(--fimby-brand-teal);
+}
+
+.share-row {
+    display: flex;
+    gap: 8px;
+}
+
+.share-half {
+    width: 50%;
+}
+
+.share-error {
+    color: var(--fimby-error, #c62828);
+    font-size: 13px;
+    margin: 8px 0 0;
+    padding: 8px 12px;
+    background: var(--fimby-error-tint, #fef2f2);
+    border-radius: var(--fimby-radius-sm, 6px);
+}
+
+/* Desktop */
+@media (min-width: 892px) {
+    .terminal-banner,
+    .complete-banner {
+        bottom: env(safe-area-inset-bottom);
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-response-thread {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-response-thread {
+        max-width: 800px;
+    }
+
+    .terminal-banner,
+    .complete-banner {
+        max-width: 800px;
+    }
+}
+
+/* Focus */
+.back-button:focus-visible,
+.reply-trigger:focus-visible,
+.compose-send:focus-visible,
+.compose-cancel:focus-visible,
+.action-btn:focus-visible,
+.confirm-btn-primary:focus-visible,
+.confirm-btn-secondary:focus-visible,
+.collapsed-count-pill:focus-visible,
+.msg-collapsed:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back-button,
+    .reply-trigger,
+    .compose-send,
+    .action-btn,
+    .dot,
+    .collapsed-count-pill,
+    .msg-collapsed,
+    .menu-button,
+    .modal-close-btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ──────────────────────────────────────────────────────────
+   A3: Block / Report — header kebab + combined modal.
+   Mirrors the fimbyConversationView pattern so DM and response
+   thread moderation surfaces look and feel identical.
+   ────────────────────────────────────────────────────────── */
+.menu-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+    color: var(--fimby-text-secondary);
+    min-width: 36px;
+    min-height: 44px;
+    flex-shrink: 0;
+}
+
+.menu-button:hover {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+.menu-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.block-modal-container {
+    max-width: 400px;
+    width: 90%;
+    margin: 0 auto;
+    border-radius: var(--fimby-radius-lg);
+    overflow: hidden;
+    background-color: var(--fimby-surface-card);
+    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    display: flex;
+    flex-direction: column;
+}
+
+.block-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.block-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fimby-text-secondary);
+}
+
+.modal-close-btn:hover { background: var(--fimby-hover-bg); }
+
+.block-modal-body { padding: 20px; }
+
+.block-warning {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 16px;
+    line-height: 1.4;
+}
+
+.block-field { margin-bottom: 16px; }
+
+.block-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 6px;
+}
+
+.block-input,
+.report-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--fimby-text-primary);
+    background-color: var(--fimby-surface-input, var(--fimby-surface-card));
+    outline: none;
+    box-sizing: border-box;
+}
+
+.report-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    min-height: 60px;
+}
+
+.block-input:focus,
+.report-textarea:focus {
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow);
+}
+
+.report-toggle { margin-bottom: 16px; }
+
+.report-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+}
+
+.block-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-md);
+    background: transparent;
+    color: var(--fimby-text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-btn:hover { background: var(--fimby-hover-bg); }
+
+.block-btn {
+    padding: 10px 20px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--fimby-radius-md);
+    background-color: var(--fimby-btn-danger-bg, var(--fimby-error));
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.block-btn:disabled,
+.cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cancel-btn:focus-visible,
+.block-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.block-btn:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover, var(--fimby-error));
+    opacity: 0.95;
+}
+
+section[role="dialog"].slds-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--fimby-modal-inset-top, 86px);
+}

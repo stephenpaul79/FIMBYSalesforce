@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Launch_Notes__c</fullName>
+    <description>Preserved from Lead conversion: free-text notes from the launch lead about their interest, context, or constraints.</description>
+    <externalId>false</externalId>
+    <label>Launch Notes</label>
+    <length>5000</length>
+    <trackHistory>false</trackHistory>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

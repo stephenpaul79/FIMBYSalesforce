@@ -1,0 +1,9 @@
+{
+  "name": "fimby-applinks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static site for app.fimby.com — serves App Links / Universal Links verification files and the OAuth callback redirect. Deploy to Vercel as a separate project.",
+  "scripts": {
+    "build": "echo 'Static site — nothing to build'"
+  }
+}

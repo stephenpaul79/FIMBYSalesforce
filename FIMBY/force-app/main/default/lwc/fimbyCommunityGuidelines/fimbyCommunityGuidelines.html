@@ -1,0 +1,129 @@
+<template>
+    <div class="fimby-guidelines-page">
+        <c-fimby-page-header
+            page-title="Community Guidelines"
+            onback={handleBack}>
+        </c-fimby-page-header>
+
+        <div class="page-content">
+
+            <!-- Welcome -->
+            <div class="guidelines-section highlight-section">
+                <div class="section-icon-row">
+                    <img src={careIconUrl} alt="" class="section-icon">
+                    <h2 class="section-title">A neighbourhood, not a platform</h2>
+                </div>
+                <p class="section-body">
+                    FIMBY is a place where neighbours look out for each other. The way we treat each other here matters more than anything we post. These guidelines are how we keep this a warm place for everyone &mdash; especially for neighbours who may be vulnerable, new, or finding their footing.
+                </p>
+                <p class="section-body">
+                    Read them as you would a note tucked under your door from someone who cares about the block, not as terms imposed from above.
+                </p>
+            </div>
+
+            <!-- Community Values -->
+            <div class="guidelines-section">
+                <h2 class="section-title">What we hope for</h2>
+                <ul class="values-list">
+                    <li><strong>Belonging over performance.</strong> You don&rsquo;t need to be polished. Show up as yourself.</li>
+                    <li><strong>Dignity over efficiency.</strong> A slower, kinder reply is worth more than a quick clever one.</li>
+                    <li><strong>Trust grows here.</strong> Most of us are sharing things we depend on or asking for help that feels vulnerable. Treat each other accordingly.</li>
+                    <li><strong>Disagreement is fine. Cruelty is not.</strong> Neighbours can hold different views and still take care of each other.</li>
+                </ul>
+            </div>
+
+            <!-- Not Allowed -->
+            <div class="guidelines-section">
+                <div class="section-icon-row">
+                    <img src={warningIconUrl} alt="" class="section-icon">
+                    <h2 class="section-title">What is not allowed</h2>
+                </div>
+                <p class="section-body">
+                    These don&rsquo;t belong on FIMBY and will be removed when reported or seen by a moderator:
+                </p>
+                <ul class="values-list">
+                    <li><strong>Harassment, bullying, or threats</strong> &mdash; including targeted insults, repeated unwanted contact, or attempts to shame a neighbour publicly.</li>
+                    <li><strong>Hate speech</strong> &mdash; content that attacks people for who they are (race, religion, gender, sexuality, ability, age, or background).</li>
+                    <li><strong>Sexual content</strong> &mdash; explicit material, or any sexual content involving minors.</li>
+                    <li><strong>Self-harm or suicide content that encourages</strong> rather than seeks support. (Posts asking for help are welcome.)</li>
+                    <li><strong>Doxxing</strong> &mdash; sharing someone else&rsquo;s home address, phone number, workplace, or other identifying details without their consent.</li>
+                    <li><strong>Illegal sales</strong> &mdash; weapons, controlled substances, stolen goods, or anything you couldn&rsquo;t legally hand to a neighbour over the fence.</li>
+                    <li><strong>Spam or scams</strong> &mdash; mass posting, repeated links, deceptive offers, or attempts to phish for personal information.</li>
+                    <li><strong>Impersonation</strong> &mdash; pretending to be another neighbour, a community group, or a FIMBY moderator.</li>
+                </ul>
+                <p class="section-body">
+                    Severe issues &mdash; threats, sexual content involving minors, doxxing, or anything that puts a neighbour at risk &mdash; are prioritised and may result in immediate suspension.
+                </p>
+            </div>
+
+            <!-- How We Respond -->
+            <div class="guidelines-section sla-section">
+                <div class="section-icon-row">
+                    <img src={moderatorIconUrl} alt="" class="section-icon">
+                    <h2 class="section-title">How we respond</h2>
+                </div>
+                <p class="section-body sla-commitment">
+                    <strong>We review every report within 24 hours.</strong>
+                </p>
+                <p class="section-body">
+                    Reports go to your neighbourhood moderator first, with the FIMBY team as backup. After review, a moderator may:
+                </p>
+                <ul class="values-list">
+                    <li>Reach out to the person who posted to ask for changes or context.</li>
+                    <li>Hide the content from the feed while it&rsquo;s being looked at.</li>
+                    <li>Remove the content if it doesn&rsquo;t belong here.</li>
+                    <li>Suspend the account if the behaviour is serious or repeated. Suspended accounts can&rsquo;t sign in until the issue is reviewed and resolved.</li>
+                </ul>
+                <p class="section-body">
+                    We try to talk before we remove. Most things get sorted with a conversation.
+                </p>
+            </div>
+
+            <!-- How to Report -->
+            <div class="guidelines-section">
+                <h2 class="section-title">How to report something</h2>
+                <p class="section-body">
+                    On any post, story, library item, or response, tap the menu (the three dots) and choose <strong>Report</strong>. Tell us briefly what concerned you. Reports are confidential &mdash; the person you reported is not told who flagged the content.
+                </p>
+                <p class="section-body">
+                    For urgent safety concerns, or if something feels too sensitive for the in-app form, email <a href="mailto:safety@fimby.ca" class="inline-link">safety@fimby.ca</a> directly.
+                </p>
+            </div>
+
+            <!-- How to Block -->
+            <div class="guidelines-section">
+                <h2 class="section-title">Blocking a neighbour</h2>
+                <p class="section-body">
+                    If someone&rsquo;s contact isn&rsquo;t welcome, you can block them from their profile or from a conversation. Blocking is mutual: neither of you will see the other&rsquo;s posts, messages, or responses. You can unblock anyone later in <strong>Settings &gt; Blocked Neighbours</strong>.
+                </p>
+            </div>
+
+            <!-- If something happens to you -->
+            <div class="guidelines-section">
+                <h2 class="section-title">If you&rsquo;re the one being treated badly</h2>
+                <p class="section-body">
+                    You don&rsquo;t need to handle it alone. Block the person if that helps you feel safe. Report the content. Reach out to your neighbourhood moderator from the Help &amp; Support page. If the situation involves real-world danger, please contact local emergency services first &mdash; FIMBY can follow up afterward.
+                </p>
+            </div>
+
+            <!-- Contact -->
+            <div class="guidelines-section contact-section">
+                <h2 class="section-title">Get in touch</h2>
+                <p class="section-body">
+                    Safety concerns: <a href="mailto:safety@fimby.ca" class="inline-link">safety@fimby.ca</a><br>
+                    General support: <a href="mailto:support@fimby.ca" class="inline-link">support@fimby.ca</a>
+                </p>
+                <a href="mailto:safety@fimby.ca" class="btn btn-neutral">
+                    <img src={emailIconUrl} alt="" class="btn-icon">
+                    Email Safety Team
+                </a>
+            </div>
+
+        </div>
+
+        <c-fimby-bottom-navigation
+            active-tab="mine"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

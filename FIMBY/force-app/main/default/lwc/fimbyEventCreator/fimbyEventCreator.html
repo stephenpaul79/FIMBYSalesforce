@@ -1,0 +1,26 @@
+<template>
+    <div class="fimby-event-creator">
+        <c-fimby-page-header page-title="Create Event"></c-fimby-page-header>
+        <div class="form-container">
+            <div class="form-section">
+                <label class="form-label">Event Title *</label>
+                <input type="text" class="form-input" placeholder="What's happening?" value={eventTitle} onchange={handleTitleChange}>
+            </div>
+            <div class="form-section">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" placeholder="Tell neighbors about your event..." value={eventDescription} onchange={handleDescriptionChange} rows="4"></textarea>
+            </div>
+            <div class="form-section">
+                <label class="form-label">Date & Time *</label>
+                <div class="datetime-inputs">
+                    <input type="date" class="form-input" value={eventDate} onchange={handleDateChange}>
+                    <input type="time" class="form-input" value={eventTime} onchange={handleTimeChange}>
+                </div>
+            </div>
+            <div class="form-section">
+                <label class="form-label">Location</label>
+                <c-fimby-location-picker onlocationchange={handleLocationChange}></c-fimby-location-picker>
+            </div>
+        </div>
+    </div>
+</template>

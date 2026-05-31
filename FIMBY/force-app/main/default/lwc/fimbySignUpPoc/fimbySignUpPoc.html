@@ -1,0 +1,50 @@
+<template>
+    <div class="poc-card">
+        <h2 class="poc-title">FIMBY Sign-Up POC</h2>
+        <p class="poc-sub">
+            If you can see this and the button returns a result below, an LWC
+            renders and can talk to the server as a guest on this browser.
+        </p>
+
+        <label class="poc-label" for="pocInput">
+            Type anything (or a postal code like V6A 1A1)
+        </label>
+        <input
+            id="pocInput"
+            class="poc-input"
+            type="text"
+            value={message}
+            onchange={handleChange}
+            placeholder="Test value"
+        />
+
+        <button
+            class="poc-button"
+            onclick={handlePing}
+            disabled={isSubmitting}
+        >
+            <template lwc:if={isSubmitting}>Testing…</template>
+            <template lwc:else>Test server call</template>
+        </button>
+
+        <template lwc:if={hasResult}>
+            <div class="poc-result">
+                <p><strong>Round-trip succeeded.</strong></p>
+                <ul>
+                    <li>Echo: {result.echo}</li>
+                    <li>Server time: {result.serverTime}</li>
+                    <li>Running as: {result.userName} ({result.userType})</li>
+                    <li>Postal match found: {result.postalMatchFound}</li>
+                    <li>Active neighbourhood: {result.postalActiveNeighbourhood}</li>
+                </ul>
+            </div>
+        </template>
+
+        <template lwc:if={hasError}>
+            <div class="poc-error" role="alert">
+                <p><strong>Server call failed.</strong></p>
+                <p>{errorText}</p>
+            </div>
+        </template>
+    </div>
+</template>

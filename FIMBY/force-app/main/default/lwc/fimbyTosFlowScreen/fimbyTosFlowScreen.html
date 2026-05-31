@@ -1,0 +1,51 @@
+<template>
+    <div class="fimby-tos-screen">
+        <p class="fimby-tos-screen__lead">
+            <template lwc:if={tosVersion}>
+                Current version <strong>{tosVersion}</strong><template lwc:if={effectiveDateLabel}>, effective {effectiveDateLabel}</template>.
+            </template>
+        </p>
+
+        <p class="fimby-tos-screen__link-row">
+            <a href={tosUrl} target="_blank" rel="noopener noreferrer"
+               class="fimby-tos-screen__link"
+               onclick={handleLinkTap}>
+                Open the FIMBY Terms of Service
+                <span aria-hidden="true" class="fimby-tos-screen__link-icon">↗</span>
+            </a>
+        </p>
+
+        <p class="fimby-tos-screen__muted">
+            You can also review our <a href={privacyUrl} target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href={guidelinesUrl} target="_blank" rel="noopener noreferrer">Community Guidelines</a>.
+        </p>
+
+        <label class="fimby-tos-screen__checkbox">
+            <input type="checkbox"
+                   checked={checkboxChecked}
+                   disabled={checkboxDisabled}
+                   onchange={handleCheckboxChange} />
+            <span>
+                I have read and agree to the FIMBY Terms of Service<template lwc:if={tosVersion}> (version {tosVersion})</template>, and I am 19 or older.
+            </span>
+        </label>
+
+        <div class="fimby-tos-screen__actions">
+            <button class="fimby-tos-screen__agree"
+                    type="button"
+                    disabled={agreeDisabled}
+                    onclick={handleAgree}>
+                <template lwc:if={submitting}>Recording…</template>
+                <template lwc:elseif={acceptanceCompleted}>Recorded</template>
+                <template lwc:else>I agree</template>
+            </button>
+        </div>
+
+        <template lwc:if={hintMessage}>
+            <p class="fimby-tos-screen__hint">{hintMessage}</p>
+        </template>
+
+        <template lwc:if={errorMessage}>
+            <p class="fimby-tos-screen__error">{errorMessage}</p>
+        </template>
+    </div>
+</template>

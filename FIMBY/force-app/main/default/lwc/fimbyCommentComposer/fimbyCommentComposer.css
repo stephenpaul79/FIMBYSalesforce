@@ -1,0 +1,614 @@
+/* FIMBY Comment Composer - Mobile First */
+.fimby-comment-composer {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 16px;
+    border: 1px solid var(--fimby-divider-default);
+    position: relative;
+}
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    gap: 12px;
+}
+
+.loading-text {
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Error Banner */
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--fimby-error-tint);
+    border: 1px solid var(--fimby-error-tint);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-error);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+/* Success State */
+.success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--fimby-success-tint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.success-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.success-message {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 20px;
+}
+
+.view-story-btn {
+    margin-top: 8px;
+}
+
+/* Story Context Display */
+.story-context {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.modal-story-context {
+    background-color: var(--fimby-info-tint);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 16px;
+}
+
+.story-context-label {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.modal-story-context .story-title {
+    font-size: 14px;
+    margin: 0;
+}
+
+.story-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0 0 12px;
+    line-height: 1.3;
+}
+
+.story-image-container {
+    margin-bottom: 12px;
+    border-radius: var(--fimby-radius-sm);
+    overflow: hidden;
+}
+
+.story-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.story-message {
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.story-divider {
+    text-align: center;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+/* Commenting As */
+.commenting-as {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.commenting-label {
+    color: var(--fimby-text-secondary);
+}
+
+.commenting-name {
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+/* Comment Input */
+.comment-input-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.character-count {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning);
+    font-weight: 500;
+}
+
+.character-count.over-limit {
+    color: var(--fimby-error);
+    font-weight: 600;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+}
+
+.field-label-row .character-count,
+.field-label-row .char-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.comment-textarea {
+    width: 100%;
+    min-height: 80px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
+    resize: vertical;
+}
+
+.composer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--fimby-radius-lg);
+    transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+    color: var(--fimby-text-primary);
+    background: var(--fimby-hover-bg);
+}
+
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.submit-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.submit-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.submit-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+/* Mention Suggestions */
+.mention-suggestions {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    box-shadow: var(--fimby-shadow-card-hover);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+
+.mention-suggestion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.mention-suggestion:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.mention-suggestion:last-child {
+    border-bottom: none;
+}
+
+.mention-info {
+    flex: 1;
+}
+
+.mention-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.mention-neighbourhood {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+    line-height: 1.2;
+}
+
+/* Responsive Design */
+@media (max-width: 320px) {
+    .fimby-comment-composer {
+        padding: 12px;
+    }
+
+    .story-title {
+        font-size: 16px;
+    }
+
+    .action-buttons {
+        gap: 6px;
+    }
+
+    .cancel-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .mention-suggestions {
+        left: 12px;
+        right: 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-comment-composer {
+        padding: 20px;
+    }
+
+    .story-title {
+        font-size: 20px;
+    }
+
+    .story-image {
+        max-height: 300px;
+    }
+
+    .comment-textarea {
+        min-height: 100px;
+    }
+}
+
+/* Close button (base before focus-visible for stylelint no-descending-specificity) */
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    color: var(--fimby-text-secondary);
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+/* Keyboard focus visibility */
+.cancel-btn:focus-visible,
+.mention-suggestion:focus-visible,
+.close-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .cancel-btn,
+    .submit-btn,
+    .mention-suggestion {
+        transition: none;
+    }
+
+    .submit-btn:active {
+        transform: none;
+    }
+}
+
+/* High Contrast Mode */
+/* stylelint-disable-next-line media-feature-name-value-no-unknown -- prefers-contrast:high is valid CSS (MQ Level 5) */
+@media (prefers-contrast: high) {
+    .mention-suggestions {
+        border-width: 2px;
+    }
+
+    .mention-name {
+        font-weight: 700;
+    }
+
+    .error-banner {
+        border-width: 2px;
+    }
+}
+
+/* ======================= */
+/* Modal Mode Styles       */
+/* ======================= */
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0;
+}
+
+.modal-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.loading-container.compact {
+    padding: 16px;
+}
+
+.success-container.compact {
+    flex-direction: row;
+    gap: 12px;
+    padding: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+}
+
+.success-text {
+    font-weight: 600;
+    color: var(--fimby-success);
+}
+
+.commenting-as.compact {
+    background: var(--fimby-success-tint);
+    border-left: 4px solid var(--fimby-success);
+    padding: 10px 12px;
+    border-radius: var(--fimby-radius-sm);
+    margin-bottom: 16px;
+}
+
+.modal-textarea {
+    min-height: 120px;
+}
+
+/* Textarea container for mention positioning */
+.textarea-container {
+    position: relative;
+}
+
+/* @Mention Dropdown for Modal */
+.mention-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 4px;
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    box-shadow: var(--fimby-shadow-card-hover);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.mention-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.mention-item:hover {
+    background: var(--fimby-info-tint);
+}
+
+.mention-item:last-child {
+    border-bottom: none;
+}
+
+.mention-item .mention-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.mention-item .mention-neighbourhood {
+    font-size: 12px;
+    color: var(--fimby-text-secondary);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Modal Mobile Responsive */
+@media (max-width: 480px) {
+    .modal-backdrop {
+        top: 0;
+        padding: 0;
+        align-items: flex-end;
+    }    .modal-container {
+        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        max-height: 85vh;
+        animation: slideUpMobile 0.3s ease;
+    }    @keyframes slideUpMobile {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+}

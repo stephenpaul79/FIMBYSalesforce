@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>First_Library_Item_Celebrated__c</fullName>
+    <defaultValue>false</defaultValue>
+    <label>First Library Item Celebrated</label>
+    <type>Checkbox</type>
+    <description>Whether the first-library-item celebration has been shown to this contact</description>
+</CustomField>

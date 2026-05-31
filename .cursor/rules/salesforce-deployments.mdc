@@ -1,0 +1,72 @@
+---
+description: Salesforce deployment rules — scoped deploys, test class requirements
+alwaysApply: true
+---
+
+# Salesforce Deployment Rules
+
+## Proactive deploy (default)
+
+When a task changes Salesforce metadata (including **LWC** bundles), **run the targeted deploy** before wrapping up the same turn. Do **not** wait for the user to ask for a deploy.
+
+**Skip or defer** only if the user explicitly asked to keep changes local, not deploy yet, or treat the work as draft; or if a deploy is impossible in context (e.g. no CLI org). If multiple bundles or paths changed, deploy each changed `--source-dir` (or `--metadata` set) sequentially—still scoped, never the whole `force-app`.
+
+---
+
+Run deploys only from `FIMBY/` where `sfdx-project.json` exists, using exactly:
+`sf project deploy start --source-dir "<path>" --wait 10 2>&1 | Select-Object -Last 20`
+
+Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`
+
+Do not use `cd`, `Set-Location`, `&&`, or other shell navigation in the command. Do not include `--target-org`. Keep `| Select-Object -Last 20`.
+
+Deploy only metadata created or changed in the current chat. Use targeted `--source-dir` or `--metadata`. Never deploy the whole project or all of `force-app`.
+
+For LWCs, `--source-dir` must point to the bundle folder, not an individual file. If multiple LWC bundles changed, include each as its own `--source-dir`.
+
+### MANDATORY pre-deploy check — run this mental checklist EVERY deploy
+
+1. **Does `--source-dir` include ANY `.cls` or `.trigger` file?**
+   - YES → you MUST add `--tests TestClassName` for each relevant test class. Omitting `--tests` causes the org to run ALL tests (~600), which wastes 20+ minutes and must be cancelled.
+   - NO (LWC, objects, layouts, flows, etc. only) → do NOT include `--tests` or `--test-level`.
+2. Never use `--test-level RunAllTestsInOrg` or `--test-level RunLocalTests` — always name specific tests.
+3. Confirm each test class still covers the Apex change (target 80%+, 75%+ only in a pinch).
+
+If deploy output ends with `Error (MetadataTransferError): Metadata API request failed: Missing message metadata.transfer:Finalizing for locale en_US.` then the deployment succeeded. This is a known Salesforce CLI locale bug that also corrupts the test summary — the pass/fail counts, percentages, and the `Failed: ×` indicator are all display artifacts and do not reflect actual test results. Treat the deploy as fully successful. Do not run `sf project deploy report` to re-check.
+
+### Post-deploy: Publish Experience Cloud after LWC deploys
+
+After a **successful** LWC deploy, immediately publish the Experience Cloud site so changes go live:
+`sf community publish --name "FIMBY" 2>&1 | Select-Object -Last 20`
+
+Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`. This applies to any deploy that includes one or more LWC bundles. Skip only if the user explicitly says not to publish.
+
+CLI deploys LWC bundles, but not Experience Cloud pages or routes. If a deploy created or changed any of these, add an `Experience Cloud Setup Required` section at the end of the session summary:
+- new page-level LWCs needing routes, like `fimbyManageIdentities` → `/manage-identities`
+- new or changed route paths referenced by deployed navigation
+- components needing page-level config, like property bindings or `recordId` from URL
+
+Include it alongside the manual profile updates list. If no Experience Cloud updates are needed, omit this section.
+
+### Custom Metadata Type records
+
+`force-app/main/default/customMetadata/*.md-meta.xml` files are CMDT **records**, deployed via `--source-dir "force-app/main/default/customMetadata"` or by targeting the specific file. They deploy fine WITHOUT `--tests`. New record types (`force-app/main/default/objects/*__mdt/`) must be deployed BEFORE their records, or the record deploy fails with "Custom metadata type is not available in this organization."
+
+The community user profile needs the **View Setup and Configuration** permission (or "Customize Application") to call `CustomMetadataType.getAll()` and `getInstance()` from Apex. If `FimbySettings.getUrl()` and `FimbyPublicWebsiteLinks.getUrl()` return blank in test runs but work in admin runs, this profile permission is the cause. The Cursor IDE browser MCP confirms it by checking the profile's System Permissions.
+
+### Atomic deploy rollback (Apex + new fields)
+
+A deploy is atomic per `sf project deploy start` call — if any test fails (including the synthetic "FAILED — coverage below 75%" warning), the ENTIRE deploy rolls back, including newly created custom fields/objects. Workaround: deploy schema-only changes (custom fields, picklist values, new CMDT types) in a separate call WITHOUT `--tests`, then deploy the Apex that depends on them in a second call WITH `--tests`. This is especially important for notification-pattern work where a new Apex class often references brand-new fields like `Vouch_Record__c.Last_Reminder_Sent_Date__c`.
+
+## Experience Cloud Setup Required
+
+The following pages/routes need to be created or updated in Experience Builder for the FIMBY1 site:
+
+**New Pages:**
+- `/manage-identities` — Create a new page, add the `fimbyManageIdentities` component to the content region
+- `/organization-profile` — Create a new page, add the `fimbyOrganizationProfile` component (pass `recordId` from URL)
+
+**Updated Pages:**
+- (list any existing pages where component placement or properties changed)
+
+After adding pages, **Publish** the site.

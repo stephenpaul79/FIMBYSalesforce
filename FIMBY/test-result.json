@@ -1,0 +1,42 @@
+﻿{
+  "status": 100,
+  "result": {
+    "summary": {
+      "failRate": "50%",
+      "failing": 1,
+      "hostname": "https://fimby.my.salesforce.com",
+      "orgId": "00D5f000006NDkrEAG",
+      "outcome": "Failed",
+      "passRate": "50%",
+      "passing": 1,
+      "skipped": 0,
+      "testRunId": "707OL00001giKyj",
+      "testStartTime": "2026-05-21T19:26:08.000Z",
+      "testsRan": 2,
+      "userId": "0055f000005dZ1fAAE",
+      "username": "fimby@strathconavineyard.com",
+      "commandTime": "560 ms",
+      "testExecutionTime": "345 ms",
+      "testTotalTime": "6914 ms"
+    },
+    "tests": [
+      {
+        "Id": "07MOL000005a2zi2AA",
+        "QueueItemId": "709OL00000PU6XpYAL",
+        "StackTrace": "Class.FimbyPushBatchJobTest.testBatchJob_SinglePush_CarriesDeepLinkAndNotificationId: line 217, column 1",
+        "Message": "System.AssertException: Assertion Failed: notification_id must let the mobile client mark the row read after tap. pendingCount=1 body={\"badge\":1,\"data\":{\"channelId\":\"activity\"},\"notification_type\":\"GENERAL\",\"body\":\"Something's happening in your neighbourhood.\",\"title\":\"Neighbourhood activity\",\"user_id\":\"005OL00000GbhG5YAJ\"}: Expected: a1POL00000FEL5Z2AX, Actual: null",
+        "AsyncApexJobId": "707OL00001giKyjYAE",
+        "MethodName": "testBatchJob_SinglePush_CarriesDeepLinkAndNotificationId",
+        "Outcome": "Fail",
+        "ApexClass": {
+          "Id": "01pOL000006PkKMYA0",
+          "Name": "FimbyPushBatchJobTest",
+          "NamespacePrefix": null
+        },
+        "RunTime": 345,
+        "FullName": "FimbyPushBatchJobTest.testBatchJob_SinglePush_CarriesDeepLinkAndNotificationId"
+      }
+    ]
+  },
+  "warnings": []
+}

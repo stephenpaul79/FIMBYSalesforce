@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["V2NKUL8JF4.com.fimby.app"],
+        "components": [
+          {
+            "/": "/oauth/callback",
+            "comment": "FIMBY OAuth redirect — handled by the app when installed."
+          }
+        ]
+      }
+    ]
+  }
+}

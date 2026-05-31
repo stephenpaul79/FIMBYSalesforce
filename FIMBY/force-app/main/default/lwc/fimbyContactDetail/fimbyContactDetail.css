@@ -1,0 +1,276 @@
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+.fimby-contact-detail {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background: var(--fimby-surface-page);
+    padding-bottom: 80px;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.detail-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Profile Card */
+.profile-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-container {
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--fimby-info);
+}
+
+.avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--fimby-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-account {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 0.5rem;
+}
+
+.active-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--fimby-success-tint);
+    color: var(--fimby-success);
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    border-top: 1px solid var(--fimby-border-subtle);
+    padding-top: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--fimby-surface-page);
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--fimby-text-strong);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    background: var(--fimby-border-subtle);
+}
+
+/* Details Card */
+.details-card,
+.activity-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 1.25rem;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.card-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--fimby-info);
+    border-radius: 4px;
+}
+
+.edit-btn:hover {
+    background: var(--fimby-surface-page);
+}
+
+.edit-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+/* Details Grid */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+}
+
+.detail-value.link {
+    color: var(--fimby-info);
+    text-decoration: none;
+}
+
+.detail-value.link:hover {
+    text-decoration: underline;
+}
+
+/* Activity Stats */
+.activity-stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fimby-info);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .detail-content {
+        padding: 0.75rem;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-name {
+        font-size: 1.25rem;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        flex: 1;
+        min-width: 80px;
+    }
+}
+
+@media (min-width: 892px) {
+    .fimby-contact-detail {
+        padding-bottom: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-contact-detail {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}

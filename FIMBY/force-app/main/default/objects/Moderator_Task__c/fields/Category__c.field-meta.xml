@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Category__c</fullName>
+    <label>Category</label>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>Flagged_Content</fullName><default>false</default><label>Flagged Content</label></value>
+            <value><fullName>Content_Report</fullName><default>false</default><label>Content Report</label></value>
+            <value><fullName>Bulk_Buy_Escalation</fullName><default>false</default><label>Bulk Buy Escalation</label></value>
+            <value><fullName>Blocked_Contact</fullName><default>false</default><label>Blocked Contact</label></value>
+            <value><fullName>New_Signup</fullName><default>false</default><label>New Signup</label></value>
+            <value><fullName>Feedback_Triage</fullName><default>false</default><label>Feedback Triage</label></value>
+            <value><fullName>Health_Alert</fullName><default>false</default><label>Health Alert</label></value>
+            <value><fullName>Escalation_Received</fullName><default>false</default><label>Escalation Received</label></value>
+            <value><fullName>Organization_Approval</fullName><default>false</default><label>Organization Approval</label></value>
+            <value><fullName>Support_Relationship_Approval</fullName><default>false</default><label>Support Relationship Approval</label></value>
+            <value><fullName>Support_Person_Concern</fullName><default>false</default><label>Support Person Concern</label></value>
+            <value><fullName>Overdue_Loan</fullName><default>false</default><label>Overdue Loan</label></value>
+            <value><fullName>Stale_Post</fullName><default>false</default><label>Stale Post</label></value>
+            <value><fullName>Community_Group_Lifecycle</fullName><default>false</default><label>Community Group Lifecycle</label></value>
+            <value><fullName>Vouch_Pending</fullName><default>false</default><label>Vouch Pending</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

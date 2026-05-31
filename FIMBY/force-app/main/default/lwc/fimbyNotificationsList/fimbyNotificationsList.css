@@ -1,0 +1,604 @@
+/* ---------------------------------------------------------------
+ * Layout shell
+ * --------------------------------------------------------------- */
+
+:host {
+    display: block;
+    width: 100%;
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-notifications-list {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fimby-surface-page);
+}
+
+/* ---------------------------------------------------------------
+ * Screen-reader only utility
+ * --------------------------------------------------------------- */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------------------------------------------------------------
+ * Header wrapper (constrains child page-header on desktop)
+ * --------------------------------------------------------------- */
+
+.header-wrapper {
+    width: 100%;
+}
+
+/* ---------------------------------------------------------------
+ * Action bar (replaces the old toolbar)
+ * --------------------------------------------------------------- */
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    background-color: var(--fimby-surface-page);
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.action-bar-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-bar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 36px;
+    box-shadow: var(--fimby-btn-shadow);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.action-bar-btn:active:not(:disabled) {
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.action-bar-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.action-bar-btn.icon-only {
+    padding: 8px;
+}
+
+.action-bar-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+/* ---------------------------------------------------------------
+ * Confirmation dialog
+ * --------------------------------------------------------------- */
+
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+}
+
+.confirm-dialog {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    z-index: 210;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    padding: 24px;
+    width: calc(100% - 48px);
+    max-width: 340px;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+.confirm-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+
+.confirm-msg {
+    font-size: 14px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 20px;
+    line-height: 1.4;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.confirm-btn {
+    padding: 10px 20px;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    min-height: 44px;
+}
+
+.confirm-cancel {
+    background-color: var(--fimby-surface-input);
+    color: var(--fimby-text-primary);
+}
+
+.confirm-delete {
+    background-color: var(--fimby-error);
+    color: #ffffff;
+}
+
+/* ---------------------------------------------------------------
+ * Undo toast
+ * --------------------------------------------------------------- */
+
+.undo-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background-color: var(--fimby-text-strong);
+    color: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-modal);
+    font-size: 14px;
+    font-weight: 500;
+    animation: toast-in 0.25s ease;
+}
+
+.undo-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-info);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    min-height: 36px;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---------------------------------------------------------------
+ * Notifications container
+ * --------------------------------------------------------------- */
+
+.notifications-container {
+    padding: 0 16px 80px;
+}
+
+/* ---------------------------------------------------------------
+ * Time-based group headers
+ * --------------------------------------------------------------- */
+
+.group-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fimby-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 0 8px;
+    margin: 0;
+    position: sticky;
+    top: 0;
+    background-color: var(--fimby-surface-page);
+    z-index: 5;
+}
+
+/* ---------------------------------------------------------------
+ * Swipe wrapper
+ * --------------------------------------------------------------- */
+
+.swipe-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--fimby-radius-md);
+    margin-bottom: 8px;
+}
+
+/* ── Swipe action buttons ──────────────────────── */
+
+.swipe-action {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.swipe-action-left {
+    left: 0;
+}
+
+.swipe-action-left.swipe-mark-read {
+    background: var(--fimby-brand-teal, #3d9ba1);
+}
+
+.swipe-action-left.swipe-mark-unread {
+    background: var(--fimby-warning, #C4973B);
+}
+
+.swipe-action-right {
+    right: 0;
+    background: var(--fimby-error);
+}
+
+.swipe-action-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.swipe-action-prefix {
+    font-size: 9px;
+    font-weight: 400;
+    color: #ffffff;
+    opacity: 0.85;
+}
+
+.swipe-action-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.swipe-foreground {
+    position: relative;
+    z-index: 2;
+    will-change: transform;
+    background-color: var(--fimby-surface-page);
+    border-radius: inherit;
+}
+
+/* ---------------------------------------------------------------
+ * Notification item (the card itself)
+ * --------------------------------------------------------------- */
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-subtle);
+    border-left: 4px solid var(--fimby-border-strong);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+}
+
+.notification-item.unread {
+    border: 1px solid var(--fimby-info);
+    border-left: 4px solid var(--fimby-info);
+    background-color: var(--fimby-info-tint);
+}
+
+/* ---------------------------------------------------------------
+ * Content
+ * --------------------------------------------------------------- */
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+    margin-bottom: 2px;
+}
+
+.notification-actor {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, var(--fimby-text-muted));
+    line-height: 1.3;
+    margin-bottom: 2px;
+}
+
+.notification-body {
+    font-size: 13px;
+    color: var(--fimby-text-body, var(--fimby-text-primary));
+    line-height: 1.4;
+    margin-bottom: 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: var(--fimby-text-muted);
+}
+
+/* ---------------------------------------------------------------
+ * Type icon
+ * --------------------------------------------------------------- */
+
+.type-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------
+ * Desktop kebab menu trigger
+ * --------------------------------------------------------------- */
+
+.notif-kebab-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    z-index: 5;
+}
+
+.notif-kebab {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    color: var(--fimby-text-muted, #B5A088);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.notif-kebab:hover {
+    background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+/* ── Desktop kebab dropdown ──────────────────────── */
+
+.kebab-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+}
+
+.kebab-menu {
+    position: fixed;
+    min-width: 180px;
+    background: var(--fimby-surface-card, #FAF7F2);
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: var(--fimby-radius-md, 8px);
+    box-shadow: var(--fimby-shadow-card, 0 4px 16px rgba(0, 0, 0, 0.12));
+    z-index: 9999;
+    overflow: hidden;
+    padding: 4px 0;
+}
+
+.kebab-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: var(--fimby-text-primary, #4A3526);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.kebab-menu-item:hover {
+    background: var(--fimby-hover-bg, #F5F0E8);
+}
+
+.kebab-menu-item-danger {
+    color: var(--fimby-error);
+}
+
+.kebab-menu-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.7;
+}
+
+/* ---------------------------------------------------------------
+ * Focus visibility
+ * --------------------------------------------------------------- */
+
+.notification-item:focus-visible,
+.notif-kebab:focus-visible,
+.kebab-menu-item:focus-visible,
+.confirm-btn:focus-visible,
+.undo-btn:focus-visible,
+.action-bar-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ---------------------------------------------------------------
+ * Hover — gated for pointer devices only
+ * --------------------------------------------------------------- */
+
+@media (hover: hover) {
+    .notification-item:hover {
+        box-shadow: var(--fimby-shadow-card-hover);
+    }
+
+    .action-bar-btn:hover:not(:disabled) {
+        border-color: var(--fimby-border-strong);
+        color: var(--fimby-text-primary);
+        background-color: var(--fimby-hover-bg);
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Reduced motion
+ * --------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .notification-item,
+    .action-bar-btn,
+    .notif-kebab,
+    .swipe-foreground,
+    .undo-toast {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Responsive: mobile — swipe only, hide kebab
+ * --------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+    .notif-kebab-container {
+        display: none;
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Responsive: tablet (768px+) — kebab only, hide swipe
+ * --------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+    .swipe-action {
+        display: none;
+    }
+
+    .notification-item {
+        padding-right: 40px;
+    }
+
+    .action-bar {
+        padding: 10px 24px;
+    }
+
+    .notifications-container {
+        padding: 0 24px 80px;
+    }
+
+    .undo-toast {
+        bottom: 32px;
+    }
+}
+
+@media (min-width: 892px) {
+    .notifications-container {
+        padding-bottom: 24px;
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Responsive: desktop (1024px+)
+ * --------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+    .header-wrapper,
+    .notifications-container {
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+
+    .header-wrapper {
+        /* radius handled by c-fimby-page-header internally */
+    }
+
+    .action-bar {
+        width: 100%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+        padding: 10px 0;
+        border-bottom: none;
+        background: transparent;
+    }
+
+    .notifications-container {
+        padding: 0 32px 40px;
+    }
+
+    .fimby-notifications-list {
+        scrollbar-width: thin;
+    }
+
+    .notification-title {
+        font-size: 15px;
+    }
+
+}

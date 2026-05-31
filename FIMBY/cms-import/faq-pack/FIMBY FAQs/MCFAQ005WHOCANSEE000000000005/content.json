@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "Who can see my profile and posts?",
+  "contentBody" : {
+    "question" : "Who can see my profile and posts?",
+    "answer" : "<p>Your profile and posts are visible only to <strong>other members in your neighbourhood</strong>. FIMBY is a private community - only registered neighbours can access the platform. Your information is never shared outside your neighbourhood group.</p>",
+    "sortOrder" : "050",
+    "category" : "Privacy"
+  },
+  "urlName" : "who-can-see-my-profile-and-posts"
+}

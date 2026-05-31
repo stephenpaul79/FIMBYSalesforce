@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NPBPIsBoardMemberCheck__c</fullName>
+    <label>Is Board Member Check</label>
+    <summaryFilterItems>
+        <field>npe5__Affiliation__c.NPBPRole__c</field>
+        <operation>equals</operation>
+        <value>Board Member</value>
+    </summaryFilterItems>
+    <summaryFilterItems>
+        <field>npe5__Affiliation__c.npe5__Status__c</field>
+        <operation>equals</operation>
+        <value>Current</value>
+    </summaryFilterItems>
+    <summaryForeignKey>npe5__Affiliation__c.npe5__Contact__c</summaryForeignKey>
+    <summaryOperation>count</summaryOperation>
+    <trackHistory>false</trackHistory>
+    <type>Summary</type>
+</CustomField>

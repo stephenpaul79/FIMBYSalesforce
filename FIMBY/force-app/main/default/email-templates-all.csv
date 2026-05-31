@@ -1,0 +1,109 @@
+DeveloperName,Subject,Body
+CommunityLockoutEmailTemplate,You've been locked out of {!Community_Name},"
+            Hello {!Receiving_User.FirstName},
+
+            We received your request to reset your {!Community_Name} password. We can't reset your password right now. Your account is locked after too many login attempts.
+
+            {!CASE(1,
+            IF(VALUE(PASSWORD_LOCK_TIME) > 0, 1, 0), ""Try again in "" + PASSWORD_LOCK_TIME + "" minutes."",
+            IF(VALUE(PASSWORD_LOCK_TIME) < 0, 1, 0), ""Contact your "" + Community_Name + "" administrator to unlock your account."",
+            """")}
+
+            If you didn't request a password reset or haven't tried to log in to your account recently, contact your {!Community_Name} administrator or reply to this email.
+
+            Thank you,
+            {!Community_Name}
+        "
+CommunityVerificationEmailTemplate,Verify your identity in {!Community_Name},"You recently attempted an action in {!Community_Name}.
+            Action: {!Action}
+
+            Browser: {!Browser}
+            Operating System: {!Operating_System}
+            Username: {!Receiving_User.Username}
+
+            To ensure your account's security, we must verify your identity. Enter the following code where prompted by {!Community_Name}.
+
+            Verification Code: {!Verification_Code}
+
+            If you didn't attempt this action in {!Community_Name}, or you don't recognize this browser or operating system, contact your {!Community_Name} administrator.
+        "
+CommunityChgEmailVerOldTemplate,Your {!Community_Name} account’s email address was changed,"Hi {!User.FirstName},
+
+            We received a request to change the email address for the username {!User.Username}.  Please make sure the following changes are correct:
+
+            Previous email address: {!ChgEmailVer.OldEmail}
+            New email address: {!ChgEmailVer.NewEmail}
+
+            If you didn't request this change, contact your {!Community_Name} administrator or reply to this email.
+        "
+CommunityChgEmailVerNewTemplate,Finish changing your {!Community_Name} account’s email address,"Hi {!User.FirstName},
+
+            We received a request to change the email address for the username {!User.Username}.  Please make sure the following changes are correct:
+
+            Previous email address: {!ChgEmailVer.OldEmail}
+            New email address: {!ChgEmailVer.NewEmail}
+
+            To finish changing your email address, go to the following link. This link expires in 72 hours.
+            {!ChgEmailVer.Url}
+        "
+CommunityDeviceActEmailTemplate,Verify your identity in {!Community_Name},"You recently attempted an action in {!Community_Name}.
+            Action: {!Action}
+
+            Browser: {!Browser}
+            Operating System: {!Operating_System}
+            Username: {!Receiving_User.Username}
+
+            To ensure your account's security, we must verify your identity. Enter the following code where prompted by {!Community_Name}.
+
+            Verification Code: {!Verification_Code}
+
+            If you didn't attempt this action in {!Community_Name}, or you don't recognize this browser or operating system, contact your {!Community_Name} administrator.
+        "
+CommunityWelcomeEmailTemplate,Welcome to {!Community_Name},"
+            Hi {!Receiving_User.FirstName},
+
+            Welcome to {!Community_Name}! To get started, go to {!Community_Url}
+
+            Username: {!Receiving_User.Username}
+
+            Thanks,
+            {!Organization.Name}
+        "
+CommunityChangePasswordEmailTemplate,Your new {!Community_Name} password,"
+            Hi {!Receiving_User.FirstName},
+
+            Your password has been reset for {!Community_Name}. Go to:
+
+            {!Community_Url}
+
+            Thanks,
+            {!Organization.Name}
+        "
+CommunityForgotPasswordEmailTemplate,Your new {!Community_Name} password,"
+            Hi {!Receiving_User.FirstName},
+
+            Your password has been reset for {!Community_Name}. Go to:
+
+            {!Community_Url}
+
+            Thanks,
+            {!Organization.Name}
+        "
+CommunityHeadlessForgotPasswordTemplate,Finish resetting your {!Community_Name} password,"
+            Hi {!User.FirstName},
+
+            It looks like you tried to reset the password for {!Receiving_User.Username}. To keep your account secure, enter the following one-time password where prompted by {!Community_Name}.
+
+            Password: {!Verification_Code}
+
+            If you didn’t try to change your password in {!Community_Name}, contact your {!Community_Name} administrator.
+        "
+CommunityHeadlessRegistrationTemplate,Verify your identity in {!Community.Name},"
+            Hello, {!HeadlessAuth.FirstName} {!HeadlessAuth.LastName},
+
+            To confirm your registration as {!HeadlessAuth.Username} in {!Community.Name},
+
+            let’s verify your identity. Enter this one-time password where prompted.
+
+            Password: {!Verification.Code}
+        "

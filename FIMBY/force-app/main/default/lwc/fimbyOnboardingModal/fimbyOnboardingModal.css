@@ -1,0 +1,843 @@
+/* ========== BACKDROP & CONTAINER ========== */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    position: relative;
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-modal);
+    width: 100%;
+    max-width: 720px;
+    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== DISMISS X — WCAG 44x44 ========== */
+
+.dismiss-x {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    background: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--fimby-text-secondary);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dismiss-x:hover {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+    color: var(--fimby-text-strong);
+}
+
+.dismiss-x:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ========== HEADER ========== */
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+}
+
+.walkthrough-header {
+    justify-content: space-between;
+}
+
+.close-button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--fimby-text-secondary);
+    transition: background 0.2s ease;
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+/* ========== PROGRESS DOTS ========== */
+
+.progress-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--fimby-radius-full);
+    background: var(--fimby-border-subtle);
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.dot.active {
+    background: var(--fimby-brand-teal);
+    transform: scale(1.2);
+}
+
+.dot.completed {
+    background: var(--fimby-success);
+}
+
+/* ========== BODY ========== */
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 2rem 1.5rem;
+    scrollbar-width: thin;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 1rem;
+}
+
+/* ========== PHASE 1: STEP CONTENT ========== */
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.welcome-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+.step-icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+}
+
+.step-icon-lg {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+}
+
+.welcome-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.5rem;
+}
+
+.step-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.5rem;
+}
+
+.welcome-subtext,
+.step-subtext {
+    font-size: 0.95rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 1.5rem;
+    max-width: 520px;
+    line-height: 1.5;
+}
+
+/* ========== PHOTO STEP ========== */
+
+.photo-step {
+    padding: 1rem 0;
+}
+
+.photo-step-uploader {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* ========== FORM FIELDS ========== */
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 440px;
+    text-align: left;
+}
+
+.field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.required {
+    color: var(--fimby-error);
+}
+
+.field-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+    background: var(--fimby-surface-input, var(--fimby-surface-card));
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.field-input:focus-visible {
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 2px var(--fimby-focus-glow);
+}
+
+.field-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+    background: var(--fimby-surface-input, var(--fimby-surface-card));
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.field-textarea:focus-visible {
+    border-color: var(--fimby-brand-teal);
+    box-shadow: 0 0 0 2px var(--fimby-focus-glow);
+}
+
+/* ========== 2-COLUMN GRID (Desktop, Step 3) ========== */
+
+@media (min-width: 768px) {
+    .form-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        max-width: 600px;
+    }
+
+    .form-grid-2col .full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ========== AVATAR UPLOAD ========== */
+
+.avatar-upload-section {
+    width: 100%;
+    max-width: 440px;
+    margin-top: 16px;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+}
+
+.avatar-upload-section c-fimby-image-uploader {
+    overflow: visible;
+}
+
+/* ========== CHECKBOX / RADIO GROUPS ========== */
+
+.care-question {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkbox-group,
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.checkbox-item,
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.checkbox-item:hover,
+.radio-item:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.checkbox-label,
+.radio-label {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    cursor: pointer;
+}
+
+/* ========== CELEBRATION ========== */
+
+.celebration-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.celebration-icon {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    animation: celebrationBounce 0.6s ease-out;
+}
+
+@keyframes celebrationBounce {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.celebration-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.5rem;
+}
+
+.celebration-subtext {
+    font-size: 1rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    max-width: 360px;
+    line-height: 1.5;
+}
+
+/* ========== ERROR BANNER ========== */
+
+.save-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 2rem;
+    background: var(--fimby-error-tint, #fef2f2);
+    color: var(--fimby-error, #c23934);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    border-top: 1px solid var(--fimby-error, #c23934);
+}
+
+/* ========== FOOTER ========== */
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-section);
+    gap: 0.75rem;
+}
+
+.walkthrough-footer {
+    justify-content: space-between;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dont-show-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--fimby-text-muted);
+    cursor: pointer;
+}
+
+/* ========== BUTTONS ========== */
+
+.btn {
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    padding: 10px 20px;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.btn-primary:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn-neutral {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+
+.btn-neutral:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.btn-text {
+    background: transparent;
+    color: var(--fimby-text-secondary);
+    padding: 10px 12px;
+    border: none;
+}
+
+.btn-text:hover:not(:disabled) {
+    color: var(--fimby-text-primary);
+    background: var(--fimby-hover-bg);
+}
+
+.btn lightning-spinner {
+    --lwc-colorBackground: transparent;
+}
+
+/* ========== PHASE 2: WALKTHROUGH ========== */
+
+.walkthrough-body {
+    padding: 1.5rem 2rem;
+}
+
+.single-page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+.page-image {
+    width: 100%;
+    max-width: 480px;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: var(--fimby-radius-md);
+}
+
+.page-heading {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.page-body {
+    font-size: 0.95rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.6;
+    max-width: 520px;
+    text-align: left;
+}
+
+.slide-cta {
+    display: inline-block;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    padding: 10px 24px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-weight: 600;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    text-decoration: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    margin-top: 0.5rem;
+}
+
+.slide-cta:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+/* Carousel */
+.carousel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.carousel-viewport {
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--fimby-radius-md);
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+.slide-image {
+    width: 100%;
+    max-width: 420px;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: var(--fimby-radius-md);
+}
+
+.slide-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.slide-body {
+    font-size: 0.9rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
+    max-width: 440px;
+    text-align: left;
+}
+
+/* Carousel controls */
+.carousel-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.carousel-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--fimby-border-default);
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-arrow:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.carousel-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.carousel-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--fimby-radius-full);
+    background: var(--fimby-border-subtle);
+    transition: background 0.2s ease;
+}
+
+.carousel-dot.active {
+    background: var(--fimby-brand-teal);
+}
+
+/* Empty walkthrough */
+.empty-walkthrough {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+/* ========== MOBILE RESPONSIVE ========== */
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        padding: 0;
+        padding-top: var(--fimby-header-height, 70px);
+        align-items: flex-end;
+    }
+
+    .modal-container {
+        max-width: 100%;
+        max-height: calc(100dvh - var(--fimby-header-height, 70px));
+        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        animation: slideUpMobile 0.3s ease-out;
+    }
+
+    @keyframes slideUpMobile {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-body {
+        padding: 1.5rem 1.25rem 1rem;
+    }
+
+    .walkthrough-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .welcome-heading {
+        font-size: 1.25rem;
+    }
+
+    .step-heading {
+        font-size: 1.1rem;
+    }
+
+    .welcome-logo {
+        width: 90px;
+    }
+
+    .footer-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .page-image,
+    .slide-image {
+        max-height: 180px;
+    }
+
+    .dismiss-x {
+        top: 8px;
+        right: 8px;
+    }
+}
+
+@media (min-width: 768px) {
+    .modal-container {
+        min-height: 480px;
+    }
+
+    .modal-body {
+        padding: 2.5rem 3rem 2rem;
+    }
+}
+
+/* ========== FOCUS & MOTION ========== */
+
+.btn:focus-visible,
+.close-button:focus-visible,
+.carousel-arrow:focus-visible,
+.checkbox-item input:focus-visible + .checkbox-label,
+.radio-item input:focus-visible + .radio-label {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.celebration-fine-print {
+    font-size: 0.75rem;
+    color: var(--fimby-text-muted);
+    margin-top: 12px;
+    text-align: center;
+}
+
+.celebration-fine-print a {
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .dot,
+    .carousel-track,
+    .carousel-arrow,
+    .close-button,
+    .dismiss-x,
+    .btn,
+    .celebration-icon,
+    .slide-cta {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ---- Step 7: Meet your introducer -------------------------------- */
+
+.vouch-hero {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.vouch-hero-icon {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+}
+
+@media (min-width: 768px) {
+    .vouch-hero-icon {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+.vouch-submit-message {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background-color: var(--fimby-vouch-tint);
+    border: 1px solid var(--fimby-vouch-border);
+    border-radius: var(--fimby-radius-md);
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.vouch-skip-link {
+    display: block;
+    margin: 16px auto 0;
+    background: transparent;
+    border: none;
+    color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 8px 12px;
+    min-height: 44px;
+}
+
+.vouch-skip-link:hover { color: var(--fimby-text-primary); }
+.vouch-skip-link:disabled { opacity: 0.6; cursor: not-allowed; }
+.vouch-skip-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--fimby-radius-sm);
+}

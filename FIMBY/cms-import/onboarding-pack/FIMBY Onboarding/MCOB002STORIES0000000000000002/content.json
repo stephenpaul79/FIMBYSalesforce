@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "Your Neighbourhood Feed",
+  "contentBody" : {
+    "title" : "Your Neighbourhood Feed",
+    "body" : "<p>The <strong>Stories</strong> tab is your neighbourhood's heartbeat. Here you will find:</p><ul><li>Updates and photos from neighbours</li><li>Local happenings and announcements</li><li>Conversations about life on your street</li></ul><p>Share a story of your own - introduce yourself, post a photo, or ask a question!</p>",
+    "pageOrder" : "020",
+    "slideOrder" : "010",
+    "pageTitle" : "Stories"
+  },
+  "urlName" : "stories-feed"
+}

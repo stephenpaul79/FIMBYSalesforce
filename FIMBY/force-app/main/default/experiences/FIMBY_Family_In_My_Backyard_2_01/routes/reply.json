@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "9568a0b2-c039-4dcf-8923-da04ca2b5fa0",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "reply__c",
+  "id" : "daa94440-31cb-44f1-b781-adfba4898bae",
+  "label" : "Reply",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-reply",
+  "type" : "route",
+  "urlPrefix" : "reply"
+}

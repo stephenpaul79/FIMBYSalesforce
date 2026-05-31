@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Response_Posting_Details__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(!ISBLANK( Contact__c ), HYPERLINK(&quot;https://fimby.force.com/s/contact/&quot;+ Contact__c, Contact__r.FirstName + &quot; &quot; + Contact__r.LastName + IF(Right(Contact__r.LastName, 1)=&quot;s&quot;, &quot;&apos;&quot;, &quot;&apos;s&quot;)) + &quot; response&quot;, &quot;&quot;) + 
+
+IF(Contact__c != On_Behalf_Of_Contact__c &amp;&amp; !ISBLANK( On_Behalf_Of_Contact__c), &quot; on behalf of &quot; + HYPERLINK(&quot;https://fimby.force.com/s/contact/&quot;+ On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.FirstName +&quot; &quot; + On_Behalf_Of_Contact__r.LastName), &quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Response Details</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

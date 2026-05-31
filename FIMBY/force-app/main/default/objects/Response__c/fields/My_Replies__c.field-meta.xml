@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Replies__c</fullName>
+    <formula>IF(LEN($User.Mailbox_Contact_ID__c) =0 &amp;&amp; LEFT($User.HouseholdID__c,15) = LEFT(Reply_To_Contact__r.Household_Account__c ,15), TRUE, 
+IF(LEN($User.Mailbox_Contact_ID__c) &gt; 0 &amp;&amp; LEFT($User.Mailbox_Contact_ID__c,15) = LEFT(Reply_To_Contact__r.Id ,15), TRUE, FALSE))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>My Replies</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

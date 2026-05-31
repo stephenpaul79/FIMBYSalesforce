@@ -1,0 +1,154 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "55e502a2-afb8-4478-9b53-37455753b23e",
+  "label" : "Responses and Replies",
+  "regions" : [ {
+    "id" : "03c9ef84-e4fb-4430-ab13-ec3d26a58f2a",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "",
+        "flowName" : "Mailbox_Filter"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "bc563ce9-4234-490b-a437-084c72e96d73",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "tabsetConfig" : {
+          "UUID" : "1a9a09ba-73d4-41da-9a01-a65a9c971c3a",
+          "activeTab" : "",
+          "tabs" : [ {
+            "UUID" : "ac99ac05-a67e-4b3b-ae33-3e9fcdedb091",
+            "allowGuestUser" : false,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "1",
+            "tabName" : "Inbox"
+          }, {
+            "UUID" : "16a186fb-c9c9-43de-9b47-1bd4eac58f10",
+            "allowGuestUser" : false,
+            "locked" : false,
+            "seedComponents" : [ ],
+            "tabKey" : "2",
+            "tabName" : "Outbox"
+          } ],
+          "useOverflowMenu" : false
+        }
+      },
+      "componentName" : "forceCommunity:tabset",
+      "id" : "1a9a09ba-73d4-41da-9a01-a65a9c971c3a",
+      "regions" : [ {
+        "components" : [ {
+          "componentAttributes" : {
+            "richTextValue" : "<p><strong style=\"font-size: 16px; font-family: arial;\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.inbox_1.1}\" style=\"width: 50px; height: 50px;\"> <u>Received</u>&nbsp;&nbsp;</strong></p>\n<p><em style=\"font-family: arial; font-size: 16px;\">Please click on the response's Subject below to view your conversation, reply, share your contact information, or update a response's status.</em></p>"
+          },
+          "componentName" : "forceCommunity:richTextInline",
+          "id" : "00662ff1-96c2-4ae3-a3ae-c559ff07a30e",
+          "renditionMap" : { },
+          "type" : "component"
+        }, {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "My_Replies",
+            "layout" : "FULL",
+            "pageSize" : "",
+            "scope" : "Response__c",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : false,
+            "showManualRefreshButton" : true,
+            "showObjectName" : false,
+            "showPinnedList" : false,
+            "showSearchBar" : false
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "f2a15345-3f72-4de7-a3f7-fc7339ee8a0d",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "ac99ac05-a67e-4b3b-ae33-3e9fcdedb091",
+        "regionLabel" : "Inbox",
+        "regionName" : "1",
+        "renditionMap" : { },
+        "type" : "region"
+      }, {
+        "components" : [ {
+          "componentAttributes" : {
+            "richTextValue" : "<p><br></p>\n<p><strong style=\"font-size: 16px; font-family: arial;\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.mailbox.1}\" style=\"width: 50px; height: 50px;\"> <u>Sent</u>&nbsp;&nbsp;</strong></p>\n<p><em style=\"font-family: arial; font-size: 16px;\">Please click on the response's Subject below to view your conversation, reply or share your contact information.</em></p>"
+          },
+          "componentName" : "forceCommunity:richTextInline",
+          "id" : "8a4f13a9-309f-4785-9b36-bfca929ae2c4",
+          "renditionMap" : { },
+          "type" : "component"
+        }, {
+          "componentAttributes" : {
+            "enableInlineEdit" : false,
+            "filterName" : "My_Responses",
+            "layout" : "FULL",
+            "pageSize" : "",
+            "scope" : "Response__c",
+            "showActionBar" : false,
+            "showChartsPanel" : false,
+            "showDisplay" : "grid",
+            "showFilterPanel" : false,
+            "showImageIcon" : false,
+            "showManualRefreshButton" : true,
+            "showObjectName" : false,
+            "showPinnedList" : false,
+            "showSearchBar" : false
+          },
+          "componentName" : "forceCommunity:objectHome",
+          "id" : "ff28e39b-8441-4718-a2a3-e10889827caa",
+          "renditionMap" : { },
+          "type" : "component"
+        } ],
+        "id" : "16a186fb-c9c9-43de-9b47-1bd4eac58f10",
+        "regionLabel" : "Outbox",
+        "regionName" : "2",
+        "renditionMap" : { },
+        "type" : "region"
+      } ],
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "88ce5260-02c2-45c1-8934-398f91ef9d06",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "553d9088-ff2d-4922-97df-7cfb9b870a20",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Responses and Replies"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "3157a449-fdb5-4626-8f44-834a52233225",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "307e3000-a6d3-4fa2-bec4-ac6cc5ab8f52",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  }, {
+    "id" : "194e080f-f27a-4baf-8352-9292f973fbdd",
+    "regionName" : "sidebar",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-responses-and-replies"
+}

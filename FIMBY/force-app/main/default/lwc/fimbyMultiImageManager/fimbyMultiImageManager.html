@@ -1,0 +1,86 @@
+<template>
+    <div class={containerClass}>
+        <!-- Hidden file input -->
+        <input
+            type="file"
+            accept="image/*"
+            class="hidden-file-input"
+            onchange={handleFileSelect}
+        />
+
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading photos" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Empty State: full-width drop zone -->
+        <template lwc:if={showEmptyState}>
+            <div
+                class="empty-drop-zone"
+                role="button"
+                tabindex="0"
+                onclick={handleAddClick}
+                ondragover={handleDragOver}
+                ondrop={handleDrop}
+                aria-label="Add photos"
+            >
+                <lightning-icon icon-name="utility:add" size="medium" alternative-text="Add"></lightning-icon>
+                <span class="empty-label">{addLabel}</span>
+            </div>
+        </template>
+
+        <!-- Image Grid -->
+        <template lwc:if={showGrid}>
+            <div class="image-grid">
+                <template for:each={gridCells} for:item="cell">
+                    <div key={cell.key} class="image-cell">
+                        <img src={cell.imageUrl} alt="" class="cell-image" />
+                        <button
+                            class="remove-btn"
+                            data-slot={cell.slot}
+                            onclick={handleRemove}
+                            aria-label="Remove photo"
+                            disabled={isUploading}
+                        >
+                            <img src={trashIconUrl} alt="" class="remove-icon">
+                        </button>
+                        <template lwc:if={cell.isUploading}>
+                            <div class="cell-overlay">
+                                <lightning-spinner alternative-text="Processing" size="small"></lightning-spinner>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Add button cell -->
+                <template lwc:if={canAddMore}>
+                    <div
+                        class="image-cell add-cell"
+                        role="button"
+                        tabindex="0"
+                        onclick={handleAddClick}
+                        ondragover={handleDragOver}
+                        ondrop={handleDrop}
+                        aria-label={addLabel}
+                    >
+                        <lightning-icon icon-name="utility:add" size="small" alternative-text="Add photo"></lightning-icon>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Upload progress -->
+            <template lwc:if={isUploading}>
+                <div class="progress-bar" role="progressbar" aria-valuenow={uploadProgress} aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" style={progressStyle}></div>
+                </div>
+            </template>
+        </template>
+
+        <!-- Error -->
+        <template lwc:if={errorMessage}>
+            <div class="error-message" role="alert">{errorMessage}</div>
+        </template>
+    </div>
+</template>

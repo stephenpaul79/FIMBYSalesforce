@@ -1,0 +1,11 @@
+{
+  "sites": [
+    {
+      "id": "fimby-com",
+      "name": "fimby.com",
+      "url": "https://fimby.com",
+      "apiKey": "respira_site_50a3c32cba9c54e9d55a727e",
+      "default": true
+    }
+  ]
+}

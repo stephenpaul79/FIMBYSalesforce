@@ -1,0 +1,144 @@
+---
+description: QA testing credentials, personas, and browser procedures for FIMBY agent runs (desktop + emulated mobile)
+alwaysApply: true
+---
+
+# QA Testing & Login
+
+## QA tool
+
+Agent-driven QA on this project uses the Cursor IDE **`cursor-ide-browser` MCP** as the only browser-automation surface. There is **no separate persistent regression suite**; each runbook in `C:\Users\srathjen\.cursor\plans\` is the source of truth for what to test, executed live by the agent.
+
+## Scope
+
+Agent QA covers **desktop and emulated mobile**. Per-runbook scope determines which viewport sizes are required; default to:
+
+- **Desktop:** 1280×800 or wider — full functional coverage
+- **Mobile (emulated):** 393×851 via **`browser_resize`** + page reload so responsive breakpoints re-evaluate — layout/regression coverage
+
+**Real touch gestures** (swipe-to-mark-read on notifications, swipe-to-delete on messages, pinch, long-press) cannot be reproduced by the MCP. Verify the visual swipe affordance at 393×851 and document gesture-only behavior as **`AUTOMATION_LIMIT`** in the runbook's live log; surface the item to the human tester for a real-device pass when it matters.
+
+## Login URL
+
+https://our.fimby.com/login
+
+## Test Personas
+
+All personas share the same password: `dtes4Jesus!`
+
+| Persona | Email | Purpose |
+|---------|-------|---------|
+| Mobile Tester | mobiletester@fimby.com | Alternate user in multi-persona scenarios (not a mobile-device requirement) |
+| Desktop Tester | desktop@fimby.com | Primary wide-layout / default browser testing |
+| SF Tester | sftester@fimby.com | Salesforce-integrated features and data sync |
+
+## Browser QA Procedures
+
+### Navigation (end-user only; no URL hacking)
+
+Testing must mirror how a real user moves through the app. **Do not** jump to internal pages by typing paths, pasting URLs, or using automation to open routes the user did not click through.
+
+- **Allowed:** Open **`https://our.fimby.com/login`** once per session (or after logout) to start or resume sign-in—the same entry point a user would use.
+- **Not allowed:** Navigating directly to app routes such as `/notifications`, `/quick-post`, `/ask-or-offer-post`, detail URLs, etc., to skip menus, feeds, or buttons.
+- **Required:** After login, reach every screen via **visible UI**—header, footer, links, **Create new post**, breadcrumbs, notification taps, list rows, and other controls users actually have.
+
+If a flow cannot be reached through the UI, treat that as a **finding** (blocked path or missing affordance), not a reason to bypass with URLs.
+
+### Scrolling (don’t get stuck behind chrome)
+
+If a control is **blocked** (e.g. fixed bottom nav, overlay) or the page shows a **scrollbar** with more content below, **scroll first**—same as a user: use **`browser_scroll`** (or scroll the relevant container) to move primary actions **above** fixed footers and into a clear hit area **before** retrying the click.
+
+Do not treat “click intercepted” as a dead end when vertical scroll would obviously reveal or free the target.
+
+### Cursor IDE browser MCP (mechanics learned in QA)
+
+These notes reduce false “broken UI” conclusions and speed up runs.
+
+**Clicks and Lightning / LWC**
+
+- **`browser_click` + accessibility `ref`** often targets the **host** node, not the real control inside **shadow DOM** (e.g. `lightning-button`). The app can look unresponsive when a human click works.
+- Prefer **`browser_take_screenshot`** (viewport) → **`browser_mouse_click_xy`** with **(x, y)** aimed at the **visible** control. **Estimate by eye** from the image; if you miss, **take a new screenshot** and **nudge** x/y—do not depend on PNG math or scripts.
+- **Do not** insert another **browser** tool between that screenshot and `browser_mouse_click_xy` (the MCP expects coordinates from the immediately prior capture for that tab).
+- Optional: **`browser_get_bounding_box`** on a ref (e.g. “View Post”) gives a center in **viewport** space; map to screenshot pixels using the same scale the last `mouse_click_xy` output showed (“Screenshot position” vs “Viewport position”) if you need a starting point, then nudge.
+
+**Navigation and waits**
+
+- After **`location.href`**-style moves, the tab URL can update **slowly**. Wait several seconds and re-check before concluding failure.
+- **Notifications:** using the header **Notifications** control is normal UI even if the address becomes `/notifications`—that is not “URL hacking.”
+
+**Composer success “View Post” vs home feed**
+
+- Clicks can register on the real **SLDS** button (`slds-button_success`) while the **embedded** browser still does not show a route change for a long time. If you need to continue the scenario, use **Home** → **feed** (filter **Ask & Offer** / **Offers**, **Refresh feed**) → **View Post** on the right card—not a pasted detail URL.
+- The **feed** has many similar controls; pick the correct card (filters/scroll) so you do not open the wrong post.
+
+**Forms**
+
+- Some steps enable **Submit** only after **blur** or focus moves (e.g. click the last field after **`browser_fill`**).
+
+**Shadow DOM inputs — set values via CDP, then click (preferred workaround)**
+
+When **`browser_fill`**, **`browser_type`**, or **`browser_click` + accessibility `ref`** cannot reach the real control inside nested **shadow DOM** (common on Experience Cloud **login**, **`lightning-input`**, **`lightning-textarea`**, Quick Post / composer fields, and some modals), **do not** treat the step as blocked until you try this pattern:
+
+1. **`browser_snapshot`** to confirm the page and locate the host (e.g. `community_login-login-form`, `lightning-input`, `lightning-button`).
+2. **`browser_cdp`** → **`Runtime.evaluate`** with a script that **walks open shadow roots** from `document` (or a known host selector), finds the inner **`input`** / **`textarea`**, sets **`.value`**, and dispatches **`input`** + **`change`** events so Lightning/LWC reactive bindings update.
+3. Repeat for each field (username, password, etc.).
+4. **Click the real button** — use **`browser_mouse_click_xy`** after **`browser_take_screenshot`**, or CDP **`Runtime.evaluate`** to call **`.click()`** on the inner **`button`** inside the host’s shadow root (e.g. **Sign In** on `/login`).
+5. Wait for navigation or a success signal (e.g. home greeting) before concluding failure.
+
+**When to use:** login (`/login`), any form where fill/type fails silently, or Submit stays disabled after apparent entry. **When not to use alone:** date pickers, file uploads, passkeys — still use human handoff if CDP + click does not enable Submit.
+
+**Do not skip this** in favor of declaring **`AUTOMATION_LIMIT`** or asking for human login when the surface is a standard text/password field inside Lightning shadow DOM.
+
+**Expectations**
+
+- Automation **does not show a visible mouse cursor**; that is normal.
+
+### Viewport
+
+- Default the embedded browser panel to **full-width** (~1280×800 or wider) for functional steps.
+- For each surface that has responsive layout, after the desktop pass **`browser_resize`** to **393×851**, **reload** the page so breakpoints re-evaluate, screenshot, and re-run rendering checks. Resize back to desktop before continuing.
+- Per-runbook scope decides whether mobile rechecks are mandatory per step or only on a final sweep.
+
+### Multi-Persona Validation
+
+When testing features that involve cross-user interactions (notifications, updates, shared data):
+
+1. **Log in as one persona** and perform the triggering action
+2. **Switch to a different persona** and verify the receiving side sees the expected update/notification
+
+### Human–agent handoff (collaborative QA; do not skip)
+
+Sometimes automation cannot complete a step reliably—**Lightning date pickers**, **segmented date inputs**, controls inside **shadow DOM**, **Submit** buttons that enable only after **blur/tab**, passkeys, or similar. In those cases:
+
+1. **Do not** treat the scenario as done, failed, or “out of scope” without asking the human tester.
+2. **Pause** and ask them to **enter the required data in the live UI** (field names, suggested values, and what “success” looks like—toast, modal close, URL change).
+3. When they reply **done** (or describe the new state), take a **fresh `browser_snapshot`** and **continue** verification from there.
+
+A thorough run **may combine** agent navigation with short human inputs; outcomes still count as verified when the agent **confirms them in the browser** after the handoff.
+
+### Scenario Checklist
+
+For each QA scenario, verify:
+
+- Each persona sees the correct data and permissions for their role
+- Notifications/updates propagate correctly across personas
+- UI renders correctly at **both desktop and emulated-mobile** viewports
+- Interactive elements (buttons, forms, menus) are usable with **mouse/keyboard** semantics; gesture-only flows logged as `AUTOMATION_LIMIT`
+
+### Library & lending
+
+Use the dedicated runbook for scenarios and acceptance criteria: **`C:\Users\srathjen\.cursor\plans\lending_browsing_lifecycle_qa.plan.md`** (canonical location). Summary for navigation discipline:
+
+- **First entry to library** after login must be via visible UI: e.g. **Library** tab (bottom nav / header routing), **Home** feed library card, or **My Stuff** library/borrowing links—not typing `/library-list` in the address bar to skip the shell.
+- **Paths you will recognize after clicks** (for confirming where automation landed): `/library-list`, `/library-item/{id}`, `/add-library-item`, `/messages`, `/conversation?id={id}`, `/loaned-items`, `/my-stuff/my-library-items`, and related My Stuff routes.
+- **Notifications:** Opening a notification row that navigates to `/library-item/...` (sometimes with `?action=...&requestId=` or `loanId=`) is **valid** end-user behavior—the same as email/app deep links opened from the inbox. Do not paste those URLs manually to **start** a flow; use them only when reproducing a notification-driven step.
+- **Multi-step lending** (borrow → approve → confirm → pickup → loan → extension → return) requires **hat switches** between owner and borrower personas; allow time for **LWC reloads** and **modal** chains (Lightning shadow DOM may need screenshot + coordinate clicks per above).
+- **Dates and times:** When the UI shows a **calendar date** (e.g. “Requested Apr 6”), compare it to the **known wall-clock** of the test action in the tester’s timezone (e.g. request submitted **Apr 5 morning PST**). Off-by-one day is a **likely UTC / date-only / locale bug** — record it in **`C:\Users\srathjen\FIMBY\.cursor\defect-log.md`** and do not treat it as noise.
+
+### Login Flow
+
+1. Navigate to `https://our.fimby.com/login`
+2. Enter the persona email and shared password — use **shadow DOM CDP set-value + click** (see above) when **`browser_fill`** / **`browser_type`** do not reach the inner inputs
+3. Confirm successful redirect after login before proceeding with test steps
+
+**Alternative:** From Salesforce Lightning, open the persona’s Contact → **Log in to Experience as User** when CDP login is unavailable or a second tab is already on the Contact record.

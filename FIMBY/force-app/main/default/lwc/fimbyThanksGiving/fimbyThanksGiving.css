@@ -1,0 +1,314 @@
+/* Posting As — identity display (matches fimbyAskOfferComposer) */
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.fimby-thanks-giving {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+.thanks-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thanks-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    padding: 32px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.heart-icon {
+    color: var(--fimby-error);
+    margin-bottom: 16px;
+}
+
+.thanks-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--fimby-text-primary);
+    margin: 0 0 8px;
+}
+
+.thanks-message {
+    font-size: 16px;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 24px;
+}
+
+.message-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 14px;
+    margin-bottom: 20px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    resize: vertical;
+    min-height: 80px;
+}
+
+.send-thanks-button {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.send-thanks-button:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.send-thanks-button:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.btn-thanks-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.success-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    color: var(--fimby-text-secondary);
+}
+
+.close-button:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.modal-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-divider-default);
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: var(--fimby-radius-sm);
+    transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+    color: var(--fimby-text-primary);
+    background: var(--fimby-hover-bg);
+}
+
+.modal-textarea {
+    min-height: 120px;
+}
+
+.recipient-info {
+    font-size: 14px;
+    color: var(--fimby-text-primary);
+    margin-bottom: 16px;
+}
+
+.recipient-info strong {
+    color: var(--fimby-brand-teal);
+}
+
+.success-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.success-container h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+}
+
+.success-container p {
+    color: var(--fimby-text-secondary);
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--fimby-error-tint);
+    border: 1px solid var(--fimby-error-tint);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-error);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.modal-footer .send-thanks-button {
+    width: auto;
+    padding: 10px 20px;
+}
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        top: 0;
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-container {
+        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        max-height: 85vh;
+    }
+}
+
+/* Keyboard focus visibility */
+.send-thanks-button:focus-visible,
+.close-button:focus-visible,
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (min-width: 1024px) {
+    .fimby-thanks-giving {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .cancel-btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}

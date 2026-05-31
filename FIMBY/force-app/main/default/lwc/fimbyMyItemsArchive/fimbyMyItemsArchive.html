@@ -1,0 +1,78 @@
+<template>
+    <div class="fimby-archive-page">
+        <div class="header-card">
+            <nav class="breadcrumb-nav">
+                <a href="/" class="breadcrumb-link">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="/my-stuff/my-library-items" class="breadcrumb-link">My Library Items</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span class="breadcrumb-current">Archive</span>
+            </nav>
+
+            <div class="feed-filters" lwc:if={hasFilters}>
+                <div class="filters-scroll">
+                    <template for:each={processedFilters} for:item="filter">
+                        <button key={filter.value}
+                                class={filter.cssClass}
+                                data-value={filter.value}
+                                onclick={handleFilterClick}>
+                            {filter.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="archive" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={hasItems}>
+                <div class="content-section">
+                    <template for:each={items} for:item="item">
+                        <button type="button" class="list-row" key={item.id} aria-label="View item" data-id={item.id} onclick={handleCardClick}>
+                            <span class="type-badge library-type">
+                                <img src={libraryBadgeIconUrl} alt="" class="badge-icon">
+                                {item.category}
+                            </span>
+                            <span class="list-row-title">{item.title}</span>
+                            <span class={item.statusBadgeClass}>{item.statusLabel}</span>
+                            <span class="list-row-date">{item.date}</span>
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                        </button>
+                    </template>
+
+                    <template lwc:if={showPagination}>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" disabled={isPrevDisabled} onclick={handlePrevPage}>Previous</button>
+                            <span class="page-info">Page {currentPage} of {totalPages}</span>
+                            <button class="pagination-btn" disabled={isNextDisabled} onclick={handleNextPage}>Next</button>
+                        </div>
+                    </template>
+
+                    <div class="section-footer">
+                        <a href="/my-stuff/my-library-items" class="archive-btn">
+                            <img src={recentIconUrl} alt="" class="archive-btn-icon">
+                            Recent Library Items
+                        </a>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <div class="empty-section">
+                    <img src={emptyIconUrl} alt="" class="empty-icon-img" />
+                    <h3>No library items</h3>
+                    <p>Items you share with your neighbourhood will appear here</p>
+                </div>
+            </template>
+        </template>
+
+        <c-fimby-bottom-navigation active-tab="myStuff" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

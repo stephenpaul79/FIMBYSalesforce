@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Attributes__c</fullName>
+    <externalId>false</externalId>
+    <formula>/* Donor Icon */ 
+IF(AND(npo02__TotalOppAmount__c&gt;0, npo02__TotalOppAmount__c&lt;$Setup.NPBP_Options__c.Major_Donor_Threshold__c),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Contact_Donations_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot; + Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Contact_Donations_Report_ID__c,15) &amp; &quot;?pv0=&quot; +Id),
+IMAGE(&quot;/resource/Impact_Icons/Donor.png&quot;,&quot;Donor&quot;, 35, 35),&quot;&quot;)+ &quot; &quot;,NULL)+
+
+/* Major Donor Icon */ 
+IF( npo02__TotalOppAmount__c&gt;=$Setup.NPBP_Options__c.Major_Donor_Threshold__c,
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Contact_Donations_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot; + Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Contact_Donations_Report_ID__c,15) &amp; &quot;?pv0=&quot; +Id),
+IMAGE(&quot;/resource/Impact_Icons/Major.png&quot;,&quot;Major Donor&quot;, 35, 35),&quot;&quot;)+ &quot; &quot;,NULL)+
+
+/* Current Membership Icon */	 	 
+IF(npo02__MembershipEndDate__c &gt;= TODAY(),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Contact_Memberships_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot; +Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Contact_Memberships_Report_ID__c, 15) &amp; &quot;?pv0=&quot; +Id),
+IMAGE(&quot;/resource/Impact_Icons/Member.png&quot;,&quot;Member&quot;, 35, 35),&quot;&quot;)+&quot; &quot;, NULL)+
+
+/* Lapsed Membership Icon */	
+IF(npo02__MembershipEndDate__c&lt;TODAY(),
+HYPERLINK(IF($User.UIThemeDisplayed = &quot;Theme4d&quot;,
+&quot;/one/one.app#/sObject/&quot; &amp; $Setup.NPBP_Options__c.Contact_Memberships_Report_ID__c &amp; &quot;/view?&amp;fv0=&quot; +Id,
+&quot;/&quot; &amp; LEFT($Setup.NPBP_Options__c.Contact_Memberships_Report_ID__c, 15) &amp; &quot;?pv0=&quot; +Id),
+IMAGE(&quot;/resource/Impact_Icons/FormerMember.png&quot;,&quot;Past Member&quot;, 35, 35),&quot;&quot;)+&quot; &quot;,NULL)+
+
+/* Do Not Contact Icon */	 
+IF( npsp__Do_Not_Contact__c = TRUE, IMAGE(&quot;/resource/Impact_Icons/DoNotContact.png&quot;, &quot;Do Not Contact&quot;, 35, 35)+&quot; &quot;,NULL)+
+
+/* Board Member Icon */
+IF( NPBPIsBoardMemberCheck__c=1, IMAGE(&quot;/resource/Impact_Icons/Board.png&quot;,&quot;Board Member&quot;, 35, 35)+&quot; &quot;,NULL)+
+
+/* Do Not Take Pictures Icon */
+IF( NPBPDo_Not_Take_Pictures__c= TRUE, IMAGE(&quot;/resource/Impact_Icons/DoNotTakePictures.png&quot;,&quot;Do Not Take Pictures&quot;, 35, 35)+&quot; &quot;,NULL)+
+
+/* Deceased Icon */
+IF(  npsp__Deceased__c = TRUE, IMAGE(&quot;/resource/Impact_Icons/Deceased.png&quot;,&quot;Deceased&quot;, 35, 35),NULL)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText>1. Donor = Teal Gift  (Click for Report)
+2. Major Donor = Gold Gift (Click for Report)
+3. Current Member = Blue Bookmark (Click for Report)
+4. Former Member = Grey Bookmark (Click for Report)
+5. Do Not Contact = Red Envelope
+6. Board Member = Sheriff&apos;s Badge
+7. Do Not Take Pictures = Camera
+8. Deceased = Black &quot;D&quot;</inlineHelpText>
+    <label>Attributes</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

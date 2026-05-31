@@ -1,0 +1,202 @@
+---
+description: FIMBY platform overview — stack, data model, identity, Experience Cloud routing, and naming conventions
+alwaysApply: true
+---
+
+# FIMBY Project Overview
+
+FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform built on Salesforce Experience Cloud, served through a React Native mobile app (Expo 54, WebView).
+
+| Layer | Technology | Location |
+|-------|-----------|----------|
+| Mobile app | React Native / Expo 54, expo-router, WebView | `fimby-mobile-app/` |
+| Auth bridge | Node.js serverless on Vercel, Redis (Upstash) | `fimby-auth-bridge/` |
+| Backend + UI | Salesforce Experience Cloud (LWR), Apex, LWC | `FIMBY/force-app/` |
+
+Auth: Mobile → OAuth PKCE → auth bridge exchanges for app JWTs (15min access / 30-day refresh) → JWT Bearer + `/singleaccess` → frontdoor URL → WebView. Salesforce tokens never reach device.
+
+## Core Data Model
+
+| Object | Purpose | Record Types |
+|--------|---------|--------------|
+| `Needs_Offers__c` | Asks, offers, bulk buys | Need, Offer, Bulk_Buy |
+| `Response__c` | Replies to needs/offers | — |
+| `Response_Message__c` | Thread messages (MD → Response) | — |
+| `Bulk_Buy_Follow_Up__c` | Accountability check-ins | Follow_Up, Restoration |
+| `Story__c` | Community stories | — |
+| `Story_Comment__c` | Comments on stories (MD → Story) | — |
+| `Library_Item__c` | Lending library items | Personal, FIMBY |
+| `Lending_Request__c` / `Loaned_Item__c` / `Lending_History__c` | Borrow lifecycle | — |
+| `Conversation__c` / `Message__c` / `Conversation_Member__c` | DM & group messaging | — |
+| `Notification__c` | In-app notifications (MD → Contact). See `fimby-notification-patterns` rule for voice, title/body/actor/URL contract, push payload metadata, content edit/delete coverage rules, and Vouch_* as system messages | — |
+| `Shared_Contact_Info__c` | Consent-gated contact sharing | — |
+| `Blocked_Contact__c` | Bidirectional blocks | — |
+| `Feedback__c` | Reports & feedback (incl. content reports via `Type__c = 'Content Report'`) | — |
+| `Support_Relationship__c` | Support-person & community-group-rep links (MD → Contact) | — |
+| `Community_Group_Neighbourhood__c` | Org ↔ neighbourhood junction (MD → Account) | — |
+| `Error_Log__c` / `Error_Log_Event__e` | Error logging | — |
+
+Account record types: **HH_Account**, **Neighbourhood_Account**, **Organization** (Community Groups via `Type`), **Boundary_Account**. Contact belongs to Account; most custom objects relate to Contact. Organization Contacts (`Is_Organization_Contact__c = true`) represent organizations, linked via `Organization_Account__c`.
+
+## Identity & Acting-As (Summary)
+
+`FimbyIdentityRepository` caches identity resolution per transaction. Two Contact lookups drive switching:
+
+- `Logged_In_As_Contact__c` → overrides acting identity (requires Approved `Support_Relationship__c`)
+- `Logged_In_As_Neighbourhood__c` → overrides neighbourhood context
+
+Key concepts: `realContactId` (who clicked), `actingAsContactId` (who it's for). `FimbyContactController.getActingAsContact()` returns both + `isActingAsSelf`. Single active identity per user globally.
+
+### Actor Stamping (Post Owner vs Submitted By)
+
+Every content-creating object uses two Contact fields with **opposite API name semantics**. The convention is:
+
+- **Post Owner** = the represented identity the post belongs to (shown on feed cards)
+- **Submitted By** = the person physically at the keyboard (shown on detail pages only)
+
+| Object | Post Owner (represented identity) | Submitted By (real author) |
+|--------|----------------------------------|---------------------------|
+| `Needs_Offers__c` | `Contact__c` | `Posted_By__c` |
+| `Story__c` | `Posted_By__c` | `Contact__c` |
+| `Story_Comment__c` | `Posted_By__c` | `Contact__c` |
+| `Library_Item__c` | `Owner_Contact__c` | `Listed_By__c` |
+| `Message__c` / `Response_Message__c` | `On_Behalf_Of__c` | `Sender__c` |
+| `Response__c` (incl. Bulk Buy reservations) | `On_Behalf_Of_Contact__c` | `Contact__c` |
+| `Feedback__c` (Content Reports) | `Posted_By__c` | `Contact__c` |
+| `Lending_Request__c` | `Requested_By__c` | `Requested_By_Real_Contact__c` |
+| `Loaned_Item__c` | `Loaned_To__c` | `Loaned_To_Real_Contact__c` |
+
+**Critical**: `Posted_By__c` means "real author" on `Needs_Offers__c` but "represented identity" on `Story__c` — opposite semantics, same API name. Always check the per-object mapping above.
+
+When creating records: `Post Owner = actingAsContactId`, `Submitted By = realContactId`. When querying for feed display, prefer the Post Owner field with a fallback to Submitted By for legacy records where Post Owner is null.
+
+> **Lending audit-trail fields**: `Requested_By_Real_Contact__c` and `Loaned_To_Real_Contact__c` were added so audits can see who physically submitted a request / confirmed pickup when the borrower was acting as another identity. Stamp them every time you create a `Lending_Request__c` or `Loaned_Item__c`; query them in any borrower dual-check.
+
+### Story Comments (`Story_Comment__c`)
+
+Story comments use a FIMBY-native custom object — **not** Chatter `FeedItem` — so they participate fully in dual identity stamping, neighbourhood scoping, moderation, and blocking.
+
+- **Schema**: master-detail to `Story__c` (`reparentableMasterDetail=false`, cascade delete), `sharingModel=ControlledByParent`, field history tracking on `Body__c` and `Status__c`.
+- **Dual stamping**: `Posted_By__c` = represented identity (acting-as), `Contact__c` = real author. Same convention as `Story__c`.
+- **Lifecycle**: `Status__c ∈ {Active, Hidden_By_Author, Hidden_By_Moderator}`. Author soft-delete sets `Hidden_By_Author`; moderator hide sets `Moderation_Status__c = 'Hidden_By_Moderator'` plus `Hidden_By_Moderator__c`, `Hidden_Date__c`, `Hidden_Reason_Code__c`.
+- **Edit tracking**: edits are "always open" (no time limit). Each edit captures the prior body (first 255 chars) in `Body_Snapshot__c`, increments `Edit_Count__c`, and stamps `Edited_Date__c`. Field history on `Body__c` is the canonical audit trail; `Body_Snapshot__c` powers the LWC "(edited)" hint without an extra SOQL.
+- **Mentions**: `Mention_Contact_Ids__c` is a JSON array of Contact Ids stored on insert/update; the controller fans out one `Notification__c` per unique mentioned contact (plus one to the story owner).
+- **Engagement count**: `Story__c.Comment_Count__c` is a roll-up summary (count of `Story_Comment__c` where `Status__c='Active'` AND `Moderation_Status__c != 'Hidden_By_Moderator'`). Drives feed-card engagement counts; reads from there instead of an Apex aggregate.
+- **Blocking**: `FimbyStoryCommentController.getStoryComments` filters via `FimbyBlockingHelper.getBidirectionalBlocks(viewerContactId)` against both `Posted_By__c` and `Contact__c`.
+- **Moderation hooks**: `FimbyContentReportController` accepts `contentType = 'Story_Comment__c'`; `FimbyModeratorQueryService.getContentReviewData` and `FimbyModeratorActionService.flagContent`/`republishContent` each have a `Story_Comment__c` branch.
+
+### Thanks (revised — celebration message in the thread)
+
+Sending a thanks no longer posts to Chatter. Instead it:
+
+1. Creates one `Response_Message__c` in the existing response thread with `Is_System_Message__c = true` and `System_Message_Type__c = 'Thanks_Sent'`.
+2. Stamps `Response__c.Poster_Thanked__c` / `Responder_Thanked__c` depending on direction.
+3. Sends one `Notification__c` to the recipient with `Type__c = 'Thanks_Received'`.
+4. (Optionally) emails the recipient via the existing email helper.
+
+`fimbyResponseThread` renders any `Is_System_Message__c=true` row with `System_Message_Type__c='Thanks_Sent'` as a celebratory **terracotta card** (brand gradient, `ThankYouActive.png` icon, optional `prefers-reduced-motion`-gated confetti animation). Treat thanks as a thread-internal celebration, not a feed event.
+
+### `FimbyBlockingHelper`
+
+The bidirectional block lookup is centralized in `FimbyBlockingHelper.getBidirectionalBlocks(Id contactId)`, declared `without sharing` so callers can see every block involving them regardless of which party owns the record. Used by `FimbyConversationController`, `FimbyVouchController`, and `FimbyStoryCommentController`. Do not re-implement this query inline.
+
+### Ownership / Authorization Dual-Check
+
+After the identity refactor, ownership checks must allow access via **either** path:
+
+```
+post.Posted_By__c == realContactId    // they typed it
+OR post.Contact__c == actingAsContactId  // they're the represented identity
+```
+
+Checking only one field will fail when someone posts while acting as another identity. This applies to all edit, delete, and management operations on `Needs_Offers__c` and `Bulk_Buy` posts. Resolve both IDs from `FimbyIdentityRepository`.
+
+The same dual-check shape applies to lending lifecycle records — confirmation, handoff, return, extension request, and extension approval all accept access when **either** the represented identity field matches `actingAsContactId` **or** the audit field matches `realContactId`:
+
+```
+req.Requested_By__c == actingAsContactId
+OR req.Requested_By_Real_Contact__c == realContactId
+```
+
+```
+loan.Loaned_To__c == actingAsContactId
+OR loan.Loaned_To_Real_Contact__c == realContactId
+```
+
+### Vouching Identity Guard
+
+Vouching binds identity at the Contact level — a vouch is a personal social signal, not an organizational one. All vouch actions (request, approve, decline, withdraw, revoke, override, re-enable) **must require the running user be acting as their own identity**.
+
+`FimbyVouchController.enforceOwnIdentityForVouching()` is the canonical guard: throws an `AuraHandledException` when `actingAsContactId != realContactId`, with a friendly "switch back to yourself" message. Every public vouch action in `FimbyVouchController` calls it first. Client-side, vouch modals (`fimbyVouchingRequiredModal`, `fimbyVouchRevokeModal`, `fimbyVouchDeclineModal`) surface a blocker banner and disable the submit button when `isActingAsSelf === false`.
+
+Never bypass this guard. When adding new vouch flows, call `enforceOwnIdentityForVouching()` as the first statement in the `@AuraEnabled` method.
+
+### Banner Display Gate
+
+The green "Posting as / Messaging as / Requesting as / …" banner is shown when the user **could** switch identities, not only when they are currently switched. The gate is:
+
+```
+showIdentityBanner = hasMultipleIdentities && !!postingAsDisplayName
+```
+
+Where `hasMultipleIdentities` is true when `FimbySupportRelationshipController.getAvailableIdentities()` returns at least one approved relationship. Single-identity users never see the banner; multi-identity users always see who they're acting as — including when they're acting as themselves — to reinforce identity clarity.
+
+## Neighbourhood Scoping
+
+All queries filter by `FimbyIdentityRepository.getNeighbourhoodId()`. New records must be stamped with `Neighbourhood__c`. Users cannot see content outside their active neighbourhood.
+
+## Event Type Model
+
+Events are `Needs_Offers__c` records with `Type__c = 'Event'`. The `Event_Type__c` picklist drives all behavioral differences:
+
+| Capability | Gathering | Open Event | Community Event |
+|---|---|---|---|
+| CTA | RSVP (full form) | I'm Going (1-click) | I'm Interested (1-click) |
+| Capacity | Hard cap (`Total_Quantity__c`) | Soft estimate only | None |
+| Response threads | Yes | No | No |
+| Group chat | No | Poster-created on demand | No |
+| Poster moderation | Accept/decline | Remove/block attendees | None (read-only interest list) |
+| Identity label | Hosted by | Hosted by | Shared by |
+
+**Critical rule**: Open Event and Community Event must **never** enter capacity exhaustion paths. All capacity/availability logic (`tracksQuantityForResponses`, `isQuantityExhausted`, "Event Full", etc.) must be gated behind `isGathering`, not `isEventType`.
+
+### Event Messaging Uses Response__c, Not Conversation__c
+
+Event-scoped DMs (Message Poster / Message Attendee) reuse the existing `Response__c` record and navigate to `/response-reply?recordId={responseId}`. They do **not** create `Conversation__c` records. The `getOrCreateEventConversation` method is deprecated for this purpose. Open/Community event responses only surface in the Messages list once an actual `Response_Message__c` exists (`Last_Reply_Date__c != NULL`).
+
+## Experience Cloud Site
+
+Single site **FIMBY1** (`sldsFlexibleLayout`). Theming via `--fimby-*` CSS custom properties with light/dark mode (`data-theme`). Static resources: `FIMBY_Brand` (tokens CSS, login CSS, theme-init JS), `Impact_Icons` (custom flaticon linear colour icons).
+
+### Routing
+
+**URLs are owned by Experience Builder** — `sf project deploy` ships LWCs but does **not** create or update pages or routes. New pages require manual Builder setup (see `salesforce-deployments.mdc` → *Experience Cloud Setup Required*). Do not invent paths; use existing ones or flag new ones for Builder creation.
+
+**Path sources in code:** (1) Apex — `FimbySettings.getUrl(developerName)` reads `FIMBY_URL__mdt`. (2) LWC — hardcoded paths (e.g. `location.href = '/library'`) relative to `basePath`. (3) Tab highlighting — `TAB_ROUTES` in `fimbyUniversalHeader` maps URL prefixes → bottom tab; new navigable paths must be added there.
+
+**Current Builder pages** (grouped by bottom tab, path is `/kebab-case-page-name` unless noted):
+
+| Tab | Pages |
+|-----|-------|
+| home | Home (`/`), Ask or Offer Post, Quick Post, Response Detail, Response Reply, Shared Life List, Shared Life Post, Story\*, Need / Offer\* |
+| library | Library List, Library Item\*, Library Item Post, Item Return |
+| messages | Messages, Conversation, New Message |
+| mine | My Stuff, My Items, Profile, Post Archive, Story Archive, Borrowing History, Notifications, Settings |
+| — | Manage Identities, Neighbour, Organization Profile, Search, Share Contact Info, Submit Feedback, Help and Support, News\*, Login, Error, Service Not Available†, Too Many Requests† |
+
+\* Object/Content page &ensp; † Availability page
+
+`TAB_ROUTES` also matches sub-paths (`/my-stuff/my-contacts`, `/my-stuff/my-posts`, etc.) and aliases (`/stories`, `/asks-offers`, `/needs-offers`).
+
+## Custom Metadata
+
+`FIMBY_App_Settings__mdt` (TTLs, page sizes, rate limits, push quiet hours), `FIMBY_URL__mdt` (route paths), `FIMBY_Celebration_Action__mdt`, `FIMBY_Loading_Message__mdt`, `FIMBY_Seasonal_Theme__mdt`.
+
+## Naming Conventions
+
+- Apex: `Fimby` + Domain + Suffix (`Controller`, `Service`, `Job`, `Batch`, `Queueable`, `Action`)
+- LWC: `fimby` + camelCase (e.g., `fimbyBulkBuyForm`, `fimbyLibraryBrowser`)
+- Tests: `[ClassUnderTest]Test`
+- Inner helpers: `[Domain]Helper`, `[Domain]Updater`
+
+> **Detailed patterns**: see `fimby-apex-patterns` rule (Apex), `fimby-lwc-patterns` rule (LWC), `fimby-ui-patterns` rule (UX).

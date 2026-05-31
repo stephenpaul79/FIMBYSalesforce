@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lent_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Lent By</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Lending History</relationshipLabel>
+    <relationshipName>Lending_History1</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

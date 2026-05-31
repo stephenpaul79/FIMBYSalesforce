@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Requested_By_Real_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The Contact who physically submitted the request (the logged-in user). Pair with Requested_By__c, which represents the identity the request was made on behalf of. Identical when the user is acting as themselves.</description>
+    <inlineHelpText>The Contact who physically submitted the request. May differ from Requested By when acting on behalf of another identity.</inlineHelpText>
+    <label>Requested By (Real Contact)</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Lending Requests (Submitted By)</relationshipLabel>
+    <relationshipName>Lending_Requests_Submitted_By</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

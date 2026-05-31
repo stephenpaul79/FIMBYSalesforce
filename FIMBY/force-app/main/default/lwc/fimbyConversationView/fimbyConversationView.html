@@ -1,0 +1,462 @@
+<template>
+    <div class="fimby-conversation-view">
+        <!-- Conversation Header -->
+        <div class="conversation-header">
+            <button class="back-button" onclick={handleBack} aria-label="Go back">
+                <lightning-icon icon-name="utility:chevronleft" size="medium"></lightning-icon>
+            </button>
+
+            <div class="participant-info">
+                <div class="participant-avatar-circle">
+                    <template lwc:if={participantAvatarUrl}>
+                        <img src={participantAvatarUrl} alt="" class="avatar-img" />
+                    </template>
+                    <template lwc:else>
+                        {participantInitials}
+                    </template>
+                </div>
+                <div class="participant-details">
+                    <h2 class="participant-name">{otherParticipantName}</h2>
+                    <template lwc:if={showOnBehalfHeader}>
+                        <div class="on-behalf-label">{onBehalfHeaderText}</div>
+                    </template>
+                    <template lwc:if={hasRelatedRecord}>
+                        <div class="related-record-row">
+                            <span class={headerBadgeCssClass}>{headerBadgeLabel}</span>
+                            <a href={relatedRecordHref} class="related-record-link">
+                                {relatedRecordDisplayTitle}<span class="link-chevron"> &#8250;</span>
+                            </a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="menu-button" onclick={handleMenuClick} title="Block or report" aria-label="Block or report">
+                    <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="thread-body">
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="messages" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Messages Container -->
+        <template lwc:else>
+            <div class="messages-container" onscroll={handleScroll}>
+                <!-- Load More Button -->
+                <template lwc:if={hasMoreMessages}>
+                    <div class="load-more-container">
+                        <button class="load-more-button" onclick={handleLoadMore}>
+                            <template lwc:if={isLoadingMore}>
+                                <div class="loading-spinner">
+                                    <div class="spinner-dot"></div>
+                                    <div class="spinner-dot"></div>
+                                    <div class="spinner-dot"></div>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                Load earlier messages
+                            </template>
+                        </button>
+                    </div>
+                </template>
+
+                <div class="messages-list">
+                    <!-- Zoned mode (5+ messages) -->
+                    <template lwc:if={useZones}>
+                        <!-- System messages before first user message -->
+                        <template for:each={headerSystemMessages} for:item="hsm">
+                            <div key={hsm.id} class="message-item system-message">
+                                <div class="system-bubble">
+                                    <span class="system-text">{hsm.body}</span>
+                                    <span class="system-time">{hsm.formattedTimeShort}<span class="relative-hint">{hsm.formattedTimeRelative}</span></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Zone 1: First message — collapsed by default -->
+                        <div data-msg-id={firstMessage.id}
+                             role="button" tabindex="0"
+                             onclick={handleExpandMessage}
+                             onkeydown={handleExpandMessageKey}
+                             style="cursor: pointer;">
+                            <template lwc:if={isFirstExpanded}>
+                                <div class={firstMessage.cardClass}>
+                                    <div class="message-card-header">
+                                        <div class="card-avatar">
+                                            <template lwc:if={firstMessage.hasAvatarImage}>
+                                                <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
+                                            </template>
+                                            <template lwc:else>
+                                                {firstMessage.senderInitials}
+                                            </template>
+                                        </div>
+                                        <span class="card-sender">{firstMessage.senderDisplayName}</span>
+                                        <span class="card-timestamp">{firstMessage.formattedTime}</span>
+                                    </div>
+                                    <div class="message-card-body">
+                                        <p class="message-text">{firstMessage.body}</p>
+                                    </div>
+                                    <template lwc:if={firstMessage.showViaLabel}>
+                                        <div class="via-label">{firstMessage.viaLabel}</div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="msg-collapsed zone-first">
+                                    <span class="msg-collapsed-avatar">
+                                        <template lwc:if={firstMessage.hasAvatarImage}>
+                                            <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
+                                        </template>
+                                        <template lwc:else>
+                                            {firstMessage.senderInitials}
+                                        </template>
+                                    </span>
+                                    <span class="msg-collapsed-sender">{firstMessage.senderDisplayName}</span>
+                                    <span class="msg-collapsed-snippet">{firstMessage.snippetText}</span>
+                                    <span class="msg-collapsed-time">{firstMessage.formattedTimeShort}<span class="relative-hint">{firstMessage.formattedTimeRelative}</span></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Zone 2: Middle messages — pill or collapsed rows -->
+                        <template lwc:if={hasMiddleMessages}>
+                            <template lwc:if={middleRevealed}>
+                                <template for:each={middleMessages} for:item="mid">
+                                    <template lwc:if={mid.isSystemMessage}>
+                                        <div key={mid.id} class="message-item system-message">
+                                            <div class="system-bubble">
+                                                <span class="system-text">{mid.body}</span>
+                                                <span class="system-time">{mid.formattedTimeShort}<span class="relative-hint">{mid.formattedTimeRelative}</span></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div key={mid.id} data-msg-id={mid.id}
+                                             role="button" tabindex="0"
+                                             onclick={handleExpandMessage}
+                                             onkeydown={handleExpandMessageKey}
+                                             style="cursor: pointer;">
+                                            <template lwc:if={mid.isExpanded}>
+                                                <div class={mid.cardClass}>
+                                                    <div class="message-card-header">
+                                                        <div class="card-avatar">
+                                                            <template lwc:if={mid.hasAvatarImage}>
+                                                                <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
+                                                            </template>
+                                                            <template lwc:else>
+                                                                {mid.senderInitials}
+                                                            </template>
+                                                        </div>
+                                                        <span class="card-sender">{mid.senderDisplayName}</span>
+                                                        <span class="card-timestamp">{mid.formattedTime}</span>
+                                                    </div>
+                                                    <div class="message-card-body">
+                                                        <p class="message-text">{mid.body}</p>
+                                                    </div>
+                                                    <template lwc:if={mid.showViaLabel}>
+                                                        <div class="via-label">{mid.viaLabel}</div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="msg-collapsed">
+                                                    <span class="msg-collapsed-avatar">
+                                                        <template lwc:if={mid.hasAvatarImage}>
+                                                            <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
+                                                        </template>
+                                                        <template lwc:else>
+                                                            {mid.senderInitials}
+                                                        </template>
+                                                    </span>
+                                                    <span class="msg-collapsed-sender">{mid.senderDisplayName}</span>
+                                                    <span class="msg-collapsed-snippet">{mid.snippetText}</span>
+                                                    <span class="msg-collapsed-time">{mid.formattedTimeShort}<span class="relative-hint">{mid.formattedTimeRelative}</span></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <template lwc:if={middleCount}>
+                                    <div class="collapsed-pill-line">
+                                        <div class="collapsed-count-pill" role="button" tabindex="0"
+                                             onclick={handleRevealMiddle} onkeydown={handleRevealMiddleKey}>
+                                            {middleCount}
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- System messages always visible below the pill -->
+                                <template for:each={middleSystemMessages} for:item="msm">
+                                    <div key={msm.id} class="message-item system-message">
+                                        <div class="system-bubble">
+                                            <span class="system-text">{msm.body}</span>
+                                            <span class="system-time">{msm.formattedTimeShort}<span class="relative-hint">{msm.formattedTimeRelative}</span></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </template>
+
+                        <!-- Zone 3: Last 2 messages — always expanded -->
+                        <template for:each={lastMessages} for:item="last">
+                            <div key={last.id} class={last.cardClass}>
+                                <div class="message-card-header">
+                                    <div class="card-avatar">
+                                        <template lwc:if={last.hasAvatarImage}>
+                                            <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
+                                        </template>
+                                        <template lwc:else>
+                                            {last.senderInitials}
+                                        </template>
+                                    </div>
+                                    <span class="card-sender">{last.senderDisplayName}</span>
+                                    <span class="card-timestamp">{last.formattedTime}</span>
+                                </div>
+                                <div class="message-card-body">
+                                    <p class="message-text">{last.body}</p>
+                                </div>
+                                <template lwc:if={last.showViaLabel}>
+                                    <div class="via-label">{last.viaLabel}</div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <!-- All-expanded mode (fewer than 5 messages) -->
+                    <template lwc:else>
+                        <template for:each={processedMessages} for:item="item">
+                            <div key={item.id}>
+                                <template lwc:if={item.isDateSeparator}>
+                                    <div class="date-separator">
+                                        <span class="date-text">{item.dateText}</span>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class={item.cardClass}>
+                                        <div class="message-card-header">
+                                            <div class="card-avatar">
+                                                <template lwc:if={item.hasAvatarImage}>
+                                                    <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
+                                                </template>
+                                                <template lwc:else>
+                                                    {item.senderInitials}
+                                                </template>
+                                            </div>
+                                            <span class="card-sender">{item.senderDisplayName}</span>
+                                            <span class="card-timestamp">{item.formattedTime}</span>
+                                        </div>
+                                        <div class="message-card-body">
+                                            <p class="message-text">{item.body}</p>
+                                        </div>
+                                        <template lwc:if={item.showViaLabel}>
+                                            <div class="via-label">{item.viaLabel}</div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Follow-Up Action Banner -->
+        <template lwc:if={showFollowUpBanner}>
+            <div class="follow-up-banner">
+                <p class="follow-up-text">Were you able to sort things out?</p>
+                <div class="follow-up-actions">
+                    <button class="btn btn-success follow-up-btn" onclick={handleResolveFollowUp} disabled={isResolvingFollowUp}>
+                        Resolved
+                    </button>
+                    <button class="btn btn-neutral follow-up-btn" onclick={handleEscalateFollowUp} disabled={isResolvingFollowUp}>
+                        Ask for Help
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showFollowUpResolvedBanner}>
+            <div class="follow-up-resolved-banner">
+                <p>{followUpResolvedText}</p>
+            </div>
+        </template>
+
+        <!-- Vouch Banner (Vouch_Request context) -->
+        <template lwc:if={isVouchContext}>
+            <template lwc:if={isVouchPending}>
+                <div class="lending-action-banner lending-banner-info">
+                    <p class="lending-banner-text">{vouchBannerMessage}</p>
+                    <div class="lending-banner-actions">
+                        <template lwc:if={showVouchAcceptDecline}>
+                            <button class="lending-btn lending-btn-primary"
+                                    onclick={handleVouchApprove}
+                                    disabled={isVouchActionProcessing}>
+                                Vouch for them
+                            </button>
+                            <button class="lending-btn lending-btn-secondary"
+                                    onclick={handleVouchDeclineClick}
+                                    disabled={isVouchActionProcessing}>
+                                Decline
+                            </button>
+                        </template>
+                        <template lwc:if={showVouchWithdraw}>
+                            <button class="lending-btn lending-btn-secondary"
+                                    onclick={handleVouchWithdraw}
+                                    disabled={isVouchActionProcessing}>
+                                Withdraw request
+                            </button>
+                        </template>
+                    </div>
+                    <template lwc:if={vouchActionError}>
+                        <p class="lending-banner-error" role="alert">{vouchActionError}</p>
+                    </template>
+                </div>
+            </template>
+            <template lwc:if={isVouchDecided}>
+                <div class={vouchOutcomeBannerClass}>
+                    <p class="lending-banner-text">{vouchBannerMessage}</p>
+                </div>
+            </template>
+        </template>
+
+        <!-- Lending Lifecycle Banner -->
+        <template lwc:if={showLendingBanner}>
+            <template lwc:if={showLendingBannerContent}>
+                <div class={lendingBannerClass}>
+                    <template lwc:if={lendingBannerMessage}>
+                        <p class="lending-banner-text">{lendingBannerMessage}</p>
+                    </template>
+                    <div class="lending-banner-actions">
+                        <template lwc:if={showLendingHandoffAction}>
+                            <button class="lending-btn lending-btn-primary" onclick={handleLendingHandoff}>
+                                {lendingHandoffLabel}
+                            </button>
+                        </template>
+                        <template lwc:if={showLendingCancelRequest}>
+                            <a href={lendingViewItemUrl} class="lending-link lending-link-muted">Cancel Request</a>
+                        </template>
+                        <template lwc:if={showLendingReturnAction}>
+                            <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Return Item</button>
+                        </template>
+                        <template lwc:if={showLendingExtensionAction}>
+                            <a href={lendingExtensionUrl} class="lending-link">Request Extension</a>
+                        </template>
+                        <template lwc:if={showLendingApproveExtension}>
+                            <a href={lendingApproveExtensionUrl} class="lending-btn lending-btn-primary">Approve Extension</a>
+                        </template>
+                        <template lwc:if={showLendingVerifyReturn}>
+                            <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Verify Return &amp; Condition</button>
+                        </template>
+                        <a href={lendingViewItemUrl} class="lending-link">View Item</a>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <template lwc:if={isConversationRevoked}>
+            <!-- Revoked Warning Banner -->
+            <div class="conversation-revoked-banner">
+                <lightning-icon icon-name="utility:warning" size="small"></lightning-icon>
+                <span>You are no longer connected to this contact.</span>
+            </div>
+        </template>
+        <template lwc:if={canReply}>
+            <div class="reply-container">
+                <template lwc:if={showCompose}>
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Messaging as:</span>
+                            <span class="posting-as-value">{actingAsContactName}</span>
+                        </div>
+                    </template>
+                    <div class="compose-area">
+                        <textarea class="compose-input" placeholder="Write a reply..."
+                                  value={messageText} oninput={handleMessageInput} rows="3"></textarea>
+                        <div class="compose-actions">
+                            <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
+                            <button class="compose-send" onclick={handleSendMessage}
+                                    disabled={isSendDisabled}>
+                                <template lwc:if={isSending}>Sending…</template>
+                                <template lwc:else>Send</template>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <button class="reply-trigger" onclick={handleShowCompose}>
+                        <lightning-icon icon-name="utility:reply" size="x-small"></lightning-icon>
+                        <span>Reply</span>
+                    </button>
+                </template>
+            </div>
+        </template>
+        </div>
+
+        <!-- Block/Report Modal -->
+        <template lwc:if={showBlockModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container block-modal-container">
+                    <div class="block-modal-header">
+                        <h2 class="block-modal-title">Block {otherParticipantFirstName}?</h2>
+                        <button class="modal-close-btn" onclick={handleCloseBlockModal} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="block-modal-body">
+                        <p class="block-warning">
+                            You will no longer receive messages from this person.
+                        </p>
+
+                        <div class="block-field">
+                            <label class="block-label">Reason (optional)</label>
+                            <input type="text"
+                                   class="block-input"
+                                   value={blockReason}
+                                   oninput={handleBlockReasonChange}
+                                   placeholder="Why are you blocking?" />
+                        </div>
+
+                        <div class="report-toggle">
+                            <label class="report-label">
+                                <input type="checkbox"
+                                       checked={isReporting}
+                                       onchange={handleReportToggle} />
+                                Report to admin
+                            </label>
+                        </div>
+
+                        <template lwc:if={isReporting}>
+                            <div class="block-field">
+                                <label class="block-label">Report details</label>
+                                <textarea
+                                    class="report-textarea"
+                                    value={reportDetails}
+                                    oninput={handleReportDetailsChange}
+                                    placeholder="Please describe the issue..."
+                                    rows="3"></textarea>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="block-modal-footer">
+                        <button class="cancel-btn" onclick={handleCloseBlockModal}>Cancel</button>
+                        <button class="block-btn" onclick={handleConfirmBlock}>Block</button>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
+        </template>
+
+        <!-- Vouch Decline Modal -->
+        <c-fimby-vouch-decline-modal ondeclinesubmitted={handleVouchDeclineSubmitted}></c-fimby-vouch-decline-modal>
+    </div>
+</template>

@@ -1,0 +1,114 @@
+---
+description: FIMBY UX and interaction patterns — accessibility, forms, navigation, persona-first detail pages, mobile patterns
+globs: "**/lwc/**"
+alwaysApply: false
+---
+
+# FIMBY UI Patterns
+
+## Accessibility (WCAG)
+
+- **Colour contrast**: `--fimby-*` tokens only. Never hardcode colours.
+- **Touch targets**: minimum 44x44px.
+- **ARIA**: modals → `role="dialog"` + `aria-modal` + `aria-labelledby`; progress → `role="progressbar"` with value attributes; alerts → `role="alert"`; icon-only buttons → `aria-label`.
+- **Focus management**: move focus into modals on open; return on close.
+- **Keyboard**: Enter to submit, Escape to close, arrow keys for carousels.
+- **Images**: decorative → `alt=""`; meaningful → descriptive alt text; spinners → `alternative-text`.
+
+## Button vs Badge Affordances
+
+Action buttons and decorative badges must be visually distinct at a glance — especially for users who may be low-tech or low-vision.
+
+**Action buttons** (Tier 1): Rounded rectangle shape. Must look tappable — elevated (shadow), responsive (hover/active states), sized for touch (min 44px). Uses `--fimby-btn-*` tokens.
+
+**Toggle controls** (Tier 2): Pill shape, but always in a group with clear selected/unselected states. The grouping and state change signal interactivity.
+
+**Decorative badges** (Tier 3): Pill shape, flat, small, non-interactive. Must look inert — no shadow, no hover, no cursor change, compact sizing. Uses `--fimby-badge-*` tokens.
+
+When a badge and a button appear in the same row (e.g., allocation status next to a Reserve button on a card), the shape difference alone must be sufficient to distinguish them. Never rely solely on colour.
+
+## Navigation
+
+- **Four tabs**: Home, Library, Messages, My Stuff + context-sensitive Create.
+- **Mobile-first**: bottom tab bar fixed; desktop tabs in header.
+- **Keep it flat**: most flows one level deep. When deeper, clear back affordance.
+- **Menus**: labels over icons, no jargon, group related items.
+
+## Form & Interaction Patterns
+
+- **Progressive disclosure**: one concern per step. Only required steps block progress. Conditional fields reveal when relevant. Read More / Show Less for long content.
+- **Multi-page navigation**: `.form-navigation` footer on every page. "< Back" bottom-left (neutral outlined + left chevron), primary action bottom-right (brand teal + white text). "Next >" has right chevron; final submit has no chevron. Navigation buttons always inside the form area, never in the page header.
+- **Empty states**: warm, actionable ("You're all caught up!" not "No results").
+- **Error handling**: inline near failed action, empathetic language, recovery path (retry or back). Auto-clear on context change. Never full-page error screens.
+- **Success feedback**: 1.5–2s timed confirmation, then auto-navigate or auto-close.
+- **Destructive actions**: confirmation modals that explain what happens + reassure.
+- **Inline validation**: `role="alert"` on error messages.
+- **Character counters**: same row as label via `.field-label-row` flex (label left, counter right). For `lightning-input`/`lightning-textarea`, use `variant="label-hidden"` + custom label row. Counter: `0.75rem`, `var(--fimby-text-secondary)`.
+
+## Persona-First Detail Pages
+
+Structure around the viewer's relationship to content, not as generic record-detail:
+
+| Persona | Detection | Priority |
+|---------|----------|----------|
+| **Poster / author** | Owns the record | Responses, attention, management |
+| **Potential responder** | No existing response | What is it? Available? How to respond? |
+| **Already responded** | Has response/reservation | Status, continuation |
+
+### Layout by Persona
+
+- **Poster**: header (Edit/Photo/Delete as `responsive` menuItems) → summary card → attention strip → response inbox → collapsible details
+- **Potential responder**: header (Flag as `kebab` menuItem) → summary card → action context + CTA → collapsible details
+- **Already responded**: header (Flag as `kebab` menuItem) → summary card → "Your Response" card → collapsible details
+
+### Principles
+
+- Decision page, not record page — top card answers "what is this and should I act?"
+- Persona-specific CTAs — never generic Respond to someone who already responded
+- Header actions via `menuItems` — never body-level action buttons
+- Max 2 meta facts on mobile above the fold
+- Collapsible secondary details (mobile: collapsed; desktop: primary expanded)
+- Warm empty states for posters with no responses ("post health" block)
+- Attention strips: summary pills (unread, new, accepted, available) above response list
+
+Pattern established in `fimbyNeedOfferDetail` and `fimbyBulkBuyDetailBody`.
+
+## Event Type UX Rules
+
+Three event tiers with distinct interaction models. Use `EVENT_TYPE_CONFIG` (see `fimby-lwc-patterns` rule) — never nested if/else.
+
+### Gathering (intimate, capped)
+- Poster is the host. Hard capacity via `Total_Quantity__c`. Full RSVP form, response threads, accept/decline workflow. "Hosted by" label. Feed: "X spots left".
+
+### Open Event (everyone welcome)
+- Poster is the organizer. No hard cap. 1-click "I'm Going", auto-accept, attendee list with moderation (remove/block), optional guest stepper. On-demand group chat (poster creates when ready — not automatic). "Hosted by" label. Feed: "X going" + social proof avatars.
+
+### Community Event (sharing someone else's event)
+- Poster is NOT the host. No capacity, no management tools. 1-click "I'm Interested" (lightweight — not a commitment). Read-only interest list, no moderation, no group chat. Prominent `Event_Link__c` with "check for latest details". "Shared by" label. Feed: "X interested" + COMMUNITY EVENT badge.
+
+### What must never happen
+- Open/Community Events entering capacity exhaustion ("Event Full", disabled CTA)
+- Group chat auto-created on event creation (it's poster-opt-in for Open Event only)
+- `Conversation__c` records for event-scoped DMs (use `Response__c` — see architecture rule)
+- Community Event poster shown moderation tools or "Hosted by" label
+- Event response threads for Open/Community Events (Gathering only)
+
+## Mobile-Native Patterns
+
+- Pull-to-refresh via `fimbyInfiniteScroll`
+- Client-side image compression via `fimbyImageUploader`
+- Table ↔ card auto-adapt via `fimbyResponsiveList`
+- Tap + drag-and-drop for file inputs
+
+## Community Reciprocity
+
+- Surface neighbourhood stats with weekly deltas
+- Thank-yous as direct actions tied to responses
+- Engagement counts on cards
+
+## Onboarding Principles
+
+- Registration and profile setup are separate phases
+- Only name required; everything else optional and editable later
+- Care preferences in onboarding but never gate progress
+- Walkthrough CMS-driven with dismiss option

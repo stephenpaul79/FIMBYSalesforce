@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Active_Posts</fullName>
+    <columns>Portal_Image__c</columns>
+    <columns>NAME</columns>
+    <columns>Posting_Details__c</columns>
+    <columns>Details__c</columns>
+    <columns>Status__c</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>Posted,Reply Received,Reply Accepted</value>
+    </filters>
+    <filters>
+        <field>Total_Available__c</field>
+        <operation>greaterThan</operation>
+        <value>0</value>
+    </filters>
+    <label>All Active Posts</label>
+</ListView>

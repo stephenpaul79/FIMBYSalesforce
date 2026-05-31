@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Deletion_Rate_Limit_Flagged__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Set true when the rate-limit detector finds more than 3 deletion Cases for the same ContactId within 24 hours. The expiry batch flips this and pauses verification-email dispatch until the case owner reviews.</description>
+    <label>Deletion Rate Limit Flagged</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

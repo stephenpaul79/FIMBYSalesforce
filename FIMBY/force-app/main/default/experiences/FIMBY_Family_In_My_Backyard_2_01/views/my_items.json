@@ -1,0 +1,38 @@
+{
+  "appPageId" : "33445566-7788-99aa-bbcc-ddeeff001122",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "a2a2b3b3-c4c4-d5d5-e6e6-f7f788990033",
+  "label" : "My Items",
+  "regions" : [ {
+    "id" : "b3b3c4c4-d5d5-e6e6-f7f7-889900114433",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "id" : "c4c4d5d5-e6e6-f7f7-8899-001122335566",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "d5d5e6e6-f7f7-8899-0011-223344556688",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "Manage all my library items",
+        "title" : "My Items"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "e6e6f7f7-8899-0011-2233-445566778800",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "f7f78899-0011-2233-4455-667788990011",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-my_items"
+}

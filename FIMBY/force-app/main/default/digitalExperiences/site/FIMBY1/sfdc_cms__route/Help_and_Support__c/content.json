@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Help and Support",
+  "contentBody" : {
+    "activeViewId" : "Help_and_Support",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-help-support",
+    "urlPrefix" : "help-support"
+  },
+  "urlName" : "help-and-support"
+}

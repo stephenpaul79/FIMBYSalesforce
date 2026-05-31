@@ -1,0 +1,82 @@
+---
+description: Salesforce CMS content import - JSON format, zip structure, and field rules for building importable content packages
+alwaysApply: false
+---
+
+# Salesforce CMS Content Import
+
+## Zip Structure
+
+Each content item is a folder containing two files. Folders are nested under a CMS folder name:
+
+```
+CMS Folder Name/
+  UniqueFolder001/
+    content.json
+    _meta.json
+  UniqueFolder002/
+    content.json
+    _meta.json
+```
+
+Zip the top-level folder(s) directly — the zip root should contain the CMS folder name directory.
+
+## content.json
+
+```json
+{
+  "type" : "your_content_type_developer_name",
+  "title" : "Human-readable title",
+  "contentBody" : {
+    "nameField" : "Value for the NAMEFIELD node",
+    "richTextField" : "<p>HTML content for RTE nodes</p>",
+    "textField" : "Plain text value"
+  },
+  "urlName" : "url-slug-with-hyphens"
+}
+```
+
+- `type` must match the `developerName` of a ManagedContentType deployed to the org **and enabled on the CMS workspace**.
+- `contentBody` keys must match the `nodeName` values from the content type definition.
+- RTE fields use raw HTML (not unicode-escaped). Write files with UTF-8 no-BOM encoding.
+- `urlName` is the URL slug — lowercase, hyphens allowed.
+- Optional fields from the content type can be omitted.
+
+## _meta.json
+
+```json
+{
+  "apiName" : "unique_api_name",
+  "path" : "CMS Folder Name",
+  "taxonomyTerms" : [ ]
+}
+```
+
+- `apiName`: **Only** alphanumeric characters and underscores. No hyphens, no spaces. Must begin with a letter, not end with underscore, no consecutive underscores. Must be unique per content type.
+- `path`: The CMS folder the item belongs to. Must match the folder directory name in the zip.
+- **Do NOT include `contentKey`** — Salesforce auto-generates it on import.
+
+## Common Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| "couldn't find a content.json file" | Wrong filename or not inside a folder | Each item needs its own subfolder with `content.json` inside |
+| "Specify value for type property" | Content type not recognized | Ensure the type is deployed AND enabled on the CMS workspace |
+| "This field can contain only underscores and alphanumeric characters" | `apiName` has hyphens or special chars | Use underscores only: `my_api_name` not `my-api-name` |
+| "Invalid value for ContentKey" | Made-up contentKey format | Omit `contentKey` entirely — let Salesforce generate it |
+
+## Build Script Pattern (PowerShell)
+
+Use `[System.IO.File]::WriteAllText()` with `UTF8Encoding($false)` (no BOM) to avoid PowerShell's `ConvertTo-Json` unicode-escaping HTML `<>` characters:
+
+```powershell
+function Write-JsonFile($path, $jsonString) {
+    [System.IO.File]::WriteAllText($path, $jsonString, [System.Text.UTF8Encoding]::new($false))
+}
+```
+
+Build JSON via here-strings (`@' ... '@`) to preserve raw HTML, then zip with `Compress-Archive`.
+
+## Post-Import
+
+After importing, content items are in **draft** status. They must be **published** in the CMS workspace before they are available to LWC wire adapters like `getContents` from `experience/cmsDeliveryApi`.

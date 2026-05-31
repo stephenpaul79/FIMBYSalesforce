@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rejection_Reason__c</fullName>
+    <description>Categorical reason a paper-form support relationship was rejected. Trigger surfaces this in the supporter's rejection notification (in neutral wording).</description>
+    <label>Rejection Reason</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Form invalid</fullName>
+                <default>false</default>
+                <label>Form invalid</label>
+            </value>
+            <value>
+                <fullName>Verification failed</fullName>
+                <default>false</default>
+                <label>Verification failed</label>
+            </value>
+            <value>
+                <fullName>Could not reach supportee</fullName>
+                <default>false</default>
+                <label>Could not reach supportee</label>
+            </value>
+            <value>
+                <fullName>Supportee declined</fullName>
+                <default>false</default>
+                <label>Supportee declined</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

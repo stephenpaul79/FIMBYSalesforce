@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Adjacent_Neighbourhood_Ids__c</fullName>
+    <description>Comma-separated IDs of active adjacent neighbourhoods. Maintained by flow on Neighbourhood_Adjacency__c. Used by FimbyNeighbourhoodService to avoid extra SOQL.</description>
+    <externalId>false</externalId>
+    <label>Adjacent Neighbourhood IDs</label>
+    <length>32768</length>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

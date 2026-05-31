@@ -1,0 +1,189 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+
+.fimby-guidelines-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* ========== SECTION ========== */
+
+.guidelines-section {
+    background-color: var(--fimby-surface-card);
+    padding: 20px;
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.highlight-section {
+    border-left: 4px solid var(--fimby-brand-teal);
+}
+
+.sla-section {
+    border-left: 4px solid var(--fimby-success);
+}
+
+.contact-section {
+    background-color: var(--fimby-surface-card);
+}
+
+.section-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.section-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 12px;
+}
+
+.section-icon-row .section-title {
+    margin-bottom: 0;
+}
+
+.section-body {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.55;
+    margin: 0 0 12px;
+}
+
+.section-body:last-child {
+    margin-bottom: 0;
+}
+
+.sla-commitment {
+    color: var(--fimby-text-strong);
+    font-size: 0.95rem;
+}
+
+/* ========== LISTS ========== */
+
+.values-list {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.values-list li {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.55;
+}
+
+.values-list li strong {
+    color: var(--fimby-text-strong);
+    font-weight: 600;
+}
+
+/* ========== LINKS ========== */
+
+.inline-link {
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.inline-link:hover {
+    color: var(--fimby-brand-teal-hover);
+}
+
+.inline-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+/* ========== BUTTONS ========== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border: none;
+    min-height: 44px;
+}
+
+.btn-neutral {
+    background-color: transparent;
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.btn-neutral:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (min-width: 892px) {
+    .fimby-guidelines-page {
+        padding-bottom: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-content {
+        padding: 0 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .page-content {
+        padding: 0 24px;
+    }
+}
+
+/* ========== FOCUS & MOTION ========== */
+
+.btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn {
+        transition: none !important;
+    }
+}

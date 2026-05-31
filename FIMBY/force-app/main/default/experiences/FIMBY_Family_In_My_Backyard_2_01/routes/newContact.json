@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "d182208a-c147-4342-860f-478e1f6be828",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "newcontact__c",
+  "id" : "fc68dfb4-902f-4327-8e57-585176a552b5",
+  "label" : "New Contact",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-new-contact",
+  "type" : "route",
+  "urlPrefix" : "new-contact"
+}

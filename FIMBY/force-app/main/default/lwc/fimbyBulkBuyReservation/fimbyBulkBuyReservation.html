@@ -1,0 +1,227 @@
+<template>
+    <div class="fimby-bulk-buy-reservation">
+        <c-fimby-page-header
+            page-title="Reserve-A-Share"
+            parent-label="Bulk Buy"
+            parent-url={detailPageUrl}>
+        </c-fimby-page-header>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoadingState}>
+            <div class="state-container loading-state">
+                <c-fimby-loading-message context="reserving" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template lwc:if={isErrorState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">Something went wrong</h2>
+                <p class="state-message">{errorMessage}</p>
+                <button class="btn btn-primary" onclick={handleRetry}>Try Again</button>
+            </div>
+        </template>
+
+        <!-- Unavailable State -->
+        <template lwc:if={isUnavailableState}>
+            <div class="state-container error-state">
+                <div class="state-icon error-icon">
+                    <lightning-icon icon-name="utility:warning" size="large" variant="error"></lightning-icon>
+                </div>
+                <h2 class="state-title error-title">You can't reserve your own bulk buy.</h2>
+                <p class="state-message">This post was created by you. Share it with others so they can reserve.</p>
+                <button class="btn btn-primary" onclick={handleBackToFeed}>Back to Feed</button>
+            </div>
+        </template>
+
+        <!-- Fully Reserved State -->
+        <template lwc:if={isFullyReservedState}>
+            <div class="state-container warning-state">
+                <div class="state-icon warning-icon">
+                    <lightning-icon icon-name="utility:info" size="large"></lightning-icon>
+                </div>
+                <h2 class="state-title warning-title">All shares are reserved.</h2>
+                <p class="state-message">This bulk buy has reached capacity. Check back later for new opportunities.</p>
+                <button class="btn btn-primary" onclick={handleBackToFeed}>Back to Feed</button>
+            </div>
+        </template>
+
+        <!-- Already Reserved State -->
+        <template lwc:if={isAlreadyReservedState}>
+            <div class="compact-state">
+                <div class="compact-state-card">
+                    <div class="compact-state-icon">
+                        <img src={completeIconUrl} alt="" class="state-impact-icon">
+                    </div>
+                    <h2 class="compact-state-title">You already have a reservation.</h2>
+                    <p class="compact-state-message">{alreadyReservedText}</p>
+                    <button class="reserve-btn" onclick={handleBackToFeed}>Back to Feed</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Blocked State -->
+        <template lwc:if={isBlockedState}>
+            <div class="state-container blocked-state">
+                <div class="blocked-message">
+                    <p class="state-message">{blockedMessage}</p>
+                </div>
+                <div class="bulk-buy-history-section">
+                    <h3 class="history-title">Your recent bulk buy history</h3>
+                    <div class="history-slots" role="img" aria-label="Bulk buy history">
+                        <template for:each={historySlots} for:item="slot">
+                            <span key={slot.key} class="history-slot" data-color={slot.color}></span>
+                        </template>
+                    </div>
+                    <p class="history-helper">Green = completed, Red = didn't follow through, Amber = probationary</p>
+                </div>
+                <a href="/help-support" class="contact-link">Reach out to us</a>
+                <button class="btn btn-primary" onclick={handleBackToFeed}>Back to Feed</button>
+            </div>
+        </template>
+
+        <!-- Form State -->
+        <template lwc:if={isFormState}>
+            <div class="form-container">
+                <div class="form-content">
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Responding as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
+                    <div class="form-layout">
+                        <!-- Left: Summary Card -->
+                        <div class="form-left">
+                            <div class="summary-card">
+                                <template lwc:if={hasPostImage}>
+                                    <img src={postImageUrl} alt={postTitle} class="summary-image">
+                                </template>
+                                <template lwc:else>
+                                    <div class="summary-image-placeholder">
+                                        <img src={buyIconUrl} alt="" class="placeholder-icon">
+                                    </div>
+                                </template>
+                                <h3 class="summary-title">{postTitle}</h3>
+                                <div class="organiser-row">
+                                    <img src={organiserAvatarUrl} alt="" class="organiser-avatar">
+                                    <span class="organiser-name">{organiserName}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Form -->
+                        <div class="form-right">
+                            <!-- Interactive Thermometer -->
+                            <div class="section-thermometer">
+                                <div class="thermometer-expanded">
+                                    <div class="thermometer-bar-wrap">
+                                        <div class="thermo-committed" style={committedStyle}></div>
+                                        <div class="thermo-selection" style={selectionStyle}></div>
+                                    </div>
+                                    <div class="alloc-pills">
+                                        <template lwc:if={showBuyerPill}>
+                                            <span class="alloc-pill pill-buyer">{buyerPillText}</span>
+                                        </template>
+                                        <span class={reservedPillClass}>{reservedPillText}</span>
+                                        <span class={availablePillClass}>{availablePillText}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amount Selector -->
+                            <div class="form-group">
+                                <label for="amount-input" class="form-label">How many {unitLabelPlural}?</label>
+                                <div class="amount-selector">
+                                    <button type="button" class="amount-btn" onclick={handleDecrement} aria-label="Decrease amount">−</button>
+                                    <input
+                                        id="amount-input"
+                                        type="number"
+                                        class="amount-input"
+                                        min="1"
+                                        max={maxAmount}
+                                        value={amount}
+                                        onchange={handleAmountChange}
+                                        aria-label="Number of shares">
+                                    <button type="button" class="amount-btn" onclick={handleIncrement} aria-label="Increase amount">+</button>
+                                </div>
+                                <p class="amount-hint">1 to {maxAmount} {unitLabelPlural} per person</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notices: full width below both columns -->
+                    <div class="notices-strip">
+                        <template lwc:if={costPerShareDisplay}>
+                            <div class="notice-item notice-cost">
+                                <lightning-icon icon-name="utility:info" size="x-small"></lightning-icon>
+                                <span>~{costPerShareDisplay} per {unitLabel}. Estimated — final amount confirmed by organiser.</span>
+                            </div>
+                        </template>
+                        <div class="notice-item notice-commit">
+                            <span>By reserving, you commit to pickup and payment. Your contact info will be shared with the organiser.</span>
+                        </div>
+                        <div class="notice-item notice-commit">
+                            <span>You can cancel your reservation while shares are still available. Once all shares are reserved, the group is committed.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-footer">
+                    <button
+                        class="reserve-btn"
+                        onclick={handleSubmit}
+                        disabled={isSubmitting}>
+                        <template lwc:if={isSubmitting}>
+                            <lightning-spinner alternative-text="Submitting..." size="small"></lightning-spinner>
+                            <span>Submitting...</span>
+                        </template>
+                        <template lwc:else>
+                            <img src={buyIconUrl} alt="" class="reserve-btn-icon">
+                            <span>Reserve-A-Share</span>
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success State -->
+        <template lwc:if={isSuccessState}>
+            <div class="compact-state">
+                <div class="compact-state-card">
+                    <div class="celebration-wrapper">
+                        <c-fimby-celebration action-type="bulkbuy_reserve"></c-fimby-celebration>
+                    </div>
+                    <h2 class="compact-state-title success-color">You're in!</h2>
+                    <p class="compact-state-message">{successReservedText}</p>
+                </div>
+                <div class="compact-state-card">
+                    <div class="thermometer-expanded">
+                        <div class="thermometer-bar-wrap success-bar-wrap">
+                            <div class="thermo-committed" style={successCommittedStyle}></div>
+                            <div class="thermo-just-reserved" style={successJustReservedStyle}></div>
+                        </div>
+                        <div class="alloc-pills">
+                            <span class="alloc-pill pill-success">{successPillText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="compact-state-card success-actions">
+                    <template lwc:if={hasGroupChat}>
+                        <button class="reserve-btn" onclick={handleViewGroupChat}>View Group Chat</button>
+                    </template>
+                    <button class="btn btn-secondary" onclick={handleDone}>Done</button>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-bottom-navigation
+            active-tab="home"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

@@ -1,0 +1,21 @@
+<template>
+    <template lwc:if={showSection}>
+        <section role="group" aria-label="Vouching History" class="history-container">
+            <h3 class="section-title">Vouching History</h3>
+            <div class="slots-row">
+                <template for:each={slotData} for:item="slot">
+                    <span key={slot.index}
+                          class={slot.cssClass}
+                          role="img"
+                          aria-label={slot.ariaLabel}></span>
+                </template>
+            </div>
+            <p class="slots-axis" aria-hidden="true">&larr; Newest</p>
+            <template lwc:if={isPaused}>
+                <p class="paused-message">
+                    Your ability to vouch is paused right now while we review some recent concerns. We will be in touch.
+                </p>
+            </template>
+        </section>
+    </template>
+</template>

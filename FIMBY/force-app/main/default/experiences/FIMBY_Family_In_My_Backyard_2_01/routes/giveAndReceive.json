@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "8a09bd5a-e6f5-45fa-a8b2-129313148f40",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Give_and_Receive__c",
+  "id" : "79fc8b22-51fc-40f8-ae52-13ba23bd5d02",
+  "label" : "Give and Receive",
+  "pageAccess" : "RequiresLogin",
+  "routeType" : "custom-give-and-receive",
+  "type" : "route",
+  "urlPrefix" : "give-and-receive"
+}

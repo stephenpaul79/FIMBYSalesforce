@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cga_Current_Version__c</fullName>
+    <description>Current published version of the FIMBY Community Group Agreement. fimbyManageIdentities pulls this for the org create/claim acknowledgement block.</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Bump in lockstep with Cga_Effective_Date__c when legal updates the CGA.</inlineHelpText>
+    <label>CGA Current Version</label>
+    <length>10</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

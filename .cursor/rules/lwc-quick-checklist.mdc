@@ -1,0 +1,53 @@
+---
+description: FIMBY LWC quick checklist — review before committing or deploying LWC changes
+globs: "**/lwc/**"
+alwaysApply: false
+---
+
+# FIMBY LWC Quick Checklist
+
+Consider these rules if they affect your changes.
+
+- [ ] Conditional templates use `lwc:if` / `lwc:elseif` / `lwc:else` — never the deprecated `if:true` / `if:false` (removed at API 58.0). For `!condition`, add an inverse getter in JS rather than reverting to `if:false`.
+- [ ] Page-level components use `var(--fimby-surface-page)` for both `:host` and outer wrapper background
+- [ ] `min-height` uses `calc(100vh - var(--fimby-header-height, 78px))` + `calc(100dvh - …)` — never bare `100vh`
+- [ ] Bottom padding `80px` reduced to `24px` at `@media (min-width: 892px)` (bottom nav hidden on desktop)
+- [ ] Desktop `max-width: 800px` at `@media (min-width: 1024px)` (standard) or `640px` (narrow forms)
+- [ ] Horizontal spacing via `padding` on outer wrapper — never `margin` on child cards/sections
+- [ ] Outer wrapper uses `box-sizing: border-box`
+- [ ] Page header and body share same width — no independent `max-width` on `c-fimby-page-header`
+- [ ] Full-viewport components subtract `--fimby-header-height` + `--fimby-bottom-nav-height` on mobile, header-only on desktop (≥ 892px)
+- [ ] Desktop modal backdrop uses `--fimby-modal-inset-top` (not bare viewport centering with `inset: 0`)
+- [ ] Brand/nav/content icons from `Impact_Icons` — `lightning-icon` only for generic UI (arrows, close, chevrons)
+- [ ] `utility:image` and `utility:delete` never used — replaced with `photo.png` and `trash.png`
+- [ ] `utility:edit` only for subtle inline edit pencils; pill buttons use `edit.png`
+- [ ] Action buttons with icon + label use pill shape (`border-radius: 9999px`) with `<img>` icons
+- [ ] Detail page actions use `fimbyPageHeader`'s `menuItems` API — never body-level pills or custom header markup
+- [ ] All pages use `c-fimby-page-header` — never custom header `<div>` with back buttons
+- [ ] `menuItems` three-tier: `inline` (primary CTAs), `responsive` (management), `kebab` (safety)
+- [ ] Never `slot="actions"`, `showCustomAction`, or `showMenu` on `fimbyPageHeader` (deprecated)
+- [ ] Impact Icons on primary (teal) buttons render naturally — no `filter: brightness(0) invert(1)`
+- [ ] Primary button text uses `color: #ffffff`, not `var(--fimby-text-on-teal)`
+- [ ] Button resets don't override component styles — compound selectors placed after resets
+- [ ] Every `background: var(--fimby-surface-card)` also has `box-shadow: var(--fimby-shadow-card)` (unless nested)
+- [ ] Sticky footers use `box-shadow` + `border-radius` — not flat strips
+- [ ] Solid-colour backgrounds use `background-color:` not `background:` shorthand (Safari)
+- [ ] `backdrop-filter` paired with `-webkit-backdrop-filter`
+- [ ] New colour tokens have `@property` registration in `fimby-tokens.css`
+- [ ] Zero hardcoded colours — all `var(--fimby-*)`
+- [ ] Rounded corners on all cards, headers, panels, containers
+- [ ] Base styles work at 320px; desktop via `min-width` queries
+- [ ] Tap targets ≥ 44px
+- [ ] `prefers-reduced-motion` respected
+- [ ] Focus ring visible via `--fimby-focus-ring`
+- [ ] Every `<img>` has `alt`; icon-only buttons have `aria-label`
+- [ ] No clickable `<div>`/`<span>` — semantic `<button>` or `<a>`
+- [ ] `onclick` on non-buttons paired with `onkeydown` (Enter/Space)
+- [ ] Heading hierarchy sequential — no skipped levels
+- [ ] Colour never sole state indicator — paired with icon/text
+- [ ] Form inputs have visible labels; errors linked via `aria-describedby`
+- [ ] Multi-page forms use `.form-navigation` footer — "< Back" left, primary CTA right
+- [ ] Form nav uses custom `nav-btn` — never `lightning-button`
+- [ ] "Next" has `utility:chevronright`; final submit has no icon
+- [ ] Both "Next" and Submit use `.nav-next` (teal, `#ffffff`). "Back" uses `.nav-back` (neutral)
+- [ ] If exposing Experience Builder `<property>` entries: flag enum fields, icon refs, or 5+ props for CPE

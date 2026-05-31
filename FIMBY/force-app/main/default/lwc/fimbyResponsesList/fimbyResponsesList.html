@@ -1,0 +1,189 @@
+<template>
+    <div class="fimby-responses-list">
+        <!-- Page Header -->
+        <c-fimby-page-header
+            page-title="Responses"
+            parent-label="My Stuff"
+            parent-url="/my-stuff"
+            filter-icon="utility:filterList"
+            onback={handleBack}
+            onfilter={handleShowFilters}>
+        </c-fimby-page-header>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class={allTabClass} onclick={handleAllResponses}>
+                All
+                <span class="tab-count">{totalResponses}</span>
+            </button>
+            <button class={unreadTabClass} onclick={handleUnreadResponses}>
+                New
+                <span class="tab-count unread">{unreadResponses}</span>
+            </button>
+            <button class={acceptedTabClass} onclick={handleAcceptedResponses}>
+                Accepted
+            </button>
+            <button class={pendingTabClass} onclick={handlePendingResponses}>
+                Pending
+            </button>
+        </div>
+
+        <!-- Responses List -->
+        <c-fimby-infinite-scroll
+            class="responses-scroll"
+            enable-pull-to-refresh="true"
+            empty-state-title="No responses yet"
+            empty-state-message="When neighbors respond to your posts, they'll appear here"
+            empty-state-icon="utility:comments"
+            onloadmore={handleLoadMore}
+            onrefresh={handleRefresh}>
+
+            <div class="responses-container">
+                <template for:each={filteredResponses} for:item="response">
+                    <div key={response.id} class={response.containerClass}>
+                        <!-- Response Card -->
+                        <div role="button" tabindex="0" class="response-card" aria-label="View response" onclick={handleResponseClick} onkeydown={handleResponseKeydown} data-response-id={response.id}>
+                            <!-- Response Header -->
+                            <div class="response-header">
+                                <div class="responder-info">
+                                    <img src={response.responderAvatar} alt={response.responderName} class="responder-avatar">
+                                    <div class="responder-details">
+                                        <span class="responder-name">{response.responderName}</span>
+                                        <div class="responder-rating">
+                                            <template for:each={response.ratingStars} for:item="star">
+                                                <lightning-icon
+                                                    key={star.id}
+                                                    icon-name={star.icon}
+                                                    size="xx-small"
+                                                    class={star.class}>
+                                                </lightning-icon>
+                                            </template>
+                                            <span class="rating-text">({response.responderRating})</span>
+                                        </div>
+                                    </div>
+                                    <template lwc:if={response.isVerified}>
+                                        <div class="verified-badge">
+                                            <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="response-meta">
+                                    <span class="response-time">{response.formattedTime}</span>
+                                    <div class="response-status">
+                                        <span class={response.statusClass}>{response.statusLabel}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Related Item -->
+                            <div class="related-item">
+                                <lightning-icon icon-name={response.itemIcon} size="small"></lightning-icon>
+                                <div class="item-info">
+                                    <span class="item-label">{response.itemTypeLabel}</span>
+                                    <span class="item-title">{response.itemTitle}</span>
+                                </div>
+                                <template lwc:if={response.itemImage}>
+                                    <img src={response.itemImage} alt={response.itemTitle} class="item-thumbnail">
+                                </template>
+                            </div>
+
+                            <!-- Response Content -->
+                            <div class="response-content">
+                                <div class="response-type">
+                                    <lightning-icon icon-name={response.responseIcon} size="small"></lightning-icon>
+                                    <span class="type-label">{response.responseTypeLabel}</span>
+                                </div>
+
+                                <p class="response-message">{response.message}</p>
+
+                                <!-- Additional Details -->
+                                <template lwc:if={response.availability}>
+                                    <div class="availability-info">
+                                        <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                                        <span class="availability-text">{response.availability}</span>
+                                    </div>
+                                </template>
+
+                                <template lwc:if={response.contactShared}>
+                                    <div class="contact-shared">
+                                        <lightning-icon icon-name="utility:phone" size="xx-small"></lightning-icon>
+                                        <span class="contact-text">Contact info shared</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Response Actions -->
+                            <div class="response-actions">
+                                <template lwc:if={response.canRespond}>
+                                    <template lwc:if={response.isPending}>
+                                        <button class="accept-button primary"
+                                                onclick={handleAcceptResponse}
+                                                data-response-id={response.id}>
+                                            <lightning-icon icon-name="utility:check" size="x-small"></lightning-icon>
+                                            Accept
+                                        </button>
+                                        <button class="decline-button"
+                                                onclick={handleDeclineResponse}
+                                                data-response-id={response.id}>
+                                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                                            Decline
+                                        </button>
+                                    </template>
+                                </template>
+
+                                <button class="message-button"
+                                        onclick={handleMessageResponder}
+                                        data-response-id={response.id}>
+                                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                                    Message
+                                </button>
+
+                                <button class="menu-button"
+                                        onclick={handleResponseMenu}
+                                        data-response-id={response.id}
+                                        aria-label="Response options">
+                                    <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                                </button>
+                            </div>
+
+                            <!-- Unread Indicator -->
+                            <template lwc:if={response.isUnread}>
+                                <div class="unread-indicator"></div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </c-fimby-infinite-scroll>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab-button" onclick={handleNewPost} title="Create new post" aria-label="Create new post">
+                <lightning-icon icon-name="utility:add" size="medium" variant="inverse"></lightning-icon>
+            </button>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <c-fimby-bottom-navigation
+            active-tab="responses"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+
+        <!-- Response Status Update Modal -->
+        <c-fimby-response-status-update
+            record-id={selectedResponseId}
+            onstatusupdated={handleStatusUpdated}
+            onstatuserror={handleStatusError}>
+        </c-fimby-response-status-update>
+
+        <!-- Thanks Giving Modal -->
+        <c-fimby-thanks-giving
+            is-modal-mode="true"
+            recipient-id={selectedResponderId}
+            recipient-name={selectedResponderName}
+            record-id={selectedResponseId}
+            onthankssent={handleThanksSent}>
+        </c-fimby-thanks-giving>
+    </div>
+</template>

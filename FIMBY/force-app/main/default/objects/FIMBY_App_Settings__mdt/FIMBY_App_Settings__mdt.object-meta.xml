@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>FIMBY App Settings</label>
+    <pluralLabel>FIMBY App Settings</pluralLabel>
+    <visibility>Public</visibility>
+    <description>Admin-configurable settings for the FIMBY Experience Cloud app. Controls time windows, rate limits, notification behavior, page sizes, and query limits.</description>
+</CustomObject>

@@ -1,0 +1,99 @@
+:host {
+    display: block;
+}
+
+.thermometer-container {
+    display: block;
+}
+
+/* --- Compact mode: ~8px tall, rounded, single bar --- */
+.thermometer-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bar-track-compact {
+    flex: 1;
+    min-width: 80px;
+    height: 8px;
+    border-radius: var(--fimby-radius-sm, 6px);
+    background: #C1DFE5;
+    overflow: hidden;
+}
+
+.bar-fill-compact {
+    height: 100%;
+    border-radius: var(--fimby-radius-sm, 6px);
+    background: #6CBCD1;
+    transition: width 0.3s ease;
+}
+
+.compact-label {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* --- Expanded mode: ~20px tall, notch dividers --- */
+.thermometer-expanded {
+    display: block;
+}
+
+.bar-track-expanded {
+    display: flex;
+    height: 20px;
+    border-radius: var(--fimby-radius-sm, 6px);
+    overflow: hidden;
+    background: #C1DFE5;
+}
+
+.segment {
+    flex: 1;
+    min-width: 4px;
+    background: var(--fimby-surface-card, #FAF7F2);
+    border-right: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    transition: background 0.3s ease;
+}
+
+.segment:last-child {
+    border-right: none;
+}
+
+.segment-filled {
+    background: #6CBCD1;
+}
+
+.segment-mine {
+    background: var(--fimby-earth-ochre, #A38045);
+}
+
+.segment-owner {
+    background: var(--fimby-text-secondary, #8B8178);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .thermometer-compact {
+        gap: 8px;
+    }
+    .bar-track-compact {
+        height: 6px;
+    }
+    .compact-label {
+        font-size: 0.75rem;
+    }
+    .bar-track-expanded {
+        height: 16px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .bar-fill-compact {
+        transition: none;
+    }
+    .segment {
+        transition: none;
+    }
+}

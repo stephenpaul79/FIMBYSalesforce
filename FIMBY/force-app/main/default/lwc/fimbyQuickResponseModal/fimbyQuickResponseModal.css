@@ -1,0 +1,830 @@
+/* =============================================
+ * Modal Shell
+ * ============================================= */
+
+.modal-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-container {
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg, 16px);
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: var(--fimby-shadow-modal);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+ * Header
+ * ============================================= */
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.close-button:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.close-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* =============================================
+ * Body
+ * ============================================= */
+
+.modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* =============================================
+ * State Containers
+ * ============================================= */
+
+.state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+    gap: 16px;
+    min-height: 120px;
+}
+
+.state-message {
+    font-size: 15px;
+    color: var(--fimby-text-primary, #3D3833);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Error */
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--fimby-error-tint, #FFF0F0);
+    border: 1px solid var(--fimby-error-border, #FFC9C9);
+    border-radius: var(--fimby-radius-sm, 8px);
+    color: var(--fimby-error, #C13030);
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.retry-btn,
+.view-details-btn,
+.close-state-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card, #FAF7F2));
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.retry-btn:hover,
+.view-details-btn:hover,
+.close-state-btn:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+    border-color: var(--fimby-border-strong);
+}
+.retry-btn:active,
+.view-details-btn:active,
+.close-state-btn:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+/* Success */
+.success-state {
+    gap: 16px;
+    padding-top: 16px;
+    padding-bottom: 24px;
+}
+
+.celebration-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 80px;
+}
+
+.success-icon-wrapper {
+    padding: 12px;
+}
+
+.success-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--fimby-success, #2D8A4E);
+    margin: 0;
+    text-align: center;
+}
+
+.waitlist-disclaimer {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fimby-text-secondary, #8B7355);
+    text-align: center;
+    margin: 0;
+    padding: 8px 16px;
+    background-color: var(--fimby-surface-subtle, rgba(0,0,0,0.02));
+    border-radius: var(--fimby-radius-sm, 8px);
+    max-width: 320px;
+}
+
+.success-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 240px;
+    margin-top: 4px;
+}
+
+.done-btn {
+    width: 100%;
+    padding: 12px 24px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.done-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.done-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.done-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.view-details-link {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary, #6B6256);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px;
+    text-decoration: underline;
+    font-family: inherit;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* =============================================
+ * Identity Row
+ * ============================================= */
+
+.identity-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--fimby-success-tint, rgba(58, 138, 92, 0.08));
+    border-radius: var(--fimby-radius-sm, 8px);
+    border-left: 4px solid var(--fimby-success, #3a8a5c);
+    font-size: 13px;
+}
+
+.identity-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.identity-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary, #6B6256);
+    white-space: nowrap;
+}
+
+.identity-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #3D3833);
+}
+
+/* =============================================
+ * Summary Card
+ * ============================================= */
+
+.summary-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background-color: var(--fimby-surface-input, #F5F2EC);
+    border-radius: var(--fimby-radius-sm, 8px);
+    align-items: center;
+}
+
+.summary-image {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.summary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.summary-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.summary-subtitle {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.summary-meta {
+    font-size: 12px;
+    color: var(--fimby-text-muted, #9B9286);
+}
+
+/* =============================================
+ * Form Sections
+ * ============================================= */
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3D3833);
+    margin-bottom: 0;
+}
+
+.char-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary, #6B6256);
+    flex-shrink: 0;
+}
+
+.char-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.char-count.over-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+.form-textarea {
+    width: 100%;
+    min-height: 100px;
+}
+
+.form-native-textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.note-textarea {
+    min-height: 60px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-input, #F5F2EC);
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 1px;
+}
+
+.field-error {
+    font-size: 12px;
+    color: var(--fimby-error, #C13030);
+    margin-top: 4px;
+}
+
+.field-hint {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B7280);
+    margin: 4px 0 8px;
+}
+
+/* Amount row */
+.amount-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.amount-input {
+    max-width: 100px;
+}
+
+.amount-hint {
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+/* Decline checkbox */
+.decline-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--fimby-text-secondary, #6B6256);
+    cursor: pointer;
+}
+
+.decline-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--fimby-brand-teal, #2ABFBF);
+    cursor: pointer;
+}
+
+/* =============================================
+ * Stepper Controls (events, bulk buy)
+ * ============================================= */
+
+.guest-stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.stepper-controls,
+.reserve-stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stepper-btn {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: 50%;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+    font-family: inherit;
+}
+
+.stepper-btn:hover {
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.stepper-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.stepper-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fimby-text-primary, #3D3833);
+    min-width: 48px;
+    text-align: center;
+}
+
+.stepper-hint {
+    font-size: 13px;
+    color: var(--fimby-text-muted, #9B9286);
+}
+
+.stepper-input {
+    width: 64px;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid var(--fimby-border-default, #D4CCBF);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-input, #F5F2EC);
+    color: var(--fimby-text-primary, #3D3833);
+    font-size: 18px;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.stepper-input:focus {
+    outline: 2px solid var(--fimby-focus-ring);
+}
+
+/* Event confirm button (full-width CTA inside the form) */
+.event-confirm-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 48px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.event-confirm-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.event-confirm-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.event-confirm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.event-confirm-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.event-form {
+    align-items: center;
+}
+
+/* =============================================
+ * Thermometer (bulk buy)
+ * ============================================= */
+
+.thermometer {
+    margin-bottom: 8px;
+}
+
+.thermo-bar {
+    display: flex;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--fimby-surface-input, #F5F2EC);
+}
+
+.thermo-taken {
+    background-color: var(--fimby-brand-teal, #3A7D8C);
+    transition: width 0.3s ease;
+}
+
+.thermo-pending {
+    background-color: #D4A843;
+    transition: width 0.3s ease;
+}
+
+.thermo-remaining {
+    background-color: #A8D8E0;
+    transition: width 0.3s ease;
+}
+
+.thermo-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+.legend-taken::before,
+.legend-pending::before,
+.legend-remaining::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-taken::before { background-color: var(--fimby-brand-teal, #3A7D8C); }
+.legend-pending::before { background-color: #D4A843; }
+.legend-remaining::before { background-color: #A8D8E0; }
+
+/* Notice text */
+.notice-text {
+    font-size: 12px;
+    color: var(--fimby-text-muted, #9B9286);
+    line-height: 1.5;
+    padding: 12px;
+    background-color: var(--fimby-surface-input, #F5F2EC);
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+/* =============================================
+ * Mention Dropdown
+ * ============================================= */
+
+.textarea-container {
+    position: relative;
+}
+
+.mention-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 4px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border: 1px solid var(--fimby-divider-default, #E8E2D9);
+    border-radius: var(--fimby-radius-sm, 8px);
+    box-shadow: var(--fimby-shadow-card-hover);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.mention-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid var(--fimby-border-subtle, #EDE8E0);
+}
+
+.mention-item:hover {
+    background-color: var(--fimby-info-tint, #EEF5FF);
+}
+
+.mention-item:last-child {
+    border-bottom: none;
+}
+
+.mention-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong, #2A2520);
+}
+
+.mention-neighbourhood {
+    font-size: 12px;
+    color: var(--fimby-text-secondary, #6B6256);
+}
+
+/* =============================================
+ * Footer
+ * ============================================= */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-divider-default, #E8E2D9);
+    flex-shrink: 0;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-text-secondary, #6B6256);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    transition: all 0.2s ease;
+    min-height: 44px;
+    font-family: inherit;
+}
+
+.cancel-btn:hover {
+    color: var(--fimby-text-primary, #3D3833);
+    background-color: var(--fimby-hover-bg, rgba(0,0,0,0.05));
+}
+
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.submit-btn:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.submit-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.submit-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.submit-btn.submitting {
+    pointer-events: none;
+}
+
+/* =============================================
+ * Mobile: Bottom Sheet (≤ 480px)
+ * ============================================= */
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        top: 0;
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-container {
+        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        max-height: 85vh;
+        max-height: 85dvh;
+        animation: slideUpMobile 0.3s ease;
+    }
+
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+}
+
+/* =============================================
+ * Reduced Motion
+ * ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-container,
+    .close-button,
+    .cancel-btn,
+    .submit-btn,
+    .stepper-btn,
+    .event-confirm-btn,
+    .mention-item,
+    .retry-btn,
+    .view-details-btn,
+    .close-state-btn {
+        transition: none;
+        animation: none;
+    }
+}

@@ -1,0 +1,448 @@
+/* Page layout (matches fimbyBorrowingFlow) */
+:host {
+    display: block;
+    background: var(--fimby-surface-page);
+}
+
+.fimby-quick-response {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    background: var(--fimby-surface-page);
+}
+
+/* State Containers */
+.state-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    min-height: 60vh;
+}
+
+.state-container.success-state {
+    min-height: auto;
+    justify-content: flex-start;
+    padding-top: 2rem;
+}
+
+.state-icon {
+    margin-bottom: 1.5rem;
+}
+
+.success-icon {
+    color: var(--fimby-success);
+}
+
+.warning-icon {
+    color: var(--fimby-warning);
+}
+
+.error-icon {
+    color: var(--fimby-error);
+}
+
+.state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--fimby-text-strong);
+}
+
+.error-title {
+    color: var(--fimby-error);
+}
+
+.warning-title {
+    color: var(--fimby-warning);
+}
+
+.success-title {
+    color: var(--fimby-success);
+}
+
+.state-message {
+    color: var(--fimby-text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    max-width: 500px;
+}
+
+.state-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.loading-state {
+    padding: 4rem 2rem;
+}
+
+.loading-text {
+    margin-top: 1rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* Form Container */
+.form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-content {
+    padding: 24px 16px;
+}
+
+.form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-left {
+    min-width: 0;
+}
+
+.form-right {
+    min-width: 0;
+    flex: 1;
+}
+
+.form-fields {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-section {
+    margin-bottom: 0.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.field-label-row .form-label {
+    margin-bottom: 0;
+}
+
+.character-count {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    margin-top: 0.25rem;
+}
+
+.field-label-row .character-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: var(--fimby-error);
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: 6px;
+    background: var(--fimby-surface-card);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-input:focus-visible,
+.form-textarea:focus-visible {
+    outline: none;
+    border-color: var(--fimby-info);
+    box-shadow: 0 0 0 3px rgba(27, 150, 255, 0.15);
+}
+
+.amount-input {
+    max-width: 150px;
+}
+
+.field-help,
+.field-error {
+    font-size: 0.8125rem;
+    margin-top: 0.375rem;
+}
+
+.field-error {
+    color: var(--fimby-error);
+    margin-bottom: 0;
+}
+
+.error-text {
+    color: var(--fimby-error);
+}
+
+/* Item Card */
+.item-card {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    padding: 1rem;
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.item-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0 0 0.75rem;
+}
+
+.item-image {
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    background: var(--fimby-surface-page);
+}
+
+.item-details {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Responding As */
+.responding-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--fimby-success-tint);
+    border-radius: 6px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--fimby-success);
+}
+
+.responding-as-label {
+    font-size: 0.8125rem;
+    color: var(--fimby-text-secondary);
+}
+
+.responding-as-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-success);
+}
+
+/* Amount Section */
+.amount-section {
+    background: var(--fimby-info-tint);
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.amount-available {
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem;
+}
+
+/* Checkbox */
+.checkbox-group {
+    padding: 12px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.checkbox-label input {
+    margin-top: 3px;
+}
+
+/* Submit Footer — flows naturally at end of form */
+.submit-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.5rem 16px 2rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 10px 20px;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 500;
+    border-radius: var(--fimby-btn-radius, 12px);
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    border: none;
+    min-width: 120px;
+    min-height: 44px;
+    font-family: inherit;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #fff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.btn-primary:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+.btn-secondary {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+
+.btn-secondary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.btn-secondary:active:not(:disabled) {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .form-content {
+        padding: 16px 12px;
+    }
+
+    .submit-footer {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .fimby-quick-response {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-content {
+        padding: 32px 24px;
+    }
+
+    .form-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .form-left {
+        flex: 2;
+        position: sticky;
+        top: 80px;
+    }
+
+    .form-right {
+        flex: 3;
+    }
+
+    .item-image {
+        max-height: 280px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fimby-quick-response {
+        max-width: 800px;
+    }
+}
+
+/* Keyboard focus visibility */
+.back-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .form-input,
+    .form-textarea,
+    .btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}

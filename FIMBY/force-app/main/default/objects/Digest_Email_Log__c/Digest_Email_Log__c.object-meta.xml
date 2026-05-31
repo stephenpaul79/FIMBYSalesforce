@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>false</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <label>Digest Email Log</label>
+    <nameField>
+        <displayFormat>DEL-{00000}</displayFormat>
+        <label>Digest Email Log Name</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Digest Email Logs</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+    <description>Audit and idempotency tracking for digest email sends. One row per neighbourhood + cadence + window date. Recipients are stored as a delimited list in Recipients__c (success) and Failed_Recipients__c (failure). Email_Body_Preview__c stores the rendered neighbourhood digest HTML for ops review. A Skipped row is written even when there is no content to send so ops can confirm the batch ran.</description>
+</CustomObject>

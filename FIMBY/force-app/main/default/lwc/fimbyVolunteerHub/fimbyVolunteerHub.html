@@ -1,0 +1,34 @@
+<template>
+    <div class="fimby-volunteer-hub">
+        <c-fimby-page-header page-title="Volunteer Hub"></c-fimby-page-header>
+        <div class="volunteer-content">
+            <div class="hero-section">
+                <lightning-icon icon-name="utility:heart" size="large" class="hero-icon"></lightning-icon>
+                <h2 class="hero-title">Make a Difference</h2>
+                <p class="hero-subtitle">Join community volunteer opportunities</p>
+            </div>
+
+            <div class="opportunities-section">
+                <h3 class="section-title">Volunteer Opportunities</h3>
+                <template for:each={volunteerOpportunities} for:item="opportunity">
+                    <div key={opportunity.id} class="opportunity-card" onclick={handleOpportunityClick} data-opportunity-id={opportunity.id}>
+                        <div class="opportunity-header">
+                            <lightning-icon icon-name={opportunity.icon} size="medium" class="opportunity-icon"></lightning-icon>
+                            <div class="opportunity-info">
+                                <h4 class="opportunity-title">{opportunity.title}</h4>
+                                <p class="opportunity-location">{opportunity.location}</p>
+                            </div>
+                            <div class="opportunity-date">{opportunity.date}</div>
+                        </div>
+                        <p class="opportunity-description">{opportunity.description}</p>
+                        <div class="opportunity-footer">
+                            <span class="volunteer-count">{opportunity.volunteersNeeded} volunteers needed</span>
+                            <button class="volunteer-button" onclick={handleVolunteer} data-opportunity-id={opportunity.id}>Volunteer</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <c-fimby-bottom-navigation active-tab="volunteer" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+    </div>
+</template>

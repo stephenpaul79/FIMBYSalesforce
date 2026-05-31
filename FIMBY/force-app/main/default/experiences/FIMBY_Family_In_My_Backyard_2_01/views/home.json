@@ -1,0 +1,71 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsTwoCol84Layout",
+  "dataProviders" : [ ],
+  "id" : "709562e2-d20e-4a01-a197-5bff0b8b89f5",
+  "label" : "Home",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.VanSkyline_Grey1.1}\"></p>\n<p style=\"text-align: center;\"><br></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "94e5f81b-9dca-4973-b152-3b3b6a399048",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    }, {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><a href=\"/s/give-and-receive\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.GiveReceiveButtonUpdatepng.3}\" style=\"width: 269.638px; height: 72.8px;\"></a>&nbsp;&nbsp;<a href=\"/s/lending-library\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.LendBorrowButtonUpdatedpng.3}\" style=\"width: 272.738px; height: 72.8375px;\"></a>&nbsp;&nbsp;<a href=\"/s/neighbours\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.NeighboursButtonUpdatedpng.1}\" style=\"width: 276.688px; height: 73.8875px;\"></a>&nbsp;&nbsp;<a href=\"/s/stories\" rel=\"noopener noreferrer\" target=\"_self\"><img class=\"sfdcCbImage\" alt=\"\" src=\"{!contentAsset.StoriesButtonUpdatedpng.1}\" style=\"width: 273.7px; height: 73.0875px;\"></a></p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "b01f590a-49e2-405a-811c-7540e3af7196",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "5b0722af-1c1e-4ee2-b38f-eab01c7a937a",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "id" : "ba14a973-0690-45b3-8a02-a238f1b2ab6f",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "8146d206-2117-4c02-be71-28b0cab9bfd8",
+    "regionName" : "sidebar",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "richTextValue" : "<p style=\"text-align: center;\"><a href=\"https://fimby.my.site.com/s/feedback\" rel=\"noopener noreferrer\" target=\"_self\" style=\"color: rgb(230, 0, 0);\"><strong><u>SUBMIT FEEDBACK</u></strong></a>&nbsp;&nbsp;<a href=\"https://fimby.ca/\" rel=\"noopener noreferrer\" target=\"_blank\" style=\"color: rgb(0, 138, 0);\"><strong><u>VISIT FIMBY.CA</u></strong></a></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><strong>Need Assistance?</strong></p><p style=\"text-align: center;\">fimby @ strathconavineyard.com</p>"
+      },
+      "componentName" : "forceCommunity:richTextInline",
+      "id" : "6073cd2d-8b77-4197-b13f-d296079d231e",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "be1c53db-8dd2-4916-b23e-8db960c19002",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Home"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "a1aae925-1c4d-49a8-a16c-a30394d0b889",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "bc6e372d-a368-4f73-8b22-ad80947cfe04",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "home"
+}

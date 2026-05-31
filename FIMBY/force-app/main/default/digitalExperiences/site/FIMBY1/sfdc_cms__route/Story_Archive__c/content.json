@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Story Archive",
+  "contentBody" : {
+    "activeViewId" : "Story_Archive",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-story-archive",
+    "urlPrefix" : "story-archive"
+  },
+  "urlName" : "story-archive"
+}

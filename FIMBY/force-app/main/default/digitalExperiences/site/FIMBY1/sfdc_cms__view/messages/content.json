@@ -1,0 +1,83 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "messages",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"97a0576e-7e14-4ad4-b838-cb74659ad171\",\"columns\":[{\"UUID\":\"cca320ce-ec70-4577-8916-0ca2daf112dc\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "enablePullToRefresh" : true,
+                "enableTypingIndicators" : true,
+                "pageSize" : 20,
+                "showFilters" : false
+              },
+              "definition" : "c:fimbyMessagesList",
+              "id" : "c1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "type" : "component"
+            }, {
+              "attributes" : {
+                "activeTab" : "messages",
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyBottomNavigation",
+              "id" : "d1b2c3d4-e5f6-7890-abcd-ef1234567891",
+              "type" : "component"
+            } ],
+            "id" : "cca320ce-ec70-4577-8916-0ca2daf112dc",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "97a0576e-7e14-4ad4-b838-cb74659ad171",
+          "type" : "component"
+        } ],
+        "id" : "b148c533-014a-4271-a095-378b549b30ab",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "messages",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "06b31264-982b-4f73-b0bf-5a9213d8b51f",
+          "type" : "component"
+        } ],
+        "id" : "26c42f92-61d7-4640-8bad-0220bb310298",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "83fc878d-8d38-4e30-afa1-e9e8974935a6",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-messages"
+  },
+  "urlName" : "messages"
+}

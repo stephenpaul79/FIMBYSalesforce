@@ -1,0 +1,12 @@
+{
+  "type" : "fimby_onboarding_slide",
+  "title" : "The Neighbourhood Library",
+  "contentBody" : {
+    "title" : "The Neighbourhood Library",
+    "body" : "<p>Why buy when you can borrow? The <strong>Library</strong> is a shared lending shelf for your neighbourhood.</p><ul><li>Browse items your neighbours are willing to lend</li><li>Add your own items - tools, books, games, kitchen gear</li><li>Request to borrow with a single tap</li></ul><p>It saves money, reduces waste, and gives you a reason to meet the people next door.</p>",
+    "pageOrder" : "040",
+    "slideOrder" : "010",
+    "pageTitle" : "Library"
+  },
+  "urlName" : "library-feature"
+}

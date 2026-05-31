@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sent_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The real contact who physically typed and sent this message. May differ from Sender when someone messages on behalf of another (Logged_In_As_ID__c pattern).</description>
+    <label>Sent By</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Messages Sent (By)</relationshipLabel>
+    <relationshipName>Messages_Sent_By</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

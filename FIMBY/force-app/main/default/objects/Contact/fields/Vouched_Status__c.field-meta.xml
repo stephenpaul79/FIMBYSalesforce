@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vouched_Status__c</fullName>
+    <description>Current vouching state of the Contact. Drives library borrow gating and the settling-in / vouched UI chip.</description>
+    <label>Vouched Status</label>
+    <required>false</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>New</fullName>
+                <default>true</default>
+                <label>Settling In</label>
+            </value>
+            <value>
+                <fullName>Vouch_Requested</fullName>
+                <default>false</default>
+                <label>Vouch Requested</label>
+            </value>
+            <value>
+                <fullName>Vouched</fullName>
+                <default>false</default>
+                <label>Vouched</label>
+            </value>
+            <value>
+                <fullName>Vouch_Declined</fullName>
+                <default>false</default>
+                <label>Vouch Declined</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

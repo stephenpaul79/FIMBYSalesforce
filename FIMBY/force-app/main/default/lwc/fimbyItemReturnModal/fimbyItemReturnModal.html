@@ -1,0 +1,153 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+             role="dialog" aria-modal="true" aria-labelledby="return-modal-title">
+            <div class="modal-container" onclick={handleModalClick}>
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h2 id="return-modal-title" class="modal-title">{modalTitle}</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Loading -->
+                    <template lwc:if={isLoading}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Error -->
+                    <template lwc:elseif={isError}>
+                        <div class="state-container error-state">
+                            <div class="error-banner" role="alert">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{_errorMessage}</span>
+                            </div>
+                            <button class="secondary-btn" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+
+                    <!-- Submitting -->
+                    <template lwc:elseif={isSubmitting}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Success -->
+                    <template lwc:elseif={isSuccess}>
+                        <div class="state-container success-state">
+                            <template lwc:if={_isDamaged}>
+                                <div class="damaged-icon">😔</div>
+                            </template>
+                            <template lwc:else>
+                                <c-fimby-celebration action-type="return"></c-fimby-celebration>
+                            </template>
+                            <p class="confirmation-message">{_confirmationMessage}</p>
+                            <button class="submit-btn" onclick={handleSuccessDone}>Done</button>
+                        </div>
+                    </template>
+
+                    <!-- Return Form -->
+                    <template lwc:elseif={isForm}>
+
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">{identityLabel}</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+
+                        <!-- Return Status -->
+                        <div class="field-group">
+                            <span class="field-label">Has the item been returned to the owner?</span>
+                            <div class="decision-toggle">
+                                <button class={returnedRadioClass} onclick={handleSelectReturned}>
+                                    <span class="radio-dot"></span>
+                                    <span>Yes</span>
+                                </button>
+                                <button class={damagedRadioClass} onclick={handleSelectDamaged}>
+                                    <span class="radio-dot"></span>
+                                    <span>Lost / Damaged</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Date Returned -->
+                        <div class="field-group">
+                            <label class="field-label" for="irm-date">Date Returned</label>
+                            <input id="irm-date" type="date" class="form-input"
+                                   value={_dateReturned} onchange={handleDateChange}>
+                        </div>
+
+                        <!-- Condition Upon Return (owner only) -->
+                        <template lwc:if={_isOwner}>
+                            <div class="field-group">
+                                <label class="field-label" for="irm-condition">Condition Upon Return</label>
+                                <select id="irm-condition" class="form-input"
+                                        value={_conditionUponReturn} onchange={handleConditionChange}>
+                                    <option value="">Select condition...</option>
+                                    <template for:each={_conditionOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                        </template>
+
+                        <!-- Feedback Section -->
+                        <template lwc:if={showOwnerFeedback}>
+                            <div class="field-group">
+                                <span class="field-label">Would you lend to them again? (Optional)</span>
+                                <div class="decision-toggle">
+                                    <button class={lendAgainYesClass} onclick={handleLendAgainYes}>
+                                        <span class="radio-dot"></span>
+                                        <span>Yes</span>
+                                    </button>
+                                    <button class={lendAgainNoClass} onclick={handleLendAgainNo}>
+                                        <span class="radio-dot"></span>
+                                        <span>No</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showBorrowerFeedback}>
+                            <div class="field-group">
+                                <span class="field-label">Would you borrow from them again? (Optional)</span>
+                                <div class="decision-toggle">
+                                    <button class={borrowAgainYesClass} onclick={handleBorrowAgainYes}>
+                                        <span class="radio-dot"></span>
+                                        <span>Yes</span>
+                                    </button>
+                                    <button class={borrowAgainNoClass} onclick={handleBorrowAgainNo}>
+                                        <span class="radio-dot"></span>
+                                        <span>No</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                    </template>
+                </div>
+
+                <!-- Footer -->
+                <template lwc:if={isForm}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <button class="submit-btn" onclick={handleSubmit}
+                                disabled={isSubmitDisabled}>
+                            <span>Confirm Return</span>
+                        </button>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

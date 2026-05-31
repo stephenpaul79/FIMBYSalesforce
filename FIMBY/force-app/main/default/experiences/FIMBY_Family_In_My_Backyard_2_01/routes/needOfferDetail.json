@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "b12bf59c-c489-49f0-9c19-06ac32dd2ecc",
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "configurationTags" : [ ],
+  "devName" : "Need_Offer_Detail__c",
+  "id" : "e3e46860-d56f-417b-af7f-02e04d5b72b2",
+  "label" : "Need  Offer Detail",
+  "objectApiName" : "Needs_Offers__c",
+  "routeType" : "detail-a0y",
+  "type" : "route",
+  "urlPrefix" : "needs-offers"
+}

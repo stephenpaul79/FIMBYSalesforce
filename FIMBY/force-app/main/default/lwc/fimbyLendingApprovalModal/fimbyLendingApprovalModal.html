@@ -1,0 +1,232 @@
+<template>
+    <template lwc:if={_isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+             role="dialog" aria-modal="true" aria-labelledby="approval-modal-title">
+            <div class="modal-container" onclick={handleModalClick}>
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h2 id="approval-modal-title" class="modal-title">{modalTitle}</h2>
+                    <button class="close-button" onclick={handleClose} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Loading -->
+                    <template lwc:if={isLoading}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Already Handled -->
+                    <template lwc:elseif={isAlreadyHandled}>
+                        <div class="state-container info-state">
+                            <lightning-icon icon-name="utility:check" size="medium" variant="success"></lightning-icon>
+                            <p class="state-message">Looks like you already took action here.</p>
+                            <button class="submit-btn" onclick={handleClose}>Got It</button>
+                        </div>
+                    </template>
+
+                    <!-- Error -->
+                    <template lwc:elseif={isError}>
+                        <div class="state-container error-state">
+                            <div class="error-banner" role="alert">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{_errorMessage}</span>
+                            </div>
+                            <button class="secondary-btn" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+
+                    <!-- Submitting -->
+                    <template lwc:elseif={isSubmitting}>
+                        <div class="state-container">
+                            <c-fimby-loading-message context="lending" size="medium"></c-fimby-loading-message>
+                        </div>
+                    </template>
+
+                    <!-- Success -->
+                    <template lwc:elseif={isSuccess}>
+                        <div class="state-container success-state">
+                            <c-fimby-celebration action-type="borrow-approved"></c-fimby-celebration>
+                            <h2 class="success-title">Request approved!</h2>
+                            <p class="success-subtitle">Contact info has been shared with {requesterName}.</p>
+                            <button class="submit-btn approve" onclick={handleSuccessDone}>Done</button>
+                        </div>
+                    </template>
+
+                    <!-- Share Contact Info Step -->
+                    <template lwc:elseif={isShareContact}>
+                        <p class="share-intro">
+                            Select the contact info you'd like to share with {requesterName} to coordinate pickup:
+                        </p>
+
+                        <div class="share-options">
+                            <label class="share-toggle">
+                                <input type="checkbox" checked={shareEmail} onchange={handleShareEmailChange}>
+                                <span>Email</span>
+                            </label>
+                            <template lwc:if={shareEmail}>
+                                <div class="share-field">
+                                    <input type="email" class="form-input" value={emailToShare}
+                                           onchange={handleEmailChange} placeholder="Email address">
+                                </div>
+                            </template>
+
+                            <label class="share-toggle">
+                                <input type="checkbox" checked={sharePhone} onchange={handleSharePhoneChange}>
+                                <span>Phone</span>
+                            </label>
+                            <template lwc:if={sharePhone}>
+                                <div class="share-field">
+                                    <input type="tel" class="form-input" value={phoneToShare}
+                                           onchange={handlePhoneChange} placeholder="Phone number">
+                                </div>
+                            </template>
+
+                            <label class="share-toggle">
+                                <input type="checkbox" checked={shareAddress} onchange={handleShareAddressChange}>
+                                <span>Address</span>
+                            </label>
+                            <template lwc:if={shareAddress}>
+                                <div class="address-fields">
+                                    <input type="text" class="form-input" value={streetToShare}
+                                           onchange={handleStreetChange} placeholder="Street">
+                                    <div class="address-row">
+                                        <input type="text" class="form-input" value={cityToShare}
+                                               onchange={handleCityChange} placeholder="City">
+                                        <input type="text" class="form-input" value={stateToShare}
+                                               onchange={handleStateChange} placeholder="Province/State">
+                                    </div>
+                                    <div class="address-row">
+                                        <input type="text" class="form-input" value={postalCodeToShare}
+                                               onchange={handlePostalCodeChange} placeholder="Postal code">
+                                        <input type="text" class="form-input" value={countryToShare}
+                                               onchange={handleCountryChange} placeholder="Country">
+                                    </div>
+                                    <input type="text" class="form-input" value={additionalInfo}
+                                           onchange={handleAdditionalInfoChange}
+                                           placeholder="Buzz, unit, access info (optional)">
+                                </div>
+                            </template>
+                        </div>
+
+                        <p class="share-note">
+                            Clicking <strong>Approve &amp; Share</strong> will share the selected info with {requesterName} via email and approve the request.
+                        </p>
+                    </template>
+
+                    <!-- Decision Form -->
+                    <template lwc:elseif={isForm}>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Approving as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <!-- Requester summary -->
+                        <div class="requester-summary">
+                            <template lwc:if={hasRequesterAvatar}>
+                                <img src={requesterAvatar} alt="" class="requester-avatar">
+                            </template>
+                            <template lwc:else>
+                                <img src={noProfilePhotoUrl} alt="" class="requester-avatar">
+                            </template>
+                            <div class="requester-info">
+                                <span class="requester-name">{requesterName}</span>
+                                <span class="requester-meta">wants to borrow <strong>{libraryItem.name}</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Request details -->
+                        <div class="request-detail-row">
+                            <span class="detail-value">{requestDetails}</span>
+                        </div>
+
+                        <template lwc:if={lendingRequest.message}>
+                            <div class="note-block">
+                                <span class="note-label">Note from requester</span>
+                                <p class="note-text">{lendingRequest.message}</p>
+                            </div>
+                        </template>
+
+                        <!-- Decision toggle -->
+                        <div class="decision-toggle">
+                            <button class={approveRadioClass} onclick={handleSelectApprove}>
+                                <span class="radio-dot"></span>
+                                <span>Approve</span>
+                            </button>
+                            <button class={declineRadioClass} onclick={handleSelectDecline}>
+                                <span class="radio-dot"></span>
+                                <span>Decline</span>
+                            </button>
+                        </div>
+
+                        <!-- Approve fields -->
+                        <template lwc:if={isApproveDecision}>
+                            <div class="field-group">
+                                <label class="field-label" for="am-pickup">Estimated Pickup Date</label>
+                                <input id="am-pickup" type="date" class="form-input"
+                                       value={pickupDate} onchange={handlePickupDateChange}>
+                            </div>
+
+                            <div class="risk-section">
+                                <p class="risk-text">
+                                    Lending carries risk of damage. Any issues are resolved directly between you and the borrower.
+                                </p>
+                                <label class="risk-checkbox">
+                                    <input type="checkbox" checked={riskAcknowledged}
+                                           onchange={handleRiskAcknowledgedChange}>
+                                    <span>I understand and accept the risk.</span>
+                                </label>
+                            </div>
+
+                            <p class="info-note">
+                                Next, you'll choose what contact info to share with {requesterName} to coordinate pickup.
+                            </p>
+                        </template>
+
+                        <!-- Decline fields -->
+                        <template lwc:if={isDeclineDecision}>
+                            <div class="field-group">
+                                <label class="field-label" for="am-reason">Reason for Decline</label>
+                                <textarea id="am-reason" class="form-input form-textarea"
+                                          value={declineReason} oninput={handleDeclineReasonChange}
+                                          placeholder="Let them know why so they understand..."
+                                          maxlength="500"></textarea>
+                            </div>
+                        </template>
+                    </template>
+
+                </div>
+
+                <!-- Footer: Decision form -->
+                <template lwc:if={isForm}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <button class={submitButtonClass} onclick={handleSubmit}
+                                disabled={isSubmitDisabled}>
+                            <span>{submitButtonLabel}</span>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Footer: Share contact step -->
+                <template lwc:if={isShareContact}>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleBackToForm}>Back</button>
+                        <button class="submit-btn approve" onclick={handleShareAndApprove}
+                                disabled={isShareDisabled}>
+                            <span>Approve &amp; Share</span>
+                        </button>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

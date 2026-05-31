@@ -1,0 +1,82 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Sign Up",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"6fe183c5-7396-4d8c-abff-5d0ee6b80bb6\",\"columns\":[{\"UUID\":\"fc2bf425-d975-465a-9ba4-78c2dde208dc\",\"columnName\":\"Column 1\",\"columnKey\":\"97b14\",\"columnWidth\":\"3\",\"seedComponents\":[]},{\"UUID\":\"5d30693e-b93e-4dc3-b9ad-751d281e6748\",\"columnName\":\"Column 2\",\"columnKey\":\"60c93\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"8756882b-9000-42bd-9022-3c28d4988814\",\"columnName\":\"Column 3\",\"columnKey\":\"872a8\",\"columnWidth\":\"3\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "center"
+          },
+          "children" : [ {
+            "id" : "fc2bf425-d975-465a-9ba4-78c2dde208dc",
+            "name" : "97b14",
+            "title" : "Column 1",
+            "type" : "region"
+          }, {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "flowName" : "{\"flowName\":\"FIMBY_Public_Signup_Page\",\"flowLabel\":\"FIMBY Sign Up\"}"
+              },
+              "definition" : "dxp_flow:flow",
+              "id" : "ccbe21dd-ecaf-46a5-963c-23ab44951a00",
+              "type" : "component"
+            } ],
+            "id" : "5d30693e-b93e-4dc3-b9ad-751d281e6748",
+            "name" : "60c93",
+            "title" : "Column 2",
+            "type" : "region"
+          }, {
+            "id" : "8756882b-9000-42bd-9022-3c28d4988814",
+            "name" : "872a8",
+            "title" : "Column 3",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "6fe183c5-7396-4d8c-abff-5d0ee6b80bb6",
+          "type" : "component"
+        } ],
+        "id" : "0e16f2c9-f3ce-450a-8d71-5a6d87965b26",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "Join FIMBY — a neighbourhood mutual-aid app where neighbours ask, offer, lend, and look out for each other. Sign up to connect with the people around you. Turn the place you live into a place you belong.",
+            "dxpStyle" : { },
+            "pageTitle" : "Sign Up",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "d2a1ec3d-559c-4a1d-9922-21254a3c9fd6",
+          "type" : "component"
+        } ],
+        "id" : "aca25544-20d9-4605-a441-ca426d30dbbd",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "58dfb72f-53e1-453e-b5ef-8c7c9ab524e9",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "6RRWToFKWMHjvS6Ze1xvexkT1yZNOd",
+    "viewType" : "custom-sign-up"
+  },
+  "urlName" : "sign-up"
+}

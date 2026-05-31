@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>CGA_Accepted_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Real Contact (the human at the keyboard, not the represented identity) who accepted the Community Group Agreement on behalf of this Organization Account.</description>
+    <label>CGA Accepted By</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>CGA Accepted (Accounts)</relationshipLabel>
+    <relationshipName>CGA_Accepted_Accounts</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Lookup</type>
+</CustomField>

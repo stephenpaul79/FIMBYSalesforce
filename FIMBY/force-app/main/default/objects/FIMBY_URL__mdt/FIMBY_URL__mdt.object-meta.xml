@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>FIMBY URL</label>
+    <pluralLabel>FIMBY URLs</pluralLabel>
+    <visibility>Public</visibility>
+    <description>Configurable URL patterns for the FIMBY app. Replaces hardcoded URLs in Apex to allow admin-level changes without code deployments.</description>
+</CustomObject>

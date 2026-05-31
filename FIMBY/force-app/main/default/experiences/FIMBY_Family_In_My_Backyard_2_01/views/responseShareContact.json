@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "1d542f10-d15b-4a11-9200-b8245e4dfba7",
+  "label" : "Response Share Contact",
+  "regions" : [ {
+    "id" : "a4c19db1-c7b0-4f56-8288-08b3727ec18b",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!recordId}\"}]",
+        "flowName" : "Share_Contact_Info"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "ec80c54d-8275-4382-a4f7-d628487b6bd5",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "4751a9c8-a7a5-4455-b670-bd29c3692328",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "7b5ee2a3-bebc-4893-9405-07a1ef6a64e9",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Response Share Contact"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "f19dfaa6-5bfa-4ff6-b8f2-d675375dc4de",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "0b6bd4df-c827-40c4-8f4b-5e187734c3f7",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-response-share-contact"
+}

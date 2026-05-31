@@ -1,0 +1,414 @@
+:host {
+    display: block;
+    background-color: var(--fimby-surface-page);
+}
+.org-profile-page {
+    min-height: calc(100vh - var(--fimby-header-height, 78px));
+    min-height: calc(100dvh - var(--fimby-header-height, 78px));
+    background-color: var(--fimby-surface-page);
+    padding: 0 16px 80px;
+    box-sizing: border-box;
+}
+@media (min-width: 768px) {
+    .org-profile-page { padding: 0 24px 80px; }
+}
+@media (min-width: 892px) {
+    .org-profile-page { padding-bottom: 24px; }
+}
+@media (min-width: 1024px) {
+    .org-profile-page { max-width: 800px; margin: 0 auto; }
+}
+
+.org-hero-card,
+.org-details-card,
+.org-people-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 24px;
+    margin-top: 12px;
+}
+.org-hero-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.logo-wrapper {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    background: none;
+    overflow: hidden;
+}
+.logo-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.logo-wrapper:hover .logo-overlay {
+    opacity: 1;
+}
+.logo-wrapper:hover .logo-edit-badge {
+    opacity: 0;
+}
+.logo-edit-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 28px;
+    height: 28px;
+    background: var(--fimby-brand-teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    border: 2px solid var(--fimby-surface-card);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.2s ease;
+}
+.remove-logo-btn {
+    background: none;
+    border: none;
+    color: var(--fimby-error);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.uploader-inline {
+    margin: 12px 0;
+    padding: 16px;
+    background: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-md);
+    width: 100%;
+    max-width: 320px;
+}
+.edit-fields {
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+}
+.edit-fields .field-row {
+    margin-bottom: 12px;
+}
+.edit-fields .field-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 4px;
+}
+.edit-fields .field-input,
+.edit-fields .field-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--fimby-border);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+.edit-fields .field-textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+.edit-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.btn-neutral {
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    border: 1px solid var(--fimby-border-default);
+    color: var(--fimby-text-strong);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+}
+.btn-neutral:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.btn-neutral:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.btn-primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    border: none;
+    color: white;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
+}
+.btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.post-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid var(--fimby-border-subtle);
+    flex-wrap: wrap;
+}
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 10px 20px;
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+    cursor: pointer;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    transition: all 0.2s ease;
+}
+.action-btn:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+.action-btn:active {
+    background-color: var(--fimby-pressed-bg);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+    transform: scale(0.97);
+}
+.action-btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+.org-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.logo-section .org-logo {
+    margin-bottom: 0;
+}
+.org-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0 0 8px;
+}
+.org-type-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.org-type-pill {
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    background-color: var(--fimby-surface-page);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    color: var(--fimby-text-muted);
+    pointer-events: none;
+    user-select: none;
+}
+.verified-badge {
+    width: 20px;
+    height: 20px;
+}
+.org-description {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.detail-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.detail-link {
+    color: var(--fimby-brand-teal);
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+.neighbourhood-list {
+    margin-top: 12px;
+}
+.neighbourhood-tag {
+    display: inline-block;
+    padding: var(--fimby-badge-padding, 2px 10px);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    background-color: var(--fimby-selected-bg);
+    color: var(--fimby-brand-teal);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    margin: 4px 4px 4px 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.card-icon {
+    width: 24px;
+    height: 24px;
+}
+.sub-heading {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.people-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.person-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--fimby-radius-sm);
+    min-height: 44px;
+}
+.person-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.person-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--fimby-text-strong);
+}
+
+.empty-text {
+    color: var(--fimby-text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 16px 0;
+}
+
+.error-banner {
+    background-color: var(--fimby-error-tint, #fef2f2);
+    color: var(--fimby-error, #dc2626);
+    padding: 12px 16px;
+    border-radius: var(--fimby-radius-sm);
+    margin: 12px 0;
+}
+
+/* Message button */
+.message-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Contact info section */
+.contact-info-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+.contact-info-section .sub-heading {
+    margin-bottom: 12px;
+}
+.detail-icon-svg {
+    flex-shrink: 0;
+    color: var(--fimby-text-muted);
+}
+.detail-text {
+    font-size: 0.9rem;
+    color: var(--fimby-text-secondary);
+}
+
+/* Inline field row for city/state/postcode */
+.field-row-inline {
+    display: flex;
+    gap: 8px;
+}
+.field-col {
+    flex: 1;
+}
+.field-col-sm {
+    flex: 0 0 80px;
+}
+
+/* Advisory notice in edit form */
+.edit-advisory {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 12px;
+    margin-top: 16px;
+    background-color: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.8rem;
+    color: var(--fimby-text-muted);
+    line-height: 1.4;
+}
+.advisory-icon {
+    flex-shrink: 0;
+    color: var(--fimby-text-muted);
+    margin-top: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}

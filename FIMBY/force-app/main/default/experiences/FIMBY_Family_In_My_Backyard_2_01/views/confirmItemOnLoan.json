@@ -1,0 +1,49 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsOneColLayout",
+  "dataProviders" : [ ],
+  "id" : "c514a5ea-8957-4992-bc04-109469176d14",
+  "label" : "Confirm Item On Loan",
+  "regions" : [ {
+    "id" : "24b0c14e-acba-48cd-8514-39246c2e2517",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":false,\"value\":\"{!recordId}\"}]",
+        "flowName" : "Lending_Confirmed"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "c7856d79-62c9-4e84-8a86-71de341cd00a",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "ec240faa-72cd-4a3f-b6ba-d4878924583a",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "caf23f89-62f4-48cb-bf6a-6be72b5850c5",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "Confirm Item On Loan"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "d74f8afc-125e-44c2-8a10-dd75c47e44c7",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "def6fde6-404d-417d-b9f9-97bbb807eb6b",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "custom-confirm-item-on-loan"
+}

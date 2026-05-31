@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Organization Profile",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"4272a924-a0e5-47d5-bbc0-3f5bb5577225\",\"columns\":[{\"UUID\":\"a2638988-fc55-42f1-83f6-7f19ad081800\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbyOrganizationProfile",
+              "id" : "f7d9ab7c-b900-4515-97d4-cc5cf3f3070e",
+              "type" : "component"
+            } ],
+            "id" : "a2638988-fc55-42f1-83f6-7f19ad081800",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "4272a924-a0e5-47d5-bbc0-3f5bb5577225",
+          "type" : "component"
+        } ],
+        "id" : "40ae8695-8000-458c-abe5-0f55eef66c13",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Organization Profile",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "2d00c5dd-d921-4e13-867f-f1301d2dabff",
+          "type" : "component"
+        } ],
+        "id" : "b6cf35a9-451f-4083-adde-ec2227c71b58",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "c27449ab-f08d-4c95-9ed1-a2b006a8da17",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-organization-profile"
+  },
+  "urlName" : "organization-profile"
+}

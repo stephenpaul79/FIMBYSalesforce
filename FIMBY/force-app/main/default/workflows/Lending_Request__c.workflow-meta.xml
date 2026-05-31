@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workflow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <alerts>
+        <fullName>Lending_Confirmation</fullName>
+        <description>Lending Confirmation</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Item_Owner__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Confirm_Item_On_Loan_1686786272770</template>
+    </alerts>
+    <alerts>
+        <fullName>Lending_Request_Approval_Request</fullName>
+        <description>Lending Request Approval Request</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Item_Owner__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Lending_Request_Approval_1686701498981</template>
+    </alerts>
+    <alerts>
+        <fullName>Lending_Request_Approved</fullName>
+        <description>Lending Request Approved</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Requested_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Lending_Request_Approval_Needed_1686766799339</template>
+    </alerts>
+    <alerts>
+        <fullName>Lending_Request_Decline</fullName>
+        <description>Lending Request Decline</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Requested_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Lending_Request_Decline_1686765644517</template>
+    </alerts>
+    <alerts>
+        <fullName>Waitlist_Automatic_Decline</fullName>
+        <description>Waitlist Automatic Decline</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Requested_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Lending_Request_Has_Been_Declined_Automatically_1686957542970</template>
+    </alerts>
+    <alerts>
+        <fullName>Waitlist_Confirmation_Email</fullName>
+        <description>Waitlist Confirmation Email</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Requested_By__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <senderAddress>fimby@strathconavineyard.com</senderAddress>
+        <senderType>OrgWideEmailAddress</senderType>
+        <template>unfiled$public/Confirm_Lending_Request_1686955847439</template>
+    </alerts>
+</Workflow>

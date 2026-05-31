@@ -1,0 +1,73 @@
+{
+  "appPageId" : "e514161a-7b9c-4ce9-8f17-d849b1873289",
+  "componentName" : "siteforce:sldsTwoCol66Layout",
+  "dataProviders" : [ ],
+  "id" : "5b323287-cd31-4dd9-ad72-5f78af130dc0",
+  "label" : "Contact Detail",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordHeadline",
+      "id" : "a962efb7-e46f-4e4f-b1a8-002ef263e6e3",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "05690d55-b407-44ac-9a20-a3663bea71cb",
+    "regionName" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "recordId" : "{!recordId}"
+      },
+      "componentName" : "forceCommunity:recordDetail",
+      "id" : "044696ad-0d8f-4c66-a940-7b4c0fe6c3dc",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "dbcf0033-8a6b-4180-b7ef-87f6c3526081",
+    "regionName" : "content",
+    "type" : "region"
+  }, {
+    "id" : "6c83db21-b9ae-4733-b40d-e101ce9a04d3",
+    "regionName" : "footer",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "customHeadTags" : "",
+        "description" : "",
+        "title" : "{!Record._Object}: {!Record._Title}"
+      },
+      "componentName" : "forceCommunity:seoAssistant",
+      "id" : "5eb4ee83-d427-4324-8e77-79b0c0685cea",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "68fe875d-c18e-4107-9d4b-d68326823d0b",
+    "regionName" : "sfdcHiddenRegion",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : {
+        "flowArguments" : "[{\"label\":\"recordId\",\"dataType\":\"String\",\"supportsRecordId\":true,\"value\":\"{!Record.Id}\"}]",
+        "flowName" : "Shared_Contact_Info"
+      },
+      "componentName" : "forceCommunity:flowCommunity",
+      "id" : "42a05f41-0136-4b9e-beff-ce265e862c16",
+      "renderPriority" : "NEUTRAL",
+      "renditionMap" : { },
+      "type" : "component"
+    } ],
+    "id" : "2ed78ffc-babc-4e17-955e-5f2b18877bb5",
+    "regionName" : "sidebar",
+    "type" : "region"
+  } ],
+  "themeLayoutType" : "Inner",
+  "type" : "view",
+  "viewType" : "detail-003"
+}

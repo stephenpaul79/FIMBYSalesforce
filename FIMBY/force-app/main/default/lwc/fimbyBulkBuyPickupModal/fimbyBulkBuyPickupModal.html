@@ -1,0 +1,73 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-container" onclick={handleModalClick} role="dialog" aria-modal="true" aria-labelledby="pickup-modal-title">
+                <header class="modal-header">
+                    <h2 id="pickup-modal-title" class="modal-title">
+                        <img src={pickupIconUrl} alt="" class="modal-title-icon">
+                        <span>Let your neighbours know pickup is ready</span>
+                    </h2>
+                    <button class="close-button" onclick={handleCancel} aria-label="Close" title="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </header>
+
+                <div class="modal-body">
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Posting as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
+                    <div class="form-group">
+                        <label for="pickup-message" class="form-label">Message <span class="required">*</span></label>
+                        <textarea
+                            id="pickup-message"
+                            class="form-textarea"
+                            placeholder="Add a message for your neighbours..."
+                            value={message}
+                            onchange={handleMessageChange}
+                            oninput={handleMessageChange}
+                            maxlength="5000"
+                            required
+                            disabled={isLoading}
+                            aria-required="true"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Receipt photo (optional)</label>
+                        <c-fimby-image-uploader
+                            record-id={postId}
+                            object-api-name="Needs_Offers__c"
+                            image-slot={receiptImageSlot}
+                            label="Upload receipt photo"
+                            onimageuploaded={handleReceiptUpload}
+                            onimageremoved={handleReceiptRemoved}>
+                        </c-fimby-image-uploader>
+                        <p class="trust-nudge">Sharing your receipt helps build trust</p>
+                    </div>
+
+                    <template lwc:if={errorMessage}>
+                        <div class="error-message" role="alert">{errorMessage}</div>
+                    </template>
+                </div>
+
+                <footer class="modal-footer">
+                    <button class="btn-secondary" onclick={handleCancel} disabled={isLoading}>
+                        Cancel
+                    </button>
+                    <button class="btn-primary" onclick={handleSubmit} disabled={isSubmitDisabled}>
+                        <template lwc:if={isLoading}>
+                            <lightning-spinner alternative-text="Sending..." size="x-small"></lightning-spinner>
+                            <span>Sending...</span>
+                        </template>
+                        <template lwc:else>
+                            <span>Send Notification</span>
+                        </template>
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </template>
+</template>

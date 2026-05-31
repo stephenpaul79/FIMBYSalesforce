@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ManagedContentType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Onboarding walkthrough slides displayed in the new-user modal. Each record represents one slide; slides sharing the same pageOrder value form a carousel within a single walkthrough page.</description>
+    <developerName>fimby_onboarding_slide</developerName>
+    <managedContentNodeTypes>
+        <helpText>Heading shown at the top of this slide.</helpText>
+        <isLocalizable>true</isLocalizable>
+        <isRequired>true</isRequired>
+        <nodeLabel>Title</nodeLabel>
+        <nodeName>title</nodeName>
+        <nodeType>NAMEFIELD</nodeType>
+        <placeholderText>Enter slide heading</placeholderText>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Rich text content for the slide body. Supports formatting and inline images.</helpText>
+        <isLocalizable>true</isLocalizable>
+        <isRequired>false</isRequired>
+        <nodeLabel>Body</nodeLabel>
+        <nodeName>body</nodeName>
+        <nodeType>RTE</nodeType>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Large feature image or screenshot displayed prominently on the slide.</helpText>
+        <isLocalizable>false</isLocalizable>
+        <isRequired>false</isRequired>
+        <nodeLabel>Hero Image</nodeLabel>
+        <nodeName>heroImage</nodeName>
+        <nodeType>IMG</nodeType>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Zero-padded number controlling the page sequence (e.g. 010, 020, 030). Slides sharing the same value appear together as a carousel.</helpText>
+        <isLocalizable>false</isLocalizable>
+        <isRequired>true</isRequired>
+        <nodeLabel>Page Order</nodeLabel>
+        <nodeName>pageOrder</nodeName>
+        <nodeType>TEXT</nodeType>
+        <placeholderText>010</placeholderText>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Zero-padded number controlling slide order within a page (e.g. 010, 020). Use 010 for single-slide pages.</helpText>
+        <isLocalizable>false</isLocalizable>
+        <isRequired>true</isRequired>
+        <nodeLabel>Slide Order</nodeLabel>
+        <nodeName>slideOrder</nodeName>
+        <nodeType>TEXT</nodeType>
+        <placeholderText>010</placeholderText>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Short label shown in the progress indicator for this page group.</helpText>
+        <isLocalizable>true</isLocalizable>
+        <isRequired>false</isRequired>
+        <nodeLabel>Page Title</nodeLabel>
+        <nodeName>pageTitle</nodeName>
+        <nodeType>TEXT</nodeType>
+        <placeholderText>e.g. The Library</placeholderText>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>Optional call-to-action button label. Leave blank for no button.</helpText>
+        <isLocalizable>true</isLocalizable>
+        <isRequired>false</isRequired>
+        <nodeLabel>Button Label</nodeLabel>
+        <nodeName>buttonLabel</nodeName>
+        <nodeType>TEXT</nodeType>
+        <placeholderText>e.g. Explore the Library</placeholderText>
+    </managedContentNodeTypes>
+    <managedContentNodeTypes>
+        <helpText>URL the call-to-action button navigates to when clicked.</helpText>
+        <isLocalizable>false</isLocalizable>
+        <isRequired>false</isRequired>
+        <nodeLabel>Button URL</nodeLabel>
+        <nodeName>buttonUrl</nodeName>
+        <nodeType>URL</nodeType>
+    </managedContentNodeTypes>
+    <masterLabel>FIMBY Onboarding Slide</masterLabel>
+</ManagedContentType>

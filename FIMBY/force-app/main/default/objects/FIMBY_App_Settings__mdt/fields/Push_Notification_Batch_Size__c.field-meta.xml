@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Push_Notification_Batch_Size__c</fullName>
+    <defaultValue>100</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Push Notification Batch Size</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum push notification payloads bundled into a single async job. Higher values reduce async job count but increase per-job processing time.</inlineHelpText>
+</CustomField>

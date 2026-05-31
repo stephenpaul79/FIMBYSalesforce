@@ -1,0 +1,90 @@
+<template>
+    <!-- Modal Mode -->
+    <template lwc:if={shouldShowModal}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <div class="modal-header">
+                    <h2 class="modal-title">Say Thank You</h2>
+                    <button class="close-button" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+                <template lwc:if={showSuccess}>
+                    <div class="modal-content">
+                        <!-- Success State -->
+                        <div class="success-container">
+                            <img src={thanksIconUrl} alt="" class="success-icon">
+                            <h3>Thanks Sent!</h3>
+                            <p>Your appreciation has been shared.</p>
+                        </div>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="modal-content">
+                        <!-- Form -->
+                        <template lwc:if={errorMessage}>
+                            <div class="error-banner">
+                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                                <span>{errorMessage}</span>
+                            </div>
+                        </template>
+
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Thanking as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+
+                        <p class="recipient-info">Sending thanks to <strong>{displayRecipientName}</strong></p>
+
+                        <textarea
+                            class="message-input modal-textarea"
+                            placeholder="Write a thank you message..."
+                            value={thankYouMessage}
+                            onchange={handleMessageChange}
+                            maxlength="500">
+                        </textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick={handleClose}>Cancel</button>
+                        <button class="send-thanks-button" onclick={handleSendThanks} disabled={isSubmitDisabled}>
+                            <template lwc:if={isSubmitting}>
+                                <lightning-spinner alternative-text="Sending..." size="small"></lightning-spinner>
+                            </template>
+                            <template lwc:else>
+                                <img src={thanksIconUrl} alt="" class="btn-thanks-icon">
+                                Send Thanks
+                            </template>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Page Mode (Original) -->
+    <template lwc:if={shouldShowPage}>
+        <div class="fimby-thanks-giving">
+            <c-fimby-page-header page-title="Thank You"></c-fimby-page-header>
+            <div class="thanks-content">
+                <div class="thanks-card">
+                    <lightning-icon icon-name="utility:heart" size="large" class="heart-icon"></lightning-icon>
+                    <h2 class="thanks-title">Say Thank You</h2>
+                    <p class="thanks-message">Show appreciation to your neighbors</p>
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Thanking as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
+                    <textarea class="message-input" placeholder="Write a thank you message..." value={thankYouMessage} onchange={handleMessageChange}></textarea>
+                    <button class="send-thanks-button" onclick={handleSendThanks}>Send Thanks</button>
+                </div>
+            </div>
+            <c-fimby-bottom-navigation active-tab="thanks" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
+        </div>
+    </template>
+</template>

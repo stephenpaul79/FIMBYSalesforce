@@ -1,0 +1,12 @@
+{
+  "activeViewId" : "a1a1b2b2-c3c3-d4d4-e5e5-f6f677880022",
+  "appPageId" : "22334455-6677-8899-aabb-ccddeeff0011",
+  "configurationTags" : [ ],
+  "devName" : "Story_Archive",
+  "id" : "22aa33bb-44cc-55dd-66ee-77ff88990011",
+  "label" : "Story Archive",
+  "pageAccess" : "UseParent",
+  "routeType" : "custom-story_archive",
+  "type" : "route",
+  "urlPrefix" : "story-archive"
+}
