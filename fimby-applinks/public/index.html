@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Opening FIMBY…</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1a1a1a;
+      --muted: #5a5a5a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0b0f12; --fg: #f5f5f5; --muted: #a8b1b8; }
+    }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 400 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card { max-width: 420px; text-align: center; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; }
+    p { color: var(--muted); margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Opening FIMBY…</h1>
+    <p>Taking you to FIMBY now.</p>
+  </main>
+  <script>
+    // Layered redirect: send users without the FIMBY app to the matching page
+    // on our.fimby.com. Users with the app never run this script — the OS
+    // intercepts the Universal Link / App Link before the page loads.
+    //
+    // Strategy (the Branch.io / Firebase Dynamic Links shape):
+    //
+    //   1. Primary timer at ~200ms. Fast for desktop and mobile-no-app users.
+    //   2. visibilitychange + pagehide listeners abort the redirect if the
+    //      page goes hidden — that's the OS handing off to the app, or the
+    //      user manually backgrounding the browser. Either way we don't want
+    //      to redirect underneath them.
+    //   3. Re-arm on visibility-back-to-visible: if the user backgrounded the
+    //      browser manually (not via app handoff) and comes back, restart the
+    //      redirect timer so they don't get stuck on "Opening FIMBY...".
+    //   4. Long-tail backstop at 2.5s: if visibilitychange never fires (some
+    //      in-app browsers, exotic WebViews), redirect anyway. Belt + braces.
+
+    (function () {
+      var TARGET = "https://our.fimby.com" + window.location.pathname + window.location.search + window.location.hash;
+      var FAST_DELAY_MS = 200;
+      var BACKSTOP_DELAY_MS = 2500;
+      var REARM_DELAY_MS = 500;
+
+      var aborted = false;
+      var redirected = false;
+
+      function redirect() {
+        if (redirected || aborted) return;
+        redirected = true;
+        window.location.replace(TARGET);
+      }
+
+      function abortPending(reason) {
+        // Page is leaving (OS handoff to app, or user backgrounded the browser).
+        // Either way, suppress the redirect; we re-arm if they come back.
+        aborted = true;
+      }
+
+      function rearmIfVisible() {
+        // User came back to the page (or it became visible again). If the
+        // redirect already fired, do nothing. Otherwise arm a fresh timer
+        // so they aren't stuck staring at "Opening FIMBY...".
+        if (document.hidden) return;
+        if (redirected) return;
+        aborted = false;
+        setTimeout(redirect, REARM_DELAY_MS);
+      }
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) abortPending("visibilitychange-hidden");
+        else rearmIfVisible();
+      });
+      window.addEventListener("pagehide", function () { abortPending("pagehide"); });
+
+      // Primary fast-path: ~200ms gives Universal Links a beat to intercept,
+      // then we redirect users where the OS didn't open the app.
+      setTimeout(redirect, FAST_DELAY_MS);
+
+      // Long-tail backstop: in case visibilitychange / pagehide never fire
+      // (in-app WebViews) and the fast path was somehow suppressed, force a
+      // redirect after 2.5s. Only fires if redirected and aborted are both
+      // still false; we don't override an already-aborted redirect because
+      // that means the OS likely opened the app.
+      setTimeout(function () {
+        if (!aborted) redirect();
+      }, BACKSTOP_DELAY_MS);
+    })();
+  </script>
+</body>
+</html>

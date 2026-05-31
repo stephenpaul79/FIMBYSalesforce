@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>Base_URL__c</field>
-        <value xsi:type="xsd:string">https://our.fimby.com</value>
+        <value xsi:type="xsd:string">https://app.fimby.com</value>
     </values>
     <values>
         <field>Path__c</field>

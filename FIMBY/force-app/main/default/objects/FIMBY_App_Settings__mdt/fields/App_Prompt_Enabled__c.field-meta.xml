@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>App_Prompt_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>App Prompt Enabled</label>
+    <type>Checkbox</type>
+    <inlineHelpText>Master kill switch for the mobile-web app install prompt modal. When false, the modal never appears.</inlineHelpText>
+</CustomField>

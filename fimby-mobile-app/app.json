@@ -38,8 +38,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "app.fimby.com",
-              "pathPrefix": "/oauth/callback"
+              "host": "app.fimby.com"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

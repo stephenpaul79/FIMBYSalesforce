@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>App_Store_URL_iOS__c</fullName>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>App Store URL (iOS)</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+    <inlineHelpText>Destination for the iOS &quot;Get the app&quot; CTA in the install prompt. Use a coming-soon page until the App Store listing is live, then swap to the apps.apple.com URL.</inlineHelpText>
+</CustomField>

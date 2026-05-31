@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://lwc.dev/v1.0.0">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>FIMBY App Install Prompt</masterLabel>
+    <description>Throttled mobile-web modal inviting users to install or open the FIMBY app. Mounted inside fimbyUniversalHeader; gates on user agent (mobile, not in-app), metadata kill switch, and per-browser localStorage cooldown.</description>
+</LightningComponentBundle>

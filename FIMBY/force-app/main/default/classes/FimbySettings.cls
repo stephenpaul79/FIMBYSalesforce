@@ -171,6 +171,16 @@ public with sharing class FimbySettings {
     /** @description TTL (hours) for reactivation magic-link tokens requested via /account-paused. */
     public static Integer reactivationTokenTtlHours()    { return safe(get()?.Reactivation_Token_TTL_Hours__c, 24); }
 
+    // ---- App Install Prompt (mobile web) ----
+    /** @description Master kill switch for the mobile-web app install prompt. */
+    public static Boolean appPromptEnabled()             { return get()?.App_Prompt_Enabled__c == true; }
+    /** @description Days between repeat showings of the install prompt for the same browser. */
+    public static Integer appPromptCooldownDays()        { return safe(get()?.App_Prompt_Cooldown_Days__c, 14); }
+    /** @description Destination for the iOS "Get the app" CTA in the install prompt. */
+    public static String appStoreUrlIos()                { return get()?.App_Store_URL_iOS__c; }
+    /** @description Destination for the Android "Get the app" CTA in the install prompt. */
+    public static String appStoreUrlAndroid()            { return get()?.App_Store_URL_Android__c; }
+
     // ---- Terms / Agreement Versioning ----
     /** @description Current published version of the FIMBY Terms of Service. */
     public static String tosCurrentVersion()             { return get()?.Tos_Current_Version__c; }

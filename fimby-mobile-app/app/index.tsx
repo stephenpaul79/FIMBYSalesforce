@@ -7,6 +7,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { useEventListener } from "expo";
 import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router";
+import * as Linking from "expo-linking";
 import React, { useRef, useCallback } from "react";
 import {
   AccessibilityInfo,
@@ -208,6 +209,36 @@ function isAllowedWebViewUrl(rawUrl: string): boolean {
     return WEBVIEW_ALLOWED_HOST_PATTERNS.some((rx) => rx.test(u.hostname));
   } catch {
     return false;
+  }
+}
+
+// Universal Link host. Tapping any https://app.fimby.com/<path> link from
+// outside the app should land the user on the matching Experience Cloud page
+// inside the WebView. AASA + Android intent filter on this exact host.
+const APP_LINK_HOST = "app.fimby.com";
+
+// Extract the in-app navigation path from an inbound Universal Link / App Link.
+// Returns the `path + search + hash` portion (always starts with `/`) or null
+// if the URL is not a FIMBY deep link we should act on.
+//
+// `/oauth/callback` is intentionally excluded — those URLs are handled by
+// expo-auth-session via the `fimbymobileapp://` custom scheme; if a Universal
+// Link to /oauth/callback ever fires (rare; user manually visited it), we
+// don't want the deep-link handler to push it into the WebView.
+function parseFimbyDeepLink(rawUrl: string): string | null {
+  try {
+    const u = new URL(rawUrl);
+    if (u.protocol !== "https:") return null;
+    if (u.hostname.toLowerCase() !== APP_LINK_HOST) return null;
+    if (u.pathname === "/oauth/callback") return null;
+    const path = u.pathname + u.search + u.hash;
+    // Auth-bridge ret validator requires a leading '/' and rejects protocol-
+    // relative shapes ('//...'). pathname always starts with '/' so this is
+    // defense in depth.
+    if (!path.startsWith("/") || path.startsWith("//")) return null;
+    return path;
+  } catch {
+    return null;
   }
 }
 
@@ -475,6 +506,11 @@ export default function IndexScreen() {
 
   // ✅ Guard to prevent bootstrap from running multiple times
   const bootstrapRanRef = useRef(false);
+
+  // Pending Universal Link path captured before the WebView is ready or before
+  // the user has signed in. Consumed by openFimby() the next time it mints a
+  // frontdoor URL, so the user lands directly on the deep-linked page.
+  const pendingDeepLinkRef = useRef<string | null>(null);
 
   // WebView ref for deep linking from notifications
   const webViewRef = useRef<WebView>(null);
@@ -794,8 +830,15 @@ export default function IndexScreen() {
   }, []);
 
   const openFimby = React.useCallback(
-    async (maybeAccess?: string | null) => {
+    async (maybeAccess?: string | null, retArg?: string | null) => {
       let token = maybeAccess || accessToken;
+
+      // Resolve the deep-link target: explicit arg wins, otherwise consume any
+      // pending Universal Link captured before sign-in or before WebView mount.
+      // We don't clear pendingDeepLinkRef here — quiet-hours panda may
+      // interrupt and the next openFimby call needs to see the same value.
+      // The ref is cleared at the moment we actually setWebViewUrl().
+      const ret = retArg ?? pendingDeepLinkRef.current;
 
       if (!token) {
         const result = await refreshSession();
@@ -816,7 +859,11 @@ export default function IndexScreen() {
 
       setStatus("Unlocking the door…");
 
-      const res = await fetch(BACKEND_FRONTDOOR_URL, {
+      const frontdoorUrl = ret
+        ? `${BACKEND_FRONTDOOR_URL}?ret=${encodeURIComponent(ret)}`
+        : BACKEND_FRONTDOOR_URL;
+
+      const res = await fetch(frontdoorUrl, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -841,7 +888,7 @@ export default function IndexScreen() {
           return;
         }
 
-        const retry = await fetch(BACKEND_FRONTDOOR_URL, {
+        const retry = await fetch(frontdoorUrl, {
           method: "GET",
           headers: { Authorization: `Bearer ${result.token}` },
         });
@@ -865,6 +912,7 @@ export default function IndexScreen() {
           return;
         }
 
+        if (pendingDeepLinkRef.current === ret) pendingDeepLinkRef.current = null;
         setWebViewUrl(retryUrl);
         setStatus("You're in!");
 
@@ -886,6 +934,7 @@ export default function IndexScreen() {
         return;
       }
 
+      if (pendingDeepLinkRef.current === ret) pendingDeepLinkRef.current = null;
       setWebViewUrl(url);
       setStatus("You're in!");
 
@@ -1110,6 +1159,33 @@ export default function IndexScreen() {
   );
 
   /**
+   * Apply a Universal Link deep-link path to the WebView.
+   *
+   * Three states:
+   * 1. WebView already mounted -> inject JS to navigate the existing session.
+   * 2. Signed in but WebView not yet visible -> open with ret so frontdoor
+   *    lands the user directly on the deep-linked page.
+   * 3. Signed out -> stash the path; openFimby() consumes pendingDeepLinkRef
+   *    on the next call (post-OAuth or after panda dismiss).
+   */
+  const applyDeepLink = useCallback((path: string) => {
+    log("[DEEPLINK] applying:", path);
+    if (webViewRef.current) {
+      const target = `${SF_AUTH_HOST}${path}`;
+      webViewRef.current.injectJavaScript(
+        `window.location.assign(${JSON.stringify(target)}); true;`
+      );
+      return;
+    }
+    if (accessToken) {
+      void openFimby(accessToken, path);
+      return;
+    }
+    pendingDeepLinkRef.current = path;
+    log("[DEEPLINK] stashed for after sign-in:", path);
+  }, [accessToken, openFimby]);
+
+  /**
    * Cold-start deep linking when the app was opened from a killed state via push.
    * Runs at most once: later WebView loadEnd events must not re-read the stored tap.
    */
@@ -1203,6 +1279,38 @@ export default function IndexScreen() {
     bootstrapRanRef.current = true;
     runBootstrap();
   }, [runBootstrap]);
+
+  /**
+   * Universal Link / App Link handling.
+   *
+   * Cold start: if the app was launched by tapping app.fimby.com/<path>,
+   * Linking.getInitialURL() returns that URL. We extract the path and feed it
+   * through applyDeepLink (which stashes it for sign-in if needed).
+   *
+   * Warm start: while the app is running, taps on app.fimby.com links fire
+   * the 'url' event. Same handler.
+   */
+  React.useEffect(() => {
+    let cancelled = false;
+
+    Linking.getInitialURL()
+      .then((url) => {
+        if (cancelled || !url) return;
+        const path = parseFimbyDeepLink(url);
+        if (path) applyDeepLink(path);
+      })
+      .catch((err) => warn("[DEEPLINK] getInitialURL error:", err));
+
+    const sub = Linking.addEventListener("url", (event) => {
+      const path = parseFimbyDeepLink(event.url);
+      if (path) applyDeepLink(path);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
+  }, [applyDeepLink]);
 
   /**
    * Start Sign In flow (pre-flight network check + OAuth)
