@@ -1,0 +1,43 @@
+<template>
+    <template lwc:if={_show}>
+        <div class="app-prompt-backdrop" onclick={handleBackdropClick}>
+            <div
+                class="app-prompt-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="fimby-app-prompt-title"
+                aria-describedby="fimby-app-prompt-body"
+                onclick={handleDialogClick}
+            >
+                <div class="app-prompt-illustration">
+                    <img
+                        src={smartphoneIconUrl}
+                        alt="Open FIMBY on your phone"
+                        class="app-prompt-icon"
+                    />
+                </div>
+                <h2 id="fimby-app-prompt-title" class="app-prompt-title">FIMBY fits in your pocket</h2>
+                <p id="fimby-app-prompt-body" class="app-prompt-body">
+                    Keep your neighbourhood close. The FIMBY app makes it easier to see what's
+                    happening nearby and respond when someone could use a hand.
+                </p>
+                <div class="app-prompt-actions">
+                    <button
+                        type="button"
+                        class="app-prompt-cta-primary"
+                        onclick={handleGetTheApp}
+                    >
+                        Get the app
+                    </button>
+                    <button
+                        type="button"
+                        class="app-prompt-cta-secondary"
+                        onclick={handleDismiss}
+                    >
+                        Not right now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

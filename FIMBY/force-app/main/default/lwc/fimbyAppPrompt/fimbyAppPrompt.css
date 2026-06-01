@@ -1,0 +1,173 @@
+/* ========== BACKDROP ==========
+ * Bottom-sheet on mobile-web (the only audience). Desktop never sees this
+ * modal because the gate filters non-mobile UA, but the desktop layout below
+ * is kept defensive in case of UA emulation during testing.
+ */
+
+.app-prompt-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 10001;
+    padding: 0;
+    animation: appPromptFadeIn 0.2s ease-out;
+}
+
+@keyframes appPromptFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ========== DIALOG ========== */
+
+.app-prompt-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+    box-shadow: var(--fimby-shadow-modal);
+    padding: 1.5rem 1.25rem 1.25rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    animation: appPromptSlideUp 0.3s ease-out;
+}
+
+@keyframes appPromptSlideUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== ILLUSTRATION ========== */
+
+.app-prompt-illustration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.app-prompt-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+/* ========== COPY ========== */
+
+.app-prompt-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.app-prompt-body {
+    font-size: 0.95rem;
+    color: var(--fimby-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 360px;
+}
+
+/* ========== ACTIONS ========== */
+
+.app-prompt-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.app-prompt-cta-primary {
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0, 0, 0, 0.15)),
+                var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0, 0, 0, 0.15));
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    padding: 12px 20px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.app-prompt-cta-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.app-prompt-cta-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0, 0, 0, 0.12));
+    transform: scale(0.97);
+}
+
+.app-prompt-cta-secondary {
+    background-color: transparent;
+    color: var(--fimby-text-secondary);
+    border: none;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+}
+
+.app-prompt-cta-secondary:hover {
+    background-color: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
+}
+
+/* ========== FOCUS ========== */
+
+.app-prompt-cta-primary:focus-visible,
+.app-prompt-cta-secondary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* ========== DESKTOP (defensive — gate filters non-mobile) ========== */
+
+@media (min-width: 480px) {
+    .app-prompt-backdrop {
+        align-items: center;
+        padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
+    }
+
+    .app-prompt-dialog {
+        max-width: 420px;
+        border-radius: var(--fimby-radius-lg);
+        padding: 1.75rem 1.5rem;
+    }
+}
+
+/* ========== REDUCED MOTION ========== */
+
+@media (prefers-reduced-motion: reduce) {
+    .app-prompt-backdrop,
+    .app-prompt-dialog,
+    .app-prompt-cta-primary {
+        animation: none !important;
+        transition: none !important;
+    }
+    .app-prompt-cta-primary:active {
+        transform: none;
+    }
+}

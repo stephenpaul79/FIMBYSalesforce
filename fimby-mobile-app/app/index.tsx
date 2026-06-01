@@ -16,7 +16,6 @@ import {
   Animated,
   AppState,
   Image,
-  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -1566,6 +1565,8 @@ export default function IndexScreen() {
           startInLoadingState={true}
           sharedCookiesEnabled={true}
           thirdPartyCookiesEnabled={true}
+          applicationNameForUserAgent="FIMBY-WebView/1.0"
+          injectedJavaScriptBeforeContentLoaded={"window.__FIMBY_NATIVE_APP__ = true; true;"}
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onNavigationStateChange={onNavigationStateChange}
           onError={onWebViewError}

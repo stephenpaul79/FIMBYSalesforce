@@ -184,6 +184,9 @@
             onclose={handleQuickPostClose}>
         </c-fimby-quick-post-form>
 
+        <!-- App Install Prompt (mobile-web only; self-gates on UA + cooldown) -->
+        <c-fimby-app-prompt></c-fimby-app-prompt>
+
         <!-- TOS Reacceptance Modal -->
         <template lwc:if={showTosModal}>
             <div class="fimby-tos-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
