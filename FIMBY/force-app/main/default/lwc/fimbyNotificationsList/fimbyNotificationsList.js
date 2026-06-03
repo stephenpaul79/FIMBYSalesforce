@@ -7,16 +7,12 @@ import markAsUnread from '@salesforce/apex/FimbyNotificationController.markAsUnr
 import deleteNotification from '@salesforce/apex/FimbyNotificationController.deleteNotification';
 import deleteAllNotifications from '@salesforce/apex/FimbyNotificationController.deleteAllNotifications';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
 const SWIPE_ACTION_WIDTH = 80;
 const UNDO_TIMEOUT_MS = 5000;
-
-// Hosts the LWC may navigate to. Anything else is treated as untrusted and
-// routed back to /notifications. Keep in sync with the FIMBY_URL__mdt base
-// URLs and any future app.fimby.com host swap.
-const ALLOWED_HOSTS = ['our.fimby.com', 'app.fimby.com'];
 
 const TYPE_ICON_MAP = {
     Response: 'reply.png',
@@ -232,6 +228,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         const hasBody = !!body;
         return {
             ...n,
+            navigationUrl: this._resolveNavigationUrl(n),
             typeIconUrl: `${IMPACT_ICONS}/${TYPE_ICON_MAP[n.type] || 'BellInactive.png'}`,
             formattedTime: this._formatTime(n.createdDate),
             containerClass: 'notification-item' + (isUnread ? ' unread' : ''),
@@ -377,39 +374,40 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
     /**
      * Decide which URL to send the user to when they tap a notification.
      * Trust order:
-     *   1. notification.actionUrl, if it points to a FIMBY host (or is
-     *      relative).
+     *   1. notification.actionUrl, if it resolves to a site-relative path or
+     *      a known Experience host (CMDT absolute URLs are stripped to paths).
      *   2. Fallback URL derived from related-record type when the action
      *      URL is missing or untrusted.
      *   3. /notifications (no-op refresh) as a last resort.
      */
-    _normalizeLegacyActionUrl(url) {
-        if (!url) return url;
-        const legacyMessages = url.match(
-            /^(?:https:\/\/[^/]+)?(\/messages\/([a-zA-Z0-9]{15,18}))(?:\/|$|\?|#)/
-        );
-        if (legacyMessages) {
-            return `/conversation?id=${legacyMessages[2]}`;
-        }
-        return url;
-    }
-
-    _resolveSafeUrl(notification) {
+    _resolveNavigationUrl(notification) {
         const raw = (notification && notification.actionUrl) ? notification.actionUrl.trim() : '';
-        if (raw) {
-            const normalized = this._normalizeLegacyActionUrl(raw);
-            if (normalized.startsWith('/')) return normalized;
+        if (!raw) {
+            return this._buildFallbackUrl(notification);
+        }
+
+        const relative = toExperiencePath(raw);
+        if (relative.startsWith('/')) {
+            return relative;
+        }
+
+        if (/^https?:\/\//i.test(relative)) {
             try {
-                const parsed = new URL(normalized);
-                if (ALLOWED_HOSTS.includes(parsed.host)) {
-                    return this._normalizeLegacyActionUrl(normalized);
+                const parsed = new URL(relative);
+                if (isKnownExperienceHost(parsed.host)) {
+                    return toExperiencePath(relative);
                 }
                 console.warn('FimbyNotificationsList: blocked off-host actionUrl', parsed.host);
             } catch (err) {
                 console.warn('FimbyNotificationsList: unparseable actionUrl', raw);
             }
         }
+
         return this._buildFallbackUrl(notification);
+    }
+
+    _resolveSafeUrl(notification) {
+        return this._resolveNavigationUrl(notification);
     }
 
     _buildFallbackUrl(notification) {

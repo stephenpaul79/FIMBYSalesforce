@@ -13,6 +13,7 @@ import updateLastAppVisit from '@salesforce/apex/FimbyProfileController.updateLa
 import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCelebrationContext';
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 
 import Id from '@salesforce/user/Id';
@@ -911,7 +912,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     handleAvatarNavigation(event) {
         event.stopPropagation();
-        const url = event.detail?.url;
+        const url = toExperiencePath(event.detail?.url);
         if (url) location.href = url;
     }
 
@@ -979,7 +980,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     handleLibraryAvatarClick(event) {
-        const url = event.currentTarget.dataset.url;
+        const url = toExperiencePath(event.currentTarget.dataset.url);
         if (!url) return;
         event.stopPropagation();
         location.href = url;

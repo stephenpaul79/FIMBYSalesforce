@@ -1,36 +1,52 @@
-<table border="0" cellpadding="0" width="100%" cellspacing="0">
+<table border="0" cellpadding="0" width="600" cellspacing="0" style="width:600px;min-width:600px;">
 <tr valign="top">
-<td tEditID="c1r1" style="background-color:#F0EBE3;color:#4A4A4A;font-size:14px;font-family:Verdana,Geneva,sans-serif;" aEditID="c1r1" locked="0">
+<td tEditID="c1r1" style="width:600px;min-width:600px;background-color:#F0EBE3;color:#4A4A4A;font-size:14px;font-family:Verdana,Geneva,sans-serif;" aEditID="c1r1" locked="0">
 <![CDATA[<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<html lang="en-CA">
+<head><meta charset="UTF-8"/></head>
 <body style="margin:0;padding:0;background-color:#F0EBE3;font-family:Verdana,Geneva,sans-serif;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0EBE3;">
-<tr><td align="center" style="padding:24px 12px;">
-<table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+<div style="display:none;font-size:1px;color:#F0EBE3;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">Come on in.</div>
+<!--[if mso]><table width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->
+<table cellpadding="0" cellspacing="0" border="0" width="600" align="center" style="width:600px;min-width:600px;margin:0 auto;background-color:#F0EBE3;">
+<tr><td style="padding:24px 0 0;">
+<table cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;min-width:600px;">
 <tr><td style="background-color:#FAF7F2;padding:14px 24px;border-radius:8px 8px 0 0;border-bottom:1px solid #E8E0D6;">
 <a href="https://our.fimby.com" style="text-decoration:none;"><img src="https://our.fimby.com/sfsites/c/resource/Impact_Icons/FIMBYwGrass.png" height="40" alt="FIMBY" style="border:0;display:block;"/></a>
 </td></tr>
 <tr><td style="background-color:#FAF7F2;padding:20px 24px 16px;border-radius:0 0 8px 8px;">
-<p style="margin:0;font-family:Verdana,Geneva,sans-serif;font-size:20px;font-weight:600;color:#2D2D2D;">Welcome to FIMBY</p>
+<p style="margin:0;font-family:Verdana,Geneva,sans-serif;font-size:20px;font-weight:600;color:#2D2D2D;line-height:1.35;">Welcome to the family in your backyard</p>
 </td></tr>
-<tr><td style="padding:16px 24px 20px;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="background:#FFFFFF;border-radius:8px;padding:14px 16px;border:1px solid #E8E0D6;border-left:3px solid #5B8760;">
-<span style="display:inline-block;background:#5B8760;color:#FFFFFF;font-family:Verdana,Geneva,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;padding:4px 10px;border-radius:10px;margin-bottom:8px;">WELCOME</span>
-<p style="margin:0 0 8px;font-family:Verdana,Geneva,sans-serif;font-size:16px;font-weight:600;color:#2D2D2D;">You are in</p>
-<p style="margin:0 0 10px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;">Hi {!Receiving_User.FirstName},</p>
-<p style="margin:0 0 10px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;">Welcome to FIMBY! Your username is <strong>{!Receiving_User.Username}</strong>. Open FIMBY to meet your neighbours.</p>
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:14px;"><tr><td align="center">
+<tr><td style="padding:16px 0 20px;">
+<table cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;min-width:600px;"><tr><td style="background:#FFFFFF;border-radius:8px;padding:18px 24px;border:1px solid #E8E0D6;border-left:3px solid #5B8760;">
+<p style="margin:0 0 14px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">Hi {!Receiving_User.FirstName},</p>
+<p style="margin:0 0 14px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">For years I&apos;ve been dreaming about this &mdash; a simple way to help neighbours know and care for each other, rooted in the belief that a more beautiful world is possible when we treat each other with love and generosity.</p>
+<p style="margin:0 0 14px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">That dream is FIMBY, and you&apos;re now part of it.</p>
+<p style="margin:0 0 14px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">This is a grand experiment in neighbouring. We&apos;re building something together &mdash; a place where we look out for each other, share what we have, and show up when it matters. Not perfectly. But together.</p>
+<p style="margin:0 0 14px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">Welcome to the family in your backyard.</p>
+<p style="margin:0 0 16px;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">Use the button below to set your password and come on in. This link is for you only and expires after a short time. Your username is <strong>{!Receiving_User.Username}</strong>.</p>
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 18px;"><tr><td align="center">
 <table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#3A7D8C;border-radius:12px;padding:12px 28px;">
-<a href="https://our.fimby.com" style="color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;font-family:Verdana,Geneva,sans-serif;">Open FIMBY</a>
+<a href="{!Community_Url}" style="color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;font-family:Verdana,Geneva,sans-serif;">Come on in</a>
 </td></tr></table></td></tr></table>
-<p style="margin:14px 0 0;font-family:Verdana,Geneva,sans-serif;font-size:13px;color:#6B6B6B;">Thanks,<br/>Team FIMBY</p>
+<table cellpadding="0" cellspacing="0" border="0" style="margin:0;"><tr>
+<td style="vertical-align:top;padding-right:16px;">
+<a href="https://our.fimby.com/sfsites/c/resource/Impact_Icons/StephenRathjen.JPEG" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+<img src="https://our.fimby.com/sfsites/c/resource/Impact_Icons/StephenRathjen.JPEG" width="96" height="128" alt="Stephen Rathjen" style="display:block;border:0;border-radius:8px;max-width:96px;height:auto;"/>
+</a>
+</td>
+<td style="vertical-align:top;">
+<p style="margin:0;font-family:Verdana,Geneva,sans-serif;font-size:14px;color:#4A4A4A;line-height:1.55;">With love,<br/>Stephen Rathjen<br/><span style="color:#6B6B6B;font-size:13px;">Founder, FIMBY</span></p>
+</td>
+</tr></table>
 </td></tr></table>
 </td></tr>
-<tr><td style="background-color:#FAF7F2;padding:16px 24px;border-radius:8px;border-top:1px solid #E8E0D6;">
-<p style="margin:0;font-family:Verdana,Geneva,sans-serif;font-size:13px;color:#6B6B6B;"><a href="https://fimby.com" style="color:#3A7D8C;text-decoration:none;">Family In My Backyard</a></p>
+<tr><td style="background-color:#FAF7F2;padding:16px 24px 24px;border-radius:8px;border-top:1px solid #E8E0D6;">
+<p style="margin:0;font-family:Verdana,Geneva,sans-serif;font-size:13px;color:#6B6B6B;"><a href="https://fimby.com" style="color:#3A7D8C;text-decoration:none;">Family In My Backyard</a> &middot; <a href="https://fimby.com/our-approach/" style="color:#3A7D8C;text-decoration:none;">Our approach</a></p>
 </td></tr>
-</table></td></tr></table>
+</table>
+</td></tr>
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
 </body></html>]]>
 </td>
 </tr>

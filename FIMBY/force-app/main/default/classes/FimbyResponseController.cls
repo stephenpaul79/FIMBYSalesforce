@@ -86,7 +86,7 @@ public with sharing class FimbyResponseController {
 
             if (!existingResponses.isEmpty()) {
                 Response__c existing = existingResponses[0];
-                String responseUrl = FimbySettings.getUrl('Response', existing.Id);
+                String responseUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + existing.Id);
                 return new Map<String, Object>{
                     'success' => true,
                     'hasExistingResponse' => true,
@@ -212,7 +212,7 @@ public with sharing class FimbyResponseController {
                 ConnectApi.ChatterFeeds.postFeedElement(Network.getNetworkId(), feedItemInput);
             }
 
-            String responseUrl = FimbySettings.getUrl('Response', newResponse.Id);
+            String responseUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + newResponse.Id);
 
             // Create in-app notification for post owner
             if (needOffer.Posted_By__c != null && needOffer.Posted_By__c != actingAsContactId) {

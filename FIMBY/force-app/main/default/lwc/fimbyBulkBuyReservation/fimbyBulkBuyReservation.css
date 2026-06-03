@@ -166,7 +166,7 @@
 }
 
 .contact-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
     text-decoration: none;
     font-size: 0.95rem;
@@ -342,7 +342,7 @@
 }
 
 .pill-reserved {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -608,16 +608,16 @@
 }
 
 .btn-primary {
-    background: var(--fimby-brand-teal);
-    color: var(--fimby-text-on-teal);
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 .btn-primary:active:not(:disabled) {
-    background: var(--fimby-brand-teal-pressed);
+    background: var(--fimby-btn-primary-bg-active);
 }
 
 .btn-secondary {

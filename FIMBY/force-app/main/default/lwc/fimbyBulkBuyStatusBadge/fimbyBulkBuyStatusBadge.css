@@ -28,7 +28,7 @@
 
 .badge-teal {
     background: var(--fimby-chip-teal-bg, #eaf6fa);
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .badge-amber {

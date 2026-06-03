@@ -18,6 +18,12 @@ private class FimbyEmailAlertQueueableTest {
                 AND UserName LIKE '%@testorg.com' LIMIT 1];
     }
 
+    private static void patchTestUser(User u) {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            update u;
+        }
+    }
+
     @IsTest
     static void execute_emptyMap_exitsCleanly() {
         Test.startTest();
@@ -37,7 +43,7 @@ private class FimbyEmailAlertQueueableTest {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, 'Message', 'Processing', 2, true
@@ -64,7 +70,7 @@ private class FimbyEmailAlertQueueableTest {
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
         u.Email_Alert_Events__c = true;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, FimbyConstants.NOTIF_EVENT_REMINDER, 'Processing', 1, true
@@ -88,11 +94,8 @@ private class FimbyEmailAlertQueueableTest {
     static void execute_withTestHtml_singleMessage_sendsSingleSubject() {
         Contact c = getTestContact();
         User u = getTestUser();
-        System.runAs(u) {
-            // enable email alerts for this user
-        }
         u.Email_Alerts_Enabled__c = true;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, 'Message', 'Processing', 1, true
@@ -120,7 +123,7 @@ private class FimbyEmailAlertQueueableTest {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, 'Message', 'Processing', 3, true
@@ -148,7 +151,7 @@ private class FimbyEmailAlertQueueableTest {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
-        update u;
+        patchTestUser(u);
 
         Notification__c n1 = FimbyTestDataFactory.createNotifications(c.Id, 'Message', 'Processing', 1, true)[0];
         Notification__c n2 = FimbyTestDataFactory.createNotifications(c.Id, 'Lending_Request', 'Processing', 1, true)[0];
@@ -171,7 +174,7 @@ private class FimbyEmailAlertQueueableTest {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, 'Response', 'Processing', 1, true
@@ -466,7 +469,7 @@ private class FimbyEmailAlertQueueableTest {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = false;
-        update u;
+        patchTestUser(u);
 
         List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
             c.Id, 'Comment', 'Processing', 1, true

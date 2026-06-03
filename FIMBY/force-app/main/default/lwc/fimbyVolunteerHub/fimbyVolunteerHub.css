@@ -13,7 +13,7 @@
 }
 
 .hero-section {
-    background: linear-gradient(135deg, var(--fimby-brand-teal), var(--fimby-brand-teal-pressed));
+    background: linear-gradient(135deg, var(--fimby-btn-primary-bg), var(--fimby-btn-primary-bg-active));
     color: white;
     text-align: center;
     padding: 32px 20px;
@@ -67,7 +67,7 @@
 }
 
 .opportunity-icon {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .opportunity-info {
@@ -89,7 +89,7 @@
 
 .opportunity-date {
     font-size: 12px;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 500;
 }
 
@@ -112,7 +112,7 @@
 }
 
 .volunteer-button {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
     border: none;
     border-radius: var(--fimby-radius-lg);
@@ -124,7 +124,7 @@
 }
 
 .volunteer-button:hover {
-    background: var(--fimby-brand-teal-pressed);
+    background: var(--fimby-btn-primary-bg-active);
 }
 
 /* Keyboard focus visibility */

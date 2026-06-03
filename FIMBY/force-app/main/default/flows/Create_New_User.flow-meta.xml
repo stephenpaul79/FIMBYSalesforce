@@ -369,7 +369,7 @@ IF(LEN({!Contact.FirstName}) &lt;= 40, {!Contact.FirstName}, &quot;&quot;))))</e
         <inputAssignments>
             <field>FirstName</field>
             <value>
-                <elementReference>User_First_Name</elementReference>
+                <elementReference>Contact.FirstName</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -387,7 +387,7 @@ IF(LEN({!Contact.FirstName}) &lt;= 40, {!Contact.FirstName}, &quot;&quot;))))</e
         <inputAssignments>
             <field>LastName</field>
             <value>
-                <elementReference>User_Last_Name</elementReference>
+                <elementReference>Contact.LastName</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -824,13 +824,13 @@ IF(LEN({!Contact.FirstName}) &lt;= 40, {!Contact.FirstName}, &quot;&quot;))))</e
         <inputAssignments>
             <field>FirstName</field>
             <value>
-                <elementReference>User_First_Name_0</elementReference>
+                <elementReference>Contact.FirstName</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>LastName</field>
             <value>
-                <elementReference>User_Last_Name_0</elementReference>
+                <elementReference>Contact.LastName</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -1164,7 +1164,7 @@ IF(LEN({!Contact.FirstName}) &lt;= 40, {!Contact.FirstName}, &quot;&quot;))))</e
                     <name>User_First_Name_0</name>
                     <dataType>String</dataType>
                     <defaultValue>
-                        <elementReference>UserCheck.FirstName</elementReference>
+                        <elementReference>Contact.FirstName</elementReference>
                     </defaultValue>
                     <fieldText>User First Name</fieldText>
                     <fieldType>InputField</fieldType>
@@ -1233,7 +1233,7 @@ IF(LEN({!Contact.FirstName}) &lt;= 40, {!Contact.FirstName}, &quot;&quot;))))</e
                     <name>User_Last_Name_0</name>
                     <dataType>String</dataType>
                     <defaultValue>
-                        <elementReference>UserCheck.LastName</elementReference>
+                        <elementReference>Contact.LastName</elementReference>
                     </defaultValue>
                     <fieldText>User Last Name</fieldText>
                     <fieldType>InputField</fieldType>

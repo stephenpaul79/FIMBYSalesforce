@@ -36,7 +36,7 @@
 .milestone-label {
     font-size: 14px;
     font-weight: 700;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.05em;

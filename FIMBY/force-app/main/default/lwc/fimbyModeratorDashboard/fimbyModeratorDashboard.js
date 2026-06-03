@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 import { getModeratorContext, invalidateModeratorContext } from 'c/fimbyModeratorContext';
 
@@ -1056,7 +1057,9 @@ export default class FimbyModeratorDashboard extends LightningElement {
 
                 case 'viewOriginal':
                 case 'viewBulkBuy':
-                    if (payload.url) window.location.href = payload.url;
+                    if (payload.url) {
+                        window.location.href = toExperiencePath(payload.url) || payload.url;
+                    }
                     break;
 
                 case 'viewImage': {

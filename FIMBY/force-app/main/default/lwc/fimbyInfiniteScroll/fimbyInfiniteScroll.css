@@ -36,7 +36,7 @@
 }
 
 .refresh-indicator.active {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .refresh-text {
@@ -75,19 +75,25 @@
     font-weight: 500;
 }
 
-/* End message */
+/* End message — text + check only; inset matches feed cards via --fimby-end-message-inset-x */
 .end-message {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 24px 16px;
+    padding: 24px var(--fimby-end-message-inset-x, 16px) 32px;
     color: var(--fimby-text-secondary);
     font-size: 14px;
     font-weight: 500;
-    border-top: 1px solid var(--fimby-divider-default);
-    margin-top: 16px;
-    background: rgba(0, 0, 0, 0.02);
+    text-align: center;
+}
+
+@media (min-width: 1024px) {
+    .end-message {
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 /* Empty state */

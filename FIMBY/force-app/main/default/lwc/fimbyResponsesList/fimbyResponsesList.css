@@ -39,8 +39,8 @@
 }
 
 .filter-tab.active {
-    color: var(--fimby-brand-teal);
-    border-bottom-color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
+    border-bottom-color: var(--fimby-btn-primary-bg);
     font-weight: 600;
 }
 
@@ -276,7 +276,7 @@
 
 .type-label {
     font-size: 12px;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 500;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .contact-shared {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 /* Response Actions */
@@ -369,8 +369,8 @@
 
 .message-button:hover {
     background: rgba(25, 118, 210, 0.1);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     transform: translateY(-1px);
 }
 
@@ -417,7 +417,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     border: none;
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
     cursor: pointer;
@@ -428,7 +428,7 @@
 }
 
 .fab-button:hover {
-    background: var(--fimby-brand-teal-pressed);
+    background: var(--fimby-btn-primary-bg-active);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(25, 118, 210, 0.5);
 }

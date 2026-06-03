@@ -24,13 +24,18 @@ https://our.fimby.com/login
 
 ## Test Personas
 
-All personas share the same password: `dtes4Jesus!`
+Default password for all personas except Sarah: `dtes4Jesus!`
 
-| Persona | Email | Purpose |
-|---------|-------|---------|
-| Mobile Tester | mobiletester@fimby.com | Alternate user in multi-persona scenarios (not a mobile-device requirement) |
-| Desktop Tester | desktop@fimby.com | Primary wide-layout / default browser testing |
-| SF Tester | sftester@fimby.com | Salesforce-integrated features and data sync |
+| Persona | Age | Background | Gender | Email | Password | Purpose |
+|---------|-----|------------|--------|-------|----------|---------|
+| **Appy Review** | — | — | — | reviewer@fimby.com | `dtes4Jesus!` | App Store reviewer account (formerly `sftester@fimby.com`); Salesforce-integrated features and data sync |
+| **Sarah Chen** | 34 | Chinese-Canadian | F | sarah@fimby.com | `dtes4Love!` | Primary wide-layout / default browser testing (formerly `desktop@fimby.com`) |
+| **Rosa Alvarez** | 67 | Mexican-Canadian | F | rosa@fimby.com | `dtes4Jesus!` | Alternate user in multi-persona scenarios; emulated-mobile and senior-neighbour flows (formerly `mobiletester@fimby.com`) |
+| **Marcus Bell** | 45 | Black Canadian | M | marcus@fimby.com | `dtes4Jesus!` | Multi-persona and cross-user interaction scenarios |
+| **Amir Haddad** | 31 | Lebanese-Canadian | M | amir@fimby.com | `dtes4Jesus!` | Multi-persona and cross-user interaction scenarios |
+| **Joan Whitecloud** | 70 | Coast Salish (Indigenous) | F | joan@fimby.com | `dtes4Jesus!` | Multi-persona and Indigenous-representation scenarios |
+
+**Legacy email mapping** (for older runbooks and git history): `desktop@fimby.com` → `sarah@fimby.com`; `mobiletester@fimby.com` → `rosa@fimby.com`; `sftester@fimby.com` → `reviewer@fimby.com`.
 
 ## Browser QA Procedures
 

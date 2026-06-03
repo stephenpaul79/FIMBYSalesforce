@@ -158,12 +158,12 @@
 }
 
 .story-type:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: var(--fimby-shadow-card);
 }
 
 .story-type.active {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-info-tint);
 }
 

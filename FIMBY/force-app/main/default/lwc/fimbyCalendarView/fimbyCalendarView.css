@@ -65,7 +65,7 @@
 }
 
 .calendar-day.today {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
 }
 

@@ -37,15 +37,12 @@ public with sharing class FimbyBulkBuyReservationController {
             Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
 
-            Response__c resp = [
-                SELECT Id, Contact__c, On_Behalf_Of_Contact__c, Status__c, Need_Offer_Responded_To__c,
-                       Need_Offer_Responded_To__r.Group_Conversation__c,
-                       Contact__r.FirstName, On_Behalf_Of_Contact__r.FirstName
-                FROM Response__c
-                WHERE Id = :responseId
-                /* with sharing enforces record access */
-                LIMIT 1
-            ];
+            ReservationHelper helper = new ReservationHelper();
+            List<Response__c> rows = helper.getResponseById(responseId);
+            if (rows.isEmpty()) {
+                throw new AuraHandledException('Reservation not found.');
+            }
+            Response__c resp = rows[0];
 
             // Dual-check: allow cancel if the user is the real submitter OR the represented identity
             Boolean isAuthor = (resp.Contact__c == realContactId);
@@ -59,11 +56,11 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             Id postId = resp.Need_Offer_Responded_To__c;
-            Boolean wasFullyReservedBeforeCancel = isBulkBuyFullyReserved(postId);
+            Boolean wasFullyReservedBeforeCancel = helper.isBulkBuyFullyReserved(postId);
 
             resp.Status__c = FimbyConstants.RESPONSE_CANCELLED;
             resp.Amount_Requested__c = 0;
-            new ReservationHelper().updateResponse(resp);
+            helper.updateResponse(resp);
 
             String displayFirstName = resp.On_Behalf_Of_Contact__r != null
                 ? resp.On_Behalf_Of_Contact__r.FirstName
@@ -79,7 +76,7 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             FimbyNotificationService.createNotification(
-                [SELECT Posted_By__c FROM Needs_Offers__c WHERE Id = :resp.Need_Offer_Responded_To__c].Posted_By__c,
+                helper.getPostedByContactId(resp.Need_Offer_Responded_To__c),
                 FimbyConstants.NOTIF_BULK_BUY_RESERVATION,
                 displayFirstName + ' cancelled their reservation',
                 '',
@@ -101,23 +98,18 @@ public with sharing class FimbyBulkBuyReservationController {
     @AuraEnabled
     public static Map<String, Object> revokeReservation(String responseId) {
         try {
+            Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
 
-            Response__c resp = [
-                SELECT Id, Contact__c, On_Behalf_Of_Contact__c, Status__c, Need_Offer_Responded_To__c,
-                       Need_Offer_Responded_To__r.Posted_By__c,
-                       Need_Offer_Responded_To__r.Contact__c,
-                       Need_Offer_Responded_To__r.Group_Conversation__c,
-                       Contact__r.FirstName, On_Behalf_Of_Contact__r.FirstName
-                FROM Response__c
-                WHERE Id = :responseId
-                /* with sharing enforces record access */
-                LIMIT 1
-            ];
+            ReservationHelper helper = new ReservationHelper();
+            List<Response__c> rows = helper.getResponseById(responseId);
+            if (rows.isEmpty()) {
+                throw new AuraHandledException('Reservation not found.');
+            }
+            Response__c resp = rows[0];
 
-            // Organiser dual-check: real (Posted_By__c) or represented identity (Contact__c)
             Boolean isOrganiser =
-                (resp.Need_Offer_Responded_To__r.Posted_By__c == actingAsContactId) ||
+                (resp.Need_Offer_Responded_To__r.Posted_By__c == realContactId) ||
                 (resp.Need_Offer_Responded_To__r.Contact__c == actingAsContactId);
             if (!isOrganiser) {
                 throw new AuraHandledException('Only the organiser can revoke reservations.');
@@ -125,7 +117,7 @@ public with sharing class FimbyBulkBuyReservationController {
 
             resp.Status__c = FimbyConstants.RESPONSE_CANCELLED;
             resp.Amount_Requested__c = 0;
-            new ReservationHelper().updateResponse(resp);
+            helper.updateResponse(resp);
 
             String displayFirstName = resp.On_Behalf_Of_Contact__r != null
                 ? resp.On_Behalf_Of_Contact__r.FirstName
@@ -277,6 +269,47 @@ public with sharing class FimbyBulkBuyReservationController {
      * @description Without sharing helper for DML operations with row locking.
      */
     private without sharing class ReservationHelper {
+
+        public List<Response__c> getResponseById(Id responseId) {
+            return [
+                SELECT Id, Contact__c, On_Behalf_Of_Contact__c, Status__c, Need_Offer_Responded_To__c,
+                       Need_Offer_Responded_To__r.Posted_By__c,
+                       Need_Offer_Responded_To__r.Contact__c,
+                       Need_Offer_Responded_To__r.Group_Conversation__c,
+                       Need_Offer_Responded_To__r.Name,
+                       Contact__r.FirstName, On_Behalf_Of_Contact__r.FirstName
+                FROM Response__c
+                WHERE Id = :responseId
+                LIMIT 1
+            ];
+        }
+
+        public Id getPostedByContactId(Id postId) {
+            Needs_Offers__c post = [
+                SELECT Posted_By__c FROM Needs_Offers__c WHERE Id = :postId LIMIT 1
+            ];
+            return post.Posted_By__c;
+        }
+
+        public Boolean isBulkBuyFullyReserved(Id postId) {
+            Needs_Offers__c post = [
+                SELECT Total_Quantity__c, Owner_Shares__c
+                FROM Needs_Offers__c
+                WHERE Id = :postId
+                LIMIT 1
+            ];
+            Decimal owner = post.Owner_Shares__c != null ? post.Owner_Shares__c : 0;
+            List<AggregateResult> ar = [
+                SELECT SUM(Amount_Requested__c) total
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :postId
+                AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+            ];
+            Decimal sumReserved = (!ar.isEmpty() && ar[0].get('total') != null)
+                ? (Decimal) ar[0].get('total')
+                : 0;
+            return post.Total_Quantity__c - owner - sumReserved <= 0;
+        }
 
         public Map<String, Object> doCreateReservation(Id postId, Id realContactId, Id actingAsContactId, Integer amount) {
             Needs_Offers__c post = [

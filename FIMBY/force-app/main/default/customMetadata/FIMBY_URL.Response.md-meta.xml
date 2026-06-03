@@ -8,6 +8,6 @@
     </values>
     <values>
         <field>Path__c</field>
-        <value xsi:type="xsd:string">/response/</value>
+        <value xsi:type="xsd:string">/response-reply?recordId=</value>
     </values>
 </CustomMetadata>

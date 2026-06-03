@@ -100,7 +100,7 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
     }
 
     get responseUrl() {
-        return '/response/' + this.recordId;
+        return '/response-reply?recordId=' + this.recordId;
     }
 
     // ============================================

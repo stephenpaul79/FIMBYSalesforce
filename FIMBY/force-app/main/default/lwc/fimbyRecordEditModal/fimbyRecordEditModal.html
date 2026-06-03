@@ -47,7 +47,7 @@
                             <!-- Dynamic Fields from Field Set -->
                             <div class="form-fields">
                                 <template for:each={fieldSetFields} for:item="field">
-                                    <div key={field.apiName} class="field-container">
+                                    <div key={field.apiName} class={field.containerClass}>
                                         <lightning-input-field
                                             field-name={field.apiName}
                                             required={field.required}>

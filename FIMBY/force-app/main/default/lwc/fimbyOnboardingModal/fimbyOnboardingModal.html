@@ -218,55 +218,77 @@
                             </div>
                         </template>
 
-                        <!-- Step 7: Meet your introducer -->
+                        <!-- Step 7: Vouch request -->
                         <template lwc:if={isStep7}>
                             <div class="step-content">
                                 <div class="vouch-hero">
-                                    <img src={waveIconUrl} alt="" class="vouch-hero-icon">
+                                    <img src={vouchHeroIconUrl} alt="" class="vouch-hero-icon">
                                 </div>
-                                <h2 class="step-heading">One last thing &mdash; introduce yourself</h2>
-                                <p class="step-subtext">FIMBY is a neighbourhood where people know each other. To unlock the lending library, ask someone who already knows you to vouch for you.</p>
+                                <h2 class="step-heading">One last thing &mdash; ask for a vouch</h2>
+                                <p class="step-subtext">The lending library is for neighbours who have been welcomed in. Pick someone who already knows you &mdash; they will see that you are asking them to vouch for you.</p>
 
                                 <div class="form-fields">
-                                    <div class="form-field">
-                                        <label for="vouchFullName" class="field-label">Their full name</label>
-                                        <input id="vouchFullName"
-                                               type="text"
-                                               maxlength="80"
-                                               value={vouchFullName}
-                                               data-field="vouchFullName"
-                                               oninput={handleInputChange}
-                                               class="text-input"
-                                               autocomplete="off">
+                                    <div class="voucher-toggle" role="radiogroup" aria-label="Who can vouch for you?">
+                                        <button type="button"
+                                                class={vouchPeerToggleClass}
+                                                role="radio"
+                                                aria-checked={isVouchPeerType}
+                                                data-type="peer"
+                                                onclick={handleVouchSelectType}>
+                                            Neighbour
+                                        </button>
+                                        <button type="button"
+                                                class={vouchCgToggleClass}
+                                                role="radio"
+                                                aria-checked={isVouchCommunityGroupType}
+                                                data-type="community_group"
+                                                onclick={handleVouchSelectType}>
+                                            Community group
+                                        </button>
                                     </div>
-                                    <div class="form-field">
-                                        <label for="vouchEmail" class="field-label">Their email</label>
-                                        <input id="vouchEmail"
-                                               type="email"
-                                               maxlength="80"
-                                               value={vouchEmail}
-                                               data-field="vouchEmail"
-                                               oninput={handleInputChange}
-                                               class="text-input"
-                                               autocomplete="off">
-                                    </div>
-                                    <div class="form-field">
-                                        <label for="vouchOrgName" class="field-label">Or a community group / church</label>
-                                        <input id="vouchOrgName"
-                                               type="text"
-                                               maxlength="80"
-                                               value={vouchOrgName}
-                                               data-field="vouchOrgName"
-                                               oninput={handleInputChange}
-                                               class="text-input"
-                                               placeholder="If a community group introduced you"
-                                               autocomplete="off">
+
+                                    <div class="voucher-lookup">
+                                        <template lwc:if={selectedVoucher}>
+                                            <div class="selected-pill">
+                                                <div class="selected-pill-text">
+                                                    <span class="selected-pill-name">{selectedVoucher.name}</span>
+                                                    <span class="selected-pill-subtitle">{selectedVoucher.subtitle}</span>
+                                                </div>
+                                                <button type="button"
+                                                        class="pill-clear"
+                                                        aria-label="Clear selection"
+                                                        onclick={handleVouchClearSelection}>&times;</button>
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <input type="text"
+                                                   class="search-input"
+                                                   placeholder={vouchSearchPlaceholder}
+                                                   value={vouchSearchTerm}
+                                                   oninput={handleVouchSearchInput}
+                                                   autocomplete="off"
+                                                   aria-label="Search for someone to vouch for you">
+                                            <template lwc:if={showVouchResults}>
+                                                <div class="search-results" role="listbox">
+                                                    <template for:each={vouchSearchResults} for:item="result">
+                                                        <button key={result.id}
+                                                                type="button"
+                                                                class="search-result-item"
+                                                                role="option"
+                                                                data-id={result.id}
+                                                                onclick={handleVouchSelectResult}>
+                                                            <span class="result-name">{result.name}</span>
+                                                            <span class="result-subtitle">{result.subtitle}</span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template lwc:if={showVouchNoResults}>
+                                                <p class="no-results" role="status">No matches in your neighbourhood.</p>
+                                            </template>
+                                        </template>
                                     </div>
                                 </div>
-
-                                <template lwc:if={vouchSubmitMessage}>
-                                    <p class="vouch-submit-message">{vouchSubmitMessage}</p>
-                                </template>
 
                                 <button type="button"
                                         class="vouch-skip-link"

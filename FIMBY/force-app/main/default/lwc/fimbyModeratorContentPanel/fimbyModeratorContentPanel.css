@@ -68,7 +68,7 @@
 .read-more-btn {
     background-color: transparent;
     border: none;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -79,7 +79,7 @@
 }
 
 .read-more-btn:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
     text-decoration: underline;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .image-thumb-btn:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .image-thumb-btn:focus-visible {
@@ -315,14 +315,14 @@
 
 .btn-link {
     background-color: transparent;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
     text-decoration: underline;
     padding: 10px 12px;
 }
 
 .btn-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .btn-icon {
@@ -391,7 +391,7 @@
 
 .inline-form-textarea:focus {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 3px var(--fimby-focus-glow);
 }
 

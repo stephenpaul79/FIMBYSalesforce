@@ -33,7 +33,7 @@
 
 .badge-bug { background-color: var(--fimby-error); }
 .badge-enhancement { background-color: var(--fimby-info); }
-.badge-general { background-color: var(--fimby-brand-teal); }
+.badge-general { background-color: var(--fimby-btn-primary-bg); }
 .badge-content-report { background-color: var(--fimby-warning); }
 
 .feedback-title {
@@ -141,14 +141,14 @@
     gap: 6px;
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     min-height: 44px;
     transition: color 0.15s ease;
 }
 
 .related-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .related-link:focus-visible {

@@ -164,8 +164,8 @@
 }
 
 .retry-button {
-    background: var(--fimby-brand-teal);
-    color: var(--fimby-text-on-teal);
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
     border: none;
     border-radius: var(--fimby-radius-sm);
     padding: 0.625rem 1.25rem;
@@ -176,7 +176,7 @@
 }
 
 .retry-button:hover {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 /* Form Fields — single column mobile, two columns desktop */
@@ -188,6 +188,14 @@
 
 .field-container {
     width: 100%;
+}
+
+.field-full-width {
+    grid-column: 1 / -1;
+}
+
+.field-full-width lightning-input-field {
+    --slds-c-textarea-sizing-min-height: 9rem;
 }
 
 .field-container lightning-input-field {

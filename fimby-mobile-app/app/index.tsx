@@ -511,6 +511,11 @@ export default function IndexScreen() {
   // frontdoor URL, so the user lands directly on the deep-linked page.
   const pendingDeepLinkRef = useRef<string | null>(null);
 
+  // Cold-start Universal Links are captured by runBootstrap() (which controls
+  // the auto-login openFimby call). This guard stops the separate deep-link
+  // effect from re-handling the same launch URL and double-firing the frontdoor.
+  const coldStartDeepLinkHandledRef = useRef(false);
+
   // WebView ref for deep linking from notifications
   const webViewRef = useRef<WebView>(null);
   // After a push launch is handled (or none pending), skip cold-start re-checks on later loadEnd events.
@@ -1228,6 +1233,23 @@ export default function IndexScreen() {
     setBooting(true);
     setBootstrapError(null);
 
+    // Capture a cold-start Universal Link BEFORE auto-login opens FIMBY, so the
+    // frontdoor 'ret' lands the user on the deep-linked page. Without this,
+    // openFimby() can fire before getInitialURL() resolves and the deep link is
+    // lost — the app appears to hang on the native splash on email-link launches.
+    try {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        const path = parseFimbyDeepLink(initialUrl);
+        if (path) {
+          pendingDeepLinkRef.current = path;
+          log("[DEEPLINK] cold-start captured in bootstrap:", path);
+        }
+      }
+    } catch (e: any) {
+      warn("[DEEPLINK] bootstrap getInitialURL error:", e?.message || e);
+    }
+
     try {
       setStatus("Checking if you're still you…");
       const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
@@ -1276,6 +1298,9 @@ export default function IndexScreen() {
     // Guard: only run bootstrap once on mount
     if (bootstrapRanRef.current) return;
     bootstrapRanRef.current = true;
+    // Claim the cold-start deep link synchronously so the deep-link effect below
+    // doesn't also consume getInitialURL() and double-open the frontdoor.
+    coldStartDeepLinkHandledRef.current = true;
     runBootstrap();
   }, [runBootstrap]);
 
@@ -1292,9 +1317,13 @@ export default function IndexScreen() {
   React.useEffect(() => {
     let cancelled = false;
 
+    // Cold start is owned by runBootstrap() (it stashes the path before
+    // auto-login). Only fall back to handling getInitialURL here if bootstrap
+    // somehow didn't claim it, to avoid a double frontdoor call.
     Linking.getInitialURL()
       .then((url) => {
         if (cancelled || !url) return;
+        if (coldStartDeepLinkHandledRef.current) return;
         const path = parseFimbyDeepLink(url);
         if (path) applyDeepLink(path);
       })

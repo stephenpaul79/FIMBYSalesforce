@@ -1,7 +1,8 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import { getRecord, getFieldValue, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import getFieldSetFields from '@salesforce/apex/FimbyFieldSetController.getFieldSetFields';
+import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
@@ -48,7 +49,8 @@ export default class FimbyRecordDetailCard extends LightningElement {
 
     currentUserId = Id;
     fieldsToLoad = [];
-    _recordId = null; // Internal record ID storage
+    _recordId = null;
+    _wiredRecordResult;
 
     // Get object info
     @wire(getObjectInfo, { objectApiName: '$objectApiName' })
@@ -178,7 +180,9 @@ export default class FimbyRecordDetailCard extends LightningElement {
     }
 
     @wire(getRecord, { recordId: '$effectiveRecordId', fields: '$fieldsToLoad' })
-    handleRecord({ error, data }) {
+    handleRecord(result) {
+        this._wiredRecordResult = result;
+        const { error, data } = result;
         if (data) {
             this.record = data;
             this.processRecordData();
@@ -300,12 +304,16 @@ export default class FimbyRecordDetailCard extends LightningElement {
         }
     }
 
-    handleRecordSaved(event) {
-        // Refresh the record data
+    async handleRecordSaved(event) {
         this.isLoading = true;
-        this.loadDisplayFields();
+        if (event.detail?.recordId) {
+            getRecordNotifyChange([{ recordId: event.detail.recordId }]);
+        }
+        if (this._wiredRecordResult) {
+            await refreshApex(this._wiredRecordResult);
+        }
+        this.processRecordData();
 
-        // Dispatch event to parent
         this.dispatchEvent(new CustomEvent('recordsaved', {
             detail: event.detail
         }));

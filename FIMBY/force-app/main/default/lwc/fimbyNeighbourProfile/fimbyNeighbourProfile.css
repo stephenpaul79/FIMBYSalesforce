@@ -65,7 +65,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: #fff;
     font-size: 2rem;
     font-weight: 700;
@@ -180,7 +180,7 @@
 }
 
 .contact-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
 }
 
@@ -389,7 +389,7 @@
     gap: 4px;
     padding: 2px 10px;
     border-radius: var(--fimby-badge-radius, 9999px);
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-size: 0.7rem;
     font-weight: 600;

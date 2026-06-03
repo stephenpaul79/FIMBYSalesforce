@@ -64,6 +64,12 @@
                         <span class="chip-close" onclick={handleClearCategory}>&times;</span>
                     </button>
                 </template>
+
+                <!-- Refresh (desktop only, hidden on mobile via CSS — mobile uses pull-to-refresh) -->
+                <button class={refreshButtonClass} onclick={handleRefresh} aria-label="Refresh library">
+                    <img src={refreshIconUrl} alt="" class="refresh-icon">
+                    <span>Refresh</span>
+                </button>
             </div>
 
         </div>

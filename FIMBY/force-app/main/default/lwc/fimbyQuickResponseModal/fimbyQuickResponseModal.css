@@ -462,7 +462,7 @@
 .decline-label input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: var(--fimby-brand-teal, #2ABFBF);
+    accent-color: var(--fimby-btn-primary-bg);
     cursor: pointer;
 }
 
@@ -599,7 +599,7 @@
 }
 
 .thermo-taken {
-    background-color: var(--fimby-brand-teal, #3A7D8C);
+    background-color: var(--fimby-btn-primary-bg);
     transition: width 0.3s ease;
 }
 
@@ -638,7 +638,7 @@
     flex-shrink: 0;
 }
 
-.legend-taken::before { background-color: var(--fimby-brand-teal, #3A7D8C); }
+.legend-taken::before { background-color: var(--fimby-btn-primary-bg); }
 .legend-pending::before { background-color: #D4A843; }
 .legend-remaining::before { background-color: #A8D8E0; }
 

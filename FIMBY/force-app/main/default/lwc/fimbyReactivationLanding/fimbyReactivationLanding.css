@@ -58,13 +58,13 @@
 
 .landing-help a,
 .landing-lede a {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: underline;
 }
 
 .landing-help a:hover,
 .landing-lede a:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
     text-decoration: underline;
 }
 

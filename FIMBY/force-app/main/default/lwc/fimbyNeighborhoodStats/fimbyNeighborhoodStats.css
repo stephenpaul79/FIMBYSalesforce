@@ -28,7 +28,7 @@
 }
 
 .stat-icon {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     margin-bottom: 12px;
 }
 

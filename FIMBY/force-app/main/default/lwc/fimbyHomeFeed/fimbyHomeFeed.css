@@ -58,7 +58,7 @@
     justify-content: space-between;
     gap: 12px;
     background-color: var(--fimby-selected-bg);
-    border: 1px solid var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-radius-sm);
     padding: 10px 12px;
     margin-bottom: 12px;
@@ -235,8 +235,8 @@
 }
 
 .refresh-button:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
@@ -292,8 +292,8 @@
 }
 
 .filter-button:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
@@ -305,8 +305,8 @@
 }
 
 .filter-button.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 

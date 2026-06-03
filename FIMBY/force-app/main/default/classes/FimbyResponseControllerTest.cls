@@ -400,7 +400,9 @@ public class FimbyResponseControllerTest {
             Status__c = 'New',
             Amount_Requested__c = 1
         );
-        insert testResponse;
+        System.runAs(posterUser) {
+            insert testResponse;
+        }
 
         Test.startTest();
         System.runAs(posterUser) {

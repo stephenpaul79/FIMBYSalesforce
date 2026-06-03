@@ -220,7 +220,7 @@
 
 .category-tag {
     background: var(--fimby-selected-bg);
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 10px;
     font-weight: 500;
     padding: 2px 6px;
@@ -296,8 +296,8 @@
 }
 
 .respond-button {
-    background: var(--fimby-brand-teal);
-    color: var(--fimby-text-on-teal);
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
     border: none;
     border-radius: 16px;
     padding: 6px 12px;
@@ -313,7 +313,7 @@
 }
 
 .respond-button:hover {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
     transform: translateY(-1px);
 }
 
@@ -335,15 +335,15 @@
 .message-button:hover,
 .save-button:hover {
     background: var(--fimby-selected-bg);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     transform: translateY(-1px);
 }
 
 .save-button.saved {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 /* Responsive Design */

@@ -82,7 +82,7 @@
     border-radius: 50%;
     background: transparent;
     cursor: pointer;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     transition: background 0.2s ease;
     flex-shrink: 0;
 }
@@ -169,7 +169,7 @@
 }
 
 .settings-select:focus-visible {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 /* ========== TOGGLE ROWS ========== */
@@ -216,7 +216,7 @@
 }
 
 .toggle-switch:checked {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
 }
 
 .toggle-switch::before {
@@ -351,7 +351,7 @@
 }
 
 .field-input:focus-visible {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 2px var(--fimby-focus-glow);
 }
 
@@ -434,10 +434,10 @@
 
 .btn-unblock {
     padding: 6px 14px;
-    border: 1px solid var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-radius-md);
     background: transparent;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -496,7 +496,7 @@
 }
 
 .btn-primary {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: #fff;
 }
 
@@ -507,7 +507,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 .btn-neutral {
@@ -528,8 +528,8 @@
 
 .btn-outline {
     background: transparent;
-    color: var(--fimby-brand-teal);
-    border: 1px solid var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
+    border: 1px solid var(--fimby-btn-primary-bg);
 }
 
 .btn-outline:focus-visible {
@@ -617,8 +617,8 @@
 
 .theme-option.selected {
     background: var(--fimby-selected-bg);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     transform: scale(1.02);
 }
 

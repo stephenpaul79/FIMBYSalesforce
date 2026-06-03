@@ -7,9 +7,14 @@ import saveQuietHoursPreference from '@salesforce/apex/FimbyOnboardingController
 import dismissWalkthrough from '@salesforce/apex/FimbyOnboardingController.dismissWalkthrough';
 import completeWalkthrough from '@salesforce/apex/FimbyOnboardingController.completeWalkthrough';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
-import submitVoucherDetails from '@salesforce/apex/FimbyVouchController.submitVoucherDetails';
+import searchVouchers from '@salesforce/apex/FimbyVouchController.searchVouchers';
+import submitVoucherRequest from '@salesforce/apex/FimbyVouchController.submitVoucherRequest';
 
 const TOTAL_PROFILE_STEPS = 7;
+const VOUCH_TYPE_PEER = 'peer';
+const VOUCH_TYPE_COMMUNITY_GROUP = 'community_group';
+const VOUCH_SEARCH_DEBOUNCE_MS = 250;
+const VOUCH_SEARCH_MIN_CHARS = 2;
 const SESSION_DISMISS_KEY = 'fimby_onboarding_dismissed';
 const SESSION_COMPLETE_KEY = 'fimby_onboarding_complete';
 
@@ -65,11 +70,16 @@ export default class FimbyOnboardingModal extends LightningElement {
     @track careHowToAsk = '';
     @track careHardNos = '';
     @track quietHoursPreference = '10PM_6AM';
-    @track vouchFullName = '';
-    @track vouchEmail = '';
-    @track vouchOrgName = '';
-    @track vouchSubmitMessage = '';
+    @track voucherType = VOUCH_TYPE_PEER;
+    @track vouchSearchTerm = '';
+    @track vouchSearchResults = [];
+    @track selectedVoucher = null;
+    @track isVouchSearching = false;
+    @track hasVouchSearched = false;
     @track saveError = '';
+
+    _vouchSearchTimeout = null;
+    _vouchSearchSeq = 0;
 
     @track walkthroughPages = [];
     @track currentPageIndex = 0;
@@ -101,14 +111,46 @@ export default class FimbyOnboardingModal extends LightningElement {
     get isStep7()   { return this.currentPhase === 1 && this.currentStep === 7 && !this.showCelebration; }
     get canGoBack() { return this.currentStep > 1 && !this.showCelebration; }
 
-    /* --- Step 7: vouch / introduction icon URLs ------------------- */
+    /* --- Step 7: vouch request icon ------------------------------- */
 
-    get waveIconUrl() { return `${IMPACT_ICONS}/Wave.png`; }
+    get vouchHeroIconUrl() { return `${IMPACT_ICONS}/Sapling.png`; }
 
     get isVouchStep7Valid() {
-        const hasNameAndEmail = !!(this.vouchFullName?.trim() && this.vouchEmail?.trim());
-        const hasOrgName = !!this.vouchOrgName?.trim();
-        return hasNameAndEmail || hasOrgName;
+        return !!this.selectedVoucher;
+    }
+
+    get isVouchPeerType() {
+        return this.voucherType === VOUCH_TYPE_PEER;
+    }
+
+    get isVouchCommunityGroupType() {
+        return this.voucherType === VOUCH_TYPE_COMMUNITY_GROUP;
+    }
+
+    get vouchPeerToggleClass() {
+        return this.isVouchPeerType ? 'toggle-option toggle-option_active' : 'toggle-option';
+    }
+
+    get vouchCgToggleClass() {
+        return this.isVouchCommunityGroupType ? 'toggle-option toggle-option_active' : 'toggle-option';
+    }
+
+    get vouchSearchPlaceholder() {
+        return this.isVouchPeerType
+            ? 'Start typing a neighbour\u2019s name\u2026'
+            : 'Start typing a community group or church\u2026';
+    }
+
+    get showVouchResults() {
+        return !this.selectedVoucher && this.vouchSearchResults.length > 0;
+    }
+
+    get showVouchNoResults() {
+        return !this.selectedVoucher
+            && this.hasVouchSearched
+            && !this.isVouchSearching
+            && this.vouchSearchResults.length === 0
+            && this.vouchSearchTerm.trim().length >= VOUCH_SEARCH_MIN_CHARS;
     }
 
     get showDismissProfile() {
@@ -124,7 +166,7 @@ export default class FimbyOnboardingModal extends LightningElement {
     }
 
     get nextButtonLabel() {
-        if (this.currentStep === TOTAL_PROFILE_STEPS) return 'Send introduction';
+        if (this.currentStep === TOTAL_PROFILE_STEPS) return 'Request a vouch';
         return 'Next';
     }
 
@@ -228,6 +270,63 @@ export default class FimbyOnboardingModal extends LightningElement {
         // Photo uploaded successfully — the image uploader handles its own preview
     }
 
+    handleVouchSelectType(event) {
+        const nextType = event.currentTarget.dataset.type;
+        if (!nextType || nextType === this.voucherType) return;
+        this.voucherType = nextType;
+        this.vouchSearchTerm = '';
+        this.vouchSearchResults = [];
+        this.selectedVoucher = null;
+        this.hasVouchSearched = false;
+        clearTimeout(this._vouchSearchTimeout);
+    }
+
+    handleVouchSearchInput(event) {
+        this.vouchSearchTerm = event.target.value;
+        clearTimeout(this._vouchSearchTimeout);
+        if (this.vouchSearchTerm.trim().length < VOUCH_SEARCH_MIN_CHARS) {
+            this.vouchSearchResults = [];
+            this.hasVouchSearched = false;
+            this.isVouchSearching = false;
+            return;
+        }
+        this.isVouchSearching = true;
+        this._vouchSearchTimeout = setTimeout(() => this._doVouchSearch(), VOUCH_SEARCH_DEBOUNCE_MS);
+    }
+
+    _doVouchSearch() {
+        const seq = ++this._vouchSearchSeq;
+        searchVouchers({ searchTerm: this.vouchSearchTerm.trim(), voucherType: this.voucherType })
+            .then(results => {
+                if (seq !== this._vouchSearchSeq) return;
+                this.vouchSearchResults = Array.isArray(results) ? results : [];
+                this.hasVouchSearched = true;
+                this.isVouchSearching = false;
+            })
+            .catch(() => {
+                if (seq !== this._vouchSearchSeq) return;
+                this.vouchSearchResults = [];
+                this.hasVouchSearched = true;
+                this.isVouchSearching = false;
+            });
+    }
+
+    handleVouchSelectResult(event) {
+        const id = event.currentTarget.dataset.id;
+        const match = this.vouchSearchResults.find(r => r.id === id);
+        if (!match) return;
+        this.selectedVoucher = match;
+        this.vouchSearchResults = [];
+        this.vouchSearchTerm = match.name;
+    }
+
+    handleVouchClearSelection() {
+        this.selectedVoucher = null;
+        this.vouchSearchTerm = '';
+        this.vouchSearchResults = [];
+        this.hasVouchSearched = false;
+    }
+
     /* --- Phase 1 navigation ---------------------------------------- */
 
     handleNext() {
@@ -235,7 +334,7 @@ export default class FimbyOnboardingModal extends LightningElement {
             return;
         }
 
-        // Step 6 is the last *profile* step; save profile, then move to step 7 (introduction).
+        // Step 6 is the last *profile* step; save profile, then move to step 7 (vouch request).
         if (this.currentStep === 6) {
             this._saveProfileAndAdvanceToVouchStep();
             return;
@@ -307,24 +406,20 @@ export default class FimbyOnboardingModal extends LightningElement {
         if (!this.isVouchStep7Valid) return;
         this.isSaving = true;
         this.saveError = '';
-        this.vouchSubmitMessage = '';
         try {
-            const result = await submitVoucherDetails({
-                fullName: this.vouchFullName?.trim() || '',
-                email: this.vouchEmail?.trim() || '',
-                organizationName: this.vouchOrgName?.trim() || ''
+            const result = await submitVoucherRequest({
+                voucherType: this.selectedVoucher.voucherType,
+                referenceId: this.selectedVoucher.id
             });
-            this.vouchSubmitMessage = result?.message || '';
-            if (result?.delivered === false && !result?.alreadyHasPending) {
-                // Not delivered (no match). Show inline message; don't celebrate.
+            if (result?.delivered === true || result?.alreadyHasPending === true) {
+                this.showCelebration = true;
                 return;
             }
-            // Delivered or already had a pending request — proceed to celebration either way.
-            this.showCelebration = true;
+            this.saveError = result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.';
         } catch (error) {
             console.error('Error submitting vouch request:', error);
             const msg = error?.body?.message || error?.message
-                || 'Something went wrong sending your introduction. Please try again or skip for now.';
+                || 'Something went wrong sending your vouch request. Please try again or skip for now.';
             this.saveError = msg;
         } finally {
             this.isSaving = false;

@@ -1,6 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
@@ -70,6 +71,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     record;
     currentUserId = Id;
     organizationId = null;
+    _wiredStoryDetailResult;
 
     contentCharLimit = 300;
 
@@ -78,7 +80,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     get menuIconUrl() {
-        return `${IMPACT_ICONS}/Kebab.png`;
+        return `${IMPACT_ICONS}/KebabBeige.png`;
     }
 
     get headerMenuItems() {
@@ -193,7 +195,9 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     @wire(getStoryDetail, { storyId: '$effectiveRecordId' })
-    wiredStoryDetail({ error, data }) {
+    wiredStoryDetail(result) {
+        this._wiredStoryDetailResult = result;
+        const { error, data } = result;
         this.isLoading = false;
         if (data) {
             if (data.removed) {
@@ -480,13 +484,15 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         if (modal) modal.show();
     }
 
-    handleEditSave() {
+    async handleEditSave() {
         this.dispatchEvent(new ShowToastEvent({
             title: 'Saved',
             message: 'Your story is updated.',
             variant: 'success'
         }));
-        window.location.reload();
+        if (this._wiredStoryDetailResult) {
+            await refreshApex(this._wiredStoryDetailResult);
+        }
     }
 
     handleEditCancel() {}

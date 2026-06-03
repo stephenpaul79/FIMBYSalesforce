@@ -270,7 +270,7 @@
 }
 
 .swipe-action-left.swipe-mark-read {
-    background: var(--fimby-brand-teal, #3d9ba1);
+    background: var(--fimby-btn-primary-bg);
 }
 
 .swipe-action-left.swipe-mark-unread {

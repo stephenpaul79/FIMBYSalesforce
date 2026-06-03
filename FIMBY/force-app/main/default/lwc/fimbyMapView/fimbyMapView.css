@@ -20,7 +20,7 @@
 }
 
 .map-icon {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     margin-bottom: 16px;
 }
 
@@ -59,15 +59,15 @@
 }
 
 .filter-chip.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-weight: 600;
 }
 
 .filter-chip:hover {
     background: var(--fimby-hover-bg);
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 /* Keyboard focus visibility */

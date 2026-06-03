@@ -216,7 +216,7 @@
 }
 
 .intro-modal-post {
-    background: var(--fimby-brand-teal, #2c8c84);
+    background: var(--fimby-btn-primary-bg);
     color: #fff;
     border: none;
     padding: 12px 22px;
@@ -232,7 +232,7 @@
 }
 
 .intro-modal-post:hover:not(:disabled) {
-    background: var(--fimby-brand-teal-strong, #246e67);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 .intro-modal-post:disabled {

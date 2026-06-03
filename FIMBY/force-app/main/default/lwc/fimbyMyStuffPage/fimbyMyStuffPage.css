@@ -35,14 +35,14 @@
 }
 
 .breadcrumb-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .breadcrumb-link:hover {
-    color: var(--fimby-brand-teal-pressed);
+    color: var(--fimby-btn-primary-bg-active);
     text-decoration: underline;
 }
 
@@ -92,14 +92,14 @@
 }
 
 .filter-button:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
 .filter-button.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -182,8 +182,8 @@
 }
 
 .list-row:hover {
-    border-color: var(--fimby-brand-teal);
-    box-shadow: 0 2px 8px rgba(103, 187, 210, 0.18);
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: 0 2px 8px rgba(58, 125, 140, 0.18);
 }
 
 button.list-row {
@@ -410,11 +410,11 @@ button.list-row {
 }
 
 .contacts-search-input:focus {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .contacts-search-input:focus-visible {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 3px var(--fimby-focus-glow);
 }
 
@@ -430,12 +430,12 @@ button.list-row {
 }
 
 .contact-card-wrapper:hover {
-    border-color: var(--fimby-brand-teal);
-    box-shadow: 0 2px 8px rgba(103, 187, 210, 0.15);
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: 0 2px 8px rgba(58, 125, 140, 0.15);
 }
 
 .contact-card-expanded {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .contact-card-header {
@@ -450,7 +450,7 @@ button.list-row {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: white;
     display: flex;
     align-items: center;
@@ -536,11 +536,11 @@ button.list-row {
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: 1px solid var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-radius-md);
     background-color: var(--fimby-surface-card);
     min-height: 44px;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
@@ -548,7 +548,7 @@ button.list-row {
 }
 
 .view-profile-btn:hover {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #fff;
 }
 
@@ -576,8 +576,8 @@ button.list-row {
 }
 
 .edit-shared-btn:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
@@ -731,7 +731,7 @@ button.contact-card-header {
     gap: 6px;
     padding: 6px 10px;
     border-radius: 9999px;
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-size: 0.85rem;
     font-weight: 600;

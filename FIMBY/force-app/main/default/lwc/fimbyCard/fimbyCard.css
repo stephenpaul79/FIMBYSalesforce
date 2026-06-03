@@ -315,13 +315,13 @@
     margin-top: -8px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     cursor: pointer;
     transition: color 0.15s ease;
 }
 
 .read-more-btn:hover {
-    color: var(--fimby-brand-teal-pressed);
+    color: var(--fimby-btn-primary-bg-active);
 }
 
 .card-tags {

@@ -126,14 +126,14 @@
 }
 
 .record-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .record-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .record-link:focus-visible {

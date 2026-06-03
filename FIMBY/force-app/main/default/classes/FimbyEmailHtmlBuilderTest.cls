@@ -552,4 +552,31 @@ private class FimbyEmailHtmlBuilderTest {
         // May be null if no active seasonal theme — that's fine
         System.assert(true, 'Should not throw');
     }
+
+    @IsTest
+    static void brandedShell_iconSrcUsesExperienceSiteHost() {
+        String html = FimbyEmailHtmlBuilder.wrapInBrandedShell('<p>Hi</p>', 'Test', 'NH');
+        String assetHost = FimbySettings.getUrl('Experience_Site');
+        if (String.isBlank(assetHost)) {
+            assetHost = FimbySettings.getUrl('Site_Base');
+        }
+        if (assetHost.endsWith('/')) {
+            assetHost = assetHost.substring(0, assetHost.length() - 1);
+        }
+        System.assert(
+            html.contains(assetHost + '/sfsites/c/resource/Impact_Icons/'),
+            'Email icons should load from the Experience Cloud host'
+        );
+
+        String linkHost = FimbySettings.getUrl('Site_Base');
+        if (linkHost.endsWith('/')) {
+            linkHost = linkHost.substring(0, linkHost.length() - 1);
+        }
+        if (linkHost != assetHost) {
+            System.assert(
+                !html.contains('src="' + linkHost + '/sfsites/c/resource/Impact_Icons/'),
+                'Email icons must not use the app-link host when it differs from Experience Site'
+            );
+        }
+    }
 }

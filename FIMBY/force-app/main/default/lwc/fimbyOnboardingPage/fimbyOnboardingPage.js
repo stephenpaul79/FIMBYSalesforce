@@ -6,7 +6,8 @@ import saveQuietHoursPreference from '@salesforce/apex/FimbyOnboardingController
 import dismissWalkthrough from '@salesforce/apex/FimbyOnboardingController.dismissWalkthrough';
 import completeWalkthrough from '@salesforce/apex/FimbyOnboardingController.completeWalkthrough';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
-import submitVoucherDetails from '@salesforce/apex/FimbyVouchController.submitVoucherDetails';
+import searchVouchers from '@salesforce/apex/FimbyVouchController.searchVouchers';
+import submitVoucherRequest from '@salesforce/apex/FimbyVouchController.submitVoucherRequest';
 
 import {
     WALKTHROUGH_SCREENS,
@@ -21,6 +22,10 @@ import {
 } from './fimbyWalkthroughContent';
 
 const TOTAL_PROFILE_STEPS = 7;
+const VOUCH_TYPE_PEER = 'peer';
+const VOUCH_TYPE_COMMUNITY_GROUP = 'community_group';
+const VOUCH_SEARCH_DEBOUNCE_MS = 250;
+const VOUCH_SEARCH_MIN_CHARS = 2;
 const TOTAL_WALKTHROUGH_SCREENS = WALKTHROUGH_SCREENS.length;
 const MIN_ABOUT_FIELDS = 2;
 
@@ -82,10 +87,15 @@ export default class FimbyOnboardingPage extends LightningElement {
     @track _careHowToAsk = '';
     @track _careHardNos = '';
     @track _quietHoursPreference = '10PM_6AM';
-    @track _vouchFullName = '';
-    @track _vouchEmail = '';
-    @track _vouchOrgName = '';
-    @track _vouchSubmitMessage = '';
+    @track _voucherType = VOUCH_TYPE_PEER;
+    @track _vouchSearchTerm = '';
+    @track _vouchSearchResults = [];
+    @track _selectedVoucher = null;
+    @track _isVouchSearching = false;
+    @track _hasVouchSearched = false;
+
+    _vouchSearchTimeout = null;
+    _vouchSearchSeq = 0;
 
     /* ----- phase 2 state ----- */
     @track _walkthroughIndex = 0;
@@ -132,7 +142,7 @@ export default class FimbyOnboardingPage extends LightningElement {
     get logoUrl()         { return `${IMPACT_ICONS}/FIMBYwGrass.png`; }
     get chatIconUrl()     { return `${IMPACT_ICONS}/chat.png`; }
     get careIconUrl()     { return `${IMPACT_ICONS}/care.png`; }
-    get waveIconUrl()     { return `${IMPACT_ICONS}/Wave.png`; }
+    get vouchHeroIconUrl() { return `${IMPACT_ICONS}/Sapling.png`; }
     get confettiIconUrl() { return `${IMPACT_ICONS}/confetti.png`; }
 
     /* =============================
@@ -182,10 +192,43 @@ export default class FimbyOnboardingPage extends LightningElement {
     get aboutEnjoys()       { return this._aboutEnjoys; }
     get aboutFunFact()      { return this._aboutFunFact; }
     get careHardNos()       { return this._careHardNos; }
-    get vouchFullName()     { return this._vouchFullName; }
-    get vouchEmail()        { return this._vouchEmail; }
-    get vouchOrgName()      { return this._vouchOrgName; }
-    get vouchSubmitMessage() { return this._vouchSubmitMessage; }
+    get selectedVoucher() { return this._selectedVoucher; }
+    get vouchSearchTerm() { return this._vouchSearchTerm; }
+    get vouchSearchResults() { return this._vouchSearchResults; }
+
+    get isVouchPeerType() {
+        return this._voucherType === VOUCH_TYPE_PEER;
+    }
+
+    get isVouchCommunityGroupType() {
+        return this._voucherType === VOUCH_TYPE_COMMUNITY_GROUP;
+    }
+
+    get vouchPeerToggleClass() {
+        return this.isVouchPeerType ? 'toggle-option toggle-option_active' : 'toggle-option';
+    }
+
+    get vouchCgToggleClass() {
+        return this.isVouchCommunityGroupType ? 'toggle-option toggle-option_active' : 'toggle-option';
+    }
+
+    get vouchSearchPlaceholder() {
+        return this.isVouchPeerType
+            ? 'Start typing a neighbour\u2019s name\u2026'
+            : 'Start typing a community group or church\u2026';
+    }
+
+    get showVouchResults() {
+        return !this._selectedVoucher && this._vouchSearchResults.length > 0;
+    }
+
+    get showVouchNoResults() {
+        return !this._selectedVoucher
+            && this._hasVouchSearched
+            && !this._isVouchSearching
+            && this._vouchSearchResults.length === 0
+            && this._vouchSearchTerm.trim().length >= VOUCH_SEARCH_MIN_CHARS;
+    }
     get saveError()         { return this._saveError; }
     get isSaving()          { return this._isSaving; }
     get contactId()         { return this._contactId; }
@@ -220,7 +263,7 @@ export default class FimbyOnboardingPage extends LightningElement {
     }
 
     get nextButtonLabel() {
-        if (this._currentStep === TOTAL_PROFILE_STEPS) return 'Send introduction';
+        if (this._currentStep === TOTAL_PROFILE_STEPS) return 'Request a vouch';
         return 'Next';
     }
 
@@ -239,9 +282,7 @@ export default class FimbyOnboardingPage extends LightningElement {
     }
 
     get _isVouchStep7Valid() {
-        const hasNameAndEmail = !!(this._vouchFullName?.trim() && this._vouchEmail?.trim());
-        const hasOrgName = !!this._vouchOrgName?.trim();
-        return hasNameAndEmail || hasOrgName;
+        return !!this._selectedVoucher;
     }
 
     get careWelcomeOptions() {
@@ -511,6 +552,63 @@ export default class FimbyOnboardingPage extends LightningElement {
         // Image uploader manages its own preview
     }
 
+    handleVouchSelectType(event) {
+        const nextType = event.currentTarget.dataset.type;
+        if (!nextType || nextType === this._voucherType) return;
+        this._voucherType = nextType;
+        this._vouchSearchTerm = '';
+        this._vouchSearchResults = [];
+        this._selectedVoucher = null;
+        this._hasVouchSearched = false;
+        clearTimeout(this._vouchSearchTimeout);
+    }
+
+    handleVouchSearchInput(event) {
+        this._vouchSearchTerm = event.target.value;
+        clearTimeout(this._vouchSearchTimeout);
+        if (this._vouchSearchTerm.trim().length < VOUCH_SEARCH_MIN_CHARS) {
+            this._vouchSearchResults = [];
+            this._hasVouchSearched = false;
+            this._isVouchSearching = false;
+            return;
+        }
+        this._isVouchSearching = true;
+        this._vouchSearchTimeout = setTimeout(() => this._doVouchSearch(), VOUCH_SEARCH_DEBOUNCE_MS);
+    }
+
+    _doVouchSearch() {
+        const seq = ++this._vouchSearchSeq;
+        searchVouchers({ searchTerm: this._vouchSearchTerm.trim(), voucherType: this._voucherType })
+            .then(results => {
+                if (seq !== this._vouchSearchSeq) return;
+                this._vouchSearchResults = Array.isArray(results) ? results : [];
+                this._hasVouchSearched = true;
+                this._isVouchSearching = false;
+            })
+            .catch(() => {
+                if (seq !== this._vouchSearchSeq) return;
+                this._vouchSearchResults = [];
+                this._hasVouchSearched = true;
+                this._isVouchSearching = false;
+            });
+    }
+
+    handleVouchSelectResult(event) {
+        const id = event.currentTarget.dataset.id;
+        const match = this._vouchSearchResults.find(r => r.id === id);
+        if (!match) return;
+        this._selectedVoucher = match;
+        this._vouchSearchResults = [];
+        this._vouchSearchTerm = match.name;
+    }
+
+    handleVouchClearSelection() {
+        this._selectedVoucher = null;
+        this._vouchSearchTerm = '';
+        this._vouchSearchResults = [];
+        this._hasVouchSearched = false;
+    }
+
     /* =============================
      * Phase 1 navigation
      * ============================= */
@@ -582,23 +680,21 @@ export default class FimbyOnboardingPage extends LightningElement {
         if (!this._isVouchStep7Valid) return;
         this._isSaving = true;
         this._saveError = '';
-        this._vouchSubmitMessage = '';
         try {
-            const result = await submitVoucherDetails({
-                fullName: this._vouchFullName?.trim() || '',
-                email: this._vouchEmail?.trim() || '',
-                organizationName: this._vouchOrgName?.trim() || ''
+            const result = await submitVoucherRequest({
+                voucherType: this._selectedVoucher.voucherType,
+                referenceId: this._selectedVoucher.id
             });
-            this._vouchSubmitMessage = result?.message || '';
-            if (result?.delivered === false && !result?.alreadyHasPending) {
+            if (result?.delivered === true || result?.alreadyHasPending === true) {
+                this._showCelebration = true;
+                this._scrollToTop();
                 return;
             }
-            this._showCelebration = true;
-            this._scrollToTop();
+            this._saveError = result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.';
         } catch (err) {
             console.error('Error submitting vouch request:', err);
             this._saveError = err?.body?.message || err?.message
-                || 'Something went wrong sending your introduction. Please try again or skip for now.';
+                || 'Something went wrong sending your vouch request. Please try again or skip for now.';
         } finally {
             this._isSaving = false;
         }

@@ -364,7 +364,7 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
         // Map valid pages for Digital Experience
         const validPages = {
             'home': '/',
-            'stories': '/shared-life-list',
+            'stories': '/?filter=story',
             'askOffer': '/ask-offer-list',
             'library': '/library-list',
             'messages': '/messages',
@@ -385,7 +385,7 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
     }
 
     navigateToResponseDetail(responseId) {
-        location.href = '/response-detail?recordId=' + responseId;
+        location.href = '/response-reply?recordId=' + responseId;
     }
 
     navigateToConversation(participantId, participantName) {

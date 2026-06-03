@@ -183,14 +183,14 @@
 }
 
 .nav-next {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .nav-next:hover {
-    background-color: var(--fimby-brand-teal-hover);
-    border-color: var(--fimby-brand-teal-hover);
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
 }
 
 .nav-next:disabled {
@@ -663,7 +663,7 @@
 }
 
 .confirmation-title .highlight {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 700;
 }
 

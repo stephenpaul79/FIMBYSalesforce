@@ -38,7 +38,7 @@
 }
 
 .back-chevron lightning-icon {
-    --lwc-colorTextIconDefault: var(--fimby-brand-teal);
+    --lwc-colorTextIconDefault: var(--fimby-btn-primary-bg);
 }
 
 /* ================================================================
@@ -193,7 +193,7 @@
     padding: 12px 16px;
     margin: 8px 0 16px;
     background-color: var(--fimby-surface-input);
-    border-left: 3px solid var(--fimby-brand-teal);
+    border-left: 3px solid var(--fimby-btn-primary-bg);
     border-radius: 0 var(--fimby-radius-sm, 8px) var(--fimby-radius-sm, 8px) 0;
     font-size: 0.85rem;
     color: var(--fimby-text-primary);
@@ -236,7 +236,7 @@
 }
 
 .section-active {
-    border-left: 4px solid var(--fimby-brand-teal);
+    border-left: 4px solid var(--fimby-btn-primary-bg);
     box-shadow: var(--fimby-shadow-card-hover);
 }
 
@@ -710,7 +710,7 @@
 .inline-form-textarea:focus {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .inline-form-actions {
@@ -881,7 +881,7 @@
 }
 
 .verification-doc-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 0.85rem;
     text-decoration: underline;
 }

@@ -95,13 +95,13 @@
 }
 
 .neighborhood-chip:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background: rgba(25, 118, 210, 0.1);
 }
 
 .neighborhood-chip.selected {
-    background: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: white;
 }
 
@@ -110,12 +110,12 @@
     align-items: center;
     gap: 4px;
     border-style: dashed;
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .neighborhood-chip.other:hover {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
 }
 
@@ -141,7 +141,7 @@
 }
 
 .terms-text a {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 600;
 }
@@ -272,15 +272,15 @@
 }
 
 .login-link a {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 600;
-    border-bottom: 1px solid var(--fimby-brand-teal);
+    border-bottom: 1px solid var(--fimby-btn-primary-bg);
 }
 
 .login-link a:hover {
-    color: var(--fimby-brand-teal-hover);
-    border-bottom-color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
+    border-bottom-color: var(--fimby-btn-primary-bg-hover);
 }
 
 /* Why FIMBY Section */

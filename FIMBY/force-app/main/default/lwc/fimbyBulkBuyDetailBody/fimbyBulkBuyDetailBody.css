@@ -77,7 +77,7 @@
 }
 
 .dot-reserved {
-    background: var(--fimby-brand-teal, #3A7D8C);
+    background: var(--fimby-btn-primary-bg);
 }
 
 .dot-available {
@@ -300,8 +300,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--fimby-brand-teal);
-    color: var(--fimby-text-on-teal, #fff);
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -106,6 +106,8 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(result.html.contains('Reserve-A-Share'), 'Should have bulk buy CTA');
         System.assert(result.html.contains('Library'), 'Should have library section');
         System.assert(result.html.contains('Borrow'), 'Should have library CTA');
+        System.assert(result.html.contains('/asks-offers/'), 'Ask/offer CTAs should use /asks-offers/');
+        System.assert(!result.html.contains('/needs-offers/'), 'Legacy /needs-offers/ must not appear in digest links');
     }
 
     @IsTest

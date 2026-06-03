@@ -88,11 +88,12 @@ Contact names change, so QA isn't disrupted. Each persona needs a **profile phot
 
 | Persona | Age | Background | Gender | Account |
 |---|---|---|---|---|
-| **Sarah Chen** | 34 | Chinese-Canadian | F | `reviewer@fimby.com` — the viewer; we capture as her |
-| **Rosa Alvarez** | 67 | Mexican-Canadian | F | rename `mobiletester@fimby.com` |
-| **Marcus Bell** | 45 | Black Canadian | M | rename `desktop@fimby.com` |
-| **Amir Haddad** | 31 | Lebanese-Canadian | M | rename `sftester@fimby.com` |
-| **Joan Whitecloud** | 70 | Coast Salish (Indigenous) | F | **new Contact** |
+| **Sarah Chen** | 34 | Chinese-Canadian | F | `sarah@fimby.com` — the viewer; we capture as her |
+| **Rosa Alvarez** | 67 | Mexican-Canadian | F | `rosa@fimby.com` |
+| **Marcus Bell** | 45 | Black Canadian | M | `marcus@fimby.com` |
+| **Amir Haddad** | 31 | Lebanese-Canadian | M | `amir@fimby.com` |
+| **Joan Whitecloud** | 70 | Coast Salish (Indigenous) | F | `joan@fimby.com` |
+| **Appy Review** | — | — | — | `reviewer@fimby.com` — app-store reviewer / moderator flows only |
 
 ### Content per screen
 
@@ -107,12 +108,11 @@ Contact names change, so QA isn't disrupted. Each persona needs a **profile phot
 - ASK badge · 📷 backyard birthday prep · **Respond** CTA · "Posting as Amir"
 - One response shown — **Sarah:** *"I've got a folding table you can use. I'll message you."*
 
-**Screen 3 — Library list (`/library-list`)**
-Category chips: All · Tools · Kitchen · Outdoor · Books · Kids. Item rows:
-1. **Cordless drill** — Marcus — Tools — Available — 📷
-2. **Stand mixer** — Sarah — Kitchen — Available — 📷
-3. **Folding camp chairs (set of 4)** — Amir — Outdoor — Available — 📷
-4. **6 ft step ladder** — Joan — Tools — On loan (due Jun 12) — 📷
+**Screen 3 — Library list (`/library-list`), captured as Sarah**
+Category chips: All · Filter. List view. Item rows:
+1. **Cordless Drill and Impact Driver** — Marcus — Tools — Available — 📷 DeWalt drill + impact driver
+2. **Immersion Blender** — Sarah — Kitchen Supplies — Available — 📷
+3. **Pressure / Slow Cooker** — Sarah — Kitchen Supplies — Available — 📷 (peek at bottom of viewport)
 
 **Screen 4 — Event detail, Gathering (Joan)**
 - Title: *"Tea & bannock on the porch"* · Host: Joan Whitecloud
@@ -140,8 +140,8 @@ Category chips: All · Tools · Kitchen · Outdoor · Books · Kids. Item rows:
 
 Warm, natural light, candid, consistent style; no text overlays; squarish/4:3 to fit card photo areas.
 
-- **Post / list photos (7):** seedling tray · backyard birthday prep · cordless drill · stand mixer · folding camp chairs · step ladder · porch tea & bannock
-- **Avatars (5):** Sarah, Rosa, Marcus, Amir, Joan
+- **Post / list photos (7):** seedling tray · backyard birthday prep · cordless drill (DeWalt, in org) · immersion blender (in org) · porch tea & bannock
+- **Avatars (5):** Sarah, Rosa, Marcus, Amir, Joan — done
 - Peeks (Screen 1 thank-you) show only the card header, so need no photo.
 
 ---
@@ -211,9 +211,10 @@ app-store-submission/
 
 ## 6. Asset checklist
 
-- [ ] Cast renamed (Rosa/Marcus/Amir on existing test logins) + Joan created + Sarah on `reviewer@fimby.com`
-- [ ] 5 avatars + 7 post/list photos generated
-- [ ] Reviewer's Neighbourhood seeded per section 3 (blocks all captures)
+- [x] Cast personas live (`sarah@`, `rosa@`, `marcus@`, `amir@`, `joan@`, `reviewer@`)
+- [x] 5 avatars
+- [x] Screen 3 library list seeded (Marcus drill row 1, Sarah kitchen row 2)
+- [ ] Remaining seed content per section 3 (screens 1–2, 4–8)
 - [ ] iPad WebView responsive layout verified at tablet width
 - [ ] 8 raw iPhone captures (home, ask/offer, library, gather, messages, care prefs, quiet hours, privacy)
 - [ ] 8 raw iPad captures (same screens)

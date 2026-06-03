@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 export default class FimbyCard extends LightningElement {
     // Layout properties
@@ -345,7 +346,7 @@ export default class FimbyCard extends LightningElement {
         if (!this.posterProfileUrl) return;
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('avatarclick', {
-            detail: { url: this.posterProfileUrl }
+            detail: { url: toExperiencePath(this.posterProfileUrl) || this.posterProfileUrl }
         }));
     }
 

@@ -31,7 +31,7 @@
 
 .highlight-section {
     background: var(--fimby-surface-card);
-    border-left: 4px solid var(--fimby-brand-teal);
+    border-left: 4px solid var(--fimby-btn-primary-bg);
 }
 
 .section-icon-row {
@@ -83,12 +83,12 @@
 }
 
 .btn-primary {
-    background: var(--fimby-brand-teal);
-    color: var(--fimby-text-on-teal);
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
 }
 
 .btn-primary:hover {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 .btn-neutral {
@@ -138,7 +138,7 @@
 
 .link-card:hover {
     background: var(--fimby-hover-bg);
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: var(--fimby-shadow-card-hover);
 }
 
@@ -193,7 +193,7 @@
 }
 
 .faq-question:hover {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .faq-answer {
@@ -264,7 +264,7 @@
 /* ========== MODERATOR ========== */
 
 .moderator-section {
-    border: 2px solid var(--fimby-brand-teal);
+    border: 2px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-radius-md);
 }
 
@@ -303,5 +303,5 @@
 .moderator-role {
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }

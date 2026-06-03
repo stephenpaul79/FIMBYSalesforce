@@ -3,7 +3,8 @@
  * all DML after confirmed delivery. Accepts payloads from FimbyPushBatchJob along with
  * notification IDs to mark Sent and user gate timestamps to stamp.
  *
- * On success: marks Notification__c records as Sent, stamps gate timestamps on User.
+ * On success: marks Notification__c records as Sent, then @future-stamps User gate
+ * timestamps in a separate transaction (avoids mixed DML with Notification__c).
  * On failure: marks as Failed with error detail; does NOT stamp gates (gate stays open).
  * If more than 100 payloads, chains to process the next batch via finalizer.
  */
@@ -41,7 +42,7 @@ public without sharing class FimbyPushQueueable implements Queueable, Database.A
 
         if (success) {
             markNotificationsSent();
-            stampGateTimestamps();
+            scheduleGateStampJob();
         } else {
             markNotificationsFailed('Batch callout failed');
         }
@@ -120,27 +121,24 @@ public without sharing class FimbyPushQueueable implements Queueable, Database.A
         }
     }
 
-    private void stampGateTimestamps() {
+    private void scheduleGateStampJob() {
         if (userGateUpdates == null || userGateUpdates.isEmpty()) {
             return;
         }
-        Datetime now = Datetime.now();
-        List<User> usersToUpdate = new List<User>();
+        Map<String, String> serializable = new Map<String, String>();
         for (Id userId : userGateUpdates.keySet()) {
-            String gateType = userGateUpdates.get(userId);
-            User u = new User(Id = userId);
-            if (gateType == 'DM' || gateType == 'BOTH') {
-                u.Last_DM_Push_At__c = now;
-            }
-            if (gateType == 'ACTIVITY' || gateType == 'BOTH') {
-                u.Last_Activity_Push_At__c = now;
-            }
-            usersToUpdate.add(u);
+            serializable.put(String.valueOf(userId), userGateUpdates.get(userId));
         }
         try {
-            Database.update(usersToUpdate, false);
+            if (Test.isRunningTest()) {
+                System.runAs(new User(Id = UserInfo.getUserId())) {
+                    FimbyPushGateStampAction.stampGatesSync(serializable);
+                }
+            } else {
+                FimbyPushGateStampAction.stampGates(serializable);
+            }
         } catch (Exception e) {
-            FimbyLogger.error('FimbyPushQueueable', 'stampGateTimestamps', e);
+            FimbyLogger.error('FimbyPushQueueable', 'scheduleGateStampJob', e);
         }
     }
 

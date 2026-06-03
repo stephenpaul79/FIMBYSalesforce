@@ -125,26 +125,26 @@
 }
 
 .reactivate-help a {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: underline;
 }
 
 .reactivate-help a:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .reactivate-link-button {
     background: none;
     border: none;
     padding: 0;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: underline;
     cursor: pointer;
     font: inherit;
 }
 
 .reactivate-link-button:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .reactivate-link-button:focus-visible {

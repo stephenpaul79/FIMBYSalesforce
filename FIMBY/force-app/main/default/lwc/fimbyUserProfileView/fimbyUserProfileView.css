@@ -149,7 +149,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: #fff;
     font-size: 2rem;
     font-weight: 700;
@@ -272,7 +272,7 @@
     border-radius: 50%;
     background: transparent;
     cursor: pointer;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     transition: background 0.2s ease;
     flex-shrink: 0;
 }
@@ -359,7 +359,7 @@
 }
 
 .field-input:focus-visible {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 2px var(--fimby-focus-glow);
 }
 
@@ -381,7 +381,7 @@
 }
 
 .field-textarea:focus-visible {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 2px var(--fimby-focus-glow);
 }
 
@@ -452,13 +452,13 @@
 .checkbox-item:has(input:checked),
 .radio-item:has(input:checked) {
     background: var(--fimby-selected-bg);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .checkbox-item input,
 .radio-item input {
-    accent-color: var(--fimby-brand-teal);
+    accent-color: var(--fimby-btn-primary-bg);
     margin: 0;
 }
 
@@ -603,7 +603,7 @@ button.avatar-wrapper {
     gap: 4px;
     padding: 2px 10px;
     border-radius: var(--fimby-badge-radius, 9999px);
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-size: 0.7rem;
     font-weight: 600;
@@ -673,7 +673,7 @@ button.avatar-wrapper {
     background: none;
     border: none;
     padding: 0;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
     cursor: pointer;
     font-size: 0.8rem;
@@ -682,7 +682,7 @@ button.avatar-wrapper {
 }
 
 .vouch-chip-helper-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .vouch-chip-helper-link:focus-visible {

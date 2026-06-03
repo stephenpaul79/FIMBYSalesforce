@@ -13,6 +13,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
@@ -296,6 +297,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         return {
             ...thread,
+            actionUrl: toExperiencePath(thread.actionUrl) || thread.actionUrl,
             formattedDate: this.formatGmailDate(thread.lastActivityDate),
             rowClass: 'inbox-row' + (isUnread ? ' unread' : '') + ' has-kebab',
             badgeLabel: badge.label,
@@ -389,7 +391,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         const actionUrl = event.currentTarget.dataset.actionUrl;
         if (actionUrl) {
-            location.href = actionUrl;
+            location.href = toExperiencePath(actionUrl) || actionUrl;
         }
     }
 

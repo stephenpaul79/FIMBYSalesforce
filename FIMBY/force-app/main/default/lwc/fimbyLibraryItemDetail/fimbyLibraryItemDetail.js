@@ -2,6 +2,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl } from 'c/fimbyLibraryCategoryConfig';
@@ -67,6 +68,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     @track _isModeratorForNeighbourhood = false;
     @track isRemoved = false;
     @track removedMessage = '';
+    _wiredRecordResult;
 
     // Requester context
     @track userContext = null;
@@ -187,7 +189,9 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     }
 
     @wire(getRecord, { recordId: '$recordIdIfVisible', fields: FIELDS })
-    wiredRecord({ error, data }) {
+    wiredRecord(result) {
+        this._wiredRecordResult = result;
+        const { error, data } = result;
         if (this.isRemoved) {
             return;
         }
@@ -666,9 +670,11 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         if (modal) modal.show();
     }
 
-    handleEditSave() {
+    async handleEditSave() {
         this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Item updated', variant: 'success' }));
-        window.location.reload();
+        if (this._wiredRecordResult) {
+            await refreshApex(this._wiredRecordResult);
+        }
     }
 
     handleEditCancel() {}

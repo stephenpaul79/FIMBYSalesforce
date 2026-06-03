@@ -313,7 +313,7 @@
     }
 
     .desktop-indicator.active {
-        background: var(--fimby-brand-teal);
+        background: var(--fimby-btn-primary-bg);
     }
 
     .desktop-nav-icon-wrap {
@@ -621,7 +621,7 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -631,7 +631,7 @@
 }
 
 .search-modal-submit:hover {
-    background: var(--fimby-brand-teal-hover);
+    background: var(--fimby-btn-primary-bg-hover);
 }
 
 .search-modal-clear:focus-visible,
@@ -774,7 +774,7 @@ button.identity-row {
 .acting-as-name {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     line-height: 1.15;
     display: -webkit-box;
     -webkit-line-clamp: 2;

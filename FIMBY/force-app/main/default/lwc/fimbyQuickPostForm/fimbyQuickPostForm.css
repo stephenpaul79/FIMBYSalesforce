@@ -234,7 +234,7 @@
 }
 
 .type-option:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     transform: translateY(-4px);
     box-shadow: var(--fimby-shadow-modal);
 }

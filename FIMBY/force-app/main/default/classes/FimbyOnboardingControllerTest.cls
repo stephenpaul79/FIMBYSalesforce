@@ -143,9 +143,12 @@ private class FimbyOnboardingControllerTest {
         c.Onboarding_Profile_Completed__c = true;
         update c;
 
-        User u = [SELECT Id FROM User WHERE Id = :testUser.Id];
-        u.Onboarding_Walkthrough_Status__c = 'Dismissed';
-        update u;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            update new User(
+                Id = testUser.Id,
+                Onboarding_Walkthrough_Status__c = 'Dismissed'
+            );
+        }
 
         Test.startTest();
         System.runAs(testUser) {
@@ -372,9 +375,12 @@ private class FimbyOnboardingControllerTest {
         c.Onboarding_Profile_Completed__c = true;
         update c;
 
-        User u = [SELECT Id FROM User WHERE Id = :testUser.Id];
-        u.Onboarding_Walkthrough_Dismissed_At__c = DateTime.now().addHours(-24);
-        update u;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            update new User(
+                Id = testUser.Id,
+                Onboarding_Walkthrough_Dismissed_At__c = DateTime.now().addHours(-24)
+            );
+        }
 
         Test.startTest();
         System.runAs(testUser) {

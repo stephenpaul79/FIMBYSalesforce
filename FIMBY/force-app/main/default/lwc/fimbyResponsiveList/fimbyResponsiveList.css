@@ -116,7 +116,7 @@
     align-items: center;
     gap: 0.5rem;
     background: var(--fimby-surface-card);
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     border: none;
     border-radius: var(--fimby-radius-sm);
     padding: 0.5rem 1rem;
@@ -376,7 +376,7 @@
 }
 
 .record-card:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
     transform: translateY(-2px);
 }
@@ -478,8 +478,8 @@
 
 .card-action-btn:hover {
     background: var(--fimby-surface-card);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
 }
 
 /* Load More */

@@ -175,7 +175,7 @@
 .form-textarea:focus {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .form-textarea:disabled {
@@ -245,7 +245,7 @@
 
 .btn-primary {
     background-color: var(--fimby-btn-primary-bg, #3A7D8C);
-    color: var(--fimby-text-on-teal);
+    color: #ffffff;
     border: none;
     border-radius: var(--fimby-btn-radius, 12px);
     padding: 0.625rem 1.5rem;

@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 export default class FimbyPageHeader extends LightningElement {
     _pageTitle = '';
@@ -51,7 +52,7 @@ export default class FimbyPageHeader extends LightningElement {
     _mediaQuery;
     _boundKeyDown;
 
-    get kebabIconUrl() { return `${IMPACT_ICONS}/Kebab.png`; }
+    get kebabIconUrl() { return `${IMPACT_ICONS}/KebabBeige.png`; }
     get hasParent() { return !!this.parentLabel; }
     get progressStyle() { return `width: ${this.progressValue}%`; }
 
@@ -200,7 +201,7 @@ export default class FimbyPageHeader extends LightningElement {
             return;
         }
         if (this.parentUrl) {
-            window.location.href = this.parentUrl;
+            window.location.href = toExperiencePath(this.parentUrl) || this.parentUrl;
             return;
         }
         window.location.href = '/';

@@ -142,7 +142,7 @@
 .form-textarea:focus-visible,
 .form-select:focus-visible {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .field-label-row {
@@ -215,7 +215,7 @@
 }
 
 .radio-input:checked + .radio-custom {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .radio-input:checked + .radio-custom::after {
@@ -226,7 +226,7 @@
     transform: translate(-50%, -50%);
     width: 10px;
     height: 10px;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     border-radius: 50%;
 }
 
@@ -266,8 +266,8 @@
 }
 
 .checkbox-input:checked + .checkbox-custom {
-    background: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .checkbox-input:checked + .checkbox-custom::after {

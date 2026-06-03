@@ -31,14 +31,14 @@
 }
 
 .breadcrumb-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .breadcrumb-link:hover {
-    color: var(--fimby-brand-teal-pressed);
+    color: var(--fimby-btn-primary-bg-active);
     text-decoration: underline;
 }
 
@@ -90,14 +90,14 @@
 }
 
 .filter-button:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-chip-teal-bg);
 }
 
 .filter-button.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -131,8 +131,8 @@
 }
 
 .list-row:hover {
-    border-color: var(--fimby-brand-teal);
-    box-shadow: 0 2px 8px rgba(103, 187, 210, 0.18);
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: 0 2px 8px rgba(58, 125, 140, 0.18);
 }
 
 button.list-row {

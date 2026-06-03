@@ -102,7 +102,7 @@
 
 /* Active state */
 .nav-item.active .nav-label {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .nav-indicator.active {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
 }
 
 /* ================================================================

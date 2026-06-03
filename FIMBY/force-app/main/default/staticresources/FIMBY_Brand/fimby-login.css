@@ -9,7 +9,7 @@
 
 /* ── Base defaults (lowest priority) ──────────────────────────── */
 :root {
-  --dxp-g-brand: var(--fimby-brand-teal);
+  --dxp-g-brand: var(--fimby-btn-primary-bg);
   --dxp-g-root:  var(--fimby-surface-page);
   --dxp-s-form-element-color-background: var(--fimby-surface-input);
   --dxp-g-root-contrast:   var(--fimby-text-strong);
@@ -20,14 +20,14 @@
   --dxp-s-form-element-color-border: var(--fimby-input-border-default);
   --dxp-g-neutral:   var(--fimby-border-default);
   --dxp-g-neutral-2: var(--fimby-border-strong);
-  --dxp-s-link-text-color-1: var(--fimby-brand-teal);
+  --dxp-s-link-text-color-1: var(--fimby-btn-primary-bg-hover);
   --dxp-g-success:   var(--fimby-success);
   --dxp-g-warning-1: var(--fimby-warning);
   --dxp-g-warning-2: var(--fimby-warning);
   --dxp-g-warning-3: var(--fimby-text-secondary);
   --dxp-g-error:     var(--fimby-error);
   --dxp-g-info:      var(--fimby-info);
-  --dxp-s-button-color-contrast-1: var(--fimby-text-on-teal);
+  --dxp-s-button-color-contrast-1: #ffffff;
 }
 
 
@@ -38,7 +38,7 @@
    ────────────────────────────────────────────────────────────────── */
 [class*="dxpBrand_"] {
   --dxp-g-root: var(--fimby-surface-page) !important;
-  --dxp-g-brand: var(--fimby-brand-teal) !important;
+  --dxp-g-brand: var(--fimby-btn-primary-bg) !important;
   --dxp-s-form-element-color-background: var(--fimby-surface-input) !important;
   --dxp-g-root-contrast:   var(--fimby-text-strong) !important;
   --dxp-g-root-contrast-1: var(--fimby-text-strong) !important;
@@ -48,14 +48,14 @@
   --dxp-s-form-element-color-border: var(--fimby-input-border-default) !important;
   --dxp-g-neutral:   var(--fimby-border-default) !important;
   --dxp-g-neutral-2: var(--fimby-border-strong) !important;
-  --dxp-s-link-text-color-1: var(--fimby-brand-teal) !important;
+  --dxp-s-link-text-color-1: var(--fimby-btn-primary-bg-hover) !important;
   --dxp-g-success:   var(--fimby-success) !important;
   --dxp-g-warning-1: var(--fimby-warning) !important;
   --dxp-g-warning-2: var(--fimby-warning) !important;
   --dxp-g-warning-3: var(--fimby-text-secondary) !important;
   --dxp-g-error:     var(--fimby-error) !important;
   --dxp-g-info:      var(--fimby-info) !important;
-  --dxp-s-button-color-contrast-1: var(--fimby-text-on-teal) !important;
+  --dxp-s-button-color-contrast-1: #ffffff !important;
 }
 
 
@@ -152,7 +152,7 @@ community_login-check-email {
 }
 
 .fimby-vf-auth__input:focus {
-  border-color: var(--fimby-brand-teal) !important;
+  border-color: var(--fimby-btn-primary-bg) !important;
   box-shadow: 0 0 0 3px var(--fimby-focus-glow) !important;
   outline: none !important;
 }

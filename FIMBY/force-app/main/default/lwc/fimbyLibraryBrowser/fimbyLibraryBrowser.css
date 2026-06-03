@@ -24,6 +24,7 @@
 .library-scroll-container {
     flex: 1;
     overflow: hidden;
+    --fimby-end-message-inset-x: 0;
 }
 
 /* =============================================
@@ -77,14 +78,14 @@
 }
 
 .breadcrumb-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .breadcrumb-link:hover {
-    color: var(--fimby-brand-teal-pressed);
+    color: var(--fimby-btn-primary-bg-active);
     text-decoration: underline;
 }
 
@@ -142,15 +143,15 @@
     flex-shrink: 0;
 }
 .filter-chip:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-chip-teal-bg);
 }
 
 /* Active "All" chip */
 .filter-chip.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -222,8 +223,54 @@
 }
 
 .view-toggle-btn.active {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: #ffffff;
+}
+
+/* Refresh button — desktop only (mobile uses pull-to-refresh) */
+.refresh-button {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    border-radius: var(--fimby-radius-xl, 20px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-secondary, #8B7355);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.refresh-button:hover {
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
+    background-color: var(--fimby-selected-bg);
+}
+
+.refresh-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.refresh-button.refreshing .refresh-icon {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@media (min-width: 768px) {
+    .refresh-button { display: flex; }
 }
 
 /* List mode: single column always */
@@ -243,12 +290,12 @@
 }
 .dropdown-trigger.open {
     background-color: var(--fimby-chip-teal-bg);
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
 }
 .dropdown-trigger.filter-active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     --slds-c-icon-color-foreground-default: #ffffff;
 }
@@ -329,7 +376,7 @@
 }
 
 .check-icon {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     flex-shrink: 0;
 }
 
@@ -408,7 +455,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     border: none;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     cursor: pointer;
@@ -511,7 +558,9 @@
     .filter-chip,
     .fab-button,
     .dropdown-menu,
-    .library-sticky-header {
+    .library-sticky-header,
+    .refresh-button,
+    .refresh-icon {
         animation: none;
         transition: none;
     }

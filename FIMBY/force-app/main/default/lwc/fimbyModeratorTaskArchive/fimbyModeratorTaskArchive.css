@@ -33,9 +33,9 @@
 }
 
 .nbh-toggle-btn.active {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-chip-teal-bg);
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .neighbourhood-label {
@@ -96,14 +96,14 @@
 }
 
 .filter-button:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
 .filter-button.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -170,7 +170,7 @@
 }
 
 .list-row:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: var(--fimby-shadow-card-hover);
 }
 

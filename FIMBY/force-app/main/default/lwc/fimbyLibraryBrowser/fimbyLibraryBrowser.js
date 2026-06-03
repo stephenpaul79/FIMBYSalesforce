@@ -301,6 +301,14 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         return `${IMPACT_ICONS}/ToolboxActive.png`;
     }
 
+    get refreshIconUrl() {
+        return `${IMPACT_ICONS}/refresh.png`;
+    }
+
+    get refreshButtonClass() {
+        return this.isLoading ? 'refresh-button refreshing' : 'refresh-button';
+    }
+
     get allChipClass() {
         return !this.selectedCategory ? 'filter-chip active' : 'filter-chip';
     }

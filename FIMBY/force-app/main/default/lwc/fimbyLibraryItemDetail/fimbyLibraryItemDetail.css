@@ -222,7 +222,7 @@ button.item-image-container {
 }
 
 .image-overlay lightning-icon {
-    color: var(--fimby-text-on-teal);
+    color: #ffffff;
 }
 
 .item-placeholder {
@@ -883,7 +883,7 @@ button.item-image-container {
     transition: background-color 0.15s ease;
 }
 .bh-msg-btn:hover {
-    background-color: var(--fimby-selected-bg, rgba(103, 187, 210, 0.12));
+    background-color: var(--fimby-selected-bg, rgba(58, 125, 140, 0.12));
     text-decoration: none;
 }
 

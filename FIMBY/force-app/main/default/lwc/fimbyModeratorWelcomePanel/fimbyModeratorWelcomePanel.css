@@ -174,7 +174,7 @@
 
 .welcome-textarea:focus {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 3px var(--fimby-focus-glow);
 }
 
@@ -258,14 +258,14 @@
 
 .btn-link {
     background-color: transparent;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
     text-decoration: underline;
     padding: 10px 12px;
 }
 
 .btn-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 /* ── Vouching status ─────────────────────────── */

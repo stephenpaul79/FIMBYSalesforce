@@ -1,0 +1,23 @@
+---
+description: On diagnosis requests, report findings and proposed changes before implementing
+alwaysApply: true
+---
+
+# Diagnose Before Fix
+
+When the user asks to **investigate**, **diagnose**, **look into**, **find out why**, **scan**, or **review** an issue — do **not** edit code, deploy, or commit until you have shared:
+
+1. **What you found** — root cause or best current hypothesis, with evidence.
+2. **What you would change** — files, approach, and scope (brief).
+
+Then wait for confirmation, or proceed only if they clearly asked to implement in the same message.
+
+## Skip the pause — fix directly
+
+Go straight to implementation when the prompt is clearly a **fix/implement** request, especially small pointed ones, e.g.:
+
+- "fix this", "please do", "implement", "deploy the fix"
+- A prior turn already agreed on the approach
+- Obvious one-line typo or single-file bug with no design choice
+
+When unsure whether they want diagnosis only or a fix, ask once — do not guess and ship a large diff silently.

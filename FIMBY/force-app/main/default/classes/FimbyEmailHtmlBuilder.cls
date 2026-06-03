@@ -32,8 +32,9 @@ public without sharing class FimbyEmailHtmlBuilder {
     public static final String F = 'font-family:Verdana, Geneva, sans-serif;';
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
     private static final String MARKETING_SITE_URL = resolveMarketingUrl();
+    private static final String EXPERIENCE_ASSET_HOST = resolveExperienceAssetHost();
     @TestVisible
-    static final String ICON_BASE_URL = FIMBY_BASE_URL + '/sfsites/c/resource/Impact_Icons/';
+    static final String ICON_BASE_URL = EXPERIENCE_ASSET_HOST + '/sfsites/c/resource/Impact_Icons/';
     private static final String LOGO_ICON_URL = ICON_BASE_URL + 'FIMBYwGrass.png';
     private static final String ICON_BELL_URL = ICON_BASE_URL + 'BellActive.png';
     private static final String ICON_ENTER_URL = ICON_BASE_URL + 'enter.png';
@@ -46,6 +47,15 @@ public without sharing class FimbyEmailHtmlBuilder {
     private static String resolveMarketingUrl() {
         String url = FimbyPublicWebsiteLinks.getUrl('Marketing_Home');
         return String.isBlank(url) ? 'https://fimby.com' : stripTrailingSlash(url);
+    }
+
+    /**
+     * Experience Cloud serves static resources; app-link hosts (e.g. app.fimby.com) do not.
+     * Email hyperlinks use Site_Base; icon img src must stay on the Experience site host.
+     */
+    private static String resolveExperienceAssetHost() {
+        String host = stripTrailingSlash(FimbySettings.getUrl('Experience_Site'));
+        return String.isNotBlank(host) ? host : FIMBY_BASE_URL;
     }
 
     @TestVisible

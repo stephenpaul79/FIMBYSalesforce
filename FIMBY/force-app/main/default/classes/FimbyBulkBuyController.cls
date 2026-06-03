@@ -62,7 +62,7 @@ public with sharing class FimbyBulkBuyController {
             return new Map<String, Object>{
                 'success' => true,
                 'recordId' => post.Id,
-                'postUrl' => FimbySettings.getUrl('Needs_Offers', post.Id),
+                'postUrl' => FimbySettings.getUrl('Asks_Offers', post.Id),
                 'message' => 'Bulk buy posted successfully'
             };
         } catch (Exception e) {
@@ -290,13 +290,7 @@ public with sharing class FimbyBulkBuyController {
             notifyAllReservers(postId, FimbyConstants.NOTIF_BULK_BUY_STATUS,
                 post.Name + ' has been cancelled', '');
 
-            List<Response__c> responses = [
-                SELECT Id, Status__c
-                FROM Response__c
-                WHERE Need_Offer_Responded_To__c = :postId
-                AND Status__c = :FimbyConstants.RESPONSE_RESERVED
-                /* with sharing enforces record access */
-            ];
+            List<Response__c> responses = new BulkBuyHelper().getReservedResponsesForCancel(postId);
             for (Response__c r : responses) {
                 r.Status__c = FimbyConstants.RESPONSE_CANCELLED;
                 r.Amount_Requested__c = 0;
@@ -402,17 +396,7 @@ public with sharing class FimbyBulkBuyController {
         post.Status__c = FimbyConstants.NEEDS_OFFERS_COMPLETED;
         new BulkBuyHelper().updateRecord(post);
 
-        List<Response__c> responses = [
-            SELECT Id, Status__c, Contact__c,
-                (SELECT Id, Status__c FROM Follow_Ups__r
-                 WHERE Status__c IN (:FimbyConstants.FOLLOWUP_NO_RESPONSE, :FimbyConstants.FOLLOWUP_ADMIN_CONFIRMED,
-                                      :FimbyConstants.FOLLOWUP_ESCALATED)
-                 LIMIT 1)
-            FROM Response__c
-            WHERE Need_Offer_Responded_To__c = :post.Id
-            AND Status__c IN (:FimbyConstants.RESPONSE_RESERVED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
-            /* with sharing enforces record access */
-        ];
+        List<Response__c> responses = new BulkBuyHelper().getResponsesForCompletion(post.Id);
 
         Set<Id> completedContactIds = new Set<Id>();
         List<Response__c> toUpdate = new List<Response__c>();
@@ -565,11 +549,7 @@ public with sharing class FimbyBulkBuyController {
     }
 
     private static void notifyAllReservers(Id postId, String notifType, String title, String body) {
-        List<Response__c> reservers = [
-            SELECT Contact__c FROM Response__c
-            WHERE Need_Offer_Responded_To__c = :postId
-            AND Status__c IN (:FimbyConstants.RESPONSE_RESERVED, :FimbyConstants.RESPONSE_COMPLETED)
-        ];
+        List<Response__c> reservers = new BulkBuyHelper().getReserversForNotification(postId);
         String url = FimbySettings.getUrl('Asks_Offers', String.valueOf(postId));
         List<FimbyNotificationService.NotificationRequest> requests =
             new List<FimbyNotificationService.NotificationRequest>();
@@ -604,6 +584,36 @@ public with sharing class FimbyBulkBuyController {
         public void updateRecord(Needs_Offers__c record) { update record; }
         public void updateResponses(List<Response__c> records) { update records; }
         public void updateContacts(List<Contact> records) { update records; }
+
+        public List<Response__c> getReserversForNotification(Id postId) {
+            return [
+                SELECT Contact__c FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :postId
+                AND Status__c IN (:FimbyConstants.RESPONSE_RESERVED, :FimbyConstants.RESPONSE_COMPLETED)
+            ];
+        }
+
+        public List<Response__c> getReservedResponsesForCancel(Id postId) {
+            return [
+                SELECT Id, Status__c
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :postId
+                AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+            ];
+        }
+
+        public List<Response__c> getResponsesForCompletion(Id postId) {
+            return [
+                SELECT Id, Status__c, Contact__c,
+                    (SELECT Id, Status__c FROM Follow_Ups__r
+                     WHERE Status__c IN (:FimbyConstants.FOLLOWUP_NO_RESPONSE, :FimbyConstants.FOLLOWUP_ADMIN_CONFIRMED,
+                                          :FimbyConstants.FOLLOWUP_ESCALATED)
+                     LIMIT 1)
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :postId
+                AND Status__c IN (:FimbyConstants.RESPONSE_RESERVED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
+            ];
+        }
 
         public List<Map<String, Object>> getReservations(Id postId) {
             List<Map<String, Object>> results = new List<Map<String, Object>>();

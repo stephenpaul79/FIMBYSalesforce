@@ -467,7 +467,7 @@
 .lifecycle-input:focus,
 .lifecycle-textarea:focus {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     box-shadow: 0 0 0 3px var(--fimby-focus-glow);
 }
 

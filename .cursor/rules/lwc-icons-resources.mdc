@@ -72,7 +72,8 @@ get homeIconUrl() {
 |---------|------|
 | Add / Create | `add.png` |
 | Search | `Magnify.png` |
-| More menu (kebab) | `Kebab.png` |
+| More menu (kebab) — universal header only | `Kebab.png` |
+| More menu (kebab) — page subheaders, feed cards | `KebabBeige.png` |
 | Comment | `comment.png` |
 | Reply | `reply.png` |
 | RSVP | `rsvp.png` |

@@ -49,20 +49,20 @@
 @property --fimby-text-disabled    { syntax: '<color>'; inherits: true; initial-value: #CCC5BB; }
 
 /* ── Brand Accent ──────────────────────────────────────────────── */
-@property --fimby-brand-teal         { syntax: '<color>'; inherits: true; initial-value: #67BBD2; }
-@property --fimby-brand-teal-hover   { syntax: '<color>'; inherits: true; initial-value: #55A8BF; }
-@property --fimby-brand-teal-pressed { syntax: '<color>'; inherits: true; initial-value: #4A9EB3; }
+@property --fimby-brand-teal         { syntax: '<color>'; inherits: true; initial-value: #3A7D8C; }
+@property --fimby-brand-teal-hover   { syntax: '<color>'; inherits: true; initial-value: #336F7D; }
+@property --fimby-brand-teal-pressed { syntax: '<color>'; inherits: true; initial-value: #2B5F6D; }
 @property --fimby-text-on-teal       { syntax: '<color>'; inherits: true; initial-value: #261A11; }
 
 /* ── Interaction States ────────────────────────────────────────── */
 @property --fimby-hover-bg     { syntax: '<color>'; inherits: true; initial-value: #EBE6DD; }
 @property --fimby-pressed-bg   { syntax: '<color>'; inherits: true; initial-value: #E0D9CF; }
-@property --fimby-selected-bg  { syntax: '<color>'; inherits: true; initial-value: rgba(103, 187, 210, 0.12); }
+@property --fimby-selected-bg  { syntax: '<color>'; inherits: true; initial-value: rgba(58, 125, 140, 0.12); }
 @property --fimby-disabled-bg  { syntax: '<color>'; inherits: true; initial-value: #F7F3EB; }
 
 /* ── Focus ─────────────────────────────────────────────────────── */
-@property --fimby-focus-ring   { syntax: '<color>'; inherits: true; initial-value: #67BBD2; }
-@property --fimby-focus-glow   { syntax: '<color>'; inherits: true; initial-value: rgba(103, 187, 210, 0.25); }
+@property --fimby-focus-ring   { syntax: '<color>'; inherits: true; initial-value: #3A7D8C; }
+@property --fimby-focus-glow   { syntax: '<color>'; inherits: true; initial-value: rgba(58, 125, 140, 0.25); }
 @property --fimby-focus-error  { syntax: '<color>'; inherits: true; initial-value: rgba(231, 76, 60, 0.30); }
 
 /* ── Overlays ──────────────────────────────────────────────────── */
@@ -198,20 +198,20 @@
   --fimby-text-disabled:    #CCC5BB;   /* Stone      — disabled controls            */
 
   /* ── Brand Accent ─────────────────────────────────────────────── */
-  --fimby-brand-teal:          #67BBD2;
-  --fimby-brand-teal-hover:    #55A8BF;   /* darker on light bg  */
-  --fimby-brand-teal-pressed:  #4A9EB3;
-  --fimby-text-on-teal:        #261A11;   /* WCAG-safe on #67BBD2 fill */
+  --fimby-brand-teal:          var(--fimby-btn-primary-bg);
+  --fimby-brand-teal-hover:    var(--fimby-btn-primary-bg-hover);
+  --fimby-brand-teal-pressed:  var(--fimby-btn-primary-bg-active);
+  --fimby-text-on-teal:        #ffffff;   /* white on dark CTA fill */
 
   /* ── Interaction States ───────────────────────────────────────── */
   --fimby-hover-bg:     #EBE6DD;                    /* Oat       */
   --fimby-pressed-bg:   #E0D9CF;                    /* Sandstone */
-  --fimby-selected-bg:  rgba(103, 187, 210, 0.12);  /* teal wash */
+  --fimby-selected-bg:  rgba(58, 125, 140, 0.12);  /* teal wash */
   --fimby-disabled-bg:  #F7F3EB;                    /* Linen     */
 
   /* ── Focus (keyboard accessibility) ───────────────────────────── */
-  --fimby-focus-ring:   #67BBD2;
-  --fimby-focus-glow:   rgba(103, 187, 210, 0.25);
+  --fimby-focus-ring:   var(--fimby-btn-primary-bg);
+  --fimby-focus-glow:   rgba(58, 125, 140, 0.25);
   --fimby-focus-error:  rgba(231, 76, 60, 0.30);
 
   /* ── Overlays ─────────────────────────────────────────────────── */
@@ -401,20 +401,20 @@ body {
     --fimby-text-disabled:    #6F625A;
 
     /* ── Brand Accent ─────────────────────────────────────────── */
-    --fimby-brand-teal:          #67BBD2;
-    --fimby-brand-teal-hover:    #7AC7DC;   /* lighter on dark bg */
-    --fimby-brand-teal-pressed:  #55A8BF;
-    --fimby-text-on-teal:        #261A11;
+    --fimby-brand-teal:          var(--fimby-btn-primary-bg);
+    --fimby-brand-teal-hover:    var(--fimby-btn-primary-bg-hover);
+    --fimby-brand-teal-pressed:  var(--fimby-btn-primary-bg-active);
+    --fimby-text-on-teal:        #ffffff;
 
     /* ── Interaction States ───────────────────────────────────── */
     --fimby-hover-bg:     #241C18;
     --fimby-pressed-bg:   #2B211C;
-    --fimby-selected-bg:  rgba(103, 187, 210, 0.18);
+    --fimby-selected-bg:  rgba(58, 125, 140, 0.18);
     --fimby-disabled-bg:  #191411;
 
     /* ── Focus ────────────────────────────────────────────────── */
-    --fimby-focus-ring:   #67BBD2;
-    --fimby-focus-glow:   rgba(103, 187, 210, 0.35);
+    --fimby-focus-ring:   var(--fimby-btn-primary-bg);
+    --fimby-focus-glow:   rgba(58, 125, 140, 0.35);
     --fimby-focus-error:  rgba(231, 76, 60, 0.45);
 
     /* ── Overlays ─────────────────────────────────────────────── */
@@ -480,7 +480,7 @@ body {
     --fimby-chip-thankyou-bg:  rgba(255, 107, 107, 0.18); --fimby-chip-thankyou-text:  #fda4af;
     --fimby-chip-lament-bg:    rgba(245, 158, 11, 0.15);  --fimby-chip-lament-text:    #fde68a;
     --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
-    --fimby-chip-teal-bg:      rgba(103, 187, 210, 0.15);
+    --fimby-chip-teal-bg:      rgba(58, 125, 140, 0.15);
 
     /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
     --fimby-btn-primary-bg:         #3A7D8C;
@@ -554,20 +554,20 @@ body {
   --fimby-text-disabled:    #6F625A;
 
   /* ── Brand Accent ───────────────────────────────────────────── */
-  --fimby-brand-teal:          #67BBD2;
-  --fimby-brand-teal-hover:    #7AC7DC;
-  --fimby-brand-teal-pressed:  #55A8BF;
-  --fimby-text-on-teal:        #261A11;
+  --fimby-brand-teal:          var(--fimby-btn-primary-bg);
+  --fimby-brand-teal-hover:    var(--fimby-btn-primary-bg-hover);
+  --fimby-brand-teal-pressed:  var(--fimby-btn-primary-bg-active);
+  --fimby-text-on-teal:        #ffffff;
 
   /* ── Interaction States ─────────────────────────────────────── */
   --fimby-hover-bg:     #241C18;
   --fimby-pressed-bg:   #2B211C;
-  --fimby-selected-bg:  rgba(103, 187, 210, 0.18);
+  --fimby-selected-bg:  rgba(58, 125, 140, 0.18);
   --fimby-disabled-bg:  #191411;
 
   /* ── Focus ──────────────────────────────────────────────────── */
-  --fimby-focus-ring:   #67BBD2;
-  --fimby-focus-glow:   rgba(103, 187, 210, 0.35);
+  --fimby-focus-ring:   var(--fimby-btn-primary-bg);
+  --fimby-focus-glow:   rgba(58, 125, 140, 0.35);
   --fimby-focus-error:  rgba(231, 76, 60, 0.45);
 
   /* ── Overlays ───────────────────────────────────────────────── */
@@ -633,7 +633,7 @@ body {
   --fimby-chip-thankyou-bg:  rgba(255, 107, 107, 0.18); --fimby-chip-thankyou-text:  #fda4af;
   --fimby-chip-lament-bg:    rgba(245, 158, 11, 0.15);  --fimby-chip-lament-text:    #fde68a;
   --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
-  --fimby-chip-teal-bg:      rgba(103, 187, 210, 0.15);
+  --fimby-chip-teal-bg:      rgba(58, 125, 140, 0.15);
 
   /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
   --fimby-btn-primary-bg:         #3A7D8C;

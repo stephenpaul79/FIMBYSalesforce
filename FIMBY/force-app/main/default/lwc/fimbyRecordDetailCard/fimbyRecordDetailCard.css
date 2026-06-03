@@ -236,7 +236,7 @@
 
 .edit-btn {
     background-color: var(--fimby-btn-primary-bg, #3A7D8C);
-    color: var(--fimby-text-on-teal);
+    color: #ffffff;
     border-color: var(--fimby-btn-primary-bg, #3A7D8C);
     box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
 }

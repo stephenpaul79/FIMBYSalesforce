@@ -39,7 +39,7 @@
 }
 
 .breadcrumb-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
@@ -47,7 +47,7 @@
 }
 
 .breadcrumb-link:hover {
-    color: var(--fimby-brand-teal-pressed);
+    color: var(--fimby-btn-primary-bg-active);
     text-decoration: underline;
 }
 
@@ -130,7 +130,7 @@
 
 .progress-fill {
     height: 100%;
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     border-radius: 2px;
     transition: width 0.3s ease;
 }

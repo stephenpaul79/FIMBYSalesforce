@@ -205,7 +205,7 @@
 .radio-pill input:checked + .pill-label {
     background: var(--fimby-selected-bg);
     color: var(--fimby-text-primary);
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .radio-pill input:focus-visible + .pill-label {
@@ -236,7 +236,7 @@
 .form-textarea:focus {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .form-textarea:disabled {

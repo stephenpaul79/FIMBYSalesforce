@@ -536,7 +536,7 @@
 .pill-new { background-color: var(--fimby-warning-tint); color: var(--fimby-warning); }
 .pill-accepted { background-color: var(--fimby-success-tint); color: var(--fimby-success); }
 .pill-declined { background-color: var(--fimby-error-tint); color: var(--fimby-error); }
-.pill-unread { background-color: var(--fimby-brand-teal); color: white; }
+.pill-unread { background-color: var(--fimby-btn-primary-bg); color: white; }
 .pill-available { background-color: var(--fimby-info-tint, #e0f0f5); color: var(--fimby-info); }
 
 /* Attention Strip */
@@ -723,7 +723,7 @@
     min-width: 20px;
     height: 20px;
     border-radius: 10px;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
     font-size: 0.7rem;
     font-weight: 700;
@@ -1310,7 +1310,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
 }
 
 .stepper-btn:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .stepper-btn:disabled {
@@ -1471,7 +1471,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
 }
 
 .event-chat-card:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .event-chat-card:focus-visible {

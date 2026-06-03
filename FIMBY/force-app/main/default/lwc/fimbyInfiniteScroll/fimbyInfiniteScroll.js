@@ -1,5 +1,14 @@
 import { LightningElement, api, track } from 'lwc';
 
+const END_MESSAGE_BASE = "You're all caught up!";
+const END_MESSAGE_VARIANTS = [
+    "You're all caught up. Nice work!",
+    "You're all caught up. See you around the neighbourhood.",
+    "You're all caught up. IRL calls!",
+    "You're all caught up. No more posts hiding down here.",
+    "You're all caught up. That's the lot for now."
+];
+
 export default class FimbyInfiniteScroll extends LightningElement {
     // Configuration
     @api threshold = 300; // Distance from bottom to trigger load
@@ -18,7 +27,12 @@ export default class FimbyInfiniteScroll extends LightningElement {
 
     @api
     get hasMoreData() { return this._hasMoreData; }
-    set hasMoreData(value) { this._hasMoreData = value; }
+    set hasMoreData(value) {
+        this._hasMoreData = value;
+        if (value) {
+            this._clearEndMessage();
+        }
+    }
 
     @api
     get showEmptyState() { return this._showEmptyState; }
@@ -50,6 +64,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
     windowScrollHandler = null;
     _lastRefreshTime = 0;
     _refreshCooldownMs = 5000;
+    @track _endMessageText = null;
 
     get pullRefreshClasses() {
         let classes = ['refresh-indicator'];
@@ -68,6 +83,10 @@ export default class FimbyInfiniteScroll extends LightningElement {
 
     get showEndMessage() {
         return !this._hasMoreData && !this._showEmptyState && !this._isLoading;
+    }
+
+    get endMessageText() {
+        return this._endMessageText || END_MESSAGE_BASE;
     }
 
     connectedCallback() {
@@ -89,6 +108,10 @@ export default class FimbyInfiniteScroll extends LightningElement {
             setTimeout(() => {
                 this.checkInitialLoad();
             }, 200);
+        }
+
+        if (this.showEndMessage && !this._endMessageText) {
+            this._ensureEndMessage();
         }
     }
 
@@ -263,6 +286,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         this._lastRefreshTime = now;
         this._isLoading = true;
         this.hasInitialLoadChecked = false;
+        this._clearEndMessage();
 
         this.dispatchEvent(new CustomEvent('refresh'));
 
@@ -278,6 +302,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         this._hasMoreData = true;
         this._isLoading = false;
         this.isLoadingMore = false;
+        this._clearEndMessage();
     }
 
     @api
@@ -340,6 +365,28 @@ export default class FimbyInfiniteScroll extends LightningElement {
     handleRetry() {
         this.showError = false;
         this.loadMore();
+    }
+
+    _ensureEndMessage() {
+        if (!this._endMessageText) {
+            this._endMessageText = this._pickEndMessage();
+        }
+    }
+
+    _clearEndMessage() {
+        this._endMessageText = null;
+    }
+
+    _pickEndMessage() {
+        const pool = [
+            END_MESSAGE_BASE,
+            END_MESSAGE_BASE,
+            END_MESSAGE_BASE,
+            END_MESSAGE_BASE,
+            END_MESSAGE_BASE,
+            ...END_MESSAGE_VARIANTS
+        ];
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 
     // Utility functions

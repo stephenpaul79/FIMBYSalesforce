@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { formatLocalDate, formatShortDate } from 'c/fimbyDateUtils';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 export default class FimbyLibraryItemAdmin extends LightningElement {
     @api recordId;
@@ -211,7 +212,7 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
     // ── Action Handlers ────────────────────────────────────────────
 
     handleNavigate(event) {
-        const url = event.currentTarget.dataset.url;
+        const url = toExperiencePath(event.currentTarget.dataset.url);
         if (url) {
             window.location.href = url;
         }

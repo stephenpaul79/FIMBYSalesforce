@@ -205,6 +205,23 @@ public class FimbyPushQueueableTest {
         System.assert(true, 'Should chain remaining 5 payloads without error');
     }
 
+    /* ── Gate stamp action: @future + DM-only branch ─────────────────── */
+
+    @IsTest
+    static void testGateStampAction_FutureAndEmptyMap() {
+        User testUser = getTestUser();
+        FimbyPushGateStampAction.stampGatesSync(null);
+        FimbyPushGateStampAction.stampGatesSync(new Map<String, String>());
+
+        Map<String, String> dmGate = new Map<String, String>{ String.valueOf(testUser.Id) => 'DM' };
+        Test.startTest();
+        FimbyPushGateStampAction.stampGates(dmGate);
+        Test.stopTest();
+
+        User u = [SELECT Last_DM_Push_At__c, Last_Activity_Push_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertNotEquals(null, u.Last_DM_Push_At__c, 'DM gate should be stamped via @future');
+    }
+
     /* ── Multiple notifications marked Sent in one batch ─────────────── */
 
     @IsTest

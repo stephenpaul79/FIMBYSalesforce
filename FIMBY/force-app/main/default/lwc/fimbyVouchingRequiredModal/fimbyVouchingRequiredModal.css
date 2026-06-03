@@ -151,11 +151,11 @@
 }
 
 .toggle-option:hover {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .toggle-option_active {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     box-shadow: var(--fimby-shadow-card);
 }
@@ -252,7 +252,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 10px 14px;
-    border: 1px solid var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-radius-sm);
     background-color: var(--fimby-chip-teal-bg);
     min-height: 44px;
@@ -360,14 +360,14 @@
 }
 
 .nav-next {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .nav-next:hover {
-    background-color: var(--fimby-brand-teal-hover);
-    border-color: var(--fimby-brand-teal-hover);
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
 }
 
 .nav-next lightning-icon { --lwc-colorTextIconDefault: #ffffff; }

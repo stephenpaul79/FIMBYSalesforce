@@ -25,7 +25,7 @@
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-xl);
     background: var(--fimby-surface-card);
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -33,7 +33,7 @@
 }
 
 .current-location-btn:hover {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
 }
 
@@ -91,7 +91,7 @@
 
 .location-distance {
     font-size: 11px;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 500;
     margin-top: 2px;
 }
@@ -146,9 +146,9 @@
 }
 
 .popular-chip:hover {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .selected-location {
@@ -162,7 +162,7 @@
 .selected-header {
     font-size: 12px;
     font-weight: 600;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -198,10 +198,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border: 1px solid var(--fimby-brand-teal);
+    border: 1px solid var(--fimby-btn-primary-bg);
     border-radius: var(--fimby-btn-radius, 12px);
     background-color: transparent;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
@@ -221,7 +221,7 @@
 }
 
 .change-location:hover {
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
 }
 

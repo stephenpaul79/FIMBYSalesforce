@@ -46,7 +46,7 @@ community_layout-section .background-image-overlay {
         --dxp-g-root-contrast-3: #D6CFC7;
 
         /* Brand */
-        --dxp-g-brand:           #67BBD2;
+        --dxp-g-brand:           #3A7D8C;
         --dxp-g-brand-contrast:  #261A11;
 
         /* Borders & neutrals */
@@ -59,7 +59,7 @@ community_layout-section .background-image-overlay {
         --dxp-s-form-element-color-border:     #3E312B;
 
         /* Links */
-        --dxp-s-link-text-color-1: #67BBD2;
+        --dxp-s-link-text-color-1: #3A7D8C;
 
         /* Status */
         --dxp-g-success:   #27AE60;
@@ -108,7 +108,7 @@ community_layout-section .background-image-overlay {
     --dxp-g-root-contrast-3: #D6CFC7;
 
     /* Brand */
-    --dxp-g-brand:           #67BBD2;
+    --dxp-g-brand:           #3A7D8C;
     --dxp-g-brand-contrast:  #261A11;
 
     /* Borders & neutrals */
@@ -121,7 +121,7 @@ community_layout-section .background-image-overlay {
     --dxp-s-form-element-color-border:     #3E312B;
 
     /* Links */
-    --dxp-s-link-text-color-1: #67BBD2;
+    --dxp-s-link-text-color-1: #3A7D8C;
 
     /* Status */
     --dxp-g-success:   #27AE60;

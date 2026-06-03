@@ -178,7 +178,7 @@
 .pill-btn.selected {
     background: var(--fimby-selected-bg);
     color: var(--fimby-text-primary);
-    border: 2px solid var(--fimby-brand-teal);
+    border: 2px solid var(--fimby-btn-primary-bg);
 }
 
 .pill-btn:focus-visible {
@@ -229,7 +229,7 @@
 .cost-per-share {
     font-size: 15px;
     font-weight: 600;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     margin: 8px 0 12px;
 }
 

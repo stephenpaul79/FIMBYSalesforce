@@ -5,21 +5,32 @@
     <letterhead>Blank</letterhead>
     <name>Experience Cloud: Welcome to FIMBY</name>
     <style>freeForm</style>
-    <subject>Welcome to FIMBY</subject>
-    <textOnly>Welcome to FIMBY
+    <subject>Welcome to the family in your backyard</subject>
+    <textOnly>Come on in.
 
-You are in
+Welcome to the family in your backyard
 
 Hi {!Receiving_User.FirstName},
 
-Welcome to FIMBY! Your username is {!Receiving_User.Username}. Open FIMBY to meet your neighbours.
+For years I've been dreaming about this — a simple way to help neighbours know and care for each other, rooted in the belief that a more beautiful world is possible when we treat each other with love and generosity.
 
-Open FIMBY: https://our.fimby.com
+That dream is FIMBY, and you're now part of it.
 
-Thanks,
-Team FIMBY
+This is a grand experiment in neighbouring. We're building something together — a place where we look out for each other, share what we have, and show up when it matters. Not perfectly. But together.
 
-Family In My Backyard</textOnly>
+Welcome to the family in your backyard.
+
+Use the link below to set your password and come on in. This link is for you only and expires after a short time.
+
+Come on in: {!Community_Url}
+
+Your username: {!Receiving_User.Username}
+
+With love,
+Stephen Rathjen
+Founder, FIMBY
+
+Family In My Backyard · Our approach: https://fimby.com/our-approach/</textOnly>
     <type>html</type>
     <uiType>Aloha</uiType>
 </EmailTemplate>

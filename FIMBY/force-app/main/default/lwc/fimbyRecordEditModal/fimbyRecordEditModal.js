@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
+import { getRecordNotifyChange } from 'lightning/uiRecordApi';
 import getFieldSetFields from '@salesforce/apex/FimbyFieldSetController.getFieldSetFields';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -104,7 +105,10 @@ export default class FimbyRecordEditModal extends LightningElement {
                 fieldSetName: this.fieldSetName
             });
 
-            this.fieldSetFields = fields;
+            this.fieldSetFields = fields.map((field) => ({
+                ...field,
+                containerClass: this.getFieldContainerClass(field)
+            }));
 
             if (fields.length === 0) {
                 this.hasError = true;
@@ -121,6 +125,19 @@ export default class FimbyRecordEditModal extends LightningElement {
 
     handleRetry() {
         this.loadFieldSet();
+    }
+
+    getFieldContainerClass(field) {
+        const classes = ['field-container'];
+        if (this.isFullWidthField(field)) {
+            classes.push('field-full-width');
+        }
+        return classes.join(' ');
+    }
+
+    isFullWidthField(field) {
+        const type = (field?.fieldType || '').toUpperCase();
+        return type === 'TEXTAREA';
     }
 
     handleBackdropClick(event) {
@@ -161,15 +178,18 @@ export default class FimbyRecordEditModal extends LightningElement {
     handleSuccess(event) {
         this.isSaving = false;
 
-        // Dispatch success event with record details
+        const savedRecordId = event.detail.id;
+        if (savedRecordId) {
+            getRecordNotifyChange([{ recordId: savedRecordId }]);
+        }
+
         this.dispatchEvent(new CustomEvent('recordsaved', {
             detail: {
-                recordId: event.detail.id,
+                recordId: savedRecordId,
                 objectApiName: this.objectApiName
             }
         }));
 
-        // Close the modal
         this.hide();
     }
 

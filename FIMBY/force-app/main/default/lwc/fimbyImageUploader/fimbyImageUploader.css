@@ -39,12 +39,12 @@
 }
 
 .upload-area:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background: var(--fimby-hover-bg);
 }
 
 .upload-area.dragover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background: rgba(1, 118, 211, 0.1);
     border-style: solid;
 }
@@ -181,7 +181,7 @@
 
 .progress-fill {
     height: 100%;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     border-radius: 3px;
     transition: width 0.3s ease;
 }

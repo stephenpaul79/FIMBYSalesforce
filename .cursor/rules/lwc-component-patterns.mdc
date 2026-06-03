@@ -96,9 +96,9 @@ Action buttons pairing an Impact Icon with text use the **pill shape** — `bord
 .action-btn-icon { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
 
 .action-btn.primary {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     font-weight: 700;
 }
 
@@ -251,12 +251,12 @@ Forms with multiple pages must include `.form-navigation` footer on every page: 
 }
 
 .nav-next {
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
-.nav-next:hover { background-color: var(--fimby-brand-teal-hover); border-color: var(--fimby-brand-teal-hover); }
+.nav-next:hover { background-color: var(--fimby-btn-primary-bg-hover); border-color: var(--fimby-btn-primary-bg-hover); }
 .nav-next:disabled { opacity: 0.5; cursor: not-allowed; }
 .nav-next lightning-icon { --lwc-colorTextIconDefault: #ffffff; }
 ```

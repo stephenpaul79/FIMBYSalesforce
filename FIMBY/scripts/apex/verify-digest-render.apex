@@ -12,7 +12,7 @@ Id fakeLibraryItemId  = 'a02000000000001AAA';
 
 // Probe each CMDT helper directly first; these are the source of truth.
 Map<String, String> expected = new Map<String, String>{
-    'Needs_Offers detail' => FimbySettings.getUrl('Needs_Offers', String.valueOf(fakeNeedsOffersId)),
+    'Asks_Offers detail'  => FimbySettings.getUrl('Asks_Offers', String.valueOf(fakeNeedsOffersId)),
     'Story detail'        => FimbySettings.getUrl('Story',        String.valueOf(fakeStoryId)),
     'Library_Item detail' => FimbySettings.getUrl('Library_Item', String.valueOf(fakeLibraryItemId)),
     'Shared_Life_List'    => FimbySettings.getUrl('Shared_Life_List'),
@@ -28,9 +28,9 @@ for (String label : expected.keySet()) {
     if (label == 'Story detail') {
         System.assert(url.contains('/sharedlife/'),
             'Story detail must route to /sharedlife/{id} (matches LWC navigation), not /shared-life-post or /story/. Got: ' + url);
-    } else if (label == 'Needs_Offers detail') {
-        System.assert(url.contains('/needs-offers/') || url.contains('/asks-offers/'),
-            'Needs_Offers detail must route to /needs-offers/{id} or /asks-offers/{id}, not /ask-or-offer-post/. Got: ' + url);
+    } else if (label == 'Asks_Offers detail') {
+        System.assert(url.contains('/asks-offers/'),
+            'Asks_Offers detail must route to /asks-offers/{id}, not /ask-or-offer-post/ or /needs-offers/. Got: ' + url);
     } else if (label == 'Library_Item detail') {
         System.assert(url.contains('/library-item/'),
             'Library item detail must route to /library-item/{id}. Got: ' + url);

@@ -249,7 +249,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     }
 
     get responseUrl() {
-        return '/response/' + this.recordId;
+        return '/response-reply?recordId=' + this.recordId;
     }
 
     get needOfferUrl() {

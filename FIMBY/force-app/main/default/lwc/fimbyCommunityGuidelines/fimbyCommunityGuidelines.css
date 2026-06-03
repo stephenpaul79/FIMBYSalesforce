@@ -30,7 +30,7 @@
 }
 
 .highlight-section {
-    border-left: 4px solid var(--fimby-brand-teal);
+    border-left: 4px solid var(--fimby-btn-primary-bg);
 }
 
 .sla-section {
@@ -105,13 +105,13 @@
 /* ========== LINKS ========== */
 
 .inline-link {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: underline;
     font-weight: 500;
 }
 
 .inline-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .inline-link:focus-visible {

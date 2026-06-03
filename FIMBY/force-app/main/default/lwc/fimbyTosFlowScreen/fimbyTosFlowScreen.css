@@ -31,7 +31,7 @@
     color: var(--fimby-text-strong, #261A11);
     text-decoration: none;
     font-weight: 600;
-    border: 1px solid var(--fimby-brand-teal, #67BBD2);
+    border: 1px solid var(--fimby-btn-primary-bg);
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -41,15 +41,15 @@
 
 .fimby-tos-screen a.fimby-tos-screen__link:hover,
 .fimby-tos-screen a.fimby-tos-screen__link:focus-visible {
-    background: rgba(103, 187, 210, 0.30);
-    border-color: var(--fimby-brand-teal-pressed, #4A9EB3);
+    background: rgba(58, 125, 140, 0.30);
+    border-color: var(--fimby-btn-primary-bg-active);
     color: var(--fimby-text-strong, #261A11);
     text-decoration: none;
     outline: none;
 }
 
 .fimby-tos-screen a.fimby-tos-screen__link:focus-visible {
-    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(103, 187, 210, 0.25));
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
 }
 
 .fimby-tos-screen__link-icon {
@@ -94,8 +94,8 @@
 }
 
 .fimby-tos-screen__checkbox:has(input:focus-visible) {
-    border-color: var(--fimby-brand-teal, #67BBD2);
-    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(103, 187, 210, 0.25));
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
 }
 
 .fimby-tos-screen__checkbox input[type='checkbox'] {
@@ -150,7 +150,7 @@
 
 .fimby-tos-screen__agree:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(103, 187, 210, 0.25));
+    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
 }
 
 .fimby-tos-screen__agree:disabled {

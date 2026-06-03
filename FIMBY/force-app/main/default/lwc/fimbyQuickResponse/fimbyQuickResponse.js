@@ -9,6 +9,7 @@ import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizat
 import getNeedsOffersForResponse from '@salesforce/apex/FimbyResponseController.getNeedsOffersForResponse';
 import checkExistingResponse from '@salesforce/apex/FimbyResponseController.checkExistingResponse';
 import createResponse from '@salesforce/apex/FimbyResponseController.createResponse';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 
 /**
  * Quick Response component for responding to Needs & Offers
@@ -111,7 +112,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
             if (existingResult.hasExistingResponse) {
                 this.viewState = 'existingResponse';
                 this.existingResponseId = existingResult.existingResponse.id;
-                this.existingResponseUrl = existingResult.existingResponse.responseUrl;
+                this.existingResponseUrl = toExperiencePath(existingResult.existingResponse.responseUrl);
                 this.isLoading = false;
                 return;
             }
@@ -238,7 +239,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     handleDeclineChange(event) { this.decline = event.target.checked; }
 
     handleViewExistingResponse() {
-        window.location.href = this.existingResponseUrl;
+        window.location.href = toExperiencePath(this.existingResponseUrl) || this.existingResponseUrl;
     }
 
     handleBackToNeedOffer() {
@@ -246,7 +247,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     }
 
     handleViewNewResponse() {
-        window.location.href = this.newResponseUrl;
+        window.location.href = toExperiencePath(this.newResponseUrl) || this.newResponseUrl;
     }
 
     handleDone() {
@@ -272,10 +273,14 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
             });
 
             if (result.success) {
-                this.newResponseUrl = result.responseUrl;
+                this.newResponseUrl = toExperiencePath(result.responseUrl);
                 this.viewState = 'success';
                 this.dispatchEvent(new CustomEvent('responsecreated', {
-                    detail: { responseId: result.responseId, responseUrl: result.responseUrl, status: result.status }
+                    detail: {
+                        responseId: result.responseId,
+                        responseUrl: toExperiencePath(result.responseUrl),
+                        status: result.status
+                    }
                 }));
             } else {
                 throw new Error(result.message || 'Error creating response');

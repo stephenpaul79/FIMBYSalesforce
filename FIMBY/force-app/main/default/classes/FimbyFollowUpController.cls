@@ -10,22 +10,19 @@ public with sharing class FimbyFollowUpController {
     public static Map<String, Object> reportFollowUp(Id reservationId, String message, String reasonSubtype) {
         try {
             Map<String, Object> actingAs = FimbyContactController.getActingAsContact();
-            String contactId = (String) actingAs.get('contactId');
+            Id realContactId = (Id) actingAs.get('realContactId');
+            Id actingAsContactId = (Id) actingAs.get('actingAsContactId');
 
-            Response__c resp = [
-                SELECT Id, Contact__c, Need_Offer_Responded_To__c,
-                       Need_Offer_Responded_To__r.Posted_By__c,
-                       Need_Offer_Responded_To__r.Pickup_Notified_Date__c,
-                       Need_Offer_Responded_To__r.Status__c,
-                       Need_Offer_Responded_To__r.Name,
-                       Contact__r.FirstName
-                FROM Response__c
-                WHERE Id = :reservationId
-                /* with sharing enforces record access */
-                LIMIT 1
-            ];
+            FollowUpHelper helper = new FollowUpHelper();
+            List<Response__c> responses = helper.getResponseForReport(reservationId);
+            if (responses.isEmpty()) {
+                throw new AuraHandledException('Reservation not found.');
+            }
+            Response__c resp = responses[0];
 
-            if (resp.Need_Offer_Responded_To__r.Posted_By__c != contactId) {
+            Boolean isOrganiser = resp.Need_Offer_Responded_To__r.Posted_By__c == realContactId
+                || resp.Need_Offer_Responded_To__r.Contact__c == actingAsContactId;
+            if (!isOrganiser) {
                 throw new AuraHandledException('Only the organiser can initiate a check-in.');
             }
             if (resp.Need_Offer_Responded_To__r.Status__c != FimbyConstants.NEEDS_OFFERS_PICKUP_READY) {
@@ -48,7 +45,7 @@ public with sharing class FimbyFollowUpController {
                 throw new AuraHandledException('An active check-in already exists for this reservation.');
             }
 
-            return new FollowUpHelper().doReport(resp, contactId, message, reasonSubtype);
+            return helper.doReport(resp, actingAsContactId, message, reasonSubtype);
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
@@ -239,6 +236,7 @@ public with sharing class FimbyFollowUpController {
                 .getRecordTypeInfosByDeveloperName().get(FimbyConstants.RT_RESTORATION)?.getRecordTypeId();
 
             Boolean hasActiveAmber = false;
+            FollowUpHelper helper = new FollowUpHelper();
             if (restorationRtId != null) {
                 List<Bulk_Buy_Follow_Up__c> restorations = [
                     SELECT Id, Resolution_Date__c FROM Bulk_Buy_Follow_Up__c
@@ -249,26 +247,17 @@ public with sharing class FimbyFollowUpController {
                     LIMIT 1
                 ];
                 if (!restorations.isEmpty()) {
-                    Integer newerOutcomes = [
-                        SELECT COUNT() FROM Response__c
-                        WHERE Contact__c = :contactId
-                        AND Need_Offer_Responded_To__r.RecordTypeId = :bulkBuyRtId
-                        AND Status__c IN (:FimbyConstants.RESPONSE_COMPLETED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
-                        AND CreatedDate > :restorations[0].Resolution_Date__c
-                    ];
+                    Integer newerOutcomes = helper.countNewerOutcomesSince(
+                        contactId, bulkBuyRtId, restorations[0].Resolution_Date__c
+                    );
                     hasActiveAmber = (newerOutcomes == 0);
                 }
             }
 
             Integer queryLimit = hasActiveAmber ? 2 : 3;
-            List<Response__c> outcomes = [
-                SELECT Status__c, CreatedDate FROM Response__c
-                WHERE Contact__c = :contactId
-                AND Need_Offer_Responded_To__r.RecordTypeId = :bulkBuyRtId
-                AND Status__c IN (:FimbyConstants.RESPONSE_COMPLETED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
-                ORDER BY CreatedDate DESC
-                LIMIT :queryLimit
-            ];
+            List<Response__c> outcomes = helper.getOutcomeResponsesForHistory(
+                contactId, bulkBuyRtId, queryLimit
+            );
 
             List<String> slots = new List<String>();
 
@@ -411,6 +400,42 @@ public with sharing class FimbyFollowUpController {
     }
 
     private without sharing class FollowUpHelper {
+
+        public List<Response__c> getResponseForReport(Id reservationId) {
+            return [
+                SELECT Id, Contact__c, Need_Offer_Responded_To__c,
+                       Need_Offer_Responded_To__r.Posted_By__c,
+                       Need_Offer_Responded_To__r.Contact__c,
+                       Need_Offer_Responded_To__r.Pickup_Notified_Date__c,
+                       Need_Offer_Responded_To__r.Status__c,
+                       Need_Offer_Responded_To__r.Name,
+                       Contact__r.FirstName
+                FROM Response__c
+                WHERE Id = :reservationId
+                LIMIT 1
+            ];
+        }
+
+        public Integer countNewerOutcomesSince(Id contactId, Id bulkBuyRtId, Datetime sinceDate) {
+            return [
+                SELECT COUNT() FROM Response__c
+                WHERE Contact__c = :contactId
+                AND Need_Offer_Responded_To__r.RecordTypeId = :bulkBuyRtId
+                AND Status__c IN (:FimbyConstants.RESPONSE_COMPLETED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
+                AND CreatedDate > :sinceDate
+            ];
+        }
+
+        public List<Response__c> getOutcomeResponsesForHistory(Id contactId, Id bulkBuyRtId, Integer limitCount) {
+            return [
+                SELECT Status__c, CreatedDate FROM Response__c
+                WHERE Contact__c = :contactId
+                AND Need_Offer_Responded_To__r.RecordTypeId = :bulkBuyRtId
+                AND Status__c IN (:FimbyConstants.RESPONSE_COMPLETED, :FimbyConstants.RESPONSE_NO_FOLLOW_THROUGH)
+                ORDER BY CreatedDate DESC
+                LIMIT :limitCount
+            ];
+        }
 
         public Map<String, Object> doReport(Response__c resp, Id reporterContactId, String message, String reasonSubtype) {
             Conversation__c dmConv = new Conversation__c(

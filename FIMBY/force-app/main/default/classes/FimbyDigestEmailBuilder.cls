@@ -408,7 +408,7 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String buildAskOfferCard(Needs_Offers__c post) {
         String rt = post.RecordType != null ? post.RecordType.DeveloperName : 'Need';
         String badgeLabel = rt == 'Need' ? 'ASK' : 'OFFER';
-        String ctaUrl = FimbySettings.getUrl('Needs_Offers', post.Id);
+        String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
 
         String html = openCard();
         html += FimbyEmailHtmlBuilder.buildCardImage(post.Image_1_URL__c, 180);
@@ -435,7 +435,7 @@ public without sharing class FimbyDigestEmailBuilder {
             badgeLabel = 'GATHERING';
             ctaLabel = 'RSVP';
         }
-        String ctaUrl = FimbySettings.getUrl('Needs_Offers', evt.Id);
+        String ctaUrl = FimbySettings.getUrl('Asks_Offers', evt.Id);
 
         String html = openCard();
         html += FimbyEmailHtmlBuilder.buildCardImage(evt.Image_1_URL__c, 180);
@@ -450,7 +450,7 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     private static String buildBulkBuyCard(Needs_Offers__c bb) {
-        String ctaUrl = FimbySettings.getUrl('Needs_Offers', bb.Id);
+        String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
         String html = openCard();
         html += FimbyEmailHtmlBuilder.buildCardImage(bb.Image_1_URL__c, 180);

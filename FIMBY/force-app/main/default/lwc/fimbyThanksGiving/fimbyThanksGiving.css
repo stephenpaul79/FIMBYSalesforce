@@ -238,7 +238,7 @@
 }
 
 .recipient-info strong {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .success-container {

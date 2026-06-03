@@ -2,6 +2,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
@@ -179,6 +180,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @track isRemoved = false;
     @track removedMessage = '';
     @track _eventGroupConversationId = null;
+    _wiredRecordResult;
 
     // ============================================
     // AUTO-OPEN ACTION MODAL FROM URL PARAMS
@@ -313,7 +315,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     @wire(getRecord, { recordId: '$recordIdIfVisible', fields: FIELDS })
-    wiredRecord({ error, data }) {
+    wiredRecord(result) {
+        this._wiredRecordResult = result;
+        const { error, data } = result;
         if (this.isRemoved) {
             return;
         }
@@ -1623,9 +1627,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         }
     }
 
-    handleEditSave() {
+    async handleEditSave() {
         this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Post updated successfully', variant: 'success' }));
-        window.location.reload();
+        if (this._wiredRecordResult) {
+            await refreshApex(this._wiredRecordResult);
+        }
     }
     handleEditCancel() {}
 

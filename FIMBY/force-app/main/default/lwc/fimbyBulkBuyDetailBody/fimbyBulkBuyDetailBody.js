@@ -343,7 +343,7 @@ export default class FimbyBulkBuyDetailBody extends LightningElement {
 
     get thermometerBarStyle() {
         const total = this.totalShares || 1;
-        const teal = 'var(--fimby-brand-teal, #3A7D8C)';
+        const teal = 'var(--fimby-btn-primary-bg, #3A7D8C)';
         const light = '#C1DFE5';
 
         if (this.isOrganiser && this.ownerShares > 0) {

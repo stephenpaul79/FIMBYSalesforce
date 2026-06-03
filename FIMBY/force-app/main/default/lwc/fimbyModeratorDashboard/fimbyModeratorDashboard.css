@@ -93,14 +93,14 @@
 }
 
 .toggle-btn:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
     background-color: var(--fimby-selected-bg);
 }
 
 .toggle-btn.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-weight: 600;
 }
@@ -276,7 +276,7 @@
     border-radius: 9999px;
     font-size: 0.7rem;
     font-weight: 700;
-    background-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     line-height: 1;
 }
@@ -361,13 +361,13 @@
 }
 
 .section-tab:hover {
-    border-color: var(--fimby-brand-teal);
-    color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
 }
 
 .section-tab.active {
-    background-color: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-weight: 700;
 }
@@ -491,12 +491,12 @@ button.section-header.quiet.archive-entry-link {
         background-color: var(--fimby-surface-card);
         border-color: var(--fimby-border-subtle);
         border-bottom-color: var(--fimby-surface-card);
-        color: var(--fimby-brand-teal);
+        color: var(--fimby-btn-primary-bg);
         font-weight: 700;
     }
 
     .section-tab.active .tab-count {
-        color: var(--fimby-brand-teal);
+        color: var(--fimby-btn-primary-bg);
     }
 
     .section-tab:not(.active) {

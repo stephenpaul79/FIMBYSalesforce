@@ -40,7 +40,7 @@
 .form-input:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .form-textarea {

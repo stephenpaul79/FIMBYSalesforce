@@ -64,13 +64,13 @@
 }
 
 .progress-step.active .step-number {
-    background: var(--fimby-brand-teal);
-    border-color: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: white;
 }
 
 .progress-step.active .step-title {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     font-weight: 600;
 }
 
@@ -212,13 +212,13 @@
 }
 
 .interest-chip:hover {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
     background: rgba(25, 118, 210, 0.05);
 }
 
 .interest-chip.selected {
-    border-color: var(--fimby-brand-teal);
-    background: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
+    background: var(--fimby-btn-primary-bg);
     color: white;
 }
 
@@ -245,7 +245,7 @@
 .tips-title {
     font-size: 12px;
     font-weight: 600;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     margin-bottom: 8px;
 }
 
@@ -318,7 +318,7 @@
 
 .interest-tag {
     padding: 4px 8px;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     color: white;
     font-size: 11px;
     font-weight: 500;
@@ -347,7 +347,7 @@
 }
 
 .terms-text a {
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 500;
 }

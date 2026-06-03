@@ -177,7 +177,7 @@
 }
 
 .radio-input:checked + .radio-custom {
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .radio-input:checked + .radio-custom::after {
@@ -187,7 +187,7 @@
     left: 3px;
     width: 10px;
     height: 10px;
-    background: var(--fimby-brand-teal);
+    background: var(--fimby-btn-primary-bg);
     border-radius: 50%;
 }
 
@@ -211,7 +211,7 @@
 
 .additional-info:focus-visible {
     outline: none;
-    border-color: var(--fimby-brand-teal);
+    border-color: var(--fimby-btn-primary-bg);
 }
 
 .modal-actions {
@@ -341,13 +341,13 @@
     display: block;
     margin-top: 12px;
     font-size: 0.8rem;
-    color: var(--fimby-brand-teal);
+    color: var(--fimby-btn-primary-bg);
     text-decoration: underline;
     text-align: center;
 }
 
 .need-help-link:hover {
-    color: var(--fimby-brand-teal-hover);
+    color: var(--fimby-btn-primary-bg-hover);
 }
 
 .need-help-link:focus-visible {
