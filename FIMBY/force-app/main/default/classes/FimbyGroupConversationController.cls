@@ -657,6 +657,13 @@ public with sharing class FimbyGroupConversationController {
                 FimbyNotificationService.createNotifications(notifications);
             }
 
+            FimbyGroupConversationController.sendSystemMessage(
+                conv.Id,
+                'Event chat is open',
+                FimbyConstants.SYS_MSG_STATUS_CHANGE,
+                true
+            );
+
             return conv.Id;
         }
     }

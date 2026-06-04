@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=430, initial-scale=1" id="viewport" />
+  <title>FIMBY Screen 7 — Quiet hours panda</title>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var device = params.get("device") === "ipad" ? "ipad" : "iphone";
+      document.documentElement.setAttribute("data-device", device);
+      if (params.get("capture") === "1") {
+        document.documentElement.classList.add("capture-mode");
+      }
+      if (params.get("preview") === "1") {
+        document.documentElement.classList.add("dev-preview");
+      }
+      var vp = document.getElementById("viewport") || document.querySelector('meta[name="viewport"]');
+      if (vp) {
+        vp.setAttribute("content", device === "ipad" ? "width=1032, initial-scale=1" : "width=430, initial-scale=1");
+      }
+    })();
+  </script>
+  <!--
+    Replica of fimby-mobile-app/app/index.tsx quiet-hours panda (showPanda && !webViewUrl).
+
+    iPhone raw capture:
+      • ?device=iphone&capture=1
+      • DevTools device: 430 × 932 logical · DPR 3 → 1290 × 2796 PNG
+
+    iPad raw capture (full-bleed black — save as raw/ipad/Screen 7.png):
+      • ?device=ipad  (add &capture=1 for brighter text)
+      • DevTools: 1032 × 1376 logical · DPR 2 → 2064 × 2752 PNG
+
+    Default is always full-bleed export canvas. Add &preview=1 only for gray dev chrome.
+
+    Assets:
+      ../fimby-mobile-app/assets/panda-sleeping.mp4
+      ../fimby-mobile-app/assets/images/panda-sleeping.png
+
+    ?capture=1  → slightly brighter text for App Store PNG (screenshot only)
+    ?farewell=1 · ?escape=1 · ?static=1 · ?hint=1 (show dev note; hidden by default in capture mode)
+  -->
+  <style>
+    :root {
+      --w: 430px;
+      --h: 932px;
+      --pad-x: 32px;
+      --panda-size: 200px;
+      --caption-size: 16px;
+      --caption-lh: 24px;
+      --caption-mb: 32px;
+      --caption-px: 16px;
+      --btn-w: 260px;
+      --primary-py: 8px;
+      --primary-px: 8px;
+      --primary-fs: 20px;
+      --secondary-py: 14px;
+      --secondary-px: 8px;
+      --secondary-fs: 14px;
+      --content-pt: 24px;
+      --border: 2px;
+      --radius-pill: 999px;
+      --bg: #14100D;
+      --text: #D6CFC7;
+      --btn: #B3A79E;
+    }
+
+    /* iPad 13" App Store — 1032×1376 logical @ DPR 2 → 2064×2752 */
+    html[data-device="ipad"] {
+      --w: 1032px;
+      --h: 1376px;
+    }
+
+    /* Screenshot-only legibility bump — not in the live app */
+    html.capture-mode {
+      --text: #E8E2DC;
+      --btn: #C4B8AE;
+    }
+
+    html.capture-mode .caption {
+      font-weight: 500;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: var(--w);
+      height: var(--h);
+      max-width: var(--w);
+      max-height: var(--h);
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html.dev-preview,
+    html.dev-preview body {
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
+      background: #c9c4bc;
+    }
+
+    html.dev-preview body {
+      min-height: 100vh;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+
+    html.dev-preview .panda-screen {
+      width: var(--w);
+      height: var(--h);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    html:not(.hint-visible) .capture-hint {
+      display: none;
+    }
+
+    .capture-hint {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      font-size: 12px;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      padding: 8px 10px;
+      border-radius: 8px;
+      max-width: 280px;
+      line-height: 1.4;
+      z-index: 10;
+    }
+
+    /* index.tsx pandaStyles.container */
+    .panda-screen {
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-left: var(--pad-x);
+      padding-right: var(--pad-x);
+      background: var(--bg);
+    }
+
+    /* pandaTopSpacer: flex 0.7 */
+    .panda-top-spacer {
+      flex: 0.7 1 0;
+      min-height: 0;
+    }
+
+    /* pandaSection — single 200×200 slot (native uses one VideoView OR one Image) */
+    .panda-section {
+      position: relative;
+      width: var(--panda-size);
+      height: var(--panda-size);
+      margin-left: auto;
+      margin-right: auto;
+      flex-shrink: 0;
+    }
+
+    .panda-media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .panda-media.is-active {
+      display: block;
+    }
+
+    /* contentSection: flex 1, paddingTop 24 */
+    .content-section {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: var(--content-pt);
+    }
+
+    .caption {
+      margin: 0;
+      color: var(--text);
+      font-size: var(--caption-size);
+      line-height: var(--caption-lh);
+      text-align: center;
+      margin-bottom: var(--caption-mb);
+      padding-left: var(--caption-px);
+      padding-right: var(--caption-px);
+    }
+
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .btn-stack[hidden] {
+      display: none;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-escape {
+      width: var(--btn-w);
+      border: var(--border) solid var(--btn);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      color: var(--btn);
+      font-family: inherit;
+      cursor: default;
+      text-align: center;
+    }
+
+    .btn-primary {
+      padding: var(--primary-py) var(--primary-px);
+      margin-bottom: 16px;
+      font-size: var(--primary-fs);
+      font-weight: 600;
+    }
+
+    .btn-secondary {
+      padding: var(--secondary-py) var(--secondary-px);
+      font-size: var(--secondary-fs);
+      font-weight: 600;
+    }
+
+    .btn-escape {
+      padding: 14px 40px;
+      min-width: 160px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      width: auto;
+    }
+
+    .escape-wrap {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .escape-wrap.visible {
+      opacity: 1;
+    }
+
+    .escape-wrap[hidden] {
+      display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .panda-video.is-active { display: none !important; }
+      .panda-static { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <p class="capture-hint" id="hint"></p>
+
+  <div class="panda-screen" role="img" aria-label="FIMBY quiet hours screen with sleeping panda">
+    <div class="panda-top-spacer" aria-hidden="true"></div>
+
+    <div class="panda-section">
+      <video
+        class="panda-media panda-video is-active"
+        src="../fimby-mobile-app/assets/panda-sleeping.mp4"
+        autoplay
+        loop
+        muted
+        playsinline
+        aria-label="A panda curled up sleeping"
+      ></video>
+      <img
+        class="panda-media panda-static"
+        src="../fimby-mobile-app/assets/images/panda-sleeping.png"
+        alt=""
+        aria-hidden="true"
+      />
+    </div>
+
+    <div class="content-section">
+      <p class="caption" id="caption">
+        FIMBY is resting right now,<br />but you're always welcome.
+      </p>
+
+      <div class="btn-stack" id="default-buttons">
+        <button type="button" class="btn-primary" tabindex="-1">Come on in</button>
+        <button type="button" class="btn-secondary" tabindex="-1">Come back in the morning</button>
+      </div>
+
+      <div class="escape-wrap" id="escape-wrap" hidden>
+        <button type="button" class="btn-escape" tabindex="-1">Actually, let me in</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var device = document.documentElement.getAttribute("data-device") || "iphone";
+
+      var hint = document.getElementById("hint");
+      if (params.get("hint") === "1") {
+        document.documentElement.classList.add("hint-visible");
+        var captureNote = params.get("capture") === "1" ? " Brighter text." : "";
+        if (device === "ipad") {
+          hint.textContent =
+            "1032 × 1376 @ DPR 2 → 2064 × 2752. Black fills the whole page — screenshot the viewport." +
+            captureNote;
+        } else {
+          hint.textContent =
+            "430 × 932 @ DPR 3 → 1290 × 2796. Use ?capture=1 for full-bleed iPhone export." +
+            captureNote;
+        }
+      } else {
+        hint.hidden = true;
+      }
+
+      var video = document.querySelector(".panda-video");
+      var img = document.querySelector(".panda-static");
+
+      function showVideo() {
+        video.classList.add("is-active");
+        img.classList.remove("is-active");
+      }
+
+      function showStatic() {
+        video.classList.remove("is-active");
+        img.classList.add("is-active");
+      }
+
+      if (params.get("static") === "1") {
+        showStatic();
+      } else {
+        showVideo();
+        video.addEventListener("error", showStatic);
+      }
+
+      var farewellMessages = [
+        "Sweet dreams, neighbour.",
+        "Night night! See you in the morning.",
+        "See you when the sun comes up.",
+        "Adieu, adieu -- to you and you and you.",
+        "Goodnight, moon. Goodnight, neighbour.",
+      ];
+
+      if (params.get("farewell") === "1") {
+        var msg = farewellMessages[Math.floor(Math.random() * farewellMessages.length)];
+        document.getElementById("caption").textContent = msg;
+        document.getElementById("default-buttons").hidden = true;
+
+        if (params.get("escape") === "1") {
+          var wrap = document.getElementById("escape-wrap");
+          wrap.hidden = false;
+          wrap.classList.add("visible");
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

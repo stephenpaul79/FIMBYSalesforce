@@ -1,0 +1,59 @@
+{
+  "1": {
+    "caption": "Neighbours who know your name",
+    "accent": "#67BBD2",
+    "wordmark": true,
+    "rawFile": "Screen 1 Home feed.png",
+    "overlayHeightPercent": 22,
+    "overlayLines": ["One neighbourhood feed — not an endless scroll of strangers."]
+  },
+  "2": {
+    "caption": "Ask for help. Offer what you have.",
+    "accent": "#5B8760",
+    "rawFile": "Screen 2 Ask Offer detail page.png",
+    "overlayHeightPercent": 16,
+    "overlayLines": ["Respond in a private thread with the neighbour who posted."]
+  },
+  "3": {
+    "caption": "Borrow the drill. Skip the store.",
+    "accent": "#8D7B6A",
+    "rawFile": "Screen 3 Library list.png",
+    "overlayHeightPercent": 20,
+    "overlayLines": ["See what neighbours nearby are happy to lend."]
+  },
+  "4": {
+    "caption": "Dinners, block parties, gatherings.",
+    "accent": "#448E9E",
+    "rawFile": "Screen 4 Event detail.png",
+    "overlayHeightPercent": 14,
+    "overlayLines": ["RSVP to gatherings hosted by people you know."]
+  },
+  "5": {
+    "caption": "Every conversation in one place.",
+    "accent": "#5E7B92",
+    "rawFile": "Screen 5 Messages list.png",
+    "overlayHeightPercent": 24,
+    "overlayHeightPercentIpad": 32,
+    "overlayLines": ["Direct messages, ask & offer replies, events, lending — one inbox."]
+  },
+  "6": {
+    "caption": "Tell neighbours how to care for you well.",
+    "accent": "#7E7495",
+    "rawFile": "Screen 6 Care preferences onboarding.png",
+    "overlayHeightPercent": 22,
+    "overlayLines": ["Optional preferences — change anytime in Settings."]
+  },
+  "7": {
+    "caption": "A doorbell, not a slot machine.",
+    "accent": "#A38045",
+    "rawFile": "Screen 7 Quiet-hours panda.png",
+    "overlayHeightPercent": 0
+  },
+  "8": {
+    "caption": "No ads. No tracking. Community-owned.",
+    "accent": "#6B7D54",
+    "rawFile": "Screen 8 Share Contact Info modal .png",
+    "overlayHeightPercent": 18,
+    "overlayLines": ["Share only the contact fields you choose, neighbour by neighbour."]
+  }
+}

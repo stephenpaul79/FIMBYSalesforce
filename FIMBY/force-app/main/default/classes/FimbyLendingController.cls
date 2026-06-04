@@ -404,6 +404,7 @@ public with sharing class FimbyLendingController {
             // Get loaned item with related data
             Loaned_Item__c loanedItem = [
                 SELECT Id, Name, Loan_Start_Date__c, Loan_Due_Date__c,
+                       Requested_Due_Date_Extension__c,
                        Loaned_To__c, Loaned_To_Real_Contact__c, Owned_By__c,
                        Loaned_To__r.FirstName, Loaned_To__r.Full_Name__c,
                        Library_Item__c, Library_Item__r.Id, Library_Item__r.Name,
@@ -459,6 +460,15 @@ public with sharing class FimbyLendingController {
                     'success' => false,
                     'error' => 'notAuthorized',
                     'message' => 'Only the borrower or owner can extend the due date.'
+                };
+            }
+
+            if (!isOwner && loanedItem.Requested_Due_Date_Extension__c != null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'extensionPending',
+                    'message' => 'You already have an extension request waiting for the owner.',
+                    'requestedDateDisplay' => loanedItem.Requested_Due_Date_Extension__c.format()
                 };
             }
 
@@ -1281,6 +1291,14 @@ public with sharing class FimbyLendingController {
                     'success' => false,
                     'error' => 'notAuthorized',
                     'message' => 'Only the borrower or owner can change the due date.'
+                };
+            }
+
+            if (!isOwner && loanedItem.Requested_Due_Date_Extension__c != null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'extensionPending',
+                    'message' => 'You already have an extension request waiting for the owner.'
                 };
             }
 

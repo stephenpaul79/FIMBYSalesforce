@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Screen 8 explainer box — drop-in</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --fimby-surface-page: #F0EBE3;
+      --fimby-surface-card: #FAF7F2;
+      --fimby-earth-moss: #6B7D54;
+      --fimby-shadow-card: 0 2px 8px rgba(38, 26, 17, 0.08), 0 1px 2px rgba(38, 26, 17, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body {
+      background: var(--fimby-surface-page);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      display: inline-block;
+      padding: 48px;
+      background: var(--fimby-surface-page);
+    }
+
+    .explainer {
+      display: inline-block;
+      width: max-content;
+      max-width: none;
+      background: var(--fimby-earth-moss);
+      border-radius: 18px;
+      box-shadow: var(--fimby-shadow-card);
+      padding: 44px 52px;
+      color: var(--fimby-surface-card);
+    }
+
+    .explainer h3 {
+      margin: 0 0 20px;
+      font-size: 44px;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .explainer p {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.42;
+      opacity: 0.94;
+      white-space: nowrap;
+    }
+
+    .explainer p + p {
+      margin-top: 12px;
+    }
+
+    .explainer strong {
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="explainer">
+      <h3>Built for neighbours, not advertisers.</h3>
+      <p><strong>Attention</strong> — no sponsored feeds; yours is never for sale.</p>
+      <p><strong>Feed</strong> — no likes, followers, or endless-scroll tricks.</p>
+      <p><strong>Scope</strong> — just your neighbourhood, not a world-wide or even city-wide contact list.</p>
+      <p><strong>Privacy</strong> — we do not sell your information or build ad profiles.</p>
+      <p><strong>Ownership</strong> — run by a nonprofit, not for profit.</p>
+      <p><strong>Notifications</strong> — quiet hours and digests; no getting lost in the scroll.</p>
+    </div>
+  </div>
+</body>
+</html>

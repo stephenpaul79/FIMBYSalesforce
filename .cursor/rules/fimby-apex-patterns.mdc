@@ -111,3 +111,35 @@ All TTLs from `FIMBY_App_Settings__mdt` with fallback defaults.
 - **Scheduled jobs**: `FimbyPushBatchJob` (every 15 min — push dispatch), `FimbyEventReminderJob` (daily — event reminders)
 - **Utilities**: `FimbySettings` (typed `FIMBY_App_Settings__mdt` / `FIMBY_URL__mdt`), `FimbyConstants` (status values, record types), `FimbyIdentityRepository` (cached identity with `clearCache()`), `FimbyLogger` (publishes `Error_Log_Event__e`)
 - **Test data**: `FimbyTestDataFactory` creates neighbourhoods, contacts, users, stories, etc.
+
+## Test data lookup (do not query Users by email)
+
+`FimbyTestDataFactory.createCommunityUser()` generates **dynamic** User emails and usernames (`DateTime.now()`, random suffix, static counter). You cannot know the email in advance, and patterns like `Email LIKE '%@testorg.com'` are **unreliable** (zero rows, wrong user, flaky deploys).
+
+**Never** resolve the `@TestSetup` community User like this:
+
+```apex
+// BAD — email is factory-generated; LIMIT 1 may return nothing or the wrong user
+return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+```
+
+**Always** tie the User to the Contact created in the same class's `@TestSetup`:
+
+```apex
+private static User getTestUser() {
+    Contact testContact = getTestContact();
+    List<User> users = [
+        SELECT Id, ContactId
+        FROM User
+        WHERE ContactId = :testContact.Id
+          AND IsActive = true
+        LIMIT 1
+    ];
+    System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+    return users[0];
+}
+```
+
+`getTestContact()` may use the stable factory Contact email domain (`%@fimby.test.com`) **only** when `@TestSetup` creates exactly one neighbourhood Contact in that class. For extra personas (poster, responder, etc.), create them in the test method and keep a reference to their `ContactId` / `User` — do not invent email patterns to find them later.
+
+When adding or fixing tests, grep for `@testorg.com` in `*Test.cls` and replace with ContactId-based lookup.

@@ -130,23 +130,24 @@
     object-fit: contain;
 }
 
-/* Scroll container */
+/* Scroll container — page fill below the thread list (end message, disclaimer) */
 .messages-scroll-container {
     flex: 1;
     overflow: hidden;
+    background: var(--fimby-surface-page);
+    --fimby-infinite-scroll-surface: var(--fimby-surface-page);
 }
 
-/* Retention disclaimer */
+/* Retention disclaimer — same surface as page, not a card footer */
 .inbox-disclaimer {
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 12px 16px 20px;
+    padding: 12px 16px 8px;
     font-size: 12px;
     color: var(--fimby-text-muted, #B5A088);
     line-height: 1.4;
-    background-color: var(--fimby-surface-card);
-    border-radius: 0 0 var(--fimby-radius-md, 12px) var(--fimby-radius-md, 12px);
+    background: transparent;
 }
 
 .inbox-disclaimer lightning-icon {
@@ -157,6 +158,8 @@
 /* ── Inbox rows ─────────────────────────────────── */
 .inbox-list {
     background: var(--fimby-surface-card);
+    border-radius: 0 0 var(--fimby-radius-md, 12px) var(--fimby-radius-md, 12px);
+    overflow: hidden;
 }
 
 .thread-row-wrapper {
@@ -513,7 +516,51 @@
 .badge-library  { background-color: rgba(141, 123, 106, 0.75); }
 .badge-bulkbuy  { background-color: rgba(168, 132, 78, 0.75); }
 .badge-checkin  { background-color: rgba(178, 143, 86, 0.65); }
+.badge-event    { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.badge-gathering { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.badge-community-event {
+    background-color: var(--fimby-badge-community-event, rgba(113, 90, 158, 0.75));
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+}
 .badge-vouch    { background-color: rgba(178, 110, 128, 0.80); }
+
+/* Group row — post image or type-icon circle */
+.thread-avatar-group .thread-avatar-img {
+    object-fit: cover;
+}
+
+.group-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.group-avatar-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.group-avatar-fallback {
+    display: none;
+}
+
+.thread-avatar-group .group-avatar-fallback {
+    display: none;
+}
+
+.group-avatar-bulkbuy { background-color: rgba(168, 132, 78, 0.75); }
+.group-avatar-event   { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.group-avatar-gathering { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.group-avatar-community-event {
+    background-color: var(--fimby-badge-community-event, rgba(113, 90, 158, 0.75));
+}
+.group-avatar-library { background-color: rgba(141, 123, 106, 0.75); }
+.group-avatar-checkin { background-color: rgba(178, 143, 86, 0.65); }
+.group-avatar-vouch   { background-color: rgba(178, 110, 128, 0.80); }
+.group-avatar-direct  { background-color: rgba(94, 123, 146, 0.75); }
+.group-avatar-response { background-color: rgba(91, 135, 96, 0.75); }
 
 /* ── New-Message modal ──────────────────────────── */
 .new-message-modal {
@@ -683,7 +730,6 @@ button.contact-item {
     .fimby-messages-list {
         max-width: 600px;
         margin: 0 auto;
-        box-shadow: var(--fimby-shadow-card);
     }
 
     .inbox-row {

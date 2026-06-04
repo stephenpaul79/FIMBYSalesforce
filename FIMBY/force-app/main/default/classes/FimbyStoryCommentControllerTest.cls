@@ -9,7 +9,16 @@ public class FimbyStoryCommentControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id
+              AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -46,6 +55,27 @@ public class FimbyStoryCommentControllerTest {
         System.assertEquals(testStory.Id, story.get('id'));
         System.assertEquals('Test Story Title', story.get('name'));
         System.assertEquals(testContact.Id, story.get('ownerContactId'));
+    }
+
+    @isTest
+    static void testGetStoryForComment_NonOwnerInNeighbourhood() {
+        User viewerUser = getTestUser();
+        Contact viewerContact = getTestContact();
+        Contact authorContact = FimbyTestDataFactory.createNeighbourhoodContact(viewerContact.AccountId, true);
+
+        Story__c testStory = createTestStory(authorContact);
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(viewerUser) {
+            result = FimbyStoryCommentController.getStoryForComment(testStory.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Neighbour should load story via without-sharing helper');
+        Map<String, Object> story = (Map<String, Object>) result.get('story');
+        System.assertEquals(testStory.Id, story.get('id'));
+        System.assertEquals(authorContact.Id, story.get('ownerContactId'));
     }
 
     @isTest

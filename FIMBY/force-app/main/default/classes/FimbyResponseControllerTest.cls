@@ -9,7 +9,16 @@ public class FimbyResponseControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id
+              AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -342,6 +351,89 @@ public class FimbyResponseControllerTest {
 
         System.assertEquals(true, result.get('success'), 'Should return success');
         System.assertEquals(true, result.get('hasAccess'), 'User should have access');
+    }
+
+    @isTest
+    static void testGetResponseForStatusUpdate_PosterNotResponseOwner() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact responderContact = new Contact(
+            FirstName = 'Status',
+            LastName = 'Responder',
+            AccountId = posterContact.AccountId,
+            Email = 'status.responder@fimby.test.com'
+        );
+        insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Needs_Offers__c testNeedOffer = createTestNeedOffer(posterUser, false, 5);
+
+        Response__c testResponse = new Response__c(
+            Name = 'Responder Owned Response',
+            Need_Offer_Responded_To__c = testNeedOffer.Id,
+            Contact__c = responderContact.Id,
+            On_Behalf_Of_Contact__c = responderContact.Id,
+            Reply_To_Contact__c = posterContact.Id,
+            Status__c = 'New',
+            Amount_Requested__c = 1
+        );
+        System.runAs(responderUser) {
+            insert testResponse;
+        }
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(posterUser) {
+            result = FimbyResponseController.getResponseForStatusUpdate(testResponse.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        System.assertEquals(true, result.get('hasAccess'), 'Poster should access responder-owned response');
+    }
+
+    @isTest
+    static void testUpdateResponseStatus_PosterAcceptsResponderOwnedResponse() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact responderContact = new Contact(
+            FirstName = 'Accept',
+            LastName = 'Responder',
+            AccountId = posterContact.AccountId,
+            Email = 'accept.responder@fimby.test.com'
+        );
+        insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Needs_Offers__c testNeedOffer = createTestNeedOffer(posterUser, false, 5);
+
+        Response__c testResponse = new Response__c(
+            Name = 'Accept Test Response',
+            Need_Offer_Responded_To__c = testNeedOffer.Id,
+            Contact__c = responderContact.Id,
+            On_Behalf_Of_Contact__c = responderContact.Id,
+            Reply_To_Contact__c = posterContact.Id,
+            Status__c = 'New',
+            Amount_Requested__c = 1
+        );
+        System.runAs(responderUser) {
+            insert testResponse;
+        }
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(posterUser) {
+            result = FimbyResponseController.updateResponseStatus(testResponse.Id, 'Accepted');
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Poster should accept responder-owned response');
+        System.assertEquals('Accepted', result.get('newStatus'), 'Status should be Accepted');
+
+        Response__c updated = [SELECT Status__c FROM Response__c WHERE Id = :testResponse.Id];
+        System.assertEquals('Accepted', updated.Status__c, 'Response row should persist Accepted status');
     }
 
     @isTest

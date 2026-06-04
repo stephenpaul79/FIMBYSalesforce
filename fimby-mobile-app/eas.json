@@ -19,7 +19,8 @@
     "production": {
       "ios": {
         "appleId": "stephen_rathjen@hotmail.com",
-        "appleTeamId": "V2NKUL8JF4"
+        "appleTeamId": "V2NKUL8JF4",
+        "companyName": "Strathcona Vineyard Church"
       }
     }
   }

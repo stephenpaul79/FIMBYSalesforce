@@ -9,7 +9,16 @@ public class FimbyLendingControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id
+              AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -505,6 +514,88 @@ public class FimbyLendingControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, result.get('success'), 'Should return success');
+    }
+
+    @isTest
+    static void testGetLoanedItemForExtension_ExtensionPending() {
+        User testUser = getTestUser();
+        Contact borrowerContact = getTestContact();
+        Account neighbourhood = [SELECT Id FROM Account WHERE RecordType.DeveloperName = 'Boundary_Account' LIMIT 1];
+        Contact ownerContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
+
+        Library_Item__c item = new Library_Item__c(
+            Name = 'Pending Extension Item',
+            Description__c = 'Test',
+            Category__c = 'Tools',
+            Owned_By__c = 'Self',
+            Owner_Contact__c = ownerContact.Id,
+            Neighbourhood__c = neighbourhood.Id,
+            Status__c = 'Available',
+            Max_Lending_Time_In_Days__c = 7
+        );
+        insert item;
+
+        Loaned_Item__c loanedItem = new Loaned_Item__c(
+            Library_Item__c = item.Id,
+            Loaned_To__c = borrowerContact.Id,
+            Loan_Start_Date__c = Date.today().addDays(-3),
+            Loan_Due_Date__c = Date.today().addDays(4),
+            Requested_Due_Date_Extension__c = Date.today().addDays(14),
+            OwnerId = testUser.Id
+        );
+        insert loanedItem;
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyLendingController.getLoanedItemForExtension(loanedItem.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, result.get('success'), 'Borrower should not open extension form when pending');
+        System.assertEquals('extensionPending', result.get('error'), 'Should return extensionPending');
+    }
+
+    @isTest
+    static void testRequestLoanExtension_BlocksDuplicateBorrowerRequest() {
+        User testUser = getTestUser();
+        Contact borrowerContact = getTestContact();
+        Account neighbourhood = [SELECT Id FROM Account WHERE RecordType.DeveloperName = 'Boundary_Account' LIMIT 1];
+        Contact ownerContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
+
+        Library_Item__c item = new Library_Item__c(
+            Name = 'Duplicate Extension Item',
+            Description__c = 'Test',
+            Category__c = 'Tools',
+            Owned_By__c = 'Self',
+            Owner_Contact__c = ownerContact.Id,
+            Neighbourhood__c = neighbourhood.Id,
+            Status__c = 'Available',
+            Max_Lending_Time_In_Days__c = 7
+        );
+        insert item;
+
+        Loaned_Item__c loanedItem = new Loaned_Item__c(
+            Library_Item__c = item.Id,
+            Loaned_To__c = borrowerContact.Id,
+            Loan_Start_Date__c = Date.today().addDays(-3),
+            Loan_Due_Date__c = Date.today().addDays(4),
+            Requested_Due_Date_Extension__c = Date.today().addDays(10)
+        );
+        insert loanedItem;
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyLendingController.requestLoanExtension(
+                loanedItem.Id,
+                String.valueOf(Date.today().addDays(20))
+            );
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, result.get('success'), 'Should block second borrower extension request');
+        System.assertEquals('extensionPending', result.get('error'), 'Should return extensionPending');
     }
 
     @isTest

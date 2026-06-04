@@ -155,7 +155,11 @@
 
 .badge-library  { background-color: rgba(141, 123, 106, 0.75); }
 .badge-bulkbuy  { background-color: rgba(168, 132, 78, 0.75); }
-.badge-event    { background-color: rgba(91, 135, 96, 0.75); }
+.badge-event    { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.badge-gathering { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }
+.badge-community-event {
+    background-color: var(--fimby-badge-community-event, rgba(113, 90, 158, 0.75));
+}
 .badge-checkin  { background-color: rgba(178, 143, 86, 0.65); }
 .badge-vouch    { background-color: var(--fimby-badge-vouch); }
 

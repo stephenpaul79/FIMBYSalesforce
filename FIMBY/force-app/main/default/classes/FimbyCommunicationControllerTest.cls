@@ -268,6 +268,51 @@ public class FimbyCommunicationControllerTest {
                 FimbyCommunicationController.getThreads(20, 0, 'responses', null);
             System.assertEquals(1, result.totalCount,
                 'Community Event response with messages should appear in threads');
+            System.assertEquals('community-event', result.threads[0].badgeType);
+            System.assertEquals('response', result.threads[0].threadType);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetThreadsGatheringResponseBadge() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Needs_Offers__c gatheringPost = new Needs_Offers__c(
+            Name = 'Block Party',
+            Details__c = 'Neighbourhood potluck',
+            Type__c = 'Event',
+            Event_Type__c = 'Gathering',
+            Status__c = 'Posted',
+            Neighbourhood__c = neighbourhood.Id,
+            Posted_By__c = others[0].Id,
+            Contact__c = others[0].Id
+        );
+        insert gatheringPost;
+
+        Contact myContact = [SELECT Id FROM Contact WHERE Id = :testUser.ContactId];
+        insert new Response__c(
+            Name = 'Block Party',
+            Response__c = 'Count us in',
+            Contact__c = myContact.Id,
+            On_Behalf_Of_Contact__c = myContact.Id,
+            Need_Offer_Responded_To__c = gatheringPost.Id,
+            Status__c = 'Accepted',
+            Neighbourhood__c = neighbourhood.Id,
+            Last_Reply__c = 'See you there',
+            Last_Reply_Date__c = Date.today(),
+            Last_Reply_Contact_Lookup__c = others[0].Id
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'responses', null);
+            System.assertEquals(1, result.totalCount);
+            System.assertEquals('gathering', result.threads[0].badgeType);
+            System.assertEquals('response', result.threads[0].threadType);
         }
         Test.stopTest();
     }
@@ -1535,5 +1580,374 @@ public class FimbyCommunicationControllerTest {
             SELECT Responder_Archived__c FROM Response__c WHERE Id = :resp.Id
         ];
         System.assertEquals(false, updated.Responder_Archived__c, 'Responder_Archived__c should be cleared');
+    }
+
+    // ================================================================
+    // Badge type + unified inbox (group threads)
+    // ================================================================
+
+    @IsTest
+    static void testGetThreadsMissedPickupBadge() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+
+        insert new Conversation__c(
+            Participant_1__c = testUser.ContactId,
+            Participant_2__c = others[0].Id,
+            Status__c = 'Active',
+            Context_Type__c = 'Missed_Pickup',
+            Participant_1_Unread_Count__c = 1,
+            Participant_2_Unread_Count__c = 0,
+            Participant_1_Archived__c = false,
+            Participant_2_Archived__c = false,
+            Last_Message_Date__c = Datetime.now(),
+            Last_Message_Preview__c = 'Check in'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            System.assertEquals(1, result.totalCount);
+            System.assertEquals('checkin', result.threads[0].badgeType);
+            System.assertEquals('checkin', result.threads[0].threadType);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMarkThreadReadMissedPickupConversation() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+
+        Conversation__c conv = new Conversation__c(
+            Participant_1__c = testUser.ContactId,
+            Participant_2__c = others[0].Id,
+            Status__c = 'Active',
+            Context_Type__c = 'Missed_Pickup',
+            Participant_1_Unread_Count__c = 2,
+            Participant_2_Unread_Count__c = 0,
+            Participant_1_Archived__c = false,
+            Participant_2_Archived__c = false
+        );
+        insert conv;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.markThreadRead('checkin', conv.Id);
+        }
+        Test.stopTest();
+
+        Conversation__c updated = [
+            SELECT Participant_1_Unread_Count__c FROM Conversation__c WHERE Id = :conv.Id
+        ];
+        System.assertEquals(0, updated.Participant_1_Unread_Count__c.intValue());
+    }
+
+    @IsTest
+    static void testGetThreadsBulkBuyResponseBadge() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Id bbRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName()
+            .get('Bulk_Buy').getRecordTypeId();
+        Needs_Offers__c post = new Needs_Offers__c(
+            RecordTypeId = bbRt,
+            Name = 'Bulk Buy Post',
+            Details__c = 'Details',
+            Full_Details__c = 'Full',
+            Status__c = 'Available',
+            Posted_By__c = others[0].Id,
+            Contact__c = others[0].Id,
+            Neighbourhood__c = neighbourhood.Id,
+            Giver_Recipient_Type__c = 'Self',
+            Total_Quantity__c = 10,
+            Allocation_Unit_Label__c = 'shares',
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed',
+            Auto_Accept_Responses__c = true,
+            Auto_Lock_Days__c = '7'
+        );
+        insert post;
+
+        Response__c resp = new Response__c(
+            Name = 'Reservation',
+            Response__c = '2 shares',
+            Contact__c = testUser.ContactId,
+            On_Behalf_Of_Contact__c = testUser.ContactId,
+            Need_Offer_Responded_To__c = post.Id,
+            Status__c = 'New',
+            Neighbourhood__c = neighbourhood.Id,
+            Last_Reply__c = 'Thanks',
+            Last_Reply_Date__c = Date.today(),
+            Last_Reply_Contact_Lookup__c = others[0].Id
+        );
+        insert resp;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'responses', null);
+            System.assertEquals(1, result.totalCount);
+            System.assertEquals('bulkbuy', result.threads[0].badgeType);
+            System.assertEquals('response', result.threads[0].threadType);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMarkThreadReadBulkBuyResponseRoutesToResponse() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'BB Post',
+            Details__c = 'D',
+            Type__c = 'Goods - Unperishable',
+            Status__c = 'Posted',
+            Neighbourhood__c = neighbourhood.Id,
+            Posted_By__c = others[0].Id,
+            Contact__c = others[0].Id
+        );
+        insert post;
+
+        Response__c resp = new Response__c(
+            Name = 'R',
+            Response__c = 'Help',
+            Contact__c = testUser.ContactId,
+            On_Behalf_Of_Contact__c = testUser.ContactId,
+            Need_Offer_Responded_To__c = post.Id,
+            Status__c = 'New',
+            Neighbourhood__c = neighbourhood.Id,
+            Last_Reply_Date__c = Date.today(),
+            Last_Reply_Contact_Lookup__c = others[0].Id
+        );
+        insert resp;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.markThreadRead('response', resp.Id);
+        }
+        Test.stopTest();
+
+        Response__c updated = [
+            SELECT Responder_Last_Viewed__c FROM Response__c WHERE Id = :resp.Id
+        ];
+        System.assertNotEquals(null, updated.Responder_Last_Viewed__c);
+    }
+
+    @IsTest
+    static void testGetThreadsWithGroupConversation() {
+        User testUser = getTestUser();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Id bbRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName()
+            .get('Bulk_Buy').getRecordTypeId();
+        Needs_Offers__c post = new Needs_Offers__c(
+            RecordTypeId = bbRt,
+            Name = 'Group Bulk Buy',
+            Details__c = 'Details',
+            Full_Details__c = 'Full',
+            Status__c = 'Available',
+            Posted_By__c = testUser.ContactId,
+            Contact__c = testUser.ContactId,
+            Neighbourhood__c = neighbourhood.Id,
+            Giver_Recipient_Type__c = 'Self',
+            Total_Quantity__c = 10,
+            Allocation_Unit_Label__c = 'shares',
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed',
+            Auto_Accept_Responses__c = true,
+            Auto_Lock_Days__c = '7',
+            Image_1_URL__c = 'https://example.com/post.jpg'
+        );
+        insert post;
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Group Bulk Buy',
+            Context_Type__c = 'Bulk_Buy',
+            Related_Record_Id__c = post.Id,
+            Status__c = 'Active',
+            Last_Message_Date__c = Datetime.now(),
+            Last_Message_Preview__c = 'Hello group'
+        );
+        insert conv;
+
+        insert new Conversation_Member__c(
+            Conversation__c = conv.Id,
+            Contact__c = testUser.ContactId,
+            Role__c = 'Owner',
+            Status__c = 'Active',
+            Joined_Date__c = System.now(),
+            Unread_Count__c = 1,
+            Archived__c = false
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            System.assertEquals(1, result.totalCount);
+            System.assertEquals('group', result.threads[0].threadType);
+            System.assertEquals('bulkbuy', result.threads[0].badgeType);
+            System.assertEquals(true, result.threads[0].isGroup);
+            System.assertEquals('Group Bulk Buy', result.threads[0].participantName);
+            System.assertEquals('https://example.com/post.jpg', result.threads[0].participantImageUrl);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetThreadsGroupEventBadge() {
+        User testUser = getTestUser();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+        Contact myContact = [SELECT Id FROM Contact WHERE Id = :testUser.ContactId];
+
+        Needs_Offers__c openEventPost = new Needs_Offers__c(
+            Name = 'Park Meetup',
+            Details__c = 'Open event',
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Neighbourhood__c = neighbourhood.Id,
+            Posted_By__c = myContact.Id,
+            Contact__c = myContact.Id
+        );
+        insert openEventPost;
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Open Event Chat',
+            Context_Type__c = 'Event',
+            Related_Record_Id__c = String.valueOf(openEventPost.Id),
+            Status__c = 'Active',
+            Last_Message_Date__c = Datetime.now()
+        );
+        insert conv;
+
+        insert new Conversation_Member__c(
+            Conversation__c = conv.Id,
+            Contact__c = testUser.ContactId,
+            Role__c = 'Member',
+            Status__c = 'Active',
+            Joined_Date__c = System.now(),
+            Unread_Count__c = 0,
+            Archived__c = false
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            System.assertEquals(1, result.totalCount);
+            System.assertEquals('event', result.threads[0].badgeType);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMarkThreadReadGroupMember() {
+        User testUser = getTestUser();
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Read Test Group',
+            Context_Type__c = 'Bulk_Buy',
+            Status__c = 'Active'
+        );
+        insert conv;
+
+        insert new Conversation_Member__c(
+            Conversation__c = conv.Id,
+            Contact__c = testUser.ContactId,
+            Role__c = 'Member',
+            Status__c = 'Active',
+            Joined_Date__c = System.now(),
+            Unread_Count__c = 3,
+            Archived__c = false
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.markThreadRead('group', conv.Id);
+        }
+        Test.stopTest();
+
+        Conversation_Member__c member = [
+            SELECT Unread_Count__c, Last_Read_Date__c
+            FROM Conversation_Member__c
+            WHERE Conversation__c = :conv.Id AND Contact__c = :testUser.ContactId
+            LIMIT 1
+        ];
+        System.assertEquals(0, member.Unread_Count__c.intValue());
+        System.assertNotEquals(null, member.Last_Read_Date__c);
+    }
+
+    @IsTest
+    static void testArchiveThreadGroupMember() {
+        User testUser = getTestUser();
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Archive Test Group',
+            Context_Type__c = 'Bulk_Buy',
+            Status__c = 'Active',
+            Last_Message_Date__c = Datetime.now()
+        );
+        insert conv;
+
+        insert new Conversation_Member__c(
+            Conversation__c = conv.Id,
+            Contact__c = testUser.ContactId,
+            Role__c = 'Member',
+            Status__c = 'Active',
+            Joined_Date__c = System.now(),
+            Unread_Count__c = 0,
+            Archived__c = false
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.archiveThread('group', conv.Id);
+            FimbyCommunicationController.ThreadListResult active =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            System.assertEquals(0, active.totalCount, 'Archived group should not appear in all');
+
+            FimbyCommunicationController.ThreadListResult archived =
+                FimbyCommunicationController.getThreads(20, 0, 'archived', null);
+            System.assertEquals(1, archived.totalCount);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetUnifiedUnreadCountIncludesGroup() {
+        User testUser = getTestUser();
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true,
+            Group_Name__c = 'Unread Group',
+            Context_Type__c = 'Bulk_Buy',
+            Status__c = 'Active'
+        );
+        insert conv;
+
+        insert new Conversation_Member__c(
+            Conversation__c = conv.Id,
+            Contact__c = testUser.ContactId,
+            Role__c = 'Member',
+            Status__c = 'Active',
+            Joined_Date__c = System.now(),
+            Unread_Count__c = 2,
+            Archived__c = false
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Integer count = FimbyCommunicationController.getUnifiedUnreadCount();
+            System.assert(count >= 1, 'Group unread should count toward unified badge');
+        }
+        Test.stopTest();
     }
 }

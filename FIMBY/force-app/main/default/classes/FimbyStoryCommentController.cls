@@ -37,14 +37,13 @@ public with sharing class FimbyStoryCommentController {
     @AuraEnabled(cacheable=true)
     public static Map<String, Object> getStoryForComment(String recordId) {
         try {
-            Story__c story = [
-                SELECT Id, Name, Message__c, Image_URL__c,
-                       OwnerId, Posted_By__c, Posted_By__r.Name
-                FROM Story__c
-                WHERE Id = :recordId
-                WITH SECURITY_ENFORCED
-                LIMIT 1
-            ];
+            Id viewerActingAsId = FimbyIdentityRepository.getActingAsContactId();
+            Story__c story = new StoryCommentAccessHelper().resolveCommentableStory(recordId, viewerActingAsId);
+            if (story == null) {
+                AuraHandledException ex = new AuraHandledException('Error getting story: Story not found.');
+                ex.setMessage('Error getting story: Story not found.');
+                throw ex;
+            }
 
             return new Map<String, Object>{
                 'success' => true,
@@ -58,6 +57,8 @@ public with sharing class FimbyStoryCommentController {
                     'ownerName' => story.Posted_By__r?.Name
                 }
             };
+        } catch (AuraHandledException e) {
+            throw e;
         } catch (Exception e) {
             AuraHandledException ex = new AuraHandledException('Error getting story: ' + e.getMessage());
             ex.setMessage('Error getting story: ' + e.getMessage());
@@ -527,7 +528,7 @@ public with sharing class FimbyStoryCommentController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String query = 'SELECT Id, Posted_By__c, Posted_By__r.Name FROM Story__c WHERE Id = :storyId '
+            String query = 'SELECT Id, Name, Message__c, Image_URL__c, OwnerId, Posted_By__c, Posted_By__r.Name FROM Story__c WHERE Id = :storyId '
                 + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
 
             if (String.isNotBlank(neighbourhoodAccountId)) {

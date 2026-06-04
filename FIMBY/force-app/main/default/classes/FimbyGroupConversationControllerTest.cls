@@ -580,6 +580,17 @@ public class FimbyGroupConversationControllerTest {
         System.assertEquals('Event chat started', notifs[0].Title__c);
         System.assert(notifs[0].Body__c.contains('started an event chat'),
             'Body should describe chat creation');
+
+        post = [SELECT Group_Conversation__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        Conversation__c conv = [
+            SELECT Last_Message_Date__c, Last_Message_Preview__c
+            FROM Conversation__c
+            WHERE Id = :post.Group_Conversation__c
+        ];
+        System.assertNotEquals(null, conv.Last_Message_Date__c,
+            'Event chat should seed inbox activity on create');
+        System.assertEquals('Event chat is open', conv.Last_Message_Preview__c,
+            'Preview should match seeded system message');
     }
 
     @isTest

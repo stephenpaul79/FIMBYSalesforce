@@ -14,19 +14,12 @@ import getLendingConversationContext from '@salesforce/apex/FimbyLendingControll
 import getVouchContextForConversation from '@salesforce/apex/FimbyVouchController.getVouchContextForConversation';
 import approveVouch from '@salesforce/apex/FimbyVouchController.approveVouch';
 import withdrawVouchRequest from '@salesforce/apex/FimbyVouchController.withdrawVouchRequest';
+import { getHeaderBadge } from 'c/fimbyThreadBadgeConfig';
 
 const PAGE_SIZE = 50;
 const ZONE_THRESHOLD = 3;
 const PILL_THRESHOLD = 5;
 const SNIPPET_LENGTH = 80;
-
-const HEADER_BADGE_CONFIG = {
-    Library_Lending:  { label: 'Lending',   cssClass: 'header-badge badge-library' },
-    Bulk_Buy:         { label: 'Bulk Buy',  cssClass: 'header-badge badge-bulkbuy' },
-    Event:            { label: 'Event',     cssClass: 'header-badge badge-event' },
-    Missed_Pickup:    { label: 'Check In',  cssClass: 'header-badge badge-checkin' },
-    Vouch_Request:    { label: 'Vouch',     cssClass: 'header-badge badge-vouch' }
-};
 
 export default class FimbyConversationView extends NavigationMixin(LightningElement) {
     @api conversationId = '';
@@ -137,7 +130,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     // ── Related record header (badge + title link) ──────────────────
     get hasRelatedRecord() {
-        const badge = HEADER_BADGE_CONFIG[this.contextType];
+        const badge = getHeaderBadge(this.contextType);
         if (!badge) return false;
         if (this.contextType === 'Library_Lending') return !!this.lendingItemName;
         if (this.contextType === 'Vouch_Request')   return false;
@@ -225,11 +218,11 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     }
 
     get headerBadgeLabel() {
-        return HEADER_BADGE_CONFIG[this.contextType]?.label || '';
+        return getHeaderBadge(this.contextType)?.label || '';
     }
 
     get headerBadgeCssClass() {
-        return HEADER_BADGE_CONFIG[this.contextType]?.cssClass || '';
+        return getHeaderBadge(this.contextType)?.cssClass || '';
     }
 
     get relatedRecordDisplayTitle() {

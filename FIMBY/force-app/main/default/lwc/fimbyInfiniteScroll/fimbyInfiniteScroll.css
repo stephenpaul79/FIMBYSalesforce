@@ -50,6 +50,7 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     transition: transform 0.2s ease;
+    background: var(--fimby-infinite-scroll-surface, transparent);
 }
 
 .scroll-content {
@@ -75,17 +76,18 @@
     font-weight: 500;
 }
 
-/* End message — text + check only; inset matches feed cards via --fimby-end-message-inset-x */
+/* End message — text + check on parent surface (feed/inbox set --fimby-infinite-scroll-surface) */
 .end-message {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 24px var(--fimby-end-message-inset-x, 16px) 32px;
+    padding: 16px var(--fimby-end-message-inset-x, 16px) 32px;
     color: var(--fimby-text-secondary);
     font-size: 14px;
     font-weight: 500;
     text-align: center;
+    background: var(--fimby-infinite-scroll-surface, transparent);
 }
 
 @media (min-width: 1024px) {

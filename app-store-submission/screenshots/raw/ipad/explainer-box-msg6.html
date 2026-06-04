@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Screen 6 explainer box — drop-in</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --fimby-surface-page: #F0EBE3;
+      --fimby-surface-card: #FAF7F2;
+      --fimby-earth-dusty-violet: #7E7495;
+      --fimby-shadow-card: 0 2px 8px rgba(38, 26, 17, 0.08), 0 1px 2px rgba(38, 26, 17, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body {
+      background: var(--fimby-surface-page);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      display: inline-block;
+      padding: 48px;
+      background: var(--fimby-surface-page);
+    }
+
+    .explainer {
+      display: inline-block;
+      min-width: 1220px;
+      max-width: 1220px;
+      background: var(--fimby-earth-dusty-violet);
+      border-radius: 18px;
+      box-shadow: var(--fimby-shadow-card);
+      padding: 40px 48px;
+      color: var(--fimby-surface-card);
+    }
+
+    .explainer h3 {
+      margin: 0 0 14px;
+      font-size: 46px;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .explainer p {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.45;
+      opacity: 0.94;
+    }
+
+    .explainer p + p {
+      margin-top: 16px;
+    }
+
+    .explainer .cite {
+      margin-top: 18px;
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1.4;
+      opacity: 0.78;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="explainer">
+      <h3>Letting neighbours in is how trust grows.</h3>
+      <p>Saying what help feels welcome is a small act of vulnerability. Research on reciprocity finds that when we ask, others invest in us, and belonging deepens on both sides.</p>
+      <p class="cite">Strong neighbour networks build civic trust through give-and-take, not keeping to yourself. (Greater Good Science Center, UC Berkeley)</p>
+    </div>
+  </div>
+</body>
+</html>

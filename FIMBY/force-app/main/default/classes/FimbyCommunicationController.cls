@@ -159,6 +159,7 @@ public with sharing class FimbyCommunicationController {
 
             if (filterVal == 'all' || filterVal == 'unread' || filterVal == 'archived') {
                 allThreads.addAll(getDmThreads(myContactId, 'all', searchLower, showArchived));
+                allThreads.addAll(getGroupThreads(myContactId, searchLower, showArchived));
                 allThreads.addAll(getResponseThreads(myContactId, searchLower, showArchived));
             } else if (filterVal == 'direct' || filterVal == 'library') {
                 allThreads.addAll(getDmThreads(myContactId, filterVal, searchLower, false));
@@ -223,6 +224,7 @@ public with sharing class FimbyCommunicationController {
                 + ' Context_Type__c, Related_Record_Id__c, Status__c'
                 + ' FROM Conversation__c'
                 + ' WHERE (Participant_1__c = :myContactId OR Participant_2__c = :myContactId)'
+                + ' AND (Is_Group__c = false OR Is_Group__c = null)'
                 + ' AND Status__c != \'Blocked\''
                 + archiveFilter
                 + contextFilter
@@ -318,15 +320,7 @@ public with sharing class FimbyCommunicationController {
                 }
 
                 Boolean isLibrary = conv.Context_Type__c == FimbyConstants.CTX_LIBRARY_LENDING;
-                Boolean isVouch = conv.Context_Type__c == FimbyConstants.CTX_VOUCH_REQUEST;
-                String threadType;
-                if (isVouch) {
-                    threadType = 'vouch';
-                } else if (isLibrary) {
-                    threadType = 'library';
-                } else {
-                    threadType = 'direct';
-                }
+                String slug = contextToBadgeType(conv.Context_Type__c);
                 Integer unread = isP1
                     ? (conv.Participant_1_Unread_Count__c != null ? conv.Participant_1_Unread_Count__c.intValue() : 0)
                     : (conv.Participant_2_Unread_Count__c != null ? conv.Participant_2_Unread_Count__c.intValue() : 0);
@@ -339,7 +333,10 @@ public with sharing class FimbyCommunicationController {
                 }
 
                 CommunicationThread t = new CommunicationThread();
-                t.threadType = threadType;
+                t.threadType = slug;
+                t.badgeType = slug;
+                t.contextType = conv.Context_Type__c;
+                t.isGroup = false;
                 t.threadId = conv.Id;
                 t.participantName = otherName;
                 t.participantInitials = otherInitials;
@@ -357,6 +354,128 @@ public with sharing class FimbyCommunicationController {
             }
 
             return threads;
+        }
+
+        private List<CommunicationThread> getGroupThreads(
+            String myContactId, String searchLower, Boolean showArchived
+        ) {
+            List<CommunicationThread> threads = new List<CommunicationThread>();
+            Integer groupLim = FimbySettings.dmThreadsLimit();
+
+            List<Conversation_Member__c> members = [
+                SELECT Conversation__c, Conversation__r.Group_Name__c,
+                       Conversation__r.Last_Message_Preview__c,
+                       Conversation__r.Last_Message_Date__c,
+                       Conversation__r.Context_Type__c,
+                       Conversation__r.Related_Record_Id__c,
+                       Unread_Count__c, Archived__c
+                FROM Conversation_Member__c
+                WHERE Contact__c = :myContactId
+                AND Status__c = :FimbyConstants.MEMBER_ACTIVE
+                AND Conversation__r.Is_Group__c = true
+                AND Archived__c = :showArchived
+                ORDER BY Conversation__r.Last_Message_Date__c DESC NULLS LAST
+                LIMIT :groupLim
+            ];
+
+            Set<Id> postIds = new Set<Id>();
+            Set<Id> convIds = new Set<Id>();
+            for (Conversation_Member__c cm : members) {
+                convIds.add(cm.Conversation__c);
+                if (String.isNotBlank(cm.Conversation__r.Related_Record_Id__c)) {
+                    try {
+                        postIds.add(Id.valueOf(cm.Conversation__r.Related_Record_Id__c));
+                    } catch (Exception e) { /* skip invalid ids */ }
+                }
+            }
+
+            Map<Id, String> postImageUrls = new Map<Id, String>();
+            Map<Id, String> postEventBadgeSlugs = new Map<Id, String>();
+            if (!postIds.isEmpty()) {
+                for (Needs_Offers__c post : [
+                    SELECT Id, Image_1_URL__c, Type__c, Event_Type__c,
+                           RecordType.DeveloperName
+                    FROM Needs_Offers__c
+                    WHERE Id IN :postIds
+                ]) {
+                    if (String.isNotBlank(post.Image_1_URL__c)) {
+                        postImageUrls.put(post.Id, post.Image_1_URL__c);
+                    }
+                    postEventBadgeSlugs.put(
+                        post.Id,
+                        postContextToBadgeSlug(
+                            post.RecordType?.DeveloperName,
+                            post.Type__c,
+                            post.Event_Type__c
+                        )
+                    );
+                }
+            }
+
+            Map<Id, Integer> groupMsgCounts = new Map<Id, Integer>();
+            if (!convIds.isEmpty()) {
+                for (AggregateResult ar : [
+                    SELECT Conversation__c convId, COUNT(Id) cnt
+                    FROM Message__c WHERE Conversation__c IN :convIds
+                    GROUP BY Conversation__c
+                ]) {
+                    groupMsgCounts.put((Id) ar.get('convId'), (Integer) ar.get('cnt'));
+                }
+            }
+
+            for (Conversation_Member__c cm : members) {
+                String groupName = cm.Conversation__r.Group_Name__c;
+                if (searchLower != null
+                    && (groupName == null || !groupName.toLowerCase().contains(searchLower))) {
+                    continue;
+                }
+
+                String badgeSlug = contextToBadgeType(cm.Conversation__r.Context_Type__c);
+                Integer unread = cm.Unread_Count__c != null ? cm.Unread_Count__c.intValue() : 0;
+                String imageUrl = null;
+                if (String.isNotBlank(cm.Conversation__r.Related_Record_Id__c)) {
+                    try {
+                        Id postId = Id.valueOf(cm.Conversation__r.Related_Record_Id__c);
+                        imageUrl = postImageUrls.get(postId);
+                        if (cm.Conversation__r.Context_Type__c == FimbyConstants.CTX_EVENT
+                            && postEventBadgeSlugs.containsKey(postId)) {
+                            badgeSlug = postEventBadgeSlugs.get(postId);
+                        }
+                    } catch (Exception e) { /* skip */ }
+                }
+
+                CommunicationThread t = new CommunicationThread();
+                t.threadType = 'group';
+                t.badgeType = badgeSlug;
+                t.contextType = cm.Conversation__r.Context_Type__c;
+                t.isGroup = true;
+                t.threadId = cm.Conversation__c;
+                t.participantName = groupName;
+                t.participantInitials = buildGroupInitials(groupName);
+                t.participantImageUrl = imageUrl;
+                t.isOrgContact = false;
+                t.contextLabel = null;
+                t.lastMessagePreview = cm.Conversation__r.Last_Message_Preview__c;
+                t.lastActivityDate = cm.Conversation__r.Last_Message_Date__c;
+                t.isUnread = unread > 0;
+                t.unreadCount = unread;
+                t.messageCount = groupMsgCounts.containsKey(cm.Conversation__c)
+                    ? groupMsgCounts.get(cm.Conversation__c) : 0;
+                t.statusBadge = null;
+                t.actionUrl = FimbySettings.getUrl('Conversation', String.valueOf(cm.Conversation__c));
+                threads.add(t);
+            }
+
+            return threads;
+        }
+
+        private String buildGroupInitials(String groupName) {
+            if (String.isBlank(groupName)) return '?';
+            String trimmed = groupName.trim();
+            if (trimmed.length() >= 2) {
+                return trimmed.substring(0, 2).toUpperCase();
+            }
+            return trimmed.substring(0, 1).toUpperCase();
         }
 
         private List<CommunicationThread> getResponseThreads(
@@ -378,6 +497,9 @@ public with sharing class FimbyCommunicationController {
                        On_Behalf_Of_Contact__r.Organization_Account__r.Name,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Logo_URL__c,
                        Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.Name,
+                       Need_Offer_Responded_To__r.RecordType.DeveloperName,
+                       Need_Offer_Responded_To__r.Type__c,
+                       Need_Offer_Responded_To__r.Event_Type__c,
                        Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Name,
@@ -488,8 +610,16 @@ public with sharing class FimbyCommunicationController {
                             || resp.Responder_Last_Viewed__c < lastActivity);
                 }
 
+                String parentRt = resp.Need_Offer_Responded_To__r?.RecordType?.DeveloperName;
+                String parentType = resp.Need_Offer_Responded_To__r?.Type__c;
+                String parentEventType = resp.Need_Offer_Responded_To__r?.Event_Type__c;
+                String badgeSlug = postContextToBadgeSlug(parentRt, parentType, parentEventType);
+
                 CommunicationThread t = new CommunicationThread();
                 t.threadType = 'response';
+                t.badgeType = badgeSlug;
+                t.contextType = parentRt;
+                t.isGroup = false;
                 t.threadId = resp.Id;
                 t.participantName = otherName;
                 t.participantInitials = otherInitials;
@@ -623,7 +753,17 @@ public with sharing class FimbyCommunicationController {
                 }
             }
 
-            return dmUnread + responseUnread;
+            Integer groupUnread = [
+                SELECT COUNT()
+                FROM Conversation_Member__c
+                WHERE Contact__c = :myContactId
+                AND Status__c = :FimbyConstants.MEMBER_ACTIVE
+                AND Archived__c = false
+                AND Unread_Count__c > 0
+                AND Conversation__r.Is_Group__c = true
+            ];
+
+            return dmUnread + responseUnread + groupUnread;
         }
 
         /**
@@ -673,23 +813,7 @@ public with sharing class FimbyCommunicationController {
 
             String typeVal = threadType.toLowerCase();
 
-            if (typeVal == 'direct' || typeVal == 'library' || typeVal == 'vouch') {
-                Conversation__c conv = [
-                    SELECT Id, Participant_1__c, Participant_2__c,
-                           Participant_1_Unread_Count__c, Participant_2_Unread_Count__c
-                    FROM Conversation__c WHERE Id = :threadId LIMIT 1
-                ];
-                Boolean isP1 = (conv.Participant_1__c == myContactId);
-                Conversation__c upd = new Conversation__c(Id = threadId);
-                if (isP1) {
-                    upd.Participant_1_Unread_Count__c = 1;
-                } else if (conv.Participant_2__c == myContactId) {
-                    upd.Participant_2_Unread_Count__c = 1;
-                } else {
-                    return;
-                }
-                update upd;
-            } else if (typeVal == 'response') {
+            if (typeVal == 'response') {
                 Response__c resp = [
                     SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
                            Need_Offer_Responded_To__r.Posted_By__c
@@ -706,13 +830,17 @@ public with sharing class FimbyCommunicationController {
                     return;
                 }
                 update upd;
+            } else if (typeVal == 'group') {
+                setGroupMemberUnread(threadId, myContactId, true);
+            } else {
+                markConversationUnread(threadId, myContactId);
             }
         }
 
         /**
          * @description Marks a thread as read; for DM/library sets unread count to 0; for response sets last viewed to now.
-         * @param threadType direct, library, or response
-         * @param threadId Id of the Conversation__c or Response__c
+         * @param threadType direct, library, group, or response
+         * @param threadId Id of the Conversation__c, Response__c, or group Conversation__c
          */
         public void markThreadReadInternal(String threadType, Id threadId) {
             if (String.isBlank(threadType) || threadId == null) return;
@@ -722,21 +850,7 @@ public with sharing class FimbyCommunicationController {
 
             String typeVal = threadType.toLowerCase();
 
-            if (typeVal == 'direct' || typeVal == 'library' || typeVal == 'vouch') {
-                Conversation__c conv = [
-                    SELECT Id, Participant_1__c, Participant_2__c
-                    FROM Conversation__c WHERE Id = :threadId LIMIT 1
-                ];
-                Conversation__c upd = new Conversation__c(Id = threadId);
-                if (conv.Participant_1__c == myContactId) {
-                    upd.Participant_1_Unread_Count__c = 0;
-                } else if (conv.Participant_2__c == myContactId) {
-                    upd.Participant_2_Unread_Count__c = 0;
-                } else {
-                    return;
-                }
-                update upd;
-            } else if (typeVal == 'response') {
+            if (typeVal == 'response') {
                 Response__c resp = [
                     SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
                            Need_Offer_Responded_To__r.Posted_By__c
@@ -753,22 +867,24 @@ public with sharing class FimbyCommunicationController {
                     return;
                 }
                 update upd;
+            } else if (typeVal == 'group') {
+                setGroupMemberRead(threadId, myContactId);
+            } else {
+                markConversationRead(threadId, myContactId);
             }
         }
 
         /**
          * @description Archives a thread for the current user; delegates to FimbyConversationController for DM/library, or sets Poster/Responder_Archived__c for response.
-         * @param threadType direct, library, or response
-         * @param threadId Id of the Conversation__c or Response__c
+         * @param threadType direct, library, group, or response
+         * @param threadId Id of the Conversation__c, Response__c, or group Conversation__c
          */
         public void archiveThreadInternal(String threadType, Id threadId) {
             if (String.isBlank(threadType) || threadId == null) return;
 
             String typeVal = threadType.toLowerCase();
 
-            if (typeVal == 'direct' || typeVal == 'library' || typeVal == 'vouch') {
-                FimbyConversationController.archiveConversation(threadId);
-            } else if (typeVal == 'response') {
+            if (typeVal == 'response') {
                 String myContactId = FimbyIdentityRepository.getActingAsContactId();
                 if (String.isBlank(myContactId)) return;
 
@@ -788,6 +904,10 @@ public with sharing class FimbyCommunicationController {
                     return;
                 }
                 update upd;
+            } else if (typeVal == 'group') {
+                setGroupMemberArchived(threadId, FimbyIdentityRepository.getActingAsContactId(), true);
+            } else {
+                FimbyConversationController.archiveConversation(threadId);
             }
         }
 
@@ -804,9 +924,7 @@ public with sharing class FimbyCommunicationController {
 
             String typeVal = threadType.toLowerCase();
 
-            if (typeVal == 'direct' || typeVal == 'library' || typeVal == 'vouch') {
-                FimbyConversationController.unarchiveConversation(threadId);
-            } else if (typeVal == 'response') {
+            if (typeVal == 'response') {
                 String myContactId = FimbyIdentityRepository.getActingAsContactId();
                 if (String.isBlank(myContactId)) return;
 
@@ -826,8 +944,122 @@ public with sharing class FimbyCommunicationController {
                     return;
                 }
                 update upd;
+            } else if (typeVal == 'group') {
+                setGroupMemberArchived(threadId, FimbyIdentityRepository.getActingAsContactId(), false);
+            } else {
+                FimbyConversationController.unarchiveConversation(threadId);
             }
         }
+
+        private void markConversationUnread(Id conversationId, String myContactId) {
+            Conversation__c conv = [
+                SELECT Id, Participant_1__c, Participant_2__c
+                FROM Conversation__c WHERE Id = :conversationId LIMIT 1
+            ];
+            Conversation__c upd = new Conversation__c(Id = conversationId);
+            if (conv.Participant_1__c == myContactId) {
+                upd.Participant_1_Unread_Count__c = 1;
+            } else if (conv.Participant_2__c == myContactId) {
+                upd.Participant_2_Unread_Count__c = 1;
+            } else {
+                return;
+            }
+            update upd;
+        }
+
+        private void markConversationRead(Id conversationId, String myContactId) {
+            Conversation__c conv = [
+                SELECT Id, Participant_1__c, Participant_2__c
+                FROM Conversation__c WHERE Id = :conversationId LIMIT 1
+            ];
+            Conversation__c upd = new Conversation__c(Id = conversationId);
+            if (conv.Participant_1__c == myContactId) {
+                upd.Participant_1_Unread_Count__c = 0;
+            } else if (conv.Participant_2__c == myContactId) {
+                upd.Participant_2_Unread_Count__c = 0;
+            } else {
+                return;
+            }
+            update upd;
+        }
+
+        private void setGroupMemberRead(Id conversationId, String myContactId) {
+            List<Conversation_Member__c> members = [
+                SELECT Id FROM Conversation_Member__c
+                WHERE Conversation__c = :conversationId
+                AND Contact__c = :myContactId
+                AND Status__c = :FimbyConstants.MEMBER_ACTIVE
+                LIMIT 1
+            ];
+            if (members.isEmpty()) return;
+            members[0].Unread_Count__c = 0;
+            members[0].Last_Read_Date__c = System.now();
+            update members[0];
+        }
+
+        private void setGroupMemberUnread(Id conversationId, String myContactId, Boolean asUnread) {
+            List<Conversation_Member__c> members = [
+                SELECT Id FROM Conversation_Member__c
+                WHERE Conversation__c = :conversationId
+                AND Contact__c = :myContactId
+                AND Status__c = :FimbyConstants.MEMBER_ACTIVE
+                LIMIT 1
+            ];
+            if (members.isEmpty()) return;
+            if (asUnread) {
+                members[0].Unread_Count__c = 1;
+                members[0].Last_Read_Date__c = null;
+            } else {
+                members[0].Unread_Count__c = 0;
+                members[0].Last_Read_Date__c = System.now();
+            }
+            update members[0];
+        }
+
+        private void setGroupMemberArchived(Id conversationId, String myContactId, Boolean archived) {
+            if (String.isBlank(myContactId)) return;
+            List<Conversation_Member__c> members = [
+                SELECT Id FROM Conversation_Member__c
+                WHERE Conversation__c = :conversationId
+                AND Contact__c = :myContactId
+                AND Status__c = :FimbyConstants.MEMBER_ACTIVE
+                LIMIT 1
+            ];
+            if (members.isEmpty()) return;
+            members[0].Archived__c = archived;
+            update members[0];
+        }
+    }
+
+    private static String contextToBadgeType(String contextType) {
+        if (contextType == FimbyConstants.CTX_VOUCH_REQUEST) return 'vouch';
+        if (contextType == FimbyConstants.CTX_LIBRARY_LENDING) return 'library';
+        if (contextType == FimbyConstants.CTX_BULK_BUY) return 'bulkbuy';
+        if (contextType == FimbyConstants.CTX_MISSED_PICKUP) return 'checkin';
+        if (contextType == FimbyConstants.CTX_EVENT) return 'event';
+        return 'direct';
+    }
+
+    private static String eventTypeToBadgeSlug(String eventType) {
+        if (eventType == 'Gathering') {
+            return 'gathering';
+        }
+        if (eventType == 'Community_Event') {
+            return 'community-event';
+        }
+        return 'event';
+    }
+
+    private static String postContextToBadgeSlug(
+        String recordTypeDevName, String postType, String eventType
+    ) {
+        if (recordTypeDevName == FimbyConstants.RT_BULK_BUY) {
+            return 'bulkbuy';
+        }
+        if (postType == 'Event') {
+            return eventTypeToBadgeSlug(eventType);
+        }
+        return 'response';
     }
 
     private static Boolean isBlockedParticipant(Set<Id> blockedContactIds, Id contactA, Id contactB) {
@@ -849,6 +1081,9 @@ public with sharing class FimbyCommunicationController {
 
     public class CommunicationThread implements Comparable {
         @AuraEnabled public String threadType { get; set; }
+        @AuraEnabled public String badgeType { get; set; }
+        @AuraEnabled public String contextType { get; set; }
+        @AuraEnabled public Boolean isGroup { get; set; }
         @AuraEnabled public Id threadId { get; set; }
         @AuraEnabled public String participantName { get; set; }
         @AuraEnabled public String participantInitials { get; set; }

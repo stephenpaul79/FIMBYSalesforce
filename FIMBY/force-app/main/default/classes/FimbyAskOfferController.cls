@@ -203,25 +203,34 @@ public with sharing class FimbyAskOfferController {
      * Get responses for a specific Need/Offer record (for detail page related list).
      * Returns enhanced data for poster triage: amount, last message preview,
      * last activity time, unread count, and response owner for auth checks.
+     * Posters receive all responses; other viewers receive only their own.
      */
     @AuraEnabled(cacheable=false)
     public static List<Map<String, Object>> getResponsesForNeedOffer(String needOfferId) {
+        if (String.isBlank(needOfferId)) {
+            return new List<Map<String, Object>>();
+        }
+
+        FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+        Id realContactId = identity.currentUser.ContactId;
+        Id actingAsContactId = identity.actingAsContactId;
+
+        ResponseListHelper helper = new ResponseListHelper();
+        Needs_Offers__c post = helper.queryPost(needOfferId);
+        if (post == null) {
+            return new List<Map<String, Object>>();
+        }
+
+        Boolean isPoster = post.Posted_By__c == realContactId || post.Contact__c == actingAsContactId;
+        List<Response__c> responses = isPoster
+            ? helper.queryAllResponses(needOfferId)
+            : helper.queryResponsesForViewer(needOfferId, realContactId, actingAsContactId);
+
+        return mapResponsesForDetail(responses);
+    }
+
+    private static List<Map<String, Object>> mapResponsesForDetail(List<Response__c> responses) {
         List<Map<String, Object>> results = new List<Map<String, Object>>();
-
-        List<Response__c> responses = [
-            SELECT Id, Name, Responding_Contact_Text__c, Status__c, CreatedDate,
-                   Amount_Requested__c, Last_Reply__c, Last_Reply_Date__c,
-                   Poster_Unread_Count__c, OwnerId,
-                   On_Behalf_Of_Contact__c,
-                   On_Behalf_Of_Contact__r.Image_URL__c,
-                   Poster_Thanked__c, Responder_Thanked__c
-            FROM Response__c
-            WHERE Need_Offer_Responded_To__c = :needOfferId
-            AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
-            ORDER BY CreatedDate DESC
-            LIMIT 50
-        ];
-
         for (Response__c resp : responses) {
             Datetime lastActivity = resp.Last_Reply_Date__c != null
                 ? Datetime.newInstance(resp.Last_Reply_Date__c, Time.newInstance(0, 0, 0, 0))
@@ -246,7 +255,6 @@ public with sharing class FimbyAskOfferController {
                 'responderThanked' => resp.Responder_Thanked__c
             });
         }
-
         return results;
     }
 
@@ -273,12 +281,7 @@ public with sharing class FimbyAskOfferController {
             }
 
             String actorName = identity.orgDisplayName;
-            List<Response__c> pendingResponses = [
-                SELECT Id, Contact__c, On_Behalf_Of_Contact__c
-                FROM Response__c
-                WHERE Need_Offer_Responded_To__c = :recordId
-                  AND Status__c IN (:FimbyConstants.RESPONSE_NEW, :FimbyConstants.RESPONSE_ACCEPTED)
-            ];
+            List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(recordId);
             Set<Id> notifiedContacts = new Set<Id>();
             for (Response__c resp : pendingResponses) {
                 Id recipientId = resp.On_Behalf_Of_Contact__c != null
@@ -357,23 +360,16 @@ public with sharing class FimbyAskOfferController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String query = 'SELECT Id, Group_Conversation__c FROM Needs_Offers__c WHERE Id = :recordId '
-                + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
+            Needs_Offers__c row = new NeedsOffersHelper().queryVisiblePost(
+                recordId,
+                neighbourhoodAccountId,
+                adjacentIds,
+                sharedContactIds
+            );
 
-            // Mirror feed queries: only apply neighbourhood filter when context is resolvable.
-            if (String.isNotBlank(neighbourhoodAccountId)) {
-                query += ' AND (Neighbourhood__c = :neighbourhoodAccountId'
-                    + ' OR (Neighbourhood__c IN :adjacentIds AND Visibility_Scope__c IN (\'Adjacent\',\'Regional\'))'
-                    + ' OR (Neighbourhood__c IN :adjacentIds AND Posted_By__c IN :sharedContactIds))';
-            }
-
-            query += ' LIMIT 1';
-
-            List<Needs_Offers__c> rows = Database.query(query);
-
-            return rows.isEmpty()
+            return row == null
                 ? new VisibilityResult(false, true, 'This post is no longer available.')
-                : new VisibilityResult(true, false, null, rows[0].Group_Conversation__c);
+                : new VisibilityResult(true, false, null, row.Group_Conversation__c);
 
         } catch (Exception e) {
             FimbyLogger.error('FimbyAskOfferController', 'getNeedOfferVisibility', e);
@@ -392,13 +388,7 @@ public with sharing class FimbyAskOfferController {
             return null;
         }
         try {
-            List<Needs_Offers__c> rows = [
-                SELECT Group_Conversation__c
-                FROM Needs_Offers__c
-                WHERE Id = :recordId
-                LIMIT 1
-            ];
-            return rows.isEmpty() ? null : rows[0].Group_Conversation__c;
+            return new NeedsOffersHelper().queryGroupConversationId(recordId);
         } catch (Exception e) {
             FimbyLogger.error('FimbyAskOfferController', 'getGroupConversationIdForPost', e);
             return null;
@@ -421,6 +411,75 @@ public with sharing class FimbyAskOfferController {
             this.removed = removed;
             this.message = message;
             this.groupConversationId = groupConversationId;
+        }
+    }
+
+    /**
+     * @description Without sharing helper for Response__c list queries on the detail page.
+     * Community posters cannot see responder-owned rows via sharing rules alone.
+     */
+    private without sharing class ResponseListHelper {
+        public Needs_Offers__c queryPost(String needOfferId) {
+            List<Needs_Offers__c> posts = [
+                SELECT Id, Posted_By__c, Contact__c
+                FROM Needs_Offers__c
+                WHERE Id = :needOfferId
+                LIMIT 1
+            ];
+            return posts.isEmpty() ? null : posts[0];
+        }
+
+        public List<Response__c> queryAllResponses(String needOfferId) {
+            return [
+                SELECT Id, Name, Responding_Contact_Text__c, Status__c, CreatedDate,
+                       Amount_Requested__c, Last_Reply__c, Last_Reply_Date__c,
+                       Poster_Unread_Count__c, OwnerId,
+                       On_Behalf_Of_Contact__c,
+                       On_Behalf_Of_Contact__r.Image_URL__c,
+                       Poster_Thanked__c, Responder_Thanked__c
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :needOfferId
+                AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+                ORDER BY CreatedDate DESC
+                LIMIT 50
+            ];
+        }
+
+        public List<Response__c> queryResponsesForViewer(
+            String needOfferId,
+            Id realContactId,
+            Id actingAsContactId
+        ) {
+            return [
+                SELECT Id, Name, Responding_Contact_Text__c, Status__c, CreatedDate,
+                       Amount_Requested__c, Last_Reply__c, Last_Reply_Date__c,
+                       Poster_Unread_Count__c, OwnerId,
+                       On_Behalf_Of_Contact__c,
+                       On_Behalf_Of_Contact__r.Image_URL__c,
+                       Poster_Thanked__c, Responder_Thanked__c
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :needOfferId
+                AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+                AND (Contact__c = :realContactId
+                     OR On_Behalf_Of_Contact__c = :actingAsContactId
+                     OR OwnerId = :UserInfo.getUserId())
+                ORDER BY CreatedDate DESC
+                LIMIT 50
+            ];
+        }
+
+        /**
+         * @description Pending responses on a post — used when poster deletes and must notify responders.
+         * @param needOfferId The Needs_Offers__c record ID
+         * @return Active Response__c rows for notification fan-out
+         */
+        public List<Response__c> queryPendingResponses(String needOfferId) {
+            return [
+                SELECT Id, Contact__c, On_Behalf_Of_Contact__c
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :needOfferId
+                  AND Status__c IN (:FimbyConstants.RESPONSE_NEW, :FimbyConstants.RESPONSE_ACCEPTED)
+            ];
         }
     }
 
@@ -450,6 +509,43 @@ public with sharing class FimbyAskOfferController {
          */
         public void deletePost(Needs_Offers__c post) {
             delete post;
+        }
+
+        /**
+         * @description Visibility-scoped Needs_Offers__c read for detail pages.
+         */
+        public Needs_Offers__c queryVisiblePost(
+            Id recordId,
+            String neighbourhoodAccountId,
+            Set<Id> adjacentIds,
+            Set<Id> sharedContactIds
+        ) {
+            String query = 'SELECT Id, Group_Conversation__c FROM Needs_Offers__c WHERE Id = :recordId '
+                + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
+
+            if (String.isNotBlank(neighbourhoodAccountId)) {
+                query += ' AND (Neighbourhood__c = :neighbourhoodAccountId'
+                    + ' OR (Neighbourhood__c IN :adjacentIds AND Visibility_Scope__c IN (\'Adjacent\',\'Regional\'))'
+                    + ' OR (Neighbourhood__c IN :adjacentIds AND Posted_By__c IN :sharedContactIds))';
+            }
+
+            query += ' LIMIT 1';
+
+            List<Needs_Offers__c> rows = Database.query(query);
+            return rows.isEmpty() ? null : rows[0];
+        }
+
+        /**
+         * @description Group chat lookup — community FLS may hide Group_Conversation__c from uiRecordApi.
+         */
+        public Id queryGroupConversationId(Id recordId) {
+            List<Needs_Offers__c> rows = [
+                SELECT Group_Conversation__c
+                FROM Needs_Offers__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0].Group_Conversation__c;
         }
     }
 }

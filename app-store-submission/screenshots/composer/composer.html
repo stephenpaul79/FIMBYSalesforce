@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FIMBY App Store screenshot composer</title>
+  <!--
+    Store headline + device frame around a real capture.
+    Optional in-frame copy fills empty app chrome only (no fake UI controls).
+
+    Serve: screenshots/ folder → http://localhost:3456/composer/composer.html?screen=5&device=ipad
+  -->
+  <link rel="stylesheet" href="./fimby-composer-brand.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas-w: 1290px;
+      --canvas-h: 2796px;
+      --caption-zone: 22%;
+      --device-max-w: 1080px;
+      --headline-size: 56px;
+      --accent: var(--fimby-brand-teal);
+      --marketing-bg-top: var(--fimby-surface-page);
+      --marketing-bg-bottom: var(--fimby-surface-section);
+    }
+
+    html[data-device="ipad"] {
+      --canvas-w: 2064px;
+      --canvas-h: 2752px;
+      --device-max-w: 1920px;
+      --headline-size: 64px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html.export-mode body > .ui-bar { display: none; }
+
+    html.export-mode {
+      background-color: var(--marketing-bg-top);
+    }
+
+    html.export-mode body {
+      margin: 0;
+      padding: 0;
+      min-height: 0;
+      display: block;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #b8b0a6;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .ui-bar {
+      max-width: 720px;
+      width: 100%;
+      background-color: var(--fimby-surface-card);
+      border-radius: var(--fimby-radius-md);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--fimby-text-primary);
+      line-height: 1.5;
+      box-shadow: var(--fimby-shadow-card);
+    }
+
+    .ui-bar label { font-weight: 600; margin-right: 8px; color: var(--fimby-text-strong); }
+
+    .ui-bar select {
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--fimby-border-default);
+      background-color: var(--fimby-surface-card);
+      color: var(--fimby-text-primary);
+    }
+
+    .ui-bar a { color: var(--fimby-btn-primary-bg); }
+
+    .canvas {
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-rows: var(--caption-zone) minmax(0, 1fr);
+      grid-template-areas: "caption" "device";
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--marketing-bg-top) 0%, var(--marketing-bg-bottom) 100%);
+      box-shadow: 0 24px 80px rgba(38, 26, 17, 0.18);
+      position: relative;
+    }
+
+    .canvas::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 10%;
+      width: 720px;
+      height: 720px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.08;
+      filter: blur(48px);
+      pointer-events: none;
+    }
+
+    .caption-zone {
+      grid-area: caption;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 72px 28px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .wordmark {
+      width: 200px;
+      height: auto;
+      margin-bottom: 16px;
+      opacity: 0.95;
+    }
+
+    .headline {
+      margin: 0;
+      font-size: var(--headline-size);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fimby-text-strong);
+    }
+
+    .device-wrap {
+      grid-area: device;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 48px 56px;
+      min-height: 0;
+      z-index: 1;
+    }
+
+    .device-shell {
+      width: 100%;
+      max-width: var(--device-max-w);
+      border-radius: var(--fimby-radius-xl);
+      padding: 12px;
+      background: linear-gradient(145deg, #2a221c 0%, #1a1410 100%);
+      box-shadow:
+        0 32px 64px rgba(38, 26, 17, 0.22),
+        0 8px 24px rgba(38, 26, 17, 0.12);
+    }
+
+    .device-screen {
+      position: relative;
+      border-radius: calc(var(--fimby-radius-xl) - 8px);
+      overflow: hidden;
+      background-color: var(--fimby-surface-page);
+      line-height: 0;
+    }
+
+    .device-screen img.capture {
+      width: 100%;
+      height: auto;
+      display: block;
+      vertical-align: top;
+    }
+
+    /* Fills empty chrome inside the capture — not fake buttons (badges are already in the PNG) */
+    .in-frame-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 48px 48px 40px;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(240, 235, 227, 0) 0%,
+        rgba(240, 235, 227, 0.72) 40%,
+        var(--fimby-surface-page) 100%
+      );
+    }
+
+    .overlay-line {
+      margin: 0;
+      max-width: 36em;
+      font-size: clamp(18px, 2.1vw, 28px);
+      font-weight: 500;
+      line-height: 1.45;
+      color: var(--fimby-text-secondary);
+      text-align: center;
+    }
+
+    .overlay-line + .overlay-line {
+      margin-top: 8px;
+    }
+
+    .error {
+      padding: 48px;
+      color: #8b0000;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    html[data-device="ipad"] .overlay-line {
+      font-size: clamp(20px, 1.6vw, 32px);
+    }
+  </style>
+</head>
+<body>
+  <div class="ui-bar">
+    <label for="device-select">Device</label>
+    <select id="device-select" aria-label="Device target">
+      <option value="iphone">iPhone 6.7" (1290×2796)</option>
+      <option value="ipad">iPad 13" (2064×2752)</option>
+    </select>
+    <label for="screen-select" style="margin-left:12px">Screen</label>
+    <select id="screen-select" aria-label="Screenshot number">
+      <option value="1">1 — Home feed</option>
+      <option value="2">2 — Ask/Offer detail</option>
+      <option value="3">3 — Library list</option>
+      <option value="4">4 — Event detail</option>
+      <option value="5">5 — Messages (inbox)</option>
+      <option value="6">6 — Care preferences</option>
+      <option value="7">7 — Quiet-hours panda</option>
+      <option value="8">8 — Share contact info</option>
+    </select>
+    <span style="margin-left:12px">
+      <a id="export-link" href="#">Open export view</a>
+      <span id="export-size-hint">(1290×2796, no UI bar)</span>
+    </span>
+    <p style="margin:12px 0 0;font-size:13px;color:var(--fimby-text-secondary)">
+      Raw PNGs in <code>screenshots/raw/iphone/</code> and <code>screenshots/raw/ipad/</code>.
+      Marketing headline is outside the frame; optional line sits on empty in-app space only (thread badges stay from your capture).
+    </p>
+  </div>
+
+  <div id="root" class="canvas" role="img" aria-label="App Store screenshot composition"></div>
+
+  <script>
+    const WORDMARK_SVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" role="img" aria-label="FIMBY">
+        <text x="0" y="36" font-family="Inter, sans-serif" font-size="36" font-weight="700" fill="#261A11">FIMBY</text>
+      </svg>`;
+
+    const params = new URLSearchParams(location.search);
+    const exportMode = params.get('export') === '1';
+    if (exportMode) document.documentElement.classList.add('export-mode');
+
+    let currentDevice = params.get('device') === 'ipad' ? 'ipad' : 'iphone';
+    document.documentElement.setAttribute('data-device', currentDevice);
+
+    const EXPORT_SIZES = { iphone: '1290×2796', ipad: '2064×2752' };
+
+    let screens = {};
+
+    function rawPath(cfg) {
+      const file = cfg.rawFile || '';
+      if (!file) {
+        if (cfg.raw) {
+          return cfg.raw.replace('/raw/iphone/', '/raw/' + currentDevice + '/');
+        }
+        return '';
+      }
+      const encoded = file.split('/').map((part) => encodeURIComponent(part)).join('/');
+      if (location.pathname.includes('/composer/')) {
+        return '/raw/' + currentDevice + '/' + encoded;
+      }
+      return '../raw/' + currentDevice + '/' + encoded;
+    }
+
+    function overlayPercent(cfg) {
+      if (currentDevice === 'ipad' && cfg.overlayHeightPercentIpad != null) {
+        return cfg.overlayHeightPercentIpad;
+      }
+      return cfg.overlayHeightPercent || 0;
+    }
+
+    async function loadConfig() {
+      const res = await fetch('./screens.json');
+      if (!res.ok) throw new Error('Could not load screens.json');
+      return res.json();
+    }
+
+    function render(screenId) {
+      const cfg = screens[String(screenId)];
+      const root = document.getElementById('root');
+      if (!cfg) {
+        root.innerHTML = '<p class="error">Unknown screen ' + screenId + '</p>';
+        return;
+      }
+
+      document.documentElement.style.setProperty('--accent', cfg.accent || '#3A7D8C');
+
+      const overlayPct = overlayPercent(cfg);
+      const captureSrc = rawPath(cfg);
+      const lines = cfg.overlayLines || [];
+      const hasOverlay = overlayPct > 0 && lines.length > 0;
+
+      let overlayHtml = '';
+      if (hasOverlay) {
+        const lineHtml = lines
+          .map((l) => '<p class="overlay-line">' + escapeHtml(l) + '</p>')
+          .join('');
+        overlayHtml =
+          '<div class="in-frame-overlay" style="height:' + overlayPct + '%">' + lineHtml + '</div>';
+      }
+
+      const wordmark = cfg.wordmark
+        ? '<img class="wordmark" alt="FIMBY" src="data:image/svg+xml,' + encodeURIComponent(WORDMARK_SVG.trim()) + '" />'
+        : '';
+
+      root.innerHTML =
+        '<div class="caption-zone">' +
+        wordmark +
+        '<h1 class="headline">' + escapeHtml(cfg.caption) + '</h1>' +
+        '</div>' +
+        '<div class="device-wrap">' +
+        '<div class="device-shell">' +
+        '<div class="device-screen">' +
+        '<img class="capture" alt="App screen capture" src="' + captureSrc + '" />' +
+        overlayHtml +
+        '</div></div></div>';
+
+      const img = root.querySelector('img.capture');
+      img.onerror = () => {
+        if (root.querySelector('.capture-error')) return;
+        root.querySelector('.device-screen').insertAdjacentHTML(
+          'beforeend',
+          '<p class="capture-error error">Image not found: ' + escapeHtml(captureSrc) +
+          '<br><small>Serve the <code>screenshots</code> folder. See README.</small></p>'
+        );
+      };
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function updateUrl(screenId) {
+      const q = new URLSearchParams(location.search);
+      q.set('screen', screenId);
+      q.set('device', currentDevice);
+      if (exportMode) q.set('export', '1');
+      history.replaceState(null, '', '?' + q.toString());
+      document.getElementById('export-size-hint').textContent =
+        '(' + EXPORT_SIZES[currentDevice] + ', no UI bar)';
+      const link = document.getElementById('export-link');
+      const eq = new URLSearchParams(q);
+      eq.set('export', '1');
+      link.href = '?' + eq.toString();
+    }
+
+    function setScreen(id) {
+      updateUrl(id);
+      render(id);
+      document.getElementById('screen-select').value = String(id);
+    }
+
+    function setDevice(device) {
+      currentDevice = device === 'ipad' ? 'ipad' : 'iphone';
+      document.documentElement.setAttribute('data-device', currentDevice);
+      document.getElementById('device-select').value = currentDevice;
+      setScreen(document.getElementById('screen-select').value || '5');
+    }
+
+    (async () => {
+      screens = await loadConfig();
+      const initial = params.get('screen') || '5';
+      const screenSelect = document.getElementById('screen-select');
+      const deviceSelect = document.getElementById('device-select');
+      screenSelect.value = initial;
+      deviceSelect.value = currentDevice;
+      screenSelect.addEventListener('change', () => setScreen(screenSelect.value));
+      deviceSelect.addEventListener('change', () => setDevice(deviceSelect.value));
+      setScreen(initial);
+    })();
+  </script>
+</body>
+</html>

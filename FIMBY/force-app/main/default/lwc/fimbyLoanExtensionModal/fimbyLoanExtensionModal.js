@@ -208,6 +208,9 @@ export default class FimbyLoanExtensionModal extends LightningElement {
                 }
                 this._viewState = 'success';
                 this._notifyComplete();
+            } else if (result.error === 'extensionPending') {
+                this._notifyComplete();
+                this.hide();
             } else {
                 this._errorMessage = result.message || 'Something went wrong processing the extension.';
                 this._viewState = 'error';
@@ -249,6 +252,12 @@ export default class FimbyLoanExtensionModal extends LightningElement {
 
                 this._viewState = 'form';
             } else {
+                const err = result.error;
+                if (err === 'extensionPending' || err === 'waitlist' || err === 'notAuthorized') {
+                    this._notifyComplete();
+                    this.hide();
+                    return;
+                }
                 this._errorMessage = result.message || 'Unable to load loan details.';
                 this.hide();
                 return;

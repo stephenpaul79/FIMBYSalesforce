@@ -15,6 +15,7 @@ import {
   Alert,
   Animated,
   AppState,
+  Easing,
   Image,
   Platform,
   Pressable,
@@ -33,6 +34,18 @@ import {
   NotificationData,
 } from "../hooks/use-push-notifications";
 import { log, warn } from "../lib/log";
+import {
+  authTimingMark,
+  authTimingDelta,
+  deeplinkTimingMark,
+} from "../lib/auth-timing";
+import {
+  createDeepLinkIntent,
+  peekIntentPath,
+  isIntentActive,
+  type DeepLinkIntent,
+  type DeepLinkSource,
+} from "../lib/deep-link-intent";
 
 // Splash video asset
 const SPLASH_VIDEO = require("../assets/Fimby_Startup.mp4");
@@ -137,10 +150,32 @@ const SF_AUTH_HOST = "https://fimby.my.site.com";
 const REFRESH_KEY = "fimby_refresh_token";
 
 // Endpoints
-const BACKEND_LOGIN_URL = `${BACKEND_BASE_URL}/api/login`;
+const BACKEND_LOGIN_AND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/login-and-frontdoor`;
 const BACKEND_REFRESH_URL = `${BACKEND_BASE_URL}/api/session/refresh`;
 const BACKEND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/frontdoor`;
 const BACKEND_LOGOUT_URL = `${BACKEND_BASE_URL}/api/logout`;
+
+/** WebView handoff overlay — second act after native "Unlocking the door…" */
+const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
+const WEBVIEW_HANDOFF_MIN_MS = 1000;
+const WEBVIEW_HANDOFF_FADE_MS = 550;
+
+const INJECT_FALLBACK_MS = 2000;
+const SF_EC_HOST_PATTERN = /^fimby\.my\.site\.com$/i;
+
+function isExperienceCloudUrl(rawUrl: string): boolean {
+  try {
+    return SF_EC_HOST_PATTERN.test(new URL(rawUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+type FrontdoorPayload = {
+  url: string;
+  quietHoursPreference?: string | null;
+  pushNotificationsEnabled?: boolean | null;
+};
 
 // Public marketing/onboarding URLs opened in the in-app browser sheet
 const SIGN_UP_URL = "https://our.fimby.com/sign-up";
@@ -278,6 +313,8 @@ type TokenResponse = {
   expires_in?: number;
 };
 
+type LoginAndFrontdoorResponse = TokenResponse & FrontdoorPayload;
+
 function isJwtLike(token: string) {
   return token.split(".").length === 3;
 }
@@ -313,6 +350,18 @@ export default function IndexScreen() {
     }).catch(() => {});
   }, []);
 
+  React.useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        reduceMotionRef.current = enabled;
+      })
+      .catch(() => {});
+    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
+      reduceMotionRef.current = enabled;
+    });
+    return () => sub.remove();
+  }, []);
+
   // Splash video state - track separately so bootstrap can run in parallel
   const [splashVideoComplete, setSplashVideoComplete] = React.useState(false);
 
@@ -327,6 +376,13 @@ export default function IndexScreen() {
   // WebView state
   const [webViewUrl, setWebViewUrl] = React.useState<string | null>(null);
   const [webViewError, setWebViewError] = React.useState<string | null>(null);
+  const [webViewHandoffVisible, setWebViewHandoffVisible] = React.useState(false);
+  const webViewHandoffFade = useRef(new Animated.Value(1)).current;
+  const webViewHandoffShownAtRef = useRef<number | null>(null);
+  const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
+  const webViewHandoffDismissedRef = useRef(false);
+  const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reduceMotionRef = useRef(false);
 
   // Panda Screen state
   const [showPanda, setShowPanda] = React.useState(false);
@@ -506,10 +562,15 @@ export default function IndexScreen() {
   // ✅ Guard to prevent bootstrap from running multiple times
   const bootstrapRanRef = useRef(false);
 
-  // Pending Universal Link path captured before the WebView is ready or before
-  // the user has signed in. Consumed by openFimby() the next time it mints a
-  // frontdoor URL, so the user lands directly on the deep-linked page.
-  const pendingDeepLinkRef = useRef<string | null>(null);
+  // Pending Universal Link intent (one tap → one redirect → discard).
+  const deepLinkIntentRef = useRef<DeepLinkIntent | null>(null);
+  // True when bootstrap captured a Universal Link (cold start) — beats push replay.
+  const bootstrapCapturedUniversalLinkRef = useRef(false);
+  // Warm inject: confirm navigation or fall back to openFimby(ret).
+  const injectFallbackRef = useRef<{ path: string; confirmed: boolean } | null>(null);
+  const injectFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Replay a link received while backgrounded once AppState returns to active.
+  const resumeDeepLinkPathRef = useRef<string | null>(null);
 
   // Cold-start Universal Links are captured by runBootstrap() (which controls
   // the auto-login openFimby call). This guard stops the separate deep-link
@@ -527,6 +588,107 @@ export default function IndexScreen() {
   React.useEffect(() => {
     accessTokenRef.current = accessToken;
   }, [accessToken]);
+
+  const captureDeepLinkIntent = useCallback((path: string, source: DeepLinkSource) => {
+    const intent = createDeepLinkIntent(path, source);
+    if (!intent) return;
+    deepLinkIntentRef.current = intent;
+    deeplinkTimingMark("captured", { path, source });
+    log("[DEEPLINK] captured:", path, source);
+  }, []);
+
+  const discardDeepLinkIntent = useCallback((reason?: string) => {
+    if (deepLinkIntentRef.current) {
+      log("[DEEPLINK] discarded", reason ?? "");
+      deepLinkIntentRef.current = null;
+    }
+  }, []);
+
+  const clearInjectFallback = useCallback(() => {
+    if (injectFallbackTimeoutRef.current) {
+      clearTimeout(injectFallbackTimeoutRef.current);
+      injectFallbackTimeoutRef.current = null;
+    }
+    injectFallbackRef.current = null;
+  }, []);
+
+  const dismissWebViewHandoff = useCallback(
+    (opts?: { immediate?: boolean }) => {
+      if (webViewHandoffDismissTimeoutRef.current) {
+        clearTimeout(webViewHandoffDismissTimeoutRef.current);
+        webViewHandoffDismissTimeoutRef.current = null;
+      }
+
+      const finish = () => {
+        webViewHandoffDismissedRef.current = true;
+        setWebViewHandoffVisible(false);
+      };
+
+      if (opts?.immediate || reduceMotionRef.current) {
+        webViewHandoffFade.setValue(0);
+        finish();
+        return;
+      }
+
+      Animated.timing(webViewHandoffFade, {
+        toValue: 0,
+        duration: WEBVIEW_HANDOFF_FADE_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) finish();
+      });
+    },
+    [webViewHandoffFade]
+  );
+
+  const scheduleWebViewHandoffDismiss = useCallback(() => {
+    if (webViewHandoffDismissedRef.current) return;
+    const shownAt = webViewHandoffShownAtRef.current;
+    const ecReadyAt = webViewHandoffEcReadyAtRef.current;
+    if (shownAt == null || ecReadyAt == null) return;
+
+    if (webViewHandoffDismissTimeoutRef.current) {
+      clearTimeout(webViewHandoffDismissTimeoutRef.current);
+    }
+
+    const dismissAt = Math.max(shownAt + WEBVIEW_HANDOFF_MIN_MS, ecReadyAt);
+    const delay = Math.max(0, dismissAt - Date.now());
+
+    webViewHandoffDismissTimeoutRef.current = setTimeout(() => {
+      webViewHandoffDismissTimeoutRef.current = null;
+      if (webViewHandoffDismissedRef.current) return;
+      dismissWebViewHandoff();
+    }, delay);
+  }, [dismissWebViewHandoff]);
+
+  const showWebViewHandoff = useCallback(() => {
+    if (webViewHandoffDismissTimeoutRef.current) {
+      clearTimeout(webViewHandoffDismissTimeoutRef.current);
+      webViewHandoffDismissTimeoutRef.current = null;
+    }
+    webViewHandoffDismissedRef.current = false;
+    webViewHandoffEcReadyAtRef.current = null;
+    webViewHandoffShownAtRef.current = Date.now();
+    setWebViewHandoffVisible(true);
+    webViewHandoffFade.setValue(1);
+  }, [webViewHandoffFade]);
+
+  const handleWebViewLoadEnd = useCallback(
+    (url?: string, loading?: boolean) => {
+      authTimingMark("webview_load_end", { url: url ?? "", loading });
+      authTimingDelta("frontdoor_url_set", "webview_load_end");
+
+      if (!url || !isExperienceCloudUrl(url)) return;
+      if (loading === true) return;
+      if (webViewHandoffDismissedRef.current) return;
+      if (webViewHandoffEcReadyAtRef.current != null) return;
+
+      webViewHandoffEcReadyAtRef.current = Date.now();
+      scheduleWebViewHandoffDismiss();
+    },
+    [scheduleWebViewHandoffDismiss]
+  );
 
   // Holds an access token when push is wanted but OS permission is still
   // undetermined at login. The first-time permission prompt is deferred out of
@@ -775,49 +937,6 @@ export default function IndexScreen() {
     return { token: data.access_token };
   }, []);
 
-  const loginWithBackend = React.useCallback(async (code: string, codeVerifier: string) => {
-    if (!codeVerifier) {
-      throw new Error("Missing PKCE codeVerifier.");
-    }
-
-    setStatus("Doing the secret handshake…");
-    log("Calling /api/login at:", BACKEND_LOGIN_URL);
-
-    const res = await fetch(BACKEND_LOGIN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code,
-        code_verifier: codeVerifier,
-        redirect_uri: redirectUri,
-      }),
-    });
-
-    if (!res.ok) {
-      const body = await jsonOrText(res);
-      log("Backend /api/login failed:", body);
-      throw new Error("Login failed. See logs.");
-    }
-
-    const data = (await res.json()) as TokenResponse;
-
-    if (!data?.access_token || !data?.refresh_token) {
-      log("Backend /api/login unexpected payload:", data);
-      throw new Error("Login payload missing tokens.");
-    }
-
-    await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
-    setAccessToken(data.access_token);
-
-    log("[AUTH] login successful");
-
-    // Push registration is handled by openFimby (called right after login),
-    // which reconciles against the user's Salesforce push preference from the
-    // frontdoor response. Registering here too would double-prompt/register.
-
-    return data.access_token;
-  }, []);
-
   const shouldShowQuietHoursPanda = useCallback(async (serverPref: string | null): Promise<boolean> => {
     const pref = serverPref
       || (await AsyncStorage.getItem("fimby_quiet_hours"))
@@ -833,16 +952,44 @@ export default function IndexScreen() {
     return lastPandaDate !== today && quietNow;
   }, []);
 
+  const applyFrontdoorPayload = useCallback(
+    async (token: string, payload: FrontdoorPayload, retUsed: string | null) => {
+      const url = payload?.url;
+      if (!url) {
+        log("Frontdoor response missing url:", payload);
+        Alert.alert("Could not open FIMBY", "No URL returned.");
+        return;
+      }
+
+      if (await shouldShowQuietHoursPanda(payload.quietHoursPreference ?? null)) {
+        setShowPanda(true);
+        return;
+      }
+
+      if (retUsed) {
+        discardDeepLinkIntent("frontdoor-consumed");
+        deeplinkTimingMark("consumed", { path: retUsed });
+      }
+
+      authTimingMark("frontdoor_url_set");
+      showWebViewHandoff();
+      setWebViewUrl(url);
+      setStatus("You're in!");
+      reconcilePushRegistration(token, payload.pushNotificationsEnabled);
+    },
+    [
+      shouldShowQuietHoursPanda,
+      discardDeepLinkIntent,
+      showWebViewHandoff,
+      reconcilePushRegistration,
+    ]
+  );
+
   const openFimby = React.useCallback(
     async (maybeAccess?: string | null, retArg?: string | null) => {
       let token = maybeAccess || accessToken;
 
-      // Resolve the deep-link target: explicit arg wins, otherwise consume any
-      // pending Universal Link captured before sign-in or before WebView mount.
-      // We don't clear pendingDeepLinkRef here — quiet-hours panda may
-      // interrupt and the next openFimby call needs to see the same value.
-      // The ref is cleared at the moment we actually setWebViewUrl().
-      const ret = retArg ?? pendingDeepLinkRef.current;
+      const ret = retArg ?? peekIntentPath(deepLinkIntentRef.current);
 
       if (!token) {
         const result = await refreshSession();
@@ -862,6 +1009,7 @@ export default function IndexScreen() {
       }
 
       setStatus("Unlocking the door…");
+      authTimingMark("frontdoor_fetch_start", { hasRet: !!ret });
 
       const frontdoorUrl = ret
         ? `${BACKEND_FRONTDOOR_URL}?ret=${encodeURIComponent(ret)}`
@@ -878,7 +1026,6 @@ export default function IndexScreen() {
         const body = await jsonOrText(res);
         log("Frontdoor failed:", body);
 
-        // One retry after refresh (nice UX)
         const result = await refreshSession();
         if (result.sessionExpired) {
           Alert.alert(
@@ -904,48 +1051,76 @@ export default function IndexScreen() {
           return;
         }
 
-        const retryJson = await retry.json();
-        const retryUrl = retryJson?.url;
-        if (!retryUrl) {
-          Alert.alert("Could not open FIMBY", "No URL returned.");
-          return;
-        }
-
-        if (await shouldShowQuietHoursPanda(retryJson.quietHoursPreference ?? null)) {
-          setShowPanda(true);
-          return;
-        }
-
-        if (pendingDeepLinkRef.current === ret) pendingDeepLinkRef.current = null;
-        setWebViewUrl(retryUrl);
-        setStatus("You're in!");
-
-        reconcilePushRegistration(result.token, retryJson.pushNotificationsEnabled);
+        const retryJson = (await retry.json()) as FrontdoorPayload;
+        await applyFrontdoorPayload(result.token, retryJson, ret);
         return;
       }
 
-      const json = await res.json();
-      const url = json?.url;
-
-      if (!url) {
-        log("Frontdoor response missing url:", json);
-        Alert.alert("Could not open FIMBY", "No URL returned.");
-        return;
-      }
-
-      if (await shouldShowQuietHoursPanda(json.quietHoursPreference ?? null)) {
-        setShowPanda(true);
-        return;
-      }
-
-      if (pendingDeepLinkRef.current === ret) pendingDeepLinkRef.current = null;
-      setWebViewUrl(url);
-      setStatus("You're in!");
-
-      reconcilePushRegistration(token, json.pushNotificationsEnabled);
+      const json = (await res.json()) as FrontdoorPayload;
+      await applyFrontdoorPayload(token, json, ret);
     },
-    [accessToken, refreshSession, reconcilePushRegistration, shouldShowQuietHoursPanda]
+    [accessToken, refreshSession, applyFrontdoorPayload]
   );
+
+  const loginWithBackendAndFrontdoor = React.useCallback(
+    async (code: string, codeVerifier: string) => {
+      if (!codeVerifier) {
+        throw new Error("Missing PKCE codeVerifier.");
+      }
+
+      setStatus("Doing the secret handshake…");
+      authTimingMark("login_start");
+      log("Calling /api/login-and-frontdoor at:", BACKEND_LOGIN_AND_FRONTDOOR_URL);
+
+      const ret = peekIntentPath(deepLinkIntentRef.current);
+      const res = await fetch(BACKEND_LOGIN_AND_FRONTDOOR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          code_verifier: codeVerifier,
+          redirect_uri: redirectUri,
+          ...(ret ? { ret } : {}),
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await jsonOrText(res);
+        log("Backend /api/login-and-frontdoor failed:", body);
+        throw new Error("Login failed. See logs.");
+      }
+
+      const data = (await res.json()) as LoginAndFrontdoorResponse;
+
+      if (!data?.access_token || !data?.refresh_token || !data?.url) {
+        log("Backend /api/login-and-frontdoor unexpected payload:", data);
+        throw new Error("Login payload missing tokens or URL.");
+      }
+
+      await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
+      setAccessToken(data.access_token);
+      authTimingMark("login_frontdoor_done");
+      authTimingDelta("login_start", "login_frontdoor_done");
+      log("[AUTH] login-and-frontdoor successful");
+
+      setStatus("Welcome back!");
+      await applyFrontdoorPayload(
+        data.access_token,
+        {
+          url: data.url,
+          quietHoursPreference: data.quietHoursPreference,
+          pushNotificationsEnabled: data.pushNotificationsEnabled,
+        },
+        ret
+      );
+
+      return data.access_token;
+    },
+    [applyFrontdoorPayload]
+  );
+
+  const openFimbyRef = useRef(openFimby);
+  openFimbyRef.current = openFimby;
 
   const logout = React.useCallback(async () => {
     setBusy(true);
@@ -968,14 +1143,16 @@ export default function IndexScreen() {
 
       await SecureStore.deleteItemAsync(REFRESH_KEY);
       setAccessToken(null);
-      setWebViewUrl(null); // Exit WebView and return to main screen
-      // Reset bootstrap guard so next app open can auto-login
+      setWebViewUrl(null);
+      dismissWebViewHandoff({ immediate: true });
+      discardDeepLinkIntent("logout");
+      clearInjectFallback();
       bootstrapRanRef.current = false;
       setStatus("Until next time!");
     } finally {
       setBusy(false);
     }
-  }, [accessToken, unregisterTokenFromBackend]);
+  }, [accessToken, unregisterTokenFromBackend, discardDeepLinkIntent, clearInjectFallback, dismissWebViewHandoff]);
 
   /**
    * ========= WEBVIEW LOGIN INTERCEPTION (LOGOUT TRIGGER) =========
@@ -1005,6 +1182,8 @@ export default function IndexScreen() {
 
         // Immediately clear WebView to exit (don't wait for async logout)
         setWebViewUrl(null);
+        dismissWebViewHandoff({ immediate: true });
+        discardDeepLinkIntent("webview-logout");
         setStatus("Waving goodbye…");
 
         // Fire-and-forget the rest of logout cleanup
@@ -1047,7 +1226,7 @@ export default function IndexScreen() {
 
       return true;
     },
-    []
+    [discardDeepLinkIntent, dismissWebViewHandoff]
   );
 
   /**
@@ -1060,7 +1239,11 @@ export default function IndexScreen() {
       const url = navState.url;
       log("[WebView] onNavigationStateChange:", url);
 
-      // Clear notification tray + badge when user views notifications page
+      if (injectFallbackRef.current && isExperienceCloudUrl(url)) {
+        injectFallbackRef.current.confirmed = true;
+        clearInjectFallback();
+      }
+
       if (url.includes("/notifications")) {
         Notifications.dismissAllNotificationsAsync().catch(() => {});
         Notifications.setBadgeCountAsync(0).catch(() => {});
@@ -1079,6 +1262,8 @@ export default function IndexScreen() {
 
         // Immediately clear WebView to exit
         setWebViewUrl(null);
+        dismissWebViewHandoff({ immediate: true });
+        discardDeepLinkIntent("webview-logout");
         setStatus("Waving goodbye…");
 
         // Fire-and-forget the rest of logout cleanup
@@ -1105,7 +1290,7 @@ export default function IndexScreen() {
         })();
       }
     },
-    []
+    [clearInjectFallback, discardDeepLinkIntent, dismissWebViewHandoff]
   );
 
   /**
@@ -1115,9 +1300,10 @@ export default function IndexScreen() {
     (event: WebViewErrorEvent) => {
       const { nativeEvent } = event;
       log("[WebView] Render error:", nativeEvent.description);
+      dismissWebViewHandoff({ immediate: true });
       setWebViewError(nativeEvent.description || "Something went wrong loading the page.");
     },
-    []
+    [dismissWebViewHandoff]
   );
 
   /**
@@ -1130,10 +1316,11 @@ export default function IndexScreen() {
       log("[WebView] HTTP error:", statusCode, nativeEvent.url);
 
       if (statusCode === 401 || statusCode === 403) {
+        dismissWebViewHandoff({ immediate: true });
         setWebViewError("Your session has expired. Let's get you signed back in.");
       }
     },
-    []
+    [dismissWebViewHandoff]
   );
 
   /**
@@ -1164,30 +1351,51 @@ export default function IndexScreen() {
 
   /**
    * Apply a Universal Link deep-link path to the WebView.
-   *
-   * Three states:
-   * 1. WebView already mounted -> inject JS to navigate the existing session.
-   * 2. Signed in but WebView not yet visible -> open with ret so frontdoor
-   *    lands the user directly on the deep-linked page.
-   * 3. Signed out -> stash the path; openFimby() consumes pendingDeepLinkRef
-   *    on the next call (post-OAuth or after panda dismiss).
    */
   const applyDeepLink = useCallback((path: string) => {
     log("[DEEPLINK] applying:", path);
-    if (webViewRef.current) {
+    deeplinkTimingMark("apply", { path });
+
+    if (AppState.currentState !== "active") {
+      resumeDeepLinkPathRef.current = path;
+      captureDeepLinkIntent(path, "universal-link");
+      log("[DEEPLINK] deferred until AppState active:", path);
+      return;
+    }
+
+    captureDeepLinkIntent(path, "universal-link");
+
+    if (webViewRef.current && webViewUrl) {
       const target = `${SF_AUTH_HOST}${path}`;
       webViewRef.current.injectJavaScript(
         `window.location.assign(${JSON.stringify(target)}); true;`
       );
+      discardDeepLinkIntent("inject-consumed");
+      deeplinkTimingMark("inject", { path });
+
+      clearInjectFallback();
+      injectFallbackRef.current = { path, confirmed: false };
+      injectFallbackTimeoutRef.current = setTimeout(() => {
+        const pending = injectFallbackRef.current;
+        if (!pending || pending.confirmed) return;
+        const token = accessTokenRef.current;
+        if (!token) return;
+        log("[DEEPLINK] inject fallback → openFimby", path);
+        deeplinkTimingMark("inject-fallback", { path });
+        captureDeepLinkIntent(path, "universal-link");
+        void openFimbyRef.current(token, path);
+        injectFallbackRef.current = null;
+      }, INJECT_FALLBACK_MS);
       return;
     }
-    if (accessToken) {
-      void openFimby(accessToken, path);
+
+    if (accessTokenRef.current || accessToken) {
+      void openFimbyRef.current(accessTokenRef.current ?? accessToken, path);
       return;
     }
-    pendingDeepLinkRef.current = path;
+
     log("[DEEPLINK] stashed for after sign-in:", path);
-  }, [accessToken, openFimby]);
+  }, [accessToken, webViewUrl, captureDeepLinkIntent, discardDeepLinkIntent, clearInjectFallback]);
 
   /**
    * Cold-start deep linking when the app was opened from a killed state via push.
@@ -1195,6 +1403,16 @@ export default function IndexScreen() {
    */
   const handleColdStartNotification = useCallback(async () => {
     if (coldStartPushHandledRef.current) {
+      return;
+    }
+
+    if (
+      bootstrapCapturedUniversalLinkRef.current &&
+      isIntentActive(deepLinkIntentRef.current)
+    ) {
+      log("[DEEPLINK] skipping cold-start push — Universal Link intent active");
+      coldStartPushHandledRef.current = true;
+      await clearLastNotificationResponse();
       return;
     }
 
@@ -1242,8 +1460,11 @@ export default function IndexScreen() {
       if (initialUrl) {
         const path = parseFimbyDeepLink(initialUrl);
         if (path) {
-          pendingDeepLinkRef.current = path;
+          captureDeepLinkIntent(path, "bootstrap");
+          bootstrapCapturedUniversalLinkRef.current = true;
+          deeplinkTimingMark("bootstrap-captured", { path });
           log("[DEEPLINK] cold-start captured in bootstrap:", path);
+          await clearLastNotificationResponse();
         }
       }
     } catch (e: any) {
@@ -1267,6 +1488,7 @@ export default function IndexScreen() {
           };
         } else if (result.token) {
           log("Valid session found, auto-opening FIMBY...");
+          authTimingMark("bootstrap_auto_login");
           await openFimby(result.token);
         } else {
           // Refresh failed (token expired/invalid for other reasons)
@@ -1291,7 +1513,7 @@ export default function IndexScreen() {
     } finally {
       setBooting(false);
     }
-  }, [refreshSession, openFimby, isNetworkError]);
+  }, [refreshSession, openFimby, isNetworkError, captureDeepLinkIntent]);
 
   // Initial bootstrap effect
   React.useEffect(() => {
@@ -1338,6 +1560,19 @@ export default function IndexScreen() {
       cancelled = true;
       sub.remove();
     };
+  }, [applyDeepLink]);
+
+  // Replay a deep link that arrived while the app was backgrounded.
+  React.useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") return;
+      const path = resumeDeepLinkPathRef.current;
+      if (!path) return;
+      resumeDeepLinkPathRef.current = null;
+      log("[DEEPLINK] replay on AppState active:", path);
+      applyDeepLink(path);
+    });
+    return () => sub.remove();
   }, [applyDeepLink]);
 
   /**
@@ -1390,8 +1625,10 @@ export default function IndexScreen() {
 
       // Handle non-success responses (user cancelled, dismissed, or error)
       if (result.type === 'dismiss' || result.type === 'cancel') {
+        discardDeepLinkIntent("oauth-cancel");
         setStatus("Neighbours are waiting.");
       } else if (result.type === 'error') {
+        discardDeepLinkIntent("oauth-error");
         log("OAuth error:", result.error);
         setStatus("Something went sideways. Try again?");
       }
@@ -1399,7 +1636,7 @@ export default function IndexScreen() {
     } finally {
       setBusy(false);
     }
-  }, [request, promptAsync, isNetworkError]);
+  }, [request, promptAsync, isNetworkError, discardDeepLinkIntent]);
 
   /**
    * ========= HANDLE PKCE REDIRECT =========
@@ -1420,6 +1657,7 @@ export default function IndexScreen() {
       if (!expectedState || !returnedState || returnedState !== expectedState) {
         log("OAuth state mismatch, rejecting auth response");
         handledAuthCodeRef.current = null;
+        discardDeepLinkIntent("oauth-state-mismatch");
         Alert.alert("Sign in failed", "Authentication response was invalid. Please try again.");
         return;
       }
@@ -1441,17 +1679,17 @@ export default function IndexScreen() {
           verifier.slice(0, 6)
         );
 
-        const token = await loginWithBackend(code, verifier);
-        setStatus("Welcome back!");
-        await openFimby(token);
+        const token = await loginWithBackendAndFrontdoor(code, verifier);
+        if (!token) return;
       } catch (e: any) {
-        handledAuthCodeRef.current = null; // allow retry if it truly failed
+        handledAuthCodeRef.current = null;
+        discardDeepLinkIntent("oauth-failed");
         Alert.alert("Sign in failed", e?.message || "Unknown error");
       } finally {
         setBusy(false);
       }
     })();
-  }, [response, request?.codeVerifier, loginWithBackend, openFimby]);
+  }, [response, request?.codeVerifier, request?.state, loginWithBackendAndFrontdoor, discardDeepLinkIntent]);
 
   // Open a public URL in the in-app browser sheet (sign-up, help, faq).
   // Dismisses back into the native screen; never takes over the auth WebView.
@@ -1569,9 +1807,9 @@ export default function IndexScreen() {
 
   // If WebView URL is set, show the WebView full-screen with no UI chrome
   if (webViewUrl) {
-    // Clear badge count when entering WebView (user is engaging with app)
     clearBadge();
     const themeColors = THEME_COLORS[appTheme];
+    const handoffPalette = PREAUTH_COLORS[appTheme];
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: themeColors.statusBar }]} edges={["top"]}>
         <StatusBar style={themeColors.barStyle} backgroundColor={themeColors.statusBar} />
@@ -1592,6 +1830,11 @@ export default function IndexScreen() {
           javaScriptEnabled={true}
           domStorageEnabled={true}
           startInLoadingState={true}
+          renderLoading={() => (
+            <View style={[styles.webViewHandoff, { backgroundColor: handoffPalette.bg }]}>
+              <ActivityIndicator size="large" color={handoffPalette.spinner} />
+            </View>
+          )}
           sharedCookiesEnabled={true}
           thirdPartyCookiesEnabled={true}
           applicationNameForUserAgent="FIMBY-WebView/1.0"
@@ -1601,11 +1844,27 @@ export default function IndexScreen() {
           onError={onWebViewError}
           onHttpError={onHttpError}
           onMessage={onWebViewMessage}
-          onLoadEnd={() => {
+          onLoadEnd={(event) => {
+            const { url, loading } = event.nativeEvent;
+            handleWebViewLoadEnd(url, loading);
             handleColdStartNotification();
             void maybeRunDeferredPushPrompt();
           }}
         />
+        {webViewHandoffVisible && (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.webViewHandoff,
+              { backgroundColor: handoffPalette.bg, opacity: webViewHandoffFade },
+            ]}
+          >
+            <ActivityIndicator size="large" color={handoffPalette.spinner} style={styles.spinner} />
+            <Text style={[styles.webViewHandoffText, { color: handoffPalette.secondary }]}>
+              {WEBVIEW_HANDOFF_MESSAGE}
+            </Text>
+          </Animated.View>
+        )}
         {webViewError && (
           <View style={styles.errorOverlay}>
             <Text style={styles.errorOverlayText}>{webViewError}</Text>
@@ -1880,6 +2139,18 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
+  },
+  webViewHandoff: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  webViewHandoffText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 22,
   },
   errorOverlay: {
     ...StyleSheet.absoluteFillObject,

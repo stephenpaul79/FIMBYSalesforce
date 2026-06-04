@@ -20,6 +20,7 @@ import createEventGroupChat from '@salesforce/apex/FimbyGroupConversationControl
 import declineResponseApex from '@salesforce/apex/FimbyResponseThreadController.declineResponse';
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
+import { formatShortDate, formatLocalDate } from 'c/fimbyDateUtils';
 import flagContent from '@salesforce/apex/FimbyModeratorDashboardController.flagContent';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
 
@@ -345,10 +346,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     async loadResponses() {
-        if (!this.recordId) return;
+        const needOfferId = this.effectiveRecordId;
+        if (!needOfferId) return;
         this.isLoadingResponses = true;
         try {
-            this.responses = await getResponsesForNeedOffer({ needOfferId: this.recordId });
+            this.responses = await getResponsesForNeedOffer({ needOfferId });
             this._syncQuickResponseState();
         } catch (error) {
             console.error('Error loading responses:', error);
@@ -861,11 +863,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
     get startDate() {
         const d = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Start_Date__c') : '';
-        return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        return formatShortDate(d);
     }
     get endDate() {
         const d = this.record ? getFieldValue(this.record, 'Needs_Offers__c.End_Date__c') : '';
-        return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        return formatShortDate(d);
     }
     get daysOld() {
         const v = this.record ? getFieldValue(this.record, 'Needs_Offers__c.of_Days_Old__c') : null;
@@ -874,7 +876,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get formattedExpiration() {
         // End_Date__c serves as expiration date for non-event posts
         const d = this.record ? getFieldValue(this.record, 'Needs_Offers__c.End_Date__c') : '';
-        return d ? new Date(d).toLocaleDateString() : '';
+        return formatLocalDate(d);
     }
     get hasExpiration() {
         const d = this.record ? getFieldValue(this.record, 'Needs_Offers__c.End_Date__c') : '';
@@ -1186,6 +1188,15 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get totalAccepted() {
         const v = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Accepted__c') : null;
         return v != null ? v : '';
+    }
+    get totalReserved() {
+        const v = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Reserved__c') : null;
+        return v != null ? v : '';
+    }
+    get allocationUnitLabel() {
+        const raw = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Allocation_Unit_Label__c') : null;
+        const label = raw && String(raw).trim() ? String(raw).trim() : 'share';
+        return label.toLowerCase();
     }
 
     // ============================================
@@ -1509,19 +1520,68 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // ============================================
     // PERSONA: POSTER ATTENTION STRIP
     // ============================================
+    // Capacity rollups when quantity is tracked; workflow-only when not.
+    // Unread / per-row status stay on each response row.
 
     get attentionItems() {
         const stats = this.responseSummaryStats;
         if (!stats) return [];
-        const cfg = this.eventTypeConfig;
+
+        if (this.tracksQuantityForResponses) {
+            return this._buildCapacityAttentionItems();
+        }
+
+        if (stats.newCount > 0) {
+            const n = stats.newCount;
+            return [{
+                key: 'awaiting-review',
+                label: n === 1 ? '1 awaiting review' : `${n} awaiting review`,
+                pillClass: 'pill-new'
+            }];
+        }
+        return [];
+    }
+
+    _buildCapacityAttentionItems() {
         const items = [];
-        if (stats.hasUnread) items.push({ label: `${stats.unreadCount} unread`, pillClass: 'pill-unread' });
-        if (stats.newCount > 0) items.push({ label: `${stats.newCount} new`, pillClass: 'pill-new' });
-        if (stats.acceptedCount > 0) items.push({ label: `${stats.acceptedCount} accepted`, pillClass: 'pill-accepted' });
-        if ((!cfg || cfg.usesCapacity) && this.tracksQuantityForResponses && this.totalAvailable !== '') {
-            items.push({ label: `${this.totalAvailable} available`, pillClass: 'pill-available' });
+        const fulfilled = this._inboxStripFulfilledLabel();
+        const remaining = this._inboxStripRemainingLabel();
+        if (fulfilled != null) {
+            items.push({ key: 'fulfilled', label: fulfilled, pillClass: 'pill-accepted' });
+        }
+        if (remaining != null) {
+            items.push({ key: 'remaining', label: remaining, pillClass: 'pill-available' });
         }
         return items;
+    }
+
+    _inboxStripFulfilledLabel() {
+        if (this.isBulkBuyType) {
+            if (this.totalReserved === '') return null;
+            const n = Number(this.totalReserved);
+            return n === 1 ? '1 reserved' : `${n} reserved`;
+        }
+        if (this.totalAccepted === '') return null;
+        const n = Number(this.totalAccepted);
+        if (this.isGathering) {
+            return n === 1 ? '1 attending' : `${n} attending`;
+        }
+        return n === 1 ? '1 accepted' : `${n} accepted`;
+    }
+
+    _inboxStripRemainingLabel() {
+        if (this.totalAvailable === '') return null;
+        const n = Number(this.totalAvailable);
+        if (this.isGathering) {
+            const cfg = this.eventTypeConfig;
+            return cfg ? cfg.countLabel(n) : (n === 1 ? '1 spot left' : `${n} spots left`);
+        }
+        if (this.isBulkBuyType) {
+            const unit = this.allocationUnitLabel;
+            const unitWord = n === 1 ? unit : (unit.endsWith('s') ? unit : `${unit}s`);
+            return n === 1 ? `1 ${unitWord} left` : `${n} ${unitWord} left`;
+        }
+        return n === 1 ? '1 available' : `${n} available`;
     }
 
     get showAttentionStrip() { return this.isPosterPersona && this.attentionItems.length > 0; }

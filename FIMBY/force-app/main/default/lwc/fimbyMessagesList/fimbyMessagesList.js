@@ -14,23 +14,19 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import {
+    getInboxBadge,
+    getThreadAvatarIcon,
+    getGroupAvatarVariant
+} from 'c/fimbyThreadBadgeConfig';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
 const SWIPE_ACTION_WIDTH = 80;
 
-const BADGE_CONFIG = {
-    direct:   { label: 'Direct Msg', cssClass: 'inbox-badge badge-direct' },
-    response: { label: 'Ask / Offer', cssClass: 'inbox-badge badge-response' },
-    library:  { label: 'Lending',   cssClass: 'inbox-badge badge-library' },
-    bulkbuy:  { label: 'Bulk Buy',  cssClass: 'inbox-badge badge-bulkbuy' },
-    checkin:  { label: 'Check In',  cssClass: 'inbox-badge badge-checkin' },
-    vouch:    { label: 'Vouch',     cssClass: 'inbox-badge badge-vouch' }
-};
-
 const TYPE_FILTERS = [
-    { key: 'all',      label: 'All' },
-    { key: 'unread',   label: 'Unread' },
+    { key: 'all', label: 'All' },
+    { key: 'unread', label: 'Unread' },
     { key: 'archived', label: 'Archived' }
 ];
 
@@ -283,10 +279,15 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
     }
 
     processThread(thread) {
-        const badge = BADGE_CONFIG[thread.threadType] || BADGE_CONFIG.direct;
+        const badgeType = thread.badgeType || thread.threadType || 'direct';
+        const badge = getInboxBadge(badgeType);
         const isUnread = !!thread.isUnread;
         const count = thread.messageCount || 0;
-        const hasParticipantImage = !!thread.participantImageUrl;
+        const isGroup = !!thread.isGroup;
+        const completedImageUrl = this._completeImageUrl(thread.participantImageUrl);
+        const hasPostImage = isGroup && !!completedImageUrl;
+        const showGroupIconAvatar = isGroup && !hasPostImage;
+        const hasParticipantImage = !isGroup && !!thread.participantImageUrl;
         const archiveAction = this.isArchivedView ? 'unarchive' : 'archive';
         const archiveLabel = this.isArchivedView ? 'Unarchive' : 'Archive';
 
@@ -295,11 +296,17 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         const previewText = showPreview ? (thread.lastMessagePreview || '') : '';
         const hasSecondLine = !!(subjectLine || previewText);
 
+        const groupVariant = showGroupIconAvatar ? getGroupAvatarVariant(badgeType) : '';
+        const rowAriaLabel = isGroup
+            ? `${badge.label} group: ${thread.participantName || 'conversation'}`
+            : `Open conversation with ${thread.participantName || 'neighbour'}`;
+
         return {
             ...thread,
             actionUrl: toExperiencePath(thread.actionUrl) || thread.actionUrl,
             formattedDate: this.formatGmailDate(thread.lastActivityDate),
             rowClass: 'inbox-row' + (isUnread ? ' unread' : '') + ' has-kebab',
+            rowAriaLabel,
             badgeLabel: badge.label,
             badgeCssClass: badge.cssClass,
             messageCountDisplay: count > 1 ? String(count) : '',
@@ -309,11 +316,19 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             readStatusAriaLabel: isUnread ? 'Mark as read' : 'Mark as unread',
             readStatusIconUrl: isUnread ? this.readIconUrl : this.unreadIconUrl,
             readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread'),
-            participantImageUrl: this._completeImageUrl(thread.participantImageUrl),
+            participantImageUrl: completedImageUrl,
             isOrgContact: !!thread.isOrgContact,
             hasParticipantImage,
+            hasPostImage,
+            showGroupIconAvatar,
+            groupAvatarIconUrl: `${IMPACT_ICONS}/${getThreadAvatarIcon(badgeType)}`,
+            groupAvatarClass: showGroupIconAvatar
+                ? `thread-avatar group-avatar group-avatar-${groupVariant}`
+                : 'thread-avatar',
             participantInitials: this.getInitials(thread.participantName),
-            avatarClass: 'thread-avatar' + (thread.isOrgContact ? ' thread-avatar-org' : ''),
+            avatarClass: isGroup
+                ? (hasPostImage ? 'thread-avatar thread-avatar-group' : `thread-avatar group-avatar group-avatar-${groupVariant}`)
+                : ('thread-avatar' + (thread.isOrgContact ? ' thread-avatar-org' : '')),
             archiveAction,
             archiveLabel,
             subjectLine,
@@ -355,6 +370,16 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         if (parent) {
             const initials = parent.querySelector('.thread-avatar-initials, .banner-avatar-initials, .contact-avatar-initials');
             if (initials) initials.style.display = '';
+        }
+    }
+
+    handleGroupPostImageError(event) {
+        const img = event.target;
+        img.style.display = 'none';
+        const parent = img.parentElement;
+        if (parent) {
+            const fallback = parent.querySelector('.group-avatar-fallback');
+            if (fallback) fallback.style.display = '';
         }
     }
 

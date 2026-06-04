@@ -9,7 +9,16 @@ public class FimbyQuickResponseControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id
+              AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -99,6 +108,58 @@ public class FimbyQuickResponseControllerTest {
 
         Map<String, Object> ctx = (Map<String, Object>) result.get('context');
         System.assertEquals('Test Offer', ctx.get('name'), 'Should return post name');
+    }
+
+    @isTest
+    static void testAskOfferType_FromOtherUsersPost() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact viewerContact = new Contact(
+            FirstName = 'Quick',
+            LastName = 'Viewer',
+            AccountId = posterContact.AccountId,
+            Email = 'quick.viewer@fimby.test.com'
+        );
+        insert viewerContact;
+        User viewerUser = FimbyTestDataFactory.createCommunityUser(viewerContact.Id, null, true);
+
+        Needs_Offers__c post;
+        System.runAs(posterUser) {
+            Id recordTypeId;
+            try {
+                recordTypeId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+            } catch (Exception e) {
+                recordTypeId = null;
+            }
+
+            post = new Needs_Offers__c(
+                Name = 'Neighbour Offer',
+                Details__c = 'Offer from another neighbour',
+                Status__c = 'Posted',
+                Posted_By__c = posterContact.Id,
+                Contact__c = posterContact.Id,
+                Giver_Recipient_Type__c = 'Self',
+                Neighbourhood__c = posterContact.AccountId,
+                Total_Quantity__c = 5,
+                End_Date__c = Date.today().addDays(7)
+            );
+            if (recordTypeId != null) {
+                post.RecordTypeId = recordTypeId;
+            }
+            insert post;
+        }
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(viewerUser) {
+            result = FimbyQuickResponseController.getQuickResponseContext(post.Id, 'askOffer');
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Viewer should load post context');
+        Map<String, Object> ctx = (Map<String, Object>) result.get('context');
+        System.assertEquals('Neighbour Offer', ctx.get('name'), 'Should return poster offer name');
     }
 
     @isTest

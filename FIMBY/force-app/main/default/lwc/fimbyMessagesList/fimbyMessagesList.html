@@ -93,14 +93,21 @@
                         <div class="swipe-foreground">
                             <div role="button" tabindex="0"
                                  class={thread.rowClass}
-                                 aria-label="Open conversation"
+                                 aria-label={thread.rowAriaLabel}
                                  onclick={handleThreadClick}
                                  onkeydown={handleThreadKeydown}
                                  data-thread-id={thread.threadId}
                                  data-thread-type={thread.threadType}
                                  data-action-url={thread.actionUrl}>
                                 <div class={thread.avatarClass}>
-                                    <template lwc:if={thread.hasParticipantImage}>
+                                    <template lwc:if={thread.hasPostImage}>
+                                        <img src={thread.participantImageUrl} alt="" class="thread-avatar-img" onerror={handleGroupPostImageError} />
+                                        <img src={thread.groupAvatarIconUrl} alt="" class="group-avatar-icon group-avatar-fallback" />
+                                    </template>
+                                    <template lwc:elseif={thread.showGroupIconAvatar}>
+                                        <img src={thread.groupAvatarIconUrl} alt="" class="group-avatar-icon" />
+                                    </template>
+                                    <template lwc:elseif={thread.hasParticipantImage}>
                                         <img src={thread.participantImageUrl} alt="" class="thread-avatar-img" onerror={handleAvatarError} />
                                         <span class="thread-avatar-initials" style="display:none">{thread.participantInitials}</span>
                                     </template>

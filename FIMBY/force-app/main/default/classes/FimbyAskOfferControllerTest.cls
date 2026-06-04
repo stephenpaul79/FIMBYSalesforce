@@ -16,7 +16,9 @@ public class FimbyAskOfferControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        // Community users inherit the linked Contact's Email on insert, so match on Username
+        // (which retains the '@testorg.com' suffix) rather than Email.
+        return [SELECT Id, ContactId FROM User WHERE Username LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
     }
 
     private static Contact getTestContact() {
@@ -309,6 +311,59 @@ public class FimbyAskOfferControllerTest {
         System.assertNotEquals(null, responses, 'Should return responses list');
         // No responses created, so list should be empty
         System.assertEquals(0, responses.size(), 'Should have no responses initially');
+    }
+
+    @isTest
+    static void testGetResponsesForNeedOffer_PosterSeesResponderOwnedRow() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact responderContact = new Contact(
+            FirstName = 'List',
+            LastName = 'Responder',
+            AccountId = posterContact.AccountId,
+            Email = 'list.responder@fimby.test.com'
+        );
+        insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Need For Poster Response List',
+            'description' => 'Testing poster can list responder-owned responses',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1
+        };
+
+        Map<String, Object> createResult;
+        System.runAs(posterUser) {
+            createResult = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+        }
+        String needId = (String) createResult.get('recordId');
+
+        Response__c resp = new Response__c(
+            Name = 'Poster List Response',
+            Need_Offer_Responded_To__c = needId,
+            Contact__c = responderContact.Id,
+            On_Behalf_Of_Contact__c = responderContact.Id,
+            Reply_To_Contact__c = posterContact.Id,
+            Status__c = 'New',
+            Amount_Requested__c = 1
+        );
+        System.runAs(responderUser) {
+            insert resp;
+        }
+
+        Test.startTest();
+        List<Map<String, Object>> responses;
+        System.runAs(posterUser) {
+            responses = FimbyAskOfferController.getResponsesForNeedOffer(needId);
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, responses.size(), 'Poster should see responder-owned response');
+        System.assertEquals(resp.Id, responses[0].get('id'), 'Should return the responder response id');
     }
 
     @isTest

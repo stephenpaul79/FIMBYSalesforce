@@ -20,17 +20,14 @@ public with sharing class FimbyResponseController {
                 };
             }
 
-            Needs_Offers__c needOffer = [
-                SELECT Id, Name, Details__c, Full_Details__c, Posting_Details__c, Image_1_URL__c,
-                       Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
-                       Auto_Accept_Responses__c, Neighbourhood__c,
-                       OwnerId, Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
-                       RecordType.DeveloperName, Type__c
-                FROM Needs_Offers__c
-                WHERE Id = :recordId
-                WITH SECURITY_ENFORCED
-                LIMIT 1
-            ];
+            Needs_Offers__c needOffer = new ResponseQueryHelper().queryNeedOfferForResponse(recordId);
+            if (needOffer == null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'noRecordId',
+                    'message' => 'No Need or Offer selected.'
+                };
+            }
 
             Boolean isNeed = needOffer.RecordType?.DeveloperName == FimbyConstants.RT_NEED;
             if (!isNeed && needOffer.Total_Available__c <= 0) {
@@ -425,14 +422,12 @@ public with sharing class FimbyResponseController {
     @AuraEnabled
     public static Map<String, Object> getResponseForStatusUpdate(String recordId) {
         try {
-            Response__c response = [
-                SELECT Id, Name, Status__c, OwnerId,
-                       Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.OwnerId
-                FROM Response__c
-                WHERE Id = :recordId
-                WITH SECURITY_ENFORCED
-                LIMIT 1
-            ];
+            Response__c response = new ResponseQueryHelper().queryResponseForStatusUpdate(recordId);
+            if (response == null) {
+                AuraHandledException ex = new AuraHandledException('Error getting response: Record not found.');
+                ex.setMessage('Error getting response: Record not found.');
+                throw ex;
+            }
 
             String currentUserId = UserInfo.getUserId();
             Boolean isResponseOwner = currentUserId == response.OwnerId;
@@ -949,6 +944,42 @@ public with sharing class FimbyResponseController {
                 WHERE Id = :responseId
                 LIMIT 1
             ];
+        }
+
+        /**
+         * @description Queries a Response__c record for the status-update modal.
+         * Posters must load responder-owned rows; sharing rules alone would return zero rows.
+         * @param recordId The Response__c record ID
+         * @return The Response__c record or null if not found
+         */
+        public Response__c queryResponseForStatusUpdate(String recordId) {
+            List<Response__c> results = [
+                SELECT Id, Name, Status__c, OwnerId,
+                       Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.OwnerId
+                FROM Response__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return results.isEmpty() ? null : results[0];
+        }
+
+        /**
+         * @description Queries a Needs_Offers__c record for the response composer.
+         * @param recordId The Needs_Offers__c record ID
+         * @return The Needs_Offers__c record or null if not found
+         */
+        public Needs_Offers__c queryNeedOfferForResponse(String recordId) {
+            List<Needs_Offers__c> results = [
+                SELECT Id, Name, Details__c, Full_Details__c, Posting_Details__c, Image_1_URL__c,
+                       Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
+                       Auto_Accept_Responses__c, Neighbourhood__c,
+                       OwnerId, Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
+                       RecordType.DeveloperName, Type__c
+                FROM Needs_Offers__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return results.isEmpty() ? null : results[0];
         }
     }
 

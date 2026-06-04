@@ -904,6 +904,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             case 'confirmWaitlist':
                 return this.userContext?.request?.status === 'Requesting Confirmation';
             case 'requestExtension':
+                return this.userContext?.hasActiveLoan === true
+                    && this.loanStatusDerived !== 'extensionRequested';
             case 'return':
                 return this.userContext?.hasActiveLoan === true;
             case 'verifyReturn':

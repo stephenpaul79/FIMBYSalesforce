@@ -237,11 +237,11 @@ export default class FimbyLendingConfirmationModal extends LightningElement {
             } else {
                 const err = result.error;
                 if (err === 'notOnWaitlist' || err === 'notFirst' || err === 'notConfirmable') {
-                    this._viewState = 'alreadyHandled';
-                } else {
-                    this._errorMessage = result.message || 'Unable to load this request.';
-                    this._viewState = 'error';
+                    this.hide();
+                    return;
                 }
+                this._errorMessage = result.message || 'Unable to load this request.';
+                this._viewState = 'error';
             }
         } catch (err) {
             this._errorMessage = err.body?.message || 'Something went wrong loading the request.';

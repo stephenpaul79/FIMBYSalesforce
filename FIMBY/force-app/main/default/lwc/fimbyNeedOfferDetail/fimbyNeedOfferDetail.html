@@ -242,7 +242,7 @@
                             <template lwc:if={showAttentionStrip}>
                                 <div class="attention-strip">
                                     <template for:each={attentionItems} for:item="item">
-                                        <span key={item.label} class={item.pillClass}>{item.label}</span>
+                                        <span key={item.key} class={item.pillClass}>{item.label}</span>
                                     </template>
                                 </div>
                             </template>

@@ -77,18 +77,12 @@ public with sharing class FimbyQuickResponseController {
     }
 
     private static Map<String, Object> getPostContext(String recordId) {
-        Needs_Offers__c post = [
-            SELECT Id, Name, Details__c, Full_Details__c, Image_1_URL__c,
-                   Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
-                   Status__c, Type__c, RecordType.DeveloperName,
-                   Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
-                   Event_Type__c, Event_Details__c, Location__c,
-                   Expected_Attendance__c, Event_Link__c
-            FROM Needs_Offers__c
-            WHERE Id = :recordId
-            WITH SECURITY_ENFORCED
-            LIMIT 1
-        ];
+        Needs_Offers__c post = new PostContextHelper().queryPost(recordId);
+        if (post == null) {
+            AuraHandledException ex = new AuraHandledException('Post not found.');
+            ex.setMessage('Post not found.');
+            throw ex;
+        }
 
         String posterName = '';
         if (post.Posted_By__r != null) {
@@ -115,5 +109,25 @@ public with sharing class FimbyQuickResponseController {
             'expectedAttendance' => post.Expected_Attendance__c,
             'eventLink' => post.Event_Link__c
         };
+    }
+
+    /**
+     * @description Without sharing read for quick-response modal post context.
+     */
+    private without sharing class PostContextHelper {
+        public Needs_Offers__c queryPost(String recordId) {
+            List<Needs_Offers__c> rows = [
+                SELECT Id, Name, Details__c, Full_Details__c, Image_1_URL__c,
+                       Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
+                       Status__c, Type__c, RecordType.DeveloperName,
+                       Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
+                       Event_Type__c, Event_Details__c, Location__c,
+                       Expected_Attendance__c, Event_Link__c
+                FROM Needs_Offers__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
     }
 }
