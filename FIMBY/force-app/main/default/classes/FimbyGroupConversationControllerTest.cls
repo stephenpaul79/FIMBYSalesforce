@@ -185,6 +185,7 @@ public class FimbyGroupConversationControllerTest {
         List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get('messages');
         System.assertEquals(1, messages.size(), 'Should have 1 message');
         System.assertEquals(1, result.get('totalCount'), 'Total should be 1');
+        System.assertEquals('Bulk_Buy', result.get('contextType'), 'Should return conversation context');
     }
 
     @isTest
@@ -740,6 +741,85 @@ public class FimbyGroupConversationControllerTest {
         System.assertEquals(orgContact.Id, msg.Sender__c, 'Sender should be org contact (acting-as identity)');
         System.assertEquals(organiserContact.Id, msg.Sent_By__c, 'Sent_By should be real contact (who typed)');
         System.assertNotEquals(msg.Sender__c, msg.Sent_By__c, 'Sender and Sent_By should differ for org identity');
+    }
+
+    @isTest
+    static void testSendGroupMessage_DoesNotNotifySenderOrgMemberWhenActingAsSelf() {
+        User organiserUser = getOrganiserUser();
+        Contact organiserContact = getOrganiserContact();
+        Contact memberContact = getMemberContact();
+
+        Account orgAccount = new Account(Name = 'Notify Test Org');
+        try {
+            orgAccount.RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+                .get('Organization').getRecordTypeId();
+        } catch (Exception e) { /* RT may not exist */ }
+        insert orgAccount;
+
+        Contact orgContact = new Contact(
+            FirstName = 'Org', LastName = 'NotifyTest',
+            AccountId = organiserContact.AccountId,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccount.Id
+        );
+        insert orgContact;
+        orgAccount.Organization_Contact__c = orgContact.Id;
+        update orgAccount;
+
+        insert new Support_Relationship__c(
+            Contact__c = organiserContact.Id,
+            Related_Organization__c = orgAccount.Id,
+            Relationship_Type__c = 'Community_Group_Rep',
+            Status__c = 'Approved',
+            Neighbourhood__c = organiserContact.AccountId
+        );
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true, Group_Name__c = 'Identity Notify Test',
+            Context_Type__c = 'Event', Status__c = 'Active'
+        );
+        insert conv;
+
+        insert new List<Conversation_Member__c>{
+            new Conversation_Member__c(
+                Conversation__c = conv.Id, Contact__c = orgContact.Id,
+                Role__c = 'Owner', Status__c = 'Active', Joined_Date__c = System.now()
+            ),
+            new Conversation_Member__c(
+                Conversation__c = conv.Id, Contact__c = memberContact.Id,
+                Role__c = 'Member', Status__c = 'Active', Joined_Date__c = System.now()
+            )
+        };
+
+        organiserContact.Logged_In_As_Contact__c = null;
+        organiserContact.Logged_In_As_Neighbourhood__c = null;
+        update organiserContact;
+        FimbyIdentityRepository.clearCache();
+
+        Test.startTest();
+        System.runAs(organiserUser) {
+            FimbyGroupConversationController.sendGroupMessage(conv.Id, 'Hello as myself');
+        }
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Contact__c FROM Notification__c
+            WHERE Type__c = :FimbyConstants.NOTIF_EVENT_CHAT
+            AND Related_Record_Id__c = :String.valueOf(conv.Id)
+        ];
+        System.assertEquals(1, notifs.size(),
+            'Only the other member should be notified, not the sender org membership row');
+        System.assertEquals(memberContact.Id, notifs[0].Contact__c);
+
+        Conversation_Member__c orgMember = [
+            SELECT Unread_Count__c FROM Conversation_Member__c
+            WHERE Conversation__c = :conv.Id AND Contact__c = :orgContact.Id
+            LIMIT 1
+        ];
+        System.assertEquals(
+            0, orgMember.Unread_Count__c == null ? 0 : orgMember.Unread_Count__c.intValue(),
+            'Sender org member row should not get an unread bump when messaging as self'
+        );
     }
 
     @isTest

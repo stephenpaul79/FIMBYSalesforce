@@ -152,6 +152,6 @@ Tracked boolean + chevron `<button>` + `slideDown` CSS. Mobile default: collapse
 
 ## Onboarding Structure
 
-- **Registration** (`fimbyUserRegistration`): pre-account, 5 steps — Info → Location → Photo → Interests → Review
-- **Profile setup** (`fimbyOnboardingModal`): post-login, 5 steps — only name required; steps 2–5 optional
-- **Walkthrough**: CMS-driven (`FimbyCmsHelper`), dismissible per-session (`sessionStorage`) or permanently (Apex). Re-invocable via `showWalkthrough()`
+- **Signup** (pre-account): `FIMBY_Public_Signup_Page` flow at `/sign-up`; standard Experience Cloud self-register at `/register`. No LWC — not `fimbyUserRegistration` (removed; was never wired live).
+- **Profile setup** (`fimbyOnboardingPage` at `/onboarding`): post-login Phase 1 — name required; photo, about-you, care prefs, vouch optional. Replaces legacy `fimbyOnboardingModal`.
+- **Walkthrough**: Phase 2 of `fimbyOnboardingPage` (hard-coded content in `fimbyWalkthroughContent.js`); dismissible per-session or permanently via Apex flags.

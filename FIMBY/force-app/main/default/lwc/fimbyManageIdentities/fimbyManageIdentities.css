@@ -2,25 +2,6 @@
     display: block;
     background-color: var(--fimby-surface-page);
 }
-.paper-pill {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-.paper-pill--draft {
-    background-color: var(--fimby-warning-bg, #fef3c7);
-    color: var(--fimby-warning-text, #78350f);
-}
-.paper-pill--pending {
-    background-color: var(--fimby-info-bg, #dbeafe);
-    color: var(--fimby-info-text, #1e3a8a);
-}
-.paper-pill--inactive {
-    background-color: var(--fimby-surface-muted, #f3f4f6);
-    color: var(--fimby-text-tertiary, #6b6b6b);
-}
 .manage-identities-page {
     min-height: calc(100vh - var(--fimby-header-height, 78px));
     min-height: calc(100dvh - var(--fimby-header-height, 78px));
@@ -69,10 +50,10 @@
     flex-direction: column;
     gap: 8px;
 }
-/* Desktop: distinct columns */
+/* Desktop: avatar + identity info + actions */
 .identity-row {
     display: grid;
-    grid-template-columns: 44px 1fr auto auto;
+    grid-template-columns: 44px 1fr auto;
     align-items: center;
     gap: 12px;
     padding: 10px;
@@ -92,7 +73,8 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: flex-start;
+    gap: 4px;
 }
 .row-name {
     font-weight: 600;
@@ -111,47 +93,37 @@
     color: var(--fimby-text-muted);
     font-style: italic;
 }
-/* Status in its own column — fit-content so it doesn't flex */
-.status-cell {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 0;
-}
 .row-actions {
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.status-pill {
+/* Tint badges — same pattern as library detail / responsive list */
+.status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: var(--fimby-badge-font-size, 0.75rem);
-    font-weight: var(--fimby-badge-font-weight, 600);
+    width: fit-content;
     padding: var(--fimby-badge-padding, 2px 10px);
     border-radius: var(--fimby-badge-radius, 9999px);
-    width: fit-content;
-    flex-shrink: 0;
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    line-height: 1;
     pointer-events: none;
     user-select: none;
 }
-.status-pill.approved {
-    background-color: var(--fimby-success);
-    color: #fff;
+.status-active {
+    background-color: var(--fimby-success-tint);
+    color: var(--fimby-success);
 }
-.status-pill.pending {
-    background-color: var(--fimby-warning);
-    color: #fff;
+.status-pending {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-warning);
 }
-.status-pill.inactive {
-    background-color: var(--fimby-text-muted);
-    color: #fff;
-}
-.status-dot {
-    width: 8px;
-    height: 8px;
+.status-inactive {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-error);
 }
 
 .pill-btn {
@@ -372,7 +344,7 @@
     border-color: var(--fimby-border-strong);
 }
 
-/* Mobile: status wraps under name, buttons centered */
+/* Mobile: stack actions below identity block */
 @media (max-width: 767px) {
     .identity-row {
         display: flex;
@@ -386,20 +358,9 @@
         flex: 1;
         min-width: 0;
     }
-    /* Status wraps underneath name */
-    .status-cell {
-        width: 100%;
-        order: 3;
-        justify-content: flex-start;
-        margin-top: -4px;
-    }
-    .status-cell .status-pill {
-        width: fit-content;
-    }
     .row-actions {
         width: 100%;
-        order: 4;
-        justify-content: center;
+        justify-content: flex-end;
         padding-top: 4px;
     }
 }

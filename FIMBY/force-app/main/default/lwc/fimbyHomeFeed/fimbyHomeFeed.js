@@ -14,6 +14,7 @@ import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCe
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 
 import Id from '@salesforce/user/Id';
@@ -339,11 +340,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     _measureHeaderHeight() {
-        const header = document.querySelector('header.sticky-header');
-        if (header) {
-            const height = header.getBoundingClientRect().height;
-            this.template.host.style.setProperty('--sticky-top', `${height}px`);
-        }
+        applyStickyHeaderOffset(this.template.host);
     }
 
     disconnectedCallback() {

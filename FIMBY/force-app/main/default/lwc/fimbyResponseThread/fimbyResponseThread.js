@@ -13,6 +13,7 @@ import getShareContactInfoData from '@salesforce/apex/FimbyResponseThreadControl
 import shareContactInfoApex from '@salesforce/apex/FimbyResponseThreadController.shareContactInfo';
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 
 const PAGE_SIZE = 50;
 const TERMINAL_STATUSES = ['Declined', 'Cancelled', 'Expired'];
@@ -373,11 +374,7 @@ export default class FimbyResponseThread extends LightningElement {
     }
 
     _measureHeaderHeight() {
-        const header = document.querySelector('header.sticky-header');
-        if (header) {
-            const height = header.getBoundingClientRect().height;
-            this.template.host.style.setProperty('--sticky-top', `${height}px`);
-        }
+        applyStickyHeaderOffset(this.template.host);
     }
 
     _handleScrollDirection() {

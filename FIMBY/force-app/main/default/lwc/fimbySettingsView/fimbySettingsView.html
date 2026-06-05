@@ -22,7 +22,12 @@
                     </h3>
                     <div class="field-grid">
                         <div class="field-item full-width">
-                            <span class="field-label">Username</span>
+                            <div class="field-label-row">
+                                <span class="field-label">Username</span>
+                                <span class="field-label-note">
+                                    (email <a href="mailto:help@fimby.com">help@fimby.com</a> to change your username)
+                                </span>
+                            </div>
                             <span class="field-value">{settings.username}</span>
                         </div>
                     </div>
@@ -325,6 +330,17 @@
                     </button>
 
                     <template lwc:if={showBlockedSection}>
+                        <template lwc:if={canBlockNeighbours}>
+                            <div class="blocked-actions">
+                                <button type="button" class="btn btn-block-outline" onclick={handleOpenBlockModal}>
+                                    Block someone
+                                </button>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <p class="blocked-acting-as-hint">Switch back to yourself to block or unblock neighbours.</p>
+                        </template>
+
                         <template lwc:if={isLoadingBlocked}>
                             <div class="blocked-loading">
                                 <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
@@ -340,11 +356,13 @@
                                                 <span class="blocked-name">{bc.contactName}</span>
                                                 <span class="blocked-date">Blocked {bc.formattedDate}</span>
                                             </div>
-                                            <button class="btn-unblock"
-                                                    onclick={handleUnblock}
-                                                    data-contact-id={bc.contactId}>
-                                                Unblock
-                                            </button>
+                                            <template lwc:if={canBlockNeighbours}>
+                                                <button type="button" class="btn-unblock"
+                                                        onclick={handleUnblock}
+                                                        data-contact-id={bc.contactId}>
+                                                    Unblock
+                                                </button>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -407,8 +425,8 @@
         <!-- Delete Confirmation Modal (graceful default + opt-in skip-grace checkbox) -->
         <template lwc:if={showDeleteConfirm}>
             <div class="modal-overlay" onclick={handleDeleteCancel}>
-                <div class="modal-content" onclick={stopPropagation}>
-                    <h3 class="modal-title">{deleteConfirmTitle}</h3>
+                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onclick={stopPropagation}>
+                    <h3 id="delete-modal-title" class="modal-title">{deleteConfirmTitle}</h3>
                     <p class="modal-message">{deleteConfirmBody}</p>
                     <label class="skip-grace-row">
                         <input type="checkbox"
@@ -430,11 +448,114 @@
             </div>
         </template>
 
+        <!-- Block neighbour: search then confirm -->
+        <template lwc:if={showBlockModal}>
+            <div class="modal-overlay" onclick={handleCloseBlockModal}>
+                <div class="block-modal-content" role="dialog" aria-modal="true" aria-labelledby="block-modal-title" onclick={stopPropagation}>
+                    <header class="block-modal-header">
+                        <div class="block-modal-title-row">
+                            <img src={blockedIconUrl} alt="" class="block-modal-icon">
+                            <h2 id="block-modal-title" class="block-modal-title">{blockModalTitle}</h2>
+                        </div>
+                        <button type="button" class="modal-close-btn" onclick={handleCloseBlockModal} title="Close" aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                    </header>
+
+                    <div class="block-modal-body">
+                        <template lwc:if={showBlockSearchStep}>
+                            <p class="block-intro">Search for a neighbour in your area. You do not need to have shared contact info first.</p>
+                            <label class="block-label" for="block-search-input">Find a neighbour</label>
+                            <input id="block-search-input"
+                                   type="text"
+                                   class="block-input block-search-input"
+                                   placeholder="Search by name or email (min 2 characters)..."
+                                   value={blockSearchTerm}
+                                   oninput={handleBlockSearch} />
+                            <template lwc:if={blockSearching}>
+                                <p class="block-search-status">Searching...</p>
+                            </template>
+                            <template lwc:if={blockSearchResults.length}>
+                                <div class="block-results-list" role="listbox" aria-label="Search results">
+                                    <template for:each={blockSearchResults} for:item="person">
+                                        <button type="button" key={person.contactId}
+                                                class={person.resultClass}
+                                                role="option"
+                                                onclick={handleSelectBlockTarget}
+                                                data-contact-id={person.contactId}
+                                                data-contact-name={person.contactName}>
+                                            <span class="result-name">{person.contactName}</span>
+                                            <template lwc:if={person.email}>
+                                                <span class="result-email">{person.email}</span>
+                                            </template>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+
+                        <template lwc:if={showBlockConfirmStep}>
+                            <p class="block-warning">
+                                Blocking removes visibility between you and this person. Neither of you will see each other&apos;s posts, messages, or profiles.
+                            </p>
+                            <div class="block-field">
+                                <label class="block-label" for="block-reason-input">Reason (optional)</label>
+                                <input id="block-reason-input"
+                                       type="text"
+                                       class="block-input"
+                                       value={blockReason}
+                                       oninput={handleBlockReasonChange}
+                                       placeholder="Why are you blocking?" />
+                            </div>
+                            <div class="report-toggle">
+                                <label class="report-label">
+                                    <input type="checkbox"
+                                           checked={blockIsReporting}
+                                           onchange={handleBlockReportToggle}
+                                           aria-describedby="block-report-help" />
+                                    <span class="report-label-text">Ask for a neighbourhood check-in</span>
+                                </label>
+                                <p id="block-report-help" class="block-help-text">
+                                    Lets your neighbourhood team know you would like a gentle follow-up.
+                                    They review privately; the person you block is not told you asked.
+                                    You can block with or without this.
+                                </p>
+                            </div>
+                            <template lwc:if={blockIsReporting}>
+                                <div class="block-field">
+                                    <label class="block-label" for="block-report-details">Details (optional)</label>
+                                    <textarea id="block-report-details"
+                                              class="report-textarea"
+                                              value={blockReportDetails}
+                                              oninput={handleBlockReportDetailsChange}
+                                              placeholder="Anything our team should know?"></textarea>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+
+                    <footer class="block-modal-footer">
+                        <template lwc:if={showBlockSearchStep}>
+                            <button type="button" class="cancel-btn" onclick={handleCloseBlockModal}>Cancel</button>
+                        </template>
+                        <template lwc:if={showBlockConfirmStep}>
+                            <button type="button" class="cancel-btn" onclick={handleBackToBlockSearch}>Back</button>
+                            <button type="button" class="cancel-btn" onclick={handleCloseBlockModal}>Cancel</button>
+                            <button type="button" class="block-btn" onclick={handleConfirmBlock} disabled={blockConfirmDisabled}>
+                                <template lwc:if={isBlocking}>Blocking...</template>
+                                <template lwc:else>Block</template>
+                            </button>
+                        </template>
+                    </footer>
+                </div>
+            </div>
+        </template>
+
         <!-- Push permission denied: device blocked notifications, so we reverted the toggle -->
         <template lwc:if={showPushPermissionModal}>
             <div class="modal-overlay" onclick={handleClosePushPermissionModal}>
-                <div class="modal-content" onclick={stopPropagation}>
-                    <h3 class="modal-title">Turn on notifications on your phone</h3>
+                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="push-permission-modal-title" onclick={stopPropagation}>
+                    <h3 id="push-permission-modal-title" class="modal-title">Turn on notifications on your phone</h3>
                     <p class="modal-message">
                         FIMBY needs permission from your phone before it can send push notifications.
                         Open your device Settings, allow notifications for FIMBY, then come back and

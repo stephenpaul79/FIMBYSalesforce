@@ -64,8 +64,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+    width: 100%;
     cursor: pointer;
     margin-bottom: 0;
+}
+
+.section-header-clickable .section-title {
+    flex: 1;
+    min-width: 0;
 }
 
 .section-header-clickable:hover {
@@ -116,7 +123,7 @@
 }
 
 .field-label {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--fimby-text-secondary);
     text-transform: uppercase;
@@ -128,11 +135,32 @@
     color: var(--fimby-text-strong);
 }
 
+.field-label-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.field-label-note {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.4;
+}
+
+.field-label-note a {
+    color: var(--fimby-brand-teal);
+    text-decoration: underline;
+}
+
 .empty-hint {
-    font-size: 0.85rem;
-    color: var(--fimby-text-muted);
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
     margin: 12px 0 0;
     font-style: italic;
+    line-height: 1.5;
 }
 
 /* ========== SECTION ACTION ========== */
@@ -161,7 +189,7 @@
     padding: 8px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -198,7 +226,7 @@
 }
 
 .toggle-sub-group .toggle-label {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 400;
 }
 
@@ -256,14 +284,14 @@
 }
 
 .category-header-label {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--fimby-text-secondary);
     text-transform: uppercase;
     font-weight: 600;
 }
 
 .category-header-col {
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     color: var(--fimby-text-secondary);
     text-transform: uppercase;
     font-weight: 600;
@@ -284,7 +312,7 @@
 }
 
 .category-label {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--fimby-text-primary);
 }
@@ -317,7 +345,7 @@
 }
 
 .sunday-rest-note {
-    font-size: 0.82rem;
+    font-size: 0.875rem;
     color: var(--fimby-text-secondary);
     font-style: italic;
     line-height: 1.5;
@@ -366,15 +394,23 @@
 .blocked-header-right {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .blocked-count {
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.3;
     color: var(--fimby-text-secondary);
-    background: var(--fimby-surface-page);
-    padding: 2px 8px;
-    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-input, var(--fimby-surface-page));
+    border: 1px solid var(--fimby-border-default);
+    padding: 4px 10px;
+    border-radius: var(--fimby-badge-radius, var(--fimby-radius-sm));
 }
 
 .blocked-loading {
@@ -403,8 +439,8 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--fimby-text-secondary);
-    color: white;
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -428,18 +464,22 @@
 }
 
 .blocked-date {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--fimby-text-secondary);
+    line-height: 1.4;
 }
 
 .btn-unblock {
-    padding: 6px 14px;
-    border: 1px solid var(--fimby-btn-primary-bg);
-    border-radius: var(--fimby-radius-md);
-    background: transparent;
+    box-sizing: border-box;
+    padding: 8px 16px;
+    min-height: 44px;
+    border: 2px solid var(--fimby-btn-primary-bg);
+    border-radius: var(--fimby-btn-radius);
+    background-color: transparent;
     color: var(--fimby-btn-primary-bg);
-    font-size: 0.75rem;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -448,9 +488,302 @@
     background: var(--fimby-selected-bg);
 }
 
+.blocked-actions {
+    margin-top: 16px;
+}
+
+.blocked-acting-as-hint {
+    font-size: 0.875rem;
+    color: var(--fimby-text-primary);
+    margin: 12px 0 0;
+    line-height: 1.5;
+}
+
+/* ========== BLOCK NEIGHBOUR MODAL ========== */
+.block-modal-content {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--fimby-shadow-modal);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    max-height: calc(90dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    overflow: hidden;
+    align-self: center;
+}
+
+.block-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    flex-shrink: 0;
+}
+
+.block-modal-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.block-modal-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.block-modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin: 0;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.modal-close-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.block-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 0 1 auto;
+}
+
+.block-intro {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 12px;
+    line-height: 1.5;
+}
+
+.block-warning {
+    font-size: 0.9375rem;
+    color: var(--fimby-text-primary);
+    margin: 0 0 16px;
+    line-height: 1.5;
+}
+
+.block-field {
+    margin-bottom: 16px;
+}
+
+.block-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 6px;
+}
+
+.block-input,
+.report-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-sm);
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--fimby-text-strong);
+    background-color: var(--fimby-surface-input, var(--fimby-surface-card));
+    box-sizing: border-box;
+    outline: none;
+}
+
+.report-textarea {
+    resize: vertical;
+    min-height: 72px;
+}
+
+.block-input:focus-visible,
+.report-textarea:focus-visible {
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: 0 0 0 2px var(--fimby-focus-glow);
+}
+
+.block-input::placeholder,
+.report-textarea::placeholder,
+.field-input::placeholder {
+    color: var(--fimby-text-secondary);
+    opacity: 1;
+}
+
+.block-search-status {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    margin: 8px 0 0;
+}
+
+.block-results-list {
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm);
+}
+
+button.block-result-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    cursor: pointer;
+    border: none;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    background-color: var(--fimby-surface-card);
+    font-family: inherit;
+    transition: background-color 0.15s ease;
+}
+
+button.block-result-item:last-child {
+    border-bottom: none;
+}
+
+button.block-result-item:hover,
+button.block-result-item.selected {
+    background-color: var(--fimby-hover-bg);
+}
+
+button.block-result-item:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
+}
+
+.block-result-item .result-name {
+    display: block;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+}
+
+.block-result-item .result-email {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--fimby-text-secondary);
+    margin-top: 2px;
+}
+
+.report-toggle {
+    margin-bottom: 12px;
+}
+
+.report-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.9375rem;
+    color: var(--fimby-text-strong);
+    cursor: pointer;
+}
+
+.report-label input[type='checkbox'] {
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+.report-label-text {
+    line-height: 1.4;
+}
+
+.block-help-text {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin: 8px 0 0;
+    padding-left: 1.65rem;
+}
+
+.block-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--fimby-border-subtle);
+    flex-shrink: 0;
+}
+
+.cancel-btn {
+    box-sizing: border-box;
+    padding: 8px 16px;
+    min-height: 44px;
+    border: 2px solid var(--fimby-border-default);
+    border-radius: var(--fimby-btn-radius);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-strong);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.cancel-btn:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+}
+
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.block-btn {
+    padding: 8px 20px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--fimby-btn-radius);
+    background-color: var(--fimby-btn-danger-bg);
+    color: #ffffff;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.block-btn:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover);
+}
+
+.block-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.block-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 /* ========== WALKTHROUGH SECTION ========== */
 .walkthrough-description {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: var(--fimby-text-secondary);
     margin: 8px 0 16px;
     line-height: 1.5;
@@ -469,8 +802,8 @@
 }
 
 .danger-description {
-    font-size: 0.85rem;
-    color: var(--fimby-text-secondary);
+    font-size: 0.875rem;
+    color: var(--fimby-text-primary);
     margin: 12px 0 16px;
     line-height: 1.5;
 }
@@ -542,10 +875,41 @@
     background: var(--fimby-selected-bg);
 }
 
+/* After .btn — must override border: none; WCAG text/border use validation-text-error (light/dark) */
+.btn.btn-block-outline {
+    box-sizing: border-box;
+    border: 2px solid var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+    width: fit-content;
+    max-width: 100%;
+}
+
+.btn.btn-block-outline:hover:not(:disabled) {
+    background-color: var(--fimby-error-tint);
+    border-color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+    color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+}
+
+.btn.btn-block-outline:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow:
+        0 0 0 4px var(--fimby-focus-glow),
+        0 0 0 1px var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+}
+
 .btn-danger {
-    background: var(--fimby-error);
-    color: white;
+    background-color: var(--fimby-btn-danger-bg);
+    color: #ffffff;
     border: none;
+    min-height: 44px;
+    border-radius: var(--fimby-btn-radius);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover);
+    opacity: 1;
 }
 
 .btn-danger:focus-visible {
@@ -554,17 +918,14 @@
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
-.btn-danger:hover:not(:disabled) {
-    opacity: 0.9;
-}
-
 /* ========== FUN STUFF ========== */
 .toggle-description {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--fimby-text-secondary);
-    margin-top: 2px;
+    margin-top: 4px;
     font-weight: 400;
+    line-height: 1.45;
 }
 
 .fun-toggle-preview {
@@ -646,13 +1007,18 @@
 }
 
 .modal-content {
-    background: var(--fimby-surface-card);
+    background-color: var(--fimby-surface-card);
     padding: 32px;
     border-radius: var(--fimby-radius-lg);
     max-width: 400px;
     width: 90%;
     text-align: center;
     box-shadow: var(--fimby-shadow-modal);
+}
+
+.modal-content .modal-message,
+.modal-content .skip-grace-row {
+    text-align: left;
 }
 
 .modal-title {
@@ -663,10 +1029,11 @@
 }
 
 .modal-message {
-    font-size: 0.9rem;
-    color: var(--fimby-text-secondary);
+    font-size: 0.9375rem;
+    color: var(--fimby-text-primary);
     margin: 0 0 24px;
     line-height: 1.5;
+    text-align: left;
 }
 
 .modal-actions {
@@ -693,13 +1060,13 @@
 }
 
 .skip-grace-label {
-    font-size: 0.85rem;
-    color: var(--fimby-text-secondary);
-    line-height: 1.4;
+    font-size: 0.875rem;
+    color: var(--fimby-text-primary);
+    line-height: 1.5;
 }
 
 .btn-danger-strong {
-    box-shadow: 0 0 0 2px var(--fimby-error);
+    box-shadow: 0 0 0 2px var(--fimby-btn-danger-bg);
 }
 
 /* Button reset for semantic section-header-clickable button */
@@ -712,7 +1079,10 @@ button.section-header-clickable {
     cursor: pointer;
     text-align: inherit;
     width: 100%;
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
 }
 
 @media (min-width: 892px) {
@@ -747,6 +1117,11 @@ button.section-header-clickable {
 .section-header-clickable:focus-visible,
 .edit-pencil:focus-visible,
 .btn-unblock:focus-visible,
+.btn.btn-block-outline:focus-visible,
+.modal-close-btn:focus-visible,
+button.block-result-item:focus-visible,
+.cancel-btn:focus-visible,
+.block-btn:focus-visible,
 .theme-option:focus-visible,
 .toggle-switch:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);

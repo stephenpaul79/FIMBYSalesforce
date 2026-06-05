@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FIMBY — App Review Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --page:        #F0EBE3;
+      --section:     #EBE6DD;
+      --card:        #FAF7F2;
+      --input:       #F7F3EB;
+      --border:      #E0D9CF;
+      --border-strong:#D6CFC5;
+      --strong:      #261A11;
+      --primary:     #4A3526;
+      --secondary:   #8B7355;
+      --muted:       #B5A088;
+      --teal:        #3A7D8C;
+      --teal-dark:   #2B5F6D;
+      --green:       #1A7B40;
+      --red:         #C0392B;
+      --success-tint:rgba(39, 174, 96, 0.10);
+      --success-bdr: rgba(39, 174, 96, 0.30);
+      --teal-tint:   #eaf6fa;
+      --warn-tint:   rgba(245, 158, 11, 0.10);
+      --warn-bdr:    rgba(245, 158, 11, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background: #cfc7bb; }
+    body {
+      background: #cfc7bb;
+      color: var(--primary);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.48;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      padding: 24px 0;
+    }
+
+    /* ---------- Page sheet (Letter) ---------- */
+    .page {
+      width: 8.5in;
+      margin: 0 auto;
+      padding: 0.5in 0.55in;
+      background: var(--page);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+      display: flex;
+      flex-direction: column;
+    }
+    .page + .page { margin-top: 26px; }
+    @media screen { .page { min-height: 11in; } }
+
+    /* ---------- Header ---------- */
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 18px;
+      border-bottom: 3px solid var(--teal);
+    }
+    .masthead img { height: 58px; width: auto; }
+    .masthead .title { text-align: right; }
+    .masthead .title h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--strong);
+    }
+    .masthead .title p {
+      font-size: 12.5px;
+      color: var(--secondary);
+      margin-top: 2px;
+    }
+
+    /* ---------- Section ---------- */
+    section { margin-top: 24px; }
+    section:first-of-type { margin-top: 22px; }
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--strong);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+    h2 .num {
+      flex: 0 0 auto;
+      width: 27px; height: 27px;
+      border-radius: 9999px;
+      background: var(--teal);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    p + p { margin-top: 9px; }
+    strong { color: var(--strong); font-weight: 600; }
+    .lead { font-size: 14.5px; color: var(--primary); }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .demo {
+      background: var(--teal-tint);
+      border: 1px solid rgba(58,125,140,0.30);
+      border-left: 4px solid var(--teal);
+      border-radius: 12px;
+      padding: 15px 18px;
+      margin-top: 13px;
+    }
+    .demo h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--teal-dark); margin-bottom: 9px; }
+    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 5px 14px; font-size: 14px; }
+    .kv dt { color: var(--secondary); font-weight: 500; }
+    .kv dd { color: var(--strong); font-weight: 600; }
+
+    /* ---------- Steps ---------- */
+    ol.steps { list-style: none; counter-reset: step; }
+    ol.steps li {
+      counter-increment: step;
+      position: relative;
+      padding: 8px 0 8px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    ol.steps li:last-child { border-bottom: none; }
+    ol.steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0; top: 7px;
+      width: 25px; height: 25px;
+      border-radius: 9999px;
+      background: var(--section);
+      border: 1px solid var(--border-strong);
+      color: var(--teal-dark);
+      font-weight: 700;
+      font-size: 12.5px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .path { color: var(--teal-dark); font-weight: 600; }
+
+    /* ---------- Requirement grid ---------- */
+    .req {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 4px;
+    }
+    .req .item {
+      background: var(--success-tint);
+      border: 1px solid var(--success-bdr);
+      border-radius: 10px;
+      padding: 11px 13px;
+      font-size: 13.5px;
+    }
+    .req .item b { color: var(--strong); display: block; margin-bottom: 2px; }
+    .check { color: var(--green); font-weight: 800; margin-right: 6px; }
+
+    /* ---------- Figures ---------- */
+    .figs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    figure {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px;
+    }
+    figure img {
+      max-width: 100%;
+      width: auto;
+      max-height: 3.4in;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+    }
+    figcaption {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-top: 7px;
+      line-height: 1.38;
+    }
+    figcaption b { color: var(--strong); }
+
+    .note { font-size: 13px; color: var(--secondary); margin-top: 12px; }
+
+    /* ---------- Context list ---------- */
+    .ctx .row {
+      display: grid;
+      grid-template-columns: 165px 1fr;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .ctx .row:last-child { border-bottom: none; }
+    .ctx .row .lbl { font-weight: 700; color: var(--strong); }
+
+    a { color: var(--teal); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(58, 125, 140, 0.45); text-underline-offset: 2px; }
+
+    /* ---------- Footer ---------- */
+    footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--secondary);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ---------- Print ---------- */
+    @page { size: Letter; margin: 0; }
+    @media print {
+      html, body { background: var(--page); padding: 0; }
+      .page {
+        width: auto;
+        min-height: 0;
+        margin: 0 !important;
+        padding: 0.5in 0.55in;
+        box-shadow: none;
+        break-after: page;
+        page-break-after: always;
+      }
+      .page:last-child { break-after: auto; page-break-after: auto; }
+      section, .card, .demo, figure, ol.steps li, .ctx .row { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ PAGE 1 ============ -->
+  <div class="page">
+    <header class="masthead">
+      <img src="./images/fimby-logo.png" alt="FIMBY" />
+      <div class="title">
+        <h1>App Review Guide</h1>
+        <p>iOS · v1.0.0 · Prepared for App Review</p>
+      </div>
+    </header>
+
+    <section>
+      <h2><span class="num">1</span> What FIMBY is</h2>
+      <p class="lead">FIMBY (Family In My Backyard) is a charity-operated <strong>neighbourhood mutual-aid app for adults 19+</strong>, run by Strathcona Vineyard Church, a registered Canadian charity in BC. Neighbours ask for and offer help, lend and borrow items, coordinate bulk buys, host gatherings, and message one another — all scoped to a single verified neighbourhood.</p>
+      <p>It is <strong>invite-only and neighbourhood-scoped</strong>: a normal account only ever sees its own neighbourhood. So you can review the full experience without involving real neighbours, we have pre-seeded a dedicated <strong>"Reviewer's Neighbourhood"</strong> with posts, library items, a conversation, and a pre-vouched account.</p>
+
+      <div class="card" style="margin-top:13px;">
+        <p style="font-size:13.5px;"><strong>Native iOS features:</strong> Apple Push Notifications for neighbour messages and lending reminders, secure on-device sign-in with credentials stored in the iOS Keychain, Universal Links for the sign-in callback, and per-user <strong>quiet hours</strong> that silence alerts on-device. The app is a full mutual-aid client — asks, offers, a lending library with due-date tracking, bulk-buy coordination, events, and direct &amp; group messaging.</p>
+      </div>
+
+      <div class="demo">
+        <h3>Demo account · sign-in required</h3>
+        <dl class="kv">
+          <dt>Email</dt><dd>reviewer@fimby.com</dd>
+          <dt>Password</dt><dd>fimby4Apple</dd>
+          <dt>Sign-in URL</dt><dd>opens automatically in the app</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">2</span> Guided test path</h2>
+      <p>Everything below is reachable from the bottom navigation after sign-in.</p>
+      <ol class="steps">
+        <li><strong>Sign in</strong> with the demo account. You land on the neighbourhood <span class="path">Home</span> feed (a time-of-day greeting, e.g. "Good afternoon, …").</li>
+        <li><strong>Create a post</strong> — tap the centre <span class="path">＋</span> button → choose an Ask, Offer, or Shared Life post → submit. It appears in the feed.</li>
+        <li><strong>Respond / message</strong> — open any feed card, respond, and exchange messages. Threads live under the <span class="path">Messages</span> tab.</li>
+        <li><strong>Library &amp; lending</strong> — open the <span class="path">Library</span> tab to browse items and send a borrow request on one.</li>
+        <li><strong>Notifications</strong> — tap the bell (top-right) to see in-app notifications; push arrives on a physical device.</li>
+        <li><strong>Account deletion</strong> — <span class="path">My Stuff → Settings → Delete my account</span> (in-app, Guideline 5.1.1(v)). Also documented at <a href="https://fimby.com/delete-account">fimby.com/delete-account</a>.</li>
+      </ol>
+    </section>
+  </div>
+
+  <!-- ============ PAGE 2 ============ -->
+  <div class="page">
+    <section style="margin-top:0;">
+      <h2><span class="num">3</span> Safety &amp; moderation (Guideline 1.2)</h2>
+      <p>FIMBY meets all four UGC requirements. Tools are reachable on every surface where content appears:</p>
+
+      <div class="req">
+        <div class="item"><b><span class="check">✓</span>Report objectionable content</b>On every feed card &amp; detail page (Asks/Offers, Shared Life, Library, Loaned items) and inside message &amp; response threads.</div>
+        <div class="item"><b><span class="check">✓</span>Block abusive users</b>In direct-message threads, response threads, and on neighbour profiles. Blocks are bidirectional.</div>
+        <div class="item"><b><span class="check">✓</span>Filter &amp; act within 24h</b>A binding EULA prohibits objectionable content; every report is reviewed within 24&nbsp;hours by a neighbourhood moderator, FIMBY team as backup.</div>
+        <div class="item"><b><span class="check">✓</span>Published contact</b><a href="mailto:help@fimby.com">help@fimby.com</a>, plus the full policy at <a href="https://fimby.com/community-standards">fimby.com/community-standards</a>.</div>
+      </div>
+
+      <div class="figs">
+        <figure>
+          <img src="./images/mod-feed-report.png" alt="Report on a feed card" />
+          <figcaption><b>Report</b> — the kebab (⋯) menu on every feed card and detail page surfaces Report.</figcaption>
+        </figure>
+        <figure>
+          <img src="./images/mod-message-block-report.png" alt="Block and report in a message thread" />
+          <figcaption><b>Block &amp; report</b> — the thread header kebab opens Block, with an optional "Report to admin".</figcaption>
+        </figure>
+        <figure>
+          <img src="./images/mod-settings-block-delete.png" alt="Blocked contacts and delete account in settings" />
+          <figcaption><b>Manage blocks &amp; delete</b> — Settings lists blocked contacts and the in-app "Delete my account".</figcaption>
+        </figure>
+      </div>
+
+      <p class="note">Reporter identity is confidential by default. A dispute or report is never assigned to a party involved in it. The full ladder of responses (content removal → warning → restriction → removal) is published in our Community Standards.</p>
+    </section>
+  </div>
+
+  <!-- ============ PAGE 3 ============ -->
+  <div class="page">
+    <section style="margin-top:0;">
+      <h2><span class="num">4</span> Context that helps review</h2>
+      <div class="ctx">
+        <div class="row">
+          <div class="lbl">Age requirement (19+)</div>
+          <div>BC's age of majority is 19. The App Store ceiling is 18+, so 19+ eligibility is enforced via a required <strong>age attestation at onboarding</strong> and in our Terms (§2 "Who can use FIMBY"). The store rating is set to 18+.</div>
+        </div>
+        <div class="row">
+          <div class="lbl">Neighbourhood scoping</div>
+          <div>All content is filtered to the signed-in user's neighbourhood. The seeded <strong>Reviewer's Neighbourhood</strong> exists so you see a populated, self-contained community without contacting real members.</div>
+        </div>
+        <div class="row">
+          <div class="lbl">Acting-as identity</div>
+          <div>A neighbour may help someone else (e.g. a support person posting for a senior). The app always shows who an action is "posted as" / "messaging as". The demo account acts as itself.</div>
+        </div>
+        <div class="row">
+          <div class="lbl">Fully functional</div>
+          <div>All services are live and accessible during review. Every feature works end-to-end with real data in the Reviewer's Neighbourhood — there is no demo-mode stubbing.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Contact during review: Stephen Rathjen · <a href="tel:+16043181387">604&nbsp;318&nbsp;1387</a> · <a href="mailto:fimby@strathconavineyard.com">fimby@strathconavineyard.com</a><br>
+      Strathcona Vineyard Church (registered Canadian charity, BC)<br>
+      Privacy: <a href="https://fimby.com/privacy">fimby.com/privacy</a> · Standards: <a href="https://fimby.com/community-standards">fimby.com/community-standards</a>
+    </footer>
+  </div>
+
+</body>
+</html>

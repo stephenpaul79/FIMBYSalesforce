@@ -75,10 +75,15 @@
                         </div>
                     </template>
 
-                <template lwc:if={hasMessages}>
+                <template lwc:if={loadError}>
+                    <div class="empty-thread" role="alert">
+                        <p class="empty-thread-text">{loadError}</p>
+                    </div>
+                </template>
+                <template lwc:elseif={hasMessages}>
                 <div class="messages-list">
                     <!-- Zoned mode (3+ user messages) -->
-                    <template lwc:if={useZones}>
+                    <template lwc:if={showZonedThread}>
                         <!-- System messages before first user message -->
                         <template for:each={headerSystemMessages} for:item="hsm">
                             <div key={hsm.id} class="message-item system-message">
@@ -258,7 +263,7 @@
                         </template>
                     </template>
                     <!-- All-expanded mode (fewer than 3 user messages) -->
-                    <template lwc:else>
+                    <template lwc:if={showFlatThread}>
                         <template for:each={processedMessages} for:item="item">
                             <div key={item.id}>
                                 <template lwc:if={item.isDateSeparator}>

@@ -78,6 +78,14 @@ public with sharing class FimbyConversationController {
     }
 
     /**
+     * Search neighbourhood contacts to block (same Account, excluding self and already blocked).
+     */
+    @AuraEnabled(cacheable=false)
+    public static List<Map<String, Object>> searchNeighboursForBlock(String searchTerm) {
+        return new ConversationHelper().searchNeighboursForBlockInternal(searchTerm);
+    }
+
+    /**
      * Get the list of shared contacts available for starting new conversations.
      * Returns contacts from Shared_Contact_Info__c (either direction).
      */
@@ -523,6 +531,59 @@ public with sharing class FimbyConversationController {
                 result.add(w);
             }
             return result;
+        }
+
+        /**
+         * @description Searches contacts in the same neighbourhood who can be blocked.
+         * @param searchTerm Name or email fragment (min 2 chars)
+         * @return List of maps with contactId, contactName, firstName, email
+         */
+        public List<Map<String, Object>> searchNeighboursForBlockInternal(String searchTerm) {
+            List<Map<String, Object>> results = new List<Map<String, Object>>();
+            String myContactId = FimbyIdentityRepository.getActingAsContactId();
+            if (String.isBlank(myContactId)) {
+                return results;
+            }
+
+            Contact me = [SELECT Id, AccountId FROM Contact WHERE Id = :myContactId LIMIT 1];
+            if (me.AccountId == null) {
+                return results;
+            }
+
+            Set<Id> excludeIds = new Set<Id>{ me.Id };
+            for (Blocked_Contact__c bc : [
+                SELECT Blocked__c FROM Blocked_Contact__c WHERE Blocker__c = :myContactId
+            ]) {
+                if (bc.Blocked__c != null) {
+                    excludeIds.add(bc.Blocked__c);
+                }
+            }
+
+            if (String.isBlank(searchTerm) || searchTerm.trim().length() < 2) {
+                return results;
+            }
+
+            String term = '%' + String.escapeSingleQuotes(searchTerm.trim()) + '%';
+            for (Contact c : [
+                SELECT Id, Name, FirstName, LastName, Full_Name__c, Email
+                FROM Contact
+                WHERE AccountId = :me.AccountId
+                  AND Id NOT IN :excludeIds
+                  AND Is_Organization_Contact__c = false
+                  AND (Name LIKE :term OR Email LIKE :term OR FirstName LIKE :term
+                       OR LastName LIKE :term OR Full_Name__c LIKE :term)
+                ORDER BY Name
+                LIMIT 20
+            ]) {
+                String displayName = String.isNotBlank(c.Full_Name__c) ? c.Full_Name__c : c.Name;
+                results.add(new Map<String, Object>{
+                    'contactId' => c.Id,
+                    'contactName' => displayName,
+                    'firstName' => c.FirstName,
+                    'email' => c.Email
+                });
+            }
+            return results;
         }
 
         /**

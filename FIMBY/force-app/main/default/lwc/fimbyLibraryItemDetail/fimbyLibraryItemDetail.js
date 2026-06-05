@@ -7,6 +7,7 @@ import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl } from 'c/fimbyLibraryCategoryConfig';
 import { formatLocalDate, parseLocalDate } from 'c/fimbyDateUtils';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import deleteLibraryItem from '@salesforce/apex/FimbyLibraryController.deleteLibraryItem';
@@ -306,19 +307,12 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     get itemName() {
         const raw = this.record ? getFieldValue(this.record, 'Library_Item__c.Name') : '';
-        return this.decodeHtmlEntities(raw);
+        return decodeHtmlEntities(raw);
     }
 
     get description() {
         const raw = this.record ? getFieldValue(this.record, 'Library_Item__c.Description__c') : '';
-        return this.decodeHtmlEntities(raw);
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
+        return decodeHtmlEntities(raw);
     }
 
     get hasDescription() { return !!this.description; }

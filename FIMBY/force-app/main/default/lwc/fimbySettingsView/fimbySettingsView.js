@@ -10,6 +10,8 @@ import triggerPasswordReset from '@salesforce/apex/FimbyProfileController.trigge
 import requestAccountDeletion from '@salesforce/apex/FimbyProfileController.requestAccountDeletion';
 import getBlockedContacts from '@salesforce/apex/FimbyConversationController.getBlockedContacts';
 import unblockContact from '@salesforce/apex/FimbyConversationController.unblockContact';
+import searchNeighboursForBlock from '@salesforce/apex/FimbyConversationController.searchNeighboursForBlock';
+import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 
 const EMAIL_FREQUENCY_VALUES = [
     { label: 'Daily', value: 'Daily' },
@@ -59,6 +61,20 @@ export default class FimbySettingsView extends LightningElement {
     @track blockedContacts = [];
     @track showBlockedSection = false;
     @track isLoadingBlocked = false;
+
+    // Block neighbour modal (search + confirm)
+    @track showBlockModal = false;
+    @track blockModalStep = 'search';
+    @track blockSearchTerm = '';
+    @track blockSearchResults = [];
+    @track blockSearching = false;
+    @track blockSelectedContactId = null;
+    @track blockSelectedContactName = '';
+    @track blockReason = '';
+    @track blockIsReporting = false;
+    @track blockReportDetails = '';
+    @track isBlocking = false;
+    _blockSearchTimeout;
 
     // Account deletion (graceful default, opt-in immediate)
     @track showDeleteConfirm = false;
@@ -124,6 +140,23 @@ export default class FimbySettingsView extends LightningElement {
     get pushEnabled() { return !!this.settings.pushNotificationsEnabled; }
 
     get canDeleteAccount() { return !!this.settings.isActingAsSelf; }
+
+    get canBlockNeighbours() { return !!this.settings.isActingAsSelf; }
+
+    get showBlockSearchStep() { return this.blockModalStep === 'search'; }
+
+    get showBlockConfirmStep() { return this.blockModalStep === 'confirm'; }
+
+    get blockModalTitle() {
+        if (this.showBlockConfirmStep && this.blockSelectedContactName) {
+            return `Block ${this.blockSelectedContactName}?`;
+        }
+        return 'Block someone';
+    }
+
+    get blockConfirmDisabled() {
+        return this.isBlocking;
+    }
 
     get deleteConfirmButtonLabel() {
         return this.skipGrace ? 'Delete immediately' : 'Delete my account';
@@ -481,6 +514,126 @@ export default class FimbySettingsView extends LightningElement {
             this.showToast('Unblocked', 'Contact has been unblocked.', 'success');
         } catch (error) {
             this.showToast('Error', 'Could not unblock contact.', 'error');
+        }
+    }
+
+    handleOpenBlockModal() {
+        this._resetBlockModal();
+        this.showBlockModal = true;
+    }
+
+    handleCloseBlockModal() {
+        this.showBlockModal = false;
+        this._resetBlockModal();
+    }
+
+    _resetBlockModal() {
+        this.blockModalStep = 'search';
+        this.blockSearchTerm = '';
+        this.blockSearchResults = [];
+        this.blockSearching = false;
+        this.blockSelectedContactId = null;
+        this.blockSelectedContactName = '';
+        this.blockReason = '';
+        this.blockIsReporting = false;
+        this.blockReportDetails = '';
+        this.isBlocking = false;
+        clearTimeout(this._blockSearchTimeout);
+    }
+
+    handleBlockSearch(event) {
+        this.blockSearchTerm = event.target.value;
+        clearTimeout(this._blockSearchTimeout);
+        this._blockSearchTimeout = setTimeout(() => this._doBlockSearch(), 350);
+    }
+
+    async _doBlockSearch() {
+        const term = (this.blockSearchTerm || '').trim();
+        if (term.length < 2) {
+            this.blockSearchResults = [];
+            return;
+        }
+        this.blockSearching = true;
+        try {
+            const results = await searchNeighboursForBlock({ searchTerm: term });
+            this.blockSearchResults = (results || []).map(r => ({
+                contactId: r.contactId,
+                contactName: r.contactName,
+                email: r.email,
+                resultClass: r.contactId === this.blockSelectedContactId
+                    ? 'block-result-item selected' : 'block-result-item'
+            }));
+        } catch (error) {
+            console.error('Block search error:', error);
+            this.blockSearchResults = [];
+            this.showToast('Error', 'Could not search neighbours.', 'error');
+        } finally {
+            this.blockSearching = false;
+        }
+    }
+
+    handleSelectBlockTarget(event) {
+        const contactId = event.currentTarget.dataset.contactId;
+        const contactName = event.currentTarget.dataset.contactName;
+        this.blockSelectedContactId = contactId;
+        this.blockSelectedContactName = contactName || '';
+        this.blockModalStep = 'confirm';
+        this.blockReason = '';
+        this.blockIsReporting = false;
+        this.blockReportDetails = '';
+    }
+
+    handleBackToBlockSearch() {
+        this.blockModalStep = 'search';
+        this.blockSelectedContactId = null;
+        this.blockSelectedContactName = '';
+    }
+
+    handleBlockReasonChange(event) {
+        this.blockReason = event.target.value;
+    }
+
+    handleBlockReportToggle(event) {
+        this.blockIsReporting = event.target.checked;
+    }
+
+    handleBlockReportDetailsChange(event) {
+        this.blockReportDetails = event.target.value;
+    }
+
+    async handleConfirmBlock() {
+        if (!this.blockSelectedContactId) {
+            return;
+        }
+        this.isBlocking = true;
+        try {
+            const result = await blockContact({
+                blockedContactId: this.blockSelectedContactId,
+                reason: this.blockReason,
+                isReport: this.blockIsReporting,
+                reportDetails: this.blockReportDetails
+            });
+            const alreadyBlocked = result?.alreadyBlocked === true;
+            this.showBlockModal = false;
+            this._resetBlockModal();
+            await this.loadBlockedContacts();
+            this.showBlockedSection = true;
+            const message = alreadyBlocked
+                ? 'That neighbour was already on your blocked list.'
+                : 'You will no longer see each other\u2019s content or be able to message.';
+            this.showToast(
+                alreadyBlocked ? 'Already blocked' : 'Neighbour blocked',
+                message,
+                alreadyBlocked ? 'info' : 'success'
+            );
+        } catch (error) {
+            this.showToast(
+                'Error',
+                error.body?.message || 'Could not block that neighbour.',
+                'error'
+            );
+        } finally {
+            this.isBlocking = false;
         }
     }
 

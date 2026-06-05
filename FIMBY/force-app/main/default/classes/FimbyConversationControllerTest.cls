@@ -203,6 +203,38 @@ public class FimbyConversationControllerTest {
     }
 
     @IsTest
+    static void testSearchNeighboursForBlock() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+
+        Test.startTest();
+        System.runAs(testUser) {
+            List<Map<String, Object>> results =
+                FimbyConversationController.searchNeighboursForBlock('Resident');
+            System.assert(results.size() >= 1, 'Should find unblocked neighbourhood contacts');
+
+            FimbyConversationController.blockContact(other.Id, 'Test', false, null);
+
+            List<Map<String, Object>> afterBlock =
+                FimbyConversationController.searchNeighboursForBlock('Resident');
+            for (Map<String, Object> row : afterBlock) {
+                System.assertNotEquals(
+                    other.Id,
+                    row.get('contactId'),
+                    'Already blocked contact should not appear in search'
+                );
+            }
+
+            System.assertEquals(
+                0,
+                FimbyConversationController.searchNeighboursForBlock('a').size(),
+                'Search under 2 chars returns empty'
+            );
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetMessageableContacts() {
         User testUser = getTestUser();
 

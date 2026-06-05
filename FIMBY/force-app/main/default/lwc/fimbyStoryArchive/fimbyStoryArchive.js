@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getMyStoriesArchive from '@salesforce/apex/FimbyMyStuffController.getMyStoriesArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 
 const PAGE_SIZE = 20;
 const FILTERS = [
@@ -96,8 +97,8 @@ export default class FimbyStoryArchive extends NavigationMixin(LightningElement)
             this.totalCount = result.totalCount;
             this.items = result.items.map(item => ({
                 id: item.Id,
-                title: this.decodeHtmlEntities(item.Name || 'Untitled Post'),
-                message: this.decodeHtmlEntities(item.Message__c || ''),
+                title: decodeHtmlEntities(item.Name || 'Untitled Post'),
+                message: decodeHtmlEntities(item.Message__c || ''),
                 type: STORY_DISPLAY_NAMES[item.Type__c] || item.Type__c || '',
                 typeBadgeClass: TYPE_BADGE_MAP[item.Type__c] || 'type-badge',
                 badgeIconUrl: STORY_ICON_MAP[item.Type__c] ? `${IMPACT_ICONS}/${STORY_ICON_MAP[item.Type__c]}` : null,
@@ -115,13 +116,6 @@ export default class FimbyStoryArchive extends NavigationMixin(LightningElement)
         if (!dateStr) return '';
         const d = new Date(dateStr);
         return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
     }
 
     handleFilterClick(event) {

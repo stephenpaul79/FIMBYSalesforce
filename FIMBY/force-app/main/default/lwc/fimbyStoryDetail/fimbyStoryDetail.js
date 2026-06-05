@@ -10,6 +10,7 @@ import deleteStory from '@salesforce/apex/FimbyStoriesController.deleteStory';
 import getStoryComments from '@salesforce/apex/FimbyStoryCommentController.getStoryComments';
 import softDeleteStoryComment from '@salesforce/apex/FimbyStoryCommentController.softDeleteStoryComment';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 import flagContent from '@salesforce/apex/FimbyModeratorDashboardController.flagContent';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
@@ -291,19 +292,12 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
 
     get storyName() {
         const raw = this.record ? this.record.Name : '';
-        return this.decodeHtmlEntities(raw);
+        return decodeHtmlEntities(raw);
     }
 
     get message() {
         const raw = this.record ? this.record.Message__c : '';
-        return this.decodeHtmlEntities(raw);
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
+        return decodeHtmlEntities(raw);
     }
 
     // Check if message is long enough to need truncation

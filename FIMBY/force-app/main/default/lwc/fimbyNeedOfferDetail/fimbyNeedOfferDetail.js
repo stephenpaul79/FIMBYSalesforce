@@ -5,6 +5,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import getResponsesForNeedOffer from '@salesforce/apex/FimbyAskOfferController.getResponsesForNeedOffer';
 import deleteNeedsOffersPost from '@salesforce/apex/FimbyAskOfferController.deleteNeedsOffersPost';
@@ -683,20 +684,13 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                   || getFieldValue(this.record, 'Needs_Offers__c.Name')
                   || '';
         const stripped = raw.replace(/<[^>]*>/g, '').trim();
-        return this.decodeHtmlEntities(stripped);
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
+        return decodeHtmlEntities(stripped);
     }
 
     get postDetails() {
         if (!this.record) return '';
         const raw = getFieldValue(this.record, 'Needs_Offers__c.Full_Details__c') || getFieldValue(this.record, 'Needs_Offers__c.Details__c') || '';
-        return this.decodeHtmlEntities(raw);
+        return decodeHtmlEntities(raw);
     }
 
     get hasPostDetails() {

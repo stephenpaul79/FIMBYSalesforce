@@ -14,6 +14,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import {
     getInboxBadge,
     getThreadAvatarIcon,
@@ -219,11 +220,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
     }
 
     _measureHeaderHeight() {
-        const header = document.querySelector('header.sticky-header');
-        if (header) {
-            const height = header.getBoundingClientRect().height;
-            this.template.host.style.setProperty('--sticky-top', `${height}px`);
-        }
+        applyStickyHeaderOffset(this.template.host);
     }
 
     _handleScrollDirection() {

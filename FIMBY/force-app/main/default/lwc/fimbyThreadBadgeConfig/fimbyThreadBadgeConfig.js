@@ -59,6 +59,14 @@ export function getThreadAvatarIcon(badgeType) {
     return AVATAR_ICON_BY_BADGE[badgeType] || AVATAR_ICON_BY_BADGE.direct;
 }
 
+/** Maps Conversation__c.Context_Type__c to inbox/thread badge slug. */
+export function getBadgeTypeFromContext(contextType) {
+    if (!contextType) {
+        return 'direct';
+    }
+    return CONTEXT_TO_VARIANT[contextType] || 'direct';
+}
+
 export function getGroupAvatarVariant(badgeType) {
     const entry = BADGE_VARIANTS[badgeType] || BADGE_VARIANTS.direct;
     return entry.variant;

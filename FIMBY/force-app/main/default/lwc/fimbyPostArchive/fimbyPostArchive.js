@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getMyPostsArchive from '@salesforce/apex/FimbyMyStuffController.getMyPostsArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 
 const PAGE_SIZE = 20;
 const FILTERS = [
@@ -86,8 +87,8 @@ export default class FimbyPostArchive extends NavigationMixin(LightningElement) 
                 const badge = this._getBadgeInfo(item);
                 return {
                     id: item.Id,
-                    title: this.decodeHtmlEntities(item.Name),
-                    details: this.decodeHtmlEntities(item.Details__c),
+                    title: decodeHtmlEntities(item.Name),
+                    details: decodeHtmlEntities(item.Details__c),
                     type: badge.label,
                     typeBadgeClass: badge.cssClass,
                     badgeIconUrl: badge.iconUrl,
@@ -128,13 +129,6 @@ export default class FimbyPostArchive extends NavigationMixin(LightningElement) 
         if (!dateStr) return '';
         const d = new Date(dateStr);
         return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
     }
 
     handleFilterClick(event) {

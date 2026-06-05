@@ -141,7 +141,14 @@ public with sharing class FimbyProfileController {
     /**
      * @description Mirrors FirstName, LastName, and Email to the running User when
      *              the neighbour is editing their own Contact (not acting as someone else).
-     *              User DML is deferred via Queueable to avoid MIXED_DML_OPERATION.
+     *
+     *              Published as a Fimby_User_Sync_Event__e (PublishAfterCommit) rather
+     *              than written inline or via a Queueable. The platform-event subscriber
+     *              runs as the Automated Process user, so the User.Email change is treated
+     *              as an administrative change and persists immediately. An in-transaction
+     *              or same-user async write is a SELF-SERVICE email change, which Salesforce
+     *              holds pending email confirmation (silently no-ops on Email while names
+     *              still sync) and also trips MIXED_DML_OPERATION against the Contact update.
      */
     private static void syncUserIdentityFields(Id actingAsContactId, Map<String, String> fieldValues) {
         Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
@@ -156,9 +163,23 @@ public with sharing class FimbyProfileController {
             }
         }
 
-        if (!userFields.isEmpty()) {
-            System.enqueueJob(new FimbySyncUserIdentityQueueable(UserInfo.getUserId(), userFields));
+        if (userFields.isEmpty()) {
+            return;
         }
+
+        Fimby_User_Sync_Event__e evt = new Fimby_User_Sync_Event__e(
+            User_Id__c = UserInfo.getUserId()
+        );
+        if (userFields.containsKey('FirstName')) {
+            evt.First_Name__c = userFields.get('FirstName');
+        }
+        if (userFields.containsKey('LastName')) {
+            evt.Last_Name__c = userFields.get('LastName');
+        }
+        if (userFields.containsKey('Email')) {
+            evt.Email__c = userFields.get('Email');
+        }
+        EventBus.publish(evt);
     }
 
     @AuraEnabled(cacheable=false)

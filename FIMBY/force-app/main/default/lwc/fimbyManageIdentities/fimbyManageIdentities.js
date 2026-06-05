@@ -3,7 +3,6 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getManagedRelationships from '@salesforce/apex/FimbySupportRelationshipController.getManagedRelationships';
 import getMyPaperRelationships from '@salesforce/apex/FimbySupportRelationshipController.getMyPaperRelationships';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
-import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
 import revokeRelationship from '@salesforce/apex/FimbySupportRelationshipController.revokeRelationship';
 import deactivateRelationship from '@salesforce/apex/FimbySupportRelationshipController.deactivateRelationship';
 import dismissRelationship from '@salesforce/apex/FimbySupportRelationshipController.dismissRelationship';
@@ -19,10 +18,7 @@ const ICONS = {
     trust: 'trust.png',
     noProfile: 'NoProfilePhoto.png',
     noOrg: 'NoOrgPhoto.png',
-    add: 'add.png',
-    greenDot: 'GreenCircle.png',
-    yellowDot: 'YellowCircle.png',
-    redDot: 'RedCircle.png'
+    add: 'add.png'
 };
 
 export default class FimbyManageIdentities extends LightningElement {
@@ -172,9 +168,13 @@ export default class FimbyManageIdentities extends LightningElement {
     }
 
     _paperStatusClass(status) {
-        if (status === 'Pending Paper Review' || status === 'Pending Verification') return 'paper-pill paper-pill--pending';
-        if (status === 'Rejected' || status === 'Expired') return 'paper-pill paper-pill--inactive';
-        return 'paper-pill paper-pill--draft';
+        if (status === 'Pending Paper Review' || status === 'Pending Verification') {
+            return 'status-badge status-pending';
+        }
+        if (status === 'Rejected' || status === 'Expired') {
+            return 'status-badge status-inactive';
+        }
+        return 'status-badge status-pending';
     }
 
     handlePaperResume(event) {
@@ -190,14 +190,14 @@ export default class FimbyManageIdentities extends LightningElement {
             name: r.Related_Contact__r?.Name || 'Unknown',
             avatarUrl: this._resolveAvatarUrl(r.Related_Contact__r?.Image_URL__c, ICONS.noProfile),
             status: r.Status__c,
+            statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
-            statusDotUrl: this._statusDot(r.Status__c),
             neighbourhood: r.Neighbourhood__r?.Name,
             since: r.Approved_Date__c,
             endedDate: r.Ended_Date__c,
             isApproved: r.Status__c === 'Approved',
-            isInactive: r.Status__c === 'Inactive' || r.Status__c === 'Revoked',
-            rowClass: (r.Status__c === 'Inactive' || r.Status__c === 'Revoked') ? 'identity-row muted' : 'identity-row',
+            isInactive: this._isEndedStatus(r.Status__c),
+            rowClass: this._isEndedStatus(r.Status__c) ? 'identity-row muted' : 'identity-row',
             helperText: this._helperText(r)
         }));
     }
@@ -208,14 +208,14 @@ export default class FimbyManageIdentities extends LightningElement {
             name: r.Contact__r?.Name || 'Unknown',
             avatarUrl: this._resolveAvatarUrl(r.Contact__r?.Image_URL__c, ICONS.noProfile),
             status: r.Status__c,
+            statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
-            statusDotUrl: this._statusDot(r.Status__c),
             neighbourhood: r.Neighbourhood__r?.Name,
             since: r.Approved_Date__c,
             endedDate: r.Ended_Date__c,
             isApproved: r.Status__c === 'Approved',
-            isInactive: r.Status__c === 'Inactive' || r.Status__c === 'Revoked',
-            rowClass: (r.Status__c === 'Inactive' || r.Status__c === 'Revoked') ? 'identity-row muted' : 'identity-row',
+            isInactive: this._isEndedStatus(r.Status__c),
+            rowClass: this._isEndedStatus(r.Status__c) ? 'identity-row muted' : 'identity-row',
             confirmed: r.Subject_Confirmed__c,
             showConfirm: r.Status__c === 'Approved' && !r.Subject_Confirmed__c,
             helperText: this._helperText(r)
@@ -229,37 +229,42 @@ export default class FimbyManageIdentities extends LightningElement {
             name: this.orgNames[r.Related_Organization__c] || r.Related_Organization__r?.Name || 'Unknown',
             avatarUrl: this._resolveAvatarUrl(this.orgAvatarUrls[r.Related_Organization__c], ICONS.noOrg),
             status: r.Status__c,
+            statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
-            statusDotUrl: this._statusDot(r.Status__c),
             neighbourhood: r.Neighbourhood__r?.Name,
             since: r.Approved_Date__c,
             endedDate: r.Ended_Date__c,
             isApproved: r.Status__c === 'Approved',
-            isInactive: r.Status__c === 'Inactive' || r.Status__c === 'Revoked',
+            isInactive: this._isEndedStatus(r.Status__c),
             // A2: marker the Detail Modal uses to swap copy ("Stop representing
             // this group" instead of "Step Back") and to surface the Close +
             // Delete buttons. Anything mapped through _mapGroups is, by
             // definition, a Community_Group_Rep relationship.
             isCommunityGroup: true,
-            rowClass: (r.Status__c === 'Inactive' || r.Status__c === 'Revoked') ? 'identity-row muted' : 'identity-row',
+            rowClass: this._isEndedStatus(r.Status__c) ? 'identity-row muted' : 'identity-row',
             helperText: this._helperText(r)
         }));
     }
 
-    _statusClass(status) {
-        if (status === 'Approved') return 'status-pill approved';
-        if (status === 'Pending') return 'status-pill pending';
-        return 'status-pill inactive';
+    _isEndedStatus(status) {
+        return status === 'Inactive' || status === 'Revoked' || status === 'Declined';
     }
 
-    _statusDot(status) {
-        if (status === 'Approved') return `${IMPACT_ICONS}/${ICONS.greenDot}`;
-        if (status === 'Pending') return `${IMPACT_ICONS}/${ICONS.yellowDot}`;
-        return `${IMPACT_ICONS}/${ICONS.redDot}`;
+    _statusLabel(status) {
+        if (status === 'Approved') return 'Active';
+        if (status === 'Pending') return 'Pending review';
+        return status;
+    }
+
+    _statusClass(status) {
+        if (status === 'Approved') return 'status-badge status-active';
+        if (status === 'Pending') return 'status-badge status-pending';
+        return 'status-badge status-inactive';
     }
 
     _helperText(r) {
         if (r.Status__c === 'Pending') return 'Awaiting review by the neighbourhood team';
+        if (r.Status__c === 'Declined') return 'This request was not approved';
         if (r.Status__c === 'Inactive') return `This connection ended on ${this._formatDate(r.Ended_Date__c)}`;
         if (r.Status__c === 'Revoked') return `Access was revoked on ${this._formatDate(r.Ended_Date__c)}`;
         return '';

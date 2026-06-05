@@ -151,9 +151,9 @@
 }
 
 .card-menu {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -178,11 +178,12 @@
     position: absolute;
     top: calc(100% + 4px);
     right: 0;
-    min-width: 160px;
-    background: var(--fimby-surface-card, #fff);
+    width: max-content;
+    min-width: 0;
+    background-color: var(--fimby-surface-card, #fff);
     border: 1px solid var(--fimby-border-subtle, rgba(0, 0, 0, 0.08));
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-radius: var(--fimby-radius-md, 12px);
+    box-shadow: var(--fimby-shadow-modal, 0 8px 24px rgba(0, 0, 0, 0.12));
     z-index: 901;
     padding: 6px 0;
 }
@@ -190,20 +191,29 @@
 .card-menu-item {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     width: 100%;
-    padding: 10px 14px;
+    padding: 10px 16px;
+    min-height: 44px;
     background: none;
     border: none;
     font: inherit;
     font-size: 14px;
+    font-weight: 500;
     color: var(--fimby-text-primary);
     cursor: pointer;
-    text-align: left;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .card-menu-item:hover {
-    background: var(--fimby-hover-bg);
+    background-color: var(--fimby-hover-bg);
+}
+
+.card-menu-item:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: -2px;
 }
 
 .card-menu-item-icon {

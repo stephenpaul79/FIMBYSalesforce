@@ -24,9 +24,18 @@ export default class FimbyImageUploader extends LightningElement {
     // When true, accepts PDFs in addition to images (verification letters, auth docs).
     @api allowDocuments = false;
 
+    // When true, opens interactive crop step before upload (avatars/logos).
+    @api enableCrop = false;
+    @api cropSize = 300;
+    @api cropShape = 'circle';
+
     /** Bare `allow-documents` in markup sets "" not true — normalize before use. */
     get documentsEnabled() {
         return this.allowDocuments === true || this.allowDocuments === '';
+    }
+
+    get cropEnabled() {
+        return this.enableCrop === true || this.enableCrop === '';
     }
 
     // State
@@ -47,6 +56,11 @@ export default class FimbyImageUploader extends LightningElement {
     // Image dimensions after compression
     compressedWidth = 0;
     compressedHeight = 0;
+
+    // Crop step state
+    @track showCropper = false;
+    cropSourceDataUrl = '';
+    pendingFileName = '';
 
     get isFeedbackObject() {
         return this.objectApiName === 'Feedback__c';
@@ -250,11 +264,24 @@ export default class FimbyImageUploader extends LightningElement {
             return;
         }
 
+        const isPdf = this.isPdfFile(file);
+
+        if (!isPdf && this.cropEnabled) {
+            try {
+                this.pendingFileName = this.generateFileName(file.name, false);
+                this.cropSourceDataUrl = await this.readFileAsDataUrl(file);
+                this.showCropper = true;
+            } catch (error) {
+                console.error('Error preparing crop:', error);
+                this.errorMessage = error.message || 'Failed to load image. Please try again.';
+            }
+            return;
+        }
+
         this.isUploading = true;
         this.uploadProgress = 10;
 
         try {
-            const isPdf = this.isPdfFile(file);
             let fileData;
             let fileName;
             let fileSize;
@@ -275,70 +302,14 @@ export default class FimbyImageUploader extends LightningElement {
                 this.uploadProgress = 50;
             }
 
-            if (this.recordId) {
-                const result = this.isFeedbackObject
-                    ? await uploadFeedbackScreenshot({
-                        fileData,
-                        fileName,
-                        recordId: this.recordId,
-                        imageWidth: this.compressedWidth,
-                        imageHeight: this.compressedHeight
-                    })
-                    : await uploadImage({
-                        fileData,
-                        fileName,
-                        recordId: this.recordId,
-                        objectApiName: this.objectApiName,
-                        imageSlot: this.imageSlot || null,
-                        imageWidth: this.compressedWidth,
-                        imageHeight: this.compressedHeight
-                    });
-
-                this.uploadProgress = 100;
-
-                if (result.success) {
-                    if (isPdf) {
-                        this.isPdfUpload = true;
-                        this.uploadedFileName = fileName;
-                        this.imageUrl = '';
-                    } else {
-                        this.imageUrl = result.viewUrl;
-                        this.isPdfUpload = false;
-                        this.uploadedFileName = '';
-                    }
-                    this.successMessage = isPdf ? 'Document uploaded successfully!' : 'Image uploaded successfully!';
-                    setTimeout(() => { this.successMessage = ''; }, 3000);
-
-                    this.dispatchImageEvent('imageuploaded', {
-                        imageUrl: result.viewUrl,
-                        imageRatio: result.imageRatio,
-                        contentVersionId: result.contentVersionId,
-                        fileName,
-                        isPdf
-                    });
-                }
-            } else {
-                this.uploadProgress = 100;
-                if (isPdf) {
-                    this.isPdfUpload = true;
-                    this.uploadedFileName = file.name;
-                    this.imageUrl = '';
-                } else {
-                    this.imageUrl = fileData;
-                    this.isPdfUpload = false;
-                    this.uploadedFileName = '';
-                }
-
-                this.dispatchImageEvent('imageselected', {
-                    base64: fileData,
-                    fileName,
-                    width: this.compressedWidth,
-                    height: this.compressedHeight,
-                    size: fileSize,
-                    isPdf
-                });
-            }
-
+            await this._finishImageUpload({
+                base64: fileData,
+                fileName,
+                width: this.compressedWidth,
+                height: this.compressedHeight,
+                size: fileSize,
+                isPdf
+            });
         } catch (error) {
             console.error('Error processing image:', error);
             this.errorMessage = error.body?.message || error.message || 'Failed to upload file. Please try again.';
@@ -346,6 +317,113 @@ export default class FimbyImageUploader extends LightningElement {
             this.isUploading = false;
             this.uploadProgress = 0;
         }
+    }
+
+    async _finishImageUpload({ base64, fileName, width, height, size, isPdf }) {
+        this.compressedWidth = width;
+        this.compressedHeight = height;
+
+        if (this.recordId) {
+            const result = this.isFeedbackObject
+                ? await uploadFeedbackScreenshot({
+                    fileData: base64,
+                    fileName,
+                    recordId: this.recordId,
+                    imageWidth: width,
+                    imageHeight: height
+                })
+                : await uploadImage({
+                    fileData: base64,
+                    fileName,
+                    recordId: this.recordId,
+                    objectApiName: this.objectApiName,
+                    imageSlot: this.imageSlot || null,
+                    imageWidth: width,
+                    imageHeight: height
+                });
+
+            this.uploadProgress = 100;
+
+            if (result.success) {
+                if (isPdf) {
+                    this.isPdfUpload = true;
+                    this.uploadedFileName = fileName;
+                    this.imageUrl = '';
+                } else {
+                    this.imageUrl = result.viewUrl;
+                    this.isPdfUpload = false;
+                    this.uploadedFileName = '';
+                }
+                this.successMessage = isPdf ? 'Document uploaded successfully!' : 'Image uploaded successfully!';
+                setTimeout(() => { this.successMessage = ''; }, 3000);
+
+                this.dispatchImageEvent('imageuploaded', {
+                    imageUrl: result.viewUrl,
+                    imageRatio: result.imageRatio,
+                    contentVersionId: result.contentVersionId,
+                    fileName,
+                    isPdf
+                });
+            }
+        } else {
+            this.uploadProgress = 100;
+            if (isPdf) {
+                this.isPdfUpload = true;
+                this.uploadedFileName = fileName;
+                this.imageUrl = '';
+            } else {
+                this.imageUrl = base64;
+                this.isPdfUpload = false;
+                this.uploadedFileName = '';
+            }
+
+            this.dispatchImageEvent('imageselected', {
+                base64,
+                fileName,
+                width,
+                height,
+                size,
+                isPdf
+            });
+        }
+    }
+
+    async handleCropConfirm(event) {
+        const { base64, width, height, size } = event.detail || {};
+        const fileName = this.pendingFileName || this.generateFileName('photo.jpg', false);
+        this._closeCropper();
+        if (!base64) return;
+
+        this.isUploading = true;
+        this.uploadProgress = 50;
+        this.errorMessage = '';
+
+        try {
+            await this._finishImageUpload({
+                base64,
+                fileName,
+                width,
+                height,
+                size,
+                isPdf: false
+            });
+        } catch (error) {
+            console.error('Error uploading cropped image:', error);
+            this.errorMessage = error.body?.message || error.message || 'Failed to upload file. Please try again.';
+        } finally {
+            this.isUploading = false;
+            this.uploadProgress = 0;
+        }
+    }
+
+    handleCropCancel() {
+        this._closeCropper();
+    }
+
+    _closeCropper() {
+        this.showCropper = false;
+        this.cropSourceDataUrl = '';
+        this.pendingFileName = '';
     }
 
     /**

@@ -33,6 +33,27 @@ private class FimbySyncUserIdentityQueueableTest {
     }
 
     @IsTest
+    static void executeSyncsUsernameWhenUsernameTracksEmailWithSuffix() {
+        User u = [SELECT Id, Email, Username FROM User WHERE ContactId != null LIMIT 1];
+        String baseEmail = 'track.email@testorg.com';
+        u.Email = baseEmail;
+        u.Username = baseEmail + '.fimbyorg';
+        update u;
+
+        Map<String, String> fields = new Map<String, String>{
+            'Email' => 'new.track@testorg.com'
+        };
+
+        Test.startTest();
+        System.enqueueJob(new FimbySyncUserIdentityQueueable(u.Id, fields));
+        Test.stopTest();
+
+        User updated = [SELECT Email, Username FROM User WHERE Id = :u.Id];
+        System.assertEquals('new.track@testorg.com', updated.Email);
+        System.assertEquals('new.track@testorg.com.fimbyorg', updated.Username);
+    }
+
+    @IsTest
     static void executeWithBogusIdHitsErrorPath() {
         Test.startTest();
         System.enqueueJob(new FimbySyncUserIdentityQueueable(

@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 
 export default class FimbyCard extends LightningElement {
     // Layout properties
@@ -99,9 +100,7 @@ export default class FimbyCard extends LightningElement {
 
     get displayTitle() {
         if (!this.title) return '';
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = this.title;
-        return textarea.value;
+        return decodeHtmlEntities(this.title);
     }
 
     get hasEventMeta() {

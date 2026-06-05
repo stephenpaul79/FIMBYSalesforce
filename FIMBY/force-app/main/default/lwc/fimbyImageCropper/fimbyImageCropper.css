@@ -1,0 +1,174 @@
+:host {
+    display: block;
+}
+
+.crop-backdrop {
+    position: fixed;
+    top: var(--fimby-modal-inset-top, 86px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.55);
+    box-sizing: border-box;
+}
+
+.crop-panel {
+    width: 100%;
+    max-width: 360px;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-lg, 16px);
+    box-shadow: var(--fimby-shadow-modal);
+    padding: 20px 16px 16px;
+    box-sizing: border-box;
+}
+
+.crop-heading {
+    margin: 0 0 4px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    text-align: center;
+}
+
+.crop-hint {
+    margin: 0 0 16px;
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    text-align: center;
+}
+
+.viewport-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.crop-viewport {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    overflow: hidden;
+    border-radius: var(--fimby-radius-md, 12px);
+    background-color: var(--fimby-surface-section);
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+}
+
+.crop-viewport:active {
+    cursor: grabbing;
+}
+
+.crop-canvas {
+    display: block;
+    width: 280px;
+    height: 280px;
+}
+
+.crop-mask {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+}
+
+.zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.zoom-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    flex-shrink: 0;
+}
+
+.zoom-slider {
+    flex: 1;
+    min-height: 44px;
+    accent-color: var(--fimby-btn-primary-bg, #3A7D8C);
+}
+
+.crop-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.btn-cancel,
+.btn-confirm {
+    flex: 1;
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-cancel {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.btn-cancel:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.btn-confirm {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+}
+
+.btn-confirm:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+}
+
+.btn-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-cancel:focus-visible,
+.btn-confirm:focus-visible,
+.zoom-slider:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-cancel,
+    .btn-confirm {
+        transition: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .crop-backdrop {
+        top: 0;
+        align-items: flex-end;
+        padding: 0;
+        padding-top: var(--fimby-header-height, 70px);
+    }
+
+    .crop-panel {
+        max-width: none;
+        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        padding-bottom: 24px;
+    }
+}

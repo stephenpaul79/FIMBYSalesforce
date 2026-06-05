@@ -28,15 +28,10 @@
                                 <img src={rel.avatarUrl} alt="" class="row-avatar" />
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
+                                    <span class={rel.statusClass}>{rel.statusLabel}</span>
                                     <template lwc:if={rel.helperText}>
                                         <span class="helper-text">{rel.helperText}</span>
                                     </template>
-                                </div>
-                                <div class="status-cell">
-                                    <span class={rel.statusClass}>
-                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
-                                        {rel.status}
-                                    </span>
                                 </div>
                                 <div class="row-actions">
                                     <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="support" onclick={handleViewDetails}>Details</button>
@@ -74,16 +69,11 @@
                                 <img src={rel.avatarUrl} alt="" class="row-avatar" />
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
+                                    <span class={rel.statusClass}>{rel.statusLabel}</span>
                                     <span class="row-neighbourhood">{rel.neighbourhood}</span>
                                     <template lwc:if={rel.helperText}>
                                         <span class="helper-text">{rel.helperText}</span>
                                     </template>
-                                </div>
-                                <div class="status-cell">
-                                    <span class={rel.statusClass}>
-                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
-                                        {rel.status}
-                                    </span>
                                 </div>
                                 <div class="row-actions">
                                     <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="groups" onclick={handleViewDetails}>Details</button>
@@ -124,10 +114,7 @@
                                     <template lwc:if={paper.supporteeCity}>
                                         <span class="row-neighbourhood">{paper.supporteeCity}</span>
                                     </template>
-                                    <span class="helper-text">{paper.statusLabel}</span>
-                                </div>
-                                <div class="status-cell">
-                                    <span class={paper.statusClass}>{paper.status}</span>
+                                    <span class={paper.statusClass}>{paper.statusLabel}</span>
                                 </div>
                                 <div class="row-actions">
                                     <template lwc:if={paper.isDraft}>
@@ -156,15 +143,10 @@
                                 <img src={rel.avatarUrl} alt="" class="row-avatar" />
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
+                                    <span class={rel.statusClass}>{rel.statusLabel}</span>
                                     <template lwc:if={rel.helperText}>
                                         <span class="helper-text">{rel.helperText}</span>
                                     </template>
-                                </div>
-                                <div class="status-cell">
-                                    <span class={rel.statusClass}>
-                                        <img src={rel.statusDotUrl} alt="" class="status-dot" />
-                                        {rel.status}
-                                    </span>
                                 </div>
                                 <div class="row-actions">
                                     <button type="button" class="pill-btn secondary" data-id={rel.id} data-section="supportme" onclick={handleViewDetails}>Details</button>
@@ -219,10 +201,7 @@
                         <div class="detail-content">
                             <img src={detailRecord.avatarUrl} alt="" class="detail-avatar" />
                             <p class="detail-name">{detailRecord.name}</p>
-                            <span class={detailRecord.statusClass}>
-                                <img src={detailRecord.statusDotUrl} alt="" class="status-dot" />
-                                {detailRecord.status}
-                            </span>
+                            <span class={detailRecord.statusClass}>{detailRecord.statusLabel}</span>
                             <template lwc:if={detailRecord.organizationId}>
                                 <a href={detailProfileUrl} class="view-profile-link">View Profile</a>
                             </template>

@@ -162,7 +162,6 @@
     width: 100%;
     max-width: 100%;
     overflow-wrap: break-word;
-    overflow-wrap: break-word;
 }
 
 .poster-identity-label {
@@ -203,7 +202,6 @@
 }
 
 .compact-meta-fact {
-    overflow-wrap: break-word;
     overflow-wrap: break-word;
 }
 

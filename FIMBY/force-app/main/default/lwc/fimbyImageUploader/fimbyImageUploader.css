@@ -303,7 +303,7 @@
     font-size: 14px;
     color: var(--fimby-text-primary);
     text-align: center;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .document-actions {

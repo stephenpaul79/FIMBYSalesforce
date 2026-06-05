@@ -204,7 +204,7 @@
     color: var(--fimby-text-strong);
     margin: 0;
     line-height: 1.2;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .identity-pronouns {

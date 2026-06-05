@@ -8,6 +8,10 @@ import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizat
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import {
+    getBadgeTypeFromContext,
+    getThreadAvatarIcon
+} from 'c/fimbyThreadBadgeConfig';
 
 const PAGE_SIZE = 50;
 const ZONE_THRESHOLD = 3;
@@ -22,6 +26,8 @@ export default class FimbyGroupConversation extends LightningElement {
     @track isLoading = true;
     @track isSending = false;
     @track conversationName = '';
+    @track contextType = '';
+    @track loadError = '';
     @track members = [];
     @track isLocked = false;
     @track isMuted = false;
@@ -92,11 +98,20 @@ export default class FimbyGroupConversation extends LightningElement {
     }
 
     get hasMessages() {
-        return this.processedMessages.length > 0;
+        return (this.messages && this.messages.length > 0);
+    }
+
+    get showZonedThread() {
+        return this.useZones && !!this.firstMessage;
+    }
+
+    get showFlatThread() {
+        return this.hasMessages && !this.useZones;
     }
 
     get groupIconUrl() {
-        return `${IMPACT_ICONS}/bulkbuy.png`;
+        const badgeType = getBadgeTypeFromContext(this.contextType);
+        return `${IMPACT_ICONS}/${getThreadAvatarIcon(badgeType)}`;
     }
 
     get muteIconUrl() {
@@ -171,6 +186,7 @@ export default class FimbyGroupConversation extends LightningElement {
             const match = list.find(c => c.conversationId === this.conversationId);
             if (match) {
                 this.conversationName = match.groupName || 'Group Chat';
+                this.contextType = match.contextType || '';
                 this.isLocked = !!match.locked;
                 this.isMuted = !!match.muted;
             } else {
@@ -184,6 +200,7 @@ export default class FimbyGroupConversation extends LightningElement {
 
     async loadMessages() {
         this.isLoading = true;
+        this.loadError = '';
         this.currentOffset = 0;
         this.middleRevealed = false;
         this.expandedIds = [];
@@ -197,8 +214,18 @@ export default class FimbyGroupConversation extends LightningElement {
 
             this.messages = result.messages || [];
             this.hasMoreMessages = !!result.hasMore;
+            if (result.groupName) {
+                this.conversationName = result.groupName;
+            }
+            if (result.contextType) {
+                this.contextType = result.contextType;
+            }
             this.processMessages();
         } catch (error) {
+            this.messages = [];
+            this.processedMessages = [];
+            this.loadError = error?.body?.message || error?.message
+                || 'We could not load this conversation. Please try again.';
             console.error('Error loading messages:', error);
         } finally {
             this.isLoading = false;
@@ -294,6 +321,18 @@ export default class FimbyGroupConversation extends LightningElement {
 
             const firstUser = userMessages[0];
             const firstUserIdx = realMessages.indexOf(firstUser);
+            if (firstUserIdx < 0) {
+                this.useZones = false;
+                this.processedMessages = processed;
+                this.firstMessage = null;
+                this.headerSystemMessages = [];
+                this._rawMiddle = [];
+                this._rawMiddleAll = [];
+                this.middleMessages = [];
+                this.middleSystemMessages = [];
+                this.lastMessages = [];
+                return;
+            }
 
             this.headerSystemMessages = realMessages.slice(0, firstUserIdx);
             this.firstMessage = { ...firstUser, cardClass: (firstUser.cardClass || 'message-card') + ' zone-first' };

@@ -147,7 +147,7 @@ FIMBY is a charity-operated neighbourhood mutual-aid app for adults 19+, operate
 
 Demo account (sign-in required):
 Email: reviewer@fimby.com (reset in your profile after initial login to receive email notifications)
-Password: [INSERT BEFORE SUBMITTING]
+Password: fimby4Apple
 
 The native iOS client integrates with platform capabilities that a website cannot: Apple Push Notifications for neighbour messages and lending reminders, on-device OAuth PKCE sign-in with credentials secured in the iOS Keychain (via expo-secure-store) so backend tokens never persist on the device, Universal Links for the sign-in callback, and per-user quiet hours that suppress notifications on-device. The app is a full neighbourhood mutual-aid client (asks, offers, lending library with due-date tracking, bulk-buy coordination, events, direct and group messaging), not a single-page utility or content feed.
 

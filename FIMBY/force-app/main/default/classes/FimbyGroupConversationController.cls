@@ -34,8 +34,13 @@ public with sharing class FimbyGroupConversationController {
 
             GroupChatHelper helper = new GroupChatHelper();
             List<Message__c> messages = helper.queryMessages(conversationId, pSize, pOffset);
-            helper.markAsRead(conversationId, contactId);
+            try {
+                helper.markAsRead(conversationId, contactId);
+            } catch (Exception markReadEx) {
+                FimbyLogger.error(CLASS_NAME, 'getGroupMessages.markAsRead', markReadEx);
+            }
             Integer total = helper.countMessages(conversationId);
+            Conversation__c convMeta = helper.queryConversationMeta(conversationId);
 
             List<Map<String, Object>> messageList = new List<Map<String, Object>>();
             for (Message__c m : messages) {
@@ -74,7 +79,9 @@ public with sharing class FimbyGroupConversationController {
             return new Map<String, Object>{
                 'messages' => messageList,
                 'hasMore' => (pOffset + pSize) < total,
-                'totalCount' => total
+                'totalCount' => total,
+                'groupName' => convMeta.Group_Name__c,
+                'contextType' => convMeta.Context_Type__c
             };
         } catch (Exception e) {
             FimbyLogger.error(CLASS_NAME, 'getGroupMessages', e);
@@ -185,6 +192,7 @@ public with sharing class FimbyGroupConversationController {
                 results.add(new Map<String, Object>{
                     'conversationId' => cm.Conversation__c,
                     'groupName' => cm.Conversation__r.Group_Name__c,
+                    'contextType' => cm.Conversation__r.Context_Type__c,
                     'lastMessage' => cm.Conversation__r.Last_Message_Preview__c,
                     'lastMessageDate' => cm.Conversation__r.Last_Message_Date__c,
                     'locked' => cm.Conversation__r.Locked__c,
@@ -267,6 +275,15 @@ public with sharing class FimbyGroupConversationController {
             ];
         }
 
+        public Conversation__c queryConversationMeta(Id conversationId) {
+            return [
+                SELECT Id, Group_Name__c, Context_Type__c, Locked__c
+                FROM Conversation__c
+                WHERE Id = :conversationId
+                LIMIT 1
+            ];
+        }
+
         public Id createGroupConversation(Needs_Offers__c post) {
             Conversation__c conv = new Conversation__c(
                 Is_Group__c = true,
@@ -305,7 +322,8 @@ public with sharing class FimbyGroupConversationController {
             insert msg;
 
             updateConversationSummary(conversationId, body);
-            incrementUnreadForOthers(conversationId, contactId);
+            Set<Id> senderExcludeContactIds = buildSenderRecipientExclusionIds(contactId, realContactId);
+            incrementUnreadForOthers(conversationId, senderExcludeContactIds);
 
             Conversation__c conv = [
                 SELECT Id, Group_Name__c FROM Conversation__c
@@ -335,7 +353,7 @@ public with sharing class FimbyGroupConversationController {
             List<Conversation_Member__c> recipients = [
                 SELECT Contact__c FROM Conversation_Member__c
                 WHERE Conversation__c = :conversationId
-                AND Contact__c != :contactId
+                AND Contact__c NOT IN :senderExcludeContactIds
                 AND Status__c = :FimbyConstants.MEMBER_ACTIVE
                 AND Muted__c = false
             ];
@@ -567,6 +585,7 @@ public with sharing class FimbyGroupConversationController {
         public List<Conversation_Member__c> queryMyGroupMemberships(Id contactId) {
             return [
                 SELECT Conversation__c, Conversation__r.Group_Name__c,
+                       Conversation__r.Context_Type__c,
                        Conversation__r.Last_Message_Preview__c,
                        Conversation__r.Last_Message_Date__c,
                        Conversation__r.Locked__c, Unread_Count__c, Muted__c
@@ -579,11 +598,58 @@ public with sharing class FimbyGroupConversationController {
             ];
         }
 
-        private void incrementUnreadForOthers(Id conversationId, Id senderContactId) {
+        /**
+         * Contact Ids that must not receive notifications or unread bumps for this send.
+         * Includes represented + real author and org identities the user can act as (same User).
+         */
+        private Set<Id> buildSenderRecipientExclusionIds(Id actingAsContactId, Id sentByContactId) {
+            Set<Id> excludeIds = new Set<Id>();
+            if (actingAsContactId != null) {
+                excludeIds.add(actingAsContactId);
+            }
+            Id sentBy = sentByContactId != null ? sentByContactId : actingAsContactId;
+            if (sentBy != null) {
+                excludeIds.add(sentBy);
+            }
+
+            Id realContactId = FimbyIdentityRepository.getCurrentUser()?.ContactId;
+            if (realContactId == null) {
+                return excludeIds;
+            }
+            excludeIds.add(realContactId);
+
+            Set<Id> orgAccountIdsNeedingLookup = new Set<Id>();
+            for (Support_Relationship__c rel : [
+                SELECT Related_Organization__c, Related_Organization__r.Organization_Contact__c
+                FROM Support_Relationship__c
+                WHERE Contact__c = :realContactId
+                  AND Status__c = 'Approved'
+                  AND Relationship_Type__c = 'Community_Group_Rep'
+                  AND Related_Organization__c != null
+            ]) {
+                if (rel.Related_Organization__r.Organization_Contact__c != null) {
+                    excludeIds.add(rel.Related_Organization__r.Organization_Contact__c);
+                } else {
+                    orgAccountIdsNeedingLookup.add(rel.Related_Organization__c);
+                }
+            }
+            if (!orgAccountIdsNeedingLookup.isEmpty()) {
+                for (Contact orgContact : [
+                    SELECT Id FROM Contact
+                    WHERE Is_Organization_Contact__c = true
+                      AND Organization_Account__c IN :orgAccountIdsNeedingLookup
+                ]) {
+                    excludeIds.add(orgContact.Id);
+                }
+            }
+            return excludeIds;
+        }
+
+        private void incrementUnreadForOthers(Id conversationId, Set<Id> senderExcludeContactIds) {
             List<Conversation_Member__c> others = [
                 SELECT Id, Unread_Count__c, Muted__c FROM Conversation_Member__c
                 WHERE Conversation__c = :conversationId
-                AND Contact__c != :senderContactId
+                AND Contact__c NOT IN :senderExcludeContactIds
                 AND Status__c = :FimbyConstants.MEMBER_ACTIVE
             ];
             for (Conversation_Member__c cm : others) {

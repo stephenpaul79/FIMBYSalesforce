@@ -1,0 +1,43 @@
+<template>
+    <div class="crop-backdrop" role="dialog" aria-modal="true" aria-labelledby="crop-heading">
+        <div class="crop-panel">
+            <h2 id="crop-heading" class="crop-heading">Position your photo</h2>
+            <p class="crop-hint">Drag to move. Pinch or use the slider to zoom.</p>
+
+            <div class="viewport-wrap">
+                <div
+                    class="crop-viewport"
+                    onpointerdown={handlePointerDown}
+                    onpointermove={handlePointerMove}
+                    onpointerup={handlePointerUp}
+                    onpointercancel={handlePointerUp}
+                    onpointerleave={handlePointerUp}>
+                    <canvas class="crop-canvas" lwc:dom="manual"></canvas>
+                    <div class="crop-mask" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div class="zoom-row">
+                <label class="zoom-label" for="crop-zoom">Zoom</label>
+                <input
+                    id="crop-zoom"
+                    type="range"
+                    class="zoom-slider"
+                    min={zoomMinPercent}
+                    max={zoomMaxPercent}
+                    value={zoomPercent}
+                    oninput={handleZoomInput}
+                    aria-valuemin={zoomMinPercent}
+                    aria-valuemax={zoomMaxPercent}
+                    aria-valuenow={zoomPercent}>
+            </div>
+
+            <div class="crop-actions">
+                <button type="button" class="btn-cancel" onclick={handleCancel}>Cancel</button>
+                <button type="button" class="btn-confirm" onclick={handleConfirm} disabled={isExporting}>
+                    {confirmLabel}
+                </button>
+            </div>
+        </div>
+    </div>
+</template>

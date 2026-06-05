@@ -4,6 +4,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 
 const SORT_OPTIONS = [
     { value: 'relevance', label: 'Relevance' },
@@ -448,16 +449,9 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     truncate(text, maxLength) {
         if (!text) return '';
         const stripped = text.replace(/<[^>]*>/g, '');
-        const decoded = this.decodeHtmlEntities(stripped);
+        const decoded = decodeHtmlEntities(stripped);
         if (decoded.length <= maxLength) return decoded;
         return decoded.substring(0, maxLength) + '...';
-    }
-
-    decodeHtmlEntities(text) {
-        if (!text) return text;
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
     }
 
     formatRelativeDate(dateString) {

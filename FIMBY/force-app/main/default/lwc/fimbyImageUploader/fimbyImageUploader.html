@@ -107,5 +107,16 @@
                 <span>{successMessage}</span>
             </div>
         </template>
+
+        <!-- Avatar crop step -->
+        <template lwc:if={showCropper}>
+            <c-fimby-image-cropper
+                image-src={cropSourceDataUrl}
+                output-size={cropSize}
+                quality={jpegQuality}
+                oncropconfirm={handleCropConfirm}
+                oncropcancel={handleCropCancel}>
+            </c-fimby-image-cropper>
+        </template>
     </div>
 </template>
