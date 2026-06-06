@@ -174,6 +174,8 @@ public with sharing class FimbySettings {
     // ---- App Install Prompt (mobile web) ----
     /** @description Master kill switch for the mobile-web app install prompt. */
     public static Boolean appPromptEnabled()             { return get()?.App_Prompt_Enabled__c == true; }
+    /** @description Kill switch for the CommunitiesLanding mobile app handoff page. */
+    public static Boolean appHandoffEnabled()            { return get()?.App_Handoff_Enabled__c == true; }
     /** @description Days between repeat showings of the install prompt for the same browser. */
     public static Integer appPromptCooldownDays()        { return safe(get()?.App_Prompt_Cooldown_Days__c, 14); }
     /** @description Destination for the iOS "Get the app" CTA in the install prompt. */

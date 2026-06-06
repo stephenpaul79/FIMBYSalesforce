@@ -5,7 +5,7 @@
  *   1. The postal code matches a Postal_Codes__c row AND the neighbourhood
  *      Account is active (Account.Active__c = 'Yes') -> continue to
  *      Create_Contact path (Vouched_Status__c defaults to 'New').
- *   2. No match, or matched neighbourhood is inactive -> create a Lead.
+ *   2. No match, or matched neighbourhood is inactive -> waitlist Contact path.
  *
  * Runs in system context (without sharing) because it is called pre-login
  * by the public sign-up flow where the guest user lacks read access to
@@ -29,15 +29,21 @@ public without sharing class FimbyPostalResolver {
             return new List<Result>();
         }
 
-        // Normalize all postal codes once.
-        List<String> normalized = new List<String>();
+        Set<String> compactLookupKeys = new Set<String>();
+        Set<String> formattedLookupKeys = new Set<String>();
         for (Request r : requests) {
-            normalized.add(normalize(r != null ? r.postalCode : null));
+            String compact = normalizeForLookup(r != null ? r.postalCode : null);
+            if (String.isNotBlank(compact)) {
+                compactLookupKeys.add(compact);
+                String formatted = formatCanadianPostalCode(compact);
+                if (String.isNotBlank(formatted)) {
+                    formattedLookupKeys.add(formatted);
+                }
+            }
         }
 
-        // Single bulk query: match either Name (with-spaces) or Postal_Code_No_Spaces__c.
         Map<String, Postal_Codes__c> byKey = new Map<String, Postal_Codes__c>();
-        if (!normalized.isEmpty()) {
+        if (!compactLookupKeys.isEmpty() || !formattedLookupKeys.isEmpty()) {
             for (Postal_Codes__c pc : [
                 SELECT Id, Name, Postal_Code_No_Spaces__c,
                        Neighbourhood_Account__c,
@@ -45,11 +51,14 @@ public without sharing class FimbyPostalResolver {
                        Boundary_Account__c,
                        Boundary_Account__r.Active__c
                 FROM Postal_Codes__c
-                WHERE Postal_Code_No_Spaces__c IN :normalized
+                WHERE Postal_Code_No_Spaces__c IN :compactLookupKeys
+                   OR Name IN :formattedLookupKeys
             ]) {
-                String key = pc.Postal_Code_No_Spaces__c;
-                if (String.isNotBlank(key)) {
-                    byKey.put(key, pc);
+                if (String.isNotBlank(pc.Postal_Code_No_Spaces__c)) {
+                    byKey.put(pc.Postal_Code_No_Spaces__c, pc);
+                }
+                if (String.isNotBlank(pc.Name)) {
+                    byKey.put(normalizeForLookup(pc.Name), pc);
                 }
             }
         }
@@ -77,7 +86,8 @@ public without sharing class FimbyPostalResolver {
     private static Result buildResult(Request req, Map<String, Postal_Codes__c> byKey) {
         Result out = new Result();
         out.postalCodeAsEntered = req != null ? req.postalCode : null;
-        out.normalizedPostalCode = normalize(out.postalCodeAsEntered);
+        out.normalizedPostalCode = normalizeForLookup(out.postalCodeAsEntered);
+        out.formattedPostalCode = formatCanadianPostalCode(out.normalizedPostalCode);
         out.isMatchFound = false;
         out.isActiveNeighbourhood = false;
 
@@ -113,11 +123,26 @@ public without sharing class FimbyPostalResolver {
         return out;
     }
 
-    private static String normalize(String raw) {
+    /**
+     * @description Strips non-alphanumeric characters and uppercases letters so
+     *              user input like "v6a-1c5", "V6A 1C5", or "V6a1c5" all resolve
+     *              to the same lookup key (e.g. "V6A1C5").
+     */
+    private static String normalizeForLookup(String raw) {
         if (String.isBlank(raw)) {
             return null;
         }
-        return raw.toUpperCase().replaceAll('\\s+', '');
+        return raw.toUpperCase().replaceAll('[^A-Z0-9]', '');
+    }
+
+    /**
+     * @description Formats a compact Canadian postal code as "V6A 1C5".
+     */
+    private static String formatCanadianPostalCode(String compact) {
+        if (String.isBlank(compact) || compact.length() != 6) {
+            return null;
+        }
+        return compact.substring(0, 3) + ' ' + compact.substring(3);
     }
 
     /* ------------------------------------------------------------------
@@ -152,7 +177,11 @@ public without sharing class FimbyPostalResolver {
         public String postalCodeAsEntered;
 
         @InvocableVariable(label='Normalized Postal Code'
-            description='Uppercased, whitespace-stripped postal code used for lookup.')
+            description='Uppercased, non-alphanumeric-stripped postal code used for lookup.')
         public String normalizedPostalCode;
+
+        @InvocableVariable(label='Formatted Postal Code'
+            description='Canadian display format with a space after the third character (e.g. V6A 1C5).')
+        public String formattedPostalCode;
     }
 }

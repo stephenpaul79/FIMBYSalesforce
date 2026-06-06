@@ -8,8 +8,7 @@
 
         <p class="fimby-tos-screen__link-row">
             <a href={tosUrl} target="_blank" rel="noopener noreferrer"
-               class="fimby-tos-screen__link"
-               onclick={handleLinkTap}>
+               class="fimby-tos-screen__link">
                 Open the FIMBY Terms of Service
                 <span aria-hidden="true" class="fimby-tos-screen__link-icon">↗</span>
             </a>
@@ -22,7 +21,6 @@
         <label class="fimby-tos-screen__checkbox">
             <input type="checkbox"
                    checked={checkboxChecked}
-                   disabled={checkboxDisabled}
                    onchange={handleCheckboxChange} />
             <span>
                 I have read and agree to the FIMBY Terms of Service<template lwc:if={tosVersion}> (version {tosVersion})</template>, and I am 19 or older.
@@ -39,10 +37,6 @@
                 <template lwc:else>I agree</template>
             </button>
         </div>
-
-        <template lwc:if={hintMessage}>
-            <p class="fimby-tos-screen__hint">{hintMessage}</p>
-        </template>
 
         <template lwc:if={errorMessage}>
             <p class="fimby-tos-screen__error">{errorMessage}</p>

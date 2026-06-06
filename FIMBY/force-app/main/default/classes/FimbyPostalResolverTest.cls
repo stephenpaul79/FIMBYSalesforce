@@ -45,6 +45,45 @@ private class FimbyPostalResolverTest {
         System.assertEquals(true, r.isActiveNeighbourhood, 'neighbourhood should be active');
         System.assertEquals(hood.Id, r.neighbourhoodAccountId, 'should return neighbourhood id');
         System.assertEquals('V6A1A1', r.normalizedPostalCode, 'normalized should strip spaces + uppercase');
+        System.assertEquals('V6A 1A1', r.formattedPostalCode, 'formatted should use canonical Canadian spacing');
+    }
+
+    @isTest
+    static void resolves_mixed_case_and_hyphen_input() {
+        Account hood = makeActiveNeighbourhood('Strathcona V6A');
+        makePostalCode('V6A 1C5', hood.Id, null);
+
+        FimbyPostalResolver.Request req = new FimbyPostalResolver.Request();
+        req.postalCode = 'V6a-1c5';
+
+        Test.startTest();
+        List<FimbyPostalResolver.Result> results =
+            FimbyPostalResolver.resolve(new List<FimbyPostalResolver.Request>{ req });
+        Test.stopTest();
+
+        FimbyPostalResolver.Result r = results[0];
+        System.assertEquals(true, r.isMatchFound, 'hyphenated mixed-case input should match');
+        System.assertEquals(true, r.isActiveNeighbourhood);
+        System.assertEquals(hood.Id, r.neighbourhoodAccountId);
+        System.assertEquals('V6A1C5', r.normalizedPostalCode);
+        System.assertEquals('V6A 1C5', r.formattedPostalCode);
+    }
+
+    @isTest
+    static void resolves_compact_lowercase_input_without_spaces() {
+        Account hood = makeActiveNeighbourhood('Strathcona V6A');
+        makePostalCode('V6A 1C5', hood.Id, null);
+
+        FimbyPostalResolver.Request req = new FimbyPostalResolver.Request();
+        req.postalCode = 'v6a1c5';
+
+        Test.startTest();
+        FimbyPostalResolver.Result r = FimbyPostalResolver.resolveSingle('v6a1c5');
+        Test.stopTest();
+
+        System.assertEquals(true, r.isMatchFound);
+        System.assertEquals(hood.Id, r.neighbourhoodAccountId);
+        System.assertEquals('V6A 1C5', r.formattedPostalCode);
     }
 
     @isTest

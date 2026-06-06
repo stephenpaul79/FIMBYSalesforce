@@ -12,7 +12,6 @@ export default class FimbyTosFlowScreen extends LightningElement {
     @api acceptanceCompleted = false;
     @api source = 'Login Flow';
 
-    linkTapped = false;
     checkboxChecked = false;
     submitting = false;
     errorMessage = '';
@@ -54,29 +53,8 @@ export default class FimbyTosFlowScreen extends LightningElement {
         }
     }
 
-    get checkboxDisabled() {
-        return !this.linkTapped;
-    }
-
     get agreeDisabled() {
-        return !this.linkTapped || !this.checkboxChecked || this.submitting || this.acceptanceCompleted;
-    }
-
-    get hintMessage() {
-        if (this.acceptanceCompleted) {
-            return 'Thanks — you can tap Continue to enter FIMBY.';
-        }
-        if (!this.linkTapped) {
-            return 'Tap the Terms of Service link above first, then come back to check the box.';
-        }
-        if (!this.checkboxChecked) {
-            return 'Check the box once you have read the Terms of Service.';
-        }
-        return '';
-    }
-
-    handleLinkTap() {
-        this.linkTapped = true;
+        return !this.checkboxChecked || this.submitting || this.acceptanceCompleted;
     }
 
     handleCheckboxChange(event) {

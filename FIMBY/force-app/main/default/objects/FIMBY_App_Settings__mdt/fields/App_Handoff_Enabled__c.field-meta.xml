@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>App_Handoff_Enabled__c</fullName>
+    <defaultValue>true</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>App Handoff Enabled</label>
+    <type>Checkbox</type>
+    <inlineHelpText>Kill switch for the post-set-password mobile app handoff page (CommunitiesLanding). When false, mobile users go straight to the web experience.</inlineHelpText>
+</CustomField>

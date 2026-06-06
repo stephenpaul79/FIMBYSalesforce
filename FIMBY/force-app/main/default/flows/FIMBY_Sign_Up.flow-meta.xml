@@ -147,7 +147,7 @@
         <locationX>500</locationX>
         <locationY>700</locationY>
         <defaultConnector>
-            <targetReference>Create_Waitlist_Lead</targetReference>
+            <targetReference>Create_Waitlist_Contact</targetReference>
         </defaultConnector>
         <defaultConnectorLabel>Just waitlist</defaultConnectorLabel>
         <rules>
@@ -167,23 +167,29 @@
         </rules>
     </decisions>
     <recordCreates>
-        <name>Create_Waitlist_Lead</name>
-        <label>Create Waitlist Lead</label>
+        <name>Create_Waitlist_Contact</name>
+        <label>Create Waitlist Contact</label>
         <locationX>400</locationX>
         <locationY>830</locationY>
         <connector>
             <targetReference>Waitlist_Thank_You</targetReference>
         </connector>
         <inputAssignments>
-            <field>Best_Contact_Method__c</field>
+            <field>Age_Attestation_Confirmed__c</field>
             <value>
-                <stringValue>Email</stringValue>
+                <elementReference>Age_Attestation</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Company</field>
+            <field>Age_Attestation_Date__c</field>
             <value>
-                <elementReference>Lead_Company_Display</elementReference>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Age_Attestation_Source__c</field>
+            <value>
+                <stringValue>Public Sign-up Form</stringValue>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -193,21 +199,15 @@
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>FIMBY_Lead_Type__c</field>
-            <value>
-                <stringValue>Waitlist</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
             <field>FirstName</field>
             <value>
                 <elementReference>First_Name</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Is_Launch_Lead__c</field>
+            <field>Household_Nickname__c</field>
             <value>
-                <booleanValue>false</booleanValue>
+                <elementReference>Household_Nickname_Username</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -217,9 +217,27 @@
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>LeadSource</field>
+            <field>MailingCity</field>
             <value>
-                <stringValue>FIMBY Sign-Up</stringValue>
+                <elementReference>City</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingPostalCode</field>
+            <value>
+                <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingState</field>
+            <value>
+                <elementReference>Province_State</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingStreet</field>
+            <value>
+                <elementReference>Mailing_Street</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -229,12 +247,12 @@
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>PostalCode</field>
+            <field>Status__c</field>
             <value>
-                <elementReference>Postal_COde</elementReference>
+                <stringValue>New Public Signup</stringValue>
             </value>
         </inputAssignments>
-        <object>Lead</object>
+        <object>Contact</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordCreates>
@@ -391,7 +409,7 @@
         <inputAssignments>
             <field>MailingPostalCode</field>
             <value>
-                <elementReference>Postal_COde</elementReference>
+                <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>

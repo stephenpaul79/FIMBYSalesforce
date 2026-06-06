@@ -11,6 +11,10 @@
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
+        <field>App_Handoff_Enabled__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>App_Store_URL_Android__c</field>
         <value xsi:type="xsd:string">https://fimby.com/app-coming-soon</value>
     </values>

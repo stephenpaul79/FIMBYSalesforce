@@ -1,0 +1,80 @@
+<apex:page id="fimbyAppHandoff"
+    showHeader="false"
+    sidebar="false"
+    standardStylesheets="false"
+    applyHtmlTag="false"
+    applyBodyTag="false"
+    controller="FimbyAppHandoffController"
+    title="Open FIMBY"
+    docType="html-5.0">
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>You're all set | FIMBY</title>
+    <apex:stylesheet value="{!URLFOR($Resource.FIMBY_Brand, 'fimby-tokens.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.FIMBY_Brand, 'fimby-login.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.FIMBY_Brand, 'fimby-theme-init.js')}" />
+    <style>
+        .fimby-vf-auth__body {
+            color: var(--fimby-text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.55;
+            margin: 0 0 1.5rem;
+            text-align: center;
+        }
+        .fimby-vf-auth__actions--stack {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .fimby-vf-auth__btn--secondary {
+            background-color: transparent !important;
+            border: 1.5px solid var(--fimby-border-strong) !important;
+            box-shadow: none !important;
+            color: var(--fimby-text-strong) !important;
+            text-decoration: none;
+        }
+        .fimby-vf-auth__btn--secondary:hover {
+            background-color: var(--fimby-hover-bg) !important;
+            color: var(--fimby-text-strong) !important;
+        }
+        .fimby-vf-auth__store {
+            margin-top: 1.25rem;
+            text-align: center;
+        }
+        .fimby-vf-auth__store a {
+            color: var(--fimby-btn-primary-bg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .fimby-vf-auth__store a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="fimby-vf-auth">
+    <main class="fimby-vf-auth__shell">
+        <img
+            class="fimby-vf-auth__logo"
+            src="{!URLFOR($Resource.Impact_Icons, 'FIMBYwGrass.png')}"
+            alt="FIMBY" />
+        <section class="fimby-vf-auth__card">
+            <h1 class="fimby-vf-auth__title">You're all set</h1>
+            <p class="fimby-vf-auth__body">
+                Your password is saved. Open the FIMBY app and sign in with the same password.
+            </p>
+            <div class="fimby-vf-auth__actions fimby-vf-auth__actions--stack">
+                <a href="{!appOpenUrl}" class="fimby-vf-auth__btn">Open the FIMBY app</a>
+                <a href="{!continueUrl}" class="fimby-vf-auth__btn fimby-vf-auth__btn--secondary">Continue in browser</a>
+            </div>
+            <apex:outputPanel layout="block" styleClass="fimby-vf-auth__store" rendered="{!showStoreLink}">
+                <span>Don't have the app yet? </span>
+                <a href="{!storeUrl}">Get the app</a>
+            </apex:outputPanel>
+        </section>
+    </main>
+</body>
+</html>
+</apex:page>

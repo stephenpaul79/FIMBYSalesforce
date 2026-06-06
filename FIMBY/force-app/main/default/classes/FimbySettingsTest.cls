@@ -100,6 +100,7 @@ private class FimbySettingsTest {
         FimbySettings.vouchRequestExpiryDays();
         FimbySettings.vouchDeclineCooldownDays();
         FimbySettings.vouchPendingModeratorAlertDays();
+        FimbySettings.appHandoffEnabled();
         Test.stopTest();
         System.assert(true, 'All remaining accessors completed without throwing');
     }

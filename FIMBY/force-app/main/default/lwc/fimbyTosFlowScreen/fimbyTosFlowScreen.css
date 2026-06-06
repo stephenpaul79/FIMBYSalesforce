@@ -159,12 +159,6 @@
     box-shadow: none;
 }
 
-.fimby-tos-screen__hint {
-    margin: 0;
-    font-size: 0.8125rem;
-    color: var(--fimby-text-primary, #4A3526);
-}
-
 .fimby-tos-screen__error {
     margin: 0;
     padding: 0.5rem 0.75rem;
