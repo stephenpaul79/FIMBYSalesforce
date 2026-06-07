@@ -10,7 +10,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 import getLibraryItemForLending from '@salesforce/apex/FimbyLibraryController.getLibraryItemForLending';
 import checkExistingLendingRequest from '@salesforce/apex/FimbyLibraryController.checkExistingLendingRequest';
 import createLendingRequest from '@salesforce/apex/FimbyLibraryController.createLendingRequest';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyBorrowingFlow extends NavigationMixin(LightningElement) {
     recordId;
@@ -30,8 +30,6 @@ export default class FimbyBorrowingFlow extends NavigationMixin(LightningElement
     @track realContactId = '';
     @track actingAsContactName = '';
     @track hasMultipleIdentities = false;
-
-    organizationId = null;
 
     // Form data
     @track requestedDate = '';
@@ -186,7 +184,7 @@ export default class FimbyBorrowingFlow extends NavigationMixin(LightningElement
     }
 
     get processedImageUrl() {
-        return this.getCompleteImageUrl(this.item.imageUrl);
+        return completeImageUrl(this.item.imageUrl);
     }
 
     get hasProcessedImage() {
@@ -194,21 +192,8 @@ export default class FimbyBorrowingFlow extends NavigationMixin(LightningElement
         return !!url && url.trim() !== '';
     }
 
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId) return imageUrl + this.organizationId;
-        return imageUrl;
-    }
-
     async loadData() {
         try {
-            try {
-                this.organizationId = await getOrganizationId();
-            } catch (e) {
-                console.error('Org ID error', e);
-            }
-
             const actingAsResult = await getActingAsContact();
             if (actingAsResult.success) {
                 this.actingAsContactId = actingAsResult.actingAsContactId || actingAsResult.contactId;

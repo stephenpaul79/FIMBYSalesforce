@@ -261,6 +261,38 @@ private class FimbyProfileControllerTest {
     }
 
     @IsTest
+    static void testGetSettingsReturnsRegionalFields() {
+        User testUser = getTestUser();
+        update new User(
+            Id = testUser.Id,
+            TimeZoneSidKey = 'America/Vancouver',
+            LocaleSidKey = 'en_CA',
+            LanguageLocaleKey = 'en_US'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyProfileController.getSettingsData();
+            System.assertEquals(true, result.get('success'));
+            System.assertEquals('America/Vancouver', result.get('timeZone'));
+            System.assertEquals('en_CA', result.get('locale'));
+            System.assertEquals('en_US', result.get('language'));
+
+            List<Object> tzOptions = (List<Object>) result.get('timeZoneOptions');
+            Boolean includesCurrentTz = false;
+            for (Object row : tzOptions) {
+                Map<String, Object> opt = (Map<String, Object>) row;
+                if (opt.get('value') == 'America/Vancouver') {
+                    includesCurrentTz = true;
+                    break;
+                }
+            }
+            System.assert(includesCurrentTz, 'Timezone picklist should include the saved value');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testUpdateSettingsFieldBlocked() {
         User testUser = getTestUser();
         Boolean caughtError = false;

@@ -373,6 +373,14 @@ public with sharing class FimbyResponseThreadController {
         }
     }
 
+    /**
+     * @description Creates a Contact_Shared thread system message when contact info was shared
+     * but no matching system message exists yet. Safe to call after share or on thread load.
+     */
+    public static Map<String, Object> recordContactSharedSystemMessage(String responseId, Id sharingContactId) {
+        return new ThreadHelper().recordContactSharedSystemMessage(responseId, sharingContactId);
+    }
+
     // ============================================
     // PRIVATE HELPERS
     // ============================================
@@ -790,6 +798,68 @@ public with sharing class FimbyResponseThreadController {
                 System_Message_Type__c = msgType
             );
             insert sysMsg;
+        }
+
+        public Map<String, Object> recordContactSharedSystemMessage(String responseId, Id sharingContactId) {
+            if (String.isBlank(responseId) || sharingContactId == null) {
+                return null;
+            }
+
+            List<Response_Message__c> existing = [
+                SELECT Id, Body__c, Sender__c, Sent_Date__c
+                FROM Response_Message__c
+                WHERE Response__c = :responseId
+                  AND Is_System_Message__c = true
+                  AND System_Message_Type__c = 'Contact_Shared'
+                  AND Sender__c = :sharingContactId
+                LIMIT 1
+            ];
+            if (!existing.isEmpty()) {
+                return buildMessageMap(existing[0], null);
+            }
+
+            Contact sharingContact = [
+                SELECT Id, Name, FirstName, LastName
+                FROM Contact
+                WHERE Id = :sharingContactId
+                LIMIT 1
+            ];
+            String sharerName = buildSharerDisplayName(sharingContact);
+            String sysBody = sharerName + ' shared their contact info';
+
+            Response_Message__c sysMsg = new Response_Message__c(
+                Response__c = responseId,
+                Body__c = sysBody,
+                Sender__c = sharingContactId,
+                Sent_Date__c = Datetime.now(),
+                Is_System_Message__c = true,
+                System_Message_Type__c = 'Contact_Shared'
+            );
+            insert sysMsg;
+            return buildMessageMap(sysMsg, sharerName);
+        }
+
+        private String buildSharerDisplayName(Contact sharingContact) {
+            if (sharingContact == null) {
+                return 'A neighbour';
+            }
+            if (String.isNotBlank(sharingContact.FirstName) || String.isNotBlank(sharingContact.LastName)) {
+                return ((sharingContact.FirstName != null ? sharingContact.FirstName : '') + ' '
+                    + (sharingContact.LastName != null ? sharingContact.LastName : '')).trim();
+            }
+            return String.isNotBlank(sharingContact.Name) ? sharingContact.Name : 'A neighbour';
+        }
+
+        private Map<String, Object> buildMessageMap(Response_Message__c msg, String senderName) {
+            return new Map<String, Object>{
+                'id' => msg.Id,
+                'body' => msg.Body__c,
+                'senderId' => msg.Sender__c,
+                'senderName' => senderName,
+                'sentDate' => msg.Sent_Date__c,
+                'isSystemMessage' => true,
+                'systemMessageType' => 'Contact_Shared'
+            };
         }
 
         /**

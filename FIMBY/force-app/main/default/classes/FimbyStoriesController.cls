@@ -117,6 +117,63 @@ public with sharing class FimbyStoriesController {
             throw new AuraHandledException('Error creating story: ' + e.getMessage());
         }
     }
+
+    /**
+     * @description LWC-callable method that updates an existing Story__c for the author.
+     * @param storyData JSON with recordId, title, content, category, shareOnSocial
+     * @return Map with success flag and recordId
+     */
+    @AuraEnabled
+    public static Map<String, Object> updateStory(String storyData) {
+        try {
+            Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(storyData);
+            String recordId = (String) data.get('recordId');
+            if (String.isBlank(recordId)) {
+                throw new AuraHandledException('Record ID is required.');
+            }
+
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Id realContactId = identity.currentUser.ContactId;
+            Id actingAsContactId = identity.actingAsContactId;
+
+            Story__c story = new StoryUpdateHelper().queryStory(recordId);
+            if (story == null) {
+                throw new AuraHandledException('Story not found.');
+            }
+
+            if (story.Contact__c != realContactId && story.Posted_By__c != actingAsContactId) {
+                throw new AuraHandledException('You can only edit stories you created.');
+            }
+
+            if (data.containsKey('title')) {
+                story.Name = (String) data.get('title');
+            }
+            if (data.containsKey('content')) {
+                story.Message__c = (String) data.get('content');
+            }
+            if (data.containsKey('category')) {
+                story.Type__c = (String) data.get('category');
+            }
+            if (data.containsKey('shareOnSocial')) {
+                story.Share_on_Social_Media__c = data.get('shareOnSocial') == true;
+            }
+
+            new StoryUpdateHelper().updateStory(story);
+
+            return new Map<String, Object>{
+                'success' => true,
+                'recordId' => story.Id,
+                'message' => 'Story updated successfully'
+            };
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyStoriesController', 'updateStory', e);
+            AuraHandledException ex = new AuraHandledException('Error updating story: ' + e.getMessage());
+            ex.setMessage('Error updating story: ' + e.getMessage());
+            throw ex;
+        }
+    }
     
     /**
      * @description LWC-callable method that records a like on a story (placeholder for Like__c or counter implementation).
@@ -279,6 +336,22 @@ public with sharing class FimbyStoriesController {
             this.removed = removed;
             this.message = message;
             this.story = null;
+        }
+    }
+
+    private without sharing class StoryUpdateHelper {
+        public Story__c queryStory(Id storyId) {
+            List<Story__c> rows = [
+                SELECT Id, Posted_By__c, Contact__c, Name, Message__c, Type__c, Share_on_Social_Media__c
+                FROM Story__c
+                WHERE Id = :storyId
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
+
+        public void updateStory(Story__c story) {
+            update story;
         }
     }
 

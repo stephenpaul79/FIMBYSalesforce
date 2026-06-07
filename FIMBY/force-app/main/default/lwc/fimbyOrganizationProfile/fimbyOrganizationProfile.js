@@ -6,7 +6,7 @@ import canEditOrganization from '@salesforce/apex/FimbyOrganizationProfileContro
 import updateOrganizationProfile from '@salesforce/apex/FimbyOrganizationProfileController.updateOrganizationProfile';
 import uploadOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileController.uploadOrganizationLogo';
 import removeOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileController.removeOrganizationLogo';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 
@@ -17,7 +17,6 @@ export default class FimbyOrganizationProfile extends LightningElement {
     @track canEdit = false;
     @track isLoading = true;
     @track error = null;
-    @track organizationId = null;
 
     @track showImageUploader = false;
     @track isEditing = false;
@@ -49,7 +48,7 @@ export default class FimbyOrganizationProfile extends LightningElement {
     get orgLogoUrl() {
         const base = this.org?.Logo_URL__c;
         if (!base) return this.noOrgPhotoUrl;
-        return this.getCompleteImageUrl(base) || this.noOrgPhotoUrl;
+        return completeImageUrl(base) || this.noOrgPhotoUrl;
     }
     get orgName() { return this.org?.Name || ''; }
     get orgType() { return this.org?.Type || 'Organization'; }
@@ -87,7 +86,7 @@ export default class FimbyOrganizationProfile extends LightningElement {
         if (!this.people || !this.people.length) return [];
         return this.people.map(p => ({
             ...p,
-            avatarUrl: p.avatarUrl ? this.getCompleteImageUrl(p.avatarUrl) : this.noProfilePhotoUrl
+            avatarUrl: p.avatarUrl ? avatarImageUrl(p.avatarUrl) : this.noProfilePhotoUrl
         }));
     }
 
@@ -109,13 +108,11 @@ export default class FimbyOrganizationProfile extends LightningElement {
         this.isLoading = true;
 
         try {
-            const [orgIdResult, profileResult, canEditResult, identityResult] = await Promise.all([
-                getOrganizationId(),
+            const [profileResult, canEditResult, identityResult] = await Promise.all([
                 getOrganizationProfile({ organizationId: orgId }),
                 canEditOrganization({ organizationId: orgId }),
                 getActingAsContact()
             ]);
-            this.organizationId = orgIdResult;
 
             if (!profileResult?.success) {
                 this.error = 'Could not load organization.';
@@ -143,13 +140,6 @@ export default class FimbyOrganizationProfile extends LightningElement {
             return parts[orgIndex + 1];
         }
         return null;
-    }
-
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId && imageUrl.endsWith('&oid=')) return imageUrl + this.organizationId;
-        return imageUrl;
     }
 
     // ============================================

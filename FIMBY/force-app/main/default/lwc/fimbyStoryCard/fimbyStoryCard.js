@@ -1,6 +1,6 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyStoryCard extends NavigationMixin(LightningElement) {
     @api storyId;
@@ -27,45 +27,14 @@ export default class FimbyStoryCard extends NavigationMixin(LightningElement) {
     @track previewComments = [];
     @track showImageOverlay = false;
     @track showCommentModal = false;
-    organizationId = null;
 
     // Getter for recordId (alias for storyId, used by child components)
     get recordId() {
         return this.storyId;
     }
 
-    // Wire Organization ID
-    @wire(getOrganizationId)
-    wiredOrgId({ data, error }) {
-        if (data) {
-            this.organizationId = data;
-        } else if (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
-    }
-
-    // Helper method to get complete image URL with Organization ID
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) {
-            return null;
-        }
-
-        // If the URL already contains the organization ID or is a complete URL, return as-is
-        if (imageUrl.includes('http') || (this.organizationId && imageUrl.includes(this.organizationId))) {
-            return imageUrl;
-        }
-
-        // If we have the organization ID, append it
-        if (this.organizationId) {
-            return imageUrl + this.organizationId;
-        }
-
-        // Fallback: return the original URL
-        return imageUrl;
-    }
-
     get processedStoryImageUrl() {
-        return this.getCompleteImageUrl(this.storyImageUrl);
+        return completeImageUrl(this.storyImageUrl);
     }
 
     get formattedStoryType() {

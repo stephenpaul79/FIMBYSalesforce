@@ -377,6 +377,80 @@ public class FimbyStoriesControllerTest {
     }
 
     // Helper method to create test user with contact
+    @IsTest
+    static void testUpdateStory_Success() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = createTestUser(testContact.Id);
+
+        Story__c story = [
+            SELECT Id FROM Story__c WHERE Type__c = 'Thank You' LIMIT 1
+        ];
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => story.Id,
+            'title' => 'Updated Story Title',
+            'content' => 'Updated message body',
+            'category' => 'Prayer',
+            'shareOnSocial' => true
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            result = FimbyStoriesController.updateStory(JSON.serialize(updateData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'));
+        Story__c updated = [
+            SELECT Name, Message__c, Type__c, Share_on_Social_Media__c
+            FROM Story__c WHERE Id = :story.Id
+        ];
+        System.assertEquals('Updated Story Title', updated.Name);
+        System.assertEquals('Updated message body', updated.Message__c);
+        System.assertEquals('Prayer', updated.Type__c);
+        System.assertEquals(true, updated.Share_on_Social_Media__c);
+    }
+
+    @IsTest
+    static void testUpdateStory_NotAuthor() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact authorContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+
+        Contact otherContact = new Contact(
+            FirstName = 'Other',
+            LastName = 'Reader',
+            AccountId = testNeighbourhood.Id,
+            Email = 'otherreader@example.com'
+        );
+        insert otherContact;
+        User otherUser = createTestUser(otherContact.Id);
+
+        Story__c story = [
+            SELECT Id FROM Story__c WHERE Type__c = 'Prayer' LIMIT 1
+        ];
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => story.Id,
+            'title' => 'Should Not Update'
+        };
+
+        Test.startTest();
+        Boolean caught = false;
+        FimbyIdentityRepository.clearCache();
+        System.runAs(otherUser) {
+            try {
+                FimbyStoriesController.updateStory(JSON.serialize(updateData));
+            } catch (Exception e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Non-author should not be able to update');
+    }
+
     private static User createTestUser(Id contactId) {
         Profile p = [SELECT Id FROM Profile WHERE Name = 'Customer Community Plus User' OR Name = 'Partner Community User' LIMIT 1];
 

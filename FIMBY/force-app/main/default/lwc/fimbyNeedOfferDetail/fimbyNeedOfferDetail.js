@@ -6,7 +6,7 @@ import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import getResponsesForNeedOffer from '@salesforce/apex/FimbyAskOfferController.getResponsesForNeedOffer';
 import deleteNeedsOffersPost from '@salesforce/apex/FimbyAskOfferController.deleteNeedsOffersPost';
 import getNeedOfferVisibility from '@salesforce/apex/FimbyAskOfferController.getNeedOfferVisibility';
@@ -149,7 +149,22 @@ const EVENT_TYPE_CONFIG = {
 };
 
 export default class FimbyNeedOfferDetail extends NavigationMixin(LightningElement) {
-    @api recordId;
+    _recordId;
+    _activeRecordId = null;
+
+    @api
+    get recordId() {
+        return this._recordId;
+    }
+    set recordId(value) {
+        const next = value && String(value).trim() ? value : null;
+        if (next === this._recordId) {
+            return;
+        }
+        this._recordId = next;
+        this._syncActiveRecordId();
+    }
+
     @track _extractedRecordId = null;
     @track isLoading = true;
     @track showLightbox = false;
@@ -175,7 +190,6 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     record;
     error;
     currentUserId = Id;
-    organizationId = null;
     @track actingAsContactId = null;
     @track realContactId = null;
     @track _isModeratorForNeighbourhood = false;
@@ -209,14 +223,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // ============================================
 
     async connectedCallback() {
-        await this.loadOrganizationId();
-        if (!this.recordId || String(this.recordId).trim() === '') {
-            const id = this.extractRecordIdFromUrl();
-            this._extractedRecordId = id;
-            if (id) {
-                this.recordId = id;
-            }
-        }
+        this._resolveRecordIdFromPage();
         if (window.matchMedia('(min-width: 768px)').matches) {
             this.detailsExpanded = true;
         }
@@ -248,16 +255,53 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this._tryAutoOpenActionModal();
     }
 
-    async loadOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
+    get effectiveRecordId() {
+        return this._recordId || this._extractedRecordId;
     }
 
-    get effectiveRecordId() {
-        return this.recordId || this._extractedRecordId;
+    get wiredRecordId() {
+        return this.effectiveRecordId || undefined;
+    }
+
+    get showLoadingState() {
+        if (this.showRemovedState) {
+            return false;
+        }
+        return this.isLoading || !this.effectiveRecordId;
+    }
+
+    get showRemovedState() {
+        return this.isRemoved && !!this.effectiveRecordId;
+    }
+
+    _resolveRecordIdFromPage() {
+        if (!this._recordId) {
+            const id = this.extractRecordIdFromUrl();
+            if (id) {
+                this._extractedRecordId = id;
+                this._recordId = id;
+            }
+        }
+        this._syncActiveRecordId();
+    }
+
+    _syncActiveRecordId() {
+        const id = this.effectiveRecordId || null;
+        if (id === this._activeRecordId) {
+            return;
+        }
+        this._activeRecordId = id;
+        this._resetDetailLoadState();
+    }
+
+    _resetDetailLoadState() {
+        this.isLoading = true;
+        this.isRemoved = false;
+        this.removedMessage = '';
+        this.record = undefined;
+        this.error = undefined;
+        this.responses = [];
+        this.bulkBuyData = null;
     }
 
     extractRecordIdFromUrl() {
@@ -293,8 +337,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         }
     }
 
-    @wire(getNeedOfferVisibility, { recordId: '$effectiveRecordId' })
-    wiredVisibility({ data, error }) {
+    @wire(getNeedOfferVisibility, { recordId: '$wiredRecordId' })
+    wiredVisibility(result) {
+        const { data, error, loading } = result;
+        if (loading || !this.wiredRecordId) {
+            return;
+        }
         if (data) {
             if (data.removed) {
                 this.isRemoved = true;
@@ -319,8 +367,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @wire(getRecord, { recordId: '$recordIdIfVisible', fields: FIELDS })
     wiredRecord(result) {
         this._wiredRecordResult = result;
-        const { error, data } = result;
-        if (this.isRemoved) {
+        const { error, data, loading } = result;
+        if (loading || this.isRemoved || !this.wiredRecordId) {
             return;
         }
         this.isLoading = false;
@@ -339,7 +387,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     get recordIdIfVisible() {
-        return this.isRemoved ? null : this.effectiveRecordId;
+        if (!this.effectiveRecordId || this.isRemoved) {
+            return undefined;
+        }
+        return this.effectiveRecordId;
     }
 
     get shouldRenderRecord() {
@@ -595,12 +646,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     resolveContactAvatarUrl(rawUrl) {
         if (!rawUrl || typeof rawUrl !== 'string') return '';
-        const baseUrl = rawUrl.trim();
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return avatarImageUrl(rawUrl.trim());
     }
 
     get headerMenuItems() {
@@ -711,11 +757,22 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get imageUrl() {
         const baseUrl = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Image_1_URL__c') : '';
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return completeImageUrl(baseUrl);
+    }
+
+    get imageDisplayUrl() {
+        const baseUrl = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Image_1_URL__c') : '';
+        return thumbnailUrl(baseUrl);
+    }
+
+    get imageSrcset() {
+        const baseUrl = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Image_1_URL__c') : '';
+        const ratio = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Image_1_Ratio__c') : '';
+        return buildSrcset(baseUrl, ratio, { includeOriginal: true });
+    }
+
+    get detailImageSizes() {
+        return SIZES.feedColumn;
     }
 
     get hasImage() {
@@ -730,11 +787,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const url = getFieldValue(this.record, `Needs_Offers__c.Image_${i}_URL__c`);
             const ratio = getFieldValue(this.record, `Needs_Offers__c.Image_${i}_Ratio__c`);
             if (url && url.trim()) {
-                let fullUrl = url;
-                if (this.organizationId && !url.includes(this.organizationId)) {
-                    fullUrl = url + this.organizationId;
-                }
-                imgs.push({ url: fullUrl, ratio: ratio || '' });
+                imgs.push({ url: completeImageUrl(url), ratio: ratio || '' });
             }
         }
         return imgs;
@@ -789,11 +842,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         if (!this.record) return '';
         const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
         const baseUrl = contactImg || getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Image_URL__c') || '';
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return avatarImageUrl(baseUrl);
     }
 
     get postedByName() {
@@ -1674,10 +1723,17 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // ACTION HANDLERS
     // ============================================
 
+    get editPostKind() {
+        if (this.isBulkBuyType) return 'bulkBuy';
+        if (this.isEventType) return 'event';
+        if (this.postType === 'Offer') return 'offer';
+        return 'ask';
+    }
+
     handleEdit() {
-        const modal = this.template.querySelector('c-fimby-record-edit-modal');
+        const modal = this.template.querySelector('c-fimby-post-edit-modal');
         if (modal) {
-            modal.show(this.recordId, 'Needs_Offers__c', 'FIMBY_Editable_Fields');
+            modal.show(this.recordId, this.editPostKind);
         }
     }
 

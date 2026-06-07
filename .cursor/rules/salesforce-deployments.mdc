@@ -7,9 +7,9 @@ alwaysApply: true
 
 ## Proactive deploy (default)
 
-When a task changes Salesforce metadata (including **LWC** bundles), **run the targeted deploy** before wrapping up the same turn. Do **not** wait for the user to ask for a deploy.
+When a task changes Salesforce metadata (including **LWC** bundles), **run the targeted deploy** before wrapping up the same turn — but **only after** the user has approved implementation per **Confirm Before Implement** (`diagnose-before-fix.mdc`). Do not deploy exploratory or unapproved changes.
 
-**Skip or defer** only if the user explicitly asked to keep changes local, not deploy yet, or treat the work as draft; or if a deploy is impossible in context (e.g. no CLI org). If multiple bundles or paths changed, deploy each changed `--source-dir` (or `--metadata` set) sequentially—still scoped, never the whole `force-app`.
+**Skip or defer** if the user asked to keep changes local, not deploy yet, or treat the work as draft; if implementation was not yet approved; or if a deploy is impossible in context (e.g. no CLI org). If multiple bundles or paths changed, deploy each changed `--source-dir` (or `--metadata` set) sequentially—still scoped, never the whole `force-app`.
 
 ---
 

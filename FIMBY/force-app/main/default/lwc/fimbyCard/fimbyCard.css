@@ -145,6 +145,47 @@
     position: relative;
 }
 
+/* Mobile: grid header matches library cards — name gets middle column; kebab under badge */
+@media (max-width: 767px) {
+    .card-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: "avatar identity actions";
+        align-items: start;
+        gap: 6px 12px;
+        justify-content: initial;
+    }
+
+    .header-left {
+        display: contents;
+    }
+
+    .user-avatar {
+        grid-area: avatar;
+        margin-right: 0;
+    }
+
+    .user-info {
+        grid-area: identity;
+        align-self: start;
+        flex: initial;
+        min-width: 0;
+        /* Same squeeze as badge+kebab side-by-side so names wrap consistently when kebab stacks below badge */
+        max-width: 7.5rem;
+    }
+
+    .header-right {
+        grid-area: actions;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+    }
+
+    .user-name {
+        overflow-wrap: break-word;
+    }
+}
+
 .card-menu-wrap {
     position: relative;
     flex-shrink: 0;
@@ -158,14 +199,8 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.card-menu-icon {
-    width: 18px;
-    height: 18px;
-    object-fit: contain;
-    opacity: 0.85;
+    color: var(--fimby-text-secondary);
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .card-menu-backdrop {
@@ -225,6 +260,7 @@
 
 .card-menu:hover {
     background: var(--fimby-hover-bg);
+    color: var(--fimby-text-primary);
 }
 
 /* ----------------------------------------------------------

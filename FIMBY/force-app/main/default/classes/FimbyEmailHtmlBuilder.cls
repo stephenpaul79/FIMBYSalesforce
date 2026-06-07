@@ -331,10 +331,14 @@ public without sharing class FimbyEmailHtmlBuilder {
      * --------------------------------------------------------------- */
 
     public static String buildAlertCards(List<Notification__c> notifications) {
-        return buildAlertCards(notifications, null);
+        return buildAlertCards(notifications, null, null);
     }
 
     public static String buildAlertCards(List<Notification__c> notifications, Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichmentMap) {
+        return buildAlertCards(notifications, enrichmentMap, null);
+    }
+
+    public static String buildAlertCards(List<Notification__c> notifications, Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichmentMap, String recipientFirstName) {
         if (notifications == null || notifications.isEmpty()) {
             return '';
         }
@@ -348,7 +352,8 @@ public without sharing class FimbyEmailHtmlBuilder {
             Notification__c n = notifications[i];
             FimbyEmailAlertQueueable.AlertCardEnrichment enrich = String.isNotBlank(n.Related_Record_Id__c)
                 ? safeMap.get(n.Related_Record_Id__c) : null;
-            html += buildNotificationCard(n, enrich);
+            Boolean includeGreeting = (i == 0);
+            html += buildNotificationCard(n, enrich, includeGreeting ? recipientFirstName : null);
         }
 
         if (notifications.size() > MAX_ALERT_CARDS) {
@@ -363,6 +368,10 @@ public without sharing class FimbyEmailHtmlBuilder {
     }
 
     private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich) {
+        return buildNotificationCard(n, enrich, null);
+    }
+
+    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName) {
         String accentColor = getAccentColorForType(n.Type__c);
         String ctaUrl = buildCtaUrl(n);
         String notifType = n.Type__c != null ? n.Type__c : '';
@@ -420,6 +429,10 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<span style="' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';vertical-align:middle;">'
             + escapeHtml(avatarPillName) + '</span></td>'
             + '</tr></table>';
+
+        if (recipientFirstName != null) {
+            html += buildInCardGreetingLine(recipientFirstName);
+        }
 
         // Content area with optional thumbnail
         html += '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
@@ -487,23 +500,68 @@ public without sharing class FimbyEmailHtmlBuilder {
     }
 
     /* ---------------------------------------------------------------
+     * Recipient Greeting
+     * --------------------------------------------------------------- */
+
+    public static String resolveGreetingText(String firstName) {
+        return 'Hi ' + (String.isNotBlank(firstName) ? escapeHtml(firstName) : 'neighbour') + ',';
+    }
+
+    public static String buildRecipientGreetingPlain(String firstName) {
+        return resolveGreetingText(firstName) + '\n\n';
+    }
+
+    public static String buildInCardGreetingLine(String firstName) {
+        return '<p style="margin:0 0 10px;' + F + 'font-size:14px;color:' + TEXT_BODY + ';line-height:1.55;">'
+            + resolveGreetingText(firstName) + '</p>';
+    }
+
+    public static String buildInCardIntroParagraph(String introText) {
+        if (String.isBlank(introText)) {
+            return '';
+        }
+        return '<p style="margin:0 0 14px;' + F + 'font-size:14px;color:' + TEXT_BODY + ';line-height:1.55;">'
+            + escapeHtml(introText) + '</p>';
+    }
+
+    /**
+     * @description Compact white card with greeting only — prepended to digest content.
+     */
+    public static String buildGreetingCard(String firstName) {
+        return '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">'
+            + '<tr><td style="background:' + BG_CARD + ';border-radius:8px;padding:14px 16px;border:1px solid ' + BORDER_LIGHT
+            + ';border-left:3px solid ' + CTA_BG + ';">'
+            + buildInCardGreetingLine(firstName)
+            + '</td></tr></table>';
+    }
+
+    /* ---------------------------------------------------------------
+     * Transactional badge tokens (category pills)
+     * --------------------------------------------------------------- */
+
+    public static final String TXN_BADGE_SUPPORT = 'SUPPORT';
+    public static final String TXN_BADGE_VOUCH = 'VOUCH';
+    public static final String TXN_BADGE_CONTACT = 'CONTACT';
+    public static final String TXN_BADGE_THANK_YOU = 'THANK YOU';
+
+    /* ---------------------------------------------------------------
      * Transactional Cards
      * --------------------------------------------------------------- */
 
     /**
      * @description Generic transactional card: white surface, accent
      * border-left, optional badge pill at top, title, and free-form body HTML.
-     * Use for one-off branded transactional emails (account state changes,
-     * confirmations, etc.) where the richer notification card (avatar,
-     * thumbnail, actor name) isn't a fit.
-     * @param badgeLabel Optional pill label (e.g. "PAUSED"). Pass blank to omit.
-     * @param accentColor Hex color for the left border + badge background. Defaults to CTA_BG.
-     * @param badgeIcon Optional Impact_Icons filename for the badge.
-     * @param title Card heading (escaped).
-     * @param bodyHtml Pre-built HTML block for the card body (caller controls
-     *        paragraphs, lists, etc.). Pass empty/null for badge+title only.
      */
     public static String buildTransactionalCard(String badgeLabel, String accentColor, String badgeIcon, String title, String bodyHtml) {
+        return buildTransactionalCard(badgeLabel, accentColor, badgeIcon, title, bodyHtml, null, null, null, null, null);
+    }
+
+    /**
+     * @description Full transactional card with greeting, intro, and in-card CTA.
+     * Render order: badge → greeting → intro → title → bodyHtml → CTA.
+     */
+    public static String buildTransactionalCard(String badgeLabel, String accentColor, String badgeIcon, String title, String bodyHtml,
+            String recipientFirstName, String introText, String ctaUrl, String ctaLabel, String ctaIcon) {
         String accent = String.isNotBlank(accentColor) ? accentColor : CTA_BG;
         String html = '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">'
             + '<tr><td style="background:' + BG_CARD + ';border-radius:8px;padding:14px 16px;border:1px solid ' + BORDER_LIGHT
@@ -511,12 +569,21 @@ public without sharing class FimbyEmailHtmlBuilder {
         if (String.isNotBlank(badgeLabel)) {
             html += '<div style="margin-bottom:8px;">' + buildBadgePill(badgeLabel, accent, badgeIcon) + '</div>';
         }
+        html += buildInCardGreetingLine(recipientFirstName);
+        html += buildInCardIntroParagraph(introText);
         if (String.isNotBlank(title)) {
             html += '<p style="margin:0 0 6px;' + F + 'font-size:16px;font-weight:600;color:' + TEXT_HEADING + ';">'
                 + escapeHtml(title) + '</p>';
         }
         if (String.isNotBlank(bodyHtml)) {
             html += bodyHtml;
+        }
+        if (String.isNotBlank(ctaUrl)) {
+            html += buildCtaButton(
+                String.isNotBlank(ctaLabel) ? ctaLabel : 'View in FIMBY',
+                ctaUrl,
+                ctaIcon
+            );
         }
         html += '</td></tr></table>';
         return html;
@@ -526,9 +593,18 @@ public without sharing class FimbyEmailHtmlBuilder {
         String senderName, String email, String phone, String street,
         String additionalInfo, String contextLabel
     ) {
+        return buildContactShareCard(null, senderName, email, phone, street, additionalInfo, contextLabel, null, null, null);
+    }
+
+    public static String buildContactShareCard(
+        String recipientFirstName, String senderName, String email, String phone, String street,
+        String additionalInfo, String contextLabel, String ctaUrl, String ctaLabel, String ctaIcon
+    ) {
         String html = '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">'
             + '<tr><td style="background:' + BG_CARD + ';border-left:3px solid ' + EARTH_TERRACOTTA
             + ';border-radius:8px;padding:14px 16px;border:1px solid ' + BORDER_LIGHT + ';border-left:3px solid ' + EARTH_TERRACOTTA + ';">'
+            + '<div style="margin-bottom:8px;">' + buildBadgePill(TXN_BADGE_CONTACT, EARTH_TERRACOTTA, 'email.png') + '</div>'
+            + buildInCardGreetingLine(recipientFirstName)
             + '<p style="margin:0 0 6px;' + F + 'font-size:15px;font-weight:600;color:' + TEXT_HEADING + ';">'
             + escapeHtml(senderName) + ' shared their contact info</p>';
 
@@ -555,18 +631,30 @@ public without sharing class FimbyEmailHtmlBuilder {
         if (String.isNotBlank(additionalInfo)) {
             html += '<p style="margin:0 0 4px;' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">' + escapeHtml(additionalInfo) + '</p>';
         }
+        if (String.isNotBlank(ctaUrl)) {
+            html += buildCtaButton(
+                String.isNotBlank(ctaLabel) ? ctaLabel : 'View in FIMBY',
+                ctaUrl,
+                String.isNotBlank(ctaIcon) ? ctaIcon : 'enter.png'
+            );
+        }
 
         html += '</td></tr></table>';
         return html;
     }
 
     public static String buildThankYouCard(String senderName, String message, String postTitle) {
+        return buildThankYouCard(null, senderName, message, postTitle, null, null, null);
+    }
+
+    public static String buildThankYouCard(String recipientFirstName, String senderName, String message, String postTitle,
+            String ctaUrl, String ctaLabel, String ctaIcon) {
         String html = '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">'
             + '<tr><td style="background:' + BG_CARD + ';border-left:3px solid ' + EARTH_TERRACOTTA
             + ';border-radius:8px;padding:14px 16px;border:1px solid ' + BORDER_LIGHT + ';border-left:3px solid ' + EARTH_TERRACOTTA + ';">'
+            + '<div style="margin-bottom:8px;">' + buildBadgePill(TXN_BADGE_THANK_YOU, EARTH_TERRACOTTA, 'ThankYouActive.png') + '</div>'
+            + buildInCardGreetingLine(recipientFirstName)
             + '<p style="margin:0 0 6px;' + F + 'font-size:16px;font-weight:600;color:' + TEXT_HEADING + ';">'
-            + '<img src="' + ICON_BASE_URL + 'ThankYouActive.png" width="18" height="18" alt="" '
-            + 'style="vertical-align:middle;margin-right:6px;border:0;" />'
             + 'Thank you from ' + escapeHtml(senderName) + '</p>';
 
         if (String.isNotBlank(postTitle)) {
@@ -578,6 +666,13 @@ public without sharing class FimbyEmailHtmlBuilder {
             html += '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:10px;">'
                 + '<tr><td style="border-left:2px solid ' + BORDER_LIGHT + ';padding:8px 12px;' + F + 'font-style:italic;'
                 + 'font-size:14px;color:' + TEXT_BODY + ';">&ldquo;' + escapeHtml(message) + '&rdquo;</td></tr></table>';
+        }
+        if (String.isNotBlank(ctaUrl)) {
+            html += buildCtaButton(
+                String.isNotBlank(ctaLabel) ? ctaLabel : 'View Conversation',
+                ctaUrl,
+                String.isNotBlank(ctaIcon) ? ctaIcon : 'reply.png'
+            );
         }
 
         html += '</td></tr></table>';

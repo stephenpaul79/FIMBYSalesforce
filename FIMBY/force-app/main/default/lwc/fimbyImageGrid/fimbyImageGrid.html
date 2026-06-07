@@ -6,10 +6,15 @@
             <div class="image-grid grid-single">
                 <div class="grid-cell single-cell" style={singleImageContainerStyle}>
                     <img
-                        src={singleImage.url}
+                        src={singleImage.displayUrl}
+                        srcset={singleImage.srcset}
+                        sizes={sizes}
                         alt={singleImage.alt}
                         class="grid-image single-image"
+                        loading="lazy"
+                        decoding="async"
                         data-index={singleImage.index}
+                        data-original={singleImage.url}
                         onclick={handleImageClick}
                         onerror={handleImageError}>
                 </div>
@@ -22,10 +27,15 @@
                 <template for:each={twoImages} for:item="img">
                     <div class="grid-cell" key={img.key}>
                         <img
-                            src={img.url}
+                            src={img.displayUrl}
+                            srcset={img.srcset}
+                            sizes={sizes}
                             alt={img.alt}
                             class="grid-image"
+                            loading="lazy"
+                            decoding="async"
                             data-index={img.index}
+                            data-original={img.url}
                             onclick={handleImageClick}
                             onerror={handleImageError}>
                     </div>
@@ -38,20 +48,30 @@
             <div class="image-grid grid-3" style={threeImageContainerStyle}>
                 <div class="grid-cell grid-3-hero">
                     <img
-                        src={threeImageHero.url}
+                        src={threeImageHero.displayUrl}
+                        srcset={threeImageHero.srcset}
+                        sizes={sizes}
                         alt={threeImageHero.alt}
                         class="grid-image"
+                        loading="lazy"
+                        decoding="async"
                         data-index={threeImageHero.index}
+                        data-original={threeImageHero.url}
                         onclick={handleImageClick}
                         onerror={handleImageError}>
                 </div>
                 <template for:each={threeImageSecondary} for:item="img">
                     <div class="grid-cell" key={img.key}>
                         <img
-                            src={img.url}
+                            src={img.displayUrl}
+                            srcset={img.srcset}
+                            sizes={sizes}
                             alt={img.alt}
                             class="grid-image"
+                            loading="lazy"
+                            decoding="async"
                             data-index={img.index}
+                            data-original={img.url}
                             onclick={handleImageClick}
                             onerror={handleImageError}>
                     </div>
@@ -65,10 +85,15 @@
                 <template for:each={fourImages} for:item="img">
                     <div class="grid-cell" key={img.key}>
                         <img
-                            src={img.url}
+                            src={img.displayUrl}
+                            srcset={img.srcset}
+                            sizes={sizes}
                             alt={img.alt}
                             class="grid-image"
+                            loading="lazy"
+                            decoding="async"
                             data-index={img.index}
+                            data-original={img.url}
                             onclick={handleImageClick}
                             onerror={handleImageError}>
                     </div>

@@ -445,11 +445,6 @@
     outline-offset: 2px;
 }
 
-.comment-menu-icon {
-    width: 18px;
-    height: 18px;
-}
-
 .comment-menu {
     position: absolute;
     right: 0;

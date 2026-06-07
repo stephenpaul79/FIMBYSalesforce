@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
@@ -67,7 +67,6 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     @track countsByType = {};
     @track showSortDropdown = false;
 
-    organizationId = null;
     currentOffset = 0;
     pageSize = 20;
     _searchTimeout;
@@ -121,18 +120,9 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
 
     _hasSearched = false;
 
-    async connectedCallback() {
+    connectedCallback() {
         this.loadRecentSearches();
-        await this._fetchOrganizationId();
         this._applyUrlState();
-    }
-
-    async _fetchOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
     }
 
     // ========================================================
@@ -335,8 +325,8 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 isAskOffer: item.resultType === 'askOffer',
                 isLibrary: item.resultType === 'library',
                 isPeople: item.resultType === 'people',
-                processedImageUrl: this.getCompleteImageUrl(item.imageUrl),
-                processedAvatarUrl: this.getAvatarUrl(item.postedByImageUrl),
+                processedImageUrl: completeImageUrl(item.imageUrl),
+                processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),
                 shortDescription: this.truncate(item.description, 120),
                 formattedDate: this.formatRelativeDate(item.createdDate),
                 badgeLabel: badge.label,
@@ -424,22 +414,6 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
         if (route) {
             location.href = route;
         }
-    }
-
-    // ========================================================
-    // Image helpers (matches fimbyHomeFeed pattern exactly)
-    // ========================================================
-
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId) return imageUrl + this.organizationId;
-        return imageUrl;
-    }
-
-    getAvatarUrl(imageUrl) {
-        if (!imageUrl) return null;
-        return this.getCompleteImageUrl(imageUrl);
     }
 
     // ========================================================

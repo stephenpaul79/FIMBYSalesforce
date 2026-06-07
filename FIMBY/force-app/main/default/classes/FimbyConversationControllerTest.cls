@@ -410,6 +410,48 @@ public class FimbyConversationControllerTest {
     }
 
     @IsTest
+    static void testIsConversationRevoked_VouchRequestReturnsFalse() {
+        User testUser = getTestUser();
+        Contact myContact = [SELECT Id, AccountId FROM Contact WHERE Id = :testUser.ContactId];
+
+        Contact voucher = new Contact(
+            FirstName = 'Vouch',
+            LastName = 'Ref',
+            Email = 'vouchref@test.com',
+            AccountId = myContact.AccountId
+        );
+        insert voucher;
+
+        Vouch_Record__c vr = new Vouch_Record__c(
+            Requester_Contact__c = myContact.Id,
+            Reference_Contact__c = voucher.Id,
+            Neighbourhood__c = myContact.AccountId,
+            Status__c = 'Pending',
+            Source__c = 'Peer',
+            Requested_Date__c = System.now()
+        );
+        insert vr;
+
+        Conversation__c conv = new Conversation__c(
+            Participant_1__c = myContact.Id,
+            Participant_2__c = voucher.Id,
+            Context_Type__c = FimbyConstants.CTX_VOUCH_REQUEST,
+            Vouch_Record__c = vr.Id,
+            Vouch_Outcome__c = 'Pending',
+            Is_Group__c = false,
+            Status__c = 'Active'
+        );
+        insert conv;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Boolean revoked = FimbyConversationController.isConversationRevoked(conv.Id);
+            System.assertEquals(false, revoked, 'Vouch_Request threads do not require shared contact info');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testIsConversationRevoked_OrgContactReturnsFalse() {
         User testUser = getTestUser();
         Contact orgContact = createOrgContactInNeighbourhood();

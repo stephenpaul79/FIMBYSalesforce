@@ -9,7 +9,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
 import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 
 const LOGO_FILE = 'FIMBYwGrass.png';
@@ -72,7 +72,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track actingAsAvatarUrl = '';
     @track selfMenuItem = null;
     @track otherIdentityMenuItems = [];
+    @track identitiesLoading = false;
     @track _identitySwitching = false;
+    _identitiesLoaded = false;
+    _actingAsContactId = null;
     @track _isOrgContact = false;
     @track _orgAccountId = null;
     @track _isModerator = false;
@@ -216,78 +219,90 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     get switchBackAriaLabel() { return this.selfMenuItem ? `Switch back to ${this.selfMenuItem.name}` : 'Switch back to self'; }
 
     _loadIdentityContext() {
-        Promise.all([getActingAsContact(), getAvailableIdentities(), getOrganizationId()])
-            .then(([actingResult, identitiesResult, orgId]) => {
-                this._sfOrgId = orgId;
-
-                const raw = (identitiesResult || []).map(id => ({
-                    ...id,
-                    avatarUrl: this._completeImageUrl(id.avatarUrl, orgId)
-                        || (id.type === 'Support_Person'
-                            ? `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`
-                            : `${IMPACT_ICONS}/${NO_ORG_PHOTO}`)
-                }));
-
-                const selfAvatarUrl = this._completeImageUrl(actingResult.realContactAvatarUrl, orgId)
-                    || this.defaultAvatarUrl;
-                this.selfMenuItem = {
-                    name: actingResult.realContactName,
-                    avatarUrl: selfAvatarUrl,
-                    isActive: actingResult.isActingAsSelf
-                };
-                this.isActingAsSelf = actingResult.isActingAsSelf;
-                this.showTosModal = actingResult.tosReacceptanceRequired === true
-                    && actingResult.isActingAsSelf === true;
-                if (!actingResult.isActingAsSelf) {
-                    this.actingAsDisplayName = actingResult.actingAsContactName;
-                    this.actingAsAvatarUrl = this._completeImageUrl(actingResult.actingAsAvatarUrl, orgId)
-                        || (actingResult.isOrganizationContact
-                            ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
-                            : this.defaultAvatarUrl);
-                    this._isOrgContact = actingResult.isOrganizationContact === true;
-                    this._orgAccountId = actingResult.organizationAccountId || null;
-                }
-
-                const actingAsContactId = actingResult.actingAsContactId;
-                const activeIdx = actingResult.isActingAsSelf ? -1 : raw.findIndex(id =>
-                    String(id.targetContactId) === String(actingAsContactId));
-
-                let activeRow = null;
-                let others = raw;
-                if (activeIdx >= 0) {
-                    activeRow = { ...raw[activeIdx], isActive: true };
-                    others = raw.filter((_, i) => i !== activeIdx);
-                }
-
-                const seen = new Set();
-                const deduped = others.filter(id => {
-                    const key = id.relationshipId;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-
-                this.otherIdentityMenuItems = [];
-                if (activeRow) this.otherIdentityMenuItems.push(activeRow);
-                const remaining = deduped.slice(0, Math.max(0, MAX_KEBAB_IDENTITIES - this.otherIdentityMenuItems.length));
-                remaining.forEach(id => this.otherIdentityMenuItems.push({
-                    ...id,
-                    isActive: false,
-                    switchAriaLabel: `Switch to ${id.name}`
-                }));
-            })
+        getActingAsContact()
+            .then((actingResult) => this._applyActingAsContext(actingResult))
             .catch(() => { /* silent */ });
+    }
+
+    _applyActingAsContext(actingResult) {
+        const selfAvatarUrl = avatarImageUrl(actingResult.realContactAvatarUrl)
+            || this.defaultAvatarUrl;
+        this.selfMenuItem = {
+            name: actingResult.realContactName,
+            avatarUrl: selfAvatarUrl,
+            isActive: actingResult.isActingAsSelf
+        };
+        this.isActingAsSelf = actingResult.isActingAsSelf;
+        this.showTosModal = actingResult.tosReacceptanceRequired === true
+            && actingResult.isActingAsSelf === true;
+        if (!actingResult.isActingAsSelf) {
+            this.actingAsDisplayName = actingResult.actingAsContactName;
+            this.actingAsAvatarUrl = avatarImageUrl(actingResult.actingAsAvatarUrl)
+                || (actingResult.isOrganizationContact
+                    ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
+                    : this.defaultAvatarUrl);
+            this._isOrgContact = actingResult.isOrganizationContact === true;
+            this._orgAccountId = actingResult.organizationAccountId || null;
+        }
+        this._actingAsContactId = actingResult.actingAsContactId;
+    }
+
+    _loadAvailableIdentitiesIfNeeded() {
+        if (this._identitiesLoaded || this.identitiesLoading) {
+            return;
+        }
+        this.identitiesLoading = true;
+        getAvailableIdentities()
+            .then((identitiesResult) => {
+                this._applyAvailableIdentities(identitiesResult);
+                this._identitiesLoaded = true;
+            })
+            .catch(() => { /* silent */ })
+            .finally(() => {
+                this.identitiesLoading = false;
+            });
+    }
+
+    _applyAvailableIdentities(identitiesResult) {
+        const raw = (identitiesResult || []).map(id => ({
+            ...id,
+            avatarUrl: avatarImageUrl(id.avatarUrl)
+                || (id.type === 'Support_Person'
+                    ? `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`
+                    : `${IMPACT_ICONS}/${NO_ORG_PHOTO}`)
+        }));
+
+        const actingAsContactId = this._actingAsContactId;
+        const activeIdx = this.isActingAsSelf ? -1 : raw.findIndex(id =>
+            String(id.targetContactId) === String(actingAsContactId));
+
+        let activeRow = null;
+        let others = raw;
+        if (activeIdx >= 0) {
+            activeRow = { ...raw[activeIdx], isActive: true };
+            others = raw.filter((_, i) => i !== activeIdx);
+        }
+
+        const seen = new Set();
+        const deduped = others.filter(id => {
+            const key = id.relationshipId;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        this.otherIdentityMenuItems = [];
+        if (activeRow) this.otherIdentityMenuItems.push(activeRow);
+        const remaining = deduped.slice(0, Math.max(0, MAX_KEBAB_IDENTITIES - this.otherIdentityMenuItems.length));
+        remaining.forEach(id => this.otherIdentityMenuItems.push({
+            ...id,
+            isActive: false,
+            switchAriaLabel: `Switch to ${id.name}`
+        }));
     }
 
     handleTosComplete() {
         this.showTosModal = false;
-    }
-
-    _completeImageUrl(url, orgId) {
-        if (!url) return null;
-        if (!orgId) return url;
-        if (url.includes(orgId)) return url;
-        return url + orgId;
     }
 
     handleIdentitySwitch(event) {
@@ -523,6 +538,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     handleMenuClick() {
         this.showMenuOverlay = true;
+        this._loadAvailableIdentitiesIfNeeded();
     }
 
     handleMenuClose() {

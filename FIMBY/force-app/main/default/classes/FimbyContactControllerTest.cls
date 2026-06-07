@@ -27,7 +27,15 @@ public class FimbyContactControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'Expected community user from @TestSetup');
+        return users[0];
     }
 
     private static Contact getTestContact() {

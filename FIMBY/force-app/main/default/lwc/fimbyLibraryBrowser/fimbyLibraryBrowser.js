@@ -7,7 +7,7 @@ import { CATEGORY_COLORS, getCategoryIconUrl, getCategoryStyle, getCategoryColor
 
 import getLibraryItems from '@salesforce/apex/FimbyHomeController.getLibraryItems';
 import getCategoryPicklistValues from '@salesforce/apex/FimbyLibraryController.getCategoryPicklistValues';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCelebrationContext';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 
@@ -48,8 +48,6 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     _lastScrollY = 0;
     _scrollTicking = false;
 
-    organizationId = null;
-
     // Vouching gate
     @track _isVouchedForBorrowing = null;
     @track isSettlingIn = false;
@@ -70,12 +68,10 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     async connectedCallback() {
         try {
-            const [orgId, celebCtx, vouched] = await Promise.all([
-                getOrganizationId(),
+            const [celebCtx, vouched] = await Promise.all([
                 getCelebrationContext(),
                 isVouchedForBorrowing()
             ]);
-            this.organizationId = orgId;
             this._memesEnabled = celebCtx?.memesEnabled !== false;
             this._isVouchedForBorrowing = vouched === true;
             this.isSettlingIn = vouched === false;
@@ -203,7 +199,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     processItems(items) {
         return items.map(item => {
-            const imageUrl = this.getCompleteImageUrl(item.Image_URL__c);
+            const imageUrl = completeImageUrl(item.Image_URL__c);
             const category = item.Category__c || 'Other';
             const color = getCategoryColor(category);
             const hasValidImage = !!imageUrl && imageUrl.trim() !== '';
@@ -221,10 +217,10 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 status: item.Status__c || '',
                 createdDate: item.CreatedDate,
                 ownerName: item.ownerName || '',
-                ownerAvatar: ownerAvatarRaw ? this.getCompleteImageUrl(ownerAvatarRaw) : '',
+                ownerAvatar: ownerAvatarRaw ? avatarImageUrl(ownerAvatarRaw) : '',
                 showImage: hasValidImage,
                 imageUrl: imageUrl,
-                images: hasValidImage ? [{ url: imageUrl, ratio: null, alt: item.Name || '' }] : [],
+                images: hasValidImage ? [{ url: imageUrl, ratio: item.Image_Ratio__c || '', alt: item.Name || '' }] : [],
                 viewerState: item.viewerState,
                 primaryAction: item.primaryAction,
                 ctaLabel: item.ctaLabel,
@@ -660,13 +656,6 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // =============================================
     // HELPERS
     // =============================================
-
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId) return imageUrl + this.organizationId;
-        return imageUrl;
-    }
 
     updateScrollContainer() {
         const scroll = this.template.querySelector('c-fimby-infinite-scroll');

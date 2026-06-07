@@ -2,5 +2,5 @@
 <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
     <cacheControl>Public</cacheControl>
     <contentType>application/zip</contentType>
-    <description>System-generated SNA sf_akamai_cdn FIMBY1</description>
+    <description>System-generated SNA sf_cloudflare_cdn FIMBY1</description>
 </StaticResource>

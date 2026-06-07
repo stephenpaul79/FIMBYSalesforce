@@ -54,7 +54,7 @@ public with sharing class FimbyBulkBuyController {
                 post.Total_Estimated_Cost__c = totalEstimatedCost;
             }
             if (String.isNotBlank(expiryDateStr) && availabilityRule == 'Expires_At_Date') {
-                post.Expiry_DateTime__c = Datetime.valueOf(expiryDateStr.replace('T', ' '));
+                post.Expiry_DateTime__c = parseDatetimeLocal(expiryDateStr);
             }
 
             new BulkBuyHelper().insertRecord(post);
@@ -112,6 +112,25 @@ public with sharing class FimbyBulkBuyController {
             if (data.containsKey('unitLabel')) { post.Allocation_Unit_Label__c = (String) data.get('unitLabel'); }
             if (data.containsKey('perResponseLimit')) { post.Per_Response_Limit__c = toDecimal(data.get('perResponseLimit'), null); }
             if (data.containsKey('totalEstimatedCost')) { post.Total_Estimated_Cost__c = toDecimal(data.get('totalEstimatedCost'), null); }
+
+            if (data.containsKey('availabilityRule')) {
+                post.Availability_Rule__c = (String) data.get('availabilityRule');
+            }
+            String expiryDateStr = (String) data.get('expiryDateTime');
+            if (data.containsKey('availabilityRule')) {
+                String rule = (String) data.get('availabilityRule');
+                if (rule == 'Expires_At_Date' && String.isNotBlank(expiryDateStr)) {
+                    post.Expiry_DateTime__c = parseDatetimeLocal(expiryDateStr);
+                } else if (rule == 'Open_Until_Full_Or_Closed') {
+                    post.Expiry_DateTime__c = null;
+                }
+            } else if (String.isNotBlank(expiryDateStr)) {
+                post.Expiry_DateTime__c = parseDatetimeLocal(expiryDateStr);
+            }
+            if (data.containsKey('autoLockDays')) {
+                String lockDays = (String) data.get('autoLockDays');
+                post.Auto_Lock_Days__c = String.isNotBlank(lockDays) ? lockDays : '7';
+            }
 
             new BulkBuyHelper().updateRecord(post);
 
@@ -577,6 +596,18 @@ public with sharing class FimbyBulkBuyController {
         AuraHandledException ex = new AuraHandledException(msg);
         ex.setMessage(msg);
         return ex;
+    }
+
+    private static Datetime parseDatetimeLocal(String value) {
+        if (String.isBlank(value)) {
+            return null;
+        }
+        String normalized = value.replace('T', ' ').trim();
+        Integer colonCount = normalized.countMatches(':');
+        if (colonCount == 1) {
+            normalized += ':00';
+        }
+        return Datetime.valueOf(normalized);
     }
 
     private without sharing class BulkBuyHelper {

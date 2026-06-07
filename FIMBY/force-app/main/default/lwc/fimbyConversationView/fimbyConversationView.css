@@ -560,7 +560,7 @@
 /* ── Reply compose area ──────────────────────────── */
 .reply-container {
     border-top: none;
-    padding: 4px 24px 12px;
+    padding: 4px 24px 16px;
     padding-left: 76px;
     flex-shrink: 0;
 }
@@ -672,8 +672,9 @@ section[role="dialog"].slds-modal {
     max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
     height: fit-content;
-    /* Override SLDS .slds-modal__container defaults (3rem padding, min sizing)
+    /* Override SLDS .slds-modal__container defaults (3rem padding, flex grow)
        so the modal fits tightly to its content. */
     padding: 0;
     min-height: 0;
@@ -869,6 +870,10 @@ section[role="dialog"] {
     border-top: 1px solid var(--fimby-border-subtle, #e5e0d8);
 }
 
+.follow-up-banner:last-child {
+    padding-bottom: 16px;
+}
+
 .follow-up-text {
     font-size: 0.85rem;
     color: var(--fimby-text-primary, #2c3e2d);
@@ -910,6 +915,10 @@ section[role="dialog"] {
     border-top: 1px solid var(--fimby-border-subtle, #e5e0d8);
 }
 
+.follow-up-resolved-banner:last-child {
+    padding-bottom: 16px;
+}
+
 /* ── Lending Action Banner ──────────────────────────────────────── */
 .lending-action-banner {
     padding: 10px 16px;
@@ -918,6 +927,10 @@ section[role="dialog"] {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.lending-action-banner:last-child {
+    margin-bottom: 16px;
 }
 
 .lending-banner-success {

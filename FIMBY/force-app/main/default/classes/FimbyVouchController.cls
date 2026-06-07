@@ -970,21 +970,29 @@ public without sharing class FimbyVouchController {
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = voucherUserId;
         req.subject = 'A note about your vouching';
-        req.introText = 'We wanted to let you know that ' + countingCount
+        String intro = 'We wanted to let you know that ' + countingCount
             + ' people you vouched for in the past year have had their library access revoked for cause.';
-        req.cardHtml =
-            '<div style="padding:16px;background:#FAF7F2;border-radius:12px;">'
-            + '<p style="margin:0 0 12px;font-size:15px;color:#261A11;">'
+        String bodyHtml =
+            '<p style="margin:0 0 12px;' + FimbyEmailHtmlBuilder.F + 'font-size:15px;color:#4A4A4A;">'
             + 'For now, your ability to vouch is paused while we take a closer look.'
             + ' This is a private record \u2014 nobody else sees it.'
             + '</p>'
-            + '<p style="margin:0;font-size:14px;color:#4A3526;">'
+            + '<p style="margin:0;' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:#4A4A4A;">'
             + 'If you have questions or want to talk through what happened, please reach out to a moderator.'
             + ' We are happy to walk through it with you.'
-            + '</p>'
-            + '</div>';
-        req.ctaUrl = FimbySettings.getUrl('Profile');
-        req.ctaLabel = 'Open your profile';
+            + '</p>';
+        req.cardHtml = FimbyEmailHtmlBuilder.buildTransactionalCard(
+            FimbyEmailHtmlBuilder.TXN_BADGE_VOUCH,
+            '#8A5936',
+            'ToolboxActive.png',
+            null,
+            bodyHtml,
+            FimbyTransactionalEmailService.lookupRecipientFirstName(voucherUserId),
+            intro,
+            FimbySettings.getUrl('Profile'),
+            'Open your profile',
+            'enter.png'
+        );
 
         try {
             FimbyTransactionalEmailService.send(req);

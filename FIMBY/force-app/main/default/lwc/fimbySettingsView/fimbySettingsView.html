@@ -53,7 +53,7 @@
                         <div class="toggle-row">
                             <span class="toggle-label">Push Notifications</span>
                             <input type="checkbox" class="toggle-switch"
-                                   checked={settings.pushNotificationsEnabled}
+                                   checked={pushEnabled}
                                    data-field="Push_Notifications_Enabled__c"
                                    data-key="pushNotificationsEnabled"
                                    onchange={handleToggle}>
@@ -61,7 +61,7 @@
                         <div class="toggle-row">
                             <span class="toggle-label">Email Alerts</span>
                             <input type="checkbox" class="toggle-switch"
-                                   checked={settings.emailAlertsEnabled}
+                                   checked={emailAlertsEnabled}
                                    data-field="Email_Alerts_Enabled__c"
                                    data-key="emailAlertsEnabled"
                                    onchange={handleToggle}>
@@ -121,7 +121,7 @@
                                 <span class="toggle-description">Get notifications 7 days a week</span>
                             </div>
                             <input type="checkbox" class="toggle-switch"
-                                   checked={settings.includeSundays}
+                                   checked={includeSundaysEnabled}
                                    data-field="Include_Sundays__c"
                                    data-key="includeSundays"
                                    onchange={handleToggle}>
@@ -181,7 +181,7 @@
                             <span class="toggle-description">Occasional updates about FIMBY itself, including operating-cost requests from Strathcona Vineyard Church. Opting out doesn't affect your access to the app.</span>
                         </div>
                         <input type="checkbox" class="toggle-switch"
-                               checked={settings.fimbyOperatingUpdatesEnabled}
+                               checked={fimbyOperatingUpdatesEnabled}
                                data-field="FIMBY_Operating_Updates_Enabled__c"
                                data-key="fimbyOperatingUpdatesEnabled"
                                onchange={handleToggle}>
@@ -200,7 +200,7 @@
                             <span class="toggle-description">Emoji confetti when you do something great</span>
                         </div>
                         <input type="checkbox" class="toggle-switch"
-                               checked={settings.celebrationConfettiEnabled}
+                               checked={celebrationConfettiEnabled}
                                data-field="Celebration_Confetti_Enabled__c"
                                data-key="celebrationConfettiEnabled"
                                onchange={handleFunToggle}>
@@ -211,7 +211,7 @@
                             <span class="toggle-description">Random meme GIFs on success screens</span>
                         </div>
                         <input type="checkbox" class="toggle-switch"
-                               checked={settings.celebrationMemesEnabled}
+                               checked={celebrationMemesEnabled}
                                data-field="Celebration_Memes_Enabled__c"
                                data-key="celebrationMemesEnabled"
                                onchange={handleFunToggle}>
@@ -244,27 +244,27 @@
                             <div class="field-row">
                                 <label class="field-label">Time Zone</label>
                                 <select class="settings-select" data-field="editTimeZone" onchange={handleRegionalSelect}>
-                                    <template for:each={timeZonePicklist} for:item="opt">
+                                    <template for:each={timeZoneEditOptions} for:item="opt">
                                         <option key={opt.value} value={opt.value}
-                                                selected={opt.value}>{opt.label}</option>
+                                                selected={opt.selected}>{opt.label}</option>
                                     </template>
                                 </select>
                             </div>
                             <div class="field-row">
                                 <label class="field-label">Locale</label>
                                 <select class="settings-select" data-field="editLocale" onchange={handleRegionalSelect}>
-                                    <template for:each={localePicklist} for:item="opt">
+                                    <template for:each={localeEditOptions} for:item="opt">
                                         <option key={opt.value} value={opt.value}
-                                                selected={opt.value}>{opt.label}</option>
+                                                selected={opt.selected}>{opt.label}</option>
                                     </template>
                                 </select>
                             </div>
                             <div class="field-row">
                                 <label class="field-label">Language</label>
                                 <select class="settings-select" data-field="editLanguage" onchange={handleRegionalSelect}>
-                                    <template for:each={languagePicklist} for:item="opt">
+                                    <template for:each={languageEditOptions} for:item="opt">
                                         <option key={opt.value} value={opt.value}
-                                                selected={opt.value}>{opt.label}</option>
+                                                selected={opt.selected}>{opt.label}</option>
                                     </template>
                                 </select>
                             </div>

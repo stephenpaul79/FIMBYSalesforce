@@ -90,16 +90,18 @@ public without sharing class FimbyReactivationEmailService {
             + 'For more on what happens when you delete your account, see '
             + '<a href="' + deleteDocUrl + '" style="color:#3A7D8C;">' + displayHost(deleteDocUrl) + '</a>.</p>';
 
+        String firstName = lookupUserFirstName(userId);
         String card = FimbyEmailHtmlBuilder.buildTransactionalCard(
             'SCHEDULED', ACCENT_PAUSED, 'deactivation.png',
             'Your account is scheduled for deletion on ' + scheduledDate,
-            cardBody);
+            cardBody,
+            firstName, null, null, null, null);
 
         String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
             card, GRACE_CONFIRMATION_SUBJECT, null, null, true, true);
 
         String plain =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(firstName) +
             'Your FIMBY account has been deactivated. Your login is already revoked, ' +
             'so nobody can see your posts or reach you while you decide.\n\n' +
             'We hold onto your data for ' + windowDays + ' days in case you change your mind. ' +
@@ -131,12 +133,13 @@ public without sharing class FimbyReactivationEmailService {
         if (userId == null || String.isBlank(token)) return;
 
         List<User> recipients = [
-            SELECT ContactId FROM User WHERE Id = :userId LIMIT 1
+            SELECT ContactId, Contact.FirstName FROM User WHERE Id = :userId LIMIT 1
         ];
         if (recipients.isEmpty() || recipients[0].ContactId == null) {
             return;
         }
 
+        String firstName = recipients[0].Contact?.FirstName;
         Integer ttlHours = FimbySettings.reactivationTokenTtlHours();
         String restoreUrl = buildRestoreUrl(token);
 
@@ -153,13 +156,14 @@ public without sharing class FimbyReactivationEmailService {
         String card = FimbyEmailHtmlBuilder.buildTransactionalCard(
             'RESTORE LINK', ACCENT_RESTORE, 'key.png',
             'A fresh link to restore your account',
-            cardBody);
+            cardBody,
+            firstName, null, null, null, null);
 
         String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
             card, REACTIVATION_LINK_SUBJECT, null, null, true, true);
 
         String plain =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(firstName) +
             'Someone (hopefully you) asked for a fresh link to restore your FIMBY ' +
             'account. Click here to restore:\n\n' +
             '    ' + restoreUrl + '\n\n' +
@@ -192,16 +196,18 @@ public without sharing class FimbyReactivationEmailService {
             + 'left them. The scheduled deletion has been cancelled.</p>'
             + FimbyEmailHtmlBuilder.buildCenteredCtaButton('Log in', loginUrl);
 
+        String firstName = lookupUserFirstName(userId);
         String card = FimbyEmailHtmlBuilder.buildTransactionalCard(
             'RESTORED', ACCENT_WELCOME, 'NeighborhoodActive.png',
             'You\u2019re back in your neighbourhood',
-            cardBody);
+            cardBody,
+            firstName, null, null, null, null);
 
         String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
             card, WELCOME_BACK_SUBJECT, null, null, true, false);
 
         String plain =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(firstName) +
             'Welcome back! Your FIMBY account is restored.\n\n' +
             'Your posts, library items, messages, and profile are all back where you ' +
             'left them. The scheduled deletion has been cancelled.\n\n' +
@@ -254,6 +260,14 @@ public without sharing class FimbyReactivationEmailService {
 
     private static String formatDate(DateTime dt) {
         return dt.format('MMMM d, yyyy', 'America/Vancouver');
+    }
+
+    private static String lookupUserFirstName(Id userId) {
+        if (userId == null) {
+            return null;
+        }
+        List<User> users = [SELECT FirstName FROM User WHERE Id = :userId LIMIT 1];
+        return users.isEmpty() ? null : users[0].FirstName;
     }
 
     /**

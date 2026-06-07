@@ -4,7 +4,7 @@ import sendGroupMessage from '@salesforce/apex/FimbyGroupConversationController.
 import getGroupMembers from '@salesforce/apex/FimbyGroupConversationController.getGroupMembers';
 import toggleMute from '@salesforce/apex/FimbyGroupConversationController.toggleMute';
 import getMyGroupConversations from '@salesforce/apex/FimbyGroupConversationController.getMyGroupConversations';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -12,6 +12,12 @@ import {
     getBadgeTypeFromContext,
     getThreadAvatarIcon
 } from 'c/fimbyThreadBadgeConfig';
+
+function resolveAvatarUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
+    return avatarImageUrl(url);
+}
 
 const PAGE_SIZE = 50;
 const ZONE_THRESHOLD = 3;
@@ -36,7 +42,6 @@ export default class FimbyGroupConversation extends LightningElement {
     @track isLoadingMore = false;
     @track currentOffset = 0;
     @track myContactId = '';
-    @track organizationId = null;
     @track showCompose = false;
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
@@ -153,24 +158,7 @@ export default class FimbyGroupConversation extends LightningElement {
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
-    _completeImageUrl(url) {
-        if (!url) return null;
-        if (url.startsWith('/resource/') || !url.startsWith('http')) {
-            return url;
-        }
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
-    }
-
     async connectedCallback() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (e) {
-            /* non-critical */
-        }
-
         if (this.conversationId) {
             await this.loadConversationMetadata();
             await this.loadMessages();
@@ -264,7 +252,7 @@ export default class FimbyGroupConversation extends LightningElement {
                 ? this._getInitialsFromName(msg.senderDisplayName)
                 : this._getInitials(msg.senderFirstName, msg.senderLastName);
 
-            const avatarUrl = this._completeImageUrl(msg.senderAvatarUrl);
+            const avatarUrl = resolveAvatarUrl(msg.senderAvatarUrl);
 
             let senderColorIndex = 0;
             if (!isMine && msg.senderId) {
@@ -522,7 +510,7 @@ export default class FimbyGroupConversation extends LightningElement {
                 const shortName = isOrg
                     ? (m.displayName || 'Org').split(' ')[0]
                     : (m.firstName || name.split(' ')[0] || 'Unknown');
-                const avatarUrl = this._completeImageUrl(m.avatarUrl);
+                const avatarUrl = resolveAvatarUrl(m.avatarUrl);
                 return {
                     ...m,
                     displayName: name,

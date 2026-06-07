@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { buildSrcset, SIZES, thumbnailUrl } from 'c/fimbyImageUrl';
 
 const ORIENTATION_THRESHOLDS = {
     HORIZONTAL_MIN: 1.2,
@@ -8,6 +9,8 @@ const ORIENTATION_THRESHOLDS = {
 export default class FimbyImageGrid extends LightningElement {
     @api images = [];
     @api layout = 'auto';
+    @api sizes = SIZES.feedColumn;
+    @api includeOriginal = false;
 
     @track errorIndexes = new Set();
 
@@ -19,7 +22,9 @@ export default class FimbyImageGrid extends LightningElement {
                 ...img,
                 key: `img-${idx}`,
                 index: idx,
-                orientation: this._classifyOrientation(img.ratio)
+                orientation: this._classifyOrientation(img.ratio),
+                displayUrl: thumbnailUrl(img.url),
+                srcset: buildSrcset(img.url, img.ratio, { includeOriginal: this.includeOriginal })
             }));
     }
 
@@ -47,9 +52,6 @@ export default class FimbyImageGrid extends LightningElement {
         return this.imageCount >= 4;
     }
 
-    /* ----------------------------------------------------------
-     * Single image getters
-     * ---------------------------------------------------------- */
     get singleImage() {
         return this.validImages[0] || null;
     }
@@ -63,9 +65,6 @@ export default class FimbyImageGrid extends LightningElement {
         return `aspect-ratio: ${clamped.w} / ${clamped.h}; max-height: 400px;`;
     }
 
-    /* ----------------------------------------------------------
-     * Two-image getters
-     * ---------------------------------------------------------- */
     get twoImages() {
         return this.validImages.slice(0, 2);
     }
@@ -92,9 +91,6 @@ export default class FimbyImageGrid extends LightningElement {
         return 'aspect-ratio: 1 / 1;';
     }
 
-    /* ----------------------------------------------------------
-     * Three-image getters
-     * ---------------------------------------------------------- */
     get threeImages() {
         return this.validImages.slice(0, 3);
     }
@@ -116,9 +112,6 @@ export default class FimbyImageGrid extends LightningElement {
         return 'aspect-ratio: 1 / 1;';
     }
 
-    /* ----------------------------------------------------------
-     * Four-image getters
-     * ---------------------------------------------------------- */
     get fourImages() {
         return this.validImages.slice(0, 4);
     }
@@ -140,9 +133,6 @@ export default class FimbyImageGrid extends LightningElement {
         return 'aspect-ratio: 1 / 1;';
     }
 
-    /* ----------------------------------------------------------
-     * Event handlers
-     * ---------------------------------------------------------- */
     handleImageClick(event) {
         event.stopPropagation();
         const index = parseInt(event.currentTarget.dataset.index, 10);
@@ -155,15 +145,19 @@ export default class FimbyImageGrid extends LightningElement {
 
     handleImageError(event) {
         const index = parseInt(event.currentTarget.dataset.index, 10);
+        const imgEl = event.target;
+        const original = event.currentTarget.dataset.original;
+        if (original && imgEl.src !== original) {
+            imgEl.src = original;
+            imgEl.removeAttribute('srcset');
+            return;
+        }
         if (!isNaN(index)) {
             this.errorIndexes = new Set([...this.errorIndexes, index]);
         }
-        event.target.style.display = 'none';
+        imgEl.style.display = 'none';
     }
 
-    /* ----------------------------------------------------------
-     * Private helpers
-     * ---------------------------------------------------------- */
     _classifyOrientation(ratioString) {
         if (!ratioString) return 'square';
         const parsed = this._parseRatio(ratioString);

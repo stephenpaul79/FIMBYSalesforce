@@ -4,7 +4,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
 import updateProfileSection from '@salesforce/apex/FimbyProfileController.updateProfileSection';
 import removeImage from '@salesforce/apex/FimbyLibraryController.removeImage';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 
 const CARE_WELCOME_OPTIONS = [
@@ -40,7 +40,6 @@ const AVAILABILITY_OPTIONS = [
 export default class FimbyUserProfileView extends LightningElement {
     @track isLoading = true;
     @track profile = {};
-    @track organizationId = null;
     @track showImageUploader = false;
 
     // Section edit states
@@ -199,12 +198,7 @@ export default class FimbyUserProfileView extends LightningElement {
     get displayCareHardNos() { return this._d(this.profile.careHardNos); }
 
     get avatarUrl() {
-        const base = this.profile.imageUrl;
-        if (!base) return '';
-        if (this.organizationId && !base.includes(this.organizationId)) {
-            return base + this.organizationId;
-        }
-        return base;
+        return avatarImageUrl(this.profile.imageUrl);
     }
     get hasAvatar() { return !!this.profile.imageUrl; }
     get initials() {
@@ -279,14 +273,7 @@ export default class FimbyUserProfileView extends LightningElement {
     get hardNosCountClass() { return this._charCountClass((this.editCareHardNos || '').length, 200); }
 
     async connectedCallback() {
-        await this.loadOrganizationId();
         await this.loadProfile();
-    }
-
-    async loadOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (e) { /* non-critical */ }
     }
 
     async loadProfile() {

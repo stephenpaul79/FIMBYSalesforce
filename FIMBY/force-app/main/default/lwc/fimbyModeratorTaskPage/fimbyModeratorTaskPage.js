@@ -29,7 +29,7 @@ import approveOrganizationAndRep from '@salesforce/apex/FimbyModeratorDashboardC
 import adminResolveFollowUp from '@salesforce/apex/FimbyModeratorDashboardController.adminResolveFollowUp';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
 import getReporterFilingStats from '@salesforce/apex/FimbyModeratorDashboardController.getReporterFilingStats';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 
 const NO_PHOTO = '/resource/Impact_Icons/NoProfilePhoto.png';
 const BODY_TRUNCATE_LENGTH = 300;
@@ -99,7 +99,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
     @track lightboxStartIndex = 0;
 
     _recordId;
-    _organizationId;
     _initialized = false;
 
     // ================================================================
@@ -563,7 +562,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
             return;
         }
 
-        try { this._organizationId = await getOrganizationId(); } catch { /* non-fatal */ }
         await this._loadTask();
     }
 
@@ -685,7 +683,7 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                     const contact = h.subject || {};
                     panelData.subjectData = {
                         name: contact.Name || '',
-                        photoUrl: contact.Image_URL__c ? this._completeImageUrl(contact.Image_URL__c) : '',
+                        photoUrl: contact.Image_URL__c ? avatarImageUrl(contact.Image_URL__c) : '',
                         pronouns: contact.Pronouns__c || '',
                         memberSince: contact.CreatedDate,
                         totalReports: h.totalReports || 0,
@@ -1255,14 +1253,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         return (routes[type] || '/') + id;
     }
 
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (url.endsWith('oid=') && this._organizationId) {
-            return url + this._organizationId;
-        }
-        return url;
-    }
-
     _resolveImageUrls(data) {
         if (!data) return;
         const photoKeys = [
@@ -1274,22 +1264,22 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         ];
         for (const key of photoKeys) {
             if (data[key]) {
-                data[key] = this._completeImageUrl(data[key]);
+                data[key] = avatarImageUrl(data[key]);
             }
         }
         if (data.subjectData?.photoUrl) {
             data.subjectData = {
                 ...data.subjectData,
-                photoUrl: this._completeImageUrl(data.subjectData.photoUrl)
+                photoUrl: avatarImageUrl(data.subjectData.photoUrl)
             };
         }
         if (Array.isArray(data.imageUrls)) {
-            data.imageUrls = data.imageUrls.map(u => this._completeImageUrl(u));
+            data.imageUrls = data.imageUrls.map(u => completeImageUrl(u));
         }
         if (Array.isArray(data.verificationDocs)) {
             data.verificationDocs = data.verificationDocs.map(doc => ({
                 ...doc,
-                url: doc.url ? this._completeImageUrl(doc.url) : ''
+                url: doc.url ? completeImageUrl(doc.url) : ''
             }));
         }
     }

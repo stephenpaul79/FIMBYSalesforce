@@ -198,22 +198,63 @@
                                          data-url={feedItem.orgProfileUrl}>
                                         <img src={feedItem.avatarUrl} alt="" class="library-listed-avatar" />
                                     </div>
-                                    <div class="library-listed-info">
+                                    <div class="library-listed-identity">
+                                        <span class="library-listed-name">{feedItem.postedByName}</span>
+                                        <template lwc:if={feedItem.formattedTimestamp}>
+                                            <span class="library-listed-timestamp">{feedItem.formattedTimestamp}</span>
+                                        </template>
+                                    </div>
+                                    <div class="library-listed-actions">
+                                        <div class="card-type-badge library-badge" style={libraryBadgeStyle}>
+                                            <img src={libraryBadgeIconUrl} alt="Library Item" class="badge-icon" />
+                                            <span>LIBRARY ITEM</span>
+                                        </div>
+                                        <template lwc:if={feedItem.showCardMenu}>
+                                            <div class="library-card-menu-wrap">
+                                                <button type="button"
+                                                        class="library-card-menu"
+                                                        aria-label="More options"
+                                                        aria-expanded={feedItem.libraryMenuOpen}
+                                                        aria-haspopup="menu"
+                                                        data-record-id={feedItem.recordId}
+                                                        onclick={handleLibraryMenuClick}>
+                                                    <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                                                </button>
+                                                <template lwc:if={feedItem.libraryMenuOpen}>
+                                                    <div class="library-card-menu-backdrop" onclick={handleLibraryMenuBackdropClick}></div>
+                                                    <div class="library-card-menu-dropdown" role="menu">
+                                                        <button type="button"
+                                                                class="library-card-menu-item"
+                                                                role="menuitem"
+                                                                data-record-id={feedItem.recordId}
+                                                                onclick={handleLibraryCardReport}>
+                                                            <img src={reportIconUrl} alt="" class="library-card-menu-item-icon">
+                                                            Report
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="library-listed-announcement">
                                         <span class="library-listed-text">
-                                            <strong>{feedItem.postedByName}</strong> added <strong>{feedItem.name}</strong> to the Library
+                                            Added <strong>{feedItem.name}</strong> to the Library
                                         </span>
                                         <span class="library-listed-meta">{feedItem.category}</span>
                                     </div>
-                                    <template lwc:if={feedItem.showCardMenu}>
-                                        <button type="button" class="library-card-menu" aria-label="Report this item" data-record-id={feedItem.recordId} onclick={handleLibraryCardReport}>
-                                            <img src={kebabBeigeIconUrl} alt="" class="library-card-menu-icon">
-                                        </button>
-                                    </template>
                                 </div>
                                 <div class="library-listed-body">
                                     <template lwc:if={feedItem.showImage}>
                                         <div class="library-listed-media">
-                                            <img src={feedItem.imageUrl} alt={feedItem.name} class="library-listed-thumb" />
+                                            <img
+                                                src={feedItem.libraryDisplayImageUrl}
+                                                srcset={feedItem.libraryImageSrcset}
+                                                sizes={feedColumnSizes}
+                                                alt={feedItem.name}
+                                                class="library-listed-thumb"
+                                                loading="lazy"
+                                                decoding="async"
+                                                data-original={feedItem.imageUrl} />
                                         </div>
                                     </template>
                                     <div class="library-listed-content">
@@ -223,7 +264,7 @@
                                 </div>
                                 <div class="library-listed-footer">
                                     <template lwc:if={feedItem.isPoster}>
-                                        <button class="library-view-btn" onclick={handleCardClick}>
+                                        <button class="library-view-btn" onclick={handleLibraryView}>
                                             <img src={viewPostIconUrl} alt="" class="borrow-btn-icon" />
                                             <span>View Post</span>
                                         </button>
@@ -235,10 +276,6 @@
                                         </button>
                                     </template>
                                 </div>
-                            </div>
-                            <div class="card-type-badge library-badge" style={libraryBadgeStyle}>
-                                <img src={libraryBadgeIconUrl} alt="Library Item" class="badge-icon" />
-                                <span>LIBRARY ITEM</span>
                             </div>
                         </div>
                     </template>

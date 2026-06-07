@@ -54,6 +54,8 @@ private class FimbyReactivationEmailServiceTest {
         System.assertNotEquals(null, html, 'Branded HTML body should be set');
         System.assert(html.contains('SCHEDULED'),
             'HTML body should render the SCHEDULED badge pill');
+        System.assert(html.contains('Hi ') && html.contains(','),
+            'HTML body should include a personal greeting line');
         System.assert(html.contains('/reactivate?token='),
             'HTML body should embed the restore URL');
         System.assert(!html.contains('/notifications'),

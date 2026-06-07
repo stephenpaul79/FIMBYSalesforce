@@ -2,12 +2,12 @@ import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { formatLocalDate, formatShortDate } from 'c/fimbyDateUtils';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyLibraryItemAdmin extends LightningElement {
     @api recordId;
     @api adminData;
     @api adminDataLoaded = false;
-    @api organizationId;
 
     @track showLendingRequests = true;
     @track showLendingHistory = false;
@@ -27,14 +27,6 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
     get returnIconUrl() { return `${IMPACT_ICONS}/ToolboxActive.png`; }
     get extensionIconUrl() { return `${IMPACT_ICONS}/plannersm.png`; }
 
-    _completeAvatarUrl(url) {
-        if (!url) return '';
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
-    }
-
     // ── Current Loan ──────────────────────────────────────────────
 
     get hasCurrentLoan() {
@@ -48,7 +40,7 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
         const convId = loan.conversationId;
         return {
             ...loan,
-            borrowerAvatar: this._completeAvatarUrl(loan.borrowerAvatar),
+            borrowerAvatar: avatarImageUrl(loan.borrowerAvatar),
             isOverdue: phase === 'overdue',
             isExtensionRequested: phase === 'extensionRequested',
             isReturnPending: phase === 'returnPending',
@@ -148,7 +140,7 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
 
             return {
                 ...req,
-                requesterAvatar: this._completeAvatarUrl(req.requesterAvatar),
+                requesterAvatar: avatarImageUrl(req.requesterAvatar),
                 formattedMeta: parts.join(' · '),
                 isReviewAction: isPendingApproval,
                 showRemove: !isPendingApproval && !isApproved,
@@ -189,7 +181,7 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
     get processedHistory() {
         return this.lendingHistory.map(hist => ({
             ...hist,
-            borrowerAvatar: this._completeAvatarUrl(hist.borrowerAvatar),
+            borrowerAvatar: avatarImageUrl(hist.borrowerAvatar),
             displayStartDate: formatLocalDate(hist.startDate),
             displayEndDate: hist.endDate ? formatLocalDate(hist.endDate) : 'Ongoing',
             hasConversation: !!hist.conversationId,

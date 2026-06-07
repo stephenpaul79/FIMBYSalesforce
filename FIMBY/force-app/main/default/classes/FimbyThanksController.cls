@@ -129,18 +129,22 @@ public with sharing class FimbyThanksController {
                 ];
                 if (users.isEmpty()) return;
 
-                String cardHtml = FimbyEmailHtmlBuilder.buildThankYouCard(senderName, message, postTitle);
+                Id recipientUserId = users[0].Id;
+                String ctaUrl = String.isNotBlank(relatedRecordId)
+                    ? FimbySettings.getUrl('Response_Reply', null, '?recordId=' + relatedRecordId)
+                    : null;
+                String cardHtml = FimbyEmailHtmlBuilder.buildThankYouCard(
+                    FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
+                    senderName, message, postTitle,
+                    ctaUrl, 'View Conversation', 'reply.png'
+                );
 
                 FimbyTransactionalEmailService.TransactionalEmailRequest req =
                     new FimbyTransactionalEmailService.TransactionalEmailRequest();
-                req.recipientUserId = users[0].Id;
+                req.recipientUserId = recipientUserId;
                 req.subject = 'Thank you from ' + senderName;
                 req.cardHtml = cardHtml;
                 req.skipSubjectBlock = true;
-                if (String.isNotBlank(relatedRecordId)) {
-                    req.ctaUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + relatedRecordId);
-                    req.ctaLabel = 'View Conversation';
-                }
 
                 FimbyTransactionalEmailService.send(req);
             } catch (Exception e) {

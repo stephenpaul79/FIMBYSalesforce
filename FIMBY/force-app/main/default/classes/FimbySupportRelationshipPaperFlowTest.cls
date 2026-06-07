@@ -376,7 +376,7 @@ private class FimbySupportRelationshipPaperFlowTest {
         insert rel;
 
         FimbyTransactionalEmailService.testLastSubject = null;
-        FimbyTransactionalEmailService.testLastIntroText = null;
+        FimbyTransactionalEmailService.testLastCardHtml = null;
 
         Test.startTest();
         FimbySupportRelationshipEmailService.sendApprovalNotification(rel.Id);
@@ -387,12 +387,16 @@ private class FimbySupportRelationshipPaperFlowTest {
             FimbyTransactionalEmailService.testLastSubject
         );
         System.assert(
-            !FimbyTransactionalEmailService.testLastIntroText.contains('supportee'),
-            FimbyTransactionalEmailService.testLastIntroText
+            !FimbyTransactionalEmailService.testLastCardHtml.contains('supportee'),
+            FimbyTransactionalEmailService.testLastCardHtml
         );
         System.assert(
-            FimbyTransactionalEmailService.testLastIntroText.contains('Manage Identities'),
-            FimbyTransactionalEmailService.testLastIntroText
+            FimbyTransactionalEmailService.testLastCardHtml.contains('Manage Identities'),
+            FimbyTransactionalEmailService.testLastCardHtml
+        );
+        System.assert(
+            FimbyTransactionalEmailService.testLastCardHtml.contains('SUPPORT'),
+            'Approval email should use SUPPORT badge'
         );
     }
 
@@ -420,7 +424,7 @@ private class FimbySupportRelationshipPaperFlowTest {
         insert rel;
 
         FimbyTransactionalEmailService.testLastSubject = null;
-        FimbyTransactionalEmailService.testLastIntroText = null;
+        FimbyTransactionalEmailService.testLastCardHtml = null;
 
         Test.startTest();
         FimbySupportRelationshipEmailService.sendRejectionNotification(rel.Id);
@@ -431,8 +435,8 @@ private class FimbySupportRelationshipPaperFlowTest {
             FimbyTransactionalEmailService.testLastSubject
         );
         System.assert(
-            !FimbyTransactionalEmailService.testLastIntroText.contains('paper form'),
-            FimbyTransactionalEmailService.testLastIntroText
+            !FimbyTransactionalEmailService.testLastCardHtml.contains('paper form'),
+            FimbyTransactionalEmailService.testLastCardHtml
         );
     }
 }

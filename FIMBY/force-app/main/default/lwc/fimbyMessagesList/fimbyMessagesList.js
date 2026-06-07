@@ -11,7 +11,7 @@ import getMessageableContacts from '@salesforce/apex/FimbyConversationController
 import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
@@ -20,6 +20,12 @@ import {
     getThreadAvatarIcon,
     getGroupAvatarVariant
 } from 'c/fimbyThreadBadgeConfig';
+
+function resolveAvatarUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
+    return avatarImageUrl(url);
+}
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
@@ -77,7 +83,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
     _swipeDeltaX = 0;
     _swiping = false;
 
-    _organizationId = null;
 
     _badgeCountHandler;
     @track headerHidden = false;
@@ -178,11 +183,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     // ── Lifecycle ─────────────────────────────────────
 
-    async connectedCallback() {
-        try {
-            this._organizationId = await getOrganizationId();
-        } catch (e) { /* non-critical */ }
-
+    connectedCallback() {
         this.loadThreads();
         this.refreshUnreadCount();
         this._loadRetentionDisclaimer();
@@ -281,7 +282,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         const isUnread = !!thread.isUnread;
         const count = thread.messageCount || 0;
         const isGroup = !!thread.isGroup;
-        const completedImageUrl = this._completeImageUrl(thread.participantImageUrl);
+        const completedImageUrl = resolveAvatarUrl(thread.participantImageUrl);
         const hasPostImage = isGroup && !!completedImageUrl;
         const showGroupIconAvatar = isGroup && !hasPostImage;
         const hasParticipantImage = !isGroup && !!thread.participantImageUrl;
@@ -378,15 +379,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             const fallback = parent.querySelector('.group-avatar-fallback');
             if (fallback) fallback.style.display = '';
         }
-    }
-
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
-        if (this._organizationId && !url.includes(this._organizationId)) {
-            return url + this._organizationId;
-        }
-        return url;
     }
 
     // ── Filter / navigation ───────────────────────────
@@ -691,7 +683,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
                 ...c,
                 initials: this.getInitials(c.contactName),
                 isOrgContact: !!c.isOrgContact,
-                avatarUrl: this._completeImageUrl(c.avatarUrl),
+                avatarUrl: resolveAvatarUrl(c.avatarUrl),
                 hasAvatar: !!c.avatarUrl,
                 contactAvatarClass: 'contact-avatar-sm' + (c.isOrgContact ? ' contact-avatar-org' : '')
             }));
@@ -783,7 +775,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             if (result?.success) {
                 this.isActingAsSelf = !!result.isActingAsSelf;
                 this.actingAsContactName = result.postingAsDisplayName || result.actingAsContactName || '';
-                this.actingAsAvatarUrl = this._completeImageUrl(result.actingAsAvatarUrl);
+                this.actingAsAvatarUrl = resolveAvatarUrl(result.actingAsAvatarUrl);
                 this.isActingAsOrg = !!result.isActingAsOrg;
             }
         } catch (error) {

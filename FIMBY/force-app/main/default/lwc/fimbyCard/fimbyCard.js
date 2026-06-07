@@ -381,10 +381,6 @@ export default class FimbyCard extends LightningElement {
         this.dispatchEvent(clickEvent);
     }
 
-    get kebabIconUrl() {
-        return `${IMPACT_ICONS}/KebabBeige.png`;
-    }
-
     get reportIconUrl() {
         return `${IMPACT_ICONS}/warning.png`;
     }

@@ -27,6 +27,16 @@ function normalizeSummaryEmailFrequency(value) {
     return value;
 }
 
+/** Matches Apex notification gate semantics: null means enabled unless explicitly false. */
+function isNotificationToggleEnabled(value) {
+    return value !== false;
+}
+
+/** Include Sundays is opt-in at the gate (FimbyPushBatchJob / FimbyEmailAlertBatchJob). */
+function isOptInToggleEnabled(value) {
+    return value === true;
+}
+
 const QUIET_HOURS_VALUES = [
     { label: '9 PM \u2013 5 AM', value: '9PM_5AM' },
     { label: '10 PM \u2013 6 AM', value: '10PM_6AM' },
@@ -126,18 +136,40 @@ export default class FimbySettingsView extends LightningElement {
     }
 
     get notificationCategories() {
-        const pushMaster = !!this.settings.pushNotificationsEnabled;
-        const emailMaster = !!this.settings.emailAlertsEnabled;
+        const pushMaster = isNotificationToggleEnabled(this.settings.pushNotificationsEnabled);
+        const emailMaster = isNotificationToggleEnabled(this.settings.emailAlertsEnabled);
         return NOTIFICATION_CATEGORIES.map(cat => ({
             ...cat,
-            pushChecked: !!this.settings[cat.pushKey],
-            emailChecked: !!this.settings[cat.emailKey],
+            pushChecked: isNotificationToggleEnabled(this.settings[cat.pushKey]),
+            emailChecked: isNotificationToggleEnabled(this.settings[cat.emailKey]),
             pushDisabled: !pushMaster,
             emailDisabled: !emailMaster
         }));
     }
 
-    get pushEnabled() { return !!this.settings.pushNotificationsEnabled; }
+    get pushEnabled() {
+        return isNotificationToggleEnabled(this.settings.pushNotificationsEnabled);
+    }
+
+    get emailAlertsEnabled() {
+        return isNotificationToggleEnabled(this.settings.emailAlertsEnabled);
+    }
+
+    get includeSundaysEnabled() {
+        return isOptInToggleEnabled(this.settings.includeSundays);
+    }
+
+    get fimbyOperatingUpdatesEnabled() {
+        return isNotificationToggleEnabled(this.settings.fimbyOperatingUpdatesEnabled);
+    }
+
+    get celebrationConfettiEnabled() {
+        return isNotificationToggleEnabled(this.settings.celebrationConfettiEnabled);
+    }
+
+    get celebrationMemesEnabled() {
+        return isNotificationToggleEnabled(this.settings.celebrationMemesEnabled);
+    }
 
     get canDeleteAccount() { return !!this.settings.isActingAsSelf; }
 
@@ -370,6 +402,30 @@ export default class FimbySettingsView extends LightningElement {
     get timeZonePicklist() { return this.settings.timeZoneOptions || []; }
     get localePicklist() { return this.settings.localeOptions || []; }
     get languagePicklist() { return this.settings.languageOptions || []; }
+
+    get timeZoneEditOptions() {
+        const current = this.editTimeZone || this.settings.timeZone || '';
+        return this.timeZonePicklist.map(opt => ({
+            ...opt,
+            selected: opt.value === current
+        }));
+    }
+
+    get localeEditOptions() {
+        const current = this.editLocale || this.settings.locale || '';
+        return this.localePicklist.map(opt => ({
+            ...opt,
+            selected: opt.value === current
+        }));
+    }
+
+    get languageEditOptions() {
+        const current = this.editLanguage || this.settings.language || '';
+        return this.languagePicklist.map(opt => ({
+            ...opt,
+            selected: opt.value === current
+        }));
+    }
 
     // ============================================
     // REGIONAL SETTINGS

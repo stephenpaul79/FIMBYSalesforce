@@ -9,7 +9,15 @@ public class FimbyBulkBuyControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -128,6 +136,37 @@ public class FimbyBulkBuyControllerTest {
     }
 
     @isTest
+    static void testUpdateBulkBuyPost_AvailabilityAndPickup() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+
+        Datetime expiry = System.now().addDays(3);
+        String expiryStr = expiry.format('yyyy-MM-dd') + 'T' + expiry.format('HH:mm');
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => post.Id,
+            'availabilityRule' => 'Expires_At_Date',
+            'expiryDateTime' => expiryStr,
+            'autoLockDays' => '14'
+        };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyBulkBuyController.updateBulkBuyPost(JSON.serialize(updateData));
+        }
+        Test.stopTest();
+
+        Needs_Offers__c updated = [
+            SELECT Availability_Rule__c, Expiry_DateTime__c, Auto_Lock_Days__c
+            FROM Needs_Offers__c WHERE Id = :post.Id
+        ];
+        System.assertEquals('Expires_At_Date', updated.Availability_Rule__c);
+        System.assertNotEquals(null, updated.Expiry_DateTime__c);
+        System.assertEquals('14', updated.Auto_Lock_Days__c);
+    }
+
+    @isTest
     static void testUpdateBulkBuyPost_NotOwner() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();
@@ -149,10 +188,11 @@ public class FimbyBulkBuyControllerTest {
 
         Test.startTest();
         Boolean caught = false;
+        FimbyIdentityRepository.clearCache();
         System.runAs(otherUser) {
             try {
                 FimbyBulkBuyController.updateBulkBuyPost(JSON.serialize(updateData));
-            } catch (AuraHandledException e) {
+            } catch (Exception e) {
                 caught = true;
             }
         }

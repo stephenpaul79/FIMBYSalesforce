@@ -99,6 +99,11 @@
                             </button>
                         </template>
                     </template>
+                    <template lwc:if={identitiesLoading}>
+                        <div class="identity-row identity-loading" aria-live="polite">
+                            <span class="identity-loading-text">Loading identities…</span>
+                        </div>
+                    </template>
                     <template for:each={otherIdentityMenuItems} for:item="identity">
                         <template lwc:if={identity.isActive}>
                             <div key={identity.relationshipId} class="identity-row" aria-current="true">

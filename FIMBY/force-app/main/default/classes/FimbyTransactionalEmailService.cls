@@ -15,6 +15,8 @@ public without sharing class FimbyTransactionalEmailService {
     private static String testLastSubject;
     @TestVisible
     private static String testLastIntroText;
+    @TestVisible
+    private static String testLastCardHtml;
     private static final String INTRO_PLACEHOLDER = '<!-- FIMBY_INTRO_TEXT -->';
     private static final String INTENT_PLACEHOLDER = '<!-- FIMBY_INTENT_LINE -->';
 
@@ -26,6 +28,7 @@ public without sharing class FimbyTransactionalEmailService {
         public String replyToEmail;
         public String ctaUrl;
         public String ctaLabel;
+        public String ctaIcon;
         public Boolean skipSubjectBlock = false;
     }
 
@@ -38,6 +41,7 @@ public without sharing class FimbyTransactionalEmailService {
             testSendInvocationCount++;
             testLastSubject = request.subject;
             testLastIntroText = request.introText;
+            testLastCardHtml = request.cardHtml;
         }
 
         Id templateId = getTransactionalTemplateId();
@@ -60,20 +64,11 @@ public without sharing class FimbyTransactionalEmailService {
             }
 
             String cardContent = request.cardHtml != null ? request.cardHtml : '';
-            if (String.isNotBlank(request.ctaUrl)) {
-                cardContent += FimbyEmailHtmlBuilder.buildCtaButton(
-                    String.isNotBlank(request.ctaLabel) ? request.ctaLabel : 'View in FIMBY',
-                    request.ctaUrl
-                );
-            }
-
-            Boolean skip = request.skipSubjectBlock == true;
-            String intentLine = skip ? null : FimbyEmailHtmlBuilder.getRandomIntentLine();
 
             Map<String, String> replacements = new Map<String, String>{
                 DYNAMIC_PLACEHOLDER => cardContent,
-                INTRO_PLACEHOLDER => (!skip && request.introText != null) ? '<p style="font-size:14px;color:#4A4A4A;margin:0 0 16px;">' + request.introText + '</p>' : '',
-                INTENT_PLACEHOLDER => (!skip && intentLine != null) ? '<p style="color:#6B6B6B;font-size:13px;font-style:italic;margin:0 0 12px;">' + intentLine + '</p>' : ''
+                INTRO_PLACEHOLDER => '',
+                INTENT_PLACEHOLDER => ''
             };
             html = FimbyEmailHtmlBuilder.injectContent(html, replacements);
 
@@ -99,19 +94,8 @@ public without sharing class FimbyTransactionalEmailService {
     private static void sendDirectHtml(TransactionalEmailRequest request, Id oweaId) {
         try {
             Boolean skip = request.skipSubjectBlock == true;
-            String innerHtml = '';
-            if (!skip && String.isNotBlank(request.introText)) {
-                innerHtml += '<p style="font-size:14px;color:#4A4A4A;margin:0 0 16px;">' + request.introText + '</p>';
-            }
-            if (String.isNotBlank(request.cardHtml)) {
-                innerHtml += request.cardHtml;
-            }
-            if (String.isNotBlank(request.ctaUrl)) {
-                innerHtml += FimbyEmailHtmlBuilder.buildCtaButton(
-                    String.isNotBlank(request.ctaLabel) ? request.ctaLabel : 'View in FIMBY',
-                    request.ctaUrl
-                );
-            }
+            String innerHtml = String.isNotBlank(request.cardHtml) ? request.cardHtml : '';
+
             String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(innerHtml, request.subject, null, null, skip);
 
             Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
@@ -131,6 +115,15 @@ public without sharing class FimbyTransactionalEmailService {
         } catch (Exception e) {
             FimbyLogger.error('FimbyTransactionalEmailService', 'sendDirectHtml', e);
         }
+    }
+
+    @TestVisible
+    public static String lookupRecipientFirstName(Id userId) {
+        if (userId == null) {
+            return null;
+        }
+        List<User> users = [SELECT FirstName FROM User WHERE Id = :userId LIMIT 1];
+        return users.isEmpty() ? null : users[0].FirstName;
     }
 
     @TestVisible

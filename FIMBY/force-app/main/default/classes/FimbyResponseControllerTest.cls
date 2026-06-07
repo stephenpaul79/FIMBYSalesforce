@@ -574,6 +574,7 @@ public class FimbyResponseControllerTest {
             Email = 'responder@fimby.test.com'
         );
         insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
 
         Needs_Offers__c testNeedOffer;
         System.runAs(posterUser) {
@@ -617,6 +618,64 @@ public class FimbyResponseControllerTest {
     }
 
     @isTest
+    static void testGetResponseForShareContactInfo_AsResponderWithoutReplyTo() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact responderContact = new Contact(
+            FirstName = 'ShareResponder',
+            LastName = 'Test',
+            AccountId = posterContact.AccountId,
+            Email = 'shareresponder@fimby.test.com'
+        );
+        insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Needs_Offers__c testNeedOffer;
+        System.runAs(posterUser) {
+            testNeedOffer = new Needs_Offers__c(
+                Name = 'Responder Share Need',
+                Details__c = 'Details',
+                Full_Details__c = 'Full details',
+                Status__c = 'Posted',
+                Posted_By__c = posterContact.Id,
+                Contact__c = posterContact.Id,
+                Giver_Recipient_Type__c = 'Self',
+                Neighbourhood__c = posterContact.AccountId,
+                Total_Quantity__c = 5,
+                Per_Response_Limit__c = 5,
+                Auto_Accept_Responses__c = false,
+                End_Date__c = Date.today().addDays(7)
+            );
+            insert testNeedOffer;
+        }
+
+        Response__c testResponse = new Response__c(
+            Name = 'Responder Share Response',
+            Need_Offer_Responded_To__c = testNeedOffer.Id,
+            Contact__c = responderContact.Id,
+            On_Behalf_Of_Contact__c = responderContact.Id,
+            Status__c = 'Accepted',
+            Amount_Requested__c = 1
+        );
+        System.runAs(responderUser) {
+            insert testResponse;
+        }
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(responderUser) {
+            result = FimbyResponseController.getResponseForShareContactInfo(testResponse.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Responder should load share data: ' + result.get('message'));
+        System.assertEquals(false, result.get('isPostedBy'), 'Should not be poster');
+        Map<String, Object> recipient = (Map<String, Object>) result.get('recipient');
+        System.assertEquals(posterContact.Id, recipient.get('id'), 'Recipient should resolve to poster');
+    }
+
+    @isTest
     static void testShareContactInfo_Success() {
         User posterUser = getTestUser();
         Contact posterContact = getTestContact();
@@ -629,6 +688,7 @@ public class FimbyResponseControllerTest {
             Email = 'responder2@fimby.test.com'
         );
         insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
 
         Needs_Offers__c testNeedOffer;
         System.runAs(posterUser) {
@@ -677,6 +737,9 @@ public class FimbyResponseControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, result.get('success'), 'Should return success');
+        System.assertNotEquals(null, result.get('systemMessage'), 'Should return thread system message');
+        Map<String, Object> systemMessage = (Map<String, Object>) result.get('systemMessage');
+        System.assertEquals('Contact_Shared', systemMessage.get('systemMessageType'));
         Id sharedId = (Id) result.get('sharedContactInfoId');
         System.assertNotEquals(null, sharedId, 'Should return shared contact info ID');
 
@@ -698,6 +761,7 @@ public class FimbyResponseControllerTest {
             Email = 'emailtest@fimby.test.com'
         );
         insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
 
         Needs_Offers__c testNeedOffer;
         System.runAs(posterUser) {
@@ -745,7 +809,7 @@ public class FimbyResponseControllerTest {
 
         Test.startTest();
         Map<String, Object> result;
-        System.runAs(posterUser) {
+        System.runAs(responderUser) {
             result = FimbyResponseController.shareContactInfo(JSON.serialize(shareData));
         }
         Test.stopTest();
@@ -765,6 +829,7 @@ public class FimbyResponseControllerTest {
             Email = 'reshare@fimby.test.com'
         );
         insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
 
         Needs_Offers__c testNeedOffer;
         System.runAs(posterUser) {
@@ -820,7 +885,7 @@ public class FimbyResponseControllerTest {
 
         Test.startTest();
         Map<String, Object> result;
-        System.runAs(posterUser) {
+        System.runAs(responderUser) {
             result = FimbyResponseController.shareContactInfo(JSON.serialize(shareData));
         }
         Test.stopTest();
@@ -841,6 +906,7 @@ public class FimbyResponseControllerTest {
             Email = 'expanded@fimby.test.com'
         );
         insert responderContact;
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
 
         Needs_Offers__c testNeedOffer;
         System.runAs(posterUser) {
@@ -897,7 +963,7 @@ public class FimbyResponseControllerTest {
 
         Test.startTest();
         Map<String, Object> result;
-        System.runAs(posterUser) {
+        System.runAs(responderUser) {
             result = FimbyResponseController.shareContactInfo(JSON.serialize(shareData));
         }
         Test.stopTest();

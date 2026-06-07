@@ -11,7 +11,15 @@
             <div class="image-container">
                 <template lwc:if={item.images}>
                     <div class="image-carousel">
-                        <img src={currentImage} alt={item.title} class="item-image">
+                        <img
+                            src={currentImageDisplay}
+                            srcset={currentImageSrcset}
+                            sizes={libraryCardSizes}
+                            alt={item.title}
+                            class="item-image"
+                            loading="lazy"
+                            decoding="async"
+                            data-original={currentImageOriginal}>
 
                         <template lwc:if={hasMultipleImages}>
                             <div class="image-indicators">

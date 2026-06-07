@@ -639,4 +639,199 @@ public class FimbyAskOfferControllerTest {
         }
         Test.stopTest();
     }
+
+    @isTest
+    static void testUpdateNeedsOffersPost_Need() {
+        User testUser = getTestUser();
+
+        Map<String, Object> createData = new Map<String, Object>{
+            'postType' => 'Need',
+            'title' => 'Original Need',
+            'description' => 'Original description',
+            'type' => 'Services - Paid',
+            'quantity' => 1,
+            'perResponseLimit' => 1,
+            'isUrgent' => false,
+            'autoAcceptResponses' => false,
+            'autoShareContactInfo' => false
+        };
+
+        String recordId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(createData));
+            recordId = (String) created.get('recordId');
+        }
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => recordId,
+            'title' => 'Updated Need Title',
+            'description' => 'Updated full description text',
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'isUrgent' => true,
+            'autoAcceptResponses' => true,
+            'autoShareContactInfo' => true
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.updateNeedsOffersPost(JSON.serialize(updateData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Should return success');
+        Needs_Offers__c updated = [
+            SELECT Name, Full_Details__c, Is_Urgent__c, Auto_Accept_Responses__c, Visibility_Scope__c
+            FROM Needs_Offers__c WHERE Id = :recordId
+        ];
+        System.assertEquals('Updated Need Title', updated.Name);
+        System.assertEquals('Updated full description text', updated.Full_Details__c);
+        System.assertEquals(true, updated.Is_Urgent__c);
+        System.assertEquals('Adjacent', updated.Visibility_Scope__c);
+    }
+
+    @isTest
+    static void testUpdateNeedsOffersPost_NotOwner() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Contact otherContact = FimbyTestDataFactory.createNeighbourhoodContact(testContact.AccountId, true);
+        User otherUser = FimbyTestDataFactory.createCommunityUser(otherContact.Id, null, true);
+
+        Map<String, Object> createData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Offer to protect',
+            'description' => 'Description',
+            'type' => 'Services - Paid',
+            'quantity' => 5,
+            'perResponseLimit' => 1
+        };
+
+        String recordId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(createData));
+            recordId = (String) created.get('recordId');
+        }
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => recordId,
+            'title' => 'Should Not Update'
+        };
+
+        Test.startTest();
+        Boolean caught = false;
+        FimbyIdentityRepository.clearCache();
+        System.runAs(otherUser) {
+            try {
+                FimbyAskOfferController.updateNeedsOffersPost(JSON.serialize(updateData));
+            } catch (Exception e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Non-owner should not be able to update');
+        Needs_Offers__c unchanged = [SELECT Name FROM Needs_Offers__c WHERE Id = :recordId];
+        System.assertEquals('Offer to protect', unchanged.Name, 'Title should remain unchanged');
+    }
+
+    @isTest
+    static void testCreateNeedsOffersPost_EventEndBeforeStart() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(7)) + 'T14:00';
+        String endIso = String.valueOf(Date.today().addDays(7)) + 'T10:00';
+
+        Map<String, Object> postData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Bad Dates Event',
+            'description' => 'End before start',
+            'type' => 'Event',
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'eventStart' => startIso,
+            'eventEnd' => endIso,
+            'location' => 'Community Center'
+        };
+
+        Test.startTest();
+        Boolean caught = false;
+        System.runAs(testUser) {
+            try {
+                FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(postData));
+            } catch (AuraHandledException e) {
+                caught = true;
+                System.assert(
+                    e.getMessage().contains('after the start time'),
+                    'Should explain end must follow start: ' + e.getMessage()
+                );
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Create should reject end time before start time');
+        System.assertEquals(
+            0,
+            [SELECT COUNT() FROM Needs_Offers__c WHERE Name = 'Bad Dates Event'],
+            'Invalid event should not be inserted'
+        );
+    }
+
+    @isTest
+    static void testUpdateNeedsOffersPost_EventEndBeforeStart() {
+        User testUser = getTestUser();
+
+        String startIso = String.valueOf(Date.today().addDays(7)) + 'T10:00';
+        String endIso = String.valueOf(Date.today().addDays(7)) + 'T14:00';
+
+        Map<String, Object> createData = new Map<String, Object>{
+            'postType' => 'Offer',
+            'title' => 'Valid Event',
+            'description' => 'Original event',
+            'type' => 'Event',
+            'endDate' => String.valueOf(Date.today().addDays(14)),
+            'eventStart' => startIso,
+            'eventEnd' => endIso,
+            'location' => 'Community Center'
+        };
+
+        String recordId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyAskOfferController.createNeedsOffersPost(JSON.serialize(createData));
+            recordId = (String) created.get('recordId');
+        }
+
+        String badEndIso = String.valueOf(Date.today().addDays(6)) + 'T22:00';
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => recordId,
+            'title' => 'Valid Event',
+            'description' => 'Original event',
+            'eventStart' => startIso,
+            'eventEnd' => badEndIso,
+            'location' => 'Community Center'
+        };
+
+        Test.startTest();
+        Boolean caught = false;
+        System.runAs(testUser) {
+            try {
+                FimbyAskOfferController.updateNeedsOffersPost(JSON.serialize(updateData));
+            } catch (AuraHandledException e) {
+                caught = true;
+                System.assert(
+                    e.getMessage().contains('after the start time'),
+                    'Should explain end must follow start: ' + e.getMessage()
+                );
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Update should reject end time before start time');
+        Needs_Offers__c unchanged = [
+            SELECT End_Date__c, End_Time__c
+            FROM Needs_Offers__c
+            WHERE Id = :recordId
+        ];
+        System.assertEquals(Date.today().addDays(7), unchanged.End_Date__c, 'End date should remain unchanged');
+        System.assertEquals(Time.newInstance(14, 0, 0, 0), unchanged.End_Time__c, 'End time should remain unchanged');
+    }
 }

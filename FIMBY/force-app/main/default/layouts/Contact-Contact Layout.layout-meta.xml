@@ -41,10 +41,6 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Summary_Email_Frequency__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
                 <field>Status__c</field>
             </layoutItems>
             <layoutItems>

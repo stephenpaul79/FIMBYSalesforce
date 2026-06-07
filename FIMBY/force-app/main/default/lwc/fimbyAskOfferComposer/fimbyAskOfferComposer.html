@@ -281,13 +281,18 @@
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label">Event End</label>
+                                <label class="field-label" for="event-end-input">Event End</label>
                                 <input
+                                    id="event-end-input"
                                     type="datetime-local"
                                     class="datetime-input"
                                     value={eventEnd}
+                                    aria-describedby="event-end-error"
                                     onchange={handleEventEndChange}
                                 />
+                                <template lwc:if={eventEndValidationError}>
+                                    <span id="event-end-error" class="field-error" role="alert">{eventEndValidationError}</span>
+                                </template>
                             </div>
                         </div>
 

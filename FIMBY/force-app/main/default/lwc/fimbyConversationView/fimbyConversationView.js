@@ -2,7 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getMessages from '@salesforce/apex/FimbyMessageController.getMessages';
 import sendMessage from '@salesforce/apex/FimbyMessageController.sendMessage';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
@@ -15,6 +15,12 @@ import getVouchContextForConversation from '@salesforce/apex/FimbyVouchControlle
 import approveVouch from '@salesforce/apex/FimbyVouchController.approveVouch';
 import withdrawVouchRequest from '@salesforce/apex/FimbyVouchController.withdrawVouchRequest';
 import { getHeaderBadge } from 'c/fimbyThreadBadgeConfig';
+
+function resolveAvatarUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
+    return avatarImageUrl(url);
+}
 
 const PAGE_SIZE = 50;
 const ZONE_THRESHOLD = 3;
@@ -40,7 +46,6 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track otherParticipantImageUrl = '';
     @track myContactId = '';
     @track myContactImageUrl = '';
-    @track organizationId = null;
 
     @track isOtherParticipantOrg = false;
 
@@ -75,8 +80,12 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track isConversationRevoked = false;
     @track isConversationLocked = false;
 
+    get showDisconnectedBanner() {
+        return this.isConversationRevoked && !this.isVouchContext;
+    }
+
     get canReply() {
-        return !this.isConversationRevoked && !this.isConversationLocked;
+        return !this.isConversationRevoked && !this.isConversationLocked && !this.isVouchContext;
     }
 
     @track followUpId = null;
@@ -264,18 +273,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     }
 
     get participantAvatarUrl() {
-        return this._completeImageUrl(this.otherParticipantImageUrl);
-    }
-
-    _completeImageUrl(url) {
-        if (!url) return null;
-        if (url.startsWith('/resource/') || !url.startsWith('http')) {
-            return url;
-        }
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
+        return resolveAvatarUrl(this.otherParticipantImageUrl);
     }
 
     _getInitials(name) {
@@ -291,11 +289,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         return this._rawMiddle.length;
     }
 
-    async connectedCallback() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (e) { /* non-critical */ }
-
+    connectedCallback() {
         if (this.conversationId) {
             this.loadMessages();
         }
@@ -356,6 +350,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     _maybeAutoOpenCompose() {
         if (this._composeAutoOpened) return;
         if (this.isConversationRevoked) return;
+        if (this.isVouchContext) return;
         if (this.isConversationLocked) return;
         if (this.messages && this.messages.length > 0) return;
         this._composeAutoOpened = true;
@@ -636,8 +631,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
                 ? (this.actingAsContactName || 'You')
                 : (msg.senderName || this.otherParticipantName);
             const avatarUrl = isMine
-                ? this._completeImageUrl(this.myContactImageUrl)
-                : this._completeImageUrl(msg.senderImageUrl || this.otherParticipantImageUrl);
+                ? resolveAvatarUrl(this.myContactImageUrl)
+                : resolveAvatarUrl(msg.senderImageUrl || this.otherParticipantImageUrl);
 
             processed.push({
                 ...msg,

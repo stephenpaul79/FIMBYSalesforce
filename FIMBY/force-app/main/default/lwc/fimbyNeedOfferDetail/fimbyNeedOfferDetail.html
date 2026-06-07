@@ -9,21 +9,21 @@
             onmenuaction={handleHeaderMenuAction}>
         </c-fimby-page-header>
 
+        <!-- Loading State -->
+        <template lwc:if={showLoadingState}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
         <!-- Removed / Hidden State -->
-        <template lwc:if={isRemoved}>
+        <template lwc:elseif={showRemovedState}>
             <div class="detail-content">
                 <div class="content-removed-card" role="status">
                     <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
                     <h2 class="content-removed-title">This post is no longer available</h2>
                     <p class="content-removed-message">{removedMessage}</p>
                 </div>
-            </div>
-        </template>
-
-        <!-- Loading State -->
-        <template lwc:elseif={isLoading}>
-            <div class="loading-container">
-                <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
             </div>
         </template>
 
@@ -39,7 +39,15 @@
                                         <div class={bulkBuyStatusBadgeClass} data-status={bulkBuyDisplayStatus}>{bulkBuyStatusBadgeText}</div>
                                     </div>
                                     <button type="button" class="post-image-container bulk-buy-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                                        <img src={imageUrl} alt={postTitle} class="post-image">
+                                        <img
+                                            src={imageDisplayUrl}
+                                            srcset={imageSrcset}
+                                            sizes={detailImageSizes}
+                                            alt={postTitle}
+                                            class="post-image"
+                                            loading="lazy"
+                                            decoding="async"
+                                            data-original={imageUrl}>
                                         <div class="image-overlay">
                                             <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
                                         </div>
@@ -156,11 +164,23 @@
                                         <div class="status-badge" data-status={status}>{status}</div>
                                     </div>
                                     <template lwc:if={hasMultipleImages}>
-                                        <c-fimby-image-grid images={allImages} onimageclick={handleImageGridClick}></c-fimby-image-grid>
+                                        <c-fimby-image-grid
+                                            images={allImages}
+                                            include-original
+                                            onimageclick={handleImageGridClick}>
+                                        </c-fimby-image-grid>
                                     </template>
                                     <template lwc:else>
                                         <button type="button" class="post-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                                            <img src={imageUrl} alt={postTitle} class="post-image">
+                                            <img
+                                            src={imageDisplayUrl}
+                                            srcset={imageSrcset}
+                                            sizes={detailImageSizes}
+                                            alt={postTitle}
+                                            class="post-image"
+                                            loading="lazy"
+                                            decoding="async"
+                                            data-original={imageUrl}>
                                             <div class="image-overlay">
                                                 <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
                                             </div>
@@ -698,13 +718,10 @@
 
         <!-- Embedded Modals -->
         <template lwc:if={isAuthor}>
-            <c-fimby-record-edit-modal
+            <c-fimby-post-edit-modal
                 record-id={recordId}
-                object-api-name="Needs_Offers__c"
-                field-set-name="FIMBY_Editable_Fields"
-                modal-title="Edit Post"
                 onrecordsaved={handleEditSave}>
-            </c-fimby-record-edit-modal>
+            </c-fimby-post-edit-modal>
         </template>
 
         <c-fimby-report-content></c-fimby-report-content>

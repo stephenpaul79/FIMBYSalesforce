@@ -18,6 +18,7 @@
 public without sharing class FimbySupportRelationshipEmailService {
 
     private static final String MANAGE_IDENTITIES_FALLBACK = 'https://our.fimby.com/manage-identities';
+    private static final String SUPPORT_ACCENT = '#476B4C';
 
     /**
      * @description Day-0 send: triggered by createPaperDraft. Attaches the
@@ -34,10 +35,10 @@ public without sharing class FimbySupportRelationshipEmailService {
         String intro = 'Thanks for stepping up to support someone in your neighbourhood. ' +
             'Attached is the printable paper form your supportee will sign. Once you have it ' +
             'signed, return to FIMBY using the link below to upload a photo or scan.';
-        String card = buildCardHtml(rel, /*isReminder*/ false, /*dayCount*/ null);
+        String bodyHtml = buildFormInstructionsBody(rel, false);
         String ctaUrl = buildDeepLink(srId);
 
-        sendEmailWithPdf(supporterUserId, subject, intro, card, ctaUrl,
+        sendEmailWithPdf(supporterUserId, subject, intro, bodyHtml, ctaUrl,
                          'Open in FIMBY', srId, rel.Name);
 
         rel.Day0_Email_Sent_Date__c = Datetime.now();
@@ -70,10 +71,10 @@ public without sharing class FimbySupportRelationshipEmailService {
                 'link below opens the same draft you already started.';
         }
 
-        String card = buildCardHtml(rel, /*isReminder*/ true, dayCount);
+        String bodyHtml = buildFormInstructionsBody(rel, true);
         String ctaUrl = buildDeepLink(srId);
 
-        sendEmailWithPdf(supporterUserId, subject, intro, card, ctaUrl,
+        sendEmailWithPdf(supporterUserId, subject, intro, bodyHtml, ctaUrl,
                          'Open in FIMBY', srId, rel.Name);
 
         rel.Last_Reminder_Sent_Date__c = Datetime.now();
@@ -93,31 +94,35 @@ public without sharing class FimbySupportRelationshipEmailService {
         Id supporterUserId = lookupUserId(rel.Contact__c);
         if (supporterUserId == null) return;
 
-        FimbyTransactionalEmailService.TransactionalEmailRequest req =
-            new FimbyTransactionalEmailService.TransactionalEmailRequest();
-        req.recipientUserId = supporterUserId;
-        req.cardHtml = '<p style="font-size:14px;color:#4A4A4A;margin:0;">If anything looks off, ' +
-            'please reply to this email or contact help@fimby.com.</p>';
-        req.ctaUrl = buildManageIdentitiesUrl();
-        req.ctaLabel = 'Open Manage Identities';
-
+        String intro;
         if (rel.Relationship_Type__c == 'Community_Group_Rep') {
             String orgName = rel.Related_Organization__r != null
                     && String.isNotBlank(rel.Related_Organization__r.Name)
                 ? rel.Related_Organization__r.Name
                 : 'your organization';
-            req.subject = 'You\'re approved to represent ' + orgName + ' on FIMBY';
-            req.introText = 'Good news — the FIMBY team has verified your organization. You can now ' +
+            intro = 'Good news — the FIMBY team has verified your organization. You can now ' +
                 'switch to ' + orgName + ' from Manage Identities and post, respond, and borrow on its ' +
                 'behalf in your neighbourhood.';
         } else {
             String supporteeName = rel.Related_Contact__r != null && rel.Related_Contact__r.Name != null
                 ? rel.Related_Contact__r.Name : 'your supportee';
-            req.subject = 'Your FIMBY support relationship is approved';
-            req.introText = 'Good news — the FIMBY team has verified your support relationship for ' +
+            intro = 'Good news — the FIMBY team has verified your support relationship for ' +
                 supporteeName + '. You can now switch identities from Manage Identities. We have also ' +
                 'mailed a postal letter to the supportee so they know this relationship is active.';
         }
+
+        String bodyHtml = '<p style="font-size:14px;color:#4A4A4A;margin:0;' + FimbyEmailHtmlBuilder.F + '">'
+            + 'If anything looks off, please reply to this email or contact help@fimby.com.</p>';
+
+        FimbyTransactionalEmailService.TransactionalEmailRequest req =
+            new FimbyTransactionalEmailService.TransactionalEmailRequest();
+        req.recipientUserId = supporterUserId;
+        req.cardHtml = buildSupportCard(
+            FimbyTransactionalEmailService.lookupRecipientFirstName(supporterUserId),
+            intro, null, bodyHtml, buildManageIdentitiesUrl(), 'Open Manage Identities');
+        req.subject = rel.Relationship_Type__c == 'Community_Group_Rep'
+            ? 'You\'re approved to represent ' + (rel.Related_Organization__r?.Name != null ? rel.Related_Organization__r.Name : 'your organization') + ' on FIMBY'
+            : 'Your FIMBY support relationship is approved';
 
         FimbyTransactionalEmailService.send(req);
     }
@@ -137,28 +142,35 @@ public without sharing class FimbySupportRelationshipEmailService {
         String reason = String.isNotBlank(rel.Rejection_Reason__c) ? rel.Rejection_Reason__c : 'Not specified';
         String detail = String.isNotBlank(rel.Rejection_Reason_Detail__c) ? rel.Rejection_Reason_Detail__c : '';
 
+        String intro;
+        if (rel.Relationship_Type__c == 'Community_Group_Rep') {
+            intro = 'Thanks for applying to represent your organization on FIMBY. After review, ' +
+                'we are not able to activate your representative access right now.';
+        } else {
+            intro = 'Thanks for taking the time to fill out the support relationship paper form. ' +
+                'After review, we are not able to activate this relationship right now.';
+        }
+
+        String bodyHtml = '<p style="font-size:14px;color:#4A4A4A;margin:0 0 12px;' + FimbyEmailHtmlBuilder.F + '">'
+            + '<strong>Reason:</strong> ' + reason.escapeHtml4() + '</p>';
+        if (String.isNotBlank(detail)) {
+            bodyHtml += '<p style="font-size:14px;color:#4A4A4A;margin:0 0 12px;' + FimbyEmailHtmlBuilder.F + '">'
+                + detail.escapeHtml4().replace('\n', '<br/>') + '</p>';
+        }
+        bodyHtml += '<p style="font-size:14px;color:#4A4A4A;margin:0;' + FimbyEmailHtmlBuilder.F + '">'
+            + 'If you would like to talk through this, reply to this email or contact help@fimby.com. '
+            + 'We are happy to revisit if anything changes.</p>';
+
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = supporterUserId;
-        if (rel.Relationship_Type__c == 'Community_Group_Rep') {
-            req.subject = 'A note about your organization representative request';
-            req.introText = 'Thanks for applying to represent your organization on FIMBY. After review, ' +
-                'we are not able to activate your representative access right now.';
-        } else {
-            req.subject = 'A note about your FIMBY support relationship request';
-            req.introText = 'Thanks for taking the time to fill out the support relationship paper form. ' +
-                'After review, we are not able to activate this relationship right now.';
-        }
-        String card = '<p style="font-size:14px;color:#4A4A4A;margin:0 0 12px;"><strong>Reason:</strong> ' +
-            reason + '</p>';
-        if (String.isNotBlank(detail)) {
-            card += '<p style="font-size:14px;color:#4A4A4A;margin:0 0 12px;">' +
-                String.escapeSingleQuotes(detail).replace('\n', '<br/>') + '</p>';
-        }
-        card += '<p style="font-size:14px;color:#4A4A4A;margin:0;">If you would like to talk through ' +
-            'this, reply to this email or contact help@fimby.com. We are happy to revisit if anything ' +
-            'changes.</p>';
-        req.cardHtml = card;
+        req.subject = rel.Relationship_Type__c == 'Community_Group_Rep'
+            ? 'A note about your organization representative request'
+            : 'A note about your FIMBY support relationship request';
+        req.cardHtml = buildSupportCard(
+            FimbyTransactionalEmailService.lookupRecipientFirstName(supporterUserId),
+            intro, null, bodyHtml, null, null);
+
         FimbyTransactionalEmailService.send(req);
     }
 
@@ -188,19 +200,36 @@ public without sharing class FimbySupportRelationshipEmailService {
         return users.isEmpty() ? null : users[0].Id;
     }
 
-    private static String buildCardHtml(Support_Relationship__c rel, Boolean isReminder, Integer dayCount) {
+    private static String buildFormInstructionsBody(Support_Relationship__c rel, Boolean isReminder) {
         String supporteeName = rel.Related_Contact__r != null && rel.Related_Contact__r.Name != null
             ? rel.Related_Contact__r.Name : 'your supportee';
         String header = isReminder ? 'Still ready when you are' : 'Your printable paper form is attached';
         String body = isReminder
             ? 'When you have the signed form, tap the link below to upload it.'
-            : 'Print the attached PDF, walk it through with ' + supporteeName +
-              ', and once it is signed, come back to FIMBY to upload a photo.';
+            : 'Print the attached PDF, walk it through with ' + supporteeName.escapeHtml4()
+              + ', and once it is signed, come back to FIMBY to upload a photo.';
 
-        return '<div style="border:1px solid #E5E5E5;border-radius:8px;padding:16px;background:#FFFFFF;">'
-            +    '<p style="font-size:16px;color:#2A2A2A;margin:0 0 8px;font-weight:600;">' + header + '</p>'
-            +    '<p style="font-size:14px;color:#4A4A4A;margin:0 0 12px;">' + body + '</p>'
-            + '</div>';
+        return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:16px;font-weight:600;color:#2D2D2D;">'
+            + header.escapeHtml4() + '</p>'
+            + '<p style="margin:0;' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:#4A4A4A;">' + body + '</p>';
+    }
+
+    @TestVisible
+    private static String buildSupportCard(String firstName, String intro, String title, String bodyHtml,
+            String ctaUrl, String ctaLabel) {
+        String resolvedFirstName = firstName;
+        return FimbyEmailHtmlBuilder.buildTransactionalCard(
+            FimbyEmailHtmlBuilder.TXN_BADGE_SUPPORT,
+            SUPPORT_ACCENT,
+            'NeighborhoodActive.png',
+            title,
+            bodyHtml,
+            resolvedFirstName,
+            intro,
+            ctaUrl,
+            ctaLabel,
+            'enter.png'
+        );
     }
 
     @TestVisible
@@ -231,19 +260,17 @@ public without sharing class FimbySupportRelationshipEmailService {
         }
     }
 
-    private static void sendEmailWithPdf(Id supporterUserId, String subject, String intro,
-                                         String card, String ctaUrl, String ctaLabel,
-                                         Id srId, String relName) {
+    private static void sendEmailWithPdf(Id supporterUserId, String subject, String intro, String bodyHtml,
+                                         String ctaUrl, String ctaLabel, Id srId, String relName) {
         if (supporterUserId == null) return;
+
+        String firstName = FimbyTransactionalEmailService.lookupRecipientFirstName(supporterUserId);
 
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = supporterUserId;
         req.subject = subject;
-        req.introText = intro;
-        req.cardHtml = card;
-        req.ctaUrl = ctaUrl;
-        req.ctaLabel = ctaLabel;
+        req.cardHtml = buildSupportCard(firstName, intro, null, bodyHtml, ctaUrl, ctaLabel);
         FimbyTransactionalEmailService.send(req);
 
         Blob pdf = renderPdf(srId);
@@ -257,11 +284,14 @@ public without sharing class FimbySupportRelationshipEmailService {
             attach.setBody(pdf);
             attach.setContentType('application/pdf');
 
+            String attachGreeting = FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(firstName);
+
             Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
             email.setTargetObjectId(supporterUserId);
             email.setTreatTargetObjectAsRecipient(true);
             email.setSubject('[Form attached] ' + subject);
-            email.setPlainTextBody('Attached: the printable Authorized Supporter Form for support ' +
+            email.setPlainTextBody(attachGreeting +
+                'Attached: the printable Authorized Supporter Form for support ' +
                 'relationship ' + relName + '. Open the previous email for the full instructions.');
             email.setSaveAsActivity(false);
             email.setFileAttachments(new List<Messaging.EmailFileAttachment>{ attach });

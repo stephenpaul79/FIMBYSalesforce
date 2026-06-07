@@ -73,7 +73,7 @@ get homeIconUrl() {
 | Add / Create | `add.png` |
 | Search | `Magnify.png` |
 | More menu (kebab) — universal header only | `Kebab.png` |
-| More menu (kebab) — page subheaders, feed cards | `KebabBeige.png` |
+| More menu (horizontal dots) — page subheaders, feed cards, comment menus | `utility:threedots` (`lightning-icon`) |
 | Comment | `comment.png` |
 | Reply | `reply.png` |
 | RSVP | `rsvp.png` |

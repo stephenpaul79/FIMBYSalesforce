@@ -45,7 +45,7 @@ public without sharing class FimbyDeletionEmailService {
         if (caseId == null || userId == null) return;
 
         String body =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(lookupUserFirstName(userId)) +
             'We received a request to delete the FIMBY account tied to this email address.\n\n' +
             'If that was you, please reply to this email with the words:\n\n' +
             '    CONFIRM DELETE\n\n' +
@@ -70,7 +70,7 @@ public without sharing class FimbyDeletionEmailService {
         if (caseId == null || userId == null) return;
 
         String body =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(lookupUserFirstName(userId)) +
             'Your account-deletion request has been cancelled — your FIMBY account is unchanged and ready when you are.\n\n' +
             'If you ever do want to delete your account, you can:\n' +
             '  - Use the "Deactivate Account" button in Settings while logged in, or\n' +
@@ -90,7 +90,7 @@ public without sharing class FimbyDeletionEmailService {
         if (caseId == null || userId == null) return;
 
         String body =
-            'Hi neighbour,\n\n' +
+            FimbyEmailHtmlBuilder.buildRecipientGreetingPlain(lookupUserFirstName(userId)) +
             'This is the last email you\'ll get from FIMBY.\n\n' +
             'Your account has been deactivated:\n' +
             '  - Your login is being revoked right now.\n' +
@@ -187,6 +187,14 @@ public without sharing class FimbyDeletionEmailService {
         } catch (Exception e) {
             FimbyLogger.error('FimbyDeletionEmailService', 'sendDirect', e, caseId);
         }
+    }
+
+    private static String lookupUserFirstName(Id userId) {
+        if (userId == null) {
+            return null;
+        }
+        List<User> users = [SELECT FirstName FROM User WHERE Id = :userId LIMIT 1];
+        return users.isEmpty() ? null : users[0].FirstName;
     }
 
     @TestVisible

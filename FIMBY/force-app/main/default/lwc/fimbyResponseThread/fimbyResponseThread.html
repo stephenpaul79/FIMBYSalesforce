@@ -44,38 +44,32 @@
                         </div>
                     </div>
                     <div class="header-right">
-                        <template lwc:if={showHeaderPills}>
-                            <span class={statusBadgeClass}>{response.status}</span>
-                            <template lwc:if={tracksQuantity}>
-                                <button class="header-amount" onclick={handleEditAmount}
-                                        disabled={isAmountEditDisabled}
-                                        aria-label="Edit amount">
-                                    <span>{amountDisplay}</span>
-                                    <template lwc:if={showEditAmountButton}>
-                                        <lightning-icon icon-name="utility:edit" size="xx-small" class="amount-edit-icon"></lightning-icon>
-                                    </template>
-                                </button>
+                        <div class="header-meta">
+                            <template lwc:if={showHeaderPills}>
+                                <span class={statusBadgeClass}>{response.status}</span>
                             </template>
-                        </template>
-                        <template lwc:if={showAcceptDecline}>
-                            <button class="action-btn action-accept" onclick={handleAccept}>Accept</button>
-                            <button class="action-btn action-decline" onclick={handleDecline}>Decline</button>
-                        </template>
-                        <template lwc:if={showComplete}>
-                            <button class="action-btn action-complete" onclick={handleComplete}>Complete</button>
-                        </template>
-                        <template lwc:if={showCancelForResponder}>
-                            <button class="action-btn action-cancel" onclick={handleCancel}>Cancel</button>
-                        </template>
-                        <!-- A3: Block/Report kebab — matches fimbyConversationView.
-                             Opens the combined Block + optional Report modal. -->
-                        <button class="menu-button"
-                                type="button"
-                                onclick={handleMenuClick}
-                                title="Block or report"
-                                aria-label="Block or report">
-                            <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
-                        </button>
+                        </div>
+                        <div class="header-actions">
+                            <template lwc:if={showAcceptDecline}>
+                                <button class="action-btn action-accept" onclick={handleAccept}>Accept</button>
+                                <button class="action-btn action-decline" onclick={handleDecline}>Decline</button>
+                            </template>
+                            <template lwc:if={showComplete}>
+                                <button class="action-btn action-complete" onclick={handleComplete}>Complete</button>
+                            </template>
+                            <template lwc:if={showCancelForResponder}>
+                                <button class="action-btn action-cancel" onclick={handleCancel}>Cancel</button>
+                            </template>
+                            <!-- A3: Block/Report kebab — matches fimbyConversationView.
+                                 Opens the combined Block + optional Report modal. -->
+                            <button class="menu-button"
+                                    type="button"
+                                    onclick={handleMenuClick}
+                                    title="Block or report"
+                                    aria-label="Block or report">
+                                <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -98,9 +92,12 @@
                         <div class="share-contact-prompt">
                             <p class="share-prompt-text">Response accepted! Share your contact info with {otherPartyName}?</p>
                             <div class="share-prompt-actions">
-                                <button class="action-btn action-share" onclick={handleShareContact}>Share</button>
-                                <button class="action-btn-subtle" onclick={handleDismissSharePrompt}>Dismiss</button>
+                                <button type="button" class="action-btn action-share" onclick={handleShareContact}>Share</button>
+                                <button type="button" class="action-btn-subtle" onclick={handleDismissSharePrompt}>Dismiss</button>
                             </div>
+                            <template lwc:if={shareContactError}>
+                                <p class="share-error share-prompt-error" role="alert">{shareContactError}</p>
+                            </template>
                         </div>
                     </template>
 
@@ -110,8 +107,11 @@
                             <p class="complete-banner-text">{terminalBannerMessage}</p>
                             <template lwc:if={contactNotShared}>
                                 <div class="share-prompt-actions">
-                                    <button class="action-btn action-share" onclick={handleShareContact}>Share Contact Info</button>
+                                    <button type="button" class="action-btn action-share" onclick={handleShareContact}>Share Contact Info</button>
                                 </div>
+                            </template>
+                            <template lwc:if={shareContactError}>
+                                <p class="share-error share-prompt-error" role="alert">{shareContactError}</p>
                             </template>
                         </div>
                     </template>
@@ -156,6 +156,11 @@
                                     <div key={hsm.id} class="message-item system-message">
                                         <div class="system-bubble">
                                             <span class="system-text">{hsm.body}</span>
+                                            <template lwc:if={hsm.showAmountEditIcon}>
+                                                <button type="button" class="system-edit-btn" onclick={handleEditAmount} aria-label="Edit amount">
+                                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                </button>
+                                            </template>
                                             <span class="system-time">{hsm.formattedTimeShort}<span class="relative-hint">{hsm.formattedTimeRelative}</span></span>
                                         </div>
                                     </div>
@@ -185,9 +190,6 @@
                                         <div class="message-card-body">
                                             <p class="message-text">{firstMessage.body}</p>
                                         </div>
-                                        <template lwc:if={firstMessage.showViaLabel}>
-                                            <div class="via-label">{firstMessage.viaLabel}</div>
-                                        </template>
                                     </div>
                                 </template>
                                 <template lwc:else>
@@ -230,6 +232,11 @@
                                                 <div key={mid.id} class="message-item system-message">
                                                     <div class="system-bubble">
                                                         <span class="system-text">{mid.body}</span>
+                                                        <template lwc:if={mid.showAmountEditIcon}>
+                                                            <button type="button" class="system-edit-btn" onclick={handleEditAmount} aria-label="Edit amount">
+                                                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                            </button>
+                                                        </template>
                                                         <span class="system-time">{mid.formattedTimeShort}<span class="relative-hint">{mid.formattedTimeRelative}</span></span>
                                                     </div>
                                                 </div>
@@ -258,9 +265,6 @@
                                                         <div class="message-card-body">
                                                             <p class="message-text">{mid.body}</p>
                                                         </div>
-                                                        <template lwc:if={mid.showViaLabel}>
-                                                            <div class="via-label">{mid.viaLabel}</div>
-                                                        </template>
                                                     </div>
                                                 </template>
                                                 <template lwc:else>
@@ -311,6 +315,11 @@
                                             <div key={msm.id} class="message-item system-message">
                                                 <div class="system-bubble">
                                                     <span class="system-text">{msm.body}</span>
+                                                    <template lwc:if={msm.showAmountEditIcon}>
+                                                        <button type="button" class="system-edit-btn" onclick={handleEditAmount} aria-label="Edit amount">
+                                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </template>
                                                     <span class="system-time">{msm.formattedTimeShort}<span class="relative-hint">{msm.formattedTimeRelative}</span></span>
                                                 </div>
                                             </div>
@@ -341,6 +350,11 @@
                                             <div class="message-item system-message">
                                                 <div class="system-bubble">
                                                     <span class="system-text">{last.body}</span>
+                                                    <template lwc:if={last.showAmountEditIcon}>
+                                                        <button type="button" class="system-edit-btn" onclick={handleEditAmount} aria-label="Edit amount">
+                                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </template>
                                                     <span class="system-time">{last.formattedTimeShort}<span class="relative-hint">{last.formattedTimeRelative}</span></span>
                                                 </div>
                                             </div>
@@ -363,9 +377,6 @@
                                             <div class="message-card-body">
                                                 <p class="message-text">{last.body}</p>
                                             </div>
-                                            <template lwc:if={last.showViaLabel}>
-                                                <div class="via-label">{last.viaLabel}</div>
-                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -396,9 +407,6 @@
                                             <div class="message-card-body">
                                                 <p class="message-text">{item.body}</p>
                                             </div>
-                                            <template lwc:if={item.showViaLabel}>
-                                                <div class="via-label">{item.viaLabel}</div>
-                                            </template>
                                         </div>
                                     </template>
                                     <template lwc:elseif={item.isSystemMessage}>
@@ -420,6 +428,11 @@
                                             <div class="message-item system-message">
                                                 <div class="system-bubble">
                                                     <span class="system-text">{item.body}</span>
+                                                    <template lwc:if={item.showAmountEditIcon}>
+                                                        <button type="button" class="system-edit-btn" onclick={handleEditAmount} aria-label="Edit amount">
+                                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </template>
                                                     <span class="system-time">{item.formattedTimeShort}<span class="relative-hint">{item.formattedTimeRelative}</span></span>
                                                 </div>
                                             </div>

@@ -9,13 +9,13 @@
             onmenuaction={handleHeaderMenuAction}>
         </c-fimby-page-header>
 
-        <template lwc:if={isLoading}>
+        <template lwc:if={showLoadingState}>
             <div class="loading-container">
                 <c-fimby-loading-message context="detail" size="medium"></c-fimby-loading-message>
             </div>
         </template>
 
-        <template lwc:elseif={isRemoved}>
+        <template lwc:elseif={showRemovedState}>
             <div class="detail-content">
                 <div class="story-removed-card" role="status">
                     <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
@@ -79,7 +79,15 @@
                     <!-- Story Image - Clickable for modal (positioned after truncated content) -->
                     <template lwc:if={hasImage}>
                         <button type="button" class="story-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                            <img src={imageUrl} alt={storyName} class="story-image">
+                            <img
+                                src={imageDisplayUrl}
+                                srcset={imageSrcset}
+                                sizes={detailImageSizes}
+                                alt={storyName}
+                                class="story-image"
+                                loading="lazy"
+                                decoding="async"
+                                data-original={imageUrl}>
                             <div class="image-overlay">
                                 <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
                             </div>
@@ -131,7 +139,7 @@
                                             aria-expanded={comment.menuOpen}
                                             aria-label="More comment actions"
                                             onclick={handleCommentMenuToggle}>
-                                            <img src={menuIconUrl} alt="" class="comment-menu-icon">
+                                            <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
                                         </button>
                                         <template lwc:if={comment.menuOpen}>
                                             <div class="comment-menu" role="menu">
@@ -184,7 +192,13 @@
                     <lightning-icon icon-name="utility:close" size="medium" variant="inverse"></lightning-icon>
                 </button>
                 <div class="modal-image-container">
-                    <img src={imageUrl} alt={storyName} class="modal-image">
+                    <img
+                        src={imageDisplayUrl}
+                        srcset={imageSrcset}
+                        sizes={detailImageSizes}
+                        alt={storyName}
+                        class="modal-image"
+                        data-original={imageUrl}>
                 </div>
             </div>
         </template>
@@ -200,13 +214,10 @@
 
         <!-- Edit modal only rendered if user is author -->
         <template lwc:if={isAuthor}>
-            <c-fimby-record-edit-modal
+            <c-fimby-post-edit-modal
                 record-id={effectiveRecordId}
-                object-api-name="Story__c"
-                field-set-name="FIMBY_Editable_Fields"
-                modal-title="Edit Post"
                 onrecordsaved={handleEditSave}>
-            </c-fimby-record-edit-modal>
+            </c-fimby-post-edit-modal>
         </template>
 
         <!-- Photo uploader modal for author -->

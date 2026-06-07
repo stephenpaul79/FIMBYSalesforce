@@ -136,6 +136,68 @@ public with sharing class FimbyLibraryController {
     }
 
     /**
+     * Update an existing Library_Item__c (org ownership fields excluded after publish).
+     */
+    @AuraEnabled
+    public static Map<String, Object> updateLibraryItem(String itemData) {
+        try {
+            Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(itemData);
+            String recordId = (String) data.get('recordId');
+            if (String.isBlank(recordId)) {
+                throw new AuraHandledException('Record ID is required.');
+            }
+
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Id realContactId = identity.currentUser.ContactId;
+            Id actingAsContactId = identity.actingAsContactId;
+
+            Library_Item__c item = new LibraryItemUpdateHelper().queryItem(recordId);
+            if (item == null) {
+                throw new AuraHandledException('Library item not found.');
+            }
+
+            if (item.Listed_By__c != realContactId && item.Owner_Contact__c != actingAsContactId) {
+                throw new AuraHandledException('You can only edit library items you listed.');
+            }
+
+            if (data.containsKey('title')) {
+                item.Name = (String) data.get('title');
+            }
+            if (data.containsKey('description')) {
+                item.Description__c = (String) data.get('description');
+            }
+            if (data.containsKey('category')) {
+                item.Category__c = (String) data.get('category');
+            }
+            if (data.containsKey('maxLendingDays')) {
+                item.Max_Lending_Time_In_Days__c = data.get('maxLendingDays') != null
+                    ? Decimal.valueOf(String.valueOf(data.get('maxLendingDays'))) : null;
+            }
+            if (data.containsKey('autoAcceptRequests')) {
+                item.Auto_Accept_Requests__c = data.get('autoAcceptRequests') == true;
+            }
+            if (data.containsKey('autoShareContactInfo')) {
+                item.Auto_Share_Contact_Info__c = data.get('autoShareContactInfo') == true;
+            }
+
+            new LibraryItemUpdateHelper().updateItem(item);
+
+            return new Map<String, Object>{
+                'success' => true,
+                'recordId' => item.Id,
+                'message' => 'Library item updated successfully'
+            };
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyLibraryController', 'updateLibraryItem', e);
+            AuraHandledException ex = new AuraHandledException('Error updating library item: ' + e.getMessage());
+            ex.setMessage('Error updating library item: ' + e.getMessage());
+            throw ex;
+        }
+    }
+
+    /**
      * Launch the photo upload flow for a library item
      * This is called after the item is created to upload a photo
      */
@@ -1167,6 +1229,23 @@ public with sharing class FimbyLibraryController {
         if (lower.contains('extension requested')) return 'extensionRequested';
         if (lower.contains('owner to confirm return') || lower.contains('return')) return 'returnPending';
         return 'onLoan';
+    }
+
+    private without sharing class LibraryItemUpdateHelper {
+        public Library_Item__c queryItem(Id recordId) {
+            List<Library_Item__c> rows = [
+                SELECT Id, Listed_By__c, Owner_Contact__c, Name, Description__c, Category__c,
+                       Max_Lending_Time_In_Days__c, Auto_Accept_Requests__c, Auto_Share_Contact_Info__c
+                FROM Library_Item__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
+
+        public void updateItem(Library_Item__c item) {
+            update item;
+        }
     }
 
     private without sharing class LibraryItemHelper {

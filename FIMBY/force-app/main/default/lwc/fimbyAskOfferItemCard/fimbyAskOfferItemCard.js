@@ -1,45 +1,14 @@
-import { LightningElement, api, track, wire } from 'lwc';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { LightningElement, api, track } from 'lwc';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyAskOfferItemCard extends LightningElement {
     @api item = {};
     @track currentImageIndex = 0;
     @track isSaved = false;
-    organizationId = null;
-
-    // Wire Organization ID
-    @wire(getOrganizationId)
-    wiredOrgId({ data, error }) {
-        if (data) {
-            this.organizationId = data;
-        } else if (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
-    }
-
-    // Helper method to get complete image URL with Organization ID
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) {
-            return null;
-        }
-
-        // If the URL already contains the organization ID or is a complete URL, return as-is
-        if (imageUrl.includes('http') || (this.organizationId && imageUrl.includes(this.organizationId))) {
-            return imageUrl;
-        }
-
-        // If we have the organization ID, append it
-        if (this.organizationId) {
-            return imageUrl + this.organizationId;
-        }
-
-        // Fallback: return the original URL
-        return imageUrl;
-    }
 
     get currentImage() {
         if (this.item.images && this.item.images.length > 0) {
-            return this.getCompleteImageUrl(this.item.images[this.currentImageIndex]);
+            return completeImageUrl(this.item.images[this.currentImageIndex]);
         }
         return null;
     }
@@ -156,7 +125,6 @@ export default class FimbyAskOfferItemCard extends LightningElement {
     }
 
     handleCardClick(event) {
-        // Prevent card click when interacting with action buttons
         if (event.target.closest('.action-buttons') ||
             event.target.closest('.image-indicators')) {
             return;
@@ -206,7 +174,6 @@ export default class FimbyAskOfferItemCard extends LightningElement {
         }));
     }
 
-    // Report functionality
     @api
     showReportModal() {
         const reportModal = this.template.querySelector('c-fimby-report-content');

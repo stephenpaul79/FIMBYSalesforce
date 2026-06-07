@@ -120,15 +120,18 @@ const PUSH_LIMITS = {
   dataValueMax: 400,
   dataKeyCount: 20,
   allowedChannelIds: new Set(["messages", "activity", "default"]),
-  allowedNotificationTypes: new Set([
-    "MESSAGE",
-    "ACTIVITY",
-    "DEFAULT",
-    "LIBRARY",
-    "LENDING",
-    "SYSTEM",
-  ]),
+  notificationTypeMax: 40,
 };
+
+// Top-level notification_type values originate in Salesforce
+// (FimbyPushNotificationService.NotificationType). The bridge only checks shape;
+// Salesforce auth (X-SF-Secret) is the gatekeeper for which types are sent.
+function isSafeNotificationType(v) {
+  if (typeof v !== "string") return false;
+  const len = v.length;
+  if (len === 0 || len > PUSH_LIMITS.notificationTypeMax) return false;
+  return /^[A-Za-z][A-Za-z0-9_]*$/.test(v);
+}
 
 function isPlainObject(v) {
   return v !== null && typeof v === "object" && !Array.isArray(v);
@@ -167,10 +170,7 @@ function validatePushNotification(n) {
     }
   }
   if (n.notification_type !== undefined && n.notification_type !== null) {
-    if (
-      typeof n.notification_type !== "string" ||
-      !PUSH_LIMITS.allowedNotificationTypes.has(n.notification_type.toUpperCase())
-    ) {
+    if (!isSafeNotificationType(n.notification_type)) {
       return { ok: false, reason: "invalid_notification_type" };
     }
   }

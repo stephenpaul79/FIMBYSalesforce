@@ -36,7 +36,7 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
 
         Map<Id, User> userByContactId = new Map<Id, User>();
         for (User u : [
-            SELECT Id, ContactId, Email, TimeZoneSidKey,
+            SELECT Id, ContactId, FirstName, Email, TimeZoneSidKey,
                    Quiet_Hours_Preference__c,
                    Email_Alerts_Enabled__c, Email_Alert_Messages__c,
                    Email_Alert_Needs_Offers__c, Email_Alert_Library__c,
@@ -112,7 +112,7 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             notifs = eligibleNotifs;
 
             try {
-                String dynamicHtml = FimbyEmailHtmlBuilder.buildAlertCards(notifs, enrichmentMap);
+                String dynamicHtml = FimbyEmailHtmlBuilder.buildAlertCards(notifs, enrichmentMap, u.FirstName);
                 // Alert emails are direct-action: subject + card already carry the story
                 // for the recipient. The neighbourhood-summary intent lines belong to
                 // digest emails. See lending_email_fix_plan_b4b7029a Phase 2.

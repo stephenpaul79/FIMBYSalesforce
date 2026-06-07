@@ -2,7 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
@@ -10,7 +10,6 @@ import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardControll
 export default class FimbyNeighbourProfile extends LightningElement {
     @track isLoading = true;
     @track profile = {};
-    @track organizationId = null;
     @track neighbourContactId = null;
     @track showBlockConfirm = false;
     @track isBlocking = false;
@@ -40,12 +39,7 @@ export default class FimbyNeighbourProfile extends LightningElement {
     get displayCareHardNos() { return this._d(this.profile.careHardNos); }
 
     get avatarUrl() {
-        const base = this.profile.imageUrl;
-        if (!base) return '';
-        if (this.organizationId && !base.includes(this.organizationId)) {
-            return base + this.organizationId;
-        }
-        return base;
+        return avatarImageUrl(this.profile.imageUrl);
     }
     get hasAvatar() { return !!this.profile.imageUrl; }
     get initials() {
@@ -137,19 +131,12 @@ export default class FimbyNeighbourProfile extends LightningElement {
             this.isLoading = false;
             return;
         }
-        await this._loadOrganizationId();
         await this._loadProfile();
     }
 
     _getContactIdFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get('id') || null;
-    }
-
-    async _loadOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (e) { /* non-critical */ }
     }
 
     async _loadProfile() {

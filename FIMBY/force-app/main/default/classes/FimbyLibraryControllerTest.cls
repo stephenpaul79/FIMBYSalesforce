@@ -32,7 +32,15 @@ public class FimbyLibraryControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -1597,5 +1605,104 @@ public class FimbyLibraryControllerTest {
         System.assertEquals(true, result.removed, 'Hidden item should be reported as removed');
         System.assertEquals(false, result.visible, 'Hidden item should not be visible');
         System.assertNotEquals(null, result.message, 'Removed stub should include a message');
+    }
+
+    @isTest
+    static void testUpdateLibraryItem_Success() {
+        User testUser = getTestUser();
+
+        Map<String, Object> createData = new Map<String, Object>{
+            'title' => 'Item To Edit',
+            'description' => 'Original description',
+            'category' => 'Tools',
+            'ownedBy' => 'Self',
+            'maxLendingDays' => 7,
+            'autoAcceptRequests' => false,
+            'autoShareContactInfo' => false,
+            'damageWaiverConfirmed' => true
+        };
+
+        String recordId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyLibraryController.createLibraryItem(JSON.serialize(createData));
+            recordId = (String) created.get('recordId');
+        }
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => recordId,
+            'title' => 'Updated Item Title',
+            'description' => 'Updated description',
+            'category' => 'Books',
+            'maxLendingDays' => 14,
+            'autoAcceptRequests' => true,
+            'autoShareContactInfo' => true
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyLibraryController.updateLibraryItem(JSON.serialize(updateData));
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'));
+        Library_Item__c updated = [
+            SELECT Name, Description__c, Category__c, Max_Lending_Time_In_Days__c,
+                   Auto_Accept_Requests__c, Auto_Share_Contact_Info__c
+            FROM Library_Item__c WHERE Id = :recordId
+        ];
+        System.assertEquals('Updated Item Title', updated.Name);
+        System.assertEquals('Updated description', updated.Description__c);
+        System.assertEquals('Books', updated.Category__c);
+        System.assertEquals(14, updated.Max_Lending_Time_In_Days__c);
+        System.assertEquals(true, updated.Auto_Accept_Requests__c);
+    }
+
+    @isTest
+    static void testUpdateLibraryItem_NotOwner() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Map<String, Object> createData = new Map<String, Object>{
+            'title' => 'Protected Item',
+            'description' => 'Description',
+            'category' => 'Tools',
+            'ownedBy' => 'Self',
+            'damageWaiverConfirmed' => true
+        };
+
+        String recordId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyLibraryController.createLibraryItem(JSON.serialize(createData));
+            recordId = (String) created.get('recordId');
+        }
+
+        Contact otherContact = new Contact(
+            FirstName = 'Other',
+            LastName = 'Borrower',
+            AccountId = testContact.AccountId,
+            Email = 'otherborrower@fimby.test.com'
+        );
+        insert otherContact;
+        User otherUser = FimbyTestDataFactory.createCommunityUser(otherContact.Id, null, true);
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => recordId,
+            'title' => 'Should Not Update'
+        };
+
+        Test.startTest();
+        Boolean caught = false;
+        FimbyIdentityRepository.clearCache();
+        System.runAs(otherUser) {
+            try {
+                FimbyLibraryController.updateLibraryItem(JSON.serialize(updateData));
+            } catch (Exception e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Non-owner should not be able to update');
     }
 }

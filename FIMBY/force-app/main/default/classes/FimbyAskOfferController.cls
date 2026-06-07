@@ -100,6 +100,8 @@ public with sharing class FimbyAskOfferController {
                 endTimeValue = Time.newInstance(Integer.valueOf(hm[0]), Integer.valueOf(hm[1]), 0, 0);
             }
 
+            validateEventDatetimeOrder(startDate, startTimeValue, endDateFromEvent, endTimeValue);
+
             // Settings
             Boolean autoAccept = data.get('autoAcceptResponses') == true;
             Boolean autoShare = data.get('autoShareContactInfo') == true;
@@ -191,10 +193,157 @@ public with sharing class FimbyAskOfferController {
                 'message' => postType + ' posted successfully'
             };
 
+        } catch (AuraHandledException e) {
+            throw e;
         } catch (Exception e) {
             FimbyLogger.error('FimbyAskOfferController', 'createNeedsOffersPost', e);
             AuraHandledException ex = new AuraHandledException('Error creating post: ' + e.getMessage());
             ex.setMessage('Error creating post: ' + e.getMessage());
+            throw ex;
+        }
+    }
+
+    /**
+     * Update an existing Needs_Offers__c post (Ask, Offer, or Event).
+     * Mirrors createNeedsOffersPost field mapping; does not accept Type__c, Status__c, or Category__c.
+     */
+    @AuraEnabled
+    public static Map<String, Object> updateNeedsOffersPost(String postData) {
+        try {
+            Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(postData);
+            String recordId = (String) data.get('recordId');
+            if (String.isBlank(recordId)) {
+                throw new AuraHandledException('Record ID is required.');
+            }
+
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Id realContactId = identity.currentUser.ContactId;
+            Id actingAsContactId = identity.actingAsContactId;
+
+            Needs_Offers__c post = [
+                SELECT Id, Posted_By__c, Contact__c, RecordType.DeveloperName,
+                       Type__c, Event_Type__c, Is_Urgent__c,
+                       Start_Date__c, Start_Time__c, End_Date__c, End_Time__c
+                FROM Needs_Offers__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+
+            if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
+                throw new AuraHandledException('You can only edit posts you created.');
+            }
+
+            if (data.containsKey('title')) {
+                post.Name = (String) data.get('title');
+            }
+            if (data.containsKey('description')) {
+                String description = (String) data.get('description');
+                post.Full_Details__c = description;
+                post.Details__c = description != null && description.length() > 255
+                    ? description.substring(0, 252) + '...' : description;
+            }
+
+            String endDateStr = (String) data.get('endDate');
+            if (String.isNotBlank(endDateStr)) {
+                post.End_Date__c = Date.valueOf(endDateStr);
+            }
+
+            if (data.containsKey('quantity')) {
+                post.Total_Quantity__c = data.get('quantity') != null
+                    ? Decimal.valueOf(String.valueOf(data.get('quantity'))) : null;
+            }
+            if (data.containsKey('perResponseLimit')) {
+                post.Per_Response_Limit__c = data.get('perResponseLimit') != null
+                    ? Decimal.valueOf(String.valueOf(data.get('perResponseLimit'))) : null;
+            }
+
+            String eventStartStr = (String) data.get('eventStart');
+            String eventEndStr = (String) data.get('eventEnd');
+            if (String.isNotBlank(eventStartStr) && eventStartStr.contains('T')) {
+                List<String> parts = eventStartStr.split('T');
+                post.Start_Date__c = Date.valueOf(parts[0]);
+                post.Start_Time_Text__c = formatTimeFromIso(parts[1]);
+                List<String> hm = parts[1].split(':');
+                post.Start_Time__c = Time.newInstance(Integer.valueOf(hm[0]), Integer.valueOf(hm[1]), 0, 0);
+            }
+            if (eventEndStr != null) {
+                if (String.isNotBlank(eventEndStr) && eventEndStr.contains('T')) {
+                    List<String> parts = eventEndStr.split('T');
+                    post.End_Date__c = Date.valueOf(parts[0]);
+                    post.End_Time_Text__c = formatTimeFromIso(parts[1]);
+                    List<String> hm = parts[1].split(':');
+                    post.End_Time__c = Time.newInstance(Integer.valueOf(hm[0]), Integer.valueOf(hm[1]), 0, 0);
+                } else if (String.isBlank(eventEndStr)) {
+                    post.End_Time__c = null;
+                    post.End_Time_Text__c = null;
+                }
+            }
+            if (data.containsKey('location')) {
+                post.Location__c = (String) data.get('location');
+            }
+
+            if (data.containsKey('isUrgent')) {
+                post.Is_Urgent__c = data.get('isUrgent') == true;
+            }
+            if (data.containsKey('autoAcceptResponses')) {
+                post.Auto_Accept_Responses__c = data.get('autoAcceptResponses') == true;
+            }
+            if (data.containsKey('autoShareContactInfo')) {
+                post.Auto_Share_Contact_Info__c = data.get('autoShareContactInfo') == true;
+            }
+            if (data.containsKey('expectedAttendance')) {
+                post.Expected_Attendance__c = data.get('expectedAttendance') != null
+                    ? Decimal.valueOf(String.valueOf(data.get('expectedAttendance'))) : null;
+            }
+            if (data.containsKey('eventNotes')) {
+                post.Event_Notes__c = (String) data.get('eventNotes');
+            }
+            if (data.containsKey('eventLink')) {
+                post.Event_Link__c = (String) data.get('eventLink');
+            }
+
+            // Recompute visibility scope when urgency changes
+            String rtName = post.RecordType?.DeveloperName;
+            if (rtName == FimbyConstants.RT_BULK_BUY) {
+                post.Visibility_Scope__c = 'Adjacent';
+            } else if (rtName == FimbyConstants.RT_OFFER && post.Event_Type__c == null) {
+                post.Visibility_Scope__c = 'Adjacent';
+            } else if (post.Is_Urgent__c == true) {
+                post.Visibility_Scope__c = 'Adjacent';
+            } else if (post.Event_Type__c == 'Gathering') {
+                post.Visibility_Scope__c = 'Neighbourhood';
+            } else if (post.Event_Type__c != null) {
+                post.Visibility_Scope__c = 'Regional';
+            } else {
+                post.Visibility_Scope__c = 'Neighbourhood';
+            }
+
+            if (post.Event_Type__c == 'Open_Event') {
+                post.Auto_Accept_Responses__c = true;
+            }
+
+            if (post.Type__c == 'Event') {
+                validateEventDatetimeOrder(
+                    post.Start_Date__c,
+                    post.Start_Time__c,
+                    post.End_Date__c,
+                    post.End_Time__c
+                );
+            }
+
+            new NeedsOffersHelper().updatePost(post);
+
+            return new Map<String, Object>{
+                'success' => true,
+                'recordId' => post.Id,
+                'message' => 'Post updated successfully'
+            };
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyAskOfferController', 'updateNeedsOffersPost', e);
+            AuraHandledException ex = new AuraHandledException('Error updating post: ' + e.getMessage());
+            ex.setMessage('Error updating post: ' + e.getMessage());
             throw ex;
         }
     }
@@ -320,6 +469,26 @@ public with sharing class FimbyAskOfferController {
         } catch (Exception e) {
             AuraHandledException ex = new AuraHandledException('Error deleting post: ' + e.getMessage());
             ex.setMessage('Error deleting post: ' + e.getMessage());
+            throw ex;
+        }
+    }
+
+    private static void validateEventDatetimeOrder(
+        Date startDate,
+        Time startTime,
+        Date endDate,
+        Time endTime
+    ) {
+        if (startDate == null || startTime == null || endDate == null || endTime == null) {
+            return;
+        }
+        Datetime startDt = Datetime.newInstance(startDate, startTime);
+        Datetime endDt = Datetime.newInstance(endDate, endTime);
+        if (endDt <= startDt) {
+            AuraHandledException ex = new AuraHandledException(
+                'The end time needs to come after the start time.'
+            );
+            ex.setMessage('The end time needs to come after the start time.');
             throw ex;
         }
     }

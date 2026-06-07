@@ -301,12 +301,21 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
         return !this.selectedType;
     }
 
+    get eventEndValidationError() {
+        if (!this.eventStart || !this.eventEnd) return '';
+        if (new Date(this.eventEnd) <= new Date(this.eventStart)) {
+            return 'The end time needs to come after the start time.';
+        }
+        return '';
+    }
+
     get isSubmitDisabled() {
         if (!this.postTitle.trim() || !this.postDescription.trim()) return true;
         if (this.showQuantityField && this.quantity < 1) return true;
         if (this.showPerResponseLimit && this.perResponseLimit > this.quantity) return true;
         if (this.isEventType && !this.eventStart) return true;
         if (this.isEventType && !this.isCommunityEvent && !this.location) return true;
+        if (this.isEventType && this.eventEndValidationError) return true;
         return this.isPosting;
     }
 

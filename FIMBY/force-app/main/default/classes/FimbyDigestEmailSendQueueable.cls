@@ -131,7 +131,8 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             try {
                 String intentLine = FimbyEmailHtmlBuilder.getRandomIntentLine();
                 String digestSubject = 'Your ' + frequency.toLowerCase() + ' neighbourhood update';
-                String fullContent = contentHtml + saturdayFooter;
+                String greetingCard = FimbyEmailHtmlBuilder.buildGreetingCard(firstNameByUser.get(userId));
+                String fullContent = greetingCard + contentHtml + saturdayFooter;
 
                 String html = buildDigestHtml(templateId, userId, fullContent, intentLine, digestSubject, timeRange);
 

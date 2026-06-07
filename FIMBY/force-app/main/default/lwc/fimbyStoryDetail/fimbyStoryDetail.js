@@ -4,7 +4,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import getStoryDetail from '@salesforce/apex/FimbyStoriesController.getStoryDetail';
 import deleteStory from '@salesforce/apex/FimbyStoriesController.deleteStory';
 import getStoryComments from '@salesforce/apex/FimbyStoryCommentController.getStoryComments';
@@ -43,7 +43,22 @@ const BADGE_LABELS = {
 };
 
 export default class FimbyStoryDetail extends NavigationMixin(LightningElement) {
-    @api recordId;
+    _recordId;
+    _activeRecordId = null;
+
+    @api
+    get recordId() {
+        return this._recordId;
+    }
+    set recordId(value) {
+        const next = value && String(value).trim() ? value : null;
+        if (next === this._recordId) {
+            return;
+        }
+        this._recordId = next;
+        this._syncActiveRecordId();
+    }
+
     @track isLoading = true;
     @track _extractedRecordId = null;
     @track showImageModal = false;
@@ -71,17 +86,12 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
 
     record;
     currentUserId = Id;
-    organizationId = null;
     _wiredStoryDetailResult;
 
     contentCharLimit = 300;
 
     get commentIconUrl() {
         return `${IMPACT_ICONS}/comment.png`;
-    }
-
-    get menuIconUrl() {
-        return `${IMPACT_ICONS}/KebabBeige.png`;
     }
 
     get headerMenuItems() {
@@ -120,12 +130,11 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     async connectedCallback() {
-        await this.loadOrganizationId();
-        await this.loadIdentity();
-
-        if (!this.recordId || this.recordId.trim() === '') {
+        if (!this._recordId) {
             this._extractedRecordId = this.extractRecordIdFromUrl();
         }
+        this._syncActiveRecordId();
+        await this.loadIdentity();
         this._checkModeratorStatus();
     }
 
@@ -148,21 +157,40 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         } catch (e) { /* noop */ }
     }
 
-    async loadOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-            if (this.comments && this.comments.length) {
-                this.comments = this.comments.map(c => this.decorateComment(c));
-            }
-        } catch (error) {
-            // Image URLs fall back to base path without org suffix
-        }
+    get effectiveRecordId() {
+        return this._recordId || this._extractedRecordId;
     }
 
-    // Effective record ID - either from @api or extracted from URL
-    get effectiveRecordId() {
-        const id = this.recordId || this._extractedRecordId;
-        return id;
+    get wiredRecordId() {
+        return this.effectiveRecordId || undefined;
+    }
+
+    get showLoadingState() {
+        if (this.showRemovedState) {
+            return false;
+        }
+        return this.isLoading || !this.effectiveRecordId;
+    }
+
+    get showRemovedState() {
+        return this.isRemoved && !!this.effectiveRecordId;
+    }
+
+    _syncActiveRecordId() {
+        const id = this.effectiveRecordId || null;
+        if (id === this._activeRecordId) {
+            return;
+        }
+        this._activeRecordId = id;
+        this._resetDetailLoadState();
+    }
+
+    _resetDetailLoadState() {
+        this.isLoading = true;
+        this.isRemoved = false;
+        this.removedMessage = '';
+        this.record = null;
+        this.comments = [];
     }
 
     // Extract record ID from URL path (/story/{recordId}) or query param (?recordId=xxx)
@@ -195,10 +223,13 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         }
     }
 
-    @wire(getStoryDetail, { storyId: '$effectiveRecordId' })
+    @wire(getStoryDetail, { storyId: '$wiredRecordId' })
     wiredStoryDetail(result) {
         this._wiredStoryDetailResult = result;
-        const { error, data } = result;
+        const { error, data, loading } = result;
+        if (loading || !this.wiredRecordId) {
+            return;
+        }
         this.isLoading = false;
         if (data) {
             if (data.removed) {
@@ -245,7 +276,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         const canManage = !!comment.isAuthor;
         return {
             ...comment,
-            authorPhotoUrl: this._completeImageUrl(comment.authorPhotoUrl),
+            authorPhotoUrl: avatarImageUrl(comment.authorPhotoUrl),
             formattedDate: this.formatCommentDate(comment.createdDate),
             isEdited: editCount > 0,
             editedSuffix: editCount > 0 ? ' · edited' : '',
@@ -256,14 +287,6 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
                 ? 'comment-menu-container is-open'
                 : 'comment-menu-container'
         };
-    }
-
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
     }
 
     formatCommentDate(dateString) {
@@ -332,13 +355,22 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     // Construct complete image URL with Organization ID
     get imageUrl() {
         const baseUrl = this.record ? this.record.Image_URL__c : '';
-        if (!baseUrl) return '';
+        return completeImageUrl(baseUrl);
+    }
 
-        // Append Organization ID to complete the URL (pattern: URL ends with &oid=)
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+    get imageDisplayUrl() {
+        const baseUrl = this.record ? this.record.Image_URL__c : '';
+        return thumbnailUrl(baseUrl);
+    }
+
+    get imageSrcset() {
+        const baseUrl = this.record ? this.record.Image_URL__c : '';
+        const ratio = this.record ? this.record.Image_Ratio__c : '';
+        return buildSrcset(baseUrl, ratio, { includeOriginal: true });
+    }
+
+    get detailImageSizes() {
+        return SIZES.feedColumn;
     }
 
     // Check if image exists
@@ -409,12 +441,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     // Construct complete avatar URL with Organization ID
     get authorAvatar() {
         const baseUrl = this.record && this.record.Posted_By__r ? this.record.Posted_By__r.Image_URL__c : '';
-        if (!baseUrl) return '';
-
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return avatarImageUrl(baseUrl);
     }
 
     get formattedDate() {
@@ -474,8 +501,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             return;
         }
 
-        const modal = this.template.querySelector('c-fimby-record-edit-modal');
-        if (modal) modal.show();
+        const modal = this.template.querySelector('c-fimby-post-edit-modal');
+        if (modal) modal.show(this.effectiveRecordId, 'story');
     }
 
     async handleEditSave() {

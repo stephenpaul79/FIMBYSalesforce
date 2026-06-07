@@ -137,9 +137,25 @@
     }
     .header-right {
         width: 100%;
-        justify-content: flex-start;
-        gap: 6px;
+        justify-content: space-between;
         padding-left: 38px;
+    }
+    .header-meta,
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .header-actions {
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    .messages-container {
+        padding: 16px;
+    }
+    .reply-container {
+        padding: 4px 16px 12px;
+        padding-left: 68px;
     }
     .action-btn {
         padding: 5px 12px;
@@ -226,10 +242,23 @@
 .header-right {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 12px;
     flex-shrink: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.header-meta,
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-actions {
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .header-amount {
@@ -272,7 +301,7 @@
 
 /* Messages Container — scrollable middle */
 .messages-container {
-    padding: 0 24px 16px;
+    padding: 16px 24px;
     background-color: var(--fimby-surface-card, #FAF7F2);
 }
 
@@ -335,6 +364,11 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.share-prompt-error {
+    flex-basis: 100%;
+    margin: 4px 0 0;
 }
 
 .share-prompt-text {
@@ -435,8 +469,10 @@
     display: flex;
     align-items: center;
     padding: 10px 0;
+    padding-left: 52px;
     border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
     margin: 0;
+    box-sizing: border-box;
 }
 
 /* Gmail-style flat messages */
@@ -503,36 +539,62 @@
     padding-top: 2px;
 }
 
-.via-label {
-    font-size: 11px;
-    color: var(--fimby-on-behalf-text);
-    margin-top: 4px;
-    padding-left: 52px;
-    font-style: italic;
-}
-
 .system-bubble {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     align-items: center;
+    justify-content: flex-start;
     width: 100%;
-    gap: 8px;
+    gap: 4px;
+    position: relative;
+    min-height: 28px;
+    padding-right: 72px;
+    box-sizing: border-box;
 }
 
 .system-text {
-    grid-column: 2;
     font-size: 12px;
     color: var(--fimby-text-secondary);
     font-style: italic;
     background: var(--fimby-hover-bg);
     border-radius: 12px;
     padding: 4px 12px;
-    text-align: center;
-    white-space: nowrap;
+    text-align: left;
+    white-space: normal;
+    max-width: 100%;
+}
+
+.system-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--fimby-btn-primary-bg);
+    flex-shrink: 0;
+}
+
+.system-edit-btn:hover {
+    background: var(--fimby-hover-bg);
+}
+
+.system-edit-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
 .system-time {
-    grid-column: 3;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 12px;
     color: var(--fimby-text-muted, #B5A088);
     text-align: right;
@@ -757,13 +819,19 @@
     align-items: center;
     gap: 8px;
     padding: 8px 20px;
-    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border: 1px solid var(--fimby-border-strong, #CCC5BB);
     border-radius: 20px;
     background: transparent;
-    color: var(--fimby-text-secondary);
+    color: var(--fimby-text-primary);
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
+    min-height: 44px;
+}
+
+.reply-trigger lightning-icon {
+    --lwc-colorTextIconDefault: var(--fimby-text-primary);
 }
 
 .reply-trigger:hover {
@@ -1103,6 +1171,7 @@
 /* Focus */
 .back-button:focus-visible,
 .reply-trigger:focus-visible,
+.system-edit-btn:focus-visible,
 .compose-send:focus-visible,
 .compose-cancel:focus-visible,
 .action-btn:focus-visible,
@@ -1173,6 +1242,14 @@
     max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
+    height: fit-content;
+    /* Override SLDS .slds-modal__container defaults (3rem padding, flex grow)
+       so the modal fits tightly to its content. */
+    padding: 0;
+    min-height: 0;
+    min-width: 0;
+    align-self: center;
 }
 
 .block-modal-header {

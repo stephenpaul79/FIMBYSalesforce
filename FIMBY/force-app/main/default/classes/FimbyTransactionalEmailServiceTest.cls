@@ -70,19 +70,26 @@ private class FimbyTransactionalEmailServiceTest {
         FimbyTransactionalEmailService.testRenderedHtml =
             '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
 
+        String cardHtml = FimbyEmailHtmlBuilder.buildTransactionalCard(
+            FimbyEmailHtmlBuilder.TXN_BADGE_CONTACT, '#8A5936', 'email.png',
+            'Shared contact', '<p>Details</p>',
+            'Test', 'A neighbour shared their contact info.',
+            'https://our.fimby.com/test', 'View', 'enter.png'
+        );
+
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
         req.subject = 'Template Path Test';
-        req.introText = 'A neighbour shared their contact info.';
-        req.cardHtml = '<table><tr><td>Contact card</td></tr></table>';
-        req.ctaUrl = 'https://our.fimby.com/test';
-        req.ctaLabel = 'View';
+        req.cardHtml = cardHtml;
         req.replyToEmail = 'neighbour@example.com';
 
         Test.startTest();
         FimbyTransactionalEmailService.send(req);
         Test.stopTest();
+
+        System.assert(FimbyTransactionalEmailService.testLastCardHtml.contains('Hi Test,'),
+            'Consolidated card should include greeting');
     }
 
     @IsTest

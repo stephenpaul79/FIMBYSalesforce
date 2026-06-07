@@ -8,7 +8,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl } from 'c/fimbyLibraryCategoryConfig';
 import { formatLocalDate, parseLocalDate } from 'c/fimbyDateUtils';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import deleteLibraryItem from '@salesforce/apex/FimbyLibraryController.deleteLibraryItem';
 import getLibraryItemUserContext from '@salesforce/apex/FimbyLibraryController.getLibraryItemUserContext';
@@ -46,7 +46,22 @@ const FIELDS = [
 ];
 
 export default class FimbyLibraryItemDetail extends NavigationMixin(LightningElement) {
-    @api recordId;
+    _recordId;
+    _activeRecordId = null;
+
+    @api
+    get recordId() {
+        return this._recordId;
+    }
+    set recordId(value) {
+        const next = value && String(value).trim() ? value : null;
+        if (next === this._recordId) {
+            return;
+        }
+        this._recordId = next;
+        this._syncActiveRecordId();
+    }
+
     @track _extractedRecordId = null;
     @track isLoading = true;
     @track showImageModal = false;
@@ -64,7 +79,6 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     record;
     error;
     currentUserId = Id;
-    organizationId = null;
     @track actingAsContactId = null;
     @track _isModeratorForNeighbourhood = false;
     @track isRemoved = false;
@@ -100,14 +114,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     }
 
     async connectedCallback() {
-        await this.loadOrganizationId();
-        if (!this.recordId || String(this.recordId).trim() === '') {
-            const id = this.extractRecordIdFromUrl();
-            this._extractedRecordId = id;
-            if (id) {
-                this.recordId = id;
-            }
-        }
+        this._resolveRecordIdFromPage();
         this._checkModeratorStatus();
     }
 
@@ -122,16 +129,55 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         this._tryAutoOpenActionModal();
     }
 
-    async loadOrganizationId() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
+    get effectiveRecordId() {
+        return this._recordId || this._extractedRecordId;
     }
 
-    get effectiveRecordId() {
-        return this.recordId || this._extractedRecordId;
+    get wiredRecordId() {
+        return this.effectiveRecordId || undefined;
+    }
+
+    get showLoadingState() {
+        if (this.showRemovedState) {
+            return false;
+        }
+        return this.isLoading || !this.effectiveRecordId;
+    }
+
+    get showRemovedState() {
+        return this.isRemoved && !!this.effectiveRecordId;
+    }
+
+    _resolveRecordIdFromPage() {
+        if (!this._recordId) {
+            const id = this.extractRecordIdFromUrl();
+            if (id) {
+                this._extractedRecordId = id;
+                this._recordId = id;
+            }
+        }
+        this._syncActiveRecordId();
+    }
+
+    _syncActiveRecordId() {
+        const id = this.effectiveRecordId || null;
+        if (id === this._activeRecordId) {
+            return;
+        }
+        this._activeRecordId = id;
+        this._resetDetailLoadState();
+    }
+
+    _resetDetailLoadState() {
+        this.isLoading = true;
+        this.isRemoved = false;
+        this.removedMessage = '';
+        this.record = undefined;
+        this.error = undefined;
+        this.userContext = null;
+        this.userContextLoaded = false;
+        this.adminData = null;
+        this.adminDataLoaded = false;
     }
 
     extractRecordIdFromUrl() {
@@ -168,8 +214,12 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         }
     }
 
-    @wire(getLibraryItemVisibility, { recordId: '$effectiveRecordId' })
-    wiredVisibility({ data, error }) {
+    @wire(getLibraryItemVisibility, { recordId: '$wiredRecordId' })
+    wiredVisibility(result) {
+        const { data, error, loading } = result;
+        if (loading || !this.wiredRecordId) {
+            return;
+        }
         if (data) {
             if (data.removed) {
                 this.isRemoved = true;
@@ -192,8 +242,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     @wire(getRecord, { recordId: '$recordIdIfVisible', fields: FIELDS })
     wiredRecord(result) {
         this._wiredRecordResult = result;
-        const { error, data } = result;
-        if (this.isRemoved) {
+        const { error, data, loading } = result;
+        if (loading || this.isRemoved || !this.wiredRecordId) {
             return;
         }
         this.isLoading = false;
@@ -209,7 +259,10 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     }
 
     get recordIdIfVisible() {
-        return this.isRemoved ? null : this.effectiveRecordId;
+        if (!this.effectiveRecordId || this.isRemoved) {
+            return undefined;
+        }
+        return this.effectiveRecordId;
     }
 
     get shouldRenderRecord() {
@@ -331,11 +384,22 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     get imageUrl() {
         const baseUrl = this.record ? getFieldValue(this.record, 'Library_Item__c.Image_URL__c') : '';
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return completeImageUrl(baseUrl);
+    }
+
+    get imageDisplayUrl() {
+        const baseUrl = this.record ? getFieldValue(this.record, 'Library_Item__c.Image_URL__c') : '';
+        return thumbnailUrl(baseUrl);
+    }
+
+    get imageSrcset() {
+        const baseUrl = this.record ? getFieldValue(this.record, 'Library_Item__c.Image_URL__c') : '';
+        const ratio = this.record ? getFieldValue(this.record, 'Library_Item__c.Image_Ratio__c') : '';
+        return buildSrcset(baseUrl, ratio, { includeOriginal: true });
+    }
+
+    get detailImageSizes() {
+        return SIZES.feedColumn;
     }
 
     get hasImage() {
@@ -385,19 +449,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     get ownerAvatar() {
         const baseUrl = this.record ? getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Image_URL__c') : '';
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
-    }
-
-    _completeAvatarUrl(url) {
-        if (!url) return '';
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
+        return avatarImageUrl(baseUrl);
     }
 
     get ownerOrganizationName() {
@@ -636,7 +688,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         if (!Array.isArray(hist)) return [];
         return hist.map(h => ({
             ...h,
-            lenderAvatar: this._completeAvatarUrl(h.lenderAvatar),
+            lenderAvatar: avatarImageUrl(h.lenderAvatar),
             displayStartDate: formatLocalDate(h.startDate),
             displayEndDate: h.endDate ? formatLocalDate(h.endDate) : 'Ongoing',
             hasConversation: !!h.conversationId,
@@ -660,8 +712,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // ============================================
 
     handleEdit() {
-        const modal = this.template.querySelector('c-fimby-record-edit-modal');
-        if (modal) modal.show();
+        const modal = this.template.querySelector('c-fimby-post-edit-modal');
+        if (modal) modal.show(this.recordId, 'library');
     }
 
     async handleEditSave() {

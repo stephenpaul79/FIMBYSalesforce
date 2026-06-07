@@ -886,6 +886,17 @@ button.identity-row:focus-visible {
     line-height: 1.2;
 }
 
+.identity-loading {
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.identity-loading-text {
+    font-size: 0.8125rem;
+    color: var(--fimby-text-muted);
+    font-style: italic;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .fimby-logo-img,
     .bell-button,

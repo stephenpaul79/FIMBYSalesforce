@@ -133,13 +133,17 @@ public with sharing class FimbyResponseController {
 
             Needs_Offers__c needOffer = [
                 SELECT Id, Auto_Accept_Responses__c, Neighbourhood__c, Status__c,
-                       Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
+                       Contact__c, Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
                        RecordType.DeveloperName
                 FROM Needs_Offers__c
                 WHERE Id = :needOfferId
                 WITH SECURITY_ENFORCED
                 LIMIT 1
             ];
+
+            Id replyToContactId = needOffer.Contact__c != null
+                ? needOffer.Contact__c
+                : needOffer.Posted_By__c;
 
             Set<String> activeStatuses = new Set<String>{
                 FimbyConstants.NEEDS_OFFERS_POSTED,
@@ -167,6 +171,7 @@ public with sharing class FimbyResponseController {
                 Status__c = status,
                 Amount_Requested__c = amountRequested,
                 On_Behalf_Of_Contact__c = actingAsContactId,
+                Reply_To_Contact__c = replyToContactId,
                 Neighbourhood__c = needOffer.Neighbourhood__c
             );
 
@@ -601,7 +606,7 @@ public with sharing class FimbyResponseController {
     private without sharing class QuickEventResponseHelper {
         public Map<String, Object> execute(String eventId, String action, Integer guestCount, String actingAsContactId, String realContactId) {
             Needs_Offers__c evt = [
-                SELECT Id, Status__c, Event_Type__c, Neighbourhood__c, Posted_By__c,
+                SELECT Id, Status__c, Event_Type__c, Neighbourhood__c, Contact__c, Posted_By__c,
                        Posted_By__r.FirstName, Posted_By__r.LastName, Name
                 FROM Needs_Offers__c
                 WHERE Id = :eventId
@@ -659,6 +664,8 @@ public with sharing class FimbyResponseController {
                 };
             }
 
+            Id replyToContactId = evt.Contact__c != null ? evt.Contact__c : evt.Posted_By__c;
+
             Response__c newResp = new Response__c(
                 Name = evt.Name,
                 Contact__c = realContactId,
@@ -667,6 +674,7 @@ public with sharing class FimbyResponseController {
                 Response__c = 'Quick event response',
                 Status__c = FimbyConstants.RESPONSE_ACCEPTED,
                 Amount_Requested__c = gc,
+                Reply_To_Contact__c = replyToContactId,
                 Neighbourhood__c = evt.Neighbourhood__c
             );
             insert newResp;
@@ -991,11 +999,24 @@ public with sharing class FimbyResponseController {
          * @return Map containing success, response, needOffer, recipient, and sharingContact data
          */
         public Map<String, Object> getResponseForShareContactInfoInternal(String recordId) {
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            if (identity == null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'noIdentity',
+                    'message' => 'Unable to determine your identity.'
+                };
+            }
+
+            String myContactId = identity.actingAsContactId;
+            Id myRealContactId = identity.contact?.Id;
+
             Response__c response = [
-                SELECT Id, Name, OwnerId, Contact__c, Contact__r.Name,
+                SELECT Id, Name, Contact__c, Contact__r.Name,
                        On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name,
                        Reply_To_Contact__c, Reply_To_Contact__r.Name,
-                       Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.OwnerId,
+                       Need_Offer_Responded_To__c,
+                       Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Name
                 FROM Response__c
@@ -1003,17 +1024,15 @@ public with sharing class FimbyResponseController {
                 LIMIT 1
             ];
 
-            User currentUser = FimbyIdentityRepository.getCurrentUser();
-            String currentUserId = UserInfo.getUserId();
+            Needs_Offers__c post = response.Need_Offer_Responded_To__r;
+            Id postOwnerId = post?.Contact__c;
+            Id postSubmittedBy = post?.Posted_By__c;
 
-            String postBy = String.valueOf(response.Need_Offer_Responded_To__r.OwnerId).substring(0, 15);
-            String respondeeContact = String.valueOf(response.OwnerId).substring(0, 15);
-            String currentUser15 = currentUserId.substring(0, 15);
+            Boolean isPoster = postSubmittedBy == myRealContactId || postOwnerId == myContactId;
+            Boolean isResponder = response.Contact__c == myContactId
+                || response.On_Behalf_Of_Contact__c == myContactId;
 
-            Boolean isPostedBy = (currentUser15 == postBy);
-            Boolean isRespondee = (currentUser15 == respondeeContact);
-
-            if (!isPostedBy && !isRespondee) {
+            if (!isPoster && !isResponder) {
                 return new Map<String, Object>{
                     'success' => false,
                     'error' => 'notAuthorized',
@@ -1021,11 +1040,27 @@ public with sharing class FimbyResponseController {
                 };
             }
 
-            String recipientContactId;
-            if (isPostedBy) {
-                recipientContactId = response.Contact__c;
-            } else {
-                recipientContactId = response.Reply_To_Contact__c;
+            Id recipientContactId = isPoster
+                ? (response.On_Behalf_Of_Contact__c != null
+                    ? response.On_Behalf_Of_Contact__c
+                    : response.Contact__c)
+                : resolvePosterContactId(response, post);
+            Id sharingContactId = myContactId;
+
+            if (recipientContactId == null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'missingRecipient',
+                    'message' => 'Unable to determine who to share with. Please try again from the response thread.'
+                };
+            }
+
+            if (sharingContactId == recipientContactId) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'error' => 'selfShare',
+                    'message' => 'You cannot share contact info with yourself.'
+                };
             }
 
             Contact recipient = [
@@ -1034,21 +1069,6 @@ public with sharing class FimbyResponseController {
                 WHERE Id = :recipientContactId
                 LIMIT 1
             ];
-
-            if (currentUser.ContactId == recipientContactId) {
-                return new Map<String, Object>{
-                    'success' => false,
-                    'error' => 'selfShare',
-                    'message' => 'You cannot share contact info with yourself.'
-                };
-            }
-
-            String sharingContactId;
-            if (isPostedBy) {
-                sharingContactId = response.Reply_To_Contact__c;
-            } else {
-                sharingContactId = response.Contact__c;
-            }
 
             Contact sharingContact = [
                 SELECT Id, Name, FirstName, LastName, Email, Phone,
@@ -1060,7 +1080,7 @@ public with sharing class FimbyResponseController {
 
             return new Map<String, Object>{
                 'success' => true,
-                'isPostedBy' => isPostedBy,
+                'isPostedBy' => isPoster,
                 'response' => new Map<String, Object>{
                     'id' => response.Id,
                     'name' => response.Name
@@ -1094,10 +1114,71 @@ public with sharing class FimbyResponseController {
          *            shareAddress, and optional address fields
          * @return Map with success, message, and sharedContactInfoId
          */
+        private Id resolvePosterContactId(Response__c response, Needs_Offers__c post) {
+            if (response.Reply_To_Contact__c != null) {
+                return response.Reply_To_Contact__c;
+            }
+            if (post != null && post.Contact__c != null) {
+                return post.Contact__c;
+            }
+            return post?.Posted_By__c;
+        }
+
         public Map<String, Object> shareContactInfoInternal(Map<String, Object> data) {
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            if (identity == null) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'message' => 'Unable to determine your identity.'
+                };
+            }
+
             String responseId = (String) data.get('responseId');
             String sharingContactId = (String) data.get('sharingContactId');
             String recipientContactId = (String) data.get('recipientContactId');
+
+            Response__c resp = [
+                SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
+                       Need_Offer_Responded_To__r.Contact__c,
+                       Need_Offer_Responded_To__r.Posted_By__c,
+                       Need_Offer_Responded_To__r.Auto_Share_Contact_Info__c
+                FROM Response__c
+                WHERE Id = :responseId
+                LIMIT 1
+            ];
+
+            Needs_Offers__c post = resp.Need_Offer_Responded_To__r;
+            Id postOwnerId = post?.Contact__c;
+            Id postSubmittedBy = post?.Posted_By__c;
+            Id postOwnerContactId = postOwnerId != null ? postOwnerId : postSubmittedBy;
+            Id responderContactId = resp.On_Behalf_Of_Contact__c != null
+                ? resp.On_Behalf_Of_Contact__c
+                : resp.Contact__c;
+
+            Id myRealContactId = identity.contact?.Id;
+            Boolean isPoster = postSubmittedBy == myRealContactId || postOwnerId == identity.actingAsContactId;
+            Boolean isResponder = resp.Contact__c == identity.actingAsContactId
+                || resp.On_Behalf_Of_Contact__c == identity.actingAsContactId;
+
+            if (!isPoster && !isResponder) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'message' => 'You do not have access to share contact info on this response.'
+                };
+            }
+
+            Boolean isAutoShareRequest = sharingContactId == postOwnerContactId
+                && recipientContactId == responderContactId
+                && post.Auto_Share_Contact_Info__c == true;
+            Boolean isOwnShareRequest = sharingContactId == identity.actingAsContactId
+                && (isPoster || isResponder);
+
+            if (!isAutoShareRequest && !isOwnShareRequest) {
+                return new Map<String, Object>{
+                    'success' => false,
+                    'message' => 'You can only share contact info for your current identity.'
+                };
+            }
             Boolean shareEmail = data.get('shareEmail') == true;
             Boolean sharePhone = data.get('sharePhone') == true;
             Boolean shareAddress = data.get('shareAddress') == true;
@@ -1193,6 +1274,11 @@ public with sharing class FimbyResponseController {
 
             new SharedContactInfoDmlHelper().upsertSharedContactInfo(sharedInfo, isNew);
 
+            Map<String, Object> systemMessage = FimbyResponseThreadController.recordContactSharedSystemMessage(
+                responseId,
+                Id.valueOf(sharingContactId)
+            );
+
             if (shouldSendEmail) {
                 List<User> recipientUsers = [
                     SELECT Id FROM User
@@ -1206,18 +1292,21 @@ public with sharing class FimbyResponseController {
                     String phoneVal = (sharePhone && String.isNotBlank(phone)) ? phone : null;
                     String streetVal = shareAddress ? (street + ', ' + city + ', ' + state + ' ' + postalCode) : null;
 
+                    Id recipientUserId = recipientUsers[0].Id;
+                    String ctaUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId);
                     String cardHtml = FimbyEmailHtmlBuilder.buildContactShareCard(
-                        senderName, emailVal, phoneVal, streetVal, null, contextLabel
+                        FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
+                        senderName, emailVal, phoneVal, streetVal, null, contextLabel,
+                        ctaUrl, 'View Conversation', 'reply.png'
                     );
 
                     FimbyTransactionalEmailService.TransactionalEmailRequest emailReq =
                         new FimbyTransactionalEmailService.TransactionalEmailRequest();
-                    emailReq.recipientUserId = recipientUsers[0].Id;
+                    emailReq.recipientUserId = recipientUserId;
                     emailReq.subject = 'Contact info shared — ' + (contextLabel != null ? contextLabel : 'your post');
                     emailReq.cardHtml = cardHtml;
                     emailReq.skipSubjectBlock = true;
                     emailReq.replyToEmail = sharingContact.Email;
-                    emailReq.ctaUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId);
 
                     FimbyTransactionalEmailService.send(emailReq);
                 }
@@ -1226,7 +1315,8 @@ public with sharing class FimbyResponseController {
             return new Map<String, Object>{
                 'success' => true,
                 'message' => 'Contact information shared successfully',
-                'sharedContactInfoId' => sharedInfo.Id
+                'sharedContactInfoId' => sharedInfo.Id,
+                'systemMessage' => systemMessage
             };
         }
     }

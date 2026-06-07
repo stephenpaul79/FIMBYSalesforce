@@ -1578,13 +1578,16 @@ public with sharing class FimbyLendingController {
             String streetVal = shareAddress ? (String) shareData.get('street') : null;
             String additionalVal = shareAddress ? (String) shareData.get('additionalInfo') : null;
 
+            Id recipientUserId = users[0].Id;
             String cardHtml = FimbyEmailHtmlBuilder.buildContactShareCard(
-                senderName, emailVal, phoneVal, streetVal, additionalVal, 'Lending item'
+                FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
+                senderName, emailVal, phoneVal, streetVal, additionalVal, 'Lending item',
+                null, null, null
             );
 
             FimbyTransactionalEmailService.TransactionalEmailRequest req =
                 new FimbyTransactionalEmailService.TransactionalEmailRequest();
-            req.recipientUserId = users[0].Id;
+            req.recipientUserId = recipientUserId;
             req.subject = senderName + ' shared their contact info with you';
             req.cardHtml = cardHtml;
             req.skipSubjectBlock = true;

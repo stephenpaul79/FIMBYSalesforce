@@ -199,11 +199,12 @@
     }
 }
 
-/* Kebab trigger icon */
-.kebab-icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
+.kebab-trigger {
+    color: var(--fimby-text-secondary);
+}
+
+.kebab-trigger:hover {
+    color: var(--fimby-text-primary);
 }
 
 /* ── Kebab dropdown menu ─────────────────────────── */

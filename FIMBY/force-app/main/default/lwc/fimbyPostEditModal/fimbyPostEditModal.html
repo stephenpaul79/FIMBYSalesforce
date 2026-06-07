@@ -1,0 +1,408 @@
+<template>
+    <template lwc:if={isVisible}>
+        <div class="modal-backdrop" onclick={handleBackdropClick} role="presentation">
+            <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="post-edit-modal-title" onclick={handleModalClick}>
+                <div class="modal-header">
+                    <h2 id="post-edit-modal-title" class="modal-title">
+                        <img src={editIconUrl} alt="" class="modal-title-icon">
+                        <span>{modalTitle}</span>
+                    </h2>
+                    <button class="close-button" onclick={handleClose} title="Close" aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <template lwc:if={isLoading}>
+                        <div class="loading-container">
+                            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                            <p class="loading-text">Loading fields...</p>
+                        </div>
+                    </template>
+                    <template lwc:elseif={errorMessage}>
+                        <div class="error-container">
+                            <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+                            <p class="error-message">{errorMessage}</p>
+                            <button class="retry-button" onclick={handleRetry}>Try Again</button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Editing as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+
+                        <!-- ========== ASK / OFFER / EVENT: Post Details ========== -->
+                        <template lwc:if={isNeedsOffers}>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={postDetailsIconUrl} alt="" class="section-icon">
+                                    {postDetailsSectionTitle}
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="edit-title">Post Title <abbr class="required" title="required">*</abbr></label>
+                                            <span class={titleCountClass}>{titleCharacterCount}</span>
+                                        </div>
+                                        <input id="edit-title" type="text" class="text-input" maxlength="80" value={title} data-field="title" oninput={handleFieldChange} required>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="edit-description">Description</label>
+                                            <span class={descriptionCountClass}>{descriptionCharacterCount}</span>
+                                        </div>
+                                        <textarea id="edit-description" class="body-textarea" rows="6" maxlength="2000" data-field="description" oninput={handleFieldChange}>{description}</textarea>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="field-label" for="edit-end-date">{endDateLabel}</label>
+                                        <input id="edit-end-date" type="date" class="date-input" value={endDate} data-field="endDate" onchange={handleFieldChange}>
+                                    </div>
+                                    <template lwc:if={showQuantityField}>
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-quantity">{quantityLabel} <abbr class="required" title="required">*</abbr></label>
+                                            <input id="edit-quantity" type="number" class="text-input" min="1" value={quantity} oninput={handleQuantityChange} required>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={showPerResponseLimit}>
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-per-limit">{perResponseLimitLabel}</label>
+                                            <input id="edit-per-limit" type="number" class="text-input" min="1" value={perResponseLimit} data-field="perResponseLimit" oninput={handleFieldChange}>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={showExpectedAttendance}>
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-attendance">Expected Attendance</label>
+                                            <input id="edit-attendance" type="number" class="text-input" min="1" value={expectedAttendance} data-field="expectedAttendance" oninput={handleFieldChange} placeholder="e.g., 50">
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <template lwc:if={showWhenWhereSection}>
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <img src={eventDetailsIconUrl} alt="" class="section-icon">
+                                        When &amp; Where
+                                    </h3>
+                                    <div class="field-grid">
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-event-start">Event Start <abbr class="required" title="required">*</abbr></label>
+                                            <input id="edit-event-start" type="datetime-local" class="datetime-input" value={eventStart} data-field="eventStart" onchange={handleFieldChange}>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-event-end">Event End</label>
+                                            <input id="edit-event-end" type="datetime-local" class="datetime-input" value={eventEnd} data-field="eventEnd" aria-describedby="edit-event-end-error" onchange={handleFieldChange}>
+                                            <template lwc:if={eventEndValidationError}>
+                                                <span id="edit-event-end-error" class="field-error" role="alert">{eventEndValidationError}</span>
+                                            </template>
+                                        </div>
+                                        <div class="form-field field-full-width">
+                                            <label class="field-label" for="edit-location">Location
+                                                <template lwc:if={isGathering}><abbr class="required" title="required">*</abbr></template>
+                                                <template lwc:if={isOpenEvent}><abbr class="required" title="required">*</abbr></template>
+                                            </label>
+                                            <input id="edit-location" type="text" class="text-input" value={location} data-field="location" oninput={handleFieldChange} placeholder="e.g., Community Centre, 123 Main St">
+                                        </div>
+                                        <template lwc:if={showEventNotes}>
+                                            <div class="form-field field-full-width">
+                                                <label class="field-label" for="edit-event-notes">{eventNotesLabel}</label>
+                                                <input id="edit-event-notes" type="text" class="text-input" maxlength="255" value={eventNotes} data-field="eventNotes" oninput={handleFieldChange} placeholder={eventNotesPlaceholder}>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={showEventLink}>
+                                            <div class="form-field field-full-width">
+                                                <label class="field-label" for="edit-event-link">Event Link</label>
+                                                <input id="edit-event-link" type="url" class="text-input" value={eventLink} data-field="eventLink" oninput={handleFieldChange} placeholder="https://...">
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template lwc:if={showAvailabilitySection}>
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <img src={quantityIconUrl} alt="" class="section-icon">
+                                        Availability
+                                    </h3>
+                                    <div class="field-grid">
+                                        <div class="form-field">
+                                            <label class="field-label" for="edit-offer-qty">Quantity Available <abbr class="required" title="required">*</abbr></label>
+                                            <input id="edit-offer-qty" type="number" class="text-input" min="1" value={quantity} oninput={handleQuantityChange} required>
+                                        </div>
+                                        <template lwc:if={showPerResponseLimit}>
+                                            <div class="form-field">
+                                                <label class="field-label" for="edit-offer-per-limit">Per Response Limit</label>
+                                                <input id="edit-offer-per-limit" type="number" class="text-input" min="1" value={perResponseLimit} data-field="perResponseLimit" oninput={handleFieldChange}>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template lwc:if={showPostSettingsSection}>
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <img src={settingsIconUrl} alt="" class="section-icon">
+                                        Post Settings
+                                    </h3>
+                                    <template lwc:if={showUrgentToggle}>
+                                        <div class="form-field field-full-width urgent-toggle-row">
+                                            <lightning-input type="toggle" label="Mark as Urgent" checked={isUrgent} onchange={handleUrgentChange} message-toggle-active="Urgent" message-toggle-inactive=""></lightning-input>
+                                            <p class="urgent-help-text">Urgent asks are visible to adjacent neighbourhoods so more neighbours can help.</p>
+                                        </div>
+                                    </template>
+                                    <div class="settings-grid">
+                                        <template lwc:if={showAutoAcceptSection}>
+                                            <div class="form-field">
+                                                <lightning-input type="checkbox" label={autoAcceptLabel} checked={autoAcceptResponses} onchange={handleAutoAcceptChange}></lightning-input>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={showAutoShareSection}>
+                                            <div class="form-field">
+                                                <lightning-input type="checkbox" label="Auto-Share Contact Info" checked={autoShareContactInfo} onchange={handleAutoShareChange}></lightning-input>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- ========== BULK BUY ========== -->
+                        <template lwc:if={isBulkBuy}>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={postDetailsIconUrl} alt="" class="section-icon">
+                                    Your Bulk Buy
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="bb-title">Title <abbr class="required" title="required">*</abbr></label>
+                                            <span class={titleCountClass}>{titleCharacterCount}</span>
+                                        </div>
+                                        <input id="bb-title" type="text" class="text-input" maxlength="80" value={title} data-field="title" oninput={handleFieldChange} required>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="bb-description">Description</label>
+                                            <span class={descriptionCountClass}>{descriptionCharacterCount}</span>
+                                        </div>
+                                        <textarea id="bb-description" class="body-textarea" rows="6" maxlength="2000" data-field="description" oninput={handleFieldChange}>{description}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={sharesIconUrl} alt="" class="section-icon">
+                                    Shares
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field">
+                                        <label class="field-label" for="bb-total">Total units you're purchasing <abbr class="required" title="required">*</abbr></label>
+                                        <input id="bb-total" type="number" class="text-input" min="1" value={totalQuantity} oninput={handleTotalQuantityChange} required>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="field-label" for="bb-owner">Units you're keeping</label>
+                                        <input id="bb-owner" type="number" class="text-input" min="0" max={ownerSharesMax} value={ownerShares} data-field="ownerShares" oninput={handleFieldChange}>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="field-label" for="bb-unit-label">Unit Label</label>
+                                        <input id="bb-unit-label" type="text" class="text-input" value={unitLabel} data-field="unitLabel" oninput={handleFieldChange} placeholder="e.g. ~5lb portion">
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="field-label" for="bb-per-person">Per Person Limit</label>
+                                        <input id="bb-per-person" type="number" class="text-input" min="1" value={perResponseLimit} data-field="perResponseLimit" oninput={handleFieldChange}>
+                                    </div>
+                                </div>
+                                <template lwc:if={showSharesPreview}>
+                                    <div class="shares-preview-callout">
+                                        <span class="shares-preview-text">{sharesPreviewText}</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={availabilityIconUrl} alt="" class="section-icon">
+                                    Availability
+                                </h3>
+                                <div class="form-field field-full-width">
+                                    <label class="field-label">When does this close?</label>
+                                    <div class="pill-radio-group" role="group" aria-label="Availability rule">
+                                        <template for:each={availabilityOptions} for:item="opt">
+                                            <button key={opt.value} type="button" class={opt.pillClass} aria-pressed={opt.selected} data-value={opt.value} onclick={handleAvailabilityPillClick}>{opt.label}</button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <template lwc:if={isExpiryVisible}>
+                                    <div class="form-field field-full-width">
+                                        <label class="field-label" for="bb-expiry">Expiry Date &amp; Time <abbr class="required" title="required">*</abbr></label>
+                                        <input id="bb-expiry" type="datetime-local" class="datetime-input" value={expiryDateTime} data-field="expiryDateTime" onchange={handleFieldChange} required>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={costIconUrl} alt="" class="section-icon">
+                                    Cost Reference
+                                </h3>
+                                <p class="section-help">Optional. Helps respondents understand approximate cost per share.</p>
+                                <div class="form-field field-full-width">
+                                    <label class="field-label" for="bb-cost">Total Estimated Cost ($)</label>
+                                    <input id="bb-cost" type="number" class="text-input" step="0.01" min="0" value={totalEstimatedCost} data-field="totalEstimatedCost" oninput={handleFieldChange} placeholder="Optional">
+                                </div>
+                                <template lwc:if={estimatedCostDisplay}>
+                                    <div class="cost-per-share">{estimatedCostDisplay}</div>
+                                </template>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={settingsIconUrl} alt="" class="section-icon">
+                                    Pickup Window
+                                </h3>
+                                <p class="section-help">After you notify everyone that pickup is ready, how many days should people have to collect their shares?</p>
+                                <div class="form-field field-full-width">
+                                    <label class="field-label">Pickup window</label>
+                                    <div class="pill-radio-group" role="group" aria-label="Pickup window">
+                                        <template for:each={autoLockOptions} for:item="opt">
+                                            <button key={opt.value} type="button" class={opt.pillClass} aria-pressed={opt.selected} data-value={opt.value} onclick={handleAutoLockPillClick}>{opt.label}</button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ========== STORY ========== -->
+                        <template lwc:if={isStory}>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={storyIconUrl} alt="" class="section-icon">
+                                    Story Details
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field field-full-width">
+                                        <label class="field-label" for="story-type">Story Type <abbr class="required" title="required">*</abbr></label>
+                                        <select id="story-type" class="text-input" data-field="storyType" onchange={handleFieldChange}>
+                                            <option value="">Select a type</option>
+                                            <template for:each={storyTypeOptions} for:item="opt">
+                                                <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="story-title">Title <abbr class="required" title="required">*</abbr></label>
+                                            <span class={titleCountClass}>{titleCharacterCount}</span>
+                                        </div>
+                                        <input id="story-title" type="text" class="text-input" maxlength="80" value={title} data-field="title" oninput={handleFieldChange} required>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="story-message">Your Message <abbr class="required" title="required">*</abbr></label>
+                                            <span class={storyMessageCountClass}>{storyMessageCount}</span>
+                                        </div>
+                                        <textarea id="story-message" class="body-textarea" rows="6" maxlength="2000" data-field="storyMessage" oninput={handleFieldChange} required>{storyMessage}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={settingsIconUrl} alt="" class="section-icon">
+                                    Sharing
+                                </h3>
+                                <div class="form-field field-full-width">
+                                    <lightning-input type="checkbox" label="Okay with FIMBY reposting on social media" checked={shareOnSocial} onchange={handleShareOnSocialChange}></lightning-input>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ========== LIBRARY ========== -->
+                        <template lwc:if={isLibrary}>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={postDetailsIconUrl} alt="" class="section-icon">
+                                    Item Details
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="lib-title">Item to Lend Title <abbr class="required" title="required">*</abbr></label>
+                                            <span class={titleCountClass}>{titleCharacterCount}</span>
+                                        </div>
+                                        <input id="lib-title" type="text" class="text-input" maxlength="80" value={title} data-field="title" oninput={handleFieldChange} required>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <div class="field-label-row">
+                                            <label class="field-label" for="lib-description">Description <abbr class="required" title="required">*</abbr></label>
+                                            <span class={libraryDescriptionCountClass}>{libraryDescriptionCount}</span>
+                                        </div>
+                                        <textarea id="lib-description" class="body-textarea" rows="6" maxlength="255" data-field="description" oninput={handleFieldChange} required>{description}</textarea>
+                                    </div>
+                                    <div class="form-field field-full-width">
+                                        <label class="field-label" for="lib-category">Category <abbr class="required" title="required">*</abbr></label>
+                                        <select id="lib-category" class="text-input" data-field="libraryCategory" onchange={handleFieldChange} required>
+                                            <option value="">Select a category</option>
+                                            <template for:each={libraryCategorySelectOptions} for:item="cat">
+                                                <option key={cat.value} value={cat.value} selected={cat.selected}>{cat.label}</option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={availabilityIconUrl} alt="" class="section-icon">
+                                    Availability
+                                </h3>
+                                <div class="field-grid">
+                                    <div class="form-field">
+                                        <label class="field-label" for="lib-max-days">Maximum Lending Time (Days) <abbr class="required" title="required">*</abbr></label>
+                                        <input id="lib-max-days" type="number" class="text-input" min="1" max="365" value={maxLendingDays} data-field="maxLendingDays" oninput={handleFieldChange} required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <img src={settingsIconUrl} alt="" class="section-icon">
+                                    Item Settings
+                                </h3>
+                                <div class="settings-grid">
+                                    <div class="form-field">
+                                        <lightning-input type="checkbox" label="Auto-Accept Requests" checked={autoAcceptResponses} onchange={handleAutoAcceptChange}></lightning-input>
+                                    </div>
+                                    <div class="form-field">
+                                        <lightning-input type="checkbox" label="Auto-Share Contact Info" checked={autoShareContactInfo} onchange={handleAutoShareChange}></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <template lwc:if={showFooter}>
+                    <div class="modal-footer">
+                        <button class="cancel-button" onclick={handleCancel} disabled={isSaving}>Cancel</button>
+                        <button class="save-button" onclick={handleSave} disabled={isSaveDisabled}>
+                            <template lwc:if={isSaving}>
+                                <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
+                                <span>Saving...</span>
+                            </template>
+                            <template lwc:else>
+                                <img src={saveIconUrl} alt="" class="save-btn-icon">
+                                <span>Save Changes</span>
+                            </template>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

@@ -9,21 +9,21 @@
             onmenuaction={handleHeaderMenuAction}>
         </c-fimby-page-header>
 
+        <!-- Loading State -->
+        <template lwc:if={showLoadingState}>
+            <div class="loading-container">
+                <c-fimby-loading-message context="library" size="medium"></c-fimby-loading-message>
+            </div>
+        </template>
+
         <!-- Removed / Hidden State -->
-        <template lwc:if={isRemoved}>
+        <template lwc:elseif={showRemovedState}>
             <div class="detail-content">
                 <div class="content-removed-card" role="status">
                     <lightning-icon icon-name="utility:info" alternative-text="" size="small"></lightning-icon>
                     <h2 class="content-removed-title">This item is no longer available</h2>
                     <p class="content-removed-message">{removedMessage}</p>
                 </div>
-            </div>
-        </template>
-
-        <!-- Loading State -->
-        <template lwc:elseif={isLoading}>
-            <div class="loading-container">
-                <c-fimby-loading-message context="library" size="medium"></c-fimby-loading-message>
             </div>
         </template>
 
@@ -40,7 +40,15 @@
                                 <template lwc:if={hasImage}>
                                     <button type="button" class="item-image-container" style={imageContainerStyle}
                                             aria-label="View full image" onclick={handleImageClick}>
-                                        <img src={imageUrl} alt={itemName} class="item-image">
+                                        <img
+                                            src={imageDisplayUrl}
+                                            srcset={imageSrcset}
+                                            sizes={detailImageSizes}
+                                            alt={itemName}
+                                            class="item-image"
+                                            loading="lazy"
+                                            decoding="async"
+                                            data-original={imageUrl}>
                                         <div class="image-overlay">
                                             <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
                                         </div>
@@ -179,7 +187,6 @@
                         record-id={recordId}
                         admin-data={adminData}
                         admin-data-loaded={adminDataLoaded}
-                        organization-id={organizationId}
                         onreviewrequest={handleReviewRequest}
                         onremoverequest={handleRemoveRequest}
                         onconfirmpickup={handleAdminConfirmPickup}
@@ -331,7 +338,13 @@
                     <lightning-icon icon-name="utility:close" size="medium" variant="inverse"></lightning-icon>
                 </button>
                 <div class="modal-image-container">
-                    <img src={imageUrl} alt={itemName} class="modal-image">
+                    <img
+                        src={imageDisplayUrl}
+                        srcset={imageSrcset}
+                        sizes={detailImageSizes}
+                        alt={itemName}
+                        class="modal-image"
+                        data-original={imageUrl}>
                 </div>
             </div>
         </template>
@@ -339,13 +352,10 @@
         <c-fimby-bottom-navigation active-tab="library" ontabchange={handleTabChange}></c-fimby-bottom-navigation>
 
         <template lwc:if={isOwner}>
-            <c-fimby-record-edit-modal
+            <c-fimby-post-edit-modal
                 record-id={recordId}
-                object-api-name="Library_Item__c"
-                field-set-name="FIMBY_Editable_Fields"
-                modal-title="Edit Library Item"
                 onrecordsaved={handleEditSave}>
-            </c-fimby-record-edit-modal>
+            </c-fimby-post-edit-modal>
         </template>
 
         <c-fimby-report-content></c-fimby-report-content>

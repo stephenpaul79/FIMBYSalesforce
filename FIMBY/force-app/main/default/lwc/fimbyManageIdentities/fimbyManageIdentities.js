@@ -8,7 +8,7 @@ import deactivateRelationship from '@salesforce/apex/FimbySupportRelationshipCon
 import dismissRelationship from '@salesforce/apex/FimbySupportRelationshipController.dismissRelationship';
 import confirmRelationship from '@salesforce/apex/FimbySupportRelationshipController.confirmRelationship';
 import requestCommunityGroupLifecycleAction from '@salesforce/apex/FimbySupportRelationshipController.requestCommunityGroupLifecycleAction';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 const ICONS = {
     care: 'care.png',
@@ -51,7 +51,6 @@ export default class FimbyManageIdentities extends LightningElement {
     @track isLifecycleSubmitting = false;
     @track _lifecycleRelId = null;
     @track _lifecycleGroupName = '';
-    _organizationId = null;
     orgAvatarUrls = {};
     orgNames = {};
 
@@ -104,9 +103,8 @@ export default class FimbyManageIdentities extends LightningElement {
 
     loadRelationships() {
         this.isLoading = true;
-        Promise.all([getManagedRelationships(), getOrganizationId()])
-            .then(([result, orgId]) => {
-                this._organizationId = orgId;
+        getManagedRelationships()
+            .then((result) => {
                 this.orgAvatarUrls = result.orgAvatarUrls || {};
                 this.orgNames = result.orgNames || {};
                 this.peopleISupport = this._mapSupport(result.peopleISupport || []);
@@ -121,16 +119,8 @@ export default class FimbyManageIdentities extends LightningElement {
         this._loadPaperRelationships();
     }
 
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (this._organizationId && !url.includes(this._organizationId)) {
-            return url + this._organizationId;
-        }
-        return url;
-    }
-
     _resolveAvatarUrl(rawUrl, fallbackIcon) {
-        return this._completeImageUrl(rawUrl) || `${IMPACT_ICONS}/${fallbackIcon}`;
+        return avatarImageUrl(rawUrl) || `${IMPACT_ICONS}/${fallbackIcon}`;
     }
 
     _loadPaperRelationships() {

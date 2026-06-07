@@ -24,7 +24,7 @@
                 <slot name="badge"></slot>
                 <div lwc:if={showMenu} class="card-menu-wrap">
                     <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
-                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                        <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
                     </button>
                     <template lwc:if={showMenuDropdown}>
                         <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
@@ -61,7 +61,7 @@
                             <template lwc:if={showListCardMenu}>
                                 <div class="card-menu-wrap list-card-menu">
                                     <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
-                                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                                        <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
                                     </button>
                                     <template lwc:if={showMenuDropdown}>
                                         <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
@@ -96,7 +96,7 @@
                             <template lwc:if={showCompactCardMenu}>
                                 <div class="card-menu-wrap compact-card-menu">
                                     <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
-                                        <img src={kebabIconUrl} alt="" class="card-menu-icon">
+                                        <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
                                     </button>
                                     <template lwc:if={showMenuDropdown}>
                                         <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>

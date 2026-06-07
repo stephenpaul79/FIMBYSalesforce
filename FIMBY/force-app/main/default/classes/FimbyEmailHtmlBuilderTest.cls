@@ -20,7 +20,8 @@ private class FimbyEmailHtmlBuilderTest {
             Type__c = 'Message',
             Action_URL__c = '/conversation?id=123'
         );
-        String html = FimbyEmailHtmlBuilder.buildAlertCards(new List<Notification__c>{ n });
+        String html = FimbyEmailHtmlBuilder.buildAlertCards(new List<Notification__c>{ n }, null, 'Sarah');
+        System.assert(html.contains('Hi Sarah,'), 'First card should greet recipient');
         System.assert(html.contains('Test Alert Title'), 'Should contain the notification title');
         System.assert(html.contains('Jane Doe'), 'Should contain the actor name');
         System.assert(html.contains('Alert body content'), 'Should contain the body');
@@ -91,9 +92,12 @@ private class FimbyEmailHtmlBuilderTest {
     @IsTest
     static void buildContactShareCard_allFields_containsAllData() {
         String html = FimbyEmailHtmlBuilder.buildContactShareCard(
-            'John Smith', 'john@example.com', '555-1234',
-            '123 Main St', 'Apt 4B', 'Lending item'
+            'Sarah', 'John Smith', 'john@example.com', '555-1234',
+            '123 Main St', 'Apt 4B', 'Lending item',
+            'https://our.fimby.com/reply', 'View Conversation', 'reply.png'
         );
+        System.assert(html.contains('Hi Sarah,'), 'Should greet recipient');
+        System.assert(html.contains('CONTACT'), 'Should show category badge');
         System.assert(html.contains('John Smith'), 'Should contain sender name');
         System.assert(html.contains('john@example.com'), 'Should contain email');
         System.assert(html.contains('555-1234'), 'Should contain phone');
@@ -117,12 +121,49 @@ private class FimbyEmailHtmlBuilderTest {
     @IsTest
     static void buildThankYouCard_fullContent_containsQuote() {
         String html = FimbyEmailHtmlBuilder.buildThankYouCard(
-            'Maria', 'Thank you for helping with my garden!', 'Need: Gardening help'
+            'Sarah', 'Maria', 'Thank you for helping with my garden!', 'Need: Gardening help',
+            'https://our.fimby.com/reply', 'View Conversation', 'reply.png'
         );
+        System.assert(html.contains('Hi Sarah,'), 'Should greet recipient');
+        System.assert(html.contains('THANK YOU'), 'Should show category badge');
         System.assert(html.contains('Maria'), 'Should contain sender name');
         System.assert(html.contains('Thank you for helping'), 'Should contain message');
         System.assert(html.contains('Gardening help'), 'Should contain post title');
-        System.assert(html.contains('ThankYouActive.png'), 'Should contain thank you icon');
+        System.assert(html.contains('View Conversation'), 'CTA should be inside card');
+        System.assert(html.contains('ThankYouActive.png'), 'Should contain thank you badge icon');
+    }
+
+    @IsTest
+    static void buildTransactionalCard_greetingIntroCta_allInsideCard() {
+        String html = FimbyEmailHtmlBuilder.buildTransactionalCard(
+            FimbyEmailHtmlBuilder.TXN_BADGE_SUPPORT, '#476B4C', 'NeighborhoodActive.png',
+            'Approved',
+            '<p>Help line</p>',
+            'Sarah', 'Good news — verified.', 'https://our.fimby.com/manage', 'Open Manage Identities', 'enter.png'
+        );
+        System.assert(html.contains('SUPPORT'), 'Should show badge');
+        System.assert(html.contains('Hi Sarah,'), 'Should greet recipient');
+        System.assert(html.contains('Good news'), 'Intro should be inside card');
+        System.assert(html.contains('Open Manage Identities'), 'CTA should be inside card');
+        Integer cardClose = html.indexOf('</td></tr></table>');
+        System.assert(html.indexOf('Hi Sarah,') < cardClose, 'Greeting before card close');
+        System.assert(html.indexOf('Open Manage Identities') < cardClose, 'CTA before card close');
+    }
+
+    @IsTest
+    static void resolveGreetingText_blankFirstName_usesNeighbour() {
+        System.assertEquals('Hi neighbour,', FimbyEmailHtmlBuilder.resolveGreetingText(null));
+        System.assertEquals('Hi neighbour,', FimbyEmailHtmlBuilder.resolveGreetingText(''));
+    }
+
+    @IsTest
+    static void buildAlertCards_multiCard_greetingOnFirstOnly() {
+        List<Notification__c> notifs = new List<Notification__c>{
+            new Notification__c(Title__c = 'First', Type__c = 'Message'),
+            new Notification__c(Title__c = 'Second', Type__c = 'Response')
+        };
+        String html = FimbyEmailHtmlBuilder.buildAlertCards(notifs, null, 'Alex');
+        System.assertEquals(1, html.split('Hi Alex,').size() - 1, 'Greeting should appear once');
     }
 
     @IsTest

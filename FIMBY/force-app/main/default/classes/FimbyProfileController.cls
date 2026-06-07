@@ -185,31 +185,14 @@ public with sharing class FimbyProfileController {
     @AuraEnabled(cacheable=false)
     public static Map<String, Object> getSettingsData() {
         try {
-            User u = [
-                SELECT Id, Username,
-                       FIMBY_Summary_Emails__c,
-                       Push_Notifications_Enabled__c, Push_Messages__c,
-                       Push_Needs_Offers__c, Push_Library__c,
-                       Push_Stories__c, Push_Reminders__c, Push_Bulk_Buy__c,
-                       Push_Events__c,
-                       Quiet_Hours_Preference__c,
-                       Email_Alerts_Enabled__c, Email_Alert_Messages__c,
-                       Email_Alert_Needs_Offers__c, Email_Alert_Library__c,
-                       Email_Alert_Stories__c, Email_Alert_Reminders__c,
-                       Email_Alert_Bulk_Buy__c, Email_Alert_Events__c,
-                       Include_Sundays__c,
-                       FIMBY_Operating_Updates_Enabled__c,
-                       Celebration_Confetti_Enabled__c, Celebration_Memes_Enabled__c,
-                       TimeZoneSidKey, LocaleSidKey, LanguageLocaleKey,
-                       Theme_Preference__c
-                FROM User
-                WHERE Id = :UserInfo.getUserId()
-                LIMIT 1
-            ];
+            // SYSTEM_MODE: community profiles often lack FLS read on standard User
+            // regional fields (TimeZoneSidKey, LocaleSidKey) even though the member
+            // may update them from Settings. Scoped strictly to the running user.
+            User u = new UserSettingsReader().getCurrentUserSettings();
 
-            List<Map<String, String>> tzOptions = getPicklistOptions(User.TimeZoneSidKey);
-            List<Map<String, String>> localeOptions = getPicklistOptions(User.LocaleSidKey);
-            List<Map<String, String>> langOptions = getPicklistOptions(User.LanguageLocaleKey);
+            List<Map<String, String>> tzOptions = getPicklistOptions(User.TimeZoneSidKey, u.TimeZoneSidKey);
+            List<Map<String, String>> localeOptions = getPicklistOptions(User.LocaleSidKey, u.LocaleSidKey);
+            List<Map<String, String>> langOptions = getPicklistOptions(User.LanguageLocaleKey, u.LanguageLocaleKey);
 
             Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
@@ -258,15 +241,25 @@ public with sharing class FimbyProfileController {
         }
     }
 
-    private static List<Map<String, String>> getPicklistOptions(Schema.SObjectField field) {
+    private static List<Map<String, String>> getPicklistOptions(Schema.SObjectField field, String currentValue) {
         List<Map<String, String>> options = new List<Map<String, String>>();
+        Boolean currentIncluded = false;
         for (Schema.PicklistEntry entry : field.getDescribe().getPicklistValues()) {
-            if (entry.isActive()) {
+            if (entry.isActive() || entry.getValue() == currentValue) {
                 options.add(new Map<String, String>{
                     'label' => entry.getLabel(),
                     'value' => entry.getValue()
                 });
+                if (entry.getValue() == currentValue) {
+                    currentIncluded = true;
+                }
             }
+        }
+        if (String.isNotBlank(currentValue) && !currentIncluded) {
+            options.add(0, new Map<String, String>{
+                'label' => currentValue,
+                'value' => currentValue
+            });
         }
         return options;
     }
@@ -578,6 +571,36 @@ public with sharing class FimbyProfileController {
     /**
      * @description Without-sharing helper for User updates.
      */
+    private without sharing class UserSettingsReader {
+        public User getCurrentUserSettings() {
+            List<User> rows = Database.queryWithBinds(
+                'SELECT Id, Username,' +
+                ' FIMBY_Summary_Emails__c,' +
+                ' Push_Notifications_Enabled__c, Push_Messages__c,' +
+                ' Push_Needs_Offers__c, Push_Library__c,' +
+                ' Push_Stories__c, Push_Reminders__c, Push_Bulk_Buy__c,' +
+                ' Push_Events__c,' +
+                ' Quiet_Hours_Preference__c,' +
+                ' Email_Alerts_Enabled__c, Email_Alert_Messages__c,' +
+                ' Email_Alert_Needs_Offers__c, Email_Alert_Library__c,' +
+                ' Email_Alert_Stories__c, Email_Alert_Reminders__c,' +
+                ' Email_Alert_Bulk_Buy__c, Email_Alert_Events__c,' +
+                ' Include_Sundays__c,' +
+                ' FIMBY_Operating_Updates_Enabled__c,' +
+                ' Celebration_Confetti_Enabled__c, Celebration_Memes_Enabled__c,' +
+                ' TimeZoneSidKey, LocaleSidKey, LanguageLocaleKey,' +
+                ' Theme_Preference__c' +
+                ' FROM User WHERE Id = :userId LIMIT 1',
+                new Map<String, Object>{ 'userId' => UserInfo.getUserId() },
+                AccessLevel.SYSTEM_MODE
+            );
+            if (rows.isEmpty()) {
+                throw new AuraHandledException('User record not found.');
+            }
+            return rows[0];
+        }
+    }
+
     private without sharing class UserUpdater {
         /**
          * @description Updates a User record without sharing.

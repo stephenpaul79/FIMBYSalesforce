@@ -708,10 +708,15 @@ public with sharing class FimbyConversationController {
          */
         public Boolean isConversationRevokedInternal(Id conversationId) {
             Conversation__c convo = [
-                SELECT Participant_1__c, Participant_2__c
+                SELECT Participant_1__c, Participant_2__c, Context_Type__c
                 FROM Conversation__c
                 WHERE Id = :conversationId LIMIT 1
             ];
+
+            if (convo.Context_Type__c == FimbyConstants.CTX_VOUCH_REQUEST) {
+                return false;
+            }
+
             Id p1 = convo.Participant_1__c;
             Id p2 = convo.Participant_2__c;
 

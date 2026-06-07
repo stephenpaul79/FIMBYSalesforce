@@ -17,7 +17,16 @@ public class FimbyResponseThreadControllerTest {
     }
 
     private static User getPosterUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact posterContact = getPosterContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :posterContact.Id
+              AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the poster Contact.');
+        return users[0];
     }
 
     private static Contact getPosterContact() {
@@ -109,6 +118,7 @@ public class FimbyResponseThreadControllerTest {
         Shared_Contact_Info__c sci = new Shared_Contact_Info__c(
             Contact__c = posterContact.Id,
             Shared_To__c = responderContact.Id,
+            Response__c = resp.Id,
             Email__c = 'poster@test.com',
             Origin__c = 'Response'
         );

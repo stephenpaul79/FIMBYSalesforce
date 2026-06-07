@@ -6,7 +6,7 @@ import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 
 import getUnifiedFeed from '@salesforce/apex/FimbyHomeController.getUnifiedFeed';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getActiveSeasonalTheme from '@salesforce/apex/FimbyProfileController.getActiveSeasonalTheme';
 import updateLastAppVisit from '@salesforce/apex/FimbyProfileController.updateLastAppVisit';
@@ -93,6 +93,22 @@ const INITIAL_FETCH_SIZE = 100;
 const SCROLL_BATCH_SIZE = 50;
 const CACHE_KEY = 'fimby-home-feed-state';
 const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
+
+/** Matches fimbyCard.formattedTimestamp for consistent feed card headers */
+function formatRelativeTimestamp(timestamp) {
+    if (!timestamp) return '';
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = now - time;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return time.toLocaleDateString();
+}
 const CACHE_MAX_ITEMS = 100;
 
 /** Apex UnifiedFeedItem fields — used to strip UI-only keys when reprocessing cached rows. */
@@ -112,7 +128,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @api showLibrary;
 
     currentUserId = Id;
-    organizationId = null;
     currentContactId = null;
     actingAsContactId = null;
 
@@ -135,6 +150,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @track showLightbox = false;
     @track lightboxImages = [];
     @track lightboxStartIndex = 0;
+    @track _openLibraryMenuRecordId = null;
 
     /* Sticky header / scroll-direction detection */
     @track filterHidden = false;
@@ -153,6 +169,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     _saveThrottleTimer = null;
 
     defaultAvatarUrl = `${IMPACT_ICONS}/NoProfilePhoto.png`;
+    feedColumnSizes = SIZES.feedColumn;
 
     /* ===============================================================
      * L1 Filter pill getters
@@ -204,7 +221,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get urgentIconUrl()        { return `${IMPACT_ICONS}/exclamation.png`; }
     get borrowIconUrl()        { return `${IMPACT_ICONS}/borrow.png`; }
     get viewPostIconUrl()      { return `${IMPACT_ICONS}/Magnify.png`; }
-    get kebabBeigeIconUrl()    { return `${IMPACT_ICONS}/KebabBeige.png`; }
+    get reportIconUrl()        { return `${IMPACT_ICONS}/warning.png`; }
     get libraryBadgeStyle()    { return `background: ${BADGE_BG_COLORS['library']};`; }
 
     /* ===============================================================
@@ -310,7 +327,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
         this._applyUrlFilterParam();
         this._initGreeting();
-        await this.getOrganizationIdAsync();
 
         if (!this._restoreFeedState()) {
             this.loadInitialData();
@@ -384,14 +400,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             }
         } catch (e) {
             // Fail silently
-        }
-    }
-
-    async getOrganizationIdAsync() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (error) {
-            console.error('Error fetching Organization ID:', error);
         }
     }
 
@@ -506,7 +514,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      * =============================================================== */
     processItems(items) {
         return items.map(item => {
-            const processedImageUrl = this.getCompleteImageUrl(item.imageUrl);
+            const processedImageUrl = completeImageUrl(item.imageUrl);
             const aspectRatioStyle = this.calculateAspectRatioStyle(item.imageRatio);
             const isStory = item.feedType === 'story';
             const isAskOffer = item.feedType === 'askOffer';
@@ -642,7 +650,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             }
             const orgAvatarFallback = `${IMPACT_ICONS}/NoOrgPhoto.png`;
             const avatarUrl = item.postedByImageUrl
-                ? this.getCompleteImageUrl(item.postedByImageUrl)
+                ? avatarImageUrl(item.postedByImageUrl)
                 : (isOrg ? orgAvatarFallback : this.defaultAvatarUrl);
             const orgProfileUrl = isOrg && item.orgAccountId
                 ? `/organization/${item.orgAccountId}` : '';
@@ -669,7 +677,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 responsePillClass = 'response-pill-responded';
             }
 
-            return {
+            const processed = {
                 ...item,
                 isStory,
                 isAskOffer,
@@ -704,8 +712,16 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 badgeClass,
                 badgeIconUrl,
                 badgeLabel,
-                badgeStyle: badgeBg ? `background: ${badgeBg};` : ''
+                badgeStyle: badgeBg ? `background: ${badgeBg};` : '',
+                formattedTimestamp: formatRelativeTimestamp(item.createdDate)
             };
+
+            if (item.feedType === 'library' && hasVisibleImage) {
+                processed.libraryDisplayImageUrl = thumbnailUrl(item.imageUrl);
+                processed.libraryImageSrcset = buildSrcset(item.imageUrl, item.imageRatio);
+            }
+
+            return processed;
         });
     }
 
@@ -722,15 +738,15 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 images.push({ url: primaryImageUrl, ratio: item.imageRatio || null, alt: altText });
             }
             if (item.image2Url) {
-                const url2 = this.getCompleteImageUrl(item.image2Url);
+                const url2 = completeImageUrl(item.image2Url);
                 if (url2) images.push({ url: url2, ratio: item.image2Ratio || null, alt: altText });
             }
             if (item.image3Url) {
-                const url3 = this.getCompleteImageUrl(item.image3Url);
+                const url3 = completeImageUrl(item.image3Url);
                 if (url3) images.push({ url: url3, ratio: item.image3Ratio || null, alt: altText });
             }
             if (item.image4Url) {
-                const url4 = this.getCompleteImageUrl(item.image4Url);
+                const url4 = completeImageUrl(item.image4Url);
                 if (url4) images.push({ url: url4, ratio: item.image4Ratio || null, alt: altText });
             }
         } else {
@@ -785,18 +801,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         return item.itemType || '';
     }
 
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId) return imageUrl + this.organizationId;
-        return imageUrl;
-    }
-
-    getAvatarUrl(imageUrl) {
-        if (imageUrl) return this.getCompleteImageUrl(imageUrl);
-        return this.defaultAvatarUrl;
-    }
-
     /* ===============================================================
      * Client-side filter application (for the "all" feed view)
      * Server-side filtering is the primary mechanism now.
@@ -810,7 +814,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     get displayFeedItems() {
-        return this.feedItems;
+        const openMenuId = this._openLibraryMenuRecordId;
+        return this.feedItems.map((item) => ({
+            ...item,
+            libraryMenuOpen: item.isLibrary && openMenuId === item.recordId
+        }));
     }
 
     get hasFeedItems() {
@@ -864,6 +872,14 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      * Card interactions
      * =============================================================== */
     handleCardClick(event) {
+        if (event.target.closest('.library-card-menu-wrap') ||
+            event.target.closest('.library-card-menu-dropdown') ||
+            event.target.closest('.library-card-menu-backdrop') ||
+            event.target.closest('.library-borrow-btn') ||
+            event.target.closest('.library-view-btn') ||
+            event.target.closest('.clickable-avatar')) {
+            return;
+        }
         const cardWrapper = event.currentTarget;
         const recordId = cardWrapper.dataset.recordId;
         const item = this.feedItems.find(i => i.recordId === recordId);
@@ -954,12 +970,25 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         this._openContentReport(recordId, item);
     }
 
+    handleLibraryMenuClick(event) {
+        event.stopPropagation();
+        const recordId = event.currentTarget?.dataset?.recordId;
+        if (!recordId) return;
+        this._openLibraryMenuRecordId =
+            this._openLibraryMenuRecordId === recordId ? null : recordId;
+    }
+
+    handleLibraryMenuBackdropClick(event) {
+        event.stopPropagation();
+        this._openLibraryMenuRecordId = null;
+    }
+
     handleLibraryCardReport(event) {
         event.stopPropagation();
         const recordId = event.currentTarget?.dataset?.recordId;
-        if (recordId) {
-            this._openContentReport(recordId, { feedType: 'library' });
-        }
+        if (!recordId) return;
+        this._openLibraryMenuRecordId = null;
+        this._openContentReport(recordId, { feedType: 'library' });
     }
 
     _openContentReport(recordId, item) {
@@ -981,6 +1010,15 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         if (!url) return;
         event.stopPropagation();
         location.href = url;
+    }
+
+    handleLibraryView(event) {
+        event.stopPropagation();
+        const cardWrapper = event.target.closest('.feed-card-wrapper');
+        const recordId = cardWrapper?.dataset.recordId;
+        if (!recordId) return;
+        const item = this.feedItems.find(i => i.recordId === recordId);
+        if (item) this.navigateToDetailPage(item);
     }
 
     async handleLibraryBorrow(event) {

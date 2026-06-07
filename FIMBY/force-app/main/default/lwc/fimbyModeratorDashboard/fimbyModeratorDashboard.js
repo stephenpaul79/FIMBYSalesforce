@@ -33,7 +33,7 @@ import triageFeedback from '@salesforce/apex/FimbyModeratorDashboardController.t
 import approveSupportRelationship from '@salesforce/apex/FimbyModeratorDashboardController.approveSupportRelationship';
 import declineSupportRelationship from '@salesforce/apex/FimbyModeratorDashboardController.declineSupportRelationship';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 
 const PAGE_SIZE = 20;
 const STORAGE_KEY = 'fimby-mod-dashboard-state';
@@ -199,7 +199,6 @@ export default class FimbyModeratorDashboard extends LightningElement {
     accessDenied = false;
     isInitialLoading = true;
     _initialized = false;
-    _organizationId;
     _desktopQuery;
 
     get lockIconUrl() {
@@ -392,7 +391,6 @@ export default class FimbyModeratorDashboard extends LightningElement {
         this._initialized = true;
         this._desktopQuery = window.matchMedia('(min-width: 1024px)');
         this._restoreState();
-        try { this._organizationId = await getOrganizationId(); } catch (_) { /* non-fatal */ }
         await this._initDashboard();
     }
 
@@ -831,14 +829,6 @@ export default class FimbyModeratorDashboard extends LightningElement {
         return pattern ? summary.replace(pattern, '') : summary;
     }
 
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (this._organizationId && !url.includes(this._organizationId)) {
-            return url + this._organizationId;
-        }
-        return url;
-    }
-
     _resolveImageUrls(data) {
         if (!data) return;
         const photoKeys = [
@@ -849,14 +839,14 @@ export default class FimbyModeratorDashboard extends LightningElement {
         ];
         for (const key of photoKeys) {
             if (data[key]) {
-                data[key] = this._completeImageUrl(data[key]);
+                data[key] = avatarImageUrl(data[key]);
             }
         }
         if (data.subjectData?.photoUrl) {
-            data.subjectData.photoUrl = this._completeImageUrl(data.subjectData.photoUrl);
+            data.subjectData.photoUrl = avatarImageUrl(data.subjectData.photoUrl);
         }
         if (Array.isArray(data.imageUrls)) {
-            data.imageUrls = data.imageUrls.map(u => this._completeImageUrl(u));
+            data.imageUrls = data.imageUrls.map(u => completeImageUrl(u));
         }
     }
 

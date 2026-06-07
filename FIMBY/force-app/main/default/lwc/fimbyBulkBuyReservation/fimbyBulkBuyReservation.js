@@ -7,7 +7,7 @@ import { LightningElement, track, wire } from 'lwc';
 import getReservationContext from '@salesforce/apex/FimbyBulkBuyReservationController.getReservationContext';
 import createReservation from '@salesforce/apex/FimbyBulkBuyReservationController.createReservation';
 import getBulkBuyHistory from '@salesforce/apex/FimbyFollowUpController.getBulkBuyHistory';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 
@@ -29,7 +29,6 @@ export default class FimbyBulkBuyReservation extends LightningElement {
     @track blockedMessage = '';
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
-    organizationId = null;
 
     defaultAvatarUrl = 'https://fimby.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_PNG&versionId=068OL00000A728z&operationContext=DELIVERY&contentId=05TOL00000CsvCQ&page=0&d=/a/OL000005rMIr/8p5CUUyFrdpAivDzkgUrn4DaBoudxfTwT4yVSF5lRSc&oid=00D5f000006NDkr';
 
@@ -82,7 +81,6 @@ export default class FimbyBulkBuyReservation extends LightningElement {
 
     async loadContext() {
         try {
-            this.organizationId = await getOrganizationId();
             const result = await getReservationContext({ postId: this.recordId });
 
             if (!result.success) {
@@ -420,13 +418,6 @@ export default class FimbyBulkBuyReservation extends LightningElement {
     }
     get organiserAvatarUrl() {
         const url = this.post?.Posted_By__r?.Image_URL__c;
-        return url ? this.resolveImageUrl(url) : this.defaultAvatarUrl;
-    }
-
-    resolveImageUrl(url) {
-        if (!url) return '';
-        if (this.organizationId && url.includes(this.organizationId)) return url;
-        if (this.organizationId) return url + this.organizationId;
-        return url;
+        return url ? avatarImageUrl(url) : this.defaultAvatarUrl;
     }
 }

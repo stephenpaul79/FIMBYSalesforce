@@ -1,23 +1,63 @@
 ---
-description: On diagnosis requests, report findings and proposed changes before implementing
+description: Default to discuss-first — no edits, deploys, or commits until the user explicitly approves
 alwaysApply: true
 ---
 
-# Diagnose Before Fix
+# Confirm Before Implement
 
-When the user asks to **investigate**, **diagnose**, **look into**, **find out why**, **scan**, or **review** an issue — do **not** edit code, deploy, or commit until you have shared:
+This rule is **unconditional**. `alwaysApply: true` means the default below applies to **every** message — not only when certain keywords appear.
 
-1. **What you found** — root cause or best current hypothesis, with evidence.
-2. **What you would change** — files, approach, and scope (brief).
+## Default: discuss, do not act
 
-Then wait for confirmation, or proceed only if they clearly asked to implement in the same message.
+Do **not** edit, create, or delete files; run deploys; or create commits/PRs until the user has **explicitly approved** your proposed approach in the conversation.
 
-## Skip the pause — fix directly
+First share:
 
-Go straight to implementation when the prompt is clearly a **fix/implement** request, especially small pointed ones, e.g.:
+1. **What you found** — root cause, feasibility, or best current hypothesis, with evidence when relevant.
+2. **What you would change** — options, tradeoffs, files, scope, and a recommendation.
+3. **A clear ask** — e.g. "Want me to implement option B?" — then **stop**.
 
-- "fix this", "please do", "implement", "deploy the fix"
-- A prior turn already agreed on the approach
-- Obvious one-line typo or single-file bug with no design choice
+## Capability and planning questions are not implementation requests
 
-When unsure whether they want diagnosis only or a fix, ask once — do not guess and ship a large diff silently.
+Treat these as **discuss-only** until the user approves:
+
+- "can you…", "is it possible…", "are you able…"
+- "how would we…", "what would it take…"
+- "make it on brand", "fix this", "improve X" — without explicit go-ahead in the same message
+
+Answer whether it is possible, outline options and risks, recommend one — **do not start work**.
+
+## When you may implement
+
+Proceed only when **one** of these is true:
+
+1. **Same message:** user clearly approves implementation — e.g. "go ahead", "implement", "do it", "yes, option B", "deploy it", "apply that plan".
+2. **Prior turn:** you proposed a **specific** plan (files + approach) and the user's **next reply** approves it — e.g. "yes", "do that", "proceed with A".
+3. **Trivial typo:** user pointed at one obvious typo and said "fix this" with no design choice — single-line correction only.
+
+If unsure, **ask once**. Do not guess and ship a diff.
+
+## In-process work (relaxed mode)
+
+When **all** are true in the current thread:
+
+- The user already approved a specific plan or said to proceed, and
+- Implementation of that plan has started (edits made or work clearly underway), and
+- The new message is a follow-up on the **same task** (refinement, bug from last change, "also…", "that failed…"),
+
+then you may implement follow-ups **without** re-pitching the full plan — but still briefly state what you are changing.
+
+**Cold start:** If there is no approved plan in the thread, or the message opens a **new topic**, use the cautious default even if the wording sounds like "fix this" or "can you…".
+
+**Still pause** for in-process messages that introduce new tradeoffs, expand scope materially, or touch guarded areas (e.g. network/site metadata) unless the user explicitly approves in that message.
+
+When unsure whether a message is in-process or a new topic, ask once.
+
+## Rule precedence
+
+This rule overrides:
+
+- Proactive deploy rules (deploy only **after** approved implementation in the same session turn)
+- Any inference that a question implies "do it now"
+
+When rules conflict, **confirm before implement wins**.

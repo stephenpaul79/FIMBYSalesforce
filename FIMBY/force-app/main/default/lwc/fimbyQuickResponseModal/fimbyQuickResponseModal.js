@@ -1,7 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 import getQuickResponseContext from '@salesforce/apex/FimbyQuickResponseController.getQuickResponseContext';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import postStoryComment from '@salesforce/apex/FimbyStoryCommentController.postStoryComment';
@@ -91,7 +91,6 @@ export default class FimbyQuickResponseModal extends LightningElement {
      * ================================================================ */
     _context = null;
     _identity = null;
-    _organizationId = null;
 
     /* ================================================================
      * Story Form State
@@ -246,7 +245,7 @@ export default class FimbyQuickResponseModal extends LightningElement {
         else if (this.isBulkBuyType) raw = this._context.post?.Image_1_URL__c || '';
         else if (this.isLibraryType) raw = this._context.item?.imageUrl || '';
         else raw = this._context.imageUrl || '';
-        return this._completeImageUrl(raw);
+        return completeImageUrl(raw);
     }
 
     get hasSummaryImage() {
@@ -492,14 +491,6 @@ export default class FimbyQuickResponseModal extends LightningElement {
     get successIconUrl() { return `${IMPACT_ICONS}/confetti.png`; }
     get closeIconName() { return 'utility:close'; }
 
-    _completeImageUrl(url) {
-        if (!url) return '';
-        if (this._organizationId && !url.includes(this._organizationId)) {
-            return url + this._organizationId;
-        }
-        return url;
-    }
-
     /* ================================================================
      * MODAL EVENT HANDLERS
      * ================================================================ */
@@ -531,10 +522,6 @@ export default class FimbyQuickResponseModal extends LightningElement {
     async _loadContext() {
         this._viewState = 'loading';
         try {
-            if (!this._organizationId) {
-                this._organizationId = await getOrganizationId();
-            }
-
             const result = await getQuickResponseContext({
                 recordId: this._recordId,
                 responseType: this._responseType

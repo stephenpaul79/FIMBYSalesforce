@@ -1,5 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getThread from '@salesforce/apex/FimbyResponseThreadController.getThread';
 import getMessages from '@salesforce/apex/FimbyResponseThreadController.getMessages';
@@ -14,6 +14,12 @@ import shareContactInfoApex from '@salesforce/apex/FimbyResponseThreadController
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
+
+function resolveAvatarUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
+    return avatarImageUrl(url);
+}
 
 const PAGE_SIZE = 50;
 const TERMINAL_STATUSES = ['Declined', 'Cancelled', 'Expired'];
@@ -67,7 +73,6 @@ export default class FimbyResponseThread extends LightningElement {
     @track shareContactError = '';
     @track isShareSubmitting = false;
 
-    @track organizationId = null;
     @track hasMultipleIdentities = false;
     @track postExpanded = false;
     @track hasMoreMessages = false;
@@ -265,17 +270,6 @@ export default class FimbyResponseThread extends LightningElement {
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
-    _completeImageUrl(url) {
-        if (!url) return null;
-        if (url.startsWith('/resource/') || !url.startsWith('http')) {
-            return url;
-        }
-        if (this.organizationId && !url.includes(this.organizationId)) {
-            return url + this.organizationId;
-        }
-        return url;
-    }
-
     _getInitials(name) {
         if (!name) return '?';
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -297,12 +291,7 @@ export default class FimbyResponseThread extends LightningElement {
     }
 
     get postImageUrl() {
-        const baseUrl = this.post.imageUrl;
-        if (!baseUrl) return '';
-        if (this.organizationId && !baseUrl.includes(this.organizationId)) {
-            return baseUrl + this.organizationId;
-        }
-        return baseUrl;
+        return completeImageUrl(this.post.imageUrl);
     }
 
     get showShareContactPrompt() {
@@ -338,10 +327,6 @@ export default class FimbyResponseThread extends LightningElement {
     }
 
     async connectedCallback() {
-        try {
-            this.organizationId = await getOrganizationId();
-        } catch (e) { /* non-critical */ }
-
         if (!this.responseId) {
             const params = new URLSearchParams(window.location.search);
             this.responseId = params.get('recordId') || '';
@@ -468,8 +453,8 @@ export default class FimbyResponseThread extends LightningElement {
         const origIsFromMe = this.isResponder && !this.isPoster;
         const origDisplayName = origIsFromMe ? this.myContactName : this.responderName;
         const origAvatarUrl = origIsFromMe
-            ? this._completeImageUrl(this.myContactImageUrl)
-            : this._completeImageUrl(this.response.responderImageUrl);
+            ? resolveAvatarUrl(this.myContactImageUrl)
+            : resolveAvatarUrl(this.response.responderImageUrl);
 
         if (this.response.amountRequested) {
             items.push({
@@ -482,11 +467,11 @@ export default class FimbyResponseThread extends LightningElement {
                 formattedTimeShort: this.formatTimeShort(this.response.createdDate),
                 formattedTimeRelative: this.formatTimeRelative(this.response.createdDate),
                 systemMessageType: 'Amount_Request',
+                showAmountEditIcon: this.showEditAmountButton,
                 cardClass: 'message-item system-message'
             });
         }
 
-        const origIsOnBehalfOf = !!this.response.onBehalfOfId;
         const origCard = {
             id: 'original-response',
             isOriginalResponse: true,
@@ -505,8 +490,6 @@ export default class FimbyResponseThread extends LightningElement {
             senderAvatarUrl: origAvatarUrl,
             hasAvatarImage: !!origAvatarUrl,
             responderIsOrg: !!this.response.responderIsOrg,
-            showViaLabel: origIsOnBehalfOf && !origIsFromMe && !this.response.responderIsOrg,
-            viaLabel: origIsOnBehalfOf ? 'via ' + (this.response.contactName || '').split(' ')[0] : '',
             cardClass: 'message-card' + (origIsFromMe ? ' from-me' : ''),
             snippetText: this._getSnippet(this.response.responseText)
         };
@@ -526,8 +509,8 @@ export default class FimbyResponseThread extends LightningElement {
             const isMe = msg.senderId === this.myContactId;
             const msgDisplayName = isMe ? this.myContactName : (msg.senderName || this.otherPartyName);
             const msgAvatarUrl = isMe
-                ? this._completeImageUrl(this.myContactImageUrl)
-                : this._completeImageUrl(msg.senderImageUrl);
+                ? resolveAvatarUrl(this.myContactImageUrl)
+                : resolveAvatarUrl(msg.senderImageUrl);
 
             const isThanksMsg = msg.isSystemMessage && msg.systemMessageType === 'Thanks_Sent';
 
@@ -920,7 +903,14 @@ export default class FimbyResponseThread extends LightningElement {
                 if (result.success) {
                     this.contactShared = true;
                     this.showShareContact = false;
-                    this.appendSystemMessage(this.myContactName + ' shared their contact info');
+                    if (result.systemMessage) {
+                        const alreadyShown = this.messages.some(m => m.id === result.systemMessage.id);
+                        if (!alreadyShown) {
+                            this.messages = [...this.messages, result.systemMessage];
+                            this.processMessages();
+                            this.scrollToBottom();
+                        }
+                    }
                 } else {
                     this.shareContactError = result.message || 'Unable to share contact info.';
                 }

@@ -52,7 +52,6 @@ export default class FimbyPageHeader extends LightningElement {
     _mediaQuery;
     _boundKeyDown;
 
-    get kebabIconUrl() { return `${IMPACT_ICONS}/KebabBeige.png`; }
     get hasParent() { return !!this.parentLabel; }
     get progressStyle() { return `width: ${this.progressValue}%`; }
 

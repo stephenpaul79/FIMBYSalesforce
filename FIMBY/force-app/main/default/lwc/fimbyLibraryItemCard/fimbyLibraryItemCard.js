@@ -1,7 +1,7 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl } from 'c/fimbyLibraryCategoryConfig';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import { formatLocalDate, parseLocalDate } from 'c/fimbyDateUtils';
 
 export default class FimbyLibraryItemCard extends LightningElement {
@@ -9,43 +9,35 @@ export default class FimbyLibraryItemCard extends LightningElement {
     @api showActions = false;
     @track currentImageIndex = 0;
     @track isSaved = false;
-    organizationId = null;
 
-    // Wire Organization ID
-    @wire(getOrganizationId)
-    wiredOrgId({ data, error }) {
-        if (data) {
-            this.organizationId = data;
-        } else if (error) {
-            console.error('Error fetching Organization ID:', error);
-        }
-    }
-
-    // Helper method to get complete image URL with Organization ID
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) {
+    get currentImageOriginal() {
+        if (!this.item.images || !this.item.images.length) {
             return null;
         }
-
-        // If the URL already contains the organization ID or is a complete URL, return as-is
-        if (imageUrl.includes('http') || (this.organizationId && imageUrl.includes(this.organizationId))) {
-            return imageUrl;
-        }
-
-        // If we have the organization ID, append it
-        if (this.organizationId) {
-            return imageUrl + this.organizationId;
-        }
-
-        // Fallback: return the original URL
-        return imageUrl;
+        const img = this.item.images[this.currentImageIndex];
+        const url = typeof img === 'string' ? img : img?.url;
+        return completeImageUrl(url);
     }
 
-    get currentImage() {
-        if (this.item.images && this.item.images.length > 0) {
-            return this.getCompleteImageUrl(this.item.images[this.currentImageIndex]);
+    get currentImageDisplay() {
+        if (this.currentImageOriginal) {
+            return thumbnailUrl(this.currentImageOriginal);
         }
         return null;
+    }
+
+    get currentImageSrcset() {
+        if (!this.item.images || !this.item.images.length) {
+            return '';
+        }
+        const img = this.item.images[this.currentImageIndex];
+        const url = typeof img === 'string' ? img : img?.url;
+        const ratio = typeof img === 'object' ? img?.ratio : '';
+        return buildSrcset(url, ratio);
+    }
+
+    get libraryCardSizes() {
+        return SIZES.libraryCard;
     }
 
     get borrowCountDisplay() {

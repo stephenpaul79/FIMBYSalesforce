@@ -493,6 +493,14 @@
     max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
+    height: fit-content;
+    /* Override SLDS .slds-modal__container defaults (3rem padding, flex grow)
+       so the modal fits tightly to its content. */
+    padding: 0;
+    min-height: 0;
+    min-width: 0;
+    align-self: center;
 }
 
 .block-modal-header {

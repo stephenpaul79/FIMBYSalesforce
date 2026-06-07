@@ -5,7 +5,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
-import getOrganizationId from '@salesforce/apex/FimbyHomeController.getOrganizationId';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 import getNeedsOffersForResponse from '@salesforce/apex/FimbyResponseController.getNeedsOffersForResponse';
 import checkExistingResponse from '@salesforce/apex/FimbyResponseController.checkExistingResponse';
 import createResponse from '@salesforce/apex/FimbyResponseController.createResponse';
@@ -40,7 +40,6 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     @track decline = false;
 
     @track newResponseUrl = '';
-    organizationId = null;
 
     // ============================================
     // LIFECYCLE
@@ -83,12 +82,6 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
         this.viewState = 'loading';
 
         try {
-            try {
-                this.organizationId = await getOrganizationId();
-            } catch (e) {
-                console.error('Org ID error', e);
-            }
-
             const contactResult = await getActingAsContact();
             if (contactResult.success) {
                 this.actingAsContact = contactResult;
@@ -133,19 +126,12 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     // ============================================
 
     get processedImageUrl() {
-        return this.getCompleteImageUrl(this.needOffer?.imageUrl);
+        return completeImageUrl(this.needOffer?.imageUrl);
     }
 
     get hasProcessedImage() {
         const url = this.processedImageUrl;
         return !!url && url.trim() !== '';
-    }
-
-    getCompleteImageUrl(imageUrl) {
-        if (!imageUrl) return null;
-        if (this.organizationId && imageUrl.includes(this.organizationId)) return imageUrl;
-        if (this.organizationId) return imageUrl + this.organizationId;
-        return imageUrl;
     }
 
     // ============================================
