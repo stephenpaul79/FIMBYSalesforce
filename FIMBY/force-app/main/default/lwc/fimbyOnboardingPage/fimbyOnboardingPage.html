@@ -3,7 +3,7 @@
         <div class="page-shell" role="main" aria-label="FIMBY onboarding">
 
             <!-- ============================================================
-                 PHASE 1 - Profile setup (7 steps + celebration)
+                 PHASE 1 - Profile setup (6 steps + celebration)
                  ============================================================ -->
             <template lwc:if={isPhase1}>
                 <header class="page-header">
@@ -111,15 +111,15 @@
                         </div>
                     </template>
 
-                    <!-- Step 4: Welcome Support -->
+                    <!-- Step 4: Care preferences (progressive disclosure) -->
                     <template lwc:if={isStep4}>
                         <div class="step-content">
                             <img src={careIconUrl} alt="" class="step-icon">
                             <h2 class="step-heading">How can your neighbours care for you well?</h2>
-                            <p class="step-subtext">FIMBY was built on the belief that neighbours look out for each other. These questions help people in your community know how to show up for you &mdash; on your terms. Everything here is optional, and you can update it any time in your profile.</p>
+                            <p class="step-subtext">Everything here is optional, and you can update it any time in your profile.</p>
                             <div class="form-fields">
                                 <div class="care-question">
-                                    <label class="field-label">What kind of support is usually welcome?</label>
+                                    <label class="field-label">If life gets heavy, what tends to help?</label>
                                     <div class="checkbox-group">
                                         <template for:each={careWelcomeOptions} for:item="opt">
                                             <label key={opt.value} class="checkbox-item">
@@ -131,57 +131,57 @@
                                         </template>
                                     </div>
                                 </div>
+                                <button type="button" class="care-expander-btn" onclick={handleCareExpanderToggle}
+                                        aria-expanded={careExpanded}>
+                                    {careExpanderLabel}
+                                </button>
+                                <template lwc:if={careExpanded}>
+                                    <div class="care-question">
+                                        <label class="field-label">How should someone reach out?</label>
+                                        <div class="checkbox-group">
+                                            <template for:each={careHowToAskOptions} for:item="opt">
+                                                <label key={opt.value} class="checkbox-item">
+                                                    <input type="checkbox" checked={opt.checked}
+                                                           data-group="careHowToAsk" data-value={opt.value}
+                                                           onchange={handleCheckboxChange}>
+                                                    <span class="checkbox-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="care-question">
+                                        <label class="field-label">Anything that can feel like too much?</label>
+                                        <div class="checkbox-group">
+                                            <template for:each={careUnhelpfulOptions} for:item="opt">
+                                                <label key={opt.value} class="checkbox-item">
+                                                    <input type="checkbox" checked={opt.checked}
+                                                           data-group="careUnhelpful" data-value={opt.value}
+                                                           onchange={handleCheckboxChange}>
+                                                    <span class="checkbox-label">{opt.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                        <label class="field-label" for="onb-hardnos">Anything else? (optional)</label>
+                                        <textarea id="onb-hardnos" class="field-textarea"
+                                                  value={careHardNos} data-field="careHardNos"
+                                                  maxlength="256"
+                                                  placeholder="Short and clear is perfect."
+                                                  onchange={handleInputChange}></textarea>
+                                    </div>
+                                </template>
+                                <div class="care-question">
+                                    <label class="checkbox-item standing-toggle">
+                                        <input type="checkbox" checked={careStandingVisible}
+                                               onchange={handleCareStandingToggle}>
+                                        <span class="checkbox-label">Show this on my profile so neighbours know how to care for you?</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </template>
 
-                    <!-- Step 5: How to Ask + Unhelpful + Hard Nos -->
+                    <!-- Step 5: Quiet Hours -->
                     <template lwc:if={isStep5}>
-                        <div class="step-content">
-                            <img src={careIconUrl} alt="" class="step-icon">
-                            <h2 class="step-heading">One more thing</h2>
-                            <p class="step-subtext">How would you prefer people reach out when they want to help?</p>
-                            <div class="form-fields">
-                                <div class="care-question">
-                                    <label class="field-label">How should someone ask before helping?</label>
-                                    <div class="radio-group">
-                                        <template for:each={careHowToAskOptions} for:item="opt">
-                                            <label key={opt.value} class="radio-item">
-                                                <input type="radio" name="careHowToAsk" value={opt.value}
-                                                       checked={opt.checked}
-                                                       onchange={handleRadioChange}>
-                                                <span class="radio-label">{opt.label}</span>
-                                            </label>
-                                        </template>
-                                    </div>
-                                </div>
-                                <div class="care-question">
-                                    <label class="field-label">What can feel unhelpful or overwhelming?</label>
-                                    <div class="checkbox-group">
-                                        <template for:each={careUnhelpfulOptions} for:item="opt">
-                                            <label key={opt.value} class="checkbox-item">
-                                                <input type="checkbox" checked={opt.checked}
-                                                       data-group="careUnhelpful" data-value={opt.value}
-                                                       onchange={handleCheckboxChange}>
-                                                <span class="checkbox-label">{opt.label}</span>
-                                            </label>
-                                        </template>
-                                    </div>
-                                </div>
-                                <div class="field-row">
-                                    <label class="field-label" for="onb-hardnos">Anything else to avoid? (optional)</label>
-                                    <textarea id="onb-hardnos" class="field-textarea"
-                                              value={careHardNos} data-field="careHardNos"
-                                              maxlength="256"
-                                              placeholder="Anything you'd like neighbours to know &mdash; short and clear is perfect."
-                                              onchange={handleInputChange}></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <!-- Step 6: Quiet Hours -->
-                    <template lwc:if={isStep6}>
                         <div class="step-content">
                             <h2 class="step-heading">When should FIMBY rest?</h2>
                             <p class="step-subtext">FIMBY has a rhythm. Late at night, we rest &mdash; no buzzes, no pings. Your neighbours' messages and activity will be here in the morning. Pick the quiet hours that fit your life.</p>
@@ -202,8 +202,8 @@
                         </div>
                     </template>
 
-                    <!-- Step 7: Vouch request -->
-                    <template lwc:if={isStep7}>
+                    <!-- Step 6: Vouch request -->
+                    <template lwc:if={isStep6}>
                         <div class="step-content">
                             <div class="vouch-hero">
                                 <img src={vouchHeroIconUrl} alt="" class="vouch-hero-icon">

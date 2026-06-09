@@ -866,18 +866,33 @@ public with sharing class FimbyMyStuffController {
          * @return Map with profile fields and shared contact info when applicable
          */
         public Map<String, Object> getNeighbourProfileInternal(String myContactId, String neighbourContactId) {
+            Contact viewer = [
+                SELECT AccountId
+                FROM Contact
+                WHERE Id = :myContactId
+                LIMIT 1
+            ];
+
             Contact c = [
                 SELECT Id, FirstName, LastName, Full_Name__c, Pronouns__c,
-                       Image_URL__c, Image_Ratio__c, Account.Name, CreatedDate,
+                       Image_URL__c, Image_Ratio__c, AccountId, Account.Name, CreatedDate,
                        Languages_Spoken__c, Accessibility_Notes__c, General_Availability__c,
                        About_Neighbourhood_Tenure__c, About_What_Brought_You__c,
                        About_Local_Place__c, About_Enjoys_Doing__c, About_Fun_Fact__c,
                        Care_Welcome_Support__c, Care_Unhelpful_Things__c,
-                       Care_How_To_Ask__c, Care_Hard_Nos__c
+                       Care_How_To_Ask__c, Care_Hard_Nos__c,
+                       Care_Standing_Visible__c, Care_Updated_Date__c
                 FROM Contact
                 WHERE Id = :neighbourContactId
                 LIMIT 1
             ];
+
+            Boolean sameNeighbourhood = viewer.AccountId != null && viewer.AccountId == c.AccountId;
+            Set<Id> blockedIds = FimbyBlockingHelper.getBidirectionalBlocks((Id) myContactId);
+            Boolean isBlocked = blockedIds.contains((Id) neighbourContactId);
+            Boolean showCareStanding = sameNeighbourhood
+                && !isBlocked
+                && c.Care_Standing_Visible__c == true;
 
             List<Shared_Contact_Info__c> sharedRecords = [
                 SELECT Id, Email__c, Phone__c, Street__c, City__c,
@@ -907,10 +922,12 @@ public with sharing class FimbyMyStuffController {
                 'aboutLocalPlace' => c.About_Local_Place__c,
                 'aboutEnjoysDoing' => c.About_Enjoys_Doing__c,
                 'aboutFunFact' => c.About_Fun_Fact__c,
-                'careWelcomeSupport' => c.Care_Welcome_Support__c,
-                'careUnhelpfulThings' => c.Care_Unhelpful_Things__c,
-                'careHowToAsk' => c.Care_How_To_Ask__c,
-                'careHardNos' => c.Care_Hard_Nos__c
+                'careStandingVisible' => showCareStanding,
+                'careUpdatedDate' => showCareStanding ? c.Care_Updated_Date__c : null,
+                'careWelcomeSupport' => showCareStanding ? c.Care_Welcome_Support__c : null,
+                'careUnhelpfulThings' => showCareStanding ? c.Care_Unhelpful_Things__c : null,
+                'careHowToAsk' => showCareStanding ? c.Care_How_To_Ask__c : null,
+                'careHardNos' => showCareStanding ? c.Care_Hard_Nos__c : null
             };
 
             if (!sharedRecords.isEmpty()) {

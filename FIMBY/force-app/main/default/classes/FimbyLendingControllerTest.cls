@@ -1028,10 +1028,7 @@ public class FimbyLendingControllerTest {
         Contact borrowerContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhoodId, true);
         User borrowerUser = FimbyTestDataFactory.createCommunityUser(borrowerContact.Id, null, true);
 
-        FimbyTransactionalEmailService.transactionalTemplateId = borrowerUser.Id;
         FimbyTransactionalEmailService.oweaCached = null;
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
         FimbyTransactionalEmailService.testSendInvocationCount = 0;
 
         Library_Item__c item = createTestLibraryItem(ownerUser, ownerContact);
@@ -1122,10 +1119,7 @@ public class FimbyLendingControllerTest {
         Contact borrowerContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhoodId, true);
         User borrowerUser = FimbyTestDataFactory.createCommunityUser(borrowerContact.Id, null, true);
 
-        FimbyTransactionalEmailService.transactionalTemplateId = borrowerUser.Id;
         FimbyTransactionalEmailService.oweaCached = null;
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
         FimbyTransactionalEmailService.testSendInvocationCount = 0;
 
         Library_Item__c item = createTestLibraryItem(ownerUser, ownerContact);

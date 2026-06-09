@@ -404,7 +404,21 @@
                                 </div>
                             </div>
                             <div class="care-question">
-                                <label class="field-label">What can feel unhelpful or overwhelming?</label>
+                                <label class="field-label">How should someone reach out?</label>
+                                <p class="field-helper">Pick any that fit. What&apos;s the best first step so support feels respectful, not intrusive?</p>
+                                <div class="checkbox-group">
+                                    <template for:each={careHowToAskOptions} for:item="opt">
+                                        <label key={opt.value} class="checkbox-item">
+                                            <input type="checkbox" checked={opt.checked}
+                                                   data-group="editCareHowToAsk" data-value={opt.value}
+                                                   onchange={handleCheckboxChange}>
+                                            <span class="checkbox-label">{opt.label}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="care-question">
+                                <label class="field-label">Anything that can feel like too much?</label>
                                 <p class="field-helper">This helps neighbours care well. No judgement, just clarity.</p>
                                 <div class="checkbox-group">
                                     <template for:each={careUnhelpfulOptions} for:item="opt">
@@ -416,32 +430,23 @@
                                         </label>
                                     </template>
                                 </div>
-                            </div>
-                            <div class="care-question">
-                                <label class="field-label">How should someone ask before helping?</label>
-                                <p class="field-helper">What's the best first step so support feels respectful, not intrusive?</p>
-                                <div class="radio-group">
-                                    <template for:each={careHowToAskOptions} for:item="opt">
-                                        <label key={opt.value} class="radio-item">
-                                            <input type="radio" name="careHowToAsk" value={opt.value}
-                                                   checked={opt.checked}
-                                                   data-field="editCareHowToAsk"
-                                                   onchange={handleRadioChange}>
-                                            <span class="radio-label">{opt.label}</span>
-                                        </label>
-                                    </template>
-                                </div>
-                            </div>
-                            <div class="care-question">
-                                <div class="field-label-row">
-                                    <label class="field-label">Any hard "no's"? (optional)</label>
+                                <div class="field-label-row care-too-much-text">
+                                    <label class="field-label" for="edit-care-hardnos">Anything else? (optional)</label>
                                     <span class={hardNosCountClass}>{hardNosCharCount}</span>
                                 </div>
-                                <p class="field-helper">Anything you'd like neighbours to avoid. Short and clear is perfect.</p>
-                                <textarea class="field-textarea" value={editCareHardNos}
-                                          data-field="editCareHardNos" maxlength="200"
+                                <textarea id="edit-care-hardnos" class="field-textarea" value={editCareHardNos}
+                                          data-field="editCareHardNos" maxlength="256"
                                           placeholder='Example: "Please don&apos;t drop by unannounced."'
                                           onchange={handleInputChange}></textarea>
+                            </div>
+                            <div class="care-question care-standing-toggle">
+                                <label class="checkbox-item standing-toggle">
+                                    <input type="checkbox" checked={editCareStandingVisible}
+                                           onchange={handleCareStandingToggle}
+                                           aria-describedby="care-standing-help">
+                                    <span class="checkbox-label">Share on my profile</span>
+                                </label>
+                                <p id="care-standing-help" class="field-helper">When on, neighbours can see this care block on your profile. Off by default.</p>
                             </div>
                             <div class="edit-actions">
                                 <button class="btn btn-neutral" onclick={handleCancelCare} disabled={isSaving}>Cancel</button>
@@ -456,16 +461,16 @@
                                 <span class="field-value">{displayCareWelcome}</span>
                             </div>
                             <div class="field-item full-width">
-                                <span class="field-label">Can feel unhelpful</span>
-                                <span class="field-value">{displayCareUnhelpful}</span>
-                            </div>
-                            <div class="field-item full-width">
-                                <span class="field-label">How to ask</span>
+                                <span class="field-label">How to reach out</span>
                                 <span class="field-value">{displayCareHowToAsk}</span>
                             </div>
                             <div class="field-item full-width">
-                                <span class="field-label">Hard no's</span>
-                                <span class="field-value">{displayCareHardNos}</span>
+                                <span class="field-label">Can feel like too much</span>
+                                <span class="field-value">{displayCareTooMuch}</span>
+                            </div>
+                            <div class="field-item full-width">
+                                <span class="field-label">Profile visibility</span>
+                                <span class="field-value">{displayCareStandingVisible}</span>
                             </div>
                         </div>
                     </template>

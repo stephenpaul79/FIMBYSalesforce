@@ -20,9 +20,9 @@
     </values>
     <values>
         <field>Messages__c</field>
-        <value xsi:type="xsd:string">Your very first ask! It only gets easier from here.
-Brave first step. Your neighbours have your back.
-First ask -- the door is open now.</value>
+        <value xsi:type="xsd:string">Asking is brave. Your community&apos;s got you.
+Your very first ask! It only gets easier from here.
+Brave first step. Your neighbours have your back.</value>
     </values>
     <values>
         <field>Milestone_Thresholds__c</field>

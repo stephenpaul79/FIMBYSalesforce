@@ -867,10 +867,7 @@ public class FimbyResponseControllerTest {
             Origin__c = 'Response'
         );
 
-        FimbyTransactionalEmailService.transactionalTemplateId = posterUser.Id;
         FimbyTransactionalEmailService.oweaCached = null;
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
         FimbyTransactionalEmailService.testSendInvocationCount = 0;
 
         Map<String, Object> shareData = new Map<String, Object>{
@@ -944,10 +941,7 @@ public class FimbyResponseControllerTest {
             Origin__c = 'Response'
         );
 
-        FimbyTransactionalEmailService.transactionalTemplateId = posterUser.Id;
         FimbyTransactionalEmailService.oweaCached = null;
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
         FimbyTransactionalEmailService.testSendInvocationCount = 0;
 
         Map<String, Object> shareData = new Map<String, Object>{

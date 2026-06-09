@@ -345,6 +345,8 @@ global without sharing class FimbyAccountDeactivationBatch implements Database.B
                 Care_Unhelpful_Things__c = null,
                 Care_How_To_Ask__c = null,
                 Care_Hard_Nos__c = null,
+                Care_Standing_Visible__c = false,
+                Care_Updated_Date__c = null,
                 Logged_In_As_Contact__c = null,
                 Logged_In_As_Neighbourhood__c = null,
                 Deactivation_Requested__c = false,

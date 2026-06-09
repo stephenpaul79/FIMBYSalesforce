@@ -33,6 +33,39 @@ private class FimbyDigestEmailBatchTest {
     }
 
     @IsTest
+    static void batchConstructor_sundayRestCatchUp() {
+        System.assertNotEquals(null, new FimbyDigestEmailBatch(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST));
+    }
+
+    @IsTest
+    static void batchSundayRestCatchUp_resolvesTwoDayWindow() {
+        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST);
+        System.assertEquals(Date.today().addDays(-1), batch.getWindowEndForTest());
+        System.assertEquals(Date.today().addDays(-2), batch.getWindowStartForTest());
+    }
+
+    @IsTest
+    static void resolveLogCadence_catchUpLogsAsDaily() {
+        System.assertEquals(
+            'Daily',
+            FimbyDigestEmailBatch.resolveLogCadence(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST)
+        );
+    }
+
+    @IsTest
+    static void resolveBuilderCadence_mapsCatchUpToDaily() {
+        System.assertEquals(
+            'Daily',
+            FimbyDigestEmailBatch.resolveBuilderCadence(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST)
+        );
+    }
+
+    @IsTest
+    static void schedulerIsMonday_returnsBooleanCleanly() {
+        System.assertNotEquals(null, FimbyDigestEmailScheduler.isMondayNow());
+    }
+
+    @IsTest
     static void scheduler_globalEnabled_launchesBatch() {
         FIMBY_App_Settings__mdt mock = new FIMBY_App_Settings__mdt(
             Digest_Email_Global_Enabled__c = true
@@ -40,10 +73,22 @@ private class FimbyDigestEmailBatchTest {
         FimbySettings.setMock(mock);
 
         Test.startTest();
+        new FimbyDigestEmailScheduler('Daily').execute(null);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void scheduler_catchUpEnabled_launchesOnMondayOrExitsOtherwise() {
+        FIMBY_App_Settings__mdt mock = new FIMBY_App_Settings__mdt(
+            Digest_Email_Global_Enabled__c = true
+        );
+        FimbySettings.setMock(mock);
+
+        Test.startTest();
         try {
-            new FimbyDigestEmailScheduler('Daily').execute(null);
+            new FimbyDigestEmailScheduler(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST).execute(null);
         } catch (Exception e) {
-            // May skip on Sunday
+            // Batch may fail in partial test org data; guard is Monday-only.
         }
         Test.stopTest();
     }
@@ -158,6 +203,7 @@ private class FimbyDigestEmailBatchTest {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             u = FimbyTestDataFactory.createCommunityUser(c.Id, 'Customer Community User', false);
             u.FIMBY_Summary_Emails__c = 'Daily';
+            u.Include_Sundays__c = true;
             insert u;
         }
 

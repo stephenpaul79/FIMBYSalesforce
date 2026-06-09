@@ -436,6 +436,28 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
+    static void buildHeaderGreetingLine_formatsNameWithoutCard() {
+        String html = FimbyEmailHtmlBuilder.buildHeaderGreetingLine('Sarah');
+        System.assert(html.contains('Hi Sarah,'), 'Should greet by first name.');
+        System.assert(!html.contains('border-left:3px'), 'Header greeting should not use card border.');
+    }
+
+    @IsTest
+    static void wrapInBrandedShell_withRecipientFirstName_greetingBeforeSubject() {
+        String result = FimbyEmailHtmlBuilder.wrapInBrandedShell(
+            '<p>body</p>', 'Neighbourhood digest for today', 'Kensington', 'intent line', false, false, 'Rosa'
+        );
+        System.assert(result.contains('Hi Rosa,'), 'Should include header greeting.');
+        Integer nhIdx = result.indexOf('Kensington');
+        Integer greetingIdx = result.indexOf('Hi Rosa,');
+        Integer subjectIdx = result.lastIndexOf('Neighbourhood digest for today');
+        System.assert(
+            nhIdx >= 0 && greetingIdx > nhIdx && subjectIdx > greetingIdx,
+            'Header order should be neighbourhood, greeting, then subject.'
+        );
+    }
+
+    @IsTest
     static void wrapInBrandedShell_basicContent_hasBrandedStructure() {
         String content = '<p>Hello neighbour</p>';
         String result = FimbyEmailHtmlBuilder.wrapInBrandedShell(content, 'Test Subject', 'Kensington');

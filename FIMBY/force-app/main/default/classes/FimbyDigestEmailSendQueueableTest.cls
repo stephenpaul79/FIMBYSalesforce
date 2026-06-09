@@ -3,9 +3,10 @@ private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
     static void execute_emptyUserIds_exitsCleanly() {
+        Date window = Date.today();
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'TestNeighbourhood', 'Daily', Date.today(),
+            null, 'TestNeighbourhood', 'Daily', window, window,
             '<p>Content</p>', 5, new List<Id>()
         ).execute(null);
         Test.stopTest();
@@ -13,9 +14,10 @@ private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
     static void execute_nullUserIds_exitsCleanly() {
+        Date window = Date.today();
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'TestNeighbourhood', 'Daily', Date.today(),
+            null, 'TestNeighbourhood', 'Daily', window, window,
             '<p>Content</p>', 5, null
         ).execute(null);
         Test.stopTest();
@@ -24,10 +26,11 @@ private class FimbyDigestEmailSendQueueableTest {
     @IsTest
     static void execute_noTemplate_createsLog() {
         List<Id> userIds = new List<Id>{ UserInfo.getUserId() };
+        Date window = Date.today().addDays(-1);
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'Maplewood', 'Daily', Date.today().addDays(-1),
+            null, 'Maplewood', 'Daily', window, window,
             '<p>Digest content</p>', 3, userIds
         ).execute(null);
         Test.stopTest();
@@ -37,18 +40,15 @@ private class FimbyDigestEmailSendQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_exercisesFullRenderPath() {
-        FimbyDigestEmailSendQueueable.digestTemplateId = UserInfo.getUserId();
+    static void execute_brandedShell_createsLog() {
         FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
-        FimbyDigestEmailSendQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE -->' +
-            '<!-- FIMBY_NEIGHBOURHOOD_NAME --><!-- FIMBY_TIME_RANGE --></html>';
 
         List<Id> userIds = new List<Id>{ UserInfo.getUserId() };
+        Date window = Date.today().addDays(-1);
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'Maplewood', 'Daily', Date.today().addDays(-1),
+            null, 'Maplewood', 'Daily', window, window,
             '<p>Digest cards</p>', 3, userIds
         ).execute(null);
         Test.stopTest();
@@ -60,18 +60,15 @@ private class FimbyDigestEmailSendQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_weeklyFrequency_coversTimeRange() {
-        FimbyDigestEmailSendQueueable.digestTemplateId = UserInfo.getUserId();
+    static void execute_weeklyFrequency_coversTimeRange() {
         FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
-        FimbyDigestEmailSendQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE -->' +
-            '<!-- FIMBY_NEIGHBOURHOOD_NAME --><!-- FIMBY_TIME_RANGE --></html>';
 
         List<Id> userIds = new List<Id>{ UserInfo.getUserId() };
+        Date windowStart = Date.today().addDays(-7);
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'Riverside', 'Weekly', Date.today().addDays(-7),
+            null, 'Riverside', 'Weekly', windowStart, windowStart.addDays(6),
             '<p>Weekly digest</p>', 8, userIds
         ).execute(null);
         Test.stopTest();
@@ -79,16 +76,12 @@ private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
     static void execute_alreadySentBuild_exitsWithoutChanges() {
-        FimbyDigestEmailSendQueueable.digestTemplateId = UserInfo.getUserId();
         FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
-        FimbyDigestEmailSendQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE -->' +
-            '<!-- FIMBY_NEIGHBOURHOOD_NAME --><!-- FIMBY_TIME_RANGE --></html>';
 
         Id userId = UserInfo.getUserId();
         Date windowDate = Date.today().addDays(-1);
         String key = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
-            null, 'Daily', windowDate
+            null, 'Daily', windowDate, windowDate
         );
         Digest_Email_Log__c existing = new Digest_Email_Log__c(
             Cadence__c = 'Daily',
@@ -98,7 +91,7 @@ private class FimbyDigestEmailSendQueueableTest {
             Recipient_Count__c = 1,
             Recipients__c = 'Existing User - ' + userId,
             Content_Item_Count__c = 5,
-            Template_Version__c = 'FIMBY_Digest_Email',
+            Template_Version__c = 'FimbyEmailHtmlBuilder',
             Idempotency_Key__c = key
         );
         insert existing;
@@ -107,7 +100,7 @@ private class FimbyDigestEmailSendQueueableTest {
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'Maplewood', 'Daily', windowDate,
+            null, 'Maplewood', 'Daily', windowDate, windowDate,
             '<p>Content</p>', 5, userIds
         ).execute(null);
         Test.stopTest();
@@ -130,6 +123,20 @@ private class FimbyDigestEmailSendQueueableTest {
     }
 
     @IsTest
+    static void buildIdempotencyKey_sundayRestCatchUp_usesDistinctSuffix() {
+        Date sat = Date.newInstance(2026, 4, 11);
+        Date sun = Date.newInstance(2026, 4, 12);
+        String catchUpKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST, sat, sun
+        );
+        String dailyKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', sun, sun
+        );
+        System.assert(catchUpKey.contains('DailySundayRest'), 'Catch-up key should use DailySundayRest suffix.');
+        System.assertNotEquals(catchUpKey, dailyKey, 'Monday catch-up and daily keys must not collide.');
+    }
+
+    @IsTest
     static void buildIdempotencyKey_weeklyDifferentFromDaily() {
         String dailyKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
             '001000000000001', 'Daily', Date.newInstance(2026, 4, 9)
@@ -138,6 +145,24 @@ private class FimbyDigestEmailSendQueueableTest {
             '001000000000001', 'Weekly', Date.newInstance(2026, 4, 9)
         );
         System.assertNotEquals(dailyKey, weeklyKey);
+    }
+
+    @IsTest
+    static void buildTimeRange_multiDayDaily_formatsRange() {
+        Date sat = Date.newInstance(2026, 4, 11);
+        Date sun = Date.newInstance(2026, 4, 12);
+        String range = FimbyDigestEmailSendQueueable.buildTimeRange('Daily', sat, sun);
+        System.assert(range.contains(' - '), 'Multi-day daily digest should show a date range.');
+        System.assert(range.contains(sat.format()), 'Range should include window start.');
+        System.assert(range.contains(sun.format()), 'Range should include window end.');
+    }
+
+    @IsTest
+    static void buildTimeRange_singleDayDaily_formatsOneDate() {
+        Date day = Date.newInstance(2026, 4, 12);
+        String range = FimbyDigestEmailSendQueueable.buildTimeRange('Daily', day, day);
+        System.assertEquals(day.format(), range);
+        System.assert(!range.contains(' - '), 'Single-day digest should not show a range separator.');
     }
 
     @IsTest
@@ -159,14 +184,14 @@ private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
     static void execute_noOwea_writesFailureLines() {
-        FimbyDigestEmailSendQueueable.digestTemplateId = UserInfo.getUserId();
-        FimbyDigestEmailSendQueueable.oweaCached = null;
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
 
         List<Id> userIds = new List<Id>{ UserInfo.getUserId() };
+        Date window = Date.today().addDays(-1);
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'NoOweaNH', 'Daily', Date.today().addDays(-1),
+            null, 'NoOweaNH', 'Daily', window, window,
             '<p>Content</p>', 1, userIds
         ).execute(null);
         Test.stopTest();
@@ -185,15 +210,11 @@ private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
     static void execute_resumeAfterPartial_skipsAlreadyDeliveredUsers() {
-        FimbyDigestEmailSendQueueable.digestTemplateId = UserInfo.getUserId();
         FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
-        FimbyDigestEmailSendQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE -->' +
-            '<!-- FIMBY_NEIGHBOURHOOD_NAME --><!-- FIMBY_TIME_RANGE --></html>';
 
         Id userId = UserInfo.getUserId();
         Date windowDate = Date.today().addDays(-1);
-        String key = FimbyDigestEmailSendQueueable.buildIdempotencyKey(null, 'Daily', windowDate);
+        String key = FimbyDigestEmailSendQueueable.buildIdempotencyKey(null, 'Daily', windowDate, windowDate);
         Digest_Email_Log__c partial = new Digest_Email_Log__c(
             Cadence__c = 'Daily',
             Window_Date__c = windowDate,
@@ -201,7 +222,7 @@ private class FimbyDigestEmailSendQueueableTest {
             Recipient_Count__c = 1,
             Recipients__c = 'Existing User - ' + userId,
             Content_Item_Count__c = 1,
-            Template_Version__c = 'FIMBY_Digest_Email',
+            Template_Version__c = 'FimbyEmailHtmlBuilder',
             Idempotency_Key__c = key
         );
         insert partial;
@@ -210,7 +231,7 @@ private class FimbyDigestEmailSendQueueableTest {
 
         Test.startTest();
         new FimbyDigestEmailSendQueueable(
-            null, 'PartialNH', 'Daily', windowDate,
+            null, 'PartialNH', 'Daily', windowDate, windowDate,
             '<p>Content</p>', 1, userIds
         ).execute(null);
         Test.stopTest();

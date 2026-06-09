@@ -16,13 +16,12 @@ const CARE_WELCOME_OPTIONS = [
 const CARE_UNHELPFUL_OPTIONS = [
     'Unannounced drop-ins', 'Lots of questions at once', 'Advice too quickly',
     'Big group attention', 'Being posted about publicly', 'Gifts with expectations',
-    'Just pushing through talk', 'Other'
+    'Just pushing through talk', "Reaching out before I've asked", 'Other'
 ];
 
 const CARE_HOW_TO_ASK_OPTIONS = [
     'Message me first', 'Offer one specific thing',
-    'Ask what would be helpful today', 'Keep it simple',
-    "Please don't reach out unless I've asked"
+    'Ask what would be helpful today'
 ];
 
 const LANGUAGES_OPTIONS = [
@@ -72,8 +71,9 @@ export default class FimbyUserProfileView extends LightningElement {
     @track editAvailability = [];
     @track editCareWelcome = [];
     @track editCareUnhelpful = [];
-    @track editCareHowToAsk = '';
+    @track editCareHowToAsk = [];
     @track editCareHardNos = '';
+    @track editCareStandingVisible = false;
 
     // Section icons
     get identityIconUrl() { return `${IMPACT_ICONS}/ProfileActive.png`; }
@@ -171,7 +171,7 @@ export default class FimbyUserProfileView extends LightningElement {
     get careHowToAskOptions() {
         return CARE_HOW_TO_ASK_OPTIONS.map(opt => ({
             label: opt, value: opt,
-            checked: this.editCareHowToAsk === opt
+            checked: this.editCareHowToAsk.includes(opt)
         }));
     }
 
@@ -194,8 +194,17 @@ export default class FimbyUserProfileView extends LightningElement {
     get displayAvailability() { return this._dMulti(this.profile.generalAvailability); }
     get displayCareWelcome() { return this._dMulti(this.profile.careWelcomeSupport); }
     get displayCareUnhelpful() { return this._dMulti(this.profile.careUnhelpfulThings); }
-    get displayCareHowToAsk() { return this._d(this.profile.careHowToAsk); }
-    get displayCareHardNos() { return this._d(this.profile.careHardNos); }
+    get displayCareHowToAsk() { return this._dMulti(this.profile.careHowToAsk); }
+    get displayCareTooMuch() {
+        const parts = [
+            this._multiSelectToDisplay(this.profile.careUnhelpfulThings),
+            this.profile.careHardNos
+        ].filter(Boolean);
+        return parts.length ? parts.join('; ') : '—';
+    }
+    get displayCareStandingVisible() {
+        return this.profile.careStandingVisible ? 'Shared on profile' : 'Private';
+    }
 
     get avatarUrl() {
         return avatarImageUrl(this.profile.imageUrl);
@@ -378,17 +387,22 @@ export default class FimbyUserProfileView extends LightningElement {
     handleEditCare() {
         this.editCareWelcome = this._parseMultiSelect(this.profile.careWelcomeSupport);
         this.editCareUnhelpful = this._parseMultiSelect(this.profile.careUnhelpfulThings);
-        this.editCareHowToAsk = this.profile.careHowToAsk || '';
+        this.editCareHowToAsk = this._parseMultiSelect(this.profile.careHowToAsk);
         this.editCareHardNos = this.profile.careHardNos || '';
+        this.editCareStandingVisible = this.profile.careStandingVisible === true;
         this.isEditingCare = true;
     }
     handleCancelCare() { this.isEditingCare = false; }
+    handleCareStandingToggle(event) {
+        this.editCareStandingVisible = event.target.checked;
+    }
     async handleSaveCare() {
         await this._saveSection({
             'Care_Welcome_Support__c': this.editCareWelcome.join(';'),
             'Care_Unhelpful_Things__c': this.editCareUnhelpful.join(';'),
-            'Care_How_To_Ask__c': this.editCareHowToAsk,
-            'Care_Hard_Nos__c': this.editCareHardNos
+            'Care_How_To_Ask__c': this.editCareHowToAsk.join(';'),
+            'Care_Hard_Nos__c': this.editCareHardNos,
+            'Care_Standing_Visible__c': this.editCareStandingVisible ? 'true' : 'false'
         }, 'isEditingCare');
     }
 

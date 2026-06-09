@@ -21,11 +21,11 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_noTemplate_fallsBackToDirectHtml() {
+    static void send_brandedShell_sendsEmail() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
-        req.subject = 'Direct HTML Fallback';
+        req.subject = 'Direct HTML';
         req.introText = 'Hello neighbour.';
         req.cardHtml = '<p>Card content</p>';
         req.replyToEmail = 'sender@example.com';
@@ -36,11 +36,11 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_noTemplate_withCta_fallsBackToDirectHtml() {
+    static void send_withCta_sendsEmail() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
-        req.subject = 'CTA Direct Fallback';
+        req.subject = 'CTA Email';
         req.introText = 'Intro text.';
         req.cardHtml = '<p>Card</p>';
         req.ctaUrl = 'https://our.fimby.com/test';
@@ -52,7 +52,7 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_noTemplate_nullOptionals_fallsBackCleanly() {
+    static void send_nullOptionals_sendsCleanly() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
@@ -64,12 +64,7 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_withTestHtml_exercisesFullTemplatePath() {
-        FimbyTransactionalEmailService.transactionalTemplateId = UserInfo.getUserId();
-        FimbyTransactionalEmailService.oweaCached = UserInfo.getUserId();
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
-
+    static void send_withCardHtml_recordsCardContent() {
         String cardHtml = FimbyEmailHtmlBuilder.buildTransactionalCard(
             FimbyEmailHtmlBuilder.TXN_BADGE_CONTACT, '#8A5936', 'email.png',
             'Shared contact', '<p>Details</p>',
@@ -80,7 +75,7 @@ private class FimbyTransactionalEmailServiceTest {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
-        req.subject = 'Template Path Test';
+        req.subject = 'Contact Share';
         req.cardHtml = cardHtml;
         req.replyToEmail = 'neighbour@example.com';
 
@@ -93,12 +88,7 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_withTestHtml_noCtaNoReply_coversMinimalBranch() {
-        FimbyTransactionalEmailService.transactionalTemplateId = UserInfo.getUserId();
-        FimbyTransactionalEmailService.oweaCached = UserInfo.getUserId();
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
-
+    static void send_noCtaNoReply_coversMinimalBranch() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
@@ -112,11 +102,7 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_withTestHtml_noOwea_stillSends() {
-        FimbyTransactionalEmailService.transactionalTemplateId = UserInfo.getUserId();
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
-
+    static void send_noOwea_stillSends() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
@@ -130,10 +116,6 @@ private class FimbyTransactionalEmailServiceTest {
 
     @IsTest
     static void send_withSkipSubjectBlock_omitsIntentAndIntro() {
-        FimbyTransactionalEmailService.transactionalTemplateId = UserInfo.getUserId();
-        FimbyTransactionalEmailService.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTRO_TEXT --><!-- FIMBY_INTENT_LINE --></html>';
-
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();
@@ -150,7 +132,7 @@ private class FimbyTransactionalEmailServiceTest {
     }
 
     @IsTest
-    static void send_skipSubjectBlock_directHtmlFallback() {
+    static void send_skipSubjectBlock_usesMinimalShell() {
         FimbyTransactionalEmailService.TransactionalEmailRequest req =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         req.recipientUserId = UserInfo.getUserId();

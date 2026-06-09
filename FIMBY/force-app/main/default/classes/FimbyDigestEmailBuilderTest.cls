@@ -119,6 +119,25 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void resolveCrossFimbyWindowWord_multiDayDaily_usesWeekend() {
+        Datetime sat = Datetime.newInstance(2026, 4, 11, 0, 0, 0);
+        Datetime sun = Datetime.newInstance(2026, 4, 12, 23, 59, 59);
+        System.assertEquals(
+            'weekend',
+            FimbyDigestEmailBuilder.resolveCrossFimbyWindowWord('Daily', sat, sun)
+        );
+    }
+
+    @IsTest
+    static void resolveCrossFimbyWindowWord_singleDayDaily_usesDay() {
+        Datetime day = Datetime.newInstance(2026, 4, 12, 12, 0, 0);
+        System.assertEquals(
+            'day',
+            FimbyDigestEmailBuilder.resolveCrossFimbyWindowWord('Daily', day, day)
+        );
+    }
+
+    @IsTest
     static void getCrossFimbyStat_returnsLineWhenCountsExist() {
         Datetime startDt = Datetime.newInstance(Date.today().addDays(-1), Time.newInstance(0, 0, 0, 0));
         Datetime endDt = Datetime.newInstance(Date.today(), Time.newInstance(23, 59, 59, 0));

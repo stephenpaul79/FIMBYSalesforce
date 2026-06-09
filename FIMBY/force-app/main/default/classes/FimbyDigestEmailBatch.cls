@@ -2,7 +2,10 @@
  * @description Batchable that replaces the legacy Flow-based digest system. Iterates over
  * Neighbourhood Accounts, builds digest content once per neighbourhood, then enqueues
  * FimbyDigestEmailSendQueueable to send in recipient chunks. Content query + HTML build
- * happens once per neighbourhood. Sunday digests are skipped by the scheduler.
+ * happens once per neighbourhood.
+ *
+ * Daily cadence on Sun/Mon targets Include_Sundays users only; Sunday-rest users receive
+ * a Monday catch-up batch (DailySundayRestCatchUp) covering Sat+Sun.
  *
  * Send gate: only enqueue the queueable when the builder produces feed-card content AND
  * there are eligible recipients. When neither is true, write a Skipped log row so ops can
@@ -15,15 +18,23 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
     private Date windowStart;
     private Date windowEnd;
 
+    public static final String CADENCE_DAILY = 'Daily';
+    public static final String CADENCE_WEEKLY = 'Weekly';
+    public static final String CADENCE_DAILY_SUNDAY_REST = 'DailySundayRestCatchUp';
+
     @TestVisible static final String SKIP_REASON_NO_CONTENT = 'No feed-card content for this window';
     @TestVisible static final String SKIP_REASON_NO_RECIPIENTS = 'No eligible recipients (FIMBY_Summary_Emails__c)';
 
     global FimbyDigestEmailBatch(String frequency) {
         this.frequency = frequency;
         this.windowEnd = Date.today().addDays(-1);
-        this.windowStart = (frequency == 'Weekly')
-            ? this.windowEnd.addDays(-6)
-            : this.windowEnd;
+        if (frequency == CADENCE_WEEKLY) {
+            this.windowStart = this.windowEnd.addDays(-6);
+        } else if (frequency == CADENCE_DAILY_SUNDAY_REST) {
+            this.windowStart = this.windowEnd.addDays(-1);
+        } else {
+            this.windowStart = this.windowEnd;
+        }
     }
 
     global Database.QueryLocator start(Database.BatchableContext ctx) {
@@ -45,12 +56,13 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
 
     global void execute(Database.BatchableContext ctx, List<Account> neighbourhoods) {
         List<Digest_Email_Log__c> skippedLogs = new List<Digest_Email_Log__c>();
+        String builderCadence = resolveBuilderCadence(frequency);
 
         for (Account nh : neighbourhoods) {
             try {
                 FimbyDigestEmailBuilder.DigestResult content =
                     FimbyDigestEmailBuilder.buildDigestContent(
-                        nh.Id, nh.Name, frequency, windowStart, windowEnd
+                        nh.Id, nh.Name, builderCadence, windowStart, windowEnd
                     );
 
                 if (content.isEmpty) {
@@ -58,18 +70,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                     continue;
                 }
 
-                List<User> recipients = [
-                    SELECT Id, ContactId, Email,
-                           Contact.HasOptedOutOfEmail,
-                           Include_Sundays__c,
-                           Contact.Account.Name
-                    FROM User
-                    WHERE Contact.AccountId = :nh.Id
-                      AND IsActive = true
-                      AND Email != null
-                      AND Contact.HasOptedOutOfEmail = false
-                      AND FIMBY_Summary_Emails__c = :frequency
-                ];
+                List<User> recipients = queryEligibleRecipients(nh.Id);
                 if (recipients.isEmpty()) {
                     skippedLogs.add(buildSkippedLog(nh.Id, content.itemCount, SKIP_REASON_NO_RECIPIENTS));
                     continue;
@@ -81,7 +82,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                 }
 
                 System.enqueueJob(new FimbyDigestEmailSendQueueable(
-                    nh.Id, nh.Name, frequency, windowStart,
+                    nh.Id, nh.Name, frequency, windowStart, windowEnd,
                     content.html, content.itemCount, userIds
                 ));
             } catch (Exception e) {
@@ -103,17 +104,71 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
             'Digest batch completed for frequency: ' + frequency);
     }
 
+    @TestVisible
+    Date getWindowStartForTest() {
+        return windowStart;
+    }
+
+    @TestVisible
+    Date getWindowEndForTest() {
+        return windowEnd;
+    }
+
+    @TestVisible
+    private List<User> queryEligibleRecipients(Id neighbourhoodId) {
+        String summaryCadence = resolveSummaryEmailCadence(frequency);
+        Boolean filterIncludeSundaysOnly = frequency == CADENCE_DAILY
+            && (FimbyDigestEmailScheduler.isSundayNow() || FimbyDigestEmailScheduler.isMondayNow());
+        Boolean filterExcludeSundays = frequency == CADENCE_DAILY_SUNDAY_REST;
+
+        String soql = 'SELECT Id, ContactId, Email, Contact.HasOptedOutOfEmail, Include_Sundays__c, Contact.Account.Name '
+            + 'FROM User WHERE Contact.AccountId = :neighbourhoodId '
+            + 'AND IsActive = true AND Email != null AND Contact.HasOptedOutOfEmail = false '
+            + 'AND FIMBY_Summary_Emails__c = :summaryCadence';
+        if (filterIncludeSundaysOnly) {
+            soql += ' AND Include_Sundays__c = true';
+        } else if (filterExcludeSundays) {
+            soql += ' AND Include_Sundays__c = false';
+        }
+        return Database.query(soql);
+    }
+
+    @TestVisible
+    private static String resolveBuilderCadence(String freq) {
+        if (freq == CADENCE_DAILY_SUNDAY_REST) {
+            return CADENCE_DAILY;
+        }
+        return freq;
+    }
+
+    @TestVisible
+    private static String resolveSummaryEmailCadence(String freq) {
+        if (freq == CADENCE_DAILY_SUNDAY_REST) {
+            return CADENCE_DAILY;
+        }
+        return freq;
+    }
+
+    public static String resolveLogCadence(String freq) {
+        if (freq == CADENCE_DAILY_SUNDAY_REST) {
+            return CADENCE_DAILY;
+        }
+        return freq;
+    }
+
     private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason) {
         return new Digest_Email_Log__c(
             Neighbourhood__c = nhId,
-            Cadence__c = frequency,
+            Cadence__c = resolveLogCadence(frequency),
             Window_Date__c = windowStart,
             Status__c = 'Skipped',
             Recipient_Count__c = 0,
             Content_Item_Count__c = itemCount,
-            Template_Version__c = 'FIMBY_Digest_Email',
+            Template_Version__c = 'FimbyEmailHtmlBuilder',
             Error_Message__c = reason?.abbreviate(255),
-            Idempotency_Key__c = String.valueOf(nhId) + '_' + frequency + '_' + String.valueOf(windowStart)
+            Idempotency_Key__c = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+                nhId, frequency, windowStart, windowEnd
+            )
         );
     }
 }

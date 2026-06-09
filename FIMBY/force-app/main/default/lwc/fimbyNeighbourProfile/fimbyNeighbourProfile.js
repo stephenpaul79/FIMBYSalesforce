@@ -35,8 +35,14 @@ export default class FimbyNeighbourProfile extends LightningElement {
     get displayAvailability() { return this._dMulti(this.profile.generalAvailability); }
     get displayCareWelcome() { return this._dMulti(this.profile.careWelcomeSupport); }
     get displayCareUnhelpful() { return this._dMulti(this.profile.careUnhelpfulThings); }
-    get displayCareHowToAsk() { return this._d(this.profile.careHowToAsk); }
-    get displayCareHardNos() { return this._d(this.profile.careHardNos); }
+    get displayCareHowToAsk() { return this._dMulti(this.profile.careHowToAsk); }
+    get displayCareTooMuch() {
+        const parts = [
+            this._multiSelectToDisplay(this.profile.careUnhelpfulThings),
+            this.profile.careHardNos
+        ].filter(Boolean);
+        return parts.length ? parts.join('; ') : '';
+    }
 
     get avatarUrl() {
         return avatarImageUrl(this.profile.imageUrl);
@@ -115,6 +121,9 @@ export default class FimbyNeighbourProfile extends LightningElement {
         return this.profile.accessibilityNotes || this.profile.generalAvailability;
     }
     get hasCareContent() {
+        if (this.profile.careStandingVisible !== true) {
+            return false;
+        }
         return this.profile.careWelcomeSupport || this.profile.careUnhelpfulThings ||
                this.profile.careHowToAsk || this.profile.careHardNos;
     }

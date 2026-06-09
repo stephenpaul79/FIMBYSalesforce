@@ -1,8 +1,8 @@
 /**
  * @description Sends digest emails in recipient chunks for one neighbourhood-build per
  * cadence per window date. Receives pre-built neighbourhood content HTML from
- * FimbyDigestEmailBatch, renders the Lightning Email Template per user, injects content,
- * and sends. Chains to process remaining recipients.
+ * FimbyDigestEmailBatch, wraps content in the Apex branded shell per user, and sends.
+ * Chains to process remaining recipients.
  *
  * Per-build logging (one Digest_Email_Log__c per neighbourhood + cadence + window):
  *   - Idempotency_Key__c is {NeighbourhoodId}_{Cadence}_{WindowDate} (no user component).
@@ -21,31 +21,25 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     private static final Integer CHUNK_SIZE = 50;
     private static final Integer MAX_HTML_PREVIEW_CHARS = 130000;
     private static final String HTML_TRUNCATION_MARKER = '\n\n[truncated for storage]';
-    private static final String DYNAMIC_PLACEHOLDER = '<!-- FIMBY_DYNAMIC_CONTENT -->';
-    private static final String INTENT_PLACEHOLDER = '<!-- FIMBY_INTENT_LINE -->';
-    private static final String NEIGHBOURHOOD_PLACEHOLDER = '<!-- FIMBY_NEIGHBOURHOOD_NAME -->';
-    private static final String TIME_RANGE_PLACEHOLDER = '<!-- FIMBY_TIME_RANGE -->';
-
-    @TestVisible
-    private static String testRenderedHtml;
-
     private Id neighbourhoodId;
     private String neighbourhoodName;
     private String frequency;
-    private Date windowDate;
+    private Date windowStart;
+    private Date windowEnd;
     private String contentHtml;
     private Integer contentItemCount;
     private List<Id> userIds;
 
     public FimbyDigestEmailSendQueueable(
         Id neighbourhoodId, String neighbourhoodName, String frequency,
-        Date windowDate, String contentHtml, Integer contentItemCount,
+        Date windowStart, Date windowEnd, String contentHtml, Integer contentItemCount,
         List<Id> userIds
     ) {
         this.neighbourhoodId = neighbourhoodId;
         this.neighbourhoodName = neighbourhoodName;
         this.frequency = frequency;
-        this.windowDate = windowDate;
+        this.windowStart = windowStart;
+        this.windowEnd = windowEnd != null ? windowEnd : windowStart;
         this.contentHtml = contentHtml;
         this.contentItemCount = contentItemCount;
         this.userIds = userIds;
@@ -56,7 +50,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             return;
         }
 
-        String idempotencyKey = buildIdempotencyKey(neighbourhoodId, frequency, windowDate);
+        String idempotencyKey = buildIdempotencyKey(neighbourhoodId, frequency, windowStart, windowEnd);
         Digest_Email_Log__c existingLog = loadExistingLog(idempotencyKey);
 
         // Build-level early exit: a fully successful build never reruns.
@@ -80,7 +74,6 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             }
         }
 
-        Id templateId = getDigestTemplateId();
         Id oweaId = getOweaId();
 
         Boolean isFirstWrite = (existingLog == null);
@@ -114,9 +107,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         Map<Id, String> lastNameByUser = new Map<Id, String>();
         loadUserNames(currentChunk, firstNameByUser, lastNameByUser);
 
-        String timeRange = (frequency == 'Weekly')
-            ? windowDate.format() + ' - ' + windowDate.addDays(6).format()
-            : windowDate.format();
+        String timeRange = buildTimeRange(frequency, windowStart, windowEnd);
 
         Boolean isSaturday = isSaturdayNow();
         String saturdayFooter = isSaturday
@@ -130,11 +121,13 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         for (Id userId : currentChunk) {
             try {
                 String intentLine = FimbyEmailHtmlBuilder.getRandomIntentLine();
-                String digestSubject = 'Your ' + frequency.toLowerCase() + ' neighbourhood update';
-                String greetingCard = FimbyEmailHtmlBuilder.buildGreetingCard(firstNameByUser.get(userId));
-                String fullContent = greetingCard + contentHtml + saturdayFooter;
+                String digestSubject = 'Your ' + resolveDisplayFrequency(frequency) + ' neighbourhood update';
+                String firstName = firstNameByUser.get(userId);
+                String fullContent = contentHtml + saturdayFooter;
 
-                String html = buildDigestHtml(templateId, userId, fullContent, intentLine, digestSubject, timeRange);
+                String html = buildDigestHtml(
+                    fullContent, intentLine, digestSubject, timeRange, firstName
+                );
 
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTargetObjectId(userId);
@@ -206,10 +199,10 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
 
         if (isFirstWrite) {
             log.Neighbourhood__c = neighbourhoodId;
-            log.Cadence__c = frequency;
-            log.Window_Date__c = windowDate;
+            log.Cadence__c = resolveLogCadence(frequency);
+            log.Window_Date__c = windowStart;
             log.Content_Item_Count__c = contentItemCount;
-            log.Template_Version__c = 'FIMBY_Digest_Email';
+            log.Template_Version__c = 'FimbyEmailHtmlBuilder';
             log.Email_Body_Preview__c = truncateHtml(contentHtml);
         }
 
@@ -346,27 +339,18 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         return html.substring(0, MAX_HTML_PREVIEW_CHARS) + HTML_TRUNCATION_MARKER;
     }
 
-    private String buildDigestHtml(Id templateId, Id userId, String content, String intentLine, String subjectLine, String timeRange) {
-        if (templateId != null) {
-            String html;
-            if (Test.isRunningTest() && testRenderedHtml != null) {
-                html = testRenderedHtml;
-            } else {
-                Messaging.SingleEmailMessage rendered =
-                    Messaging.renderStoredEmailTemplate(templateId, userId, null);
-                html = rendered.getHtmlBody();
-            }
-            if (FimbyEmailHtmlBuilder.hasRequiredPlaceholder(html, DYNAMIC_PLACEHOLDER)) {
-                Map<String, String> replacements = new Map<String, String>{
-                    DYNAMIC_PLACEHOLDER => content,
-                    INTENT_PLACEHOLDER => intentLine != null ? '<p style="color:#6B6B6B;font-size:13px;font-style:italic;margin:0 0 12px;">' + intentLine + '</p>' : '',
-                    NEIGHBOURHOOD_PLACEHOLDER => neighbourhoodName != null ? neighbourhoodName : 'your neighbourhood',
-                    TIME_RANGE_PLACEHOLDER => timeRange
-                };
-                return FimbyEmailHtmlBuilder.injectContent(html, replacements);
-            }
+    private String buildDigestHtml(
+        String content, String intentLine, String subjectLine,
+        String timeRange, String recipientFirstName
+    ) {
+        String bodyContent = content;
+        if (String.isNotBlank(timeRange)) {
+            bodyContent = '<p style="margin:0 0 12px;font-family:Verdana, Geneva, sans-serif;font-size:13px;color:#6B6B6B;">'
+                + timeRange.escapeHtml4() + '</p>' + content;
         }
-        return FimbyEmailHtmlBuilder.wrapInBrandedShell(content, subjectLine, neighbourhoodName, intentLine);
+        return FimbyEmailHtmlBuilder.wrapInBrandedShell(
+            bodyContent, subjectLine, neighbourhoodName, intentLine, false, false, recipientFirstName
+        );
     }
 
     private void chainIfNeeded(Integer processedCount) {
@@ -378,7 +362,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             try {
                 System.enqueueJob(new FimbyDigestEmailSendQueueable(
                     neighbourhoodId, neighbourhoodName, frequency,
-                    windowDate, contentHtml, contentItemCount, remaining
+                    windowStart, windowEnd, contentHtml, contentItemCount, remaining
                 ));
             } catch (Exception e) {
                 FimbyLogger.error('FimbyDigestEmailSendQueueable', 'chainIfNeeded', e);
@@ -386,9 +370,40 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         }
     }
 
+    public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt) {
+        return buildIdempotencyKey(nhId, freq, windowStartDt, windowStartDt);
+    }
+
+    public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt, Date windowEndDt) {
+        if (freq == FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST) {
+            return String.valueOf(nhId) + '_DailySundayRest_' + String.valueOf(windowStartDt);
+        }
+        return String.valueOf(nhId) + '_' + freq + '_' + String.valueOf(windowStartDt);
+    }
+
     @TestVisible
-    static String buildIdempotencyKey(Id nhId, String freq, Date windowDt) {
-        return String.valueOf(nhId) + '_' + freq + '_' + String.valueOf(windowDt);
+    public static String buildTimeRange(String freq, Date startDt, Date endDt) {
+        Date safeEnd = endDt != null ? endDt : startDt;
+        if (freq == FimbyDigestEmailBatch.CADENCE_WEEKLY) {
+            return startDt.format() + ' - ' + startDt.addDays(6).format();
+        }
+        if (safeEnd > startDt) {
+            return startDt.format() + ' - ' + safeEnd.format();
+        }
+        return startDt.format();
+    }
+
+    @TestVisible
+    private static String resolveDisplayFrequency(String freq) {
+        if (freq == FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST) {
+            return 'daily';
+        }
+        return freq != null ? freq.toLowerCase() : 'daily';
+    }
+
+    @TestVisible
+    private static String resolveLogCadence(String freq) {
+        return FimbyDigestEmailBatch.resolveLogCadence(freq);
     }
 
     private static Boolean isSaturdayNow() {
@@ -399,25 +414,13 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     }
 
     @TestVisible
-    private static Id digestTemplateId;
-    private static Id getDigestTemplateId() {
-        if (digestTemplateId == null) {
-            FIMBY_Email_Template__mdt mapping = FIMBY_Email_Template__mdt.getInstance('Digest');
-            if (mapping != null && mapping.Is_Active__c == true) {
-                List<EmailTemplate> tmpl = [
-                    SELECT Id FROM EmailTemplate
-                    WHERE DeveloperName = :mapping.Template_DeveloperName__c
-                    LIMIT 1
-                ];
-                digestTemplateId = tmpl.isEmpty() ? null : tmpl[0].Id;
-            }
-        }
-        return digestTemplateId;
-    }
-
+    private static Boolean testOweaUnavailable = false;
     @TestVisible
     private static Id oweaCached;
     private static Id getOweaId() {
+        if (Test.isRunningTest() && testOweaUnavailable) {
+            return null;
+        }
         if (oweaCached == null) {
             List<OrgWideEmailAddress> oweas = [
                 SELECT Id FROM OrgWideEmailAddress

@@ -24,3 +24,20 @@ const noop: LogFn = () => {};
 export const log: LogFn = __DEV__ ? (...args) => console.log(...args) : noop;
 export const warn: LogFn = __DEV__ ? (...args) => console.warn(...args) : noop;
 export const error: LogFn = __DEV__ ? (...args) => console.error(...args) : noop;
+
+/**
+ * Reduce a URL to `origin + pathname` for logging — strips the query string
+ * and hash, where frontdoor tokens, session material, and OAuth callback
+ * params live. Use this for any WebView / auth / deep-link URL before passing
+ * it to log()/warn(), even though logs are no-ops in release.
+ */
+export function safeUrlForLog(rawUrl: string | null | undefined): string {
+  if (!rawUrl) return "(empty)";
+  if (rawUrl === "about:blank") return "about:blank";
+  try {
+    const u = new URL(rawUrl);
+    return `${u.origin}${u.pathname}`;
+  } catch {
+    return "(unparseable-url)";
+  }
+}

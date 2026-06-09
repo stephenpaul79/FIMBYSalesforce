@@ -39,7 +39,7 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void execute_noTemplate_fallsBackToBrandedShell() {
+    static void execute_sendsViaBrandedShell() {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
@@ -49,7 +49,6 @@ private class FimbyEmailAlertQueueableTest {
             c.Id, 'Message', 'Processing', 2, true
         );
 
-        // OWEA exists in org; template is null → branded shell fallback
         FimbyEmailAlertQueueable.oweaCached = u.Id;
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
@@ -60,7 +59,7 @@ private class FimbyEmailAlertQueueableTest {
         Test.stopTest();
 
         for (Notification__c n : [SELECT Email_Status__c FROM Notification__c WHERE Id IN :notifs]) {
-            System.assertEquals('Sent', n.Email_Status__c, 'Should use branded shell when no template');
+            System.assertEquals('Sent', n.Email_Status__c, 'Should send via branded shell');
         }
     }
 
@@ -91,7 +90,7 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_singleMessage_sendsSingleSubject() {
+    static void execute_singleMessage_sendsSingleSubject() {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
@@ -101,10 +100,7 @@ private class FimbyEmailAlertQueueableTest {
             c.Id, 'Message', 'Processing', 1, true
         );
 
-        FimbyEmailAlertQueueable.alertTemplateId = u.Id;
         FimbyEmailAlertQueueable.oweaCached = u.Id;
-        FimbyEmailAlertQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE --><!-- FIMBY_NEIGHBOURHOOD_NAME --></html>';
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
         byContact.put(c.Id, notifs);
@@ -119,7 +115,7 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_multipleMessages_usesGroupSubject() {
+    static void execute_multipleMessages_usesGroupSubject() {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
@@ -129,10 +125,7 @@ private class FimbyEmailAlertQueueableTest {
             c.Id, 'Message', 'Processing', 3, true
         );
 
-        FimbyEmailAlertQueueable.alertTemplateId = u.Id;
         FimbyEmailAlertQueueable.oweaCached = u.Id;
-        FimbyEmailAlertQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE --><!-- FIMBY_NEIGHBOURHOOD_NAME --></html>';
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
         byContact.put(c.Id, notifs);
@@ -147,7 +140,7 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_mixedTypes_usesGenericSubject() {
+    static void execute_mixedTypes_usesGenericSubject() {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
@@ -156,10 +149,7 @@ private class FimbyEmailAlertQueueableTest {
         Notification__c n1 = FimbyTestDataFactory.createNotifications(c.Id, 'Message', 'Processing', 1, true)[0];
         Notification__c n2 = FimbyTestDataFactory.createNotifications(c.Id, 'Lending_Request', 'Processing', 1, true)[0];
 
-        FimbyEmailAlertQueueable.alertTemplateId = u.Id;
         FimbyEmailAlertQueueable.oweaCached = u.Id;
-        FimbyEmailAlertQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --><!-- FIMBY_INTENT_LINE --><!-- FIMBY_NEIGHBOURHOOD_NAME --></html>';
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
         byContact.put(c.Id, new List<Notification__c>{ n1, n2 });
@@ -170,7 +160,7 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void execute_withTestHtml_noPlaceholder_marksFailed() {
+    static void execute_responseAlert_sendsViaBrandedShell() {
         Contact c = getTestContact();
         User u = getTestUser();
         u.Email_Alerts_Enabled__c = true;
@@ -180,9 +170,7 @@ private class FimbyEmailAlertQueueableTest {
             c.Id, 'Response', 'Processing', 1, true
         );
 
-        FimbyEmailAlertQueueable.alertTemplateId = u.Id;
         FimbyEmailAlertQueueable.oweaCached = u.Id;
-        FimbyEmailAlertQueueable.testRenderedHtml = '<html>No placeholders</html>';
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
         byContact.put(c.Id, notifs);
@@ -192,7 +180,7 @@ private class FimbyEmailAlertQueueableTest {
         Test.stopTest();
 
         Notification__c updated = [SELECT Email_Status__c FROM Notification__c WHERE Id = :notifs[0].Id];
-        System.assertEquals('Sent', updated.Email_Status__c, 'Should fall back to branded shell when template has no placeholder');
+        System.assertEquals('Sent', updated.Email_Status__c, 'Should send via branded shell');
     }
 
     @IsTest
@@ -475,10 +463,7 @@ private class FimbyEmailAlertQueueableTest {
             c.Id, 'Comment', 'Processing', 1, true
         );
 
-        FimbyEmailAlertQueueable.alertTemplateId = u.Id;
         FimbyEmailAlertQueueable.oweaCached = u.Id;
-        FimbyEmailAlertQueueable.testRenderedHtml =
-            '<html><!-- FIMBY_DYNAMIC_CONTENT --></html>';
 
         Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>();
         byContact.put(c.Id, notifs);

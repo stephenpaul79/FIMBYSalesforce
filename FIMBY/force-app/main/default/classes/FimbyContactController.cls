@@ -19,7 +19,7 @@ public with sharing class FimbyContactController {
      *   - Sender__c = realContactId
      *   - On_Behalf_Of__c = actingAsContactId
      */
-    @AuraEnabled
+    @AuraEnabled(cacheable=true)
     public static Map<String, Object> getActingAsContact() {
         try {
             FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();

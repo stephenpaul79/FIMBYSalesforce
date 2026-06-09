@@ -7,7 +7,7 @@
     <required>false</required>
     <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>false</trackHistory>
-    <type>Picklist</type>
+    <type>MultiselectPicklist</type>
     <valueSet>
         <restricted>true</restricted>
         <valueSetDefinition>
@@ -27,16 +27,7 @@
                 <default>false</default>
                 <label>Ask what would be helpful today</label>
             </value>
-            <value>
-                <fullName>Keep it simple</fullName>
-                <default>false</default>
-                <label>Keep it simple</label>
-            </value>
-            <value>
-                <fullName>Please don&apos;t reach out unless I&apos;ve asked</fullName>
-                <default>false</default>
-                <label>Please don&apos;t reach out unless I&apos;ve asked</label>
-            </value>
         </valueSetDefinition>
     </valueSet>
+    <visibleLines>4</visibleLines>
 </CustomField>

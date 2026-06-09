@@ -11,7 +11,13 @@ public with sharing class FimbyOnboardingController {
         'Pronouns__c', 'Languages_Spoken__c', 'Accessibility_Notes__c', 'General_Availability__c',
         'About_Neighbourhood_Tenure__c', 'About_What_Brought_You__c', 'About_Local_Place__c',
         'About_Enjoys_Doing__c', 'About_Fun_Fact__c',
-        'Care_Welcome_Support__c', 'Care_Unhelpful_Things__c', 'Care_How_To_Ask__c', 'Care_Hard_Nos__c'
+        'Care_Welcome_Support__c', 'Care_Unhelpful_Things__c', 'Care_How_To_Ask__c', 'Care_Hard_Nos__c',
+        'Care_Standing_Visible__c', 'Care_Updated_Date__c'
+    };
+
+    private static final Set<String> CARE_PROFILE_FIELDS = new Set<String>{
+        'Care_Welcome_Support__c', 'Care_Unhelpful_Things__c', 'Care_How_To_Ask__c', 'Care_Hard_Nos__c',
+        'Care_Standing_Visible__c'
     };
 
     private static final Integer DISMISS_EXPIRY_HOURS = 12;
@@ -177,11 +183,22 @@ public with sharing class FimbyOnboardingController {
             }
 
             Contact c = new Contact(Id = contactId);
+            Boolean careTouched = false;
             for (String fieldName : fieldValues.keySet()) {
                 if (!ALLOWED_PROFILE_FIELDS.contains(fieldName)) {
                     throw new AuraHandledException('Field not allowed: ' + fieldName);
                 }
-                c.put(fieldName, fieldValues.get(fieldName));
+                if (CARE_PROFILE_FIELDS.contains(fieldName)) {
+                    careTouched = true;
+                }
+                if (fieldName == 'Care_Standing_Visible__c') {
+                    c.Care_Standing_Visible__c = 'true'.equalsIgnoreCase(fieldValues.get(fieldName));
+                } else {
+                    c.put(fieldName, fieldValues.get(fieldName));
+                }
+            }
+            if (careTouched) {
+                c.Care_Updated_Date__c = Date.today();
             }
             c.Onboarding_Profile_Completed__c = true;
 

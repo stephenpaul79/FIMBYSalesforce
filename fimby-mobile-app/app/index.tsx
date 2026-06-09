@@ -23,17 +23,18 @@ import {
   Text,
   View,
 } from "react-native";
+import type { AppStateStatus } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewNavigation } from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
-import type { WebViewErrorEvent, WebViewHttpErrorEvent, WebViewMessageEvent } from "react-native-webview/lib/WebViewTypes";
+import type { WebViewErrorEvent, WebViewHttpErrorEvent, WebViewMessageEvent, WebViewRenderProcessGoneEvent } from "react-native-webview/lib/WebViewTypes";
 import {
   usePushNotifications,
   getLastNotificationResponse,
   clearLastNotificationResponse,
   NotificationData,
 } from "../hooks/use-push-notifications";
-import { log, warn } from "../lib/log";
+import { log, warn, safeUrlForLog } from "../lib/log";
 import {
   authTimingMark,
   authTimingDelta,
@@ -162,6 +163,15 @@ const WEBVIEW_HANDOFF_FADE_MS = 550;
 
 const INJECT_FALLBACK_MS = 2000;
 const SF_EC_HOST_PATTERN = /^fimby\.my\.site\.com$/i;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Foreground resume reconciliation thresholds
+// The app does NOT run in the background; these only govern how much work we do
+// when it returns to the foreground (active) after an absence.
+// ─────────────────────────────────────────────────────────────────────────────
+const LIGHT_RESUME_AFTER_MS = 30 * 1000;        // notify the WebView after this
+const AUTH_RESUME_AFTER_MS = 5 * 60 * 1000;     // refresh the native session after this
+const MIN_RESUME_REFRESH_SPACING_MS = 20 * 1000; // throttle resume work churn
 
 function isExperienceCloudUrl(rawUrl: string): boolean {
   try {
@@ -375,6 +385,9 @@ export default function IndexScreen() {
 
   // WebView state
   const [webViewUrl, setWebViewUrl] = React.useState<string | null>(null);
+  // Bumped to force a full remount of the native WebView when its content
+  // process is terminated (iOS) or killed (Android) — recovers a blank page.
+  const [webViewKey, setWebViewKey] = React.useState(0);
   const [webViewError, setWebViewError] = React.useState<string | null>(null);
   const [webViewHandoffVisible, setWebViewHandoffVisible] = React.useState(false);
   const webViewHandoffFade = useRef(new Animated.Value(1)).current;
@@ -582,6 +595,20 @@ export default function IndexScreen() {
   // After a push launch is handled (or none pending), skip cold-start re-checks on later loadEnd events.
   const coldStartPushHandledRef = useRef(false);
 
+  // Foreground resume coordinator state. The app reconciles on the active
+  // transition; it does not run while backgrounded.
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const backgroundedAtRef = useRef<number | null>(null);
+  const lastResumeRefreshAtRef = useRef(0);
+  const resumeRefreshInFlightRef = useRef(false);
+
+  // WebView crash recovery. The last live Experience Cloud page we can safely
+  // reload after the OS kills the WebView process (NOT the one-time frontdoor
+  // URL, which is long expired by then). Plus a loop guard.
+  const lastEcUrlRef = useRef<string | null>(null);
+  const lastCrashRecoverAtRef = useRef(0);
+  const crashRecoverCountRef = useRef(0);
+
   // Keep the latest access token in a ref so WebView message handlers (whose
   // useCallback deps stay []) never read a stale/null token from closure.
   const accessTokenRef = useRef<string | null>(null);
@@ -676,7 +703,7 @@ export default function IndexScreen() {
 
   const handleWebViewLoadEnd = useCallback(
     (url?: string, loading?: boolean) => {
-      authTimingMark("webview_load_end", { url: url ?? "", loading });
+      authTimingMark("webview_load_end", { url: safeUrlForLog(url), loading });
       authTimingDelta("frontdoor_url_set", "webview_load_end");
 
       if (!url || !isExperienceCloudUrl(url)) return;
@@ -738,6 +765,15 @@ export default function IndexScreen() {
       }
     },
   });
+
+  // Clear the app icon badge once the WebView session is showing. Moved out of
+  // render (it was called inline during the webViewUrl branch) so it does not
+  // fire on every re-render while the WebView is mounted.
+  React.useEffect(() => {
+    if (webViewUrl) {
+      clearBadge();
+    }
+  }, [webViewUrl, clearBadge]);
 
   // Register push notifications after successful login.
   // prompt=false (the default on the login/app-open path) registers only when
@@ -1167,7 +1203,7 @@ export default function IndexScreen() {
   const onShouldStartLoadWithRequest = useCallback(
     (request: ShouldStartLoadRequest): boolean => {
       const url = request.url;
-      log("[WebView] onShouldStartLoadWithRequest:", url);
+      log("[WebView] onShouldStartLoadWithRequest:", safeUrlForLog(url));
 
       // Check if this is the login URL we want to intercept
       if (isFimbyLoginRedirect(url)) {
@@ -1217,7 +1253,7 @@ export default function IndexScreen() {
       // opened in the system browser so the Experience Cloud session cookie
       // stays inside the WebView.
       if (!isAllowedWebViewUrl(url)) {
-        log("[WebView] Blocked off-origin nav, handing to system browser:", url);
+        log("[WebView] Blocked off-origin nav, handing to system browser:", safeUrlForLog(url));
         Linking.openURL(url).catch((err) => {
           log("[WebView] Linking.openURL failed:", err);
         });
@@ -1237,7 +1273,20 @@ export default function IndexScreen() {
   const onNavigationStateChange = useCallback(
     (navState: WebViewNavigation) => {
       const url = navState.url;
-      log("[WebView] onNavigationStateChange:", url);
+      log("[WebView] onNavigationStateChange:", safeUrlForLog(url));
+
+      // Remember the last committed, authenticated page so we can reload it if
+      // the WebView process is later killed while backgrounded. Skip the login
+      // redirect, about:blank, and anything off the FIMBY/SF surface.
+      if (
+        !navState.loading &&
+        url &&
+        url !== "about:blank" &&
+        isAllowedWebViewUrl(url) &&
+        !isFimbyLoginRedirect(url)
+      ) {
+        lastEcUrlRef.current = url;
+      }
 
       if (injectFallbackRef.current && isExperienceCloudUrl(url)) {
         injectFallbackRef.current.confirmed = true;
@@ -1313,12 +1362,56 @@ export default function IndexScreen() {
     (event: WebViewHttpErrorEvent) => {
       const { nativeEvent } = event;
       const statusCode = nativeEvent.statusCode;
-      log("[WebView] HTTP error:", statusCode, nativeEvent.url);
+      log("[WebView] HTTP error:", statusCode, safeUrlForLog(nativeEvent.url));
 
       if (statusCode === 401 || statusCode === 403) {
         dismissWebViewHandoff({ immediate: true });
         setWebViewError("Your session has expired. Let's get you signed back in.");
       }
+    },
+    [dismissWebViewHandoff]
+  );
+
+  /**
+   * WebView process-death recovery -- the real fix for the blank/white frozen
+   * page after a long background. iOS terminates the WKWebView content process
+   * (and Android can kill the renderer) to reclaim memory; the view then shows
+   * a dead white page and never recovers on its own, because no navigation or
+   * HTTP error fires. We remount a fresh native WebView pointed at the last
+   * live page (session cookie reload), not the expired one-time frontdoor URL.
+   */
+  const recoverWebViewFromCrash = useCallback(
+    (reason: string) => {
+      const now = Date.now();
+      if (now - lastCrashRecoverAtRef.current < 4000) {
+        crashRecoverCountRef.current += 1;
+      } else {
+        crashRecoverCountRef.current = 1;
+      }
+      lastCrashRecoverAtRef.current = now;
+
+      log(
+        "[WebView] process gone, recovering:",
+        reason,
+        safeUrlForLog(lastEcUrlRef.current)
+      );
+
+      dismissWebViewHandoff({ immediate: true });
+
+      // Loop guard: if the page keeps crashing on load, stop remounting and let
+      // the user retry or sign out via the existing error overlay.
+      if (crashRecoverCountRef.current > 3) {
+        log("[WebView] repeated crashes; surfacing recovery overlay");
+        setWebViewError("FIMBY needs to reload. Tap Try Again to continue.");
+        return;
+      }
+
+      // Point the remount at the last authenticated page (cookie session) so we
+      // land back where the user was; fall back to the current url otherwise.
+      if (lastEcUrlRef.current) {
+        setWebViewUrl(lastEcUrlRef.current);
+      }
+      setWebViewKey((k) => k + 1);
     },
     [dismissWebViewHandoff]
   );
@@ -1562,18 +1655,125 @@ export default function IndexScreen() {
     };
   }, [applyDeepLink]);
 
-  // Replay a deep link that arrived while the app was backgrounded.
-  React.useEffect(() => {
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state !== "active") return;
-      const path = resumeDeepLinkPathRef.current;
-      if (!path) return;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // FOREGROUND RESUME RECONCILIATION
+  // One coordinator owns the active transition: replay deferred deep links,
+  // notify the WebView, and refresh the native session after a long absence.
+  // We never run work while backgrounded — only reconcile when foregrounded.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // Tell the embedded Experience Cloud app the native shell just resumed, so
+  // LWCs can refresh stale data (badge counts, feeds) without a full reload.
+  // injectJavaScript must end with `true;` and is a no-op if the WebView is not
+  // ready. awayForMs may be null → JSON.stringify(null) emits valid JS.
+  const notifyWebViewAppResumed = useCallback(
+    (awayForMs: number | null) => {
+      if (!webViewRef.current || !webViewUrl) return;
+      webViewRef.current.injectJavaScript(`
+        window.dispatchEvent(new CustomEvent('fimby-app-resumed', {
+          detail: {
+            awayForMs: ${JSON.stringify(awayForMs)},
+            resumedAt: ${JSON.stringify(Date.now())}
+          }
+        }));
+        true;
+      `);
+    },
+    [webViewUrl]
+  );
+
+  const handleAppResumed = useCallback(async () => {
+    const now = Date.now();
+    const awayForMs = backgroundedAtRef.current
+      ? now - backgroundedAtRef.current
+      : null;
+    // Null immediately so a later inactive→active blip can't reuse a stale time.
+    backgroundedAtRef.current = null;
+
+    // 1. Deferred deep link wins, before any throttle. Auth for this branch is
+    //    delegated to applyDeepLink/openFimby and the existing /login intercept.
+    const pendingPath = resumeDeepLinkPathRef.current;
+    if (pendingPath) {
       resumeDeepLinkPathRef.current = null;
-      log("[DEEPLINK] replay on AppState active:", path);
-      applyDeepLink(path);
+      log("[DEEPLINK] replay on AppState active:", pendingPath);
+      applyDeepLink(pendingPath);
+      return;
+    }
+
+    // 2. Never reconcile during logout teardown or before a session exists.
+    if (logoutInProgressRef.current) return;
+    if (!webViewUrl) return;
+
+    // 3. Short blips (app switcher, Control Center, Face ID) are no-ops.
+    if (awayForMs != null && awayForMs < LIGHT_RESUME_AFTER_MS) return;
+
+    // 4. Throttle the notify + refresh path so rapid switching can't churn.
+    if (
+      resumeRefreshInFlightRef.current ||
+      now - lastResumeRefreshAtRef.current < MIN_RESUME_REFRESH_SPACING_MS
+    ) {
+      return;
+    }
+
+    lastResumeRefreshAtRef.current = now;
+    resumeRefreshInFlightRef.current = true;
+
+    try {
+      notifyWebViewAppResumed(awayForMs);
+
+      if (awayForMs == null || awayForMs >= AUTH_RESUME_AFTER_MS) {
+        const result = await refreshSession();
+
+        if (result.sessionExpired) {
+          // refreshSession already cleared the stored refresh token on failure.
+          dismissWebViewHandoff({ immediate: true });
+          setWebViewUrl(null);
+          setAccessToken(null);
+          Alert.alert(
+            "Please Sign In",
+            result.message || "Your session has expired. Please sign in again."
+          );
+        }
+      }
+    } catch (e: any) {
+      log("[APPSTATE] resume refresh failed:", e?.message || e);
+    } finally {
+      resumeRefreshInFlightRef.current = false;
+    }
+  }, [
+    applyDeepLink,
+    notifyWebViewAppResumed,
+    refreshSession,
+    dismissWebViewHandoff,
+    webViewUrl,
+  ]);
+
+  // Single AppState coordinator. Records the earliest away-time on the way out
+  // and reconciles on the way back in.
+  React.useEffect(() => {
+    const sub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+      const prevState = appStateRef.current;
+      appStateRef.current = nextState;
+
+      if (nextState === "background" || nextState === "inactive") {
+        // Set-if-null preserves the earliest away-time across an
+        // active → inactive → background double-fire.
+        if (backgroundedAtRef.current == null) {
+          backgroundedAtRef.current = Date.now();
+        }
+        return;
+      }
+
+      if (
+        nextState === "active" &&
+        (prevState === "background" || prevState === "inactive")
+      ) {
+        void handleAppResumed();
+      }
     });
+
     return () => sub.remove();
-  }, [applyDeepLink]);
+  }, [handleAppResumed]);
 
   /**
    * Start Sign In flow (pre-flight network check + OAuth)
@@ -1615,9 +1815,8 @@ export default function IndexScreen() {
       // ✅ Capture verifier right before launching auth
       pkceVerifierRef.current = request?.codeVerifier || null;
       log(
-        "Captured PKCE verifier (len/fp):",
-        (pkceVerifierRef.current || "").length,
-        (pkceVerifierRef.current || "").slice(0, 6)
+        "Captured PKCE verifier:",
+        pkceVerifierRef.current ? "present" : "missing"
       );
 
       setStatus("Opening the door…");
@@ -1807,7 +2006,6 @@ export default function IndexScreen() {
 
   // If WebView URL is set, show the WebView full-screen with no UI chrome
   if (webViewUrl) {
-    clearBadge();
     const themeColors = THEME_COLORS[appTheme];
     const handoffPalette = PREAUTH_COLORS[appTheme];
     return (
@@ -1815,6 +2013,7 @@ export default function IndexScreen() {
         <StatusBar style={themeColors.barStyle} backgroundColor={themeColors.statusBar} />
         <Stack.Screen options={{ headerShown: false }} />
         <WebView
+          key={webViewKey}
           ref={webViewRef}
           source={{ uri: webViewUrl }}
           style={styles.webView}
@@ -1843,6 +2042,14 @@ export default function IndexScreen() {
           onNavigationStateChange={onNavigationStateChange}
           onError={onWebViewError}
           onHttpError={onHttpError}
+          onContentProcessDidTerminate={() =>
+            recoverWebViewFromCrash("ios-content-process-terminated")
+          }
+          onRenderProcessGone={(event: WebViewRenderProcessGoneEvent) =>
+            recoverWebViewFromCrash(
+              `android-render-process-gone (didCrash=${event?.nativeEvent?.didCrash})`
+            )
+          }
           onMessage={onWebViewMessage}
           onLoadEnd={(event) => {
             const { url, loading } = event.nativeEvent;

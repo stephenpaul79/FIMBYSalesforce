@@ -7,13 +7,6 @@
 public without sharing class FimbyEmailAlertQueueable implements Queueable {
 
     private static final Integer SEND_CHUNK_SIZE = 100;
-    private static final String DYNAMIC_PLACEHOLDER = '<!-- FIMBY_DYNAMIC_CONTENT -->';
-    private static final String INTENT_PLACEHOLDER = '<!-- FIMBY_INTENT_LINE -->';
-    private static final String NEIGHBOURHOOD_PLACEHOLDER = '<!-- FIMBY_NEIGHBOURHOOD_NAME -->';
-    private static final String SUBJECT_HEADING_PLACEHOLDER = '<!-- FIMBY_SUBJECT_HEADING -->';
-
-    @TestVisible
-    private static String testRenderedHtml;
 
     private Map<Id, List<Notification__c>> notifsByContact;
 
@@ -59,7 +52,6 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         }
         Map<String, AlertCardEnrichment> enrichmentMap = enrichNotifications(allNotifs);
 
-        Id templateId = getAlertTemplateId();
         Id oweaId = getOweaId();
 
         if (oweaId == null) {
@@ -120,7 +112,7 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
                 String neighbourhoodName = u.Contact?.Account?.Name;
                 String subjectLine = buildSubject(notifs);
 
-                String html = buildAlertHtml(templateId, u.Id, dynamicHtml, intentLine, neighbourhoodName, subjectLine, notifs.size());
+                String html = buildAlertHtml(dynamicHtml, intentLine, neighbourhoodName, subjectLine, notifs.size());
 
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTargetObjectId(u.Id);
@@ -164,43 +156,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         }
     }
 
-    private String buildAlertHtml(Id templateId, Id userId, String dynamicHtml, String intentLine, String neighbourhoodName, String subjectLine, Integer notifCount) {
+    private String buildAlertHtml(String dynamicHtml, String intentLine, String neighbourhoodName, String subjectLine, Integer notifCount) {
         Boolean singleDirectAlert = notifCount == 1;
-        String subjectHeadingHtml = singleDirectAlert
-            ? ''
-            : buildSubjectHeadingHtml(subjectLine);
-
-        if (templateId != null) {
-            String html;
-            if (Test.isRunningTest() && testRenderedHtml != null) {
-                html = testRenderedHtml;
-            } else {
-                Messaging.SingleEmailMessage rendered =
-                    Messaging.renderStoredEmailTemplate(templateId, userId, null);
-                html = rendered.getHtmlBody();
-            }
-            if (FimbyEmailHtmlBuilder.hasRequiredPlaceholder(html, DYNAMIC_PLACEHOLDER)) {
-                Map<String, String> replacements = new Map<String, String>{
-                    DYNAMIC_PLACEHOLDER => dynamicHtml,
-                    INTENT_PLACEHOLDER => intentLine != null ? '<p style="color:#6B6B6B;font-size:13px;font-style:italic;margin:0 0 16px;">' + intentLine + '</p>' : '',
-                    NEIGHBOURHOOD_PLACEHOLDER => neighbourhoodName != null ? neighbourhoodName : 'your neighbourhood',
-                    SUBJECT_HEADING_PLACEHOLDER => subjectHeadingHtml
-                };
-                return FimbyEmailHtmlBuilder.injectContent(html, replacements);
-            }
-        }
         return FimbyEmailHtmlBuilder.wrapInBrandedShell(
             dynamicHtml, subjectLine, neighbourhoodName, intentLine, singleDirectAlert
         );
-    }
-
-    @TestVisible
-    private static String buildSubjectHeadingHtml(String subjectLine) {
-        if (String.isBlank(subjectLine)) {
-            return '';
-        }
-        return '<p style="margin:0;font-family:Verdana, Geneva, sans-serif;font-size:20px;font-weight:600;color:#2D2D2D;">'
-            + subjectLine.escapeHtml4() + '</p>';
     }
 
     private Boolean isEligibleAtSendTime(User u) {
@@ -273,23 +233,6 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         };
         return subjects.containsKey(notifType)
             ? subjects.get(notifType) : 'Update from your neighbourhood';
-    }
-
-    @TestVisible
-    private static Id alertTemplateId;
-    private static Id getAlertTemplateId() {
-        if (alertTemplateId == null) {
-            FIMBY_Email_Template__mdt mapping = FIMBY_Email_Template__mdt.getInstance('Alert');
-            if (mapping != null && mapping.Is_Active__c == true) {
-                List<EmailTemplate> tmpl = [
-                    SELECT Id FROM EmailTemplate
-                    WHERE DeveloperName = :mapping.Template_DeveloperName__c
-                    LIMIT 1
-                ];
-                alertTemplateId = tmpl.isEmpty() ? null : tmpl[0].Id;
-            }
-        }
-        return alertTemplateId;
     }
 
     @TestVisible

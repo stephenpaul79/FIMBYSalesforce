@@ -104,6 +104,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             }
         };
         document.addEventListener('visibilitychange', this._visibilityHandler);
+
+        // The native app shell dispatches this when it returns to the
+        // foreground after an absence. visibilitychange is unreliable in iOS
+        // WKWebView after long background, so this bridges that gap. Older app
+        // builds never dispatch it, so the listener simply stays idle.
+        this._appResumedHandler = () => this._pollBadgeCountsIfStale();
+        window.addEventListener('fimby-app-resumed', this._appResumedHandler);
     }
 
     disconnectedCallback() {
@@ -115,6 +122,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         if (this._visibilityHandler) {
             document.removeEventListener('visibilitychange', this._visibilityHandler);
+        }
+        if (this._appResumedHandler) {
+            window.removeEventListener('fimby-app-resumed', this._appResumedHandler);
         }
     }
 

@@ -21,7 +21,7 @@ import {
     FEED_FILTER_PILLS
 } from './fimbyWalkthroughContent';
 
-const TOTAL_PROFILE_STEPS = 7;
+const TOTAL_PROFILE_STEPS = 6;
 const VOUCH_TYPE_PEER = 'peer';
 const VOUCH_TYPE_COMMUNITY_GROUP = 'community_group';
 const VOUCH_SEARCH_DEBOUNCE_MS = 250;
@@ -44,9 +44,7 @@ const CARE_WELCOME_VALUES = [
 const CARE_HOW_TO_ASK_VALUES = [
     'Message me first',
     'Offer one specific thing',
-    'Ask what would be helpful today',
-    'Keep it simple',
-    "Please don't reach out unless I've asked"
+    'Ask what would be helpful today'
 ];
 
 const CARE_UNHELPFUL_VALUES = [
@@ -57,6 +55,7 @@ const CARE_UNHELPFUL_VALUES = [
     'Being posted about publicly',
     'Gifts with expectations',
     'Just pushing through talk',
+    "Reaching out before I've asked",
     'Other'
 ];
 
@@ -84,8 +83,10 @@ export default class FimbyOnboardingPage extends LightningElement {
     @track _aboutFunFact = '';
     @track _careWelcome = [];
     @track _careUnhelpful = [];
-    @track _careHowToAsk = '';
+    @track _careHowToAsk = [];
     @track _careHardNos = '';
+    @track _careExpanded = false;
+    @track _careStandingVisible = false;
     @track _quietHoursPreference = '10PM_6AM';
     @track _voucherType = VOUCH_TYPE_PEER;
     @track _vouchSearchTerm = '';
@@ -160,7 +161,6 @@ export default class FimbyOnboardingPage extends LightningElement {
     get isStep4()   { return this._currentPhase === 1 && this._currentStep === 4 && !this._showCelebration; }
     get isStep5()   { return this._currentPhase === 1 && this._currentStep === 5 && !this._showCelebration; }
     get isStep6()   { return this._currentPhase === 1 && this._currentStep === 6 && !this._showCelebration; }
-    get isStep7()   { return this._currentPhase === 1 && this._currentStep === 7 && !this._showCelebration; }
     get showCelebration() { return this._showCelebration; }
     get canGoBack() { return this._currentStep > 1 && !this._showCelebration; }
 
@@ -276,12 +276,12 @@ export default class FimbyOnboardingPage extends LightningElement {
             return this.aboutFieldsFilledCount < MIN_ABOUT_FIELDS;
         }
         if (this._currentStep === TOTAL_PROFILE_STEPS) {
-            return !this._isVouchStep7Valid;
+            return !this._isVouchStep6Valid;
         }
         return false;
     }
 
-    get _isVouchStep7Valid() {
+    get _isVouchStep6Valid() {
         return !!this._selectedVoucher;
     }
 
@@ -297,8 +297,16 @@ export default class FimbyOnboardingPage extends LightningElement {
         return CARE_HOW_TO_ASK_VALUES.map(val => ({
             value: val,
             label: val,
-            checked: this._careHowToAsk === val
+            checked: this._careHowToAsk.includes(val)
         }));
+    }
+
+    get careExpanded() { return this._careExpanded; }
+    get careStandingVisible() { return this._careStandingVisible; }
+    get careExpanderLabel() {
+        return this._careExpanded
+            ? 'Hide optional care questions'
+            : 'Want to share a bit more about how neighbours can care for you? (optional)';
     }
 
     get careUnhelpfulOptions() {
@@ -531,7 +539,7 @@ export default class FimbyOnboardingPage extends LightningElement {
         const value = event.target.dataset.value;
         const checked = event.target.checked;
         const stateKey = `_${group}`;
-        if (group === 'careWelcome' || group === 'careUnhelpful') {
+        if (group === 'careWelcome' || group === 'careUnhelpful' || group === 'careHowToAsk') {
             if (checked) {
                 this[stateKey] = [...this[stateKey], value];
             } else {
@@ -540,8 +548,12 @@ export default class FimbyOnboardingPage extends LightningElement {
         }
     }
 
-    handleRadioChange(event) {
-        this._careHowToAsk = event.target.value;
+    handleCareExpanderToggle() {
+        this._careExpanded = !this._careExpanded;
+    }
+
+    handleCareStandingToggle(event) {
+        this._careStandingVisible = event.target.checked;
     }
 
     handleQuietHoursChange(event) {
@@ -617,7 +629,7 @@ export default class FimbyOnboardingPage extends LightningElement {
         if (this._currentStep === 1 && (!this._firstName?.trim() || !this._lastName?.trim())) return;
         if (this._currentStep === 3 && this.aboutFieldsFilledCount < MIN_ABOUT_FIELDS) return;
 
-        if (this._currentStep === 6) {
+        if (this._currentStep === 5) {
             this._saveProfileAndAdvanceToVouchStep();
             return;
         }
@@ -659,8 +671,9 @@ export default class FimbyOnboardingPage extends LightningElement {
             if (this._aboutFunFact?.trim()) fieldValues.About_Fun_Fact__c = this._aboutFunFact.trim();
             if (this._careWelcome.length > 0) fieldValues.Care_Welcome_Support__c = this._careWelcome.join(';');
             if (this._careUnhelpful.length > 0) fieldValues.Care_Unhelpful_Things__c = this._careUnhelpful.join(';');
-            if (this._careHowToAsk) fieldValues.Care_How_To_Ask__c = this._careHowToAsk;
+            if (this._careHowToAsk.length > 0) fieldValues.Care_How_To_Ask__c = this._careHowToAsk.join(';');
             if (this._careHardNos?.trim()) fieldValues.Care_Hard_Nos__c = this._careHardNos.trim();
+            if (this._careStandingVisible) fieldValues.Care_Standing_Visible__c = 'true';
 
             await completeProfileSetup({ fieldValues });
             if (this._quietHoursPreference) {
@@ -677,7 +690,7 @@ export default class FimbyOnboardingPage extends LightningElement {
     }
 
     async _submitVouchAndCelebrate() {
-        if (!this._isVouchStep7Valid) return;
+        if (!this._isVouchStep6Valid) return;
         this._isSaving = true;
         this._saveError = '';
         try {
@@ -831,7 +844,10 @@ export default class FimbyOnboardingPage extends LightningElement {
             this._aboutLocalPlace = profile.aboutLocalPlace || '';
             this._aboutEnjoys = profile.aboutEnjoysDoing || '';
             this._aboutFunFact = profile.aboutFunFact || '';
-            this._careHowToAsk = profile.careHowToAsk || '';
+            this._careHowToAsk = profile.careHowToAsk
+                ? profile.careHowToAsk.split(';').map(s => s.trim()).filter(Boolean)
+                : [];
+            this._careStandingVisible = profile.careStandingVisible === true;
             this._careHardNos = profile.careHardNos || '';
             if (profile.careWelcomeSupport) {
                 this._careWelcome = profile.careWelcomeSupport.split(';').map(s => s.trim()).filter(Boolean);

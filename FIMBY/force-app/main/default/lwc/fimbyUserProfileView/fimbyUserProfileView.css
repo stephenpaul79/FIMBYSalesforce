@@ -473,9 +473,17 @@
     border-bottom: 1px solid var(--fimby-border-subtle);
 }
 
-.care-question:last-of-type {
+.care-too-much-text {
+    margin-top: 12px;
+}
+
+.care-question.care-standing-toggle {
     border-bottom: none;
     padding-bottom: 0;
+}
+
+.care-standing-toggle .field-helper {
+    margin: 8px 0 0;
 }
 
 /* ========== EDIT ACTION BUTTONS ========== */

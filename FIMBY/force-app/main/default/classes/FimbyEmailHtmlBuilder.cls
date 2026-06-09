@@ -1,8 +1,7 @@
 /**
  * @description Shared HTML builder for all FIMBY email types. Generates email-safe HTML
  * using inline CSS derived from FIMBY design tokens. All dynamic content (notification cards,
- * digest sections, transactional cards) is built here and injected into Lightning Email
- * Templates via placeholder token replacement.
+ * digest sections, transactional cards) is built here and wrapped in the branded shell.
  */
 public without sharing class FimbyEmailHtmlBuilder {
 
@@ -192,6 +191,10 @@ public without sharing class FimbyEmailHtmlBuilder {
      * Backyard" sign-off are kept so the email still feels like FIMBY.
      */
     public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome) {
+        return wrapInBrandedShell(innerHtml, subject, neighbourhoodName, intentLine, skipSubjectBlock, minimalChrome, null);
+    }
+
+    public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName) {
         String nhDisplay = String.isNotBlank(neighbourhoodName) ? escapeHtml(neighbourhoodName) : 'your neighbourhood';
         String safeSubject = String.isNotBlank(subject) ? escapeHtml(subject) : 'Update from FIMBY';
         Boolean minimal = minimalChrome == true;
@@ -205,6 +208,8 @@ public without sharing class FimbyEmailHtmlBuilder {
             intentHtml = '<p style="margin:8px 0 0;' + F + 'font-size:14px;font-style:italic;color:' + TEXT_SECONDARY + ';">'
                 + escapeHtml(intentLine) + '</p>';
         }
+        String greetingHtml = String.isNotBlank(recipientFirstName)
+            ? buildHeaderGreetingLine(recipientFirstName) : '';
 
         String seasonalLine = getSeasonalLine();
         String seasonalHtml = '';
@@ -265,6 +270,7 @@ public without sharing class FimbyEmailHtmlBuilder {
                     ? buildNeighbourhoodOnlyBlockHtml(nhDisplay)
                     : '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
                       + '<p style="margin:0 0 2px;' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">' + nhDisplay + '</p>'
+                      + greetingHtml
                       + '<p style="margin:0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">' + safeSubject + '</p>'
                       + intentHtml
                       + '</td></tr>')
@@ -513,6 +519,14 @@ public without sharing class FimbyEmailHtmlBuilder {
 
     public static String buildInCardGreetingLine(String firstName) {
         return '<p style="margin:0 0 10px;' + F + 'font-size:14px;color:' + TEXT_BODY + ';line-height:1.55;">'
+            + resolveGreetingText(firstName) + '</p>';
+    }
+
+    /**
+     * @description Greeting line for digest header block (no card wrapper).
+     */
+    public static String buildHeaderGreetingLine(String firstName) {
+        return '<p style="margin:0 0 6px;' + F + 'font-size:15px;color:' + TEXT_HEADING + ';line-height:1.4;">'
             + resolveGreetingText(firstName) + '</p>';
     }
 

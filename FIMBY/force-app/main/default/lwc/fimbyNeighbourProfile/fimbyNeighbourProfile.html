@@ -206,22 +206,16 @@
                                     <span class="field-value">{displayCareWelcome}</span>
                                 </div>
                             </template>
-                            <template lwc:if={profile.careUnhelpfulThings}>
-                                <div class="field-item full-width">
-                                    <span class="field-label">Can feel unhelpful</span>
-                                    <span class="field-value">{displayCareUnhelpful}</span>
-                                </div>
-                            </template>
                             <template lwc:if={profile.careHowToAsk}>
                                 <div class="field-item full-width">
-                                    <span class="field-label">How to ask</span>
-                                    <span class="field-value">{profile.careHowToAsk}</span>
+                                    <span class="field-label">How to reach out</span>
+                                    <span class="field-value">{displayCareHowToAsk}</span>
                                 </div>
                             </template>
-                            <template lwc:if={profile.careHardNos}>
+                            <template lwc:if={displayCareTooMuch}>
                                 <div class="field-item full-width">
-                                    <span class="field-label">Hard no's</span>
-                                    <span class="field-value">{profile.careHardNos}</span>
+                                    <span class="field-label">Can feel like too much</span>
+                                    <span class="field-value">{displayCareTooMuch}</span>
                                 </div>
                             </template>
                         </div>

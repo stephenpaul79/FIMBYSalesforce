@@ -1,7 +1,6 @@
 /**
  * @description Builds the dynamic content portion of digest emails — card-style sections
- * for each content type. Output is injected into the rendered Lightning Email Template
- * via placeholder replacement.
+ * for each content type. Output is wrapped in the Apex branded email shell.
  *
  * Structure (top to bottom):
  *   1. By the numbers (resolution + cross-FIMBY encouragement line)
@@ -133,7 +132,7 @@ public without sharing class FimbyDigestEmailBuilder {
     @TestVisible
     private static String getCrossFimbyStat(String frequency, Datetime startDt, Datetime endDt) {
         try {
-            String windowWord = (frequency == 'Weekly') ? 'week' : 'day';
+            String windowWord = resolveCrossFimbyWindowWord(frequency, startDt, endDt);
             Integer variant = Math.mod(Math.abs(Crypto.getRandomInteger()), 4);
             Integer count;
             String formatString;
@@ -176,6 +175,17 @@ public without sharing class FimbyDigestEmailBuilder {
         } catch (Exception e) {
             return '';
         }
+    }
+
+    @TestVisible
+    private static String resolveCrossFimbyWindowWord(String frequency, Datetime startDt, Datetime endDt) {
+        if (frequency == 'Weekly') {
+            return 'week';
+        }
+        if (startDt != null && endDt != null && startDt.date() != endDt.date()) {
+            return 'weekend';
+        }
+        return 'day';
     }
 
     /* ---------------------------------------------------------------

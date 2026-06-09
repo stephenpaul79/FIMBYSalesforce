@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Care_Standing_Visible__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When true, the neighbour&apos;s care preferences block is visible on their profile to other neighbours in the same neighbourhood.</description>
+    <externalId>false</externalId>
+    <label>Care Standing Visible</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

@@ -16,10 +16,13 @@ const COUNT_FIELD_MAP = {
     bulkbuy: 'completedBulkBuys'
 };
 
+const COUNT_FIRST_TIME_MAP = {
+    ask: 'needPostings',
+    offer: 'offerPostings',
+    event: 'offerPostings'
+};
+
 const FIRST_CELEBRATION_MAP = {
-    ask: { contextKey: 'firstPostCelebrated', fieldName: 'First_Post_Celebrated__c' },
-    offer: { contextKey: 'firstPostCelebrated', fieldName: 'First_Post_Celebrated__c' },
-    event: { contextKey: 'firstPostCelebrated', fieldName: 'First_Post_Celebrated__c' },
     story: { contextKey: 'firstStoryCelebrated', fieldName: 'First_Story_Celebrated__c' },
     library: { contextKey: 'firstLibraryItemCelebrated', fieldName: 'First_Library_Item_Celebrated__c' },
     response: { contextKey: 'firstResponseCelebrated', fieldName: 'First_Response_Celebrated__c' },
@@ -152,7 +155,7 @@ export default class FimbyCelebration extends LightningElement {
 
         if (this._isFirstTime) {
             const mapping = FIRST_CELEBRATION_MAP[this.actionType];
-            if (mapping) {
+            if (mapping?.fieldName) {
                 markFirstCelebration({ fieldName: mapping.fieldName }).catch((err) => {
                     console.error('markFirstCelebration error', err);
                 });
@@ -239,11 +242,21 @@ export default class FimbyCelebration extends LightningElement {
     }
 
     _checkFirstTime() {
-        const mapping = FIRST_CELEBRATION_MAP[this.actionType];
-        if (!mapping || !this._celebrationContext) {
+        if (!this._celebrationContext) {
             return;
         }
-        if (this._celebrationContext[mapping.contextKey] === false) {
+
+        const countField = COUNT_FIRST_TIME_MAP[this.actionType];
+        if (countField) {
+            const count = this._celebrationContext[countField];
+            if (count === 1) {
+                this._isFirstTime = true;
+            }
+            return;
+        }
+
+        const mapping = FIRST_CELEBRATION_MAP[this.actionType];
+        if (mapping && this._celebrationContext[mapping.contextKey] === false) {
             this._isFirstTime = true;
         }
     }
