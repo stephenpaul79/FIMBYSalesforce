@@ -178,7 +178,11 @@ public with sharing class FimbyAskOfferController {
                 newPost.Visibility_Scope__c = 'Neighbourhood';
             }
 
+            FimbyRecurrenceService.applyRecurrenceOnCreate(newPost, data);
+
             new NeedsOffersHelper().insertPost(newPost);
+
+            FimbyRecurrenceService.finalizeSeriesParentAfterInsert(newPost);
 
             FimbyCounterService.onPostCreated(
                 realContactId, postType, actingAsContactId != realContactId
@@ -223,7 +227,15 @@ public with sharing class FimbyAskOfferController {
             Needs_Offers__c post = [
                 SELECT Id, Posted_By__c, Contact__c, RecordType.DeveloperName,
                        Type__c, Event_Type__c, Is_Urgent__c,
-                       Start_Date__c, Start_Time__c, End_Date__c, End_Time__c
+                       Start_Date__c, Start_Time__c, End_Date__c, End_Time__c,
+                       Series_Parent__c, Recurrence_Frequency__c, Recurrence_Interval__c,
+                       Recurrence_End_Mode__c, Recurrence_End_Date__c, Recurrence_Max_Occurrences__c,
+                       Reinvite_Prior_Attendees__c, Series_Ended__c, Current_Occurrence__c,
+                       Name, Details__c, Full_Details__c, Location__c, Event_Link__c, Event_Notes__c,
+                       Total_Quantity__c, Per_Response_Limit__c, Expected_Attendance__c,
+                       Auto_Accept_Responses__c, Auto_Share_Contact_Info__c,
+                       Image_1_URL__c, Image_1_Ratio__c, Image_2_URL__c, Image_2_Ratio__c,
+                       Image_3_URL__c, Image_3_Ratio__c, Image_4_URL__c, Image_4_Ratio__c
                 FROM Needs_Offers__c
                 WHERE Id = :recordId
                 LIMIT 1
@@ -331,7 +343,22 @@ public with sharing class FimbyAskOfferController {
                 );
             }
 
-            new NeedsOffersHelper().updatePost(post);
+            Id parentId = FimbyRecurrenceService.resolveSeriesParentId(post);
+            Needs_Offers__c parent = null;
+            if (parentId != post.Id) {
+                parent = loadSeriesParent(parentId);
+            } else if (String.isNotBlank(post.Recurrence_Frequency__c)) {
+                parent = post;
+            }
+
+            String recurrenceScope = (String) data.get('recurrenceScope');
+            FimbyRecurrenceService.applyRecurrenceOnUpdate(post, parent, data, recurrenceScope);
+
+            NeedsOffersHelper helper = new NeedsOffersHelper();
+            helper.updatePost(post);
+            if (parent != null && parent.Id != post.Id) {
+                helper.updatePost(parent);
+            }
 
             return new Map<String, Object>{
                 'success' => true,
@@ -411,14 +438,15 @@ public with sharing class FimbyAskOfferController {
      * Delete a Needs_Offers__c record (with ownership check)
      */
     @AuraEnabled
-    public static Map<String, Object> deleteNeedsOffersPost(String recordId) {
+    public static Map<String, Object> deleteNeedsOffersPost(String recordId, String seriesDeleteScope) {
         try {
             FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
             Id realContactId = identity.currentUser.ContactId;
             Id actingAsContactId = identity.actingAsContactId;
 
             Needs_Offers__c post = [
-                SELECT Id, Name, Posted_By__c, Contact__c, OwnerId, RecordType.DeveloperName
+                SELECT Id, Name, Posted_By__c, Contact__c, OwnerId, RecordType.DeveloperName,
+                       Series_Parent__c, Recurrence_Frequency__c
                 FROM Needs_Offers__c
                 WHERE Id = :recordId
                 WITH SECURITY_ENFORCED
@@ -429,28 +457,7 @@ public with sharing class FimbyAskOfferController {
                 throw new AuraHandledException('You can only delete posts you have created.');
             }
 
-            String actorName = identity.orgDisplayName;
-            List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(recordId);
-            Set<Id> notifiedContacts = new Set<Id>();
-            for (Response__c resp : pendingResponses) {
-                Id recipientId = resp.On_Behalf_Of_Contact__c != null
-                    ? resp.On_Behalf_Of_Contact__c
-                    : resp.Contact__c;
-                if (recipientId == null || notifiedContacts.contains(recipientId)) {
-                    continue;
-                }
-                notifiedContacts.add(recipientId);
-                FimbyNotificationService.createNotification(
-                    recipientId,
-                    FimbyConstants.NOTIF_RESPONSE,
-                    actorName + ' removed a post you responded to',
-                    '"' + post.Name + '" is no longer available.',
-                    resp.Id,
-                    'Response__c',
-                    FimbySettings.getUrl('Home'),
-                    actorName
-                );
-            }
+            notifyPendingRespondersOnDelete(identity.orgDisplayName, post);
 
             FimbyCounterService.onPostDeleted(
                 post.Posted_By__c,
@@ -458,7 +465,11 @@ public with sharing class FimbyAskOfferController {
                 post.Posted_By__c != post.Contact__c
             );
 
-            new NeedsOffersHelper().deletePost(post);
+            if (FimbyRecurrenceService.isSeriesMember(post)) {
+                FimbyRecurrenceService.deleteSeriesMember(recordId, seriesDeleteScope);
+            } else {
+                new NeedsOffersHelper().deletePost(post);
+            }
 
             return new Map<String, Object>{
                 'success' => true,
@@ -471,6 +482,47 @@ public with sharing class FimbyAskOfferController {
             ex.setMessage('Error deleting post: ' + e.getMessage());
             throw ex;
         }
+    }
+
+    private static void notifyPendingRespondersOnDelete(String actorName, Needs_Offers__c post) {
+        List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(post.Id);
+        Set<Id> notifiedContacts = new Set<Id>();
+        for (Response__c resp : pendingResponses) {
+            Id recipientId = resp.On_Behalf_Of_Contact__c != null
+                ? resp.On_Behalf_Of_Contact__c
+                : resp.Contact__c;
+            if (recipientId == null || notifiedContacts.contains(recipientId)) {
+                continue;
+            }
+            notifiedContacts.add(recipientId);
+            FimbyNotificationService.createNotification(
+                recipientId,
+                FimbyConstants.NOTIF_RESPONSE,
+                actorName + ' removed a post you responded to',
+                '"' + post.Name + '" is no longer available.',
+                resp.Id,
+                'Response__c',
+                FimbySettings.getUrl('Home'),
+                actorName
+            );
+        }
+    }
+
+    private static Needs_Offers__c loadSeriesParent(Id parentId) {
+        List<Needs_Offers__c> rows = [
+            SELECT Id, Recurrence_Frequency__c, Recurrence_Interval__c,
+                   Recurrence_End_Mode__c, Recurrence_End_Date__c, Recurrence_Max_Occurrences__c,
+                   Reinvite_Prior_Attendees__c, Next_Occurrence_Date__c, Current_Occurrence__c,
+                   Series_Ended__c, Name, Details__c, Full_Details__c, Location__c, Event_Link__c,
+                   Event_Notes__c, Total_Quantity__c, Per_Response_Limit__c, Expected_Attendance__c,
+                   Auto_Accept_Responses__c, Auto_Share_Contact_Info__c,
+                   Image_1_URL__c, Image_1_Ratio__c, Image_2_URL__c, Image_2_Ratio__c,
+                   Image_3_URL__c, Image_3_Ratio__c, Image_4_URL__c, Image_4_Ratio__c
+            FROM Needs_Offers__c
+            WHERE Id = :parentId
+            LIMIT 1
+        ];
+        return rows.isEmpty() ? null : rows[0];
     }
 
     private static void validateEventDatetimeOrder(

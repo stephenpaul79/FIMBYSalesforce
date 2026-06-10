@@ -389,7 +389,7 @@ public class FimbyAskOfferControllerTest {
         Test.startTest();
         Map<String, Object> deleteResult;
         System.runAs(testUser) {
-            deleteResult = FimbyAskOfferController.deleteNeedsOffersPost(needId);
+            deleteResult = FimbyAskOfferController.deleteNeedsOffersPost(needId, null);
         }
         Test.stopTest();
 
@@ -443,7 +443,7 @@ public class FimbyAskOfferControllerTest {
 
         Test.startTest();
         System.runAs(posterUser) {
-            FimbyAskOfferController.deleteNeedsOffersPost(needId);
+            FimbyAskOfferController.deleteNeedsOffersPost(needId, null);
         }
         Test.stopTest();
 

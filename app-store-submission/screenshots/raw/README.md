@@ -38,6 +38,15 @@ iPad raws are **portrait 2064×2752** (App Store iPad 13"); canvas matches in `i
 
 `export.css` in each folder sets canvas size (iPhone vs iPad).
 
+## Google Play
+
+| Folder | Canvas | Output |
+|---|---|---|
+| `play-phone/` | **1080×1920** | `../play-phone/Screen 1.png` … `Screen 8.png` |
+| `play-tablet/` | **1920×2560** | `../play-tablet/Screen 1.png` … `Screen 8.png` |
+
+Play export HTML reuses PNGs from `iphone/` and `ipad/` — no new app captures. See each folder's README for DevTools dimensions (DPR **1**).
+
 ## Optional: sharper app in frame
 
 Re-capture the app at a **shorter** viewport (e.g. 1290×2100) so less scaling is needed. Not required — current HTML handles full-height captures.

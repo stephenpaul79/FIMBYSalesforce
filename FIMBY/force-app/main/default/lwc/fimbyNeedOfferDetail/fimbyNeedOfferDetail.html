@@ -689,8 +689,22 @@
         <template lwc:if={showDeleteConfirm}>
             <div class="delete-overlay" onclick={handleDeleteCancel}>
                 <div class="delete-modal" onclick={stopPropagation}>
-                    <h3 class="delete-title">Delete Post?</h3>
-                    <p class="delete-message">This action cannot be undone. All responses will also be affected.</p>
+                    <h3 class="delete-title">{deleteModalTitle}</h3>
+                    <template lwc:if={showSeriesDeleteChooser}>
+                        <div class="series-delete-options" role="group" aria-label="Delete scope">
+                            <template for:each={seriesDeleteOptions} for:item="opt">
+                                <button
+                                    key={opt.value}
+                                    type="button"
+                                    class={opt.pillClass}
+                                    data-value={opt.value}
+                                    onclick={handleSeriesDeleteScopeClick}>
+                                    {opt.label}
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                    <p class="delete-message">{deleteModalMessage}</p>
                     <div class="delete-actions">
                         <button class="btn btn-neutral" onclick={handleDeleteCancel} disabled={isDeleting}>Cancel</button>
                         <button class="btn btn-danger" onclick={handleDeleteConfirm} disabled={isDeleting}>

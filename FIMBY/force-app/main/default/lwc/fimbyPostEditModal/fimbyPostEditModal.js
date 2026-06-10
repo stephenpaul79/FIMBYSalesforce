@@ -33,7 +33,20 @@ const NEEDS_OFFERS_FIELDS = [
     'Needs_Offers__c.Expiry_DateTime__c',
     'Needs_Offers__c.Total_Estimated_Cost__c',
     'Needs_Offers__c.Auto_Lock_Days__c',
-    'Needs_Offers__c.RecordType.DeveloperName'
+    'Needs_Offers__c.RecordType.DeveloperName',
+    'Needs_Offers__c.Series_Parent__c',
+    'Needs_Offers__c.Recurrence_Frequency__c',
+    'Needs_Offers__c.Recurrence_Interval__c',
+    'Needs_Offers__c.Recurrence_End_Mode__c',
+    'Needs_Offers__c.Recurrence_End_Date__c',
+    'Needs_Offers__c.Recurrence_Max_Occurrences__c',
+    'Needs_Offers__c.Reinvite_Prior_Attendees__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_Frequency__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_Interval__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_End_Mode__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_End_Date__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_Max_Occurrences__c',
+    'Needs_Offers__c.Series_Parent__r.Reinvite_Prior_Attendees__c'
 ];
 
 const STORY_FIELDS = [
@@ -88,6 +101,16 @@ export default class FimbyPostEditModal extends LightningElement {
     @track expectedAttendance = '';
     @track eventNotes = '';
     @track eventLink = '';
+
+    @track recurrenceEnabled = false;
+    @track recurrenceInterval = 1;
+    @track recurrenceFrequency = 'Week';
+    @track recurrenceEndMode = 'Never';
+    @track recurrenceEndDate = '';
+    @track recurrenceMaxOccurrences = '';
+    @track reinvitePriorAttendees = false;
+    @track recurrenceScope = 'thisOnly';
+    @track isSeriesMember = false;
 
     // Bulk buy
     @track totalQuantity = '';
@@ -228,6 +251,25 @@ export default class FimbyPostEditModal extends LightningElement {
     get showEventNotes() { return this.isOpenEvent || this.isCommunityEvent; }
     get showEventLink() { return this.isCommunityEvent; }
     get showWhenWhereSection() { return this.isEvent; }
+    get showRecurrenceSection() { return this.isEvent; }
+    get showRecurrenceScopeChooser() { return this.isEvent && this.isSeriesMember && this.recurrenceEnabled; }
+    get showRecurrenceEndDate() { return this.recurrenceEnabled && this.recurrenceEndMode === 'On_Date'; }
+    get showRecurrenceMaxOccurrences() { return this.recurrenceEnabled && this.recurrenceEndMode === 'After_N'; }
+
+    get recurrenceEndModeOptions() {
+        return [
+            { label: 'Never', value: 'Never', selected: this.recurrenceEndMode === 'Never', pillClass: this.recurrenceEndMode === 'Never' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'On date', value: 'On_Date', selected: this.recurrenceEndMode === 'On_Date', pillClass: this.recurrenceEndMode === 'On_Date' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'After', value: 'After_N', selected: this.recurrenceEndMode === 'After_N', pillClass: this.recurrenceEndMode === 'After_N' ? 'pill-btn selected' : 'pill-btn' }
+        ];
+    }
+
+    get recurrenceScopeOptions() {
+        return [
+            { label: 'This occurrence only', value: 'thisOnly', selected: this.recurrenceScope === 'thisOnly', pillClass: this.recurrenceScope === 'thisOnly' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'This and future occurrences', value: 'thisAndFuture', selected: this.recurrenceScope === 'thisAndFuture', pillClass: this.recurrenceScope === 'thisAndFuture' ? 'pill-btn selected' : 'pill-btn' }
+        ];
+    }
     get showAvailabilitySection() { return this.isOffer; }
     get showPostSettingsSection() {
         return this.isAsk || this.isOffer || this.isGathering || this.isOpenEvent;
@@ -445,6 +487,37 @@ export default class FimbyPostEditModal extends LightningElement {
         this.eventStart = this._toDatetimeLocal(startDate, startTime);
         this.eventEnd = this._toDatetimeLocal(endDateVal, endTime);
 
+        const seriesParentId = getFieldValue(data, 'Needs_Offers__c.Series_Parent__c');
+        const freq = seriesParentId
+            ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Recurrence_Frequency__c')
+            : getFieldValue(data, 'Needs_Offers__c.Recurrence_Frequency__c');
+        this.isSeriesMember = !!seriesParentId || !!freq;
+        this.recurrenceEnabled = !!freq;
+        if (this.recurrenceEnabled) {
+            const interval = seriesParentId
+                ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Recurrence_Interval__c')
+                : getFieldValue(data, 'Needs_Offers__c.Recurrence_Interval__c');
+            this.recurrenceInterval = interval != null ? interval : 1;
+            this.recurrenceFrequency = (freq === 'Day' ? 'Week' : freq) || 'Week';
+            const endMode = seriesParentId
+                ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Recurrence_End_Mode__c')
+                : getFieldValue(data, 'Needs_Offers__c.Recurrence_End_Mode__c');
+            this.recurrenceEndMode = endMode || 'Never';
+            const endDate = seriesParentId
+                ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Recurrence_End_Date__c')
+                : getFieldValue(data, 'Needs_Offers__c.Recurrence_End_Date__c');
+            this.recurrenceEndDate = endDate || '';
+            const maxOcc = seriesParentId
+                ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Recurrence_Max_Occurrences__c')
+                : getFieldValue(data, 'Needs_Offers__c.Recurrence_Max_Occurrences__c');
+            this.recurrenceMaxOccurrences = maxOcc != null ? String(maxOcc) : '';
+            const reinvite = seriesParentId
+                ? getFieldValue(data, 'Needs_Offers__c.Series_Parent__r.Reinvite_Prior_Attendees__c')
+                : getFieldValue(data, 'Needs_Offers__c.Reinvite_Prior_Attendees__c');
+            this.reinvitePriorAttendees = reinvite === true;
+        }
+        this.recurrenceScope = 'thisOnly';
+
         if (this.isBulkBuy) {
             this.totalQuantity = this._toStr(getFieldValue(data, 'Needs_Offers__c.Total_Quantity__c'));
             this.ownerShares = this._toStr(getFieldValue(data, 'Needs_Offers__c.Owner_Shares__c'));
@@ -548,7 +621,28 @@ export default class FimbyPostEditModal extends LightningElement {
         this.shareOnSocial = false;
         this.libraryCategory = '';
         this.maxLendingDays = 7;
+        this.recurrenceEnabled = false;
+        this.recurrenceInterval = 1;
+        this.recurrenceFrequency = 'Week';
+        this.recurrenceEndMode = 'Never';
+        this.recurrenceEndDate = '';
+        this.recurrenceMaxOccurrences = '';
+        this.reinvitePriorAttendees = false;
+        this.recurrenceScope = 'thisOnly';
+        this.isSeriesMember = false;
     }
+
+    handleRecurrenceEnabledChange(event) { this.recurrenceEnabled = event.target.checked; }
+    handleRecurrenceIntervalChange(event) {
+        const val = parseInt(event.target.value, 10);
+        this.recurrenceInterval = Number.isFinite(val) && val >= 1 ? val : 1;
+    }
+    handleRecurrenceFrequencyChange(event) { this.recurrenceFrequency = event.target.value; }
+    handleRecurrenceEndModeClick(event) { this.recurrenceEndMode = event.currentTarget.dataset.value; }
+    handleRecurrenceEndDateChange(event) { this.recurrenceEndDate = event.target.value; }
+    handleRecurrenceMaxOccurrencesChange(event) { this.recurrenceMaxOccurrences = event.target.value; }
+    handleReinvitePriorAttendeesChange(event) { this.reinvitePriorAttendees = event.target.checked; }
+    handleRecurrenceScopeClick(event) { this.recurrenceScope = event.currentTarget.dataset.value; }
 
     handleFieldChange(event) {
         const field = event.target.dataset.field;
@@ -650,6 +744,20 @@ export default class FimbyPostEditModal extends LightningElement {
             if (this.isGathering) {
                 payload.quantity = this.quantity ? parseInt(this.quantity, 10) : null;
                 payload.perResponseLimit = this.perResponseLimit ? parseInt(this.perResponseLimit, 10) : null;
+            }
+
+            payload.recurrenceEnabled = this.recurrenceEnabled;
+            if (this.recurrenceEnabled) {
+                payload.recurrenceFrequency = this.recurrenceFrequency;
+                payload.recurrenceInterval = parseInt(this.recurrenceInterval, 10) || 1;
+                payload.recurrenceEndMode = this.recurrenceEndMode;
+                payload.recurrenceEndDate = this.recurrenceEndMode === 'On_Date' ? (this.recurrenceEndDate || null) : null;
+                payload.recurrenceMaxOccurrences = this.recurrenceEndMode === 'After_N' && this.recurrenceMaxOccurrences
+                    ? parseInt(this.recurrenceMaxOccurrences, 10) : null;
+                payload.reinvitePriorAttendees = this.reinvitePriorAttendees;
+                payload.recurrenceScope = this.recurrenceScope;
+            } else if (this.isSeriesMember) {
+                payload.recurrenceEnabled = false;
             }
         }
 

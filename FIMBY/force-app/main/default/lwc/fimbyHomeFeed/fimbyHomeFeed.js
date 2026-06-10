@@ -119,7 +119,7 @@ const RAW_FEED_ITEM_KEYS = [
     'typeValue', 'engagementCount', 'recordTypeName', 'totalReserved', 'totalQuantity',
     'ownerShares', 'totalAvailable', 'activeReserverIds', 'isOrgContact', 'orgAccountId',
     'eventDetails', 'location', 'eventType', 'eventLinkUrl', 'ownerContactId', 'realAuthorContactId',
-    'isUrgent', 'sourceScope'
+    'isUrgent', 'sourceScope', 'isRecurring'
 ];
 
 export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
@@ -561,6 +561,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     badgeIconUrl = `${IMPACT_ICONS}/dining-table.png`;
                     badgeLabel = 'EVENT';
                     badgeBg = BADGE_BG_COLORS['Event'];
+                }
+                if (item.isRecurring) {
+                    badgeLabel = `${badgeLabel} · RECURRING`;
                 }
             } else if (isAskOffer) {
                 badgeClass = 'card-type-badge ask-offer-badge';

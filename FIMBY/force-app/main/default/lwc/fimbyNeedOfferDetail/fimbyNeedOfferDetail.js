@@ -87,7 +87,10 @@ const FIELDS = [
     'Needs_Offers__c.Pickup_Notified_Date__c',
     'Needs_Offers__c.Receipt_Image_URL__c',
     'Needs_Offers__c.Auto_Lock_Days__c',
-    'Needs_Offers__c.Group_Conversation__c'
+    'Needs_Offers__c.Group_Conversation__c',
+    'Needs_Offers__c.Recurrence_Frequency__c',
+    'Needs_Offers__c.Series_Parent__c',
+    'Needs_Offers__c.Series_Parent__r.Recurrence_Frequency__c'
 ];
 
 const EVENT_TYPE_CONFIG = {
@@ -173,6 +176,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @track showPhotoUploader = false;
     @track showDeleteConfirm = false;
     @track isDeleting = false;
+    @track seriesDeleteScope = 'THIS_EVENT';
     @track responses = [];
     @track isLoadingResponses = false;
     @track detailsExpanded = false;
@@ -1279,6 +1283,43 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get isNotAuthor() { return !this.isAuthor; }
     get deleteButtonLabel() { return this.isDeleting ? 'Deleting...' : 'Delete'; }
 
+    get isSeriesMember() {
+        if (!this.record || !this.isEventType) return false;
+        const parentId = getFieldValue(this.record, 'Needs_Offers__c.Series_Parent__c');
+        const freq = getFieldValue(this.record, 'Needs_Offers__c.Recurrence_Frequency__c')
+            || getFieldValue(this.record, 'Needs_Offers__c.Series_Parent__r.Recurrence_Frequency__c');
+        return !!parentId || !!freq;
+    }
+
+    get showSeriesDeleteChooser() {
+        return this.isSeriesMember;
+    }
+
+    get deleteModalTitle() {
+        return this.isSeriesMember ? 'Delete recurring event?' : 'Delete Post?';
+    }
+
+    get deleteModalMessage() {
+        if (!this.isSeriesMember) {
+            return 'This action cannot be undone. All responses will also be affected.';
+        }
+        if (this.seriesDeleteScope === 'THIS_AND_FOLLOWING') {
+            return 'This removes the current event and stops future dates. Past events stay as history.';
+        }
+        if (this.seriesDeleteScope === 'ALL_EVENTS') {
+            return 'This removes every event in the series, including past dates. This cannot be undone.';
+        }
+        return 'This removes only the current event. The series will continue with the next scheduled date.';
+    }
+
+    get seriesDeleteOptions() {
+        return [
+            { label: 'This event only', value: 'THIS_EVENT', selected: this.seriesDeleteScope === 'THIS_EVENT', pillClass: this.seriesDeleteScope === 'THIS_EVENT' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'This and following', value: 'THIS_AND_FOLLOWING', selected: this.seriesDeleteScope === 'THIS_AND_FOLLOWING', pillClass: this.seriesDeleteScope === 'THIS_AND_FOLLOWING' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'All events', value: 'ALL_EVENTS', selected: this.seriesDeleteScope === 'ALL_EVENTS', pillClass: this.seriesDeleteScope === 'ALL_EVENTS' ? 'pill-btn selected' : 'pill-btn' }
+        ];
+    }
+
     // eslint-disable-next-line no-unused-vars
     stopPropagation(event) { event.stopPropagation(); }
 
@@ -1978,6 +2019,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     handleDeleteClick() {
+        this.seriesDeleteScope = 'THIS_EVENT';
         this.showDeleteConfirm = true;
     }
 
@@ -1985,10 +2027,18 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this.showDeleteConfirm = false;
     }
 
+    handleSeriesDeleteScopeClick(event) {
+        this.seriesDeleteScope = event.currentTarget.dataset.value;
+    }
+
     async handleDeleteConfirm() {
         this.isDeleting = true;
         try {
-            await deleteNeedsOffersPost({ recordId: this.recordId });
+            const params = { recordId: this.recordId };
+            if (this.isSeriesMember) {
+                params.seriesDeleteScope = this.seriesDeleteScope;
+            }
+            await deleteNeedsOffersPost(params);
             this.dispatchEvent(new ShowToastEvent({ title: 'Deleted', message: 'Post has been deleted', variant: 'success' }));
             window.location.href = '/';
         } catch (error) {

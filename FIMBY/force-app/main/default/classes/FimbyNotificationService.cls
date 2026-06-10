@@ -31,6 +31,7 @@ public without sharing class FimbyNotificationService {
             FimbyConstants.NOTIF_THANKS_RECEIVED    => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_EVENT_CHAT         => FimbyPushNotificationService.NotificationType.EVENTS,
             FimbyConstants.NOTIF_EVENT_REMINDER     => FimbyPushNotificationService.NotificationType.EVENTS,
+            FimbyConstants.NOTIF_EVENT_SERIES_NEW_OCCURRENCE => FimbyPushNotificationService.NotificationType.EVENTS,
             FimbyConstants.NOTIF_MODERATOR          => FimbyPushNotificationService.NotificationType.MODERATOR,
             FimbyConstants.NOTIF_VOUCH_REQUEST_RECEIVED => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCH_REQUEST_REMINDER => FimbyPushNotificationService.NotificationType.MESSAGE,

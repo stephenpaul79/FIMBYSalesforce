@@ -917,6 +917,36 @@
     margin: 0 0 8px;
 }
 
+.series-delete-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0 16px;
+    text-align: left;
+}
+
+.series-delete-options .pill-btn {
+    width: 100%;
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-full);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 44px;
+    font-family: inherit;
+    text-align: left;
+}
+
+.series-delete-options .pill-btn.selected {
+    background-color: var(--fimby-selected-bg);
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-text-strong);
+    font-weight: 600;
+}
+
 .delete-message {
     font-size: 0.9rem;
     color: var(--fimby-text-secondary);

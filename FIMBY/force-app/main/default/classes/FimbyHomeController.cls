@@ -386,6 +386,20 @@ public with sharing class FimbyHomeController {
              * Fetch Needs/Offers (when category is 'all' or 'askOffer')
              * ----------------------------------------------------------- */
             if (isAllCategory || category == 'askOffer') {
+                Set<Id> liveRecurringOccurrenceIds = new Set<Id>();
+                String seriesParentQuery = 'SELECT Id, Current_Occurrence__c FROM Needs_Offers__c ' +
+                    'WHERE Recurrence_Frequency__c != null AND Series_Parent__c = null';
+                if (String.isNotBlank(neighbourhoodAccountId)) {
+                    seriesParentQuery += ' AND Neighbourhood__c = :neighbourhoodAccountId';
+                }
+                for (Needs_Offers__c seriesParent : Database.query(seriesParentQuery)) {
+                    liveRecurringOccurrenceIds.add(
+                        seriesParent.Current_Occurrence__c != null
+                            ? seriesParent.Current_Occurrence__c
+                            : seriesParent.Id
+                    );
+                }
+
                 String aoQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, ' +
                                  'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
                                  'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
@@ -400,11 +414,13 @@ public with sharing class FimbyHomeController {
                                  'Total_Accepted__c, Total_Reserved__c, Total_Quantity__c, Owner_Shares__c, Total_Available__c, ' +
                                  'Active_Reserver_Ids__c, Is_Urgent__c, ' +
                                  'Event_Details__c, Location__c, Event_Type__c, Event_Link__c, ' +
+                                 'Recurrence_Frequency__c, Series_Parent__c, Current_Occurrence__c, ' +
                                  'RecordType.Name, Category__c ' +
                                  'FROM Needs_Offers__c ' +
                                  'WHERE Status__c IN (\'Posted\', \'Reply Received\', \'Reply Accepted\', \'Available\') ' +
                                  'AND (Total_Available__c > 0 OR Total_Available__c = null) ' +
-                                 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ';
+                                 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
+                                 'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ';
 
                 if (String.isNotBlank(neighbourhoodAccountId)) {
                     aoQuery += 'AND (Neighbourhood__c = :neighbourhoodAccountId' +
@@ -615,6 +631,7 @@ public with sharing class FimbyHomeController {
         @AuraEnabled public String realAuthorContactId { get; set; }
         @AuraEnabled public Boolean isUrgent { get; set; }
         @AuraEnabled public String sourceScope { get; set; }
+        @AuraEnabled public Boolean isRecurring { get; set; }
 
         public UnifiedFeedItem(Story__c story) {
             this.recordId = story.Id;
@@ -695,6 +712,8 @@ public with sharing class FimbyHomeController {
             this.ownerContactId = item.Contact__c;
             this.realAuthorContactId = item.Posted_By__c;
             this.isUrgent = item.Is_Urgent__c == true;
+            this.isRecurring = String.isNotBlank(item.Recurrence_Frequency__c)
+                || item.Series_Parent__c != null;
         }
 
         public UnifiedFeedItem(Library_Item__c item) {

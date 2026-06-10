@@ -117,6 +117,9 @@ public class FimbyConstants {
     // Notification types (Event Reminder)
     public static final String NOTIF_EVENT_REMINDER = 'Event_Reminder';
 
+    // Notification types (Recurring event new occurrence re-invite)
+    public static final String NOTIF_EVENT_SERIES_NEW_OCCURRENCE = 'Event_Series_New_Occurrence';
+
     // Notification types (Bulk Buy)
     public static final String NOTIF_BULK_BUY_RESERVATION = 'Bulk_Buy_Reservation';
     public static final String NOTIF_BULK_BUY_STATUS = 'Bulk_Buy_Status';

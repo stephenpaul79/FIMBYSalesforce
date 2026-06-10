@@ -893,10 +893,85 @@
     }
 }
 
+.recurrence-toggle-row,
+.recurrence-reinvite-row {
+    margin-bottom: 12px;
+}
+
+.recurrence-interval-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.recurrence-prefix {
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+}
+
+.recurrence-interval-input {
+    width: 72px;
+    padding: 3px 8px 2px;
+    min-height: 1.75rem;
+    border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    border-radius: var(--dxp-s-form-element-radius-border, 4px);
+    font-size: 0.875rem;
+    box-sizing: border-box;
+}
+
+.recurrence-frequency-select {
+    width: 6.75rem;
+    flex: 0 0 auto;
+    min-height: 1.75rem;
+    padding: 3px 8px 2px;
+    border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    border-radius: var(--dxp-s-form-element-radius-border, 4px);
+    font-size: 0.875rem;
+    background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));
+    color: var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast));
+}
+
+.pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pill-btn {
+    border: 1px solid var(--fimby-border-default);
+    border-radius: var(--fimby-radius-full);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.pill-btn.selected {
+    background-color: var(--fimby-selected-bg);
+    border-color: var(--fimby-brand-teal);
+    color: var(--fimby-text-strong);
+    font-weight: 600;
+}
+
+.recurrence-help-text {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--fimby-text-muted);
+    line-height: 1.4;
+}
+
 /* Keyboard focus visibility */
 .type-button:focus-visible,
 .date-input:focus-visible,
-.datetime-input:focus-visible {
+.datetime-input:focus-visible,
+.pill-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);

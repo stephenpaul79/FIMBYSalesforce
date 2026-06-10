@@ -42,6 +42,14 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     @track eventNotes = '';
     @track eventLink = '';
 
+    @track recurrenceEnabled = false;
+    @track recurrenceInterval = 1;
+    @track recurrenceFrequency = 'Week';
+    @track recurrenceEndMode = 'Never';
+    @track recurrenceEndDate = '';
+    @track recurrenceMaxOccurrences = '';
+    @track reinvitePriorAttendees = false;
+
     @track isUrgent = false;
     @track autoAcceptResponses = false;
     @track autoShareContactInfo = false;
@@ -202,6 +210,26 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
 
     get showEventTypeInfoBanner() {
         return this.isOpenEvent || this.isCommunityEvent;
+    }
+
+    get showRecurrenceSection() {
+        return this.isEventType;
+    }
+
+    get showRecurrenceEndDate() {
+        return this.recurrenceEnabled && this.recurrenceEndMode === 'On_Date';
+    }
+
+    get showRecurrenceMaxOccurrences() {
+        return this.recurrenceEnabled && this.recurrenceEndMode === 'After_N';
+    }
+
+    get recurrenceEndModeOptions() {
+        return [
+            { label: 'Never', value: 'Never', selected: this.recurrenceEndMode === 'Never', pillClass: this.recurrenceEndMode === 'Never' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'On date', value: 'On_Date', selected: this.recurrenceEndMode === 'On_Date', pillClass: this.recurrenceEndMode === 'On_Date' ? 'pill-btn selected' : 'pill-btn' },
+            { label: 'After', value: 'After_N', selected: this.recurrenceEndMode === 'After_N', pillClass: this.recurrenceEndMode === 'After_N' ? 'pill-btn selected' : 'pill-btn' }
+        ];
     }
 
     // ============================================
@@ -449,6 +477,17 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     handleAutoAcceptChange(event) { this.autoAcceptResponses = event.target.checked; }
     handleAutoShareChange(event) { this.autoShareContactInfo = event.target.checked; }
 
+    handleRecurrenceEnabledChange(event) { this.recurrenceEnabled = event.target.checked; }
+    handleRecurrenceIntervalChange(event) {
+        const val = parseInt(event.target.value, 10);
+        this.recurrenceInterval = Number.isFinite(val) && val >= 1 ? val : 1;
+    }
+    handleRecurrenceFrequencyChange(event) { this.recurrenceFrequency = event.target.value; }
+    handleRecurrenceEndModeClick(event) { this.recurrenceEndMode = event.currentTarget.dataset.value; }
+    handleRecurrenceEndDateChange(event) { this.recurrenceEndDate = event.target.value; }
+    handleRecurrenceMaxOccurrencesChange(event) { this.recurrenceMaxOccurrences = event.target.value; }
+    handleReinvitePriorAttendeesChange(event) { this.reinvitePriorAttendees = event.target.checked; }
+
     // ============================================
     // SUBMIT
     // ============================================
@@ -480,6 +519,17 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
                 postData.expectedAttendance = this.showExpectedAttendance && this.expectedAttendance ? parseInt(this.expectedAttendance, 10) : null;
                 postData.eventNotes = this.showEventNotes ? this.eventNotes.trim() || null : null;
                 postData.eventLink = this.showEventLink ? this.eventLink.trim() || null : null;
+
+                postData.recurrenceEnabled = this.recurrenceEnabled;
+                if (this.recurrenceEnabled) {
+                    postData.recurrenceFrequency = this.recurrenceFrequency;
+                    postData.recurrenceInterval = parseInt(this.recurrenceInterval, 10) || 1;
+                    postData.recurrenceEndMode = this.recurrenceEndMode;
+                    postData.recurrenceEndDate = this.recurrenceEndMode === 'On_Date' ? (this.recurrenceEndDate || null) : null;
+                    postData.recurrenceMaxOccurrences = this.recurrenceEndMode === 'After_N' && this.recurrenceMaxOccurrences
+                        ? parseInt(this.recurrenceMaxOccurrences, 10) : null;
+                    postData.reinvitePriorAttendees = this.reinvitePriorAttendees;
+                }
             }
 
             const result = await createNeedsOffersPost({ postData: JSON.stringify(postData) });
@@ -574,6 +624,13 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
         this.eventLink = '';
         this.autoAcceptResponses = false;
         this.autoShareContactInfo = false;
+        this.recurrenceEnabled = false;
+        this.recurrenceInterval = 1;
+        this.recurrenceFrequency = 'Week';
+        this.recurrenceEndMode = 'Never';
+        this.recurrenceEndDate = '';
+        this.recurrenceMaxOccurrences = '';
+        this.reinvitePriorAttendees = false;
     }
 
     _endDateOffset(days) {

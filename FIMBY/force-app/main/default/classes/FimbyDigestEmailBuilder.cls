@@ -333,16 +333,46 @@ public without sharing class FimbyDigestEmailBuilder {
         return html;
     }
 
+    /**
+     * @description Live occurrence per recurring series — mirrors FimbyHomeController feed filter.
+     */
+    @TestVisible
+    private static Set<Id> resolveLiveRecurringOccurrenceIds(Id neighbourhoodId) {
+        Set<Id> liveIds = new Set<Id>();
+        for (Needs_Offers__c seriesParent : [
+            SELECT Id, Current_Occurrence__c
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :neighbourhoodId
+              AND Recurrence_Frequency__c != null
+              AND Series_Parent__c = null
+        ]) {
+            liveIds.add(
+                seriesParent.Current_Occurrence__c != null
+                    ? seriesParent.Current_Occurrence__c
+                    : seriesParent.Id
+            );
+        }
+        return liveIds;
+    }
+
     private static String buildEventsSection(Id nhId, Datetime startDt, Datetime endDt) {
+        Date today = Date.today();
+        Set<Id> liveRecurringOccurrenceIds = resolveLiveRecurringOccurrenceIds(nhId);
+
         List<Needs_Offers__c> events = [
             SELECT Id, Name, Details__c, Image_1_URL__c,
                    Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
-                   Event_Type__c, Start_Date__c, Location__c, CreatedDate
+                   Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND Type__c = 'Event'
               AND CreatedDate >= :startDt AND CreatedDate <= :endDt
               AND Status__c IN ('Posted', 'Available')
+              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND (
+                  (Recurrence_Frequency__c = null AND Series_Parent__c = null)
+                  OR Id IN :liveRecurringOccurrenceIds
+              )
             ORDER BY CreatedDate DESC
             LIMIT 10
         ];

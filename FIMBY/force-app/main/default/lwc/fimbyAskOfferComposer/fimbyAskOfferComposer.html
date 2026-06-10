@@ -351,6 +351,97 @@
                             </div>
                         </template>
                     </div>
+
+                    <!-- Repeat schedule (Events only) -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <img src={eventDetailsIconUrl} alt="" class="section-icon">
+                            Repeat
+                        </h3>
+                        <div class="recurrence-toggle-row">
+                            <lightning-input
+                                type="toggle"
+                                label="Repeat this event"
+                                checked={recurrenceEnabled}
+                                onchange={handleRecurrenceEnabledChange}
+                                message-toggle-active="On"
+                                message-toggle-inactive="Off">
+                            </lightning-input>
+                        </div>
+                        <template lwc:if={recurrenceEnabled}>
+                            <div class="recurrence-interval-row">
+                                <span class="recurrence-prefix">Repeat every</span>
+                                <input
+                                    type="number"
+                                    class="recurrence-interval-input"
+                                    min="1"
+                                    value={recurrenceInterval}
+                                    onchange={handleRecurrenceIntervalChange}
+                                    aria-label="Repeat interval"
+                                />
+                                <select
+                                    class="recurrence-frequency-select"
+                                    value={recurrenceFrequency}
+                                    onchange={handleRecurrenceFrequencyChange}
+                                    aria-label="Repeat frequency unit">
+                                    <option value="Week">week(s)</option>
+                                    <option value="Month">month(s)</option>
+                                    <option value="Year">year(s)</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">Ends</label>
+                                <div class="pill-group" role="group" aria-label="Recurrence end mode">
+                                    <template for:each={recurrenceEndModeOptions} for:item="opt">
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            class={opt.pillClass}
+                                            data-value={opt.value}
+                                            onclick={handleRecurrenceEndModeClick}>
+                                            {opt.label}
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <template lwc:if={showRecurrenceEndDate}>
+                                <div class="form-field">
+                                    <label class="field-label" for="recurrence-end-date">End date</label>
+                                    <input
+                                        id="recurrence-end-date"
+                                        type="date"
+                                        class="date-input"
+                                        value={recurrenceEndDate}
+                                        onchange={handleRecurrenceEndDateChange}
+                                    />
+                                </div>
+                            </template>
+                            <template lwc:if={showRecurrenceMaxOccurrences}>
+                                <div class="form-field">
+                                    <label class="field-label" for="recurrence-max-occurrences">Number of occurrences</label>
+                                    <input
+                                        id="recurrence-max-occurrences"
+                                        type="number"
+                                        class="recurrence-interval-input"
+                                        min="1"
+                                        value={recurrenceMaxOccurrences}
+                                        onchange={handleRecurrenceMaxOccurrencesChange}
+                                    />
+                                </div>
+                            </template>
+                            <div class="recurrence-reinvite-row">
+                                <lightning-input
+                                    type="toggle"
+                                    label="Remind people who came last time"
+                                    checked={reinvitePriorAttendees}
+                                    onchange={handleReinvitePriorAttendeesChange}
+                                    message-toggle-active="On"
+                                    message-toggle-inactive="Off">
+                                </lightning-input>
+                                <p class="recurrence-help-text">Optional and off by default. Sends a quiet heads-up when the next date is posted.</p>
+                            </div>
+                        </template>
+                    </div>
                 </template>
 
                 <!-- Post Settings Section (Gathering + Ask/Offer only) -->

@@ -105,6 +105,11 @@
                 <label>Event Reminder</label>
             </value>
             <value>
+                <fullName>Event_Series_New_Occurrence</fullName>
+                <default>false</default>
+                <label>Event Series New Occurrence</label>
+            </value>
+            <value>
                 <fullName>Relationship_Approved</fullName>
                 <default>false</default>
                 <label>Relationship Approved</label>

@@ -195,6 +195,138 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildEventsSection_recurringSeries_showsOnlyLiveOccurrence() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c parent = new Needs_Offers__c(
+            Name = 'Digest Parent Worship',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(-7),
+            End_Date__c = Date.today().addDays(-7),
+            Recurrence_Frequency__c = 'Week',
+            Recurrence_Interval__c = 1,
+            Location__c = 'Test Hall'
+        );
+        insert parent;
+
+        Needs_Offers__c child = new Needs_Offers__c(
+            Name = 'Digest Child Worship',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(5),
+            End_Date__c = Date.today().addDays(5),
+            Series_Parent__c = parent.Id,
+            Location__c = 'Test Hall'
+        );
+        insert child;
+        update new Needs_Offers__c(Id = parent.Id, Current_Occurrence__c = child.Id);
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(
+            result.html.contains('Digest Child Worship'),
+            'Live spawned occurrence should appear in digest'
+        );
+        System.assert(
+            !result.html.contains('Digest Parent Worship'),
+            'Series parent must not appear when a live child exists'
+        );
+    }
+
+    @IsTest
+    static void buildEventsSection_excludesPastEventsEvenWhenCreatedInWindow() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        insert new Needs_Offers__c(
+            Name = 'Past Block Party',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(-3),
+            End_Date__c = Date.today().addDays(-3),
+            Location__c = 'Old Park'
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Daily',
+                Date.today().addDays(-1), Date.today().addDays(-1)
+            );
+        Test.stopTest();
+
+        System.assert(
+            !result.html.contains('Past Block Party'),
+            'Past events should never appear in digest events section'
+        );
+    }
+
+    @IsTest
+    static void buildEventsSection_excludesPastRecurringParentBeforeSpawn() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        insert new Needs_Offers__c(
+            Name = 'Stale Series Parent',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(-7),
+            End_Date__c = Date.today().addDays(-7),
+            Recurrence_Frequency__c = 'Week',
+            Recurrence_Interval__c = 1,
+            Next_Occurrence_Date__c = Date.today().addDays(1),
+            Location__c = 'Test Hall'
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Daily',
+                Date.today().addDays(-1), Date.today().addDays(-1)
+            );
+        Test.stopTest();
+
+        System.assert(
+            !result.html.contains('Stale Series Parent'),
+            'Past live parent should not appear before next spawn'
+        );
+    }
+
+    @IsTest
     static void buildDigestContent_includesAnchorCardWhenContentExists() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
 

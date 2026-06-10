@@ -347,6 +347,49 @@
     outline-offset: 2px;
 }
 
+.recurrence-scope-field {
+    margin-bottom: 16px;
+}
+
+.recurrence-interval-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.recurrence-prefix {
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+}
+
+.recurrence-interval-input,
+.recurrence-frequency-select {
+    min-height: 1.75rem;
+    padding: 3px 8px 2px;
+    border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    border-radius: var(--dxp-s-form-element-radius-border, 4px);
+    font-size: 0.875rem;
+    box-sizing: border-box;
+}
+
+.recurrence-interval-input {
+    width: 72px;
+}
+
+.recurrence-frequency-select {
+    width: 6.75rem;
+    flex: 0 0 auto;
+    background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));
+    color: var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast));
+}
+
+.recurrence-toggle-row,
+.recurrence-reinvite-row {
+    margin-bottom: 12px;
+}
+
 .shares-preview-callout {
     margin-top: 12px;
     padding: 10px 14px;

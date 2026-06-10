@@ -71,7 +71,8 @@ detail pages show a single full post; lists show several compact rows.
 
 **iPhone set:** all 8.
 **iPad set:** same 8 captions, recomposed for the wider 2064 × 2752 canvas (real iPad-width captures — verify the WebView responsive layout looks good at tablet width before capturing).
-**Play phone set:** reuse screens **1–5** (strongest converting five), re-exported at 1080 × 1920.
+**Play phone set:** all 8, re-exported at 1080 × 1920.
+**Play tablet set:** all 8, re-exported at 1920 × 2560.
 
 ---
 
@@ -214,7 +215,7 @@ Order matters — capture depends on seeded data.
    headline + `<img>` + `export.css` in the same folder; screenshot at store size, no server.
 4. **Render** (browser screenshot at exact pixel size) → save framed finals to
    `app-store-submission/screenshots/Iphone/` (1290×2796) and `.../Ipad/` (2064×2752).
-5. **Resize/crop** screens 1–5 for Play phone → `.../play-phone/` (1080×1920) when ready.
+5. **Re-export for Play** — phone at 1080×1920, tablet at 1920×2560 via `raw/play-phone/` and `raw/play-tablet/` export HTML.
 6. **Design once, export many** — only the canvas size and frame change between targets.
 
 Suggested folder layout:
@@ -229,9 +230,10 @@ app-store-submission/
       ipad/           # explainer-box-msg2/4/5/6/8.html (Screens 2, 4, 5, 6, 8)
     Iphone/           # final framed PNGs, 1290×2796 — Screen 1.png … Screen 8.png
     Ipad/             # final framed PNGs, 2064×2752 — Screen 1.png … Screen 8.png
-    play-phone/       # 5 final PNGs, 1080×1920
-    feature-graphic/  # 1024×500
-    icons/            # 1024 (Apple) + 512 (Play)
+    play-phone/       # 8 final PNGs, 1080×1920
+    play-tablet/      # 8 final PNGs, 1920×2560
+    feature-graphic/  # 1024×500 — Google Play Feature Image.png
+    icons/            # optional export copies; source of truth is fimby-mobile-app/assets/images/
     composer/         # optional legacy preview; export HTML lives in raw/
 ```
 
@@ -250,14 +252,11 @@ app-store-submission/
 - [x] Screen 6 care preferences captured (onboarding support step · check-in message checked)
 - [x] Screen 5 messages list captured (badge variety · Rosa porch DM hero · cast threads)
 - [x] iPhone framed set — 8 × 1290 × 2796 → `screenshots/Iphone/Screen 1.png` … `Screen 8.png`
-- [x] iPad Screen 1 framed → `screenshots/Ipad/Screen 1.png`
-- [x] iPad Screen 5 framed → `screenshots/Ipad/Screen 5.png` (explainer composited from `explainer-box-msg5.html`)
-- [ ] All 8 raw iPhone captures saved to `screenshots/raw/iphone/`
-- [ ] iPad WebView responsive layout verified at tablet width
-- [ ] Remaining iPad framed set — 6 of 8 → `screenshots/Ipad/Screen 2.png` … `Screen 8.png`
-- [x] Export HTML beside raw PNGs (`raw/iphone/export-*.html`, `raw/ipad/`)
-- [ ] Play phone set — 5 × 1080 × 1920 → `screenshots/play-phone/`
-- [ ] Feature graphic — 1024 × 500
-- [ ] App icon — 1024 × 1024 (no alpha, square) for Apple
-- [ ] App icon — 512 × 512 for Play
+- [x] iPad framed set — 8 × 2064 × 2752 → `screenshots/Ipad/Screen 1.png` … `Screen 8.png`
+- [x] Export HTML beside raw PNGs (`raw/iphone/export-*.html`, `raw/ipad/`, `raw/play-phone/`, `raw/play-tablet/`)
+- [x] Play phone set — 8 × 1080 × 1920 → `screenshots/play-phone/`
+- [x] Play tablet set — 8 × 1920 × 2560 → `screenshots/play-tablet/`
+- [x] Feature graphic — 1024 × 500 → `screenshots/feature-graphic/Google Play Feature Image.png`
+- [x] App icon — 1024 × 1024 (no alpha, square) for Apple → `fimby-mobile-app/assets/images/icon.png`
+- [x] App icon — 512 × 512 for Play → use `icon.png` scaled, or `splash-icon.png` (512×512) for Play Console upload; adaptive layers in same folder for the built APK
 - [ ] Final pass: every screen is a real capture, captions match this doc, no em dashes, consistent layout
