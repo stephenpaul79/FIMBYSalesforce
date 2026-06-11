@@ -1,0 +1,30 @@
+/*
+ * Hotfix — paste at END of Additional CSS
+ * 1) HIW/home sections invisible (scroll CSS without JS)
+ * 2) Vision banner + "Worried it's another app?" spacing
+ */
+
+/* Scroll-in hides content unless fimby-scroll-sections.js is enqueued */
+.fimby-scroll-section {
+  opacity: 1;
+  transform: none;
+}
+
+.vision-funnel-banner {
+  padding: 18px 24px;
+  line-height: 1.55;
+}
+.vision-funnel-banner + .page-hero { padding-top: 32px; }
+
+.approach-footer-fork .objection-links {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--fimby-divider-default);
+  text-align: center;
+  line-height: 1.65;
+  font-size: 0.88rem;
+  color: var(--fimby-text-secondary);
+  max-width: 52ch;
+  margin-left: auto;
+  margin-right: auto;
+}

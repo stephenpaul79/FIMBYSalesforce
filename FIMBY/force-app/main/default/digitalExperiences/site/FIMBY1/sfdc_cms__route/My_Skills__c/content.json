@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Skills",
+  "contentBody" : {
+    "activeViewId" : "My_Skills",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-my-skills",
+    "urlPrefix" : "my-skills"
+  },
+  "urlName" : "my-skills"
+}

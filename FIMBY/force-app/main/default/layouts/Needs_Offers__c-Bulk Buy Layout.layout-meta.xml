@@ -23,6 +23,10 @@
                 <behavior>Edit</behavior>
                 <field>Posted_By__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Posted_Date__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

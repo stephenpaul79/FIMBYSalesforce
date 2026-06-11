@@ -1,0 +1,334 @@
+<template>
+
+    <div class="fimby-skill-composer">
+
+        <template lwc:if={isLoading}>
+
+            <div class="loading-container">
+
+                <c-fimby-loading-message context="general" size="medium"></c-fimby-loading-message>
+
+            </div>
+
+        </template>
+
+
+
+        <template lwc:elseif={showSuccess}>
+
+            <div class="success-container">
+
+                <template lwc:if={showFirstSkillCelebration}>
+
+                    <c-fimby-celebration action-type="skill"></c-fimby-celebration>
+
+                </template>
+
+                <h2 class="success-title">Your skills are listed</h2>
+
+                <p class="success-message">Neighbours can now reach out when they need a hand.</p>
+
+                <div class="success-actions">
+
+                    <button type="button" class="btn-primary btn-view-skills" onclick={handleViewMySkills}>View your skills</button>
+
+                </div>
+
+            </div>
+
+        </template>
+
+
+
+        <template lwc:else>
+
+            <template lwc:if={showIdentityBanner}>
+
+                <div class="posting-as">
+
+                    <img src={posterIconUrl} alt="" class="posting-as-icon">
+
+                    <span class="posting-as-label">Posting as:</span>
+
+                    <span class="posting-as-value">{actingAsContactName}</span>
+
+                </div>
+
+            </template>
+
+
+
+            <template lwc:if={error}>
+
+                <div class="error-banner" role="alert">{error}</div>
+
+            </template>
+
+
+
+            <!-- Step 1: category chip grid -->
+
+            <template lwc:if={showStep1}>
+
+                <div class="form-section form-section-with-nav">
+
+                    <h3 class="section-title">
+
+                        <img src={sectionIconUrl} alt="" class="section-icon">
+
+                        {stepTitle}
+
+                    </h3>
+
+                    <p class="section-description">Share what you're willing to help with — standing offers, not one-time gigs.</p>
+
+
+
+                    <div class="category-grid" role="group" aria-label="Skill categories">
+
+                        <template for:each={categoryChips} for:item="chip">
+
+                            <div key={chip.key} class="chip-wrapper">
+
+                                <template lwc:if={chip.isOffered}>
+
+                                    <button type="button"
+
+                                            class="chip-offered-control"
+
+                                            data-skill-id={chip.existingId}
+
+                                            onclick={handleEditExisting}
+
+                                            aria-label={chip.editAriaLabel}>
+
+                                        <span class="category-chip offered" aria-hidden="true">
+
+                                            <img src={chip.iconUrl} alt="" class="chip-icon">
+
+                                            <span class="chip-label">{chip.label}</span>
+
+                                        </span>
+
+                                        <span class="chip-edit-label">Edit Your Skill</span>
+
+                                    </button>
+
+                                </template>
+
+                                <template lwc:else>
+
+                                    <button type="button"
+
+                                            class={chip.chipClass}
+
+                                            data-value={chip.value}
+
+                                            onclick={handleCategoryToggle}
+
+                                            aria-pressed={chip.isSelected}>
+
+                                        <img src={chip.iconUrl} alt="" class="chip-icon">
+
+                                        <span class="chip-label">{chip.label}</span>
+
+                                    </button>
+
+                                </template>
+
+                            </div>
+
+                        </template>
+
+                    </div>
+
+                    <div class={formNavigationClass}>
+
+                        <template lwc:if={showBackButton}>
+
+                            <button type="button" class="nav-btn nav-back" onclick={handleBack} aria-label="Go back">
+
+                                <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+
+                                <span>Back</span>
+
+                            </button>
+
+                        </template>
+
+                        <div class="nav-actions">
+
+                            <button type="button" class="nav-btn nav-details" onclick={handleAddDetails} disabled={isPostDisabled}>
+
+                                <span>Add details</span>
+
+                            </button>
+
+                            <button type="button" class="nav-btn nav-next" onclick={handlePostSelected} disabled={isPostDisabled}>
+
+                                <span>{submitLabel}</span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </template>
+
+
+
+            <!-- Step 2 / Edit: skill cards -->
+
+            <template lwc:if={showStep2}>
+
+                <div class="form-section form-section-with-nav">
+
+                    <h3 class="section-title">
+
+                        <img src={sectionIconUrl} alt="" class="section-icon">
+
+                        {stepTitle}
+
+                    </h3>
+
+                    <p class="section-description">Add a title and optional details so neighbours know what you can help with.</p>
+
+
+
+                    <div class="skill-cards">
+
+                        <template for:each={skillCards} for:item="card">
+
+                            <div key={card.key} class="skill-card">
+
+                                <div class="skill-card-header" style={card.headerStyle}>
+
+                                    <img src={card.iconUrl} alt="" class="skill-card-icon">
+
+                                    <span class="skill-card-category">{card.category}</span>
+
+                                </div>
+
+                                <div class="skill-card-body">
+
+                                    <div class="field-group">
+
+                                        <div class="field-label-row">
+
+                                            <label class="field-label" for={card.titleInputId}>Title</label>
+
+                                            <span class={card.titleCountClass}>{card.title.length}/80</span>
+
+                                        </div>
+
+                                        <input id={card.titleInputId}
+
+                                               type="text"
+
+                                               class="form-input"
+
+                                               data-category={card.category}
+
+                                               value={card.title}
+
+                                               maxlength="80"
+
+                                               oninput={handleTitleChange}>
+
+                                    </div>
+
+                                    <div class="field-group">
+
+                                        <div class="field-label-row">
+
+                                            <label class="field-label" for={card.descInputId}>Description</label>
+
+                                            <span class={card.descriptionCountClass}>{card.description.length}/255</span>
+
+                                        </div>
+
+                                        <lightning-textarea
+                                            class="skill-desc-textarea"
+                                            variant="label-hidden"
+                                            data-category={card.category}
+                                            value={card.description}
+                                            max-length="255"
+                                            placeholder="What can you help with? Any experience or limits worth mentioning?"
+                                            onchange={handleDescriptionChange}>
+                                        </lightning-textarea>
+
+                                    </div>
+
+                                    <div class="field-group">
+
+                                        <div class="field-label-row">
+
+                                            <label class="field-label" for={card.availInputId}>Availability note (optional)</label>
+
+                                            <span class={card.availabilityCountClass}>{card.availabilityNote.length}/255</span>
+
+                                        </div>
+
+                                        <input id={card.availInputId}
+
+                                               type="text"
+
+                                               class="form-input"
+
+                                               data-category={card.category}
+
+                                               value={card.availabilityNote}
+
+                                               maxlength="255"
+
+                                               placeholder="e.g. Weekday evenings, by appointment"
+
+                                               oninput={handleAvailabilityChange}>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </template>
+
+                    </div>
+
+                    <div class={formNavigationClass}>
+
+                        <template lwc:if={showBackButton}>
+
+                            <button type="button" class="nav-btn nav-back" onclick={handleBack} aria-label="Go back">
+
+                                <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+
+                                <span>Back</span>
+
+                            </button>
+
+                        </template>
+
+                        <button type="button" class="nav-btn nav-next" onclick={handleSubmit} disabled={isSubmitDisabled}>
+
+                            <span>{submitLabel}</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </template>
+
+        </template>
+
+    </div>
+
+    <c-fimby-skill-edit-modal onsaved={handleSkillEditSaved}></c-fimby-skill-edit-modal>
+
+</template>
+

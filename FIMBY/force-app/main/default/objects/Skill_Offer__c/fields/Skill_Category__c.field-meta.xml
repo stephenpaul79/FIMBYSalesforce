@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Skill_Category__c</fullName>
+    <label>Skill Category</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>Tutoring &amp; Lessons</fullName><default>false</default><label>Tutoring &amp; Lessons</label></value>
+            <value><fullName>Language &amp; Translation</fullName><default>false</default><label>Language &amp; Translation</label></value>
+            <value><fullName>Tech Help</fullName><default>false</default><label>Tech Help</label></value>
+            <value><fullName>Skilled Trades</fullName><default>false</default><label>Skilled Trades</label></value>
+            <value><fullName>Home Repairs &amp; Handywork</fullName><default>false</default><label>Home Repairs &amp; Handywork</label></value>
+            <value><fullName>Cleaning &amp; Organizing</fullName><default>false</default><label>Cleaning &amp; Organizing</label></value>
+            <value><fullName>Yard &amp; Outdoor Work</fullName><default>false</default><label>Yard &amp; Outdoor Work</label></value>
+            <value><fullName>Moving &amp; Heavy Lifting</fullName><default>false</default><label>Moving &amp; Heavy Lifting</label></value>
+            <value><fullName>Rides &amp; Transportation</fullName><default>false</default><label>Rides &amp; Transportation</label></value>
+            <value><fullName>Errands &amp; Shopping</fullName><default>false</default><label>Errands &amp; Shopping</label></value>
+            <value><fullName>Cooking &amp; Baking</fullName><default>false</default><label>Cooking &amp; Baking</label></value>
+            <value><fullName>Sewing &amp; Mending</fullName><default>false</default><label>Sewing &amp; Mending</label></value>
+            <value><fullName>Childcare &amp; Babysitting</fullName><default>false</default><label>Childcare &amp; Babysitting</label></value>
+            <value><fullName>Eldercare &amp; Companionship</fullName><default>false</default><label>Eldercare &amp; Companionship</label></value>
+            <value><fullName>Pet Care</fullName><default>false</default><label>Pet Care</label></value>
+            <value><fullName>Fitness &amp; Wellness</fullName><default>false</default><label>Fitness &amp; Wellness</label></value>
+            <value><fullName>Hair &amp; Beauty</fullName><default>false</default><label>Hair &amp; Beauty</label></value>
+            <value><fullName>Arts &amp; Crafts</fullName><default>false</default><label>Arts &amp; Crafts</label></value>
+            <value><fullName>Music &amp; Performance</fullName><default>false</default><label>Music &amp; Performance</label></value>
+            <value><fullName>Event Help</fullName><default>false</default><label>Event Help</label></value>
+            <value><fullName>Admin &amp; Paperwork</fullName><default>false</default><label>Admin &amp; Paperwork</label></value>
+            <value><fullName>Financial &amp; Tax Help</fullName><default>false</default><label>Financial &amp; Tax Help</label></value>
+            <value><fullName>Legal Guidance</fullName><default>false</default><label>Legal Guidance</label></value>
+            <value><fullName>Business &amp; Career</fullName><default>false</default><label>Business &amp; Career</label></value>
+            <value><fullName>Auto &amp; Bike Repair</fullName><default>false</default><label>Auto &amp; Bike Repair</label></value>
+            <value><fullName>Other / General Help</fullName><default>false</default><label>Other / General Help</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

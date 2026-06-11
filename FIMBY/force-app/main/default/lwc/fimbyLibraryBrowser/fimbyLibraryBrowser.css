@@ -58,6 +58,17 @@
     }
 }
 
+/* Items | Skills mode chips (inline in .feed-filters) */
+.mode-chip {
+    font-weight: 600;
+}
+
+.mode-chip.active {
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+}
+
 /* =============================================
    Breadcrumb Navigation
    ============================================= */
@@ -106,22 +117,24 @@
 .feed-filters {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background-color: var(--fimby-surface-card);
     border-bottom: 1px solid var(--fimby-border-subtle);
-    padding: 12px 16px;
+    padding: 8px 10px;
     position: relative;
+    flex-wrap: nowrap;
 }
 
 .filters-scroll {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
     align-items: center;
     min-width: 0;
+    flex: 1;
 }
 .filters-scroll::-webkit-scrollbar { display: none; }
 
@@ -283,6 +296,7 @@
 /* Dropdown trigger */
 .dropdown-container {
     position: relative;
+    flex-shrink: 0;
 }
 
 .dropdown-trigger {
@@ -300,10 +314,26 @@
     --slds-c-icon-color-foreground-default: #ffffff;
 }
 
-/* Hide selected category chip on mobile — Filter chip highlights instead */
+/* Mobile: tighter chips, hide All icon, hide selected category chip */
 @media (max-width: 767px) {
+    .feed-filters {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .filter-chip {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        gap: 4px;
+        min-height: 36px;
+    }
+
     .filter-chip.selected-category {
         display: none;
+    }
+
+    .dropdown-trigger lightning-icon {
+        --slds-c-icon-color-foreground-default: currentColor;
     }
 }
 

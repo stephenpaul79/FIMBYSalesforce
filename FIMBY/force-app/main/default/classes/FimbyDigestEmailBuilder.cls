@@ -306,29 +306,129 @@ public without sharing class FimbyDigestEmailBuilder {
         return html;
     }
 
+    private class TieredDigestResult {
+        List<Needs_Offers__c> cards;
+        Integer totalCount;
+        TieredDigestResult(List<Needs_Offers__c> cards, Integer totalCount) {
+            this.cards = cards;
+            this.totalCount = totalCount;
+        }
+    }
+
+    private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt) {
+        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Is_Urgent__c, Refresh_Count__c, ' +
+            'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
+            'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
+        String baseWhere = 'FROM Needs_Offers__c ' +
+            'WHERE Neighbourhood__c = :nhId ' +
+            'AND RecordType.DeveloperName IN (\'Need\', \'Offer\') ' +
+            'AND Type__c != \'Event\' ' +
+            'AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt ' +
+            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\') ';
+
+        Integer max = MAX_CARDS_PER_SECTION;
+        List<Needs_Offers__c> tier1 = Database.query(
+            selectClause + baseWhere +
+            'AND (Refresh_Count__c = null OR Refresh_Count__c = 0) ' +
+            'ORDER BY Posted_Date__c DESC LIMIT :max'
+        );
+
+        Integer totalTier1 = Database.countQuery(
+            'SELECT COUNT() ' + baseWhere + 'AND (Refresh_Count__c = null OR Refresh_Count__c = 0)'
+        );
+        Integer totalTier2 = Database.countQuery(
+            'SELECT COUNT() ' + baseWhere + 'AND Refresh_Count__c > 0'
+        );
+        Integer totalCount = totalTier1 + totalTier2;
+
+        List<Needs_Offers__c> cards = new List<Needs_Offers__c>(tier1);
+        if (cards.size() < max) {
+            Integer remainder = max - cards.size();
+            List<Needs_Offers__c> tier2 = Database.query(
+                selectClause + baseWhere +
+                'AND Refresh_Count__c > 0 ' +
+                'ORDER BY Posted_Date__c DESC LIMIT :remainder'
+            );
+            cards.addAll(tier2);
+        }
+        return new TieredDigestResult(cards, totalCount);
+    }
+
+    @TestVisible
+    private static String formatRecurrenceFrequencyBadge(String frequency, Decimal interval) {
+        if (String.isBlank(frequency)) {
+            return null;
+        }
+        Integer n = (interval != null && interval.intValue() > 0) ? interval.intValue() : 1;
+        if (frequency == 'Week') {
+            return n == 1 ? 'WEEKLY' : 'EVERY ' + n + ' WEEKS';
+        }
+        if (frequency == 'Month') {
+            return n == 1 ? 'MONTHLY' : 'EVERY ' + n + ' MONTHS';
+        }
+        if (frequency == 'Year') {
+            return n == 1 ? 'YEARLY' : 'EVERY ' + n + ' YEARS';
+        }
+        return null;
+    }
+
+    private static TieredDigestResult queryTieredEvents(
+        Id nhId,
+        Datetime startDt,
+        Datetime endDt,
+        Set<Id> liveRecurringOccurrenceIds,
+        Date today
+    ) {
+        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, ' +
+            'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
+            'Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
+            'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
+        String baseWhere = 'FROM Needs_Offers__c ' +
+            'WHERE Neighbourhood__c = :nhId ' +
+            'AND Type__c = \'Event\' ' +
+            'AND CreatedDate >= :startDt AND CreatedDate <= :endDt ' +
+            'AND Status__c IN (\'Posted\', \'Available\') ' +
+            'AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today)) ' +
+            'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ';
+
+        Integer max = MAX_CARDS_PER_SECTION;
+        List<Needs_Offers__c> tier1 = Database.query(
+            selectClause + baseWhere +
+            'AND Series_Parent__c = null ' +
+            'ORDER BY CreatedDate DESC LIMIT :max'
+        );
+
+        Integer totalTier1 = Database.countQuery(
+            'SELECT COUNT() ' + baseWhere + 'AND Series_Parent__c = null'
+        );
+        Integer totalTier2 = Database.countQuery(
+            'SELECT COUNT() ' + baseWhere + 'AND Series_Parent__c != null'
+        );
+        Integer totalCount = totalTier1 + totalTier2;
+
+        List<Needs_Offers__c> cards = new List<Needs_Offers__c>(tier1);
+        if (cards.size() < max) {
+            Integer remainder = max - cards.size();
+            List<Needs_Offers__c> tier2 = Database.query(
+                selectClause + baseWhere +
+                'AND Series_Parent__c != null ' +
+                'ORDER BY CreatedDate DESC LIMIT :remainder'
+            );
+            cards.addAll(tier2);
+        }
+        return new TieredDigestResult(cards, totalCount);
+    }
+
     private static String buildAsksOffersSection(Id nhId, Datetime startDt, Datetime endDt) {
-        List<Needs_Offers__c> posts = [
-            SELECT Id, Name, Details__c, Image_1_URL__c, Is_Urgent__c,
-                   Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
-                   RecordType.DeveloperName, CreatedDate
-            FROM Needs_Offers__c
-            WHERE Neighbourhood__c = :nhId
-              AND RecordType.DeveloperName IN ('Need', 'Offer')
-              AND Type__c != 'Event'
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
-              AND Status__c IN ('Posted', 'Available', 'Reply Received')
-            ORDER BY CreatedDate DESC
-            LIMIT 10
-        ];
-        if (posts.isEmpty()) { return ''; }
+        TieredDigestResult result = queryTieredAskOffers(nhId, startDt, endDt);
+        if (result.cards.isEmpty()) { return ''; }
 
         String html = buildSectionHeader('Asks & Offers', EARTH_SAGE);
-        Integer count = Math.min(posts.size(), MAX_CARDS_PER_SECTION);
-        for (Integer i = 0; i < count; i++) {
-            html += buildAskOfferCard(posts[i]);
+        for (Needs_Offers__c post : result.cards) {
+            html += buildAskOfferCard(post);
         }
-        if (posts.size() > MAX_CARDS_PER_SECTION) {
-            html += buildMoreLink(posts.size() - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
+        if (result.totalCount > MAX_CARDS_PER_SECTION) {
+            html += buildMoreLink(result.totalCount - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
         }
         return html;
     }
@@ -358,33 +458,17 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String buildEventsSection(Id nhId, Datetime startDt, Datetime endDt) {
         Date today = Date.today();
         Set<Id> liveRecurringOccurrenceIds = resolveLiveRecurringOccurrenceIds(nhId);
-
-        List<Needs_Offers__c> events = [
-            SELECT Id, Name, Details__c, Image_1_URL__c,
-                   Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
-                   Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate
-            FROM Needs_Offers__c
-            WHERE Neighbourhood__c = :nhId
-              AND Type__c = 'Event'
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
-              AND Status__c IN ('Posted', 'Available')
-              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
-              AND (
-                  (Recurrence_Frequency__c = null AND Series_Parent__c = null)
-                  OR Id IN :liveRecurringOccurrenceIds
-              )
-            ORDER BY CreatedDate DESC
-            LIMIT 10
-        ];
-        if (events.isEmpty()) { return ''; }
+        TieredDigestResult result = queryTieredEvents(
+            nhId, startDt, endDt, liveRecurringOccurrenceIds, today
+        );
+        if (result.cards.isEmpty()) { return ''; }
 
         String html = buildSectionHeader('Events', EARTH_TEAL);
-        Integer count = Math.min(events.size(), MAX_CARDS_PER_SECTION);
-        for (Integer i = 0; i < count; i++) {
-            html += buildEventCard(events[i]);
+        for (Needs_Offers__c evt : result.cards) {
+            html += buildEventCard(evt);
         }
-        if (events.size() > MAX_CARDS_PER_SECTION) {
-            html += buildMoreLink(events.size() - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
+        if (result.totalCount > MAX_CARDS_PER_SECTION) {
+            html += buildMoreLink(result.totalCount - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
         }
         return html;
     }
@@ -395,13 +479,13 @@ public without sharing class FimbyDigestEmailBuilder {
                    Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
-                   CreatedDate
+                   Posted_Date__c, CreatedDate
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
-            ORDER BY CreatedDate DESC
+            ORDER BY Posted_Date__c DESC
             LIMIT 10
         ];
         if (bulkBuys.isEmpty()) { return ''; }
@@ -449,11 +533,20 @@ public without sharing class FimbyDigestEmailBuilder {
         String rt = post.RecordType != null ? post.RecordType.DeveloperName : 'Need';
         String badgeLabel = rt == 'Need' ? 'ASK' : 'OFFER';
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
+        String refreshPill = null;
+        if (post.Refresh_Count__c != null && post.Refresh_Count__c > 0) {
+            String refreshLabel = rt == 'Need' ? 'STILL NEEDED' : 'STILL AVAILABLE';
+            refreshPill = FimbyEmailHtmlBuilder.buildBadgePill(
+                refreshLabel,
+                FimbyEmailHtmlBuilder.getBadgeColor(rt),
+                null
+            );
+        }
 
         String html = openCard();
         html += FimbyEmailHtmlBuilder.buildCardImage(post.Image_1_URL__c, 180);
         html += openCardBody();
-        html += badgeAvatarRow(badgeLabel, rt, post.Contact__r);
+        html += badgeAvatarRow(badgeLabel, rt, refreshPill, post.Contact__r);
         html += titleRow(post.Name);
         html += snippetRow(post.Details__c);
         html += FimbyEmailHtmlBuilder.buildCtaButton('Respond', ctaUrl, 'reply.png');
@@ -476,11 +569,18 @@ public without sharing class FimbyDigestEmailBuilder {
             ctaLabel = 'RSVP';
         }
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', evt.Id);
+        String freqBadge = formatRecurrenceFrequencyBadge(
+            evt.Recurrence_Frequency__c,
+            evt.Recurrence_Interval__c
+        );
+        String freqPill = String.isNotBlank(freqBadge)
+            ? FimbyEmailHtmlBuilder.buildBadgePill(freqBadge, FimbyEmailHtmlBuilder.getBadgeColor(evtType), null)
+            : null;
 
         String html = openCard();
         html += FimbyEmailHtmlBuilder.buildCardImage(evt.Image_1_URL__c, 180);
         html += openCardBody();
-        html += badgeAvatarRow(badgeLabel, evtType, evt.Contact__r);
+        html += badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r);
         html += titleRow(evt.Name);
         html += FimbyEmailHtmlBuilder.buildDateLocationLine(evt.Start_Date__c, evt.Location__c);
         html += snippetRow(evt.Details__c);

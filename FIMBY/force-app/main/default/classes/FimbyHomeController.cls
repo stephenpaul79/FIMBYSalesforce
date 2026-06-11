@@ -113,7 +113,7 @@ public with sharing class FimbyHomeController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String askOfferQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, ' +
+            String askOfferQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
                           'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
                           'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                           'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
@@ -133,7 +133,7 @@ public with sharing class FimbyHomeController {
                     ' OR (Neighbourhood__c IN :adjacentIds AND Posted_By__c IN :sharedContactIds)) ';
             }
 
-            askOfferQuery += 'ORDER BY CreatedDate DESC LIMIT :pageSize OFFSET :offset';
+            askOfferQuery += 'ORDER BY Posted_Date__c DESC LIMIT :pageSize OFFSET :offset';
 
             return Database.query(askOfferQuery);
 
@@ -337,7 +337,7 @@ public with sharing class FimbyHomeController {
             Boolean isAllCategory = String.isBlank(category) || category == 'all';
             Boolean hasSubType = String.isNotBlank(subType) && subType != 'All';
 
-            List<UnifiedFeedItem> allItems = new List<UnifiedFeedItem>();
+            List<FimbyFeedItem> allItems = new List<FimbyFeedItem>();
 
             // Neighbourhood scope is capped at ~150 users; posts have a 1-3 week active life.
             // 150 per object is the practical ceiling and maps directly to the neighbourhood size limit.
@@ -377,7 +377,7 @@ public with sharing class FimbyHomeController {
                 List<Story__c> stories = Database.query(storyQuery);
 
                 for (Story__c story : stories) {
-                    UnifiedFeedItem ufi = new UnifiedFeedItem(story);
+                    FimbyFeedItem ufi = new FimbyFeedItem(story);
                     allItems.add(ufi);
                 }
             }
@@ -400,7 +400,7 @@ public with sharing class FimbyHomeController {
                     );
                 }
 
-                String aoQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, ' +
+                String aoQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
                                  'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
                                  'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                                  'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
@@ -440,11 +440,11 @@ public with sharing class FimbyHomeController {
                     }
                 }
 
-                aoQuery += 'ORDER BY CreatedDate DESC LIMIT :queryLimit';
+                aoQuery += 'ORDER BY Posted_Date__c DESC LIMIT :queryLimit';
 
                 List<Needs_Offers__c> aoItems = Database.query(aoQuery);
                 for (Needs_Offers__c item : aoItems) {
-                    allItems.add(new UnifiedFeedItem(item));
+                    allItems.add(new FimbyFeedItem(item));
                 }
             }
 
@@ -475,19 +475,18 @@ public with sharing class FimbyHomeController {
 
                 List<Library_Item__c> libItems = Database.query(libQuery);
                 for (Library_Item__c item : libItems) {
-                    allItems.add(new UnifiedFeedItem(item));
+                    allItems.add(new FimbyFeedItem(item));
                 }
             }
 
-            // Sort all items by CreatedDate descending
             allItems.sort();
 
             Id viewerContactId = FimbyIdentityRepository.getActingAsContactId();
             if (viewerContactId != null) {
                 Set<Id> blockedContactIds = FimbyBlockingHelper.getBidirectionalBlocks(viewerContactId);
                 if (!blockedContactIds.isEmpty()) {
-                    List<UnifiedFeedItem> visibleItems = new List<UnifiedFeedItem>();
-                    for (UnifiedFeedItem item : allItems) {
+                    List<FimbyFeedItem> visibleItems = new List<FimbyFeedItem>();
+                    for (FimbyFeedItem item : allItems) {
                         if (!isBlockedFeedAuthor(item, blockedContactIds)) {
                             visibleItems.add(item);
                         }
@@ -501,7 +500,7 @@ public with sharing class FimbyHomeController {
             Integer startIndex = Math.min(offset, totalCount);
             Integer endIndex = Math.min(offset + pageSize, totalCount);
 
-            List<UnifiedFeedItem> pagedItems = new List<UnifiedFeedItem>();
+            List<FimbyFeedItem> pagedItems = new List<FimbyFeedItem>();
             for (Integer i = startIndex; i < endIndex; i++) {
                 pagedItems.add(allItems.get(i));
             }
@@ -527,7 +526,7 @@ public with sharing class FimbyHomeController {
     }
 
     @TestVisible
-    private static Boolean isBlockedFeedAuthor(UnifiedFeedItem item, Set<Id> blockedContactIds) {
+    private static Boolean isBlockedFeedAuthor(FimbyFeedItem item, Set<Id> blockedContactIds) {
         if (item == null || blockedContactIds == null || blockedContactIds.isEmpty()) {
             return false;
         }
@@ -572,13 +571,13 @@ public with sharing class FimbyHomeController {
     }
 
     public class UnifiedFeedResult {
-        @AuraEnabled public List<UnifiedFeedItem> items { get; set; }
+        @AuraEnabled public List<FimbyFeedItem> items { get; set; }
         @AuraEnabled public Boolean hasMore { get; set; }
         @AuraEnabled public Integer totalCount { get; set; }
         @AuraEnabled public String currentContactId { get; set; }
         @AuraEnabled public String actingAsContactId { get; set; }
 
-        public UnifiedFeedResult(List<UnifiedFeedItem> items, Boolean hasMore, Integer totalCount) {
+        public UnifiedFeedResult(List<FimbyFeedItem> items, Boolean hasMore, Integer totalCount) {
             this.items = items;
             this.hasMore = hasMore;
             this.totalCount = totalCount;
@@ -590,163 +589,6 @@ public with sharing class FimbyHomeController {
                 this.currentContactId = null;
                 this.actingAsContactId = null;
             }
-        }
-    }
-
-    public class UnifiedFeedItem implements Comparable {
-        @AuraEnabled public String recordId { get; set; }
-        @AuraEnabled public String name { get; set; }
-        @AuraEnabled public String description { get; set; }
-        @AuraEnabled public String feedType { get; set; }
-        @AuraEnabled public String itemType { get; set; }
-        @AuraEnabled public String category { get; set; }
-        @AuraEnabled public Datetime createdDate { get; set; }
-        @AuraEnabled public String postedByName { get; set; }
-        @AuraEnabled public String postedByImageUrl { get; set; }
-        @AuraEnabled public String imageUrl { get; set; }
-        @AuraEnabled public String imageRatio { get; set; }
-        @AuraEnabled public Boolean hasImage { get; set; }
-        @AuraEnabled public String objectApiName { get; set; }
-        @AuraEnabled public String image2Url { get; set; }
-        @AuraEnabled public String image2Ratio { get; set; }
-        @AuraEnabled public String image3Url { get; set; }
-        @AuraEnabled public String image3Ratio { get; set; }
-        @AuraEnabled public String image4Url { get; set; }
-        @AuraEnabled public String image4Ratio { get; set; }
-        @AuraEnabled public String typeValue { get; set; }
-        @AuraEnabled public Integer engagementCount { get; set; }
-        @AuraEnabled public String recordTypeName { get; set; }
-        @AuraEnabled public Decimal totalReserved { get; set; }
-        @AuraEnabled public Decimal totalQuantity { get; set; }
-        @AuraEnabled public Decimal ownerShares { get; set; }
-        @AuraEnabled public Decimal totalAvailable { get; set; }
-        @AuraEnabled public String activeReserverIds { get; set; }
-        @AuraEnabled public Boolean isOrgContact { get; set; }
-        @AuraEnabled public String orgAccountId { get; set; }
-        @AuraEnabled public String eventDetails { get; set; }
-        @AuraEnabled public String location { get; set; }
-        @AuraEnabled public String eventType { get; set; }
-        @AuraEnabled public String eventLinkUrl { get; set; }
-        @AuraEnabled public String ownerContactId { get; set; }
-        @AuraEnabled public String realAuthorContactId { get; set; }
-        @AuraEnabled public Boolean isUrgent { get; set; }
-        @AuraEnabled public String sourceScope { get; set; }
-        @AuraEnabled public Boolean isRecurring { get; set; }
-
-        public UnifiedFeedItem(Story__c story) {
-            this.recordId = story.Id;
-            this.name = story.Name;
-            this.description = story.Message__c;
-            this.feedType = 'story';
-            this.itemType = story.Type__c;
-            this.category = story.Type__c;
-            this.createdDate = story.CreatedDate;
-            this.postedByName = story.Posted_By__r?.Full_Name__c;
-            this.isOrgContact = story.Posted_By__r?.Is_Organization_Contact__c == true;
-            this.orgAccountId = story.Posted_By__r?.Organization_Account__c;
-            if (this.isOrgContact && story.Posted_By__r?.Organization_Account__r?.Logo_URL__c != null) {
-                this.postedByImageUrl = story.Posted_By__r.Organization_Account__r.Logo_URL__c;
-            } else {
-                this.postedByImageUrl = story.Posted_By__r?.Image_URL__c;
-            }
-            this.hasImage = String.isNotBlank(story.Image_URL__c);
-            this.imageUrl = story.Image_URL__c;
-            this.imageRatio = story.Image_Ratio__c;
-            this.objectApiName = 'Story__c';
-            this.typeValue = story.Type__c;
-            this.engagementCount = story.Comment_Count__c != null
-                ? (Integer) story.Comment_Count__c
-                : 0;
-            this.ownerContactId = story.Posted_By__c;
-            this.realAuthorContactId = story.Contact__c;
-        }
-
-        public UnifiedFeedItem(Needs_Offers__c item) {
-            this.recordId = item.Id;
-            this.name = item.Name;
-            this.description = item.Details__c;
-            this.feedType = 'askOffer';
-            this.itemType = item.RecordType?.Name;
-            this.category = item.Category__c;
-            this.createdDate = item.CreatedDate;
-            Boolean hasContact = item.Contact__r?.Full_Name__c != null;
-            this.postedByName = hasContact ? item.Contact__r.Full_Name__c : item.Posted_By__r?.Full_Name__c;
-            this.isOrgContact = hasContact
-                ? (item.Contact__r.Is_Organization_Contact__c == true)
-                : (item.Posted_By__r?.Is_Organization_Contact__c == true);
-            this.orgAccountId = hasContact
-                ? item.Contact__r.Organization_Account__c
-                : item.Posted_By__r?.Organization_Account__c;
-            if (this.isOrgContact) {
-                String logoUrl = hasContact
-                    ? item.Contact__r.Organization_Account__r?.Logo_URL__c
-                    : item.Posted_By__r?.Organization_Account__r?.Logo_URL__c;
-                this.postedByImageUrl = logoUrl != null
-                    ? logoUrl
-                    : (hasContact ? item.Contact__r.Image_URL__c : item.Posted_By__r?.Image_URL__c);
-            } else {
-                this.postedByImageUrl = hasContact ? item.Contact__r.Image_URL__c : item.Posted_By__r?.Image_URL__c;
-            }
-            this.hasImage = String.isNotBlank(item.Image_1_URL__c);
-            this.imageUrl = item.Image_1_URL__c;
-            this.imageRatio = item.Image_1_Ratio__c;
-            this.image2Url = item.Image_2_URL__c;
-            this.image2Ratio = item.Image_2_Ratio__c;
-            this.image3Url = item.Image_3_URL__c;
-            this.image3Ratio = item.Image_3_Ratio__c;
-            this.image4Url = item.Image_4_URL__c;
-            this.image4Ratio = item.Image_4_Ratio__c;
-            this.objectApiName = 'Needs_Offers__c';
-            this.typeValue = item.Type__c;
-            this.engagementCount = item.Total_Accepted__c != null ? (Integer)item.Total_Accepted__c : 0;
-            this.recordTypeName = item.RecordType?.Name;
-            this.totalReserved = item.Total_Reserved__c;
-            this.totalQuantity = item.Total_Quantity__c;
-            this.ownerShares = item.Owner_Shares__c;
-            this.totalAvailable = item.Total_Available__c;
-            this.activeReserverIds = item.Active_Reserver_Ids__c;
-            this.eventDetails = item.Event_Details__c;
-            this.location = item.Location__c;
-            this.eventType = item.Event_Type__c;
-            this.eventLinkUrl = item.Event_Link__c;
-            this.ownerContactId = item.Contact__c;
-            this.realAuthorContactId = item.Posted_By__c;
-            this.isUrgent = item.Is_Urgent__c == true;
-            this.isRecurring = String.isNotBlank(item.Recurrence_Frequency__c)
-                || item.Series_Parent__c != null;
-        }
-
-        public UnifiedFeedItem(Library_Item__c item) {
-            this.recordId = item.Id;
-            this.name = item.Name;
-            this.description = item.Description__c;
-            this.feedType = 'library';
-            this.itemType = 'Library Item';
-            this.category = item.Category__c;
-            this.createdDate = item.CreatedDate;
-            this.postedByName = item.Owner_Contact__r?.Full_Name__c;
-            this.isOrgContact = item.Owner_Contact__r?.Is_Organization_Contact__c == true;
-            this.orgAccountId = item.Owner_Contact__r?.Organization_Account__c;
-            if (this.isOrgContact && item.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
-                this.postedByImageUrl = item.Owner_Contact__r.Organization_Account__r.Logo_URL__c;
-            } else {
-                this.postedByImageUrl = item.Owner_Contact__r?.Image_URL__c;
-            }
-            this.hasImage = String.isNotBlank(item.Image_URL__c);
-            this.imageUrl = item.Image_URL__c;
-            this.imageRatio = item.Image_Ratio__c;
-            this.objectApiName = 'Library_Item__c';
-            this.typeValue = null;
-            this.engagementCount = 0;
-            this.ownerContactId = item.Owner_Contact__c;
-            this.realAuthorContactId = item.Listed_By__c;
-        }
-
-        public Integer compareTo(Object compareTo) {
-            UnifiedFeedItem other = (UnifiedFeedItem) compareTo;
-            if (this.createdDate > other.createdDate) return -1;
-            if (this.createdDate < other.createdDate) return 1;
-            return 0;
         }
     }
 }

@@ -77,6 +77,26 @@ export default class FimbyCard extends LightningElement {
         return this.hasAnyImages;
     }
 
+    get showCategoryMediaPlaceholder() {
+        return this.cardType === 'library'
+            && this.isCondensedLayout
+            && !this.hasAnyImages
+            && !!this.badgeIconUrl;
+    }
+
+    get categoryPlaceholderStyle() {
+        const hex = (this.cardAccentColor || '').replace('#', '').trim();
+        if (hex.length === 6) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            if (!Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)) {
+                return `background-color: rgba(${r}, ${g}, ${b}, 0.12);`;
+            }
+        }
+        return 'background-color: var(--fimby-surface-input);';
+    }
+
     // Legacy style kept for backward compat with overlay
     get mediaContainerStyle() {
         return `aspect-ratio: ${this.imageAspectRatio}; max-height: 400px;`;
@@ -93,6 +113,7 @@ export default class FimbyCard extends LightningElement {
 
     // Content properties
     @api title = '';
+    @api titleLeadLabel = '';
     @api description = '';
     @api eventDateTime = '';
     @api eventLocation = '';
@@ -101,6 +122,19 @@ export default class FimbyCard extends LightningElement {
     get displayTitle() {
         if (!this.title) return '';
         return decodeHtmlEntities(this.title);
+    }
+
+    get showTitleLead() {
+        return !!this.titleLeadLabel;
+    }
+
+    get cardTitleClass() {
+        return this.showTitleLead ? 'card-title card-title-with-lead' : 'card-title';
+    }
+
+    get titleTextAriaLabel() {
+        if (!this.showTitleLead) return null;
+        return `${this.titleLeadLabel}: ${this.displayTitle}`;
     }
 
     get hasEventMeta() {
@@ -221,7 +255,16 @@ export default class FimbyCard extends LightningElement {
     }
 
     get showListOwnerRow() {
-        return this.isListLayout;
+        return this.isListLayout && (
+            this.showMenu ||
+            !!this.avatarUrl ||
+            !!this.userName ||
+            !!this.responseLabel
+        );
+    }
+
+    get imageGridLayout() {
+        return this.isListLayout ? 'thumbnail' : 'auto';
     }
 
 
@@ -367,11 +410,15 @@ export default class FimbyCard extends LightningElement {
             event.target.closest('.card-menu-backdrop') ||
             event.target.closest('.card-media') ||
             event.target.closest('.clickable-avatar') ||
-            event.target.closest('.card-footer-bar')) {
+            event.target.closest('.card-footer-bar') ||
+            event.target.closest('.card-footer-compact') ||
+            event.target.closest('.list-owner-row')) {
             return;
         }
 
         const clickEvent = new CustomEvent('cardclick', {
+            bubbles: true,
+            composed: true,
             detail: {
                 cardType: this.cardType,
                 title: this.title,

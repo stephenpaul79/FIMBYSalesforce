@@ -10,7 +10,8 @@ import { LightningElement } from 'lwc';
  * - Need → /ask-or-offer-post?type=Need
  * - Offer → /ask-or-offer-post?type=Offer
  * - Story → /story-composer
- * - Lend → /add-library-item
+ * - Lend → /library-item-post
+ * - Skill → /library-item-post?type=skill
  */
 export default class FimbyQuickPost extends LightningElement {
 
@@ -19,7 +20,8 @@ export default class FimbyQuickPost extends LightningElement {
         offer: '/ask-or-offer-post?type=Offer',
         bulkbuy: '/ask-or-offer-post?type=BulkBuy',
         story: '/story-composer',
-        lending: '/add-library-item'
+        lending: '/library-item-post',
+        skill: '/library-item-post?type=skill'
     };
 
     // Handle main quick post area click - default to Need form

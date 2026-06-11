@@ -1,0 +1,115 @@
+<template>
+    <div class="fimby-skill-offer-detail">
+        <template lwc:if={showLoadingState}>
+            <c-fimby-loading-message context="general" size="medium"></c-fimby-loading-message>
+        </template>
+
+        <template lwc:elseif={showErrorState}>
+            <div class="error-state" role="alert">
+                <p>{error}</p>
+                <a href="/library-list" class="back-link">Back to Library</a>
+            </div>
+        </template>
+
+        <template lwc:elseif={showContent}>
+            <c-fimby-page-header
+                page-title={skill.title}
+                parent-label="Library"
+                parent-url="/library-list"
+                menu-items={headerMenuItems}
+                onmenuaction={handleHeaderMenuAction}>
+            </c-fimby-page-header>
+
+            <!-- Summary card -->
+            <div class="summary-card">
+                <div class="summary-body">
+                    <div class="title-row">
+                        <h1 class="skill-title">{skill.title}</h1>
+                        <span class="category-badge" style={categoryBadgeStyle}>
+                            <img src={heroIconUrl} alt="" class="badge-icon">
+                            {skill.category}
+                        </span>
+                    </div>
+                    <button type="button" class="owner-row" onclick={handleOwnerClick} aria-label="View neighbour profile">
+                        <img src={ownerAvatarUrl} alt="" class="owner-avatar">
+                        <span class="owner-name">Offered by {skill.ownerName}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Responder CTA -->
+            <template lwc:if={isResponderPersona}>
+                <div class="action-card">
+                    <p class="action-hint">Interested in this help? Send a message to start the conversation.</p>
+                    <button type="button" class="btn-primary ask-btn" onclick={handleAskForHelp}>
+                        <img src={askHelpIconUrl} alt="" class="btn-icon">
+                        <span>Ask for Help</span>
+                    </button>
+                </div>
+            </template>
+
+            <!-- Collapsible details -->
+            <div class="info-section collapsible-section">
+                <button type="button" class="section-toggle" onclick={handleToggleDetails} aria-expanded={detailsExpanded}>
+                    <span class="section-toggle-label">
+                        <img src={detailsIconUrl} alt="" class="section-icon">
+                        Details
+                    </span>
+                    <lightning-icon icon-name={detailsToggleIcon} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={detailsExpanded}>
+                    <div class="collapsible-content">
+                        <div class="field-grid">
+                            <div class="field-item full-width">
+                                <span class="field-label">Description</span>
+                                <span class="field-value field-value-multiline">{descriptionDisplay}</span>
+                            </div>
+                            <template lwc:if={isPosterPersona}>
+                                <div class="field-item">
+                                    <span class="field-label">Status</span>
+                                    <span class="field-value">{statusLabel}</span>
+                                </div>
+                            </template>
+                            <div class="field-item">
+                                <span class="field-label">Availability</span>
+                                <span class="field-value">{availabilityDisplay}</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Pause confirmation -->
+        <template lwc:if={showPauseConfirm}>
+            <div class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+                <div class="confirm-dialog">
+                    <h2 id="pause-title">Pause this skill?</h2>
+                    <p>Neighbours won't see it in the library while it's paused. You can turn it back on anytime.</p>
+                    <div class="confirm-actions">
+                        <button type="button" class="btn-neutral" onclick={handleCancelPause}>Keep Active</button>
+                        <button type="button" class="btn-primary" onclick={handleConfirmPause}>Pause</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Remove confirmation -->
+        <template lwc:if={showRemoveConfirm}>
+            <div class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="remove-title">
+                <div class="confirm-dialog">
+                    <h2 id="remove-title">Remove this skill?</h2>
+                    <p>It will disappear from the library. Existing conversations will stay in your messages.</p>
+                    <div class="confirm-actions">
+                        <button type="button" class="btn-neutral" onclick={handleCancelRemove}>Cancel</button>
+                        <button type="button" class="btn-danger" onclick={handleConfirmRemove}>Remove</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <c-fimby-skill-edit-modal onsaved={handleSkillSaved}></c-fimby-skill-edit-modal>
+        <c-fimby-quick-response-modal onresponsesaved={handleResponseSaved}></c-fimby-quick-response-modal>
+        <c-fimby-report-content></c-fimby-report-content>
+    </div>
+</template>

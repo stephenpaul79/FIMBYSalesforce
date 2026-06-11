@@ -10,7 +10,10 @@
     </template>
 
     <template lwc:if={showDirectView}>
-        <c-fimby-conversation-view conversation-id={conversationId}></c-fimby-conversation-view>
+        <c-fimby-conversation-view
+            conversation-id={conversationId}
+            target-contact-id={targetContactId}>
+        </c-fimby-conversation-view>
     </template>
 
     <template lwc:if={hasError}>

@@ -6,7 +6,7 @@
     </div>
   </section>
 
-  <div class="container-inset" style="padding-bottom:40px;">
+  <div class="container-inset faq-page-inset">
 
     <div class="faq-category">
       <h2>Getting started</h2>
@@ -43,7 +43,7 @@
     <div class="faq-category">
       <h2>What FIMBY looks like day-to-day</h2>
 
-      <details>
+      <details id="dead-app">
         <summary>Will this just be another dead app on my phone?</summary>
         <div class="faq-answer">
           FIMBY is designed for brief check-ins, not constant scrolling. A typical week might look like seeing a couple of asks or offers from neighbours, browsing the lending library, or noticing an event you want to attend. Some weeks you might not open it at all. That's fine &mdash; FIMBY is meant to be there when you need it, not to demand your attention.
@@ -71,15 +71,15 @@
       <details>
         <summary>How does lending work?</summary>
         <div class="faq-answer">
-          The lending library lets you list items you're willing to lend &mdash; tools, books, kitchen gear, anything useful. Neighbours browse by category and request to borrow. Loans are tracked with return dates, and you manage everything from your profile.
+          The Library holds <strong>items and skills</strong>. List tools, books, kitchen gear, or standing help neighbours can ask for. Browse by <strong>Items</strong> or <strong>Skills</strong>, request to borrow items, or tap <strong>Ask for Help</strong> on a skill to open a message thread. Loans are tracked with return dates; you manage everything from your profile.
         </div>
       </details>
 
       <details>
         <summary>What does "Settling in" mean, and why do I need to be vouched to borrow?</summary>
         <div class="faq-answer">
-          <p>When you first join FIMBY, you can use most of the platform right away &mdash; you can post asks and offers, share stories, RSVP to events, and even <em>list</em> items you would like to lend. The one place we pause is <strong>borrowing</strong>.</p>
-          <p>Before you borrow something from a neighbour, we ask someone who already knows you &mdash; a peer or a community group rep in your neighbourhood &mdash; to vouch for you. This is just a small "I know this person." It is not a credit check, an interview, or a background investigation. It is the kind of introduction neighbours have always made for each other.</p>
+          <p>When you first join FIMBY, you can use most of the platform right away &mdash; you can post asks and offers, share stories, RSVP to events, and even <em>list</em> items or skills. The one place we pause is <strong>borrowing items</strong> (the Skills view does not show the vouch banner).</p>
+          <p>Before you borrow an item from a neighbour, we ask someone who already knows you &mdash; a peer or a community group rep in your neighbourhood &mdash; to vouch for you. This is just a small "I know this person." It is not a credit check, an interview, or a background investigation. It is the kind of introduction neighbours have always made for each other.</p>
           <p>While you are "Settling in", the library shows you a warm banner with a "Request a vouch" button. You provide the name and email of someone you know in your neighbourhood (or a community group), they get a message asking them to vouch, and once they do, the library opens up for you.</p>
           <p>If you do not know anyone yet, your neighbourhood moderator can introduce you to someone or vouch for you directly.</p>
         </div>
@@ -147,14 +147,14 @@
         </div>
       </details>
 
-      <details>
+      <details id="christian">
         <summary>Do I need to be Christian to use FIMBY?</summary>
         <div class="faq-answer">
           No. FIMBY grew out of a church community, but it is for neighbours of all backgrounds. Some people share prayer requests or God stories because that is part of their life. You are never expected to join in, agree, or participate in religious content to belong here. All that is asked is that neighbours treat one another with dignity.
         </div>
       </details>
 
-      <details>
+      <details id="lgbtq">
         <summary>Is FIMBY safe for LGBTQ+ people?</summary>
         <div class="faq-answer">
           Yes. FIMBY's founder is a gay man who has been part of Strathcona Vineyard for years, and FIMBY is built for all neighbours. That means all neighbours. You are welcome here exactly as you are. No one is asked to hide who they are in order to belong.
@@ -195,22 +195,13 @@
     </div>
 
     <div class="soft-cta">
-      <p>Still have questions? <a href="/contact/">Contact</a> &nbsp;&middot;&nbsp; Ready to join? <a href="#" class="cta-bridge">Join FIMBY</a></p>
+      <p>Still have questions? <a href="/family-in-my-backyard/contact-us/">Bring FIMBY</a> &nbsp;&middot;&nbsp; Ready to join? <a href="https://our.fimby.com/sign-up">Check your neighbourhood</a></p>
     </div>
 
     <div class="faq-disclaimer">Some details may change as FIMBY grows neighbourhood by neighbourhood.</div>
 
   </div>
 </main>
-
-<div id="join-modal" class="modal" aria-hidden="true" role="dialog" aria-label="Join FIMBY">
-  <div class="modal-content">
-    <button class="modal-close" aria-label="Close">&times;</button>
-    <h2>Come on in</h2>
-    <p>You'll enter your postal code as part of sign-up. If FIMBY is live in your area, you'll continue into setup. If not, we'll add you to the waitlist — and ask if you'd like to help bring FIMBY to your neighbourhood.</p>
-    <a href="https://our.fimby.com/sign-up" class="btn btn-primary" style="width:100%;text-align:center;">Sign up</a>
-  </div>
-</div>
 
 <footer>
   <div class="container">
@@ -222,22 +213,3 @@
   </div>
 </footer>
 
-<script>
-  var modal = document.getElementById('join-modal');
-  document.querySelectorAll('.cta-bridge').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      modal.classList.add('visible');
-      modal.setAttribute('aria-hidden', 'false');
-    });
-  });
-  modal.querySelector('.modal-close').addEventListener('click', closeModal);
-  modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('visible')) closeModal();
-  });
-  function closeModal() {
-    modal.classList.remove('visible');
-    modal.setAttribute('aria-hidden', 'true');
-  }
-</script>

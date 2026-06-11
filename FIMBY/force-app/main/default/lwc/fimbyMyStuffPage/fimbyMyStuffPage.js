@@ -4,6 +4,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getMyPosts from '@salesforce/apex/FimbyMyStuffController.getMyPosts';
 import getMyStories from '@salesforce/apex/FimbyMyStuffController.getMyStories';
 import getMyLibraryItems from '@salesforce/apex/FimbyMyStuffController.getMyLibraryItems';
+import getMySkills from '@salesforce/apex/FimbyMyStuffController.getMySkills';
 import getMyBorrowedItems from '@salesforce/apex/FimbyMyStuffController.getMyBorrowedItems';
 import getMyContacts from '@salesforce/apex/FimbyMyStuffController.getMyContacts';
 import searchNeighbourhoodContacts from '@salesforce/apex/FimbyMyStuffController.searchNeighbourhoodContacts';
@@ -11,15 +12,16 @@ import getMyContactDetailsForSharing from '@salesforce/apex/FimbyMyStuffControll
 import shareContactInfoDirect from '@salesforce/apex/FimbyMyStuffController.shareContactInfoDirect';
 import revokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.revokeSharedContactInfo';
 import undoRevokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.undoRevokeSharedContactInfo';
-import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
+import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
 
 const PATH_TO_SECTION = {
     'my-contacts': 'contacts',
     'my-posts': 'posts',
     'my-shared-life': 'stories',
     'my-library-items': 'library',
+    'my-skills': 'skills',
     'my-borrowing': 'borrowed'
 };
 
@@ -28,6 +30,7 @@ const SECTION_TITLES = {
     posts: 'My Posts',
     stories: 'My Shared Life',
     library: 'My Library Items',
+    skills: 'My Skills',
     borrowed: 'My Borrowing'
 };
 
@@ -79,6 +82,12 @@ const LIBRARY_STATUS_CLASSES = {
     'Unavailable':  'status-badge status-unavailable'
 };
 
+const SKILL_STATUS_CLASSES = {
+    'Active':  'status-badge status-available',
+    'Paused':  'status-badge status-unavailable',
+    'Removed': 'status-badge status-expired'
+};
+
 export default class FimbyMyStuffPage extends LightningElement {
     @track activeFilter = null;
     @track isLoading = true;
@@ -87,6 +96,7 @@ export default class FimbyMyStuffPage extends LightningElement {
     @track myPosts = [];
     @track myStories = [];
     @track myLibraryItems = [];
+    @track mySkills = [];
     @track myBorrowedItems = [];
     @track myContacts = [];
     @track expandedContactId = null;
@@ -120,6 +130,7 @@ export default class FimbyMyStuffPage extends LightningElement {
     _postsLoaded = false;
     _storiesLoaded = false;
     _libraryLoaded = false;
+    _skillsLoaded = false;
     _borrowedLoaded = false;
     _contactsLoaded = false;
 
@@ -181,6 +192,9 @@ export default class FimbyMyStuffPage extends LightningElement {
                 break;
             case 'library':
                 await this._loadLibraryItems();
+                break;
+            case 'skills':
+                await this._loadSkills();
                 break;
             case 'borrowed':
                 await this._loadBorrowedItems();
@@ -272,6 +286,23 @@ export default class FimbyMyStuffPage extends LightningElement {
         }
     }
 
+    async _loadSkills() {
+        if (this._skillsLoaded) return;
+        try {
+            const skills = await getMySkills({ pageSize: 20 });
+            this.mySkills = skills.map(skill => ({
+                ...skill,
+                statusBadgeClass: SKILL_STATUS_CLASSES[skill.status] || 'status-badge',
+                categoryIconUrl: getSkillCategoryIconUrl(IMPACT_ICONS, skill.category || 'Other / General Help'),
+                categoryBadgeStyle: getSkillCategoryStyle(skill.category || 'Other / General Help'),
+                formattedDate: this._formatDate(skill.CreatedDate)
+            }));
+            this._skillsLoaded = true;
+        } catch (error) {
+            console.error('Error loading skills:', error);
+        }
+    }
+
     async _loadBorrowedItems() {
         if (this._borrowedLoaded) return;
         try {
@@ -337,12 +368,14 @@ export default class FimbyMyStuffPage extends LightningElement {
     get showPosts()    { return this.activeFilter === 'posts'; }
     get showStories()  { return this.activeFilter === 'stories'; }
     get showLibrary()  { return this.activeFilter === 'library'; }
+    get showSkills()   { return this.activeFilter === 'skills'; }
     get showBorrowed() { return this.activeFilter === 'borrowed'; }
     get showContacts() { return this.activeFilter === 'contacts'; }
 
     get hasPosts()         { return this.myPosts.length > 0; }
     get hasStories()       { return this.myStories.length > 0; }
     get hasLibraryItems()  { return this.myLibraryItems.length > 0; }
+    get hasSkills()        { return this.mySkills.length > 0; }
     get hasBorrowedItems() { return this.myBorrowedItems.length > 0; }
     get loanedItems() {
         return this.myLibraryItems.filter(item => item.loanInfo);
@@ -416,6 +449,11 @@ export default class FimbyMyStuffPage extends LightningElement {
         if (recordId) location.href = `/library-item/${recordId}`;
     }
 
+    handleSkillClick(event) {
+        const recordId = event.currentTarget.dataset.recordId;
+        if (recordId) location.href = `/skill-offer/${recordId}`;
+    }
+
     handleBorrowedItemClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
         if (recordId) location.href = `/library-item/${recordId}`;
@@ -456,15 +494,11 @@ export default class FimbyMyStuffPage extends LightningElement {
         }
     }
 
-    async handleMessageContact(event) {
+    handleMessageContact(event) {
         event.stopPropagation();
         const contactId = event.currentTarget.dataset.contactId;
-        try {
-            const result = await getOrCreateConversation({ targetContactId: contactId });
-            location.href = '/conversation?id=' + result.conversationId;
-        } catch (error) {
-            console.error('Error starting conversation:', error);
-        }
+        if (!contactId) return;
+        location.href = '/conversation?contactId=' + contactId;
     }
 
     handleEditSharedInfo(event) {

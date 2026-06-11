@@ -156,6 +156,30 @@
                     </template>
                 </template>
 
+                <!-- My Skills -->
+                <template lwc:if={showSkills}>
+                    <template lwc:if={hasSkills}>
+                        <template for:each={mySkills} for:item="skill">
+                            <button type="button" class="list-row" key={skill.Id} aria-label="View skill" onclick={handleSkillClick} data-record-id={skill.Id}>
+                                <span class="type-badge" style={skill.categoryBadgeStyle}>
+                                    <img src={skill.categoryIconUrl} alt="" class="badge-icon">
+                                    {skill.category}
+                                </span>
+                                <span class="list-row-title">{skill.Name}</span>
+                                <span class={skill.statusBadgeClass}>{skill.status}</span>
+                                <span class="list-row-date">{skill.formattedDate}</span>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
+                            </button>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-section">
+                            <p>You haven't offered any skills yet.</p>
+                            <a href="/library-item-post?type=skill" class="empty-action-link">Offer a skill</a>
+                        </div>
+                    </template>
+                </template>
+
                 <!-- My Borrowed Items -->
                 <template lwc:if={showBorrowed}>
                     <template lwc:if={hasBorrowedItems}>

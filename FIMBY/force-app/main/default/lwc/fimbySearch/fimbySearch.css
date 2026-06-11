@@ -541,6 +541,7 @@
 
 /* Library badge */
 .library-badge     { background-color: var(--fimby-badge-library, rgba(141, 123, 106, 0.90)); }
+.skill-badge       { background-color: var(--fimby-badge-skill); color: #ffffff; }
 
 /* ── Card Image ─────────────────────────────────────────────────── */
 

@@ -60,6 +60,7 @@ public with sharing class FimbySearchController {
             'stories' => 0,
             'askOffer' => 0,
             'library' => 0,
+            'skills' => 0,
             'people' => 0
         };
 
@@ -89,6 +90,24 @@ public with sharing class FimbySearchController {
             for (Library_Item__c li : libraryItems) {
                 allItems.add(buildLibraryItem(li));
             }
+            resultSetIndex++;
+        }
+
+        if (filter == 'all' || filter == 'skills') {
+            List<Skill_Offer__c> skillOffers = (List<Skill_Offer__c>) soslResults[resultSetIndex];
+            Set<Id> blockedIds = currentContactId != null
+                ? FimbyBlockingHelper.getBidirectionalBlocks((Id) currentContactId)
+                : new Set<Id>();
+            Integer skillCount = 0;
+            for (Skill_Offer__c sk : skillOffers) {
+                if (!blockedIds.isEmpty()
+                    && (blockedIds.contains(sk.Owner_Contact__c) || blockedIds.contains(sk.Listed_By__c))) {
+                    continue;
+                }
+                skillCount++;
+                allItems.add(buildSkillItem(sk));
+            }
+            countsByType.put('skills', skillCount);
             resultSetIndex++;
         }
 
@@ -182,6 +201,20 @@ public with sharing class FimbySearchController {
             }
             libClause += ' ORDER BY Name ASC LIMIT ' + FimbySettings.searchResultsLimit() + ')';
             clauses.add(libClause);
+        }
+
+        if (filter == 'all' || filter == 'skills') {
+            String skillClause = 'Skill_Offer__c(Id, Name, Description_Text__c, Skill_Category__c, Status__c, ' +
+                'Owner_Contact__c, Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, ' +
+                'Listed_By__c, CreatedDate';
+            if (String.isNotBlank(neighbourhoodAccountId)) {
+                String nId = String.escapeSingleQuotes(neighbourhoodAccountId);
+                skillClause += ' WHERE Neighbourhood__c = \'' + nId + '\'';
+                skillClause += ' AND Status__c = \'' + String.escapeSingleQuotes(FimbyConstants.SKILL_ACTIVE) + '\'';
+                skillClause += ' AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
+            }
+            skillClause += ' ORDER BY CreatedDate DESC LIMIT ' + FimbySettings.searchResultsLimit() + ')';
+            clauses.add(skillClause);
         }
 
         if (filter == 'all' || filter == 'people') {
@@ -301,6 +334,23 @@ public with sharing class FimbySearchController {
         return item;
     }
 
+    private static SearchResultItem buildSkillItem(Skill_Offer__c sk) {
+        SearchResultItem item = new SearchResultItem();
+        item.recordId = sk.Id;
+        item.resultType = 'skill';
+        item.name = sk.Name;
+        item.description = sk.Description_Text__c;
+        item.subType = sk.Skill_Category__c;
+        item.imageUrl = null;
+        item.imageRatio = null;
+        item.postedByName = sk.Owner_Contact__r?.Full_Name__c;
+        item.postedByImageUrl = sk.Owner_Contact__r?.Image_URL__c;
+        item.createdDate = sk.CreatedDate;
+        item.status = sk.Status__c;
+        item.hasSharedContact = null;
+        return item;
+    }
+
     private static SearchResultItem buildPeopleItem(Contact c) {
         SearchResultItem item = new SearchResultItem();
         item.recordId = c.Id;
@@ -327,6 +377,7 @@ public with sharing class FimbySearchController {
             'stories' => 0,
             'askOffer' => 0,
             'library' => 0,
+            'skills' => 0,
             'people' => 0
         };
         return result;

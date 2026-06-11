@@ -28,6 +28,24 @@ public with sharing class FimbyConversationController {
     }
 
     /**
+     * Validate messaging eligibility and return draft header info without creating a record.
+     * If a Direct conversation already exists, returns its id for redirect.
+     */
+    @AuraEnabled
+    public static DraftConversationResult prepareDirectConversation(String targetContactId) {
+        return new ConversationHelper().prepareDirectConversationInternal(targetContactId);
+    }
+
+    /**
+     * Find or create a Direct conversation, then send the first (or next) message.
+     * Rate limit applies only when a new conversation is created.
+     */
+    @AuraEnabled
+    public static Map<String, Object> sendDirectMessage(String targetContactId, String body) {
+        return new ConversationHelper().sendDirectMessageInternal(targetContactId, body);
+    }
+
+    /**
      * Archive a conversation for the current user (per-user flag).
      */
     @AuraEnabled
@@ -245,22 +263,19 @@ public with sharing class FimbyConversationController {
             return result;
         }
 
-        /**
-         * @description Finds or creates a conversation with the target contact; validates shared contact info and blocks.
-         * @param targetContactId Contact Id to start conversation with
-         * @return Map with success, conversationId, and isNew flag
-         */
-        public Map<String, Object> getOrCreateConversationInternal(String targetContactId) {
+        private String resolveActingAsContactId() {
             String myContactId = FimbyIdentityRepository.getActingAsContactId();
             if (String.isBlank(myContactId)) {
                 throw new AuraHandledException('Unable to resolve current user identity.');
             }
+            return myContactId;
+        }
 
+        private void validateCanMessage(String myContactId, String targetContactId) {
             if (myContactId == targetContactId) {
                 throw new AuraHandledException('You cannot start a conversation with yourself.');
             }
 
-            // Org contacts and active moderators bypass SCI
             if (!eitherIsOrgContact(myContactId, targetContactId)
                 && !isModeratorForContact(myContactId, targetContactId)) {
                 Integer sharedCount = [
@@ -274,7 +289,6 @@ public with sharing class FimbyConversationController {
                 }
             }
 
-            // Block check is absolute — no exceptions, even for moderators
             Integer blockCount = [
                 SELECT COUNT() FROM Blocked_Contact__c
                 WHERE (Blocker__c = :myContactId AND Blocked__c = :targetContactId)
@@ -283,39 +297,40 @@ public with sharing class FimbyConversationController {
             if (blockCount > 0) {
                 throw new AuraHandledException('This contact is blocked.');
             }
+        }
 
-            // Find existing conversation (check both orderings)
+        private Conversation__c findDirectConversation(String myContactId, String targetContactId) {
             List<Conversation__c> existing = [
                 SELECT Id, Status__c,
                        Participant_1__c, Participant_2__c,
                        Participant_1_Archived__c, Participant_2_Archived__c
                 FROM Conversation__c
-                WHERE (Participant_1__c = :myContactId AND Participant_2__c = :targetContactId)
-                   OR (Participant_1__c = :targetContactId AND Participant_2__c = :myContactId)
+                WHERE ((Participant_1__c = :myContactId AND Participant_2__c = :targetContactId)
+                    OR (Participant_1__c = :targetContactId AND Participant_2__c = :myContactId))
+                  AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
                 LIMIT 1
             ];
 
-            if (!existing.isEmpty()) {
-                Conversation__c conv = existing[0];
-                Boolean isP1 = (conv.Participant_1__c == myContactId);
-                if ((isP1 && conv.Participant_1_Archived__c) ||
-                    (!isP1 && conv.Participant_2_Archived__c)) {
-                    Conversation__c upd = new Conversation__c(Id = conv.Id);
-                    if (isP1) {
-                        upd.Participant_1_Archived__c = false;
-                    } else {
-                        upd.Participant_2_Archived__c = false;
-                    }
-                    update upd;
-                }
-                return new Map<String, Object>{
-                    'success' => true,
-                    'conversationId' => conv.Id,
-                    'isNew' => false
-                };
+            if (existing.isEmpty()) {
+                return null;
             }
 
-            // Rate limit: max new conversations per day
+            Conversation__c conv = existing[0];
+            Boolean isP1 = (conv.Participant_1__c == myContactId);
+            if ((isP1 && conv.Participant_1_Archived__c) ||
+                (!isP1 && conv.Participant_2_Archived__c)) {
+                Conversation__c upd = new Conversation__c(Id = conv.Id);
+                if (isP1) {
+                    upd.Participant_1_Archived__c = false;
+                } else {
+                    upd.Participant_2_Archived__c = false;
+                }
+                update upd;
+            }
+            return conv;
+        }
+
+        private Conversation__c createDirectConversation(String myContactId, String targetContactId) {
             Date today = Date.today();
             Datetime startOfDay = Datetime.newInstance(today.year(), today.month(), today.day(), 0, 0, 0);
             Integer todayCount = [
@@ -330,10 +345,10 @@ public with sharing class FimbyConversationController {
                 );
             }
 
-            // Create new conversation
             Conversation__c newConv = new Conversation__c(
                 Participant_1__c = myContactId,
                 Participant_2__c = targetContactId,
+                Context_Type__c = FimbyConstants.CTX_DIRECT,
                 Status__c = FimbyConstants.CONVERSATION_ACTIVE,
                 Participant_1_Unread_Count__c = 0,
                 Participant_2_Unread_Count__c = 0,
@@ -341,12 +356,109 @@ public with sharing class FimbyConversationController {
                 Participant_2_Archived__c = false
             );
             insert newConv;
+            return newConv;
+        }
 
+        private DraftConversationResult buildDraftResult(
+            FimbyIdentityRepository.Identity identity,
+            String myContactId,
+            String targetContactId,
+            Conversation__c existingConv
+        ) {
+            List<Contact> targets = [
+                SELECT Id, Name, FirstName, Image_URL__c,
+                       Is_Organization_Contact__c,
+                       Organization_Account__r.Name,
+                       Organization_Account__r.Logo_URL__c
+                FROM Contact
+                WHERE Id = :targetContactId
+                LIMIT 1
+            ];
+            if (targets.isEmpty()) {
+                throw new AuraHandledException('Contact not found.');
+            }
+
+            Contact other = targets[0];
+            Boolean otherIsOrg = other.Is_Organization_Contact__c == true;
+
+            DraftConversationResult result = new DraftConversationResult();
+            result.conversationId = existingConv != null ? existingConv.Id : null;
+            result.isExisting = existingConv != null;
+            result.otherParticipantId = other.Id;
+            result.otherParticipantName = otherIsOrg
+                ? other.Organization_Account__r?.Name
+                : other.Name;
+            result.otherParticipantFirstName = other.FirstName;
+            result.otherParticipantImageUrl = otherIsOrg
+                ? other.Organization_Account__r?.Logo_URL__c
+                : other.Image_URL__c;
+            result.isOtherParticipantOrg = otherIsOrg;
+            result.myContactId = myContactId;
+            result.myContactImageUrl = identity.orgAvatarUrl;
+            result.isActingAsSelf = (identity.currentUser.ContactId == identity.actingAsContactId);
+            result.actingAsContactName = identity.orgDisplayName;
+            return result;
+        }
+
+        /**
+         * @description Finds or creates a conversation with the target contact; validates shared contact info and blocks.
+         * @param targetContactId Contact Id to start conversation with
+         * @return Map with success, conversationId, and isNew flag
+         */
+        public Map<String, Object> getOrCreateConversationInternal(String targetContactId) {
+            String myContactId = resolveActingAsContactId();
+            validateCanMessage(myContactId, targetContactId);
+
+            Conversation__c existing = findDirectConversation(myContactId, targetContactId);
+            if (existing != null) {
+                return new Map<String, Object>{
+                    'success' => true,
+                    'conversationId' => existing.Id,
+                    'isNew' => false
+                };
+            }
+
+            Conversation__c newConv = createDirectConversation(myContactId, targetContactId);
             return new Map<String, Object>{
                 'success' => true,
                 'conversationId' => newConv.Id,
                 'isNew' => true
             };
+        }
+
+        /**
+         * @description Validates messaging eligibility and returns draft header info without inserting a record.
+         */
+        public DraftConversationResult prepareDirectConversationInternal(String targetContactId) {
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            if (identity == null) {
+                throw new AuraHandledException('Unable to resolve current user identity.');
+            }
+
+            String myContactId = identity.actingAsContactId;
+            validateCanMessage(myContactId, targetContactId);
+            Conversation__c existing = findDirectConversation(myContactId, targetContactId);
+            return buildDraftResult(identity, myContactId, targetContactId, existing);
+        }
+
+        /**
+         * @description Finds or creates a Direct conversation, then sends the message via FimbyMessageController.
+         */
+        public Map<String, Object> sendDirectMessageInternal(String targetContactId, String body) {
+            String myContactId = resolveActingAsContactId();
+            validateCanMessage(myContactId, targetContactId);
+
+            Conversation__c conv = findDirectConversation(myContactId, targetContactId);
+            Boolean isNew = false;
+            if (conv == null) {
+                conv = createDirectConversation(myContactId, targetContactId);
+                isNew = true;
+            }
+
+            Map<String, Object> sendResult = FimbyMessageController.sendMessage(conv.Id, body);
+            sendResult.put('conversationId', conv.Id);
+            sendResult.put('isNew', isNew);
+            return sendResult;
         }
 
         /**
@@ -767,5 +879,19 @@ public with sharing class FimbyConversationController {
         @AuraEnabled public String reason { get; set; }
         @AuraEnabled public Boolean isReported { get; set; }
         @AuraEnabled public Datetime blockedDate { get; set; }
+    }
+
+    public class DraftConversationResult {
+        @AuraEnabled public Id conversationId { get; set; }
+        @AuraEnabled public Boolean isExisting { get; set; }
+        @AuraEnabled public String otherParticipantName { get; set; }
+        @AuraEnabled public String otherParticipantFirstName { get; set; }
+        @AuraEnabled public Id otherParticipantId { get; set; }
+        @AuraEnabled public String otherParticipantImageUrl { get; set; }
+        @AuraEnabled public Boolean isOtherParticipantOrg { get; set; }
+        @AuraEnabled public String myContactId { get; set; }
+        @AuraEnabled public String myContactImageUrl { get; set; }
+        @AuraEnabled public Boolean isActingAsSelf { get; set; }
+        @AuraEnabled public String actingAsContactName { get; set; }
     }
 }

@@ -1,0 +1,914 @@
+:host {
+
+    display: block;
+
+}
+
+
+
+.fimby-skill-composer {
+
+    display: block;
+
+}
+
+
+
+.loading-container,
+
+.success-container {
+
+    padding: 32px 0;
+
+    text-align: center;
+
+}
+
+
+
+.success-title {
+
+    margin: 16px 0 8px;
+
+    color: var(--fimby-text-strong);
+
+}
+
+
+
+.success-message {
+
+    margin: 0 0 24px;
+
+    color: var(--fimby-text-primary);
+
+}
+
+
+
+.success-actions {
+
+    display: flex;
+
+    justify-content: center;
+
+    padding: 0 16px;
+
+}
+
+
+
+.btn-view-skills {
+
+    width: 100%;
+
+    max-width: 280px;
+
+}
+
+
+
+/* Form sections — matches fimbyAddLibraryItem */
+
+.form-section {
+
+    background: var(--fimby-surface-card);
+
+    border-radius: var(--fimby-radius-md);
+
+    padding: 20px 16px;
+
+    margin-bottom: 16px;
+
+    box-shadow: var(--fimby-shadow-card);
+
+    box-sizing: border-box;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+}
+
+
+
+.section-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    color: var(--fimby-text-primary);
+
+    margin: 0 0 8px;
+
+}
+
+
+
+.section-icon {
+
+    width: 22px;
+
+    height: 22px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+
+}
+
+
+
+.section-description {
+
+    font-size: 13px;
+
+    color: var(--fimby-text-secondary);
+
+    margin: 0 0 16px;
+
+    line-height: 1.5;
+
+}
+
+
+
+.posting-as {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 12px 16px;
+
+    background: var(--fimby-success-tint);
+
+    border-radius: var(--fimby-radius-sm);
+
+    margin: 0 0 16px;
+
+    border-left: 4px solid var(--fimby-success);
+
+}
+
+
+
+.posting-as-icon {
+
+    width: 22px;
+
+    height: 22px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+
+}
+
+
+
+.posting-as-label {
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: var(--fimby-text-secondary);
+
+    white-space: nowrap;
+
+}
+
+
+
+.posting-as-value {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: var(--fimby-text-strong);
+
+}
+
+
+
+.error-banner {
+
+    padding: 12px 16px;
+
+    margin: 0 0 16px;
+
+    background-color: var(--fimby-error-tint);
+
+    border: 1px solid var(--fimby-error-border);
+
+    border-radius: var(--fimby-radius-sm);
+
+    color: var(--fimby-error);
+
+}
+
+
+
+.category-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+
+@media (min-width: 768px) {
+
+    .form-section {
+
+        padding: 24px 20px;
+
+        border-radius: var(--fimby-radius-lg);
+
+    }
+
+
+
+    .category-grid {
+
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+
+        gap: 12px;
+
+    }
+
+
+
+    .category-chip {
+
+        font-size: 0.8rem;
+
+        padding: 10px 12px;
+
+        border-radius: var(--fimby-radius-full);
+
+    }
+
+
+
+    .chip-icon {
+
+        width: 20px;
+
+        height: 20px;
+
+    }
+
+}
+
+
+
+.chip-wrapper {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    min-width: 0;
+
+}
+
+
+
+.category-chip {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    width: 100%;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    padding: 8px 10px;
+
+    min-height: 44px;
+
+    border: 1px solid var(--fimby-border-default);
+
+    border-radius: var(--fimby-radius-md);
+
+    background-color: var(--fimby-surface-card);
+
+    cursor: pointer;
+
+    font-size: 0.75rem;
+
+    font-weight: 500;
+
+    color: var(--fimby-text-primary);
+
+    text-align: left;
+
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    font-family: inherit;
+
+}
+
+
+
+.category-chip:hover:not(:disabled) {
+
+    border-color: var(--fimby-border-strong);
+
+    background-color: var(--fimby-hover-bg);
+
+}
+
+
+
+.category-chip.selected {
+
+    border-color: var(--fimby-btn-primary-bg);
+
+    background-color: var(--fimby-selected-bg);
+
+}
+
+
+
+.category-chip:focus-visible {
+
+    outline: 2px solid var(--fimby-focus-ring);
+
+    outline-offset: 2px;
+
+}
+
+
+
+.category-chip:disabled {
+
+    opacity: 0.65;
+
+    cursor: default;
+
+}
+
+
+
+.category-chip.offered {
+
+    opacity: 0.65;
+
+    pointer-events: none;
+
+}
+
+
+
+.chip-offered-control {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 2px;
+
+    width: 100%;
+
+    margin: 0;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    text-align: center;
+
+}
+
+
+
+.chip-offered-control .category-chip.offered {
+
+    width: 100%;
+
+}
+
+
+
+.chip-offered-control:hover .category-chip.offered,
+
+.chip-offered-control:focus-visible .category-chip.offered {
+
+    opacity: 1;
+
+    border-color: var(--fimby-border-strong);
+
+    background-color: var(--fimby-hover-bg);
+
+}
+
+
+
+.chip-offered-control:focus-visible {
+
+    outline: 2px solid var(--fimby-focus-ring);
+
+    outline-offset: 2px;
+
+    border-radius: var(--fimby-radius-sm);
+
+}
+
+
+
+.chip-icon {
+
+    width: 18px;
+
+    height: 18px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+
+}
+
+
+
+.chip-label {
+
+    flex: 1;
+
+    min-width: 0;
+
+    line-height: 1.25;
+
+    overflow-wrap: break-word;
+
+    word-break: break-word;
+
+}
+
+
+
+.chip-edit-label {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 0 4px 2px;
+
+    font-size: 0.7rem;
+
+    font-weight: 500;
+
+    color: var(--fimby-btn-primary-bg);
+
+    line-height: 1.2;
+
+    transition: font-weight 0.15s ease;
+
+}
+
+
+
+.chip-offered-control:hover .chip-edit-label,
+
+.chip-offered-control:focus-visible .chip-edit-label {
+
+    font-weight: 700;
+
+}
+
+
+
+.skill-cards {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+
+}
+
+
+
+.skill-card {
+
+    background-color: var(--fimby-surface-page);
+
+    border-radius: var(--fimby-radius-md);
+
+    border: 1px solid var(--fimby-border-subtle);
+
+    overflow: hidden;
+
+}
+
+
+
+.skill-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 16px 20px;
+
+    color: #ffffff;
+
+}
+
+
+
+.skill-card-icon {
+
+    width: 36px;
+
+    height: 36px;
+
+    object-fit: contain;
+
+}
+
+
+
+.skill-card-category {
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+}
+
+
+
+.skill-card-body {
+
+    padding: 16px 20px 20px;
+
+}
+
+
+
+.field-group {
+
+    margin-bottom: 16px;
+
+}
+
+
+
+.field-group:last-child {
+
+    margin-bottom: 0;
+
+}
+
+
+
+.field-label-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: baseline;
+
+    margin-bottom: 4px;
+
+}
+
+
+
+.field-label {
+
+    font-weight: 600;
+
+    color: var(--fimby-text-strong);
+
+    font-size: 0.875rem;
+
+}
+
+
+
+.character-count {
+
+    font-size: 0.75rem;
+
+    color: var(--fimby-text-secondary);
+
+}
+
+
+
+.character-count.near-limit {
+
+    color: var(--fimby-warning, #C07B2A);
+
+    font-weight: 500;
+
+}
+
+
+
+.character-count.at-limit {
+
+    color: var(--fimby-error, #C13030);
+
+    font-weight: 600;
+
+}
+
+
+
+.form-input,
+
+.form-textarea {
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    border: 2px solid var(--fimby-divider-default);
+
+    border-radius: var(--fimby-radius-sm);
+
+    background-color: var(--fimby-surface-card);
+
+    color: var(--fimby-text-primary);
+
+    font-size: 0.875rem;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.form-textarea {
+
+    min-height: 100px;
+
+    resize: vertical;
+
+}
+
+.skill-desc-textarea {
+
+    --slds-c-textarea-sizing-min-height: 88px;
+
+}
+
+
+
+.form-input:focus-visible,
+
+.form-textarea:focus-visible {
+
+    outline: none;
+
+    border-color: var(--fimby-btn-primary-bg);
+
+}
+
+
+
+.form-navigation {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+}
+
+
+
+.form-section-with-nav .form-navigation {
+
+    margin-top: 16px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid var(--fimby-border-subtle);
+
+}
+
+
+
+.form-section-with-nav .nav-back {
+
+    background-color: var(--fimby-surface-page);
+
+}
+
+
+
+.form-navigation-end {
+
+    justify-content: flex-end;
+
+}
+
+
+
+.nav-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    justify-content: flex-end;
+
+}
+
+
+
+.nav-details {
+
+    background-color: var(--fimby-surface-card);
+
+    color: var(--fimby-text-secondary);
+
+}
+
+
+
+.nav-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 10px 20px;
+
+    border: 1px solid var(--fimby-border-default);
+
+    border-radius: var(--fimby-btn-radius, 12px);
+
+    background-color: var(--fimby-surface-card);
+
+    color: var(--fimby-text-secondary);
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    min-height: 44px;
+
+    transition: all 0.2s ease;
+
+    font-family: inherit;
+
+}
+
+
+
+.nav-btn:hover:not(:disabled) {
+
+    background-color: var(--fimby-hover-bg);
+
+    border-color: var(--fimby-border-strong);
+
+}
+
+
+
+.nav-btn:focus-visible {
+
+    outline: 2px solid var(--fimby-focus-ring);
+
+    outline-offset: 2px;
+
+}
+
+
+
+.nav-next {
+
+    background-color: var(--fimby-btn-primary-bg);
+
+    color: #ffffff;
+
+    border-color: var(--fimby-btn-primary-bg);
+
+}
+
+
+
+.nav-next:hover:not(:disabled) {
+
+    background-color: var(--fimby-btn-primary-bg-hover);
+
+}
+
+
+
+.nav-next:disabled,
+
+.nav-details:disabled {
+
+    opacity: 0.5;
+
+    cursor: not-allowed;
+
+}
+
+
+
+.btn-primary {
+
+    background-color: var(--fimby-btn-primary-bg);
+
+    color: #ffffff;
+
+    border: none;
+
+    border-radius: var(--fimby-btn-radius);
+
+    padding: 10px 20px;
+
+    min-height: 44px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+}
+
+
+
+.btn-neutral {
+
+    background-color: var(--fimby-surface-card);
+
+    color: var(--fimby-text-secondary);
+
+    border: 1px solid var(--fimby-border-default);
+
+    border-radius: var(--fimby-btn-radius);
+
+    padding: 10px 20px;
+
+    min-height: 44px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+}
+

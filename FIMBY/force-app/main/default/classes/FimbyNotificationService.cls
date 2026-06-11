@@ -38,7 +38,8 @@ public without sharing class FimbyNotificationService {
             FimbyConstants.NOTIF_VOUCH_APPROVED         => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCH_DECLINED         => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCH_REVOKED          => FimbyPushNotificationService.NotificationType.MESSAGE,
-            FimbyConstants.NOTIF_VOUCHER_PAUSED         => FimbyPushNotificationService.NotificationType.MESSAGE
+            FimbyConstants.NOTIF_VOUCHER_PAUSED         => FimbyPushNotificationService.NotificationType.MESSAGE,
+            FimbyConstants.NOTIF_REFRESH_REMINDER       => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS
         };
 
     // Push notifications NEVER bypass user preferences. A user who disables the

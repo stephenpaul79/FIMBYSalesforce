@@ -30,6 +30,10 @@ const FIRST_CELEBRATION_MAP = {
     bulkbuy_reserve: {
         contextKey: 'firstBulkBuyReserveCelebrated',
         fieldName: 'First_Bulk_Buy_Reserve_Celebrated__c'
+    },
+    skill: {
+        contextKey: 'firstSkillCelebrated',
+        fieldName: 'First_Skill_Celebrated__c'
     }
 };
 

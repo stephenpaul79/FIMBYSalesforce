@@ -44,6 +44,13 @@
                     <span class="hub-pill-count hub-count-past">{libraryAvailableCount}</span>
                 </template>
             </button>
+            <button type="button" class="hub-pill hub-pill-skills" onclick={handleRowClick} data-path="/my-stuff/my-skills">
+                <img src={skillsIconUrl} alt="" class="hub-pill-icon" />
+                <span class="hub-pill-label">My Skills</span>
+                <template lwc:if={skillsCount}>
+                    <span class="hub-pill-count">{skillsCount}</span>
+                </template>
+            </button>
             <button type="button" class="hub-pill hub-pill-borrowing" onclick={handleRowClick} data-path="/my-stuff/my-borrowing">
                 <img src={borrowingIconUrl} alt="" class="hub-pill-icon" />
                 <span class="hub-pill-label">My Borrowing</span>

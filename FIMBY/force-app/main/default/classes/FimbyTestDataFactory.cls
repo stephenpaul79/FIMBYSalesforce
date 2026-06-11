@@ -222,7 +222,9 @@ public class FimbyTestDataFactory {
                 Neighbourhood__c = neighbourhoodId,
                 Contact__c = contactId,
                 Posted_By__c = contactId,
-                RecordTypeId = rtId
+                RecordTypeId = rtId,
+                Posted_Date__c = Datetime.now(),
+                End_Date__c = Date.today().addDays(recordTypeDeveloperName == 'Need' ? 7 : 21)
             ));
         }
         if (doInsert) { insert items; }

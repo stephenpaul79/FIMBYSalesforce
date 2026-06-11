@@ -15,9 +15,9 @@ const FOOTER_HEIGHT_PX = 72;
  * feeds have been absorbed into the cascading-filter home feed.
  * --------------------------------------------------------------- */
 const TAB_ROUTES = [
-    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item'] },
+    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item', '/skill-offer'] },
     { tab: 'messages', prefixes: ['/messages', '/conversation', '/new-message'] },
-    { tab: 'mine',     prefixes: ['/my-stuff', '/mine', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/help-and-support', '/community-guidelines'] },
+    { tab: 'mine',     prefixes: ['/my-stuff', '/mine', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-skills', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/help-and-support', '/community-guidelines'] },
     { tab: 'home',     prefixes: ['/shared-life-list', '/stories', '/story', '/create-story', '/shared-life-post', '/ask-offer-list', '/ask-or-offer-post', '/asks-offers', '/needs-offers', '/quick-post', '/respond', '/response-detail', '/response-reply'] }
 ];
 

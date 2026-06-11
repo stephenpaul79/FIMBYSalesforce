@@ -131,6 +131,13 @@ public without sharing class FimbyModeratorActionService {
             rec.Hidden_Date__c = null;
             rec.Hidden_Reason_Code__c = null;
             update rec;
+        } else if (recordType == 'Skill_Offer__c') {
+            Skill_Offer__c rec = [SELECT Id FROM Skill_Offer__c WHERE Id = :recordId LIMIT 1];
+            rec.Moderation_Status__c = 'Visible';
+            rec.Hidden_By_Moderator__c = null;
+            rec.Hidden_Date__c = null;
+            rec.Hidden_Reason_Code__c = null;
+            update rec;
         }
 
         if (taskId != null) {
@@ -205,6 +212,13 @@ public without sharing class FimbyModeratorActionService {
             rec.Hidden_Date__c = null;
             rec.Hidden_Reason_Code__c = null;
             update rec;
+        } else if (recordType == 'Skill_Offer__c') {
+            Skill_Offer__c rec = [SELECT Id FROM Skill_Offer__c WHERE Id = :recordId LIMIT 1];
+            rec.Moderation_Status__c = 'Under_Review';
+            rec.Hidden_By_Moderator__c = null;
+            rec.Hidden_Date__c = null;
+            rec.Hidden_Reason_Code__c = null;
+            update rec;
         }
     }
 
@@ -244,6 +258,13 @@ public without sharing class FimbyModeratorActionService {
             update rec;
         } else if (recordType == 'Story_Comment__c') {
             Story_Comment__c rec = [SELECT Id FROM Story_Comment__c WHERE Id = :recordId LIMIT 1];
+            rec.Moderation_Status__c = 'Hidden_By_Moderator';
+            rec.Hidden_By_Moderator__c = moderatorContactId;
+            rec.Hidden_Date__c = Datetime.now();
+            rec.Hidden_Reason_Code__c = reasonCode;
+            update rec;
+        } else if (recordType == 'Skill_Offer__c') {
+            Skill_Offer__c rec = [SELECT Id FROM Skill_Offer__c WHERE Id = :recordId LIMIT 1];
             rec.Moderation_Status__c = 'Hidden_By_Moderator';
             rec.Hidden_By_Moderator__c = moderatorContactId;
             rec.Hidden_Date__c = Datetime.now();

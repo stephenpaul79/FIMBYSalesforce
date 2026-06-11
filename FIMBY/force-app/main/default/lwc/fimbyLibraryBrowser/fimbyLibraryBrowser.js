@@ -4,16 +4,19 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { CATEGORY_COLORS, getCategoryIconUrl, getCategoryStyle, getCategoryColor } from 'c/fimbyLibraryCategoryConfig';
+import { CATEGORY_COLORS as SKILL_CATEGORY_COLORS, getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle, getCategoryColor as getSkillCategoryColor } from 'c/fimbySkillCategoryConfig';
 
 import getLibraryItems from '@salesforce/apex/FimbyHomeController.getLibraryItems';
+import getSkills from '@salesforce/apex/FimbySkillsController.getSkills';
 import getCategoryPicklistValues from '@salesforce/apex/FimbyLibraryController.getCategoryPicklistValues';
+import getSkillCategoryPicklistValues from '@salesforce/apex/FimbySkillsController.getSkillCategoryPicklistValues';
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCelebrationContext';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 
 const INITIAL_FETCH_SIZE = 100;
 const SCROLL_BATCH_SIZE = 50;
-const LIB_CACHE_KEY = 'fimby-library-browser-v2';
+const LIB_CACHE_KEY = 'fimby-library-browser-v3';
 const LIB_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 const LIB_CACHE_MAX_ITEMS = 100;
 
@@ -42,6 +45,10 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     // ======= View mode =======
     @track viewMode = 'grid'; // 'grid' or 'list'
+    @track viewContentMode = 'all'; // 'all', 'items', or 'skills'
+
+    _itemsOffset = 0;
+    _skillsOffset = 0;
 
     // ======= Sticky header / scroll =======
     @track filterHidden = false;
@@ -130,13 +137,26 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     async loadCategories() {
         try {
-            const data = await getCategoryPicklistValues();
+            if (this.isAllMode) {
+                this.categoryOptions = [];
+                return;
+            }
+
+            const data = this.isSkillsMode
+                ? await getSkillCategoryPicklistValues()
+                : await getCategoryPicklistValues();
             if (data) {
-                this.categoryOptions = data.map(c => ({
-                    label: c.label || c.value,
-                    value: c.value || c.label,
-                    color: CATEGORY_COLORS[c.label || c.value] || CATEGORY_COLORS[c.value || c.label] || '#9CA3AF'
-                }));
+                const mapped = data.map(c => {
+                    const val = c.value || c.label;
+                    const colorMap = this.isSkillsMode ? SKILL_CATEGORY_COLORS : CATEGORY_COLORS;
+                    return {
+                        label: c.label || c.value,
+                        value: val,
+                        color: colorMap[val] || '#9CA3AF'
+                    };
+                });
+                mapped.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+                this.categoryOptions = mapped;
             }
         } catch (error) {
             console.error('Category picklist error', error);
@@ -150,6 +170,8 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     async loadInitialData() {
         this.isLoading = true;
         this.offset = 0;
+        this._itemsOffset = 0;
+        this._skillsOffset = 0;
         this.allItems = [];
         this.filteredItems = [];
         this.hasMoreContent = true;
@@ -174,27 +196,112 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     async loadNextBatch() {
         const effectivePageSize = this.offset === 0 ? INITIAL_FETCH_SIZE : SCROLL_BATCH_SIZE;
 
-        const result = await getLibraryItems({
-            offset: this.offset,
-            pageSize: effectivePageSize
-        });
+        if (this.isAllMode) {
+            const half = Math.ceil(effectivePageSize / 2);
+            const [itemsResult, skillsResult] = await Promise.all([
+                getLibraryItems({ offset: this._itemsOffset, pageSize: half }),
+                getSkills({ offset: this._skillsOffset, pageSize: half })
+            ]);
+            const itemsArr = itemsResult || [];
+            const skillsArr = skillsResult || [];
+
+            const newLibraryItems = itemsArr.filter(item => !this.loadedIds.has(item.Id));
+            const newSkillItems = skillsArr.filter(item => !this.loadedIds.has(item.id));
+
+            newLibraryItems.forEach(item => this.loadedIds.add(item.Id));
+            newSkillItems.forEach(item => this.loadedIds.add(item.id));
+
+            const processed = [
+                ...this.processItems(newLibraryItems),
+                ...this.processSkillItems(newSkillItems)
+            ].sort((a, b) => {
+                const aTime = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+                const bTime = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+                return bTime - aTime;
+            });
+
+            if (processed.length > 0) {
+                this.allItems = [...this.allItems, ...processed];
+                this._itemsOffset += itemsArr.length;
+                this._skillsOffset += skillsArr.length;
+                this.offset += itemsArr.length + skillsArr.length;
+                const itemsHasMore = itemsArr.length >= half;
+                const skillsHasMore = skillsArr.length >= half;
+                this.hasMoreContent = itemsHasMore || skillsHasMore;
+                this._applyCategoryFilter();
+            } else if (itemsArr.length === 0 && skillsArr.length === 0) {
+                this.hasMoreContent = false;
+            }
+            return;
+        }
+
+        const result = this.isSkillsMode
+            ? await getSkills({ offset: this.offset, pageSize: effectivePageSize })
+            : await getLibraryItems({ offset: this.offset, pageSize: effectivePageSize });
 
         if (result && result.length > 0) {
             const newItems = result.filter(item => {
-                if (this.loadedIds.has(item.Id)) return false;
+                const id = this.isSkillsMode ? item.id : item.Id;
+                if (this.loadedIds.has(id)) return false;
                 return true;
             });
 
-            newItems.forEach(item => this.loadedIds.add(item.Id));
+            newItems.forEach(item => {
+                const id = this.isSkillsMode ? item.id : item.Id;
+                this.loadedIds.add(id);
+            });
 
-            const processed = this.processItems(newItems);
+            const processed = this.isSkillsMode
+                ? this.processSkillItems(newItems)
+                : this.processItems(newItems);
             this.allItems = [...this.allItems, ...processed];
             this.offset += result.length;
             this.hasMoreContent = result.length >= effectivePageSize;
-            this.applyFilter();
+            this._applyCategoryFilter();
         } else {
             this.hasMoreContent = false;
         }
+    }
+
+    _applyCategoryFilter() {
+        if (!this.selectedCategory) {
+            this.filteredItems = [...this.allItems];
+        } else {
+            this.filteredItems = this.allItems.filter(i => i.category === this.selectedCategory);
+        }
+    }
+
+    processSkillItems(items) {
+        return items.map(item => {
+            const category = item.category || 'Other / General Help';
+            const color = getSkillCategoryColor(category);
+            const ownerAvatarRaw = item.ownerImageUrl;
+
+            return {
+                id: item.id,
+                name: item.title,
+                titleLeadLabel: 'Skill',
+                description: item.description || '',
+                category,
+                categoryColor: color,
+                categoryStyle: getSkillCategoryStyle(category),
+                categoryIconUrl: getSkillCategoryIconUrl(IMPACT_ICONS, category),
+                createdDate: item.createdDate,
+                ownerName: item.ownerName || '',
+                ownerAvatar: ownerAvatarRaw ? avatarImageUrl(ownerAvatarRaw) : '',
+                showImage: false,
+                imageUrl: '',
+                images: [],
+                isSkill: true,
+                ctaLabel: 'Ask for Help',
+                ctaPillClass: 'response-pill primary',
+                responseLabel: 'Ask for Help',
+                responsePillClass: 'response-pill primary',
+                responseIconUrl: `${IMPACT_ICONS}/lightbulb.png`,
+                showCardMenu: true,
+                primaryAction: 'skillHelp'
+            };
+        });
     }
 
     processItems(items) {
@@ -209,6 +316,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             return {
                 id: item.Id,
                 name: item.Name,
+                titleLeadLabel: 'Item',
                 description: item.Description__c || '',
                 category: category,
                 categoryColor: color,
@@ -244,12 +352,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     applyFilter() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        if (!this.selectedCategory) {
-            this.filteredItems = [...this.allItems];
-        } else {
-            this.filteredItems = this.allItems.filter(i => i.category === this.selectedCategory);
-        }
+        this._applyCategoryFilter();
         this.checkAndLoadMoreForFilter();
     }
 
@@ -264,11 +367,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this.isLoading = true;
             try {
                 await this.loadNextBatch();
-                if (!this.selectedCategory) {
-                    this.filteredItems = [...this.allItems];
-                } else {
-                    this.filteredItems = this.allItems.filter(i => i.category === this.selectedCategory);
-                }
+                this._applyCategoryFilter();
                 if (this.filteredItems.length < this.minFilteredItems &&
                     this.hasMoreContent &&
                     this.filterAutoLoadCount < this.maxFilterAutoLoadBatches) {
@@ -293,10 +392,6 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             : 'library-sticky-header';
     }
 
-    get filterIconUrl() {
-        return `${IMPACT_ICONS}/ToolboxActive.png`;
-    }
-
     get refreshIconUrl() {
         return `${IMPACT_ICONS}/refresh.png`;
     }
@@ -306,7 +401,15 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     }
 
     get allChipClass() {
-        return !this.selectedCategory ? 'filter-chip active' : 'filter-chip';
+        return this.isAllMode ? 'filter-chip mode-chip active' : 'filter-chip mode-chip';
+    }
+
+    get showCategoryFilter() {
+        return this.isItemsMode || this.isSkillsMode;
+    }
+
+    get showSelectedCategoryChip() {
+        return this.showCategoryFilter && !!this.selectedCategory;
     }
 
     get hasSelectedCategory() {
@@ -318,8 +421,56 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     }
 
     get selectedCategoryStyle() {
-        const color = CATEGORY_COLORS[this.selectedCategory] || '#9CA3AF';
+        const color = CATEGORY_COLORS[this.selectedCategory]
+            || SKILL_CATEGORY_COLORS[this.selectedCategory]
+            || '#9CA3AF';
         return `background-color: ${color}; color: #ffffff; border-color: ${color};`;
+    }
+
+    get isAllMode() {
+        return this.viewContentMode === 'all';
+    }
+
+    get isSkillsMode() {
+        return this.viewContentMode === 'skills';
+    }
+
+    get isItemsMode() {
+        return this.viewContentMode === 'items';
+    }
+
+    get itemsToggleClass() {
+        return this.isItemsMode ? 'filter-chip mode-chip active' : 'filter-chip mode-chip';
+    }
+
+    get skillsToggleClass() {
+        return this.isSkillsMode ? 'filter-chip mode-chip active' : 'filter-chip mode-chip';
+    }
+
+    get showSettlingInBanner() {
+        return this.isSettlingIn && this.isItemsMode;
+    }
+
+    get emptyStateTitle() {
+        if (this.isSkillsMode) return 'No skills listed yet';
+        if (this.isAllMode) return 'The library is quiet';
+        return 'The shelves are bare!';
+    }
+
+    get emptyStateMessage() {
+        if (this.isSkillsMode) {
+            return 'Be the first to offer a skill your neighbours can count on.';
+        }
+        if (this.isAllMode) {
+            return 'Items and skills from your neighbours will show up here.';
+        }
+        return 'Got something to lend? Your neighbours are waiting.';
+    }
+
+    get emptyActionLabel() {
+        if (this.isSkillsMode) return 'Offer a Skill';
+        if (this.isAllMode) return 'Add to Library';
+        return 'Add Item';
     }
 
     get dropdownButtonClass() {
@@ -402,6 +553,26 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // =============================================
 
     handleAllChip() {
+        this.showDropdown = false;
+        if (this.viewContentMode !== 'all') {
+            this.viewContentMode = 'all';
+            this.selectedCategory = '';
+            this.filterAutoLoadCount = 0;
+            this._clearLibraryCache();
+            this.loadCategories();
+            this.loadInitialData();
+            return;
+        }
+        if (this.selectedCategory) {
+            this.selectedCategory = '';
+            this.filterAutoLoadCount = 0;
+            this._clearLibraryCache();
+            this.applyFilter();
+        }
+    }
+
+    handleClearCategory(event) {
+        event.stopPropagation();
         this.selectedCategory = '';
         this.filterAutoLoadCount = 0;
         this.showDropdown = false;
@@ -409,12 +580,8 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         this.applyFilter();
     }
 
-    handleClearCategory(event) {
-        event.stopPropagation();
-        this.handleAllChip();
-    }
-
     handleToggleDropdown() {
+        if (!this.showCategoryFilter) return;
         this.showDropdown = !this.showDropdown;
     }
 
@@ -465,8 +632,18 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // =============================================
 
     handleCardClick(event) {
-        const itemId = event.currentTarget.dataset.recordId;
-        if (itemId) {
+        const wrapper = event.currentTarget.closest('[data-record-id]');
+        const itemId = wrapper?.dataset?.recordId;
+        if (!itemId) return;
+        this._navigateToItemDetail(itemId);
+    }
+
+    _navigateToItemDetail(itemId) {
+        const item = this.allItems.find(i => i.id === itemId)
+            || this.filteredItems.find(i => i.id === itemId);
+        if (item?.isSkill) {
+            location.href = `/skill-offer/${itemId}`;
+        } else {
             location.href = `/library-item/${itemId}`;
         }
     }
@@ -484,14 +661,20 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         const itemId = wrapper?.dataset?.recordId;
         if (!itemId) return;
 
+        const item = this.allItems.find(i => i.id === itemId);
+        if (!item) return;
+
+        if (item.primaryAction === 'skillHelp') {
+            const modal = this.template.querySelector('c-fimby-quick-response-modal');
+            if (modal) modal.show(itemId, 'skill');
+            return;
+        }
+
         // Vouching gate: settling-in members cannot borrow.
         if (!(await this._ensureVouched())) {
             this._openVouchingRequiredModal();
             return;
         }
-
-        const item = this.allItems.find(i => i.id === itemId);
-        if (!item) return;
 
         if (item.primaryAction === 'borrow' || item.primaryAction === 'joinWaitlist') {
             const modal = this.template.querySelector('c-fimby-quick-response-modal');
@@ -506,7 +689,30 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     }
 
     handleAddItem() {
-        location.href = '/add-library-item';
+        if (this.isSkillsMode) {
+            location.href = '/library-item-post?type=skill';
+        } else {
+            location.href = '/library-item-post';
+        }
+    }
+
+    _switchContentMode(mode) {
+        if (this.viewContentMode === mode) return;
+        this.viewContentMode = mode;
+        this.selectedCategory = '';
+        this.showDropdown = false;
+        this.filterAutoLoadCount = 0;
+        this._clearLibraryCache();
+        this.loadCategories();
+        this.loadInitialData();
+    }
+
+    handleItemsMode() {
+        this._switchContentMode('items');
+    }
+
+    handleSkillsMode() {
+        this._switchContentMode('skills');
     }
 
     handleLoadMore() {
@@ -539,7 +745,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         if (!itemId) return;
         const modal = this.template.querySelector('c-fimby-report-content');
         if (modal) {
-            modal.show(itemId, 'Library_Item');
+            const item = this.allItems.find(i => i.id === itemId);
+            const contentType = item?.isSkill ? 'Skill_Offer' : 'Library_Item';
+            modal.show(itemId, contentType);
         }
     }
 
@@ -586,6 +794,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 offset: this.offset,
                 loadedIds: [...this.loadedIds],
                 selectedCategory: this.selectedCategory,
+                viewContentMode: this.viewContentMode,
+                itemsOffset: this._itemsOffset,
+                skillsOffset: this._skillsOffset,
                 hasMoreContent: this.hasMoreContent,
                 scrollY: window.scrollY,
                 timestamp: Date.now()
@@ -617,13 +828,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this.offset = state.offset;
             this.loadedIds = new Set(state.loadedIds);
             this.selectedCategory = state.selectedCategory || '';
+            this.viewContentMode = state.viewContentMode || 'all';
+            this._itemsOffset = state.itemsOffset || 0;
+            this._skillsOffset = state.skillsOffset || 0;
             this.hasMoreContent = state.hasMoreContent;
-
-            if (!this.selectedCategory) {
-                this.filteredItems = [...this.allItems];
-            } else {
-                this.filteredItems = this.allItems.filter(i => i.category === this.selectedCategory);
-            }
+            this._applyCategoryFilter();
+            this.loadCategories();
 
             this._pendingScrollY = state.scrollY;
             this._restoredFromCache = true;

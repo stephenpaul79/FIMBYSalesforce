@@ -1,6 +1,16 @@
 {
-  "total": 36,
-  "snapshot_date": "2026-03-21",
+  "total": 44,
+  "snapshot_date": "2026-06-10",
+  "engagement_audit_icons": [
+    { "file": "Items.png", "url": "https://fimby.com/wp-content/uploads/2026/06/Items.png", "use": "Add-library mock, capability strip", "media_id": 798, "uploaded": "2026-06-11" },
+    { "file": "Skills.png", "url": "https://fimby.com/wp-content/uploads/2026/06/Skills.png", "use": "Add-library mock", "media_id": 799, "uploaded": "2026-06-11" },
+    { "file": "lightbulb.png", "url": "https://fimby.com/wp-content/uploads/2026/06/lightbulb.png", "use": "Help Nearby capability card", "media_id": 800, "uploaded": "2026-06-11" },
+    { "file": "people.png", "url": "https://fimby.com/wp-content/uploads/2026/03/people.png", "use": "Local orgs capability card" },
+    { "file": "ToolboxActive.png", "url": "https://fimby.com/wp-content/uploads/2026/03/ToolboxActive.png", "use": "Quick-post option 6, Lend & Borrow card" },
+    { "file": "needsm.png", "url": "https://fimby.com/wp-content/uploads/2026/03/needsm.png", "use": "Ask & Offer capability card" },
+    { "file": "plannersm.png", "url": "https://fimby.com/wp-content/uploads/2026/03/plannersm.png", "use": "Gather capability card" },
+    { "file": "StoriesActive.png", "url": "https://fimby.com/wp-content/uploads/2026/03/StoriesActive.png", "use": "Shared Life capability card" }
+  ],
   "media": [
     { "id": 317, "title": "IMG_3361", "url": "https://fimby.com/wp-content/uploads/2026/02/IMG_3361-scaled.jpg", "type": "image/jpeg", "size_bytes": 539189, "uploaded": "2026-02-10" },
     { "id": 316, "title": "Strathcona_picnic", "url": "https://fimby.com/wp-content/uploads/2026/02/Strathcona_picnic.jpg", "type": "image/jpeg", "size_bytes": 693365, "uploaded": "2026-02-10" },

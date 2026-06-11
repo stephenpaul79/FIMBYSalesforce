@@ -514,6 +514,7 @@
 .badge-direct   { background-color: rgba(94, 123, 146, 0.75); }
 .badge-response { background-color: rgba(91, 135, 96, 0.75); }
 .badge-library  { background-color: rgba(141, 123, 106, 0.75); }
+.badge-skill     { background-color: var(--fimby-badge-skill); }
 .badge-bulkbuy  { background-color: rgba(168, 132, 78, 0.75); }
 .badge-checkin  { background-color: rgba(178, 143, 86, 0.65); }
 .badge-event    { background-color: var(--fimby-badge-event, rgba(68, 142, 158, 0.75)); }

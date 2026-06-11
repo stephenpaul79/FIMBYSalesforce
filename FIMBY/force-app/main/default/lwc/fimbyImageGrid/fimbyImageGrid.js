@@ -56,7 +56,14 @@ export default class FimbyImageGrid extends LightningElement {
         return this.validImages[0] || null;
     }
 
+    renderedCallback() {
+        this.classList.toggle('layout-thumbnail', this.layout === 'thumbnail');
+    }
+
     get singleImageContainerStyle() {
+        if (this.layout === 'thumbnail') {
+            return 'height: 100%; width: 100%;';
+        }
         const img = this.singleImage;
         if (!img || !img.ratio) return 'aspect-ratio: 16 / 9; max-height: 400px;';
         const parsed = this._parseRatio(img.ratio);

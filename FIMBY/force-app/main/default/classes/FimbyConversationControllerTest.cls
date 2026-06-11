@@ -410,6 +410,43 @@ public class FimbyConversationControllerTest {
     }
 
     @IsTest
+    static void testGetOrCreateConversation_IgnoresExistingVouchThread() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+
+        Conversation__c vouchConv = new Conversation__c(
+            Participant_1__c = testUser.ContactId,
+            Participant_2__c = other.Id,
+            Context_Type__c = FimbyConstants.CTX_VOUCH_REQUEST,
+            Vouch_Outcome__c = 'Pending',
+            Is_Group__c = false,
+            Status__c = 'Active'
+        );
+        insert vouchConv;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyConversationController.getOrCreateConversation(other.Id);
+            System.assertEquals(true, result.get('success'), 'Should succeed');
+            System.assertEquals(true, result.get('isNew'), 'Should create a new direct conversation');
+            Id directConvId = (Id) result.get('conversationId');
+            System.assertNotEquals(vouchConv.Id, directConvId, 'Should not return the vouch thread');
+
+            Conversation__c directConv = [
+                SELECT Context_Type__c
+                FROM Conversation__c
+                WHERE Id = :directConvId
+            ];
+            System.assertEquals(
+                FimbyConstants.CTX_DIRECT,
+                directConv.Context_Type__c,
+                'New conversation should be Direct context'
+            );
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testIsConversationRevoked_VouchRequestReturnsFalse() {
         User testUser = getTestUser();
         Contact myContact = [SELECT Id, AccountId FROM Contact WHERE Id = :testUser.ContactId];
@@ -496,5 +533,184 @@ public class FimbyConversationControllerTest {
             System.assert(foundOrg, 'Org contact should appear in messageable contacts');
         }
         Test.stopTest();
+    }
+
+    @IsTest
+    static void testPrepareDirectConversation_NoInsertWhenNoThread() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Integer convCountBefore = [SELECT COUNT() FROM Conversation__c];
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyConversationController.DraftConversationResult result =
+                FimbyConversationController.prepareDirectConversation(other.Id);
+
+            System.assertEquals(false, result.isExisting, 'Should not find an existing thread');
+            System.assertEquals(null, result.conversationId, 'Should not return a conversation id');
+            System.assertNotEquals(null, result.otherParticipantName, 'Should populate participant name');
+            System.assertEquals(other.Id, result.otherParticipantId, 'Should return target contact id');
+        }
+        Test.stopTest();
+
+        System.assertEquals(convCountBefore, [SELECT COUNT() FROM Conversation__c],
+            'prepareDirectConversation must not insert a Conversation__c');
+    }
+
+    @IsTest
+    static void testPrepareDirectConversation_ReturnsExistingDirectThread() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Id existingConvId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyConversationController.getOrCreateConversation(other.Id);
+            existingConvId = (Id) created.get('conversationId');
+        }
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyConversationController.DraftConversationResult result =
+                FimbyConversationController.prepareDirectConversation(other.Id);
+
+            System.assertEquals(true, result.isExisting, 'Should find existing Direct thread');
+            System.assertEquals(existingConvId, result.conversationId, 'Should return existing conversation id');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testSendDirectMessage_CreatesConversationAndMessage() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyConversationController.sendDirectMessage(other.Id, 'Hello neighbour');
+
+            System.assertEquals(true, result.get('success'), 'Send should succeed');
+            System.assertEquals(true, result.get('isNew'), 'Should create a new conversation');
+            Id convId = (Id) result.get('conversationId');
+            System.assertNotEquals(null, convId, 'Should return conversation id');
+
+            Conversation__c conv = [
+                SELECT Context_Type__c, Last_Message_Preview__c
+                FROM Conversation__c WHERE Id = :convId
+            ];
+            System.assertEquals(FimbyConstants.CTX_DIRECT, conv.Context_Type__c, 'Should be Direct context');
+            System.assertEquals('Hello neighbour', conv.Last_Message_Preview__c, 'Should set summary preview');
+
+            Integer msgCount = [SELECT COUNT() FROM Message__c WHERE Conversation__c = :convId];
+            System.assertEquals(1, msgCount, 'Should create exactly one message');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testSendDirectMessage_ReusesExistingThread() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Id existingConvId;
+        System.runAs(testUser) {
+            Map<String, Object> created = FimbyConversationController.getOrCreateConversation(other.Id);
+            existingConvId = (Id) created.get('conversationId');
+        }
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyConversationController.sendDirectMessage(other.Id, 'Follow up');
+
+            System.assertEquals(true, result.get('success'), 'Send should succeed');
+            System.assertEquals(false, result.get('isNew'), 'Should reuse existing conversation');
+            System.assertEquals(existingConvId, result.get('conversationId'), 'Should return same conversation id');
+
+            Integer convCount = [
+                SELECT COUNT() FROM Conversation__c
+                WHERE ((Participant_1__c = :testUser.ContactId AND Participant_2__c = :other.Id)
+                    OR (Participant_1__c = :other.Id AND Participant_2__c = :testUser.ContactId))
+                  AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
+            ];
+            System.assertEquals(1, convCount, 'Should not create a duplicate Direct conversation');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testSendDirectMessage_NoSharedContactThrows() {
+        User testUser = getTestUser();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+        Contact stranger = new Contact(FirstName = 'Stranger', LastName = 'Person', AccountId = neighbourhood.Id);
+        insert stranger;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyConversationController.sendDirectMessage(stranger.Id, 'Hi');
+                System.assert(false, 'Should throw for non-shared contact');
+            } catch (AuraHandledException e) {
+                System.assertNotEquals(null, e.getMessage(), 'Should have an error message');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testSendDirectMessage_RateLimitOnCreate() {
+        User testUser = getTestUser();
+        Integer dailyLimit = FimbySettings.maxNewConversationsPerDay();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Contact rateLimitTarget = new Contact(
+            FirstName = 'Rate',
+            LastName = 'Target',
+            Email = 'ratelimit-target@test.com',
+            AccountId = neighbourhood.Id
+        );
+        insert rateLimitTarget;
+
+        insert new Shared_Contact_Info__c(
+            Contact__c = testUser.ContactId,
+            Shared_To__c = rateLimitTarget.Id,
+            Email__c = 'ratelimit-target@test.com'
+        );
+
+        List<Contact> extraContacts = new List<Contact>();
+        for (Integer i = 0; i < dailyLimit; i++) {
+            extraContacts.add(new Contact(
+                FirstName = 'Rate',
+                LastName = 'Seed' + i,
+                Email = 'ratelimit-seed' + i + '@test.com',
+                AccountId = neighbourhood.Id
+            ));
+        }
+        insert extraContacts;
+
+        List<Conversation__c> seeded = new List<Conversation__c>();
+        for (Contact c : extraContacts) {
+            seeded.add(new Conversation__c(
+                Participant_1__c = testUser.ContactId,
+                Participant_2__c = c.Id,
+                Context_Type__c = FimbyConstants.CTX_DIRECT,
+                Status__c = 'Active',
+                Participant_1_Unread_Count__c = 0,
+                Participant_2_Unread_Count__c = 0,
+                Participant_1_Archived__c = false,
+                Participant_2_Archived__c = false
+            ));
+        }
+        insert seeded;
+
+        Boolean threw = false;
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyConversationController.sendDirectMessage(rateLimitTarget.Id, 'Should fail');
+            } catch (AuraHandledException e) {
+                threw = true;
+                System.assertNotEquals(null, e.getMessage(), 'Should have an error message');
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, threw, 'Should throw when daily limit reached');
     }
 }

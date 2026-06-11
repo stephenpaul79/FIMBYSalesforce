@@ -328,6 +328,39 @@
                     </div>
                 </template>
 
+                <!-- ========== POSTER: REFRESH / CLOSE PANEL (asks & offers) ========== -->
+                <template lwc:if={showRefreshPanel}>
+                    <div class="refresh-panel" role="region" aria-label="Post refresh options">
+                        <p class="refresh-panel-prompt">{refreshPrompt}</p>
+                        <template lwc:if={refreshHelperText}>
+                            <p class="refresh-panel-helper">{refreshHelperText}</p>
+                        </template>
+                        <div class="refresh-panel-actions">
+                            <button type="button"
+                                    class="refresh-action-btn refresh-action-resolved"
+                                    onclick={handleClosePostResolved}
+                                    disabled={refreshActionLoading}
+                                    aria-label={refreshResolvedLabel}>
+                                {refreshResolvedLabel}
+                            </button>
+                            <button type="button"
+                                    class="refresh-action-btn refresh-action-withdrawn"
+                                    onclick={handleClosePostWithdrawn}
+                                    disabled={refreshActionLoading}
+                                    aria-label={refreshWithdrawnLabel}>
+                                {refreshWithdrawnLabel}
+                            </button>
+                            <button type="button"
+                                    class="refresh-action-btn refresh-action-primary"
+                                    onclick={handleRefreshPost}
+                                    disabled={refreshActionLoading}
+                                    aria-label={refreshStillLabel}>
+                                {refreshStillLabel}
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
                 <!-- ========== RESPONDED: YOUR RESPONSE CARD ========== -->
                 <template lwc:if={showRespondedStatusCard}>
                     <div class="your-response-card">

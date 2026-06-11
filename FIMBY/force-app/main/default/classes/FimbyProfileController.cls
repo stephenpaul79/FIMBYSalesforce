@@ -44,7 +44,8 @@ public with sharing class FimbyProfileController {
     private static final Set<String> ALLOWED_FIRST_CELEBRATION_FIELDS = new Set<String>{
         'First_Post_Celebrated__c', 'First_Response_Celebrated__c',
         'First_Library_Item_Celebrated__c', 'First_Story_Celebrated__c',
-        'First_Bulk_Buy_Celebrated__c', 'First_Bulk_Buy_Reserve_Celebrated__c'
+        'First_Bulk_Buy_Celebrated__c', 'First_Bulk_Buy_Reserve_Celebrated__c',
+        'First_Skill_Celebrated__c'
     };
 
     /**
@@ -474,7 +475,8 @@ public with sharing class FimbyProfileController {
                            Completed_Bulk_Buys__c,
                            First_Post_Celebrated__c, First_Response_Celebrated__c,
                            First_Library_Item_Celebrated__c, First_Story_Celebrated__c,
-                           First_Bulk_Buy_Celebrated__c, First_Bulk_Buy_Reserve_Celebrated__c
+                           First_Bulk_Buy_Celebrated__c, First_Bulk_Buy_Reserve_Celebrated__c,
+                           First_Skill_Celebrated__c
                     FROM Contact
                     WHERE Id = :contactId
                     LIMIT 1
@@ -491,6 +493,7 @@ public with sharing class FimbyProfileController {
                 result.put('firstStoryCelebrated', c.First_Story_Celebrated__c);
                 result.put('firstBulkBuyCelebrated', c.First_Bulk_Buy_Celebrated__c);
                 result.put('firstBulkBuyReserveCelebrated', c.First_Bulk_Buy_Reserve_Celebrated__c);
+                result.put('firstSkillCelebrated', c.First_Skill_Celebrated__c);
             }
             return result;
         } catch (Exception e) {

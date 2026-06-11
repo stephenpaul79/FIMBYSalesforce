@@ -44,6 +44,7 @@ public with sharing class FimbyMyStuffController {
             counts.put('libraryActiveCount', 0);
             counts.put('libraryAvailableCount', 0);
             counts.put('borrowedCount', 0);
+            counts.put('skillsCount', 0);
             return counts;
         }
 
@@ -106,7 +107,50 @@ public with sharing class FimbyMyStuffController {
         counts.put('contactsCount',
             new SharedContactHelper().countSharedContacts(contactId));
 
+        counts.put('skillsCount', [
+            SELECT COUNT() FROM Skill_Offer__c
+            WHERE Owner_Contact__c = :contactId
+              AND Status__c != :FimbyConstants.SKILL_REMOVED
+            WITH SECURITY_ENFORCED
+        ]);
+
         return counts;
+    }
+
+    /**
+     * My Skills — newest first.
+     */
+    @AuraEnabled(cacheable=false)
+    public static List<SkillOfferWrapper> getMySkills(Integer pageSize) {
+        String contactId = FimbyIdentityRepository.getActingAsContactId();
+        if (String.isBlank(contactId)) {
+            return new List<SkillOfferWrapper>();
+        }
+
+        Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.myLibraryItemsLimit();
+        List<Skill_Offer__c> skills = [
+            SELECT Id, Name, Description_Text__c, Skill_Category__c, Status__c, Availability_Note__c, CreatedDate
+            FROM Skill_Offer__c
+            WHERE Owner_Contact__c = :contactId
+              AND Status__c != :FimbyConstants.SKILL_REMOVED
+            WITH SECURITY_ENFORCED
+            ORDER BY CreatedDate DESC
+            LIMIT :limitSize
+        ];
+
+        List<SkillOfferWrapper> wrappers = new List<SkillOfferWrapper>();
+        for (Skill_Offer__c skill : skills) {
+            SkillOfferWrapper w = new SkillOfferWrapper();
+            w.Id = skill.Id;
+            w.Name = skill.Name;
+            w.description = skill.Description_Text__c;
+            w.category = skill.Skill_Category__c;
+            w.status = skill.Status__c;
+            w.availabilityNote = skill.Availability_Note__c;
+            w.CreatedDate = skill.CreatedDate;
+            wrappers.add(w);
+        }
+        return wrappers;
     }
 
     /**
@@ -122,12 +166,12 @@ public with sharing class FimbyMyStuffController {
         Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.myPostsPageSize();
 
         return [
-            SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate,
+            SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
                    RecordType.Name, Category__c, Event_Type__c
             FROM Needs_Offers__c
             WHERE Posted_By__c = :contactId
             WITH SECURITY_ENFORCED
-            ORDER BY CreatedDate DESC
+            ORDER BY Posted_Date__c DESC
             LIMIT :limitSize
         ];
     }
@@ -386,7 +430,7 @@ public with sharing class FimbyMyStuffController {
         Set<String> activeStatuses = new Set<String>{
             'Posted', 'Reply Received', 'Reply Accepted', 'Available', 'Shares Available', 'Pickup Ready'
         };
-        String baseQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, RecordType.Name, Category__c, Event_Type__c FROM Needs_Offers__c WHERE Posted_By__c = :contactId AND Status__c NOT IN :activeStatuses';
+        String baseQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, RecordType.Name, Category__c, Event_Type__c FROM Needs_Offers__c WHERE Posted_By__c = :contactId AND Status__c NOT IN :activeStatuses';
         String countQuery = 'SELECT COUNT() FROM Needs_Offers__c WHERE Posted_By__c = :contactId AND Status__c NOT IN :activeStatuses';
 
         if (String.isNotBlank(filterType) && filterType != 'All') {
@@ -402,7 +446,7 @@ public with sharing class FimbyMyStuffController {
             }
         }
 
-        baseQuery += ' WITH SECURITY_ENFORCED ORDER BY CreatedDate DESC LIMIT :limitSize OFFSET :offsetVal';
+        baseQuery += ' WITH SECURITY_ENFORCED ORDER BY Posted_Date__c DESC LIMIT :limitSize OFFSET :offsetVal';
         countQuery += ' WITH SECURITY_ENFORCED';
 
         result.totalCount = Database.countQuery(countQuery);
@@ -576,6 +620,16 @@ public with sharing class FimbyMyStuffController {
         @AuraEnabled public Datetime CreatedDate { get; set; }
         @AuraEnabled public String loanedToName { get; set; }
         @AuraEnabled public Date dueDate { get; set; }
+    }
+
+    public class SkillOfferWrapper {
+        @AuraEnabled public Id Id { get; set; }
+        @AuraEnabled public String Name { get; set; }
+        @AuraEnabled public String description { get; set; }
+        @AuraEnabled public String category { get; set; }
+        @AuraEnabled public String status { get; set; }
+        @AuraEnabled public String availabilityNote { get; set; }
+        @AuraEnabled public Datetime CreatedDate { get; set; }
     }
 
     public class BorrowedItemWrapper {
@@ -866,6 +920,10 @@ public with sharing class FimbyMyStuffController {
          * @return Map with profile fields and shared contact info when applicable
          */
         public Map<String, Object> getNeighbourProfileInternal(String myContactId, String neighbourContactId) {
+            if (!FimbyContactVisibility.canView((Id) myContactId, (Id) neighbourContactId)) {
+                throw new AuraHandledException('Unable to load neighbour profile.');
+            }
+
             Contact viewer = [
                 SELECT AccountId
                 FROM Contact

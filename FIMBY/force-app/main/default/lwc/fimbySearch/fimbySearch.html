@@ -175,10 +175,18 @@
                                             <span class="result-posted-by">{result.postedByName}</span>
                                             <span class="result-meta">{result.formattedDate}</span>
                                         </div>
-                                        <span class={result.badgeCssClass}>
-                                            <img src={result.badgeIconUrl} alt="" class="badge-icon" />
-                                            <span>{result.badgeLabel}</span>
-                                        </span>
+                                        <template lwc:if={result.useBadgeStyle}>
+                                            <span class={result.badgeCssClass} style={result.badgeStyle}>
+                                                <img src={result.badgeIconUrl} alt="" class="badge-icon" />
+                                                <span>{result.badgeLabel}</span>
+                                            </span>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class={result.badgeCssClass}>
+                                                <img src={result.badgeIconUrl} alt="" class="badge-icon" />
+                                                <span>{result.badgeLabel}</span>
+                                            </span>
+                                        </template>
                                     </div>
                                     <template lwc:if={result.processedImageUrl}>
                                         <div class="result-image-wrapper">

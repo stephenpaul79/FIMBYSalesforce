@@ -9,6 +9,9 @@ import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
 import getResponsesForNeedOffer from '@salesforce/apex/FimbyAskOfferController.getResponsesForNeedOffer';
 import deleteNeedsOffersPost from '@salesforce/apex/FimbyAskOfferController.deleteNeedsOffersPost';
+import refreshPost from '@salesforce/apex/FimbyAskOfferController.refreshPost';
+import closePost from '@salesforce/apex/FimbyAskOfferController.closePost';
+import getRefreshPostState from '@salesforce/apex/FimbyAskOfferController.getRefreshPostState';
 import getNeedOfferVisibility from '@salesforce/apex/FimbyAskOfferController.getNeedOfferVisibility';
 import getGroupConversationIdForPost from '@salesforce/apex/FimbyAskOfferController.getGroupConversationIdForPost';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
@@ -200,6 +203,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @track isRemoved = false;
     @track removedMessage = '';
     @track _eventGroupConversationId = null;
+    @track refreshState = null;
+    @track refreshActionLoading = false;
     _wiredRecordResult;
 
     // ============================================
@@ -306,6 +311,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this.error = undefined;
         this.responses = [];
         this.bulkBuyData = null;
+        this.refreshState = null;
     }
 
     extractRecordIdFromUrl() {
@@ -382,6 +388,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             this.bulkBuyData = null;
             this.loadResponses();
             this.loadBulkBuyDetail();
+            this.loadRefreshState();
             this._refreshGroupConversationId();
         } else if (error) {
             console.error('Error loading needs/offers record:', error);
@@ -399,6 +406,17 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get shouldRenderRecord() {
         return !!this.record && !this.isRemoved;
+    }
+
+    async loadRefreshState() {
+        const needOfferId = this.effectiveRecordId;
+        if (!needOfferId) return;
+        try {
+            this.refreshState = await getRefreshPostState({ recordId: needOfferId });
+        } catch (e) {
+            console.error('Error loading refresh state:', e);
+            this.refreshState = null;
+        }
     }
 
     async loadResponses() {
@@ -1270,6 +1288,44 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // AUTHOR CHECK
     // ============================================
 
+    get showRefreshPanel() {
+        return this.refreshState?.showPanel === true;
+    }
+
+    get refreshPrompt() {
+        return this.refreshState?.prompt || '';
+    }
+
+    get refreshResolvedLabel() {
+        return this.refreshState?.resolvedLabel || 'All sorted';
+    }
+
+    get refreshWithdrawnLabel() {
+        return this.refreshState?.withdrawnLabel || 'No longer needed';
+    }
+
+    get refreshStillLabel() {
+        return this.refreshState?.refreshLabel || 'Still needed';
+    }
+
+    get canRefreshPost() {
+        return this.refreshState?.canRefresh === true && !this.refreshActionLoading;
+    }
+
+    get refreshHelperText() {
+        if (!this.refreshState?.showPanel) return '';
+        if (this.refreshState.atCap) {
+            return 'This post has had its refreshes — it will wrap up on its own when the end date arrives.';
+        }
+        if (this.refreshState.onCooldown) {
+            const days = this.refreshState.cooldownDaysRemaining;
+            return days === 1
+                ? 'You can refresh again tomorrow.'
+                : `You can refresh again in ${days} days.`;
+        }
+        return '';
+    }
+
     get isAuthor() {
         if (!this.record) return false;
         const ownerId = getFieldValue(this.record, 'Needs_Offers__c.OwnerId');
@@ -2016,6 +2072,60 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     handleImagesChanged() {
         window.location.reload();
+    }
+
+    async handleRefreshPost() {
+        if (!this.canRefreshPost) return;
+        this.refreshActionLoading = true;
+        try {
+            const result = await refreshPost({ recordId: this.effectiveRecordId });
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Refreshed',
+                message: result.message || 'Your post has been refreshed.',
+                variant: 'success'
+            }));
+            await refreshApex(this._wiredRecordResult);
+            await this.loadRefreshState();
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Could not refresh',
+                message: error.body?.message || 'Please try again in a moment.',
+                variant: 'error'
+            }));
+        } finally {
+            this.refreshActionLoading = false;
+        }
+    }
+
+    async handleClosePostResolved() {
+        await this._closePostWithOutcome('resolved');
+    }
+
+    async handleClosePostWithdrawn() {
+        await this._closePostWithOutcome('withdrawn');
+    }
+
+    async _closePostWithOutcome(outcome) {
+        if (this.refreshActionLoading) return;
+        this.refreshActionLoading = true;
+        try {
+            const result = await closePost({ recordId: this.effectiveRecordId, outcome });
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Updated',
+                message: result.message || 'Thanks for letting neighbours know.',
+                variant: 'success'
+            }));
+            await refreshApex(this._wiredRecordResult);
+            await this.loadRefreshState();
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Could not update',
+                message: error.body?.message || 'Please try again in a moment.',
+                variant: 'error'
+            }));
+        } finally {
+            this.refreshActionLoading = false;
+        }
     }
 
     handleDeleteClick() {

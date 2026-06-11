@@ -1,0 +1,71 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Skill Offer Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"8f4e2a1b-6c3d-4e5f-9a2b-1d7c8e9f0a1b\",\"columns\":[{\"UUID\":\"7e3d1c0a-5b2a-4d6e-8f9a-0c6b7d8e9f0a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbySkillOfferDetail",
+              "id" : "6d5c4b3a-2918-4f7e-a6b5-c4d3e2f1a0b9",
+              "type" : "component"
+            } ],
+            "id" : "7e3d1c0a-5b2a-4d6e-8f9a-0c6b7d8e9f0a",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "8f4e2a1b-6c3d-4e5f-9a2b-1d7c8e9f0a1b",
+          "type" : "component"
+        } ],
+        "id" : "5c4b3a29-1807-4e6d-95a4-b3c2d1e0f9a8",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Skill Offer",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "4b3a2918-0706-4d5c-84a3-a2b1c0d9e8f7",
+          "type" : "component"
+        } ],
+        "id" : "3a291807-0605-4c4b-73a2-a1b0c9d8e7f6",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "29180706-0504-4b3a-62a1-0b9c8d7e6f50",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "detail-Skill_Offer__c"
+  },
+  "urlName" : "skill-offer-detail"
+}

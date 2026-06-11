@@ -43,9 +43,9 @@ const NO_ORG_PHOTO = 'NoOrgPhoto.png';
  * feeds have been absorbed into the cascading-filter home feed.
  * --------------------------------------------------------------- */
 const TAB_ROUTES = [
-    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item'] },
+    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item', '/skill-offer'] },
     { tab: 'messages', prefixes: ['/messages', '/conversation', '/new-message'] },
-    { tab: 'mine',     prefixes: ['/mine', '/my-stuff', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/moderator-dashboard', '/moderator-task-archive', '/help-and-support', '/community-guidelines', '/feedback'] },
+    { tab: 'mine',     prefixes: ['/mine', '/my-stuff', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-skills', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/moderator-dashboard', '/moderator-task-archive', '/help-and-support', '/community-guidelines', '/feedback'] },
     { tab: 'home',     prefixes: ['/shared-life-list', '/stories', '/story', '/create-story', '/shared-life-post', '/ask-offer-list', '/ask-or-offer-post', '/asks-offers', '/needs-offers', '/quick-post', '/respond', '/response-detail', '/response-reply'] }
 ];
 
@@ -618,7 +618,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             'feedback': '/feedback',
             'create-story': '/create-story',
             'create-post': '/ask-or-offer-post',
-            'add-library-item': '/add-library-item',
+            'add-library-item': '/library-item-post',
             'ask-post': '/ask-or-offer-post?type=Need',
             'offer-post': '/ask-or-offer-post?type=Offer',
             'shared-life-post': '/shared-life-post',

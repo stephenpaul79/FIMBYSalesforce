@@ -8,6 +8,7 @@ export default class FimbyMyStuffHub extends LightningElement {
     postsIconUrl = `${IMPACT_ICONS}/BulletinBoardActive.png`;
     sharedLifeIconUrl = `${IMPACT_ICONS}/GodStoryActive.png`;
     libraryIconUrl = `${IMPACT_ICONS}/ToolboxActive.png`;
+    skillsIconUrl = `${IMPACT_ICONS}/lightbulb.png`;
     borrowingIconUrl = `${IMPACT_ICONS}/BorrowActive.png`;
     moderatorIconUrl = `${IMPACT_ICONS}/moderatoractive.png`;
     @track _isModerator = false;
@@ -21,6 +22,7 @@ export default class FimbyMyStuffHub extends LightningElement {
     @track libraryActiveCount = 0;
     @track libraryAvailableCount = 0;
     @track borrowedCount = 0;
+    @track skillsCount = 0;
     @track contactsCount = 0;
 
     connectedCallback() {
@@ -49,6 +51,7 @@ export default class FimbyMyStuffHub extends LightningElement {
             this.libraryActiveCount = summary.libraryActiveCount || 0;
             this.libraryAvailableCount = summary.libraryAvailableCount || 0;
             this.borrowedCount = summary.borrowedCount || 0;
+            this.skillsCount = summary.skillsCount || 0;
             this.contactsCount = summary.contactsCount || 0;
         } catch (error) {
             console.error('Error loading My Stuff summary:', error);

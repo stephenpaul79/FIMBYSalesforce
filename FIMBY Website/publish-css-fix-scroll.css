@@ -1,0 +1,14 @@
+/*
+ * EMERGENCY FIX — paste at the VERY END of Additional CSS
+ *
+ * Your live CSS ends with .fimby-scroll-section { opacity: 0 } which hides
+ * homepage sections until JavaScript runs. Without fimby-scroll-sections.js
+ * enqueued, capability strip, trust blocks, and final CTA are invisible.
+ *
+ * This overrides that. (Or delete the whole "SCROLL-IN VIEW" block instead.)
+ */
+
+.fimby-scroll-section {
+  opacity: 1;
+  transform: none;
+}

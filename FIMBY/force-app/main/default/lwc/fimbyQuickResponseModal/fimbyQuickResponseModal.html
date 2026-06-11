@@ -94,7 +94,14 @@
 
                         <!-- Summary card -->
                         <div class="summary-card">
-                            <template lwc:if={hasSummaryImage}>
+                            <template lwc:if={isSkillType}>
+                                <template lwc:if={hasSummaryImage}>
+                                    <div class="summary-icon-wrap" style={skillSummaryIconStyle}>
+                                        <img src={summaryIconUrl} alt="" class="summary-skill-icon">
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:elseif={hasSummaryImage}>
                                 <img src={summaryImageUrl} alt="" class="summary-image">
                             </template>
                             <div class="summary-info">
@@ -260,6 +267,24 @@
                                 <div class="notice-text">
                                     By reserving, you're committing to pick up and pay for your share.
                                     You can cancel your reservation from the post detail page.
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- ===== SKILL HELP FORM ===== -->
+                        <template lwc:if={isSkillType}>
+                            <div class="form-section">
+                                <div class="field-group">
+                                    <div class="field-label-row">
+                                        <label class="field-label" for="qr-skill-note">Your message (optional)</label>
+                                        <span class={skillNoteCountClass}>{skillNoteDisplay}</span>
+                                    </div>
+                                    <textarea id="qr-skill-note"
+                                              class="form-input form-native-textarea"
+                                              value={_skillNote}
+                                              oninput={handleSkillNoteChange}
+                                              maxlength="1000"
+                                              placeholder="Let them know what you need help with..."></textarea>
                                 </div>
                             </div>
                         </template>

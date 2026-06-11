@@ -30,7 +30,7 @@
           </h2>
           <div class="pull-quote">No likes. No followers. No trending.</div>
           <p>FIMBY has no engagement metrics, no algorithm optimizing for time-on-screen, and no follower counts. There's no audience to perform for.</p>
-          <p>Instead, you see the same neighbours over time. Names become familiar. Small acts of care start to build real relationships. That's the point.</p>
+          <p>Instead, you keep crossing paths with the same people — familiar faces first, real relationships after. That's the point.</p>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
           <h2>Small enough to recognize each other</h2>
           <p>FIMBY is scoped to your immediate neighbourhood — not a city-wide feed, not a region. Just the people around you.</p>
           <p>When a neighbourhood gets too big, it splits into smaller nearby neighbourhoods — like a healthy cell dividing. Each one stays small enough that you know who's who. If it ever becomes a city-wide contact list instead of a neighbourhood, it has failed.</p>
-          <div class="pull-quote">Names become familiar, and small acts of care start to build real relationships.</div>
+          <div class="pull-quote">Belonging starts the moment the faces stop being strangers.</div>
           <p>This is intentional. A neighbourhood that stays legible is a neighbourhood that stays safe, warm, and useful. Everything in FIMBY is designed to keep it that way.</p>
         </div>
       </div>
@@ -226,15 +226,39 @@
     </div>
   </section>
 
-  <!-- ═══ FINAL CTA ═══ -->
+  <!-- ═══ BRIDGE STRIP ═══ -->
+  <div class="bridge-strip">
+    <div class="container-inset">
+      <p>Wondering where this could lead? <a href="/vision/">Read our vision.</a></p>
+    </div>
+  </div>
+
+  <!-- ═══ FINAL CTA (TWO-PATH FORK) ═══ -->
   <section class="final-cta" id="join">
     <div class="container-inset">
       <div class="final-box">
         <h2>Ready to meet your neighbours?</h2>
-        <p>See whether FIMBY is active in your neighbourhood and start meeting the people around you.</p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <a href="#" class="btn btn-primary cta-bridge">Join FIMBY</a>
-          <a href="/faq/" class="btn btn-secondary">FAQ</a>
+        <div class="approach-footer-fork">
+          <div class="dual-cta-grid">
+            <div class="dual-cta-col">
+              <h3>Join your neighbourhood</h3>
+              <p>Check your postal code and start seeing what's happening nearby.</p>
+              <div class="button-row">
+                <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Check your neighbourhood</a>
+              </div>
+            </div>
+            <div class="dual-cta-col">
+              <h3>Bring FIMBY here</h3>
+              <p>Not in an active area yet? Help launch a hub where you live.</p>
+              <div class="button-row">
+                <a href="/family-in-my-backyard/contact-us/" class="btn btn-secondary">Bring FIMBY here</a>
+              </div>
+            </div>
+          </div>
+          <p class="objection-links">
+            <a href="/faq/#dead-app">Worried it's another app?</a> ·
+            <a href="/faq/#christian">Not Christian?</a> FIMBY is open to all neighbours — prayer welcome, never required.
+          </p>
         </div>
       </div>
     </div>
@@ -242,35 +266,7 @@
 
 </main>
 
-<!-- ═══ JOIN MODAL ═══ -->
-<div id="join-modal" class="modal" aria-hidden="true" role="dialog" aria-label="Join FIMBY">
-  <div class="modal-content">
-    <button class="modal-close" aria-label="Close">&times;</button>
-    <h2>Come on in</h2>
-    <p>You'll enter your postal code as part of sign-up. If FIMBY is live in your area, you'll continue into setup. If not, we'll add you to the waitlist — and ask if you'd like to help bring FIMBY to your neighbourhood.</p>
-    <a href="https://our.fimby.com/sign-up" class="btn btn-primary" style="width:100%;text-align:center;">Sign up</a>
-  </div>
-</div>
-
 <script>
-  var modal = document.getElementById('join-modal');
-  document.querySelectorAll('.cta-bridge').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      modal.classList.add('visible');
-      modal.setAttribute('aria-hidden', 'false');
-    });
-  });
-  modal.querySelector('.modal-close').addEventListener('click', closeModal);
-  modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('visible')) closeModal();
-  });
-  function closeModal() {
-    modal.classList.remove('visible');
-    modal.setAttribute('aria-hidden', 'true');
-  }
-
   (function(){
     var EMOJIS=['🎉', '🥳', '✨', '💛'];
     var COUNT=30;

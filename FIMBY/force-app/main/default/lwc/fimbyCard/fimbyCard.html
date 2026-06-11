@@ -45,9 +45,15 @@
             <template lwc:if={showImageGrid}>
                 <div class="card-media">
                     <c-fimby-image-grid
+                        layout={imageGridLayout}
                         images={normalizedImages}
                         onimageclick={handleImageGridClick}>
                     </c-fimby-image-grid>
+                </div>
+            </template>
+            <template lwc:elseif={showCategoryMediaPlaceholder}>
+                <div class="card-media card-media-placeholder" style={categoryPlaceholderStyle} aria-hidden="true">
+                    <img src={badgeIconUrl} alt="" class="media-placeholder-icon">
                 </div>
             </template>
 
@@ -55,44 +61,18 @@
             <div class="card-content-wrapper">
                 <!-- Content -->
                 <div class="card-content">
-                    <!-- List layout: owner + CTA floated top-right, before title so float works -->
-                    <template lwc:if={showListOwnerRow}>
-                        <div class="list-owner-row">
-                            <template lwc:if={showListCardMenu}>
-                                <div class="card-menu-wrap list-card-menu">
-                                    <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
-                                        <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
-                                    </button>
-                                    <template lwc:if={showMenuDropdown}>
-                                        <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
-                                        <div class="card-menu-dropdown" role="menu">
-                                            <button type="button" class="card-menu-item" role="menuitem" onclick={handleReportClick}>
-                                                <img src={reportIconUrl} alt="" class="card-menu-item-icon">
-                                                Report
-                                            </button>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-                            <div class="owner-identity">
-                                <template lwc:if={avatarUrl}>
-                                    <img src={avatarUrl} alt="" class="compact-avatar">
-                                </template>
-                                <span lwc:if={userName} class="compact-owner-name">{userName}</span>
-                            </div>
-                            <template lwc:if={responseLabel}>
-                                <button class={computedResponsePillClass} onclick={handleResponseClick}>
-                                    <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
-                                    <span>{responseLabel}</span>
-                                </button>
-                            </template>
-                        </div>
-                    </template>
-
                     <!-- Compact grid: title + kebab on same row -->
                     <template lwc:if={showCompactTitleRow}>
                         <div class="compact-title-row">
-                            <div class="card-title">{displayTitle}</div>
+                            <div class={cardTitleClass}>
+                                <template lwc:if={showTitleLead}>
+                                    <span class="title-lead" aria-hidden="true">
+                                        <span class="title-lead-label">{titleLeadLabel}</span>
+                                        <span class="title-lead-dot">·</span>
+                                    </span>
+                                </template>
+                                <span class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
+                            </div>
                             <template lwc:if={showCompactCardMenu}>
                                 <div class="card-menu-wrap compact-card-menu">
                                     <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
@@ -112,7 +92,15 @@
                         </div>
                     </template>
                     <template lwc:elseif={title}>
-                        <div class="card-title">{displayTitle}</div>
+                        <div class={cardTitleClass}>
+                            <template lwc:if={showTitleLead}>
+                                <span class="title-lead" aria-hidden="true">
+                                    <span class="title-lead-label">{titleLeadLabel}</span>
+                                    <span class="title-lead-dot">·</span>
+                                </span>
+                            </template>
+                            <span class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
+                        </div>
                     </template>
 
                     <!-- Compact/list badge + status row -->
@@ -226,6 +214,40 @@
                     </div>
                 </div>
             </div>
+
+            <!-- List layout: kebab, owner, CTA — right column after content + image -->
+            <template lwc:if={showListOwnerRow}>
+                <div class="list-owner-row">
+                    <template lwc:if={showListCardMenu}>
+                        <div class="card-menu-wrap list-card-menu">
+                            <button type="button" class="card-menu" aria-label="More options" aria-expanded={menuOpen} onclick={handleMenuClick}>
+                                <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
+                            </button>
+                            <template lwc:if={showMenuDropdown}>
+                                <div class="card-menu-backdrop" onclick={handleMenuBackdropClick}></div>
+                                <div class="card-menu-dropdown" role="menu">
+                                    <button type="button" class="card-menu-item" role="menuitem" onclick={handleReportClick}>
+                                        <img src={reportIconUrl} alt="" class="card-menu-item-icon">
+                                        Report
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <div class="owner-identity">
+                        <template lwc:if={avatarUrl}>
+                            <img src={avatarUrl} alt="" class="compact-avatar">
+                        </template>
+                        <span lwc:if={userName} class="compact-owner-name">{userName}</span>
+                    </div>
+                    <template lwc:if={responseLabel}>
+                        <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                            <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
+                            <span>{responseLabel}</span>
+                        </button>
+                    </template>
+                </div>
+            </template>
         </div>
 
         <!-- Default Footer Bar (full-size pill + engagement count) -->

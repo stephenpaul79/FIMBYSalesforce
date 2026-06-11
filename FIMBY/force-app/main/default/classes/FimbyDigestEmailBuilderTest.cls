@@ -343,4 +343,47 @@ private class FimbyDigestEmailBuilderTest {
         // guaranteed when content exists. Just confirm the build ran end to end and produced HTML.
         System.assert(result.html.length() > 0);
     }
+
+    @IsTest
+    static void buildAskOfferCard_showsStillNeededBadgeWhenRefreshed() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id needRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        insert new Needs_Offers__c(
+            Name = 'Refreshed Ask',
+            RecordTypeId = needRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Goods - Unperishable',
+            Status__c = 'Posted',
+            Posted_Date__c = Datetime.now(),
+            Refresh_Count__c = 1,
+            End_Date__c = Date.today().addDays(5)
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(result.html.contains('STILL NEEDED'), 'Refreshed ask should show badge');
+    }
+
+    @IsTest
+    static void formatRecurrenceFrequencyBadge_weekly() {
+        System.assertEquals(
+            'WEEKLY',
+            FimbyDigestEmailBuilder.formatRecurrenceFrequencyBadge('Week', 1)
+        );
+        System.assertEquals(
+            'EVERY 2 WEEKS',
+            FimbyDigestEmailBuilder.formatRecurrenceFrequencyBadge('Week', 2)
+        );
+    }
 }

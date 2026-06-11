@@ -7,7 +7,8 @@ const BADGE_VARIANTS = {
     event: { label: 'Event', variant: 'event' },
     gathering: { label: 'Gathering', variant: 'gathering' },
     'community-event': { label: 'Community Event', variant: 'community-event' },
-    vouch: { label: 'Vouch', variant: 'vouch' }
+    vouch: { label: 'Vouch', variant: 'vouch' },
+    skill: { label: 'Skill', variant: 'skill' }
 };
 
 const CONTEXT_TO_VARIANT = {
@@ -16,7 +17,8 @@ const CONTEXT_TO_VARIANT = {
     Missed_Pickup: 'checkin',
     Event: 'event',
     Vouch_Request: 'vouch',
-    Direct: 'direct'
+    Direct: 'direct',
+    Skill: 'skill'
 };
 
 const AVATAR_ICON_BY_BADGE = {
@@ -28,7 +30,8 @@ const AVATAR_ICON_BY_BADGE = {
     checkin: 'checkin.png',
     vouch: 'care.png',
     response: 'reply.png',
-    direct: 'chat.png'
+    direct: 'chat.png',
+    skill: 'lightbulb.png'
 };
 
 export function getInboxBadge(badgeType) {

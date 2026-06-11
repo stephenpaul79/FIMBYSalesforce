@@ -1,0 +1,200 @@
+<template>
+
+    <template lwc:if={isVisible}>
+
+        <div class="modal-backdrop" onclick={handleBackdropClick} role="presentation">
+
+            <div class="modal-container" onclick={handleModalClick} role="dialog" aria-modal="true" aria-labelledby="skill-edit-title">
+
+                <div class="modal-header">
+
+                    <h2 id="skill-edit-title" class="modal-title">
+
+                        <img src={editIconUrl} alt="" class="modal-title-icon">
+
+                        <span>{modalTitle}</span>
+
+                    </h2>
+
+                    <button type="button" class="close-button" onclick={handleClose} title="Close" aria-label="Close">
+
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="modal-body">
+
+                    <template lwc:if={isLoading}>
+
+                        <div class="loading-container">
+
+                            <c-fimby-loading-message context="general" size="small"></c-fimby-loading-message>
+
+                        </div>
+
+                    </template>
+
+                    <template lwc:elseif={loadError}>
+
+                        <div class="error-container" role="alert">
+
+                            <p class="error-message">{loadError}</p>
+
+                            <button type="button" class="retry-button" onclick={handleRetry}>Try Again</button>
+
+                        </div>
+
+                    </template>
+
+                    <template lwc:elseif={formReady}>
+
+                        <template lwc:if={showIdentityBanner}>
+
+                            <div class="posting-as">
+
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+
+                                <span class="posting-as-label">Editing as:</span>
+
+                                <span class="posting-as-value">{actingAsContactName}</span>
+
+                            </div>
+
+                        </template>
+
+
+
+                        <template lwc:if={saveError}>
+
+                            <div class="error-banner" role="alert">{saveError}</div>
+
+                        </template>
+
+
+
+                        <div class="field-group">
+
+                            <div class="field-label-row">
+
+                                <label class="field-label" for="skill-edit-title-input">Title</label>
+
+                                <span class={titleCountClass}>{titleLength}/80</span>
+
+                            </div>
+
+                            <input id="skill-edit-title-input"
+
+                                   type="text"
+
+                                   class="form-input"
+
+                                   value={title}
+
+                                   maxlength="80"
+
+                                   oninput={handleTitleChange}>
+
+                        </div>
+
+                        <div class="field-group">
+
+                            <div class="field-label-row">
+
+                                <span class="field-label">Description</span>
+
+                                <span class={descriptionCountClass}>{descriptionLength}/255</span>
+
+                            </div>
+
+                            <lightning-textarea
+
+                                class="skill-desc-textarea"
+
+                                variant="label-hidden"
+
+                                value={description}
+
+                                max-length="255"
+
+                                placeholder="What can you help with? Any experience or limits worth mentioning?"
+
+                                onchange={handleDescriptionChange}>
+
+                            </lightning-textarea>
+
+                        </div>
+
+                        <div class="field-group">
+
+                            <div class="field-label-row">
+
+                                <label class="field-label" for="skill-edit-avail">Availability note (optional)</label>
+
+                                <span class={availabilityCountClass}>{availabilityLength}/255</span>
+
+                            </div>
+
+                            <input id="skill-edit-avail"
+
+                                   type="text"
+
+                                   class="form-input"
+
+                                   value={availabilityNote}
+
+                                   maxlength="255"
+
+                                   placeholder="e.g. Weekday evenings, by appointment"
+
+                                   oninput={handleAvailabilityChange}>
+
+                        </div>
+
+                    </template>
+
+                </div>
+
+
+
+                <template lwc:if={showFooter}>
+
+                    <div class="modal-footer">
+
+                        <button type="button" class="cancel-button" onclick={handleClose} disabled={isSaving}>Cancel</button>
+
+                        <button type="button" class="save-button" onclick={handleSave} disabled={isSaveDisabled}>
+
+                            <template lwc:if={isSaving}>
+
+                                <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
+
+                                <span>Saving...</span>
+
+                            </template>
+
+                            <template lwc:else>
+
+                                <img src={saveIconUrl} alt="" class="save-btn-icon">
+
+                                <span>Save Changes</span>
+
+                            </template>
+
+                        </button>
+
+                    </div>
+
+                </template>
+
+            </div>
+
+        </div>
+
+    </template>
+
+</template>
+

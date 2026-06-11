@@ -138,6 +138,7 @@
 @property --fimby-badge-ask-offer     { syntax: '<color>'; inherits: true; initial-value: rgba(91, 135, 96, 0.90); }
 @property --fimby-badge-event         { syntax: '<color>'; inherits: true; initial-value: rgba(68, 142, 158, 0.90); }
 @property --fimby-badge-library       { syntax: '<color>'; inherits: true; initial-value: rgba(141, 123, 106, 0.90); }
+@property --fimby-badge-skill         { syntax: '<color>'; inherits: true; initial-value: rgba(107, 122, 141, 0.85); }
 @property --fimby-badge-direct        { syntax: '<color>'; inherits: true; initial-value: rgba(94, 123, 146, 0.85); }
 
 /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
@@ -274,6 +275,7 @@
   --fimby-badge-ask-offer:  rgba( 91, 135,  96, 0.90);  /* Sage         */
   --fimby-badge-event:      rgba( 68, 142, 158, 0.90);  /* Teal         */
   --fimby-badge-library:    rgba(141, 123, 106, 0.90);  /* Driftwood    */
+  --fimby-badge-skill:      rgba(107, 122, 141, 0.85);  /* Steel blue   */
   --fimby-badge-direct:     rgba( 94, 123, 146, 0.85);  /* Slate — DMs  */
 
   /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */

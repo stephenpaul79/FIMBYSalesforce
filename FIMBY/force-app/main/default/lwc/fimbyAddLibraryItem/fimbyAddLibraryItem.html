@@ -59,13 +59,40 @@
         <!-- Main Form -->
         <template lwc:else>
             <c-fimby-page-header
-                page-title="Post Library Item"
+                page-title={pageHeaderTitle}
                 parent-label="Library"
                 parent-url="/library-list">
             </c-fimby-page-header>
 
-            <!-- Form Container -->
             <div class="form-container">
+            <template lwc:if={showModeSelector}>
+                <div class="library-type-grid" role="group" aria-label="Library post type">
+                    <button type="button" class={itemTypeClass} onclick={handleItemMode} aria-pressed={isItemMode}>
+                        <div class="library-type-icon items-icon">
+                            <img src={itemsIconUrl} alt="" class="library-type-icon-img">
+                        </div>
+                        <span class="library-type-label">Lend an Item</span>
+                        <span class="library-type-description">Add to the Library</span>
+                    </button>
+                    <button type="button" class={skillTypeClass} onclick={handleSkillMode} aria-pressed={isSkillMode}>
+                        <div class="library-type-icon skills-icon">
+                            <img src={skillsIconUrl} alt="" class="library-type-icon-img">
+                        </div>
+                        <span class="library-type-label">Offer a Skill</span>
+                        <span class="library-type-description">Standing help neighbours can ask for</span>
+                    </button>
+                </div>
+            </template>
+
+            <template lwc:if={isSkillMode}>
+                <c-fimby-skill-composer
+                    mode={composerMode}
+                    edit-skill-id={editSkillId}
+                    oncelebrationchange={handleSkillCelebrationChange}>
+                </c-fimby-skill-composer>
+            </template>
+
+            <template lwc:else>
                 <!-- Error Display -->
                 <template lwc:if={error}>
                     <div class="error-banner">
@@ -74,95 +101,13 @@
                     </div>
                 </template>
 
-                <!-- Poster Details Section -->
-                <div class="form-section">
-                    <h3 class="section-title">
-                        <img src={posterIconUrl} alt="Poster" class="section-icon">
-                        Poster Details
-                    </h3>
-
-                    <div class="form-group">
-                        <label class="form-label">Owner <span class="required">*</span></label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input
-                                    type="radio"
-                                    name="owner"
-                                    value="Self"
-                                    checked={isSelfOwned}
-                                    onchange={handleOwnerChange}
-                                    class="radio-input">
-                                <span class="radio-custom"></span>
-                                <span class="radio-text">Self</span>
-                            </label>
-                            <label class="radio-option">
-                                <input
-                                    type="radio"
-                                    name="owner"
-                                    value="Organization"
-                                    checked={isOrganizationOwned}
-                                    onchange={handleOwnerChange}
-                                    class="radio-input">
-                                <span class="radio-custom"></span>
-                                <span class="radio-text">Organization</span>
-                            </label>
-                        </div>
+                <template lwc:if={showIdentityBanner}>
+                    <div class="posting-as">
+                        <img src={posterIconUrl} alt="" class="posting-as-icon">
+                        <span class="posting-as-label">Posting as:</span>
+                        <span class="posting-as-value">{actingAsContactName}</span>
                     </div>
-
-                    <!-- Organization Lookup (visible when Organization selected) -->
-                    <template lwc:if={isOrganizationOwned}>
-                        <div class="form-group">
-                            <label for="org-search" class="form-label">
-                                Organization's Name <span class="required">*</span>
-                            </label>
-                            <div class="lookup-container">
-                                <input
-                                    id="org-search"
-                                    type="text"
-                                    class="form-input"
-                                    placeholder="Search for an organization..."
-                                    value={organizationSearchTerm}
-                                    oninput={handleOrganizationSearchChange}
-                                    autocomplete="off">
-                                <template lwc:if={showOrganizationSearch}>
-                                    <div class="lookup-dropdown">
-                                        <template for:each={organizationSearchResults} for:item="org">
-                                            <div
-                                                key={org.id}
-                                                class="lookup-option"
-                                                data-id={org.id}
-                                                data-name={org.name}
-                                                onclick={handleOrganizationSelect}>
-                                                {org.name}
-                                            </div>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="org-relationship" class="form-label">
-                                Relationship to the organization <span class="required">*</span>
-                            </label>
-                            <input
-                                id="org-relationship"
-                                type="text"
-                                class="form-input"
-                                placeholder="e.g., Volunteer, Staff Member, Board Member"
-                                value={organizationRelationship}
-                                oninput={handleOrganizationRelationshipChange}>
-                        </div>
-                    </template>
-
-                    <template lwc:if={showIdentityBanner}>
-                        <div class="posting-as">
-                            <img src={posterIconUrl} alt="" class="posting-as-icon">
-                            <span class="posting-as-label">Posting as:</span>
-                            <span class="posting-as-value">{actingAsContactName}</span>
-                        </div>
-                    </template>
-                </div>
+                </template>
 
                 <!-- Item Details Section -->
                 <div class="form-section">
@@ -283,7 +228,7 @@
                 </div>
 
                 <!-- Risk Acknowledgement Section -->
-                <div class="form-section warning-section">
+                <div class="form-section warning-section form-section-with-nav">
                     <h3 class="section-title">
                         <img src={warningIconUrl} alt="Warning" class="section-icon">
                         Risk Acknowledgement
@@ -308,23 +253,23 @@
                             </span>
                         </label>
                     </div>
-                </div>
 
-                <!-- Action Buttons -->
-                <div class="form-actions">
-                    <button
-                        class="btn btn-primary btn-large"
-                        onclick={handlePostNow}
-                        disabled={isFormInvalid}>
-                        <template lwc:if={isSaving}>
-                            <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
-                        </template>
-                        <template lwc:else>
-                            <img src={submitIconUrl} alt="" class="btn-icon">
-                            {submitButtonLabel}
-                        </template>
-                    </button>
+                    <div class="form-actions">
+                        <button
+                            class="btn btn-primary btn-large"
+                            onclick={handlePostNow}
+                            disabled={isFormInvalid}>
+                            <template lwc:if={isSaving}>
+                                <lightning-spinner alternative-text="Saving..." size="small"></lightning-spinner>
+                            </template>
+                            <template lwc:else>
+                                <img src={submitIconUrl} alt="" class="btn-icon">
+                                {submitButtonLabel}
+                            </template>
+                        </button>
+                    </div>
                 </div>
+            </template>
             </div>
         </template>
     </div>

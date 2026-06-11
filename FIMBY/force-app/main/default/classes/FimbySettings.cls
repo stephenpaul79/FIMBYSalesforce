@@ -36,6 +36,16 @@ public with sharing class FimbySettings {
     /** @description Default end days for Offer posts. */
     public static Integer offerDefaultEndDays()      { return safe(get()?.Offer_Default_End_Days__c, 21); }
 
+    // ---- Post Refresh ----
+    /** @description Minimum days between post refreshes. */
+    public static Integer refreshCooldownDays()          { return safe(get()?.Refresh_Cooldown_Days__c, 7); }
+    /** @description Maximum refreshes per post (original + N = N+1 appearances). */
+    public static Integer refreshMaxCount()              { return safe(get()?.Refresh_Max_Count__c, 2); }
+    /** @description Earliest day after creation to send a refresh reminder. */
+    public static Integer refreshReminderMinAgeDays()    { return safe(get()?.Refresh_Reminder_Min_Age_Days__c, 7); }
+    /** @description Days before End_Date__c to nudge the author. */
+    public static Integer refreshReminderLeadDays()      { return safe(get()?.Refresh_Reminder_Lead_Days__c, 1); }
+
     // ---- Rate Limits ----
     /** @description Max new conversations a user can create per day. */
     public static Integer maxNewConversationsPerDay()    { return safe(get()?.Max_New_Conversations_Per_Day__c, 5); }

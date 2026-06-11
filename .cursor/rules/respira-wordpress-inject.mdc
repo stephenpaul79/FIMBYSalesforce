@@ -1,0 +1,66 @@
+---
+description: Respira MCP live inject — one recipe, no placeholders, in-thread only
+globs: FIMBY Website/**
+alwaysApply: false
+---
+
+# Respira WordPress inject (fimby.com)
+
+## Recipe (follow in order — no side paths)
+
+1. **Read** MCP schema: `respira_inject_builder_content.json`
+2. **Build** staging payload:
+   ```powershell
+   node "FIMBY Website/scripts/build-gutenberg-inject.mjs" --html <file>.html --page-id <id> --markers <token>,<token>
+   ```
+   Exit 0 required. `--markers` = comma-separated **single tokens** (no spaces).
+3. **Sanity-check** staged file before any write:
+   ```powershell
+   node -e "const p=require('./FIMBY Website/.respira/staging/inject-<id>.json'); const c=p.content[0].content; console.log({chars:c.length, forbidden:{crisis:c.includes('crisis-line'), cred_quote:c.includes('credibility-quote'), fake_testimonial:c.includes('not an app, but people who know your name'), stub:/(^|[\n>])\s*PLACEHOLDER\s*($|[\n<])/i.test(c)}});"
+   ```
+   Abort if any `forbidden` value is `true` or char count ≠ source `.html` (+2 for wrap newlines). `grocery store` in the hero wireframe mock is OK.
+4. **User approved** live push in this thread (`edit_target: live`).
+5. **Inject in this thread** — `CallMcpTool` → `project-0-FIMBY-respira-wordpress` → `respira_inject_builder_content` with **all** fields from `.respira/staging/inject-{pageId}.json`:
+   - `builder`, `page_id`, `mode`, `confirm_replace`, `edit_target`, `content`
+   - Load via `require()` on the staging path; pass the parsed object **verbatim** to `CallMcpTool`
+   - Do **not** hand-type HTML, truncate, or substitute content in the tool call
+6. **Verify** — `respira_extract_builder_content` on same `page_id`; confirm required markers present and forbidden strings absent.
+7. **Record** `snapshot_uuid` from inject response (rollback only if user asks).
+8. **Delete** `.respira/staging/inject-{pageId}.json` only after step 6 passes.
+
+Subagents: **only** if step 5 fails after one in-thread retry with the full staged JSON. Pass absolute staging path; forbid shortening `content`.
+
+## Never
+
+| Action | Why |
+|--------|-----|
+| `node fetch` / `curl` to `wp-json/respira/...` | 404 on this site; bypasses MCP |
+| `CallMcpTool` with stub/truncated/placeholder HTML | Has gone live |
+| "Test" inject on `edit_target: live` | Use read tools first |
+| Task subagents (default) | Lost context → placeholder/truncation |
+| `_inject-*.json` or `mcp-args-*.json` at repo root | Wrong-file / duplicate injects |
+| Second staging copy (`mcp-args-*.json`) | Use only `inject-{pageId}.json` |
+
+## Staging layout
+
+```
+FIMBY Website/scripts/build-gutenberg-inject.mjs   # keep
+FIMBY Website/.respira/staging/inject-{pageId}.json  # gitignored; delete after verify
+```
+
+## Page ID map
+
+| Local HTML | Post ID |
+|------------|---------|
+| `home.html` | 26 |
+| `how-it-works.html` | 30 |
+| `our-approach.html` | 431 |
+| `vision.html` | 568 |
+| `faq.html` | 59 |
+| `contact.html` | 210 |
+
+Update when IDs change.
+
+## Keep this rule current
+
+After a deploy teaches something new, edit this file in place (Never table, recipe step, or sanity-check). No running log. Prune redundancy.

@@ -5,6 +5,7 @@
  * Use together with fimby-scroll-sections.css.
  */
 (function () {
+  document.documentElement.classList.add('js-scroll-sections');
   var sections = document.querySelectorAll('.fimby-scroll-section');
   if (!sections.length) return;
 

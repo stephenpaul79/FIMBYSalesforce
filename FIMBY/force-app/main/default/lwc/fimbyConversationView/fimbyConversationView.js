@@ -7,6 +7,8 @@ import getMessages from '@salesforce/apex/FimbyMessageController.getMessages';
 import sendMessage from '@salesforce/apex/FimbyMessageController.sendMessage';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import checkConversationRevoked from '@salesforce/apex/FimbyConversationController.isConversationRevoked';
+import prepareDirectConversation from '@salesforce/apex/FimbyConversationController.prepareDirectConversation';
+import sendDirectMessage from '@salesforce/apex/FimbyConversationController.sendDirectMessage';
 import getFollowUpByConversation from '@salesforce/apex/FimbyFollowUpController.getFollowUpByConversation';
 import resolveFollowUp from '@salesforce/apex/FimbyFollowUpController.resolveFollowUp';
 import escalateFollowUp from '@salesforce/apex/FimbyFollowUpController.escalateFollowUp';
@@ -29,6 +31,8 @@ const SNIPPET_LENGTH = 80;
 
 export default class FimbyConversationView extends NavigationMixin(LightningElement) {
     @api conversationId = '';
+    @api targetContactId = '';
+    @track isDraft = false;
     @track messages = [];
     @track processedMessages = [];
     @track messageText = '';
@@ -292,10 +296,57 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     connectedCallback() {
         if (this.conversationId) {
             this.loadMessages();
+        } else if (this.targetContactId) {
+            this.loadDraft();
         }
 
         if (sessionStorage.getItem('fimby_neighbourly_dismissed') === 'true') {
             this.showNeighbourlyBanner = false;
+        }
+    }
+
+    _replaceConversationUrl(conversationId) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('contactId');
+        url.searchParams.set('id', conversationId);
+        window.history.replaceState({}, '', url.pathname + url.search);
+    }
+
+    async loadDraft() {
+        this.isLoading = true;
+        this.middleRevealed = false;
+        this.expandedIds = [];
+        try {
+            const result = await prepareDirectConversation({ targetContactId: this.targetContactId });
+
+            if (result.isExisting && result.conversationId) {
+                this.conversationId = result.conversationId;
+                this.targetContactId = '';
+                this.isDraft = false;
+                this._replaceConversationUrl(result.conversationId);
+                await this.loadMessages();
+                return;
+            }
+
+            this.otherParticipantName = result.otherParticipantName;
+            this.otherParticipantFirstName = result.otherParticipantFirstName;
+            this.otherParticipantId = result.otherParticipantId;
+            this.otherParticipantImageUrl = result.otherParticipantImageUrl;
+            this.myContactId = result.myContactId;
+            this.myContactImageUrl = result.myContactImageUrl;
+            this.isActingAsSelf = result.isActingAsSelf;
+            this.actingAsContactName = result.actingAsContactName;
+            this.isOtherParticipantOrg = result.isOtherParticipantOrg || false;
+            this.contextType = 'Direct';
+            this.messages = [];
+            this.totalCount = 0;
+            this.isDraft = true;
+            this._maybeAutoOpenCompose();
+        } catch (error) {
+            console.error('Error preparing draft conversation:', error);
+        } finally {
+            this.isLoading = false;
+            this.scrollToBottom();
         }
     }
 
@@ -827,10 +878,24 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         this.isSending = true;
 
         try {
-            const result = await sendMessage({
-                conversationId: this.conversationId,
-                body: body
-            });
+            let result;
+            if (this.isDraft) {
+                result = await sendDirectMessage({
+                    targetContactId: this.targetContactId,
+                    body: body
+                });
+                if (result.success) {
+                    this.conversationId = result.conversationId;
+                    this.targetContactId = '';
+                    this.isDraft = false;
+                    this._replaceConversationUrl(result.conversationId);
+                }
+            } else {
+                result = await sendMessage({
+                    conversationId: this.conversationId,
+                    body: body
+                });
+            }
             if (result.success) {
                 this.messageText = '';
                 this.showCompose = false;

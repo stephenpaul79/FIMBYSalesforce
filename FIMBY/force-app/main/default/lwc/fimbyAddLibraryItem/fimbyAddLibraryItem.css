@@ -287,7 +287,98 @@
     line-height: 1.4;
 }
 
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Item / Skill type cards — same scale as fimbyQuickPostForm modal-grid */
+.library-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(8px, 2vw, 14px);
+    margin-bottom: 16px;
+}
+
+.library-type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--fimby-surface-card);
+    border: 2px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg);
+    padding: clamp(10px, 2.5vw, 20px) clamp(8px, 1.5vw, 14px);
+    gap: clamp(4px, 1vw, 8px);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    font: inherit;
+    color: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px;
+}
+
+.library-type-option:hover {
+    border-color: var(--fimby-btn-primary-bg);
+    box-shadow: var(--fimby-shadow-card);
+}
+
+.library-type-option.active {
+    border-color: var(--fimby-btn-primary-bg);
+    background-color: var(--fimby-info-tint);
+}
+
+.library-type-option:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.library-type-icon {
+    width: clamp(36px, 9vw, 56px);
+    height: clamp(36px, 9vw, 56px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.library-type-icon-img {
+    width: clamp(22px, 5.5vw, 32px);
+    height: clamp(22px, 5.5vw, 32px);
+    object-fit: contain;
+}
+
+.items-icon {
+    background-color: var(--fimby-warning-tint);
+}
+
+.skills-icon {
+    background-color: var(--fimby-info-tint);
+}
+
+.library-type-label {
+    display: block;
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    margin-bottom: 2px;
+}
+
+.library-type-description {
+    display: block;
+    font-size: clamp(0.72rem, 1.6vw, 0.8rem);
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+    .library-type-grid {
+        gap: 12px;
+    }
+
+    .library-type-option {
+        padding: 16px 12px;
+        gap: 6px;
+    }
+}
+
 .posting-as {
     display: flex;
     align-items: center;
@@ -296,7 +387,7 @@
     background: var(--fimby-success-tint);
     border-radius: var(--fimby-radius-sm);
     border-left: 4px solid var(--fimby-success);
-    margin-top: 16px;
+    margin-bottom: 16px;
 }
 
 .posting-as-icon {
@@ -359,6 +450,12 @@
     margin-top: 24px;
     display: flex;
     justify-content: center;
+}
+
+.form-section-with-nav .form-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--fimby-border-subtle);
 }
 
 /* Buttons */
@@ -578,7 +675,6 @@
         max-width: 640px;
         margin: 0 auto;
         min-height: auto;
-        box-shadow: var(--fimby-shadow-card-hover);
     }
 
     .form-container {

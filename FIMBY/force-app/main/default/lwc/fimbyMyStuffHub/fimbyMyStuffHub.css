@@ -84,6 +84,11 @@
     background-color: var(--fimby-earth-ochre, #7D6234);
 }
 
+.hub-pill-skills {
+    /* Vouch copper — warm, distinct from ochre/sage/violet/slate/teal; white text ≥4.5:1 */
+    background-color: #925930;
+}
+
 .hub-pill-library {
     background-color: var(--fimby-earth-dusty-violet, #625A76);
 }

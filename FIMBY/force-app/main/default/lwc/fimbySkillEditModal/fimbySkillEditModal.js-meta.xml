@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://lwc.dev/v1.0.0">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>FIMBY Skill Edit Modal</masterLabel>
+    <description>Modal overlay for editing a single skill offer without leaving the detail page</description>
+</LightningComponentBundle>

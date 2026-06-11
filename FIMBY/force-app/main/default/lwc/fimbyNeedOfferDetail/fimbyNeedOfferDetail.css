@@ -37,6 +37,90 @@
     margin-top: 16px;
 }
 
+.refresh-panel {
+    background-color: var(--fimby-success-tint, #eef6f0);
+    border-left: 4px solid var(--fimby-success, #1A7B40);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+    margin-top: 16px;
+}
+
+.refresh-panel-prompt {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+}
+
+.refresh-panel-helper {
+    margin: 0 0 12px;
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
+}
+
+.refresh-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.refresh-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    min-height: 44px;
+    border-radius: var(--fimby-btn-radius);
+    border: 1px solid var(--fimby-border-default);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.refresh-action-btn:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.refresh-action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.refresh-action-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.refresh-action-primary {
+    background-color: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-primary-bg);
+}
+
+.refresh-action-primary:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
+}
+
+@media (max-width: 480px) {
+    .refresh-panel-actions {
+        flex-direction: column;
+    }
+
+    .refresh-action-btn {
+        width: 100%;
+    }
+}
+
 .content-removed-title {
     font-size: 1.1rem;
     font-weight: 700;

@@ -40,6 +40,11 @@
                 <default>false</default>
                 <label>Vouch Request</label>
             </value>
+            <value>
+                <fullName>Skill</fullName>
+                <default>false</default>
+                <label>Skill</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

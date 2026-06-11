@@ -180,6 +180,8 @@ public with sharing class FimbyAskOfferController {
 
             FimbyRecurrenceService.applyRecurrenceOnCreate(newPost, data);
 
+            newPost.Posted_Date__c = Datetime.now();
+
             new NeedsOffersHelper().insertPost(newPost);
 
             FimbyRecurrenceService.finalizeSeriesParentAfterInsert(newPost);
@@ -432,6 +434,218 @@ public with sharing class FimbyAskOfferController {
             });
         }
         return results;
+    }
+
+    private static final Set<String> REFRESHABLE_OPEN_STATUSES = new Set<String>{
+        FimbyConstants.NEEDS_OFFERS_POSTED,
+        FimbyConstants.NEEDS_OFFERS_REPLY_RECEIVED,
+        FimbyConstants.NEEDS_OFFERS_REPLY_ACCEPTED
+    };
+
+    /**
+     * @description Returns refresh/close eligibility for the post detail UI.
+     */
+    @AuraEnabled
+    public static Map<String, Object> getRefreshPostState(String recordId) {
+        FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+        Id realContactId = identity.currentUser.ContactId;
+        Id actingAsContactId = identity.actingAsContactId;
+
+        Needs_Offers__c post = loadPostForRefreshAction(recordId);
+
+        Boolean isAuthor = post.Posted_By__c == realContactId || post.Contact__c == actingAsContactId;
+        Boolean isAskOrOffer = post.RecordType.DeveloperName == FimbyConstants.RT_NEED
+            || post.RecordType.DeveloperName == FimbyConstants.RT_OFFER;
+        Boolean isOpen = REFRESHABLE_OPEN_STATUSES.contains(post.Status__c);
+
+        Integer refreshCount = post.Refresh_Count__c != null ? post.Refresh_Count__c.intValue() : 0;
+        Integer maxCount = FimbySettings.refreshMaxCount();
+        Integer cooldownDays = FimbySettings.refreshCooldownDays();
+
+        Boolean atCap = refreshCount >= maxCount;
+        Integer cooldownRemaining = 0;
+        if (post.Last_Refreshed_Date__c != null) {
+            Date nextEligible = post.Last_Refreshed_Date__c.addDays(cooldownDays);
+            if (nextEligible > Date.today()) {
+                cooldownRemaining = Date.today().daysBetween(nextEligible);
+            }
+        }
+        Boolean onCooldown = cooldownRemaining > 0;
+
+        Boolean isNeed = post.RecordType.DeveloperName == FimbyConstants.RT_NEED;
+        String prompt = isNeed
+            ? 'Were you able to sort this out?'
+            : 'Is this still available?';
+
+        return new Map<String, Object>{
+            'isAuthor' => isAuthor,
+            'showPanel' => isAuthor && isAskOrOffer && isOpen,
+            'isNeed' => isNeed,
+            'prompt' => prompt,
+            'canRefresh' => isAuthor && isAskOrOffer && isOpen && !atCap && !onCooldown,
+            'refreshCount' => refreshCount,
+            'maxRefreshCount' => maxCount,
+            'cooldownDaysRemaining' => cooldownRemaining,
+            'atCap' => atCap,
+            'onCooldown' => onCooldown,
+            'resolvedLabel' => isNeed ? 'All sorted' : 'All taken',
+            'withdrawnLabel' => isNeed ? 'No longer needed' : 'No longer available',
+            'refreshLabel' => isNeed ? 'Still needed' : 'Still available'
+        };
+    }
+
+    /**
+     * @description Bumps a still-relevant ask/offer in the feed without notifying neighbours.
+     */
+    @AuraEnabled
+    public static Map<String, Object> refreshPost(String recordId) {
+        try {
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Needs_Offers__c post = loadPostForRefreshAction(recordId);
+            enforceAuthorAccess(post, identity);
+            validateRefreshablePost(post);
+
+            Integer refreshCount = post.Refresh_Count__c != null ? post.Refresh_Count__c.intValue() : 0;
+            Integer maxCount = FimbySettings.refreshMaxCount();
+            if (refreshCount >= maxCount) {
+                throw refreshException('This post has reached its refresh limit.');
+            }
+
+            Integer cooldownDays = FimbySettings.refreshCooldownDays();
+            if (post.Last_Refreshed_Date__c != null
+                && post.Last_Refreshed_Date__c.addDays(cooldownDays) > Date.today()) {
+                throw refreshException('Please wait a few more days before refreshing again.');
+            }
+
+            Integer extendDays = post.RecordType.DeveloperName == FimbyConstants.RT_NEED
+                ? FimbySettings.needDefaultEndDays()
+                : FimbySettings.offerDefaultEndDays();
+
+            post.End_Date__c = Date.today().addDays(extendDays);
+            post.Posted_Date__c = Datetime.now();
+            post.Refresh_Count__c = refreshCount + 1;
+            post.Last_Refreshed_Date__c = Date.today();
+            post.Last_Refresh_Reminder_Date__c = null;
+
+            new NeedsOffersHelper().updatePost(post);
+
+            return new Map<String, Object>{
+                'success' => true,
+                'message' => 'Your post has been refreshed.'
+            };
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyAskOfferController', 'refreshPost', e);
+            throw refreshException('We could not refresh this post right now. Please try again.');
+        }
+    }
+
+    /**
+     * @description Closes an ask/offer from the refresh reminder or detail UI.
+     * @param outcome 'resolved' (all sorted / all taken) or 'withdrawn' (no longer needed / available)
+     */
+    @AuraEnabled
+    public static Map<String, Object> closePost(String recordId, String outcome) {
+        try {
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Needs_Offers__c post = loadPostForRefreshAction(recordId);
+            enforceAuthorAccess(post, identity);
+            validateRefreshablePost(post);
+
+            if (outcome == 'resolved') {
+                post.Status__c = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+            } else if (outcome == 'withdrawn') {
+                post.Status__c = FimbyConstants.NEEDS_OFFERS_CANCELLED;
+            } else {
+                throw refreshException('Please choose how to close this post.');
+            }
+
+            new NeedsOffersHelper().updatePost(post);
+            notifyPendingRespondersOnClose(identity.orgDisplayName, post, outcome);
+
+            String message = outcome == 'resolved'
+                ? 'Glad to hear it — neighbours will see this as sorted.'
+                : 'Thanks for letting neighbours know.';
+
+            return new Map<String, Object>{
+                'success' => true,
+                'message' => message
+            };
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyAskOfferController', 'closePost', e);
+            throw refreshException('We could not update this post right now. Please try again.');
+        }
+    }
+
+    private static Needs_Offers__c loadPostForRefreshAction(Id recordId) {
+        Needs_Offers__c post = new NeedsOffersHelper().queryPostForRefresh(recordId);
+        if (post == null) {
+            throw refreshException('Post not found.');
+        }
+        return post;
+    }
+
+    private static void enforceAuthorAccess(
+        Needs_Offers__c post,
+        FimbyIdentityRepository.Identity identity
+    ) {
+        Id realContactId = identity.currentUser.ContactId;
+        Id actingAsContactId = identity.actingAsContactId;
+        if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
+            throw refreshException('You can only manage posts you have created.');
+        }
+    }
+
+    private static void validateRefreshablePost(Needs_Offers__c post) {
+        Boolean isAskOrOffer = post.RecordType.DeveloperName == FimbyConstants.RT_NEED
+            || post.RecordType.DeveloperName == FimbyConstants.RT_OFFER;
+        if (!isAskOrOffer || post.Type__c == 'Event') {
+            throw refreshException('Only asks and offers can be refreshed.');
+        }
+        if (!REFRESHABLE_OPEN_STATUSES.contains(post.Status__c)) {
+            throw refreshException('This post is no longer open.');
+        }
+    }
+
+    private static AuraHandledException refreshException(String message) {
+        AuraHandledException ex = new AuraHandledException(message);
+        ex.setMessage(message);
+        return ex;
+    }
+
+    private static void notifyPendingRespondersOnClose(
+        String actorName,
+        Needs_Offers__c post,
+        String outcome
+    ) {
+        List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(post.Id);
+        Set<Id> notifiedContacts = new Set<Id>();
+        String actionPhrase = outcome == 'resolved'
+            ? 'marked this as sorted'
+            : 'marked this as no longer available';
+
+        for (Response__c resp : pendingResponses) {
+            Id recipientId = resp.On_Behalf_Of_Contact__c != null
+                ? resp.On_Behalf_Of_Contact__c
+                : resp.Contact__c;
+            if (recipientId == null || notifiedContacts.contains(recipientId)) {
+                continue;
+            }
+            notifiedContacts.add(recipientId);
+            FimbyNotificationService.createNotification(
+                recipientId,
+                FimbyConstants.NOTIF_RESPONSE,
+                actorName + ' updated a post you responded to',
+                '"' + post.Name + '" — they\'ve ' + actionPhrase + '.',
+                resp.Id,
+                'Response__c',
+                FimbySettings.getUrl('Home'),
+                actorName
+            );
+        }
     }
 
     /**
@@ -722,6 +936,18 @@ public with sharing class FimbyAskOfferController {
          */
         public void updatePost(Needs_Offers__c post) {
             update post;
+        }
+
+        public Needs_Offers__c queryPostForRefresh(Id recordId) {
+            List<Needs_Offers__c> posts = [
+                SELECT Id, Name, Status__c, Posted_By__c, Contact__c,
+                       RecordType.DeveloperName, Type__c, End_Date__c,
+                       Refresh_Count__c, Last_Refreshed_Date__c, Last_Refresh_Reminder_Date__c
+                FROM Needs_Offers__c
+                WHERE Id = :recordId
+                LIMIT 1
+            ];
+            return posts.isEmpty() ? null : posts[0];
         }
 
         /**

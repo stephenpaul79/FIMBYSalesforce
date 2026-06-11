@@ -5,13 +5,14 @@
  * Sections use class .fimby-scroll-section — they fade/slide in as they enter the viewport.
  */
 
-.fimby-scroll-section {
+/* Only hide sections when scroll JS is loaded (adds html.js-scroll-sections) */
+html.js-scroll-sections .fimby-scroll-section {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.6s ease-out, transform 0.5s ease-out;
 }
 
-.fimby-scroll-section.is-visible {
+html.js-scroll-sections .fimby-scroll-section.is-visible {
   opacity: 1;
   transform: translateY(0);
 }

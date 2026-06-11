@@ -1,0 +1,237 @@
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-success-tint);
+    border-radius: var(--fimby-radius-sm);
+    border-left: 4px solid var(--fimby-success);
+}
+
+.posting-as-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.posting-as-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+    white-space: nowrap;
+}
+
+.posting-as-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
+}
+
+.modal-container {
+    background: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-modal);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-section);
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--fimby-text-strong);
+}
+
+.modal-title-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.close-button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--fimby-text-secondary);
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+}
+
+.loading-container {
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.error-container {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.error-message {
+    color: var(--fimby-error);
+    margin: 0 0 1rem;
+}
+
+.retry-button {
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--fimby-radius-sm);
+    padding: 0.625rem 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.error-banner {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--fimby-error-tint, #FDECEC);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-error);
+    font-size: 0.875rem;
+}
+
+.field-group {
+    margin-bottom: 16px;
+}
+
+.field-group:last-child {
+    margin-bottom: 0;
+}
+
+.field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.field-label {
+    font-weight: 600;
+    color: var(--fimby-text-strong);
+    font-size: 0.875rem;
+}
+
+.character-count {
+    font-size: 0.75rem;
+    color: var(--fimby-text-secondary);
+}
+
+.character-count.near-limit {
+    color: var(--fimby-warning, #C07B2A);
+    font-weight: 500;
+}
+
+.character-count.at-limit {
+    color: var(--fimby-error, #C13030);
+    font-weight: 600;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--fimby-divider-default);
+    border-radius: var(--fimby-radius-sm);
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.skill-desc-textarea {
+    --slds-c-textarea-sizing-min-height: 88px;
+}
+
+.form-input:focus-visible,
+.skill-desc-textarea:focus-within {
+    outline: 2px solid var(--fimby-brand-teal);
+    outline-offset: 1px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--fimby-border-subtle);
+    background: var(--fimby-surface-section);
+}
+
+.cancel-button,
+.save-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    min-height: 44px;
+    border-radius: var(--fimby-btn-radius);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.cancel-button {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+}
+
+.save-button {
+    background: var(--fimby-btn-primary-bg);
+    color: #ffffff;
+    border: none;
+}
+
+.save-button:disabled,
+.cancel-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.save-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}

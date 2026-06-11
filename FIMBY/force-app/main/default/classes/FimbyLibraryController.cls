@@ -58,9 +58,8 @@ public with sharing class FimbyLibraryController {
             Id realContactId = identity.currentUser.ContactId;
             Id actingAsContactId = identity.actingAsContactId;
 
-            // Get the contact to find their neighbourhood (AccountId)
             Contact actingAsContact = [
-                SELECT Id, AccountId
+                SELECT Id, AccountId, Is_Organization_Contact__c, Organization_Account__c
                 FROM Contact
                 WHERE Id = :actingAsContactId
                 WITH SECURITY_ENFORCED
@@ -92,15 +91,16 @@ public with sharing class FimbyLibraryController {
                 ? Decimal.valueOf(String.valueOf(data.get('maxLendingDays')))
                 : 7;
 
-            // Owner settings
-            newItem.Owned_By__c = (String) data.get('ownedBy'); // 'Self' or 'Organization'
             newItem.Owner_Contact__c = actingAsContactId;
             newItem.Listed_By__c = realContactId;
             newItem.Neighbourhood__c = identity.neighbourhoodId;
 
-            // Organization (if owned by organization)
-            if (data.get('ownerOrganizationId') != null) {
-                newItem.Owner_Organization__c = (String) data.get('ownerOrganizationId');
+            if (actingAsContact.Is_Organization_Contact__c == true
+                && actingAsContact.Organization_Account__c != null) {
+                newItem.Owned_By__c = 'Organization';
+                newItem.Owner_Organization__c = actingAsContact.Organization_Account__c;
+            } else {
+                newItem.Owned_By__c = 'Self';
             }
 
             // Settings

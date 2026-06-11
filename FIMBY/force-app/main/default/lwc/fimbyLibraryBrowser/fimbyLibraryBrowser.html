@@ -21,49 +21,50 @@
                 </div>
             </nav>
 
-            <!-- Filter Bar: All → Filter dropdown → selected category -->
-            <div class="feed-filters">
-                <!-- All chip -->
-                <button class={allChipClass} onclick={handleAllChip}>
-                    <img src={filterIconUrl} alt="All" class="filter-icon">
-                    <span>All</span>
-                </button>
+            <!-- All | Items | Skills (+ Filter when Items or Skills) -->
+            <div class="feed-filters" role="group" aria-label="Library filters">
+                <div class="filters-scroll">
+                    <button type="button" class={allChipClass} onclick={handleAllChip}>All</button>
+                    <button type="button" class={itemsToggleClass} onclick={handleItemsMode}>Items</button>
+                    <button type="button" class={skillsToggleClass} onclick={handleSkillsMode}>Skills</button>
 
-                <!-- Filter dropdown (always next to All) -->
-                <div class="dropdown-container">
-                    <button class={dropdownButtonClass} onclick={handleToggleDropdown}>
-                        <lightning-icon icon-name="utility:filterList" size="xx-small"></lightning-icon>
-                        <span>Filter</span>
-                        <lightning-icon icon-name="utility:chevrondown" size="xx-small" class="chevron"></lightning-icon>
-                    </button>
+                    <template lwc:if={showCategoryFilter}>
+                        <div class="dropdown-container">
+                            <button class={dropdownButtonClass} onclick={handleToggleDropdown} aria-expanded={showDropdown}>
+                                <lightning-icon icon-name="utility:filterList" size="xx-small"></lightning-icon>
+                                <span>Filter</span>
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small" class="chevron"></lightning-icon>
+                            </button>
 
-                    <template lwc:if={showDropdown}>
-                        <div class="dropdown-backdrop" onclick={handleCloseDropdown}></div>
-                        <div class="dropdown-menu">
-                            <template for:each={dropdownCategories} for:item="cat">
-                                <button
-                                    key={cat.value}
-                                    class="dropdown-item"
-                                    data-value={cat.value}
-                                    onclick={handleSelectCategory}>
-                                    <span class="color-dot" style={cat.dotStyle}></span>
-                                    <span class="dropdown-label">{cat.label}</span>
-                                    <template lwc:if={cat.isSelected}>
-                                        <lightning-icon icon-name="utility:check" size="xx-small" class="check-icon"></lightning-icon>
+                            <template lwc:if={showDropdown}>
+                                <div class="dropdown-backdrop" onclick={handleCloseDropdown}></div>
+                                <div class="dropdown-menu">
+                                    <template for:each={dropdownCategories} for:item="cat">
+                                        <button
+                                            key={cat.value}
+                                            class="dropdown-item"
+                                            data-value={cat.value}
+                                            onclick={handleSelectCategory}>
+                                            <span class="color-dot" style={cat.dotStyle}></span>
+                                            <span class="dropdown-label">{cat.label}</span>
+                                            <template lwc:if={cat.isSelected}>
+                                                <lightning-icon icon-name="utility:check" size="xx-small" class="check-icon"></lightning-icon>
+                                            </template>
+                                        </button>
                                     </template>
-                                </button>
+                                </div>
                             </template>
                         </div>
                     </template>
-                </div>
 
-                <!-- Selected category chip (desktop only, hidden on mobile via CSS) -->
-                <template lwc:if={hasSelectedCategory}>
-                    <button class="filter-chip selected-category" style={selectedCategoryStyle}>
-                        <span>{selectedCategoryLabel}</span>
-                        <span class="chip-close" onclick={handleClearCategory}>&times;</span>
-                    </button>
-                </template>
+                    <!-- Selected category chip (desktop only, hidden on mobile via CSS) -->
+                    <template lwc:if={showSelectedCategoryChip}>
+                        <button class="filter-chip selected-category" style={selectedCategoryStyle}>
+                            <span>{selectedCategoryLabel}</span>
+                            <span class="chip-close" onclick={handleClearCategory}>&times;</span>
+                        </button>
+                    </template>
+                </div>
 
                 <!-- Refresh (desktop only, hidden on mobile via CSS — mobile uses pull-to-refresh) -->
                 <button class={refreshButtonClass} onclick={handleRefresh} aria-label="Refresh library">
@@ -75,7 +76,7 @@
         </div>
 
         <!-- Settling-in banner: shown to non-vouched borrowers -->
-        <template lwc:if={isSettlingIn}>
+        <template lwc:if={showSettlingInBanner}>
             <div class="settling-in-banner" role="status">
                 <img src={saplingIconUrl} alt="" class="settling-in-icon">
                 <div class="settling-in-content">
@@ -96,12 +97,12 @@
             is-loading={isLoading}
             show-empty-state={showEmptyState}
             threshold="200"
-            empty-state-title="The shelves are bare!"
-            empty-state-message="Got something to lend? Your neighbours are waiting."
+            empty-state-title={emptyStateTitle}
+            empty-state-message={emptyStateMessage}
             empty-state-icon="utility:package"
             empty-state-image-url={emptyStateGifUrl}
             show-empty-action="true"
-            empty-action-label="Add Item"
+            empty-action-label={emptyActionLabel}
             onloadmore={handleLoadMore}
             onrefresh={handleRefresh}
             onemptyaction={handleAddItem}>
@@ -114,6 +115,7 @@
                             layout={cardLayout}
                             card-accent-color={item.categoryColor}
                             title={item.name}
+                            title-lead-label={item.titleLeadLabel}
                             description={item.description}
                             show-header="true"
                             show-avatar="true"
@@ -130,6 +132,7 @@
                             response-pill-class={item.responsePillClass}
                             allocation-pills={item.allocationPills}
                             is-clickable="true"
+                            oncardclick={handleCardClick}
                             oncardrespond={handleCardRespond}
                             oncardreport={handleCardReport}
                             onimageclick={handleImageClick}>

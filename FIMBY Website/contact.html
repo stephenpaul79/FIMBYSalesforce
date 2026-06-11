@@ -3,56 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contact — FIMBY</title>
+  <title>Bring FIMBY — Contact</title>
 </head>
 <body>
 
-  <!-- Header is now a site-wide template part (see site-header-template-part.html) -->
+  <!-- Header: site-header-template-part.html -->
 
-  <main>
-    <div class="contact-page">
-      <div class="contact-block">
-        <h1>Bring FIMBY to your neighbourhood</h1>
-        <p class="lead">FIMBY grows one neighbourhood at a time. Sign up with your postal code — if we're live in your area, you'll continue into setup; if not, we'll add you to the waitlist and ask if you'd like to help launch FIMBY there.</p>
-        <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Sign up</a>
-        <p class="lead" style="margin-top:24px;font-size:0.95rem;">If you're a local organization interested in having a presence on FIMBY, email us and we'll walk you through what that looks like.</p>
-        <div class="contact-links">
-          <a href="mailto:hello@fimby.com">hello@fimby.com</a>
-          <a href="/faq/">Have feedback?</a>
+  <main class="contact-hub">
+    <div class="container container-inset">
+      <h1>Bring FIMBY to your neighbourhood</h1>
+      <p class="lead">FIMBY grows one neighbourhood at a time — depth with people you can recognize, not a city-wide signup race.</p>
+
+      <div class="contact-hub-section">
+        <h2>Who this is for</h2>
+        <ul>
+          <li>Block captains and engaged neighbours who know their street</li>
+          <li>Community group reps, pastors, and org leaders</li>
+          <li>Anyone who'd help gather 10–20 neighbours and host a low-key intro</li>
+        </ul>
+      </div>
+
+      <div class="contact-hub-section">
+        <h2>What launching looks like</h2>
+        <ul>
+          <li>Enter your postal code at sign-up — if we're not live yet, you join the waitlist</li>
+          <li>Check <strong>I'd like to help launch FIMBY here</strong> so we know you're a potential launcher</li>
+          <li>When density reaches threshold, the FIMBY team reaches out</li>
+          <li>You go deep with a small circle — coffee on the porch, community room, or block walk — not chasing download counts</li>
+          <li>Optional moderator role with support from FIMBY</li>
+        </ul>
+        <p class="contact-why-now">Local trust is easiest to build before anyone needs it. The best time to know your neighbours is an ordinary Tuesday.</p>
+      </div>
+
+      <div class="contact-hub-section">
+        <h2>What you don't need</h2>
+        <ul>
+          <li>Tech skills — we'll walk you through setup</li>
+          <li>A budget — FIMBY is community-funded</li>
+          <li>A formal nonprofit (unless you're taking the org path below)</li>
+        </ul>
+      </div>
+
+      <div class="contact-hub-section">
+        <h2>Community groups &amp; churches</h2>
+        <p>Orgs show up as <strong>resilience anchors</strong> — meals, rides, check-ins, program rhythms — not as content channels. Read the <a href="/family-in-my-backyard/community-group-agreement/">Community Group Agreement</a>, then email us to walk through org setup.</p>
+        <div class="button-row">
+          <a href="mailto:hello@fimby.com" class="btn btn-secondary">hello@fimby.com</a>
         </div>
+      </div>
+
+      <div class="contact-hub-section">
+        <h2>Start with your postal code</h2>
+        <p>Don't click through to discover you're not eligible — check right here. If FIMBY is live in your area, you'll continue into setup. If not, we'll add you to the waitlist and ask if you'd like to help launch.</p>
+        <div class="button-row">
+          <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Check your neighbourhood</a>
+        </div>
+        <div class="contact-postal-note">
+          Already on the waitlist? Tell us you're interested in launching at <a href="mailto:hello@fimby.com">hello@fimby.com</a> or via the sign-up flow's launch checkbox.
+        </div>
+      </div>
+
+      <div class="contact-hub-section">
+        <h2>Questions or feedback?</h2>
+        <p><a href="mailto:hello@fimby.com">hello@fimby.com</a> · <a href="/faq/">FAQ</a></p>
       </div>
     </div>
   </main>
 
-  <!-- Bridge modal -->
-  <div id="join-modal" class="modal" aria-hidden="true" role="dialog" aria-label="Join FIMBY">
-    <div class="modal-content">
-      <button class="modal-close" aria-label="Close">&times;</button>
-      <h2>Come on in</h2>
-      <p>You'll enter your postal code as part of sign-up. If FIMBY is live in your area, you'll continue into setup. If not, we'll add you to the waitlist — and ask if you'd like to help bring FIMBY to your neighbourhood.</p>
-      <a href="https://our.fimby.com/sign-up" class="btn btn-primary" style="width:100%;text-align:center;">Sign up</a>
-    </div>
-  </div>
+  <!-- Footer: footer.html -->
 
-  <footer>
-    <div class="container">
-      An initiative of <a href="https://www.strathconavineyard.com/">Strathcona Vineyard</a> &middot; <a href="/how-it-works/">How it works</a> &middot; <a href="/our-approach/">Our approach</a> &middot; <a href="/faq/">FAQ</a> &middot; <a href="/contact/">Contact</a>
-    </div>
-  </footer>
-
-  <script>
-    var modal = document.getElementById('join-modal');
-    document.querySelectorAll('.cta-bridge').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        modal.classList.add('visible');
-        modal.setAttribute('aria-hidden', 'false');
-      });
-    });
-    modal.querySelector('.modal-close').addEventListener('click', closeModal);
-    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('visible')) closeModal(); });
-    function closeModal() { modal.classList.remove('visible'); modal.setAttribute('aria-hidden', 'true'); }
-  </script>
 </body>
 </html>

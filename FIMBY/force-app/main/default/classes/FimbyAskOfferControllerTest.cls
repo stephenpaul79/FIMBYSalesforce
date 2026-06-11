@@ -64,10 +64,15 @@ public class FimbyAskOfferControllerTest {
         System.assertNotEquals(null, result.get('recordId'), 'Should return recordId');
 
         String recordId = (String) result.get('recordId');
-        Needs_Offers__c created = [SELECT Contact__c, Posted_By__c, Giver_Recipient_Type__c FROM Needs_Offers__c WHERE Id = :recordId];
+        Needs_Offers__c created = [
+            SELECT Contact__c, Posted_By__c, Giver_Recipient_Type__c, Posted_Date__c, Refresh_Count__c
+            FROM Needs_Offers__c WHERE Id = :recordId
+        ];
         System.assertEquals(testUser.ContactId, created.Contact__c, 'Contact__c should be the acting-as contact');
         System.assertEquals(testUser.ContactId, created.Posted_By__c, 'Posted_By__c should be the real contact');
         System.assertEquals('Self', created.Giver_Recipient_Type__c, 'Giver_Recipient_Type__c should be Self');
+        System.assertNotEquals(null, created.Posted_Date__c, 'Posted_Date__c should be stamped on insert');
+        System.assertEquals(0, created.Refresh_Count__c, 'Refresh_Count__c should default to 0');
     }
 
     @isTest
@@ -833,5 +838,191 @@ public class FimbyAskOfferControllerTest {
         ];
         System.assertEquals(Date.today().addDays(7), unchanged.End_Date__c, 'End date should remain unchanged');
         System.assertEquals(Time.newInstance(14, 0, 0, 0), unchanged.End_Time__c, 'End time should remain unchanged');
+    }
+
+    @isTest
+    static void testRefreshPost_bumpsPostedDateAndExtendsEnd() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id needRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Refresh Test Need',
+            Details__c = 'Need help',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = needRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(2),
+            Posted_Date__c = Datetime.now().addDays(-10),
+            Refresh_Count__c = 0
+        );
+        insert post;
+
+        Datetime beforeRefresh = post.Posted_Date__c;
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyAskOfferController.refreshPost(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'));
+        Needs_Offers__c updated = [
+            SELECT Posted_Date__c, End_Date__c, Refresh_Count__c, Last_Refreshed_Date__c,
+                   Last_Refresh_Reminder_Date__c
+            FROM Needs_Offers__c WHERE Id = :post.Id
+        ];
+        System.assert(updated.Posted_Date__c > beforeRefresh, 'Posted_Date__c should bump');
+        System.assertEquals(Date.today().addDays(FimbySettings.needDefaultEndDays()), updated.End_Date__c);
+        System.assertEquals(1, updated.Refresh_Count__c.intValue());
+        System.assertEquals(Date.today(), updated.Last_Refreshed_Date__c);
+        System.assertEquals(null, updated.Last_Refresh_Reminder_Date__c);
+    }
+
+    @isTest
+    static void testClosePost_resolvedNotifiesPendingResponder() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id needRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Close Test Need',
+            Details__c = 'Need help',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = needRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(3),
+            Posted_Date__c = Datetime.now()
+        );
+        insert post;
+
+        Contact responder = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Response__c resp = new Response__c(
+            Need_Offer_Responded_To__c = post.Id,
+            Contact__c = responder.Id,
+            On_Behalf_Of_Contact__c = responder.Id,
+            Status__c = FimbyConstants.RESPONSE_NEW
+        );
+        insert resp;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyAskOfferController.closePost(post.Id, 'resolved');
+        }
+        Test.stopTest();
+
+        post = [SELECT Status__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        System.assertEquals(FimbyConstants.NEEDS_OFFERS_COMPLETED, post.Status__c);
+        System.assertEquals(
+            1,
+            [SELECT COUNT() FROM Notification__c WHERE Contact__c = :responder.Id AND Type__c = :FimbyConstants.NOTIF_RESPONSE],
+            'Pending responder should be notified'
+        );
+    }
+
+    @isTest
+    static void testGetRefreshPostState_authorSeesPanel() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'State Test Offer',
+            Details__c = 'Offering help',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = offerRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(10),
+            Posted_Date__c = Datetime.now()
+        );
+        insert post;
+
+        Test.startTest();
+        Map<String, Object> state;
+        System.runAs(testUser) {
+            state = FimbyAskOfferController.getRefreshPostState(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, state.get('showPanel'));
+        System.assertEquals(true, state.get('canRefresh'));
+        System.assertEquals('Is this still available?', state.get('prompt'));
+        System.assertEquals('Still available', state.get('refreshLabel'));
+    }
+
+    @isTest
+    static void testRefreshPost_rejectsCooldown() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id needRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Cooldown Need',
+            Details__c = 'Too soon',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = needRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(5),
+            Posted_Date__c = Datetime.now(),
+            Refresh_Count__c = 1,
+            Last_Refreshed_Date__c = Date.today()
+        );
+        insert post;
+
+        Boolean caught = false;
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyAskOfferController.refreshPost(post.Id);
+            } catch (AuraHandledException e) {
+                caught = true;
+                System.assert(e.getMessage().contains('wait'), e.getMessage());
+            }
+        }
+        Test.stopTest();
+        System.assert(caught, 'Should reject refresh during cooldown');
+    }
+
+    @isTest
+    static void testClosePost_withdrawnSetsCancelled() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Withdraw Offer',
+            Details__c = 'Gone',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = offerRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(10),
+            Posted_Date__c = Datetime.now()
+        );
+        insert post;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyAskOfferController.closePost(post.Id, 'withdrawn');
+        }
+        Test.stopTest();
+
+        post = [SELECT Status__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        System.assertEquals(FimbyConstants.NEEDS_OFFERS_CANCELLED, post.Status__c);
     }
 }

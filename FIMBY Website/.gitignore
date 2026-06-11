@@ -1,0 +1,13 @@
+# Respira inject staging (built by scripts/build-gutenberg-inject.mjs)
+.respira/staging/
+
+# Never commit temp inject artifacts at repo root
+/_inject-*.json
+/_inject-*.mjs
+/_mcp-*.json
+/_mcp-*.txt
+/_hiw*.json
+/_run-inject.mjs
+
+# Local upload scratch (icons copied before Media Library upload)
+/media/pending-upload/

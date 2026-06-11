@@ -1037,6 +1037,7 @@ public with sharing class FimbyCommunicationController {
         if (contextType == FimbyConstants.CTX_BULK_BUY) return 'bulkbuy';
         if (contextType == FimbyConstants.CTX_MISSED_PICKUP) return 'checkin';
         if (contextType == FimbyConstants.CTX_EVENT) return 'event';
+        if (contextType == FimbyConstants.CTX_SKILL) return 'skill';
         return 'direct';
     }
 

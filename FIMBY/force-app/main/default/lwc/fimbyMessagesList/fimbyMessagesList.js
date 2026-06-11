@@ -8,7 +8,6 @@ import archiveThread from '@salesforce/apex/FimbyCommunicationController.archive
 import unarchiveThread from '@salesforce/apex/FimbyCommunicationController.unarchiveThread';
 import getRetentionDaysForDisclaimer from '@salesforce/apex/FimbyCommunicationController.getRetentionDaysForDisclaimer';
 import getMessageableContacts from '@salesforce/apex/FimbyConversationController.getMessageableContacts';
-import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -705,17 +704,12 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         this.selectContact(event.currentTarget.dataset.contactId);
     }
 
-    async selectContact(contactId) {
+    selectContact(contactId) {
         if (!contactId) return;
-        try {
-            const result = await getOrCreateConversation({ targetContactId: contactId });
-            this.showNewMessageModal = false;
-            this.contactSearchTerm = '';
-            this.messageableContacts = [];
-            location.href = '/conversation?id=' + result.conversationId;
-        } catch (error) {
-            console.error('Error creating conversation:', error);
-        }
+        this.showNewMessageModal = false;
+        this.contactSearchTerm = '';
+        this.messageableContacts = [];
+        location.href = '/conversation?contactId=' + contactId;
     }
 
     // ── Search / pagination / nav ─────────────────────

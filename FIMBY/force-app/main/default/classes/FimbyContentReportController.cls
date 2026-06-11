@@ -202,7 +202,8 @@ public with sharing class FimbyContentReportController {
                 'Needs_Offer' => 'Needs_Offers__c',
                 'Library_Item' => 'Library_Item__c',
                 'Response' => 'Response__c',
-                'Story_Comment' => 'Story_Comment__c'
+                'Story_Comment' => 'Story_Comment__c',
+                'Skill_Offer' => 'Skill_Offer__c'
             };
             return aliases.containsKey(contentType) ? aliases.get(contentType) : contentType;
         }
@@ -220,7 +221,8 @@ public with sharing class FimbyContentReportController {
                 'Story_Comment__c' => 'comment on a Sharedlife post',
                 'Needs_Offers__c' => 'Ask or Offer post',
                 'Library_Item__c' => 'library item',
-                'Response__c' => 'reply'
+                'Response__c' => 'reply',
+                'Skill_Offer__c' => 'skill offer'
             };
             if (labels.containsKey(contentType)) { return labels.get(contentType); }
             try {
@@ -250,6 +252,9 @@ public with sharing class FimbyContentReportController {
                 } else if (contentType == 'Story_Comment__c') {
                     List<Story_Comment__c> recs = [SELECT Posted_By__c FROM Story_Comment__c WHERE Id = :contentId LIMIT 1];
                     return recs.isEmpty() ? null : recs[0].Posted_By__c;
+                } else if (contentType == 'Skill_Offer__c') {
+                    List<Skill_Offer__c> recs = [SELECT Owner_Contact__c FROM Skill_Offer__c WHERE Id = :contentId LIMIT 1];
+                    return recs.isEmpty() ? null : recs[0].Owner_Contact__c;
                 }
             } catch (Exception e) {
                 return null;

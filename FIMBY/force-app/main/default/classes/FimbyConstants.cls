@@ -68,6 +68,7 @@ public class FimbyConstants {
     public static final String NOTIF_OVERDUE_REMINDER = 'Overdue_Reminder';
     public static final String NOTIF_ITEM_RETURNED = 'Item_Returned';
     public static final String NOTIF_THANKS_RECEIVED = 'Thanks_Received';
+    public static final String NOTIF_REFRESH_REMINDER = 'Refresh_Reminder';
 
     // Needs/Offers record types
     public static final String RT_NEED = 'Need';
@@ -79,6 +80,8 @@ public class FimbyConstants {
     public static final String NEEDS_OFFERS_COMPLETED = 'Completed (Offer Accepted / Need Met)';
     public static final String NEEDS_OFFERS_CANCELLED = 'Cancelled';
     public static final String NEEDS_OFFERS_EXPIRED = 'Expired';
+    public static final String NEEDS_OFFERS_REPLY_RECEIVED = 'Reply Received';
+    public static final String NEEDS_OFFERS_REPLY_ACCEPTED = 'Reply Accepted';
 
     // Response statuses (Bulk Buy)
     public static final String RESPONSE_RESERVED = 'Reserved';
@@ -145,7 +148,13 @@ public class FimbyConstants {
     public static final String NOTIF_VOUCHER_PAUSED         = 'Voucher_Paused';
 
     // Vouch context
+    public static final String CTX_SKILL = 'Skill';
     public static final String CTX_VOUCH_REQUEST = 'Vouch_Request';
+
+    // Skill offer statuses
+    public static final String SKILL_ACTIVE = 'Active';
+    public static final String SKILL_PAUSED = 'Paused';
+    public static final String SKILL_REMOVED = 'Removed';
 
     // Vouch system message types
     public static final String SYS_MSG_VOUCH_REQUESTED = 'Vouch_Requested';

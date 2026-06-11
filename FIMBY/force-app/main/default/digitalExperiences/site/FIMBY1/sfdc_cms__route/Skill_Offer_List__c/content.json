@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Skill Offer List",
+  "contentBody" : {
+    "activeViewId" : "Skill_Offer_List",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "list-Skill_Offer__c",
+    "urlPrefix" : "skill-offer"
+  },
+  "urlName" : "skill-offer-list"
+}

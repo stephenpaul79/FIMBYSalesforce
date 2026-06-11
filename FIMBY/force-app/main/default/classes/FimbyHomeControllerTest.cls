@@ -193,7 +193,7 @@ public class FimbyHomeControllerTest {
 
             // Collect feed types present in results
             Set<String> typesFound = new Set<String>();
-            for (FimbyHomeController.UnifiedFeedItem feedItem : feedResult.items) {
+            for (FimbyFeedItem feedItem : feedResult.items) {
                 typesFound.add(feedItem.feedType);
                 // Verify each item has required fields
                 System.assertNotEquals(null, feedItem.recordId, 'Item recordId required');
@@ -257,7 +257,7 @@ public class FimbyHomeControllerTest {
         Test.stopTest();
 
         Integer engagement = -1;
-        for (FimbyHomeController.UnifiedFeedItem item : feedResult.items) {
+        for (FimbyFeedItem item : feedResult.items) {
             if (item.feedType == 'story' && item.recordId == story.Id) {
                 engagement = item.engagementCount;
                 break;
@@ -279,7 +279,7 @@ public class FimbyHomeControllerTest {
             FimbyHomeController.UnifiedFeedResult feedResult = FimbyHomeController.getUnifiedFeed(0, 50);
 
             // Verify chronological order (newest first)
-            List<FimbyHomeController.UnifiedFeedItem> items = feedResult.items;
+            List<FimbyFeedItem> items = feedResult.items;
             for (Integer i = 0; i < items.size() - 1; i++) {
                 Datetime current = items[i].createdDate;
                 Datetime next = items[i + 1].createdDate;
@@ -312,10 +312,10 @@ public class FimbyHomeControllerTest {
 
                 // Ensure no overlap between pages
                 Set<String> firstPageIds = new Set<String>();
-                for (FimbyHomeController.UnifiedFeedItem item : firstPage.items) {
+                for (FimbyFeedItem item : firstPage.items) {
                     firstPageIds.add(item.recordId);
                 }
-                for (FimbyHomeController.UnifiedFeedItem item : secondPage.items) {
+                for (FimbyFeedItem item : secondPage.items) {
                     System.assert(!firstPageIds.contains(item.recordId), 'Pages should not overlap');
                 }
             }
@@ -351,7 +351,7 @@ public class FimbyHomeControllerTest {
         Test.startTest();
         System.runAs(testUser) {
             FimbyHomeController.UnifiedFeedResult result = FimbyHomeController.getUnifiedFeed(0, 50);
-            for (FimbyHomeController.UnifiedFeedItem item : result.items) {
+            for (FimbyFeedItem item : result.items) {
                 System.assertNotEquals(blockedStory.Id, item.recordId,
                     'Blocked author content should not appear in unified feed');
             }

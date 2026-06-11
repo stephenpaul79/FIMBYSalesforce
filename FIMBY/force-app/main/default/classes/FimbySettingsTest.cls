@@ -12,6 +12,10 @@ private class FimbySettingsTest {
         System.assertEquals(7, FimbySettings.libraryJustListedDays());
         System.assertEquals(7, FimbySettings.needDefaultEndDays());
         System.assertEquals(21, FimbySettings.offerDefaultEndDays());
+        System.assertEquals(7, FimbySettings.refreshCooldownDays());
+        System.assertEquals(2, FimbySettings.refreshMaxCount());
+        System.assertEquals(7, FimbySettings.refreshReminderMinAgeDays());
+        System.assertEquals(1, FimbySettings.refreshReminderLeadDays());
 
         System.assertEquals(5, FimbySettings.maxNewConversationsPerDay());
         System.assertEquals(100, FimbySettings.pushNotificationBatchSize());

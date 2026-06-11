@@ -5,6 +5,7 @@ import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
 
 const SORT_OPTIONS = [
     { value: 'relevance', label: 'Relevance' },
@@ -17,6 +18,7 @@ const FILTER_ICONS = {
     stories:  { active: 'StoriesActive.png',          inactive: 'StoriesInactive.png' },
     askOffer: { active: 'BulletinBoardActive.png',    inactive: 'BulletinBoardInactive.png' },
     library:  { active: 'ToolboxActive.png',          inactive: 'ToolboxInactive.png' },
+    skills:   { active: 'lightbulb.png',              inactive: 'lightbulb.png' },
     people:   { active: 'people.png',                 inactive: 'people.png' }
 };
 
@@ -24,6 +26,7 @@ const BASE_FILTERS = [
     { value: 'all', label: 'All' },
     { value: 'people', label: 'People' },
     { value: 'library', label: 'Library' },
+    { value: 'skills', label: 'Skills' },
     { value: 'askOffer', label: 'Ask & Offer' },
     { value: 'stories', label: 'Shared Life' }
 ];
@@ -324,6 +327,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 isStory: item.resultType === 'story',
                 isAskOffer: item.resultType === 'askOffer',
                 isLibrary: item.resultType === 'library',
+                isSkill: item.resultType === 'skill',
                 isPeople: item.resultType === 'people',
                 processedImageUrl: completeImageUrl(item.imageUrl),
                 processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),
@@ -332,6 +336,8 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 badgeLabel: badge.label,
                 badgeIconUrl: badge.iconUrl,
                 badgeCssClass: badge.cssClass,
+                badgeStyle: badge.badgeStyle || '',
+                useBadgeStyle: !!badge.badgeStyle,
                 peopleCssClass: item.resultType === 'people'
                     ? (item.hasSharedContact ? 'people-result' : 'people-result people-locked')
                     : ''
@@ -378,6 +384,16 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             };
         }
 
+        if (item.resultType === 'skill') {
+            const category = item.subType || 'Skill';
+            return {
+                label: category,
+                iconUrl: getSkillCategoryIconUrl(IMPACT_ICONS, category),
+                cssClass: 'type-badge skill-badge',
+                badgeStyle: getSkillCategoryStyle(category)
+            };
+        }
+
         return { label: '', iconUrl: '', cssClass: 'type-badge' };
     }
 
@@ -407,6 +423,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             'story': `/sharedlife/${recordId}`,
             'askOffer': `/asks-offers/${recordId}`,
             'library': `/library-item/${recordId}`,
+            'skill': `/skill-offer/${recordId}`,
             'people': `/neighbour?id=${recordId}`
         };
 
@@ -451,6 +468,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             'stories': this.countsByType.stories,
             'askOffer': this.countsByType.askOffer,
             'library': this.countsByType.library,
+            'skills': this.countsByType.skills,
             'people': this.countsByType.people
         };
         return map[filterValue];

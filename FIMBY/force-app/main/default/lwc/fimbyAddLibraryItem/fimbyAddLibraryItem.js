@@ -9,7 +9,6 @@ import { getCategoryIconUrl } from 'c/fimbyLibraryCategoryConfig';
 // Apex methods
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
-import searchOrganizations from '@salesforce/apex/FimbyContactController.searchOrganizations';
 import getCategoryPicklistValues from '@salesforce/apex/FimbyLibraryController.getCategoryPicklistValues';
 import createLibraryItem from '@salesforce/apex/FimbyLibraryController.createLibraryItem';
 
@@ -17,15 +16,9 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     // Current user/contact info
     @track actingAsContactId = '';
     @track actingAsContactName = '';
-    @track actingAsAccountId = '';
-    @track actingAsAccountName = '';
     @track hasMultipleIdentities = false;
 
     // Form state
-    @track ownedBy = 'Self'; // 'Self' or 'Organization'
-    @track ownerOrganizationId = '';
-    @track ownerOrganizationName = '';
-    @track organizationRelationship = '';
     @track title = '';
     @track description = '';
     @track selectedCategory = '';
@@ -34,11 +27,13 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     @track autoShareContactInfo = false;
     @track damageWaiverConfirmed = false;
 
+    // Content mode: item | skill
+    @track postMode = 'item';
+    @track editSkillId = '';
+    @track skillCelebrationActive = false;
+
     // UI state
     @track categories = [];
-    @track organizationSearchResults = [];
-    @track showOrganizationSearch = false;
-    @track organizationSearchTerm = '';
     @track isSaving = false;
     @track isLoading = true;
     @track showPhotoStep = false;
@@ -99,14 +94,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
             : '';
     }
 
-    get isOrganizationOwned() {
-        return this.ownedBy === 'Organization';
-    }
-
-    get isSelfOwned() {
-        return this.ownedBy === 'Self';
-    }
-
     get isFormValid() {
         return this.title.trim() !== '' &&
                this.title.length <= 80 &&
@@ -114,8 +101,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
                this.description.length <= 255 &&
                this.selectedCategory !== '' &&
                this.maxLendingDays > 0 &&
-               this.damageWaiverConfirmed &&
-               (this.isSelfOwned || (this.ownerOrganizationId && this.organizationRelationship.trim()));
+               this.damageWaiverConfirmed;
     }
 
     get isFormInvalid() {
@@ -134,14 +120,90 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
         return getCategoryIconUrl(IMPACT_ICONS, this.selectedCategory);
     }
 
+    get isItemMode() {
+        return this.postMode === 'item';
+    }
+
+    get isSkillMode() {
+        return this.postMode === 'skill';
+    }
+
+    get itemsIconUrl() {
+        return `${IMPACT_ICONS}/Items.png`;
+    }
+
+    get skillsIconUrl() {
+        return `${IMPACT_ICONS}/Skills.png`;
+    }
+
+    get itemTypeClass() {
+        return this.isItemMode ? 'library-type-option active' : 'library-type-option';
+    }
+
+    get skillTypeClass() {
+        return this.isSkillMode ? 'library-type-option active' : 'library-type-option';
+    }
+
+    get pageHeaderTitle() {
+        if (this.isSkillMode) {
+            return this.editSkillId ? 'Edit Skill Offer' : 'Offer a Skill';
+        }
+        return 'Post Library Item';
+    }
+
+    get composerMode() {
+        return this.editSkillId ? 'edit' : 'create';
+    }
+
+    get showModeSelector() {
+        return !this.skillCelebrationActive && !this.editSkillId;
+    }
+
+    handleSkillCelebrationChange(event) {
+        this.skillCelebrationActive = event.detail?.active === true;
+    }
+
+    connectedCallback() {
+        this._parseUrlParams();
+    }
+
+    _parseUrlParams() {
+        try {
+            const url = new URL(window.location.href);
+            const type = url.searchParams.get('type');
+            const editId = url.searchParams.get('edit');
+            if (type === 'skill') {
+                this.postMode = 'skill';
+                this.isLoading = false;
+            }
+            if (editId) {
+                location.href = `/skill-offer/${editId}?action=edit`;
+                return;
+            }
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    handleItemMode() {
+        if (this.postMode !== 'item') {
+            this.postMode = 'item';
+            this.editSkillId = '';
+        }
+    }
+
+    handleSkillMode() {
+        if (this.postMode !== 'skill') {
+            this.postMode = 'skill';
+        }
+    }
+
     // Wire adapters to load initial data
     @wire(getActingAsContact)
     wiredActingAs({ error, data }) {
         if (data) {
             this.actingAsContactId = data.actingAsContactId || data.contactId;
             this.actingAsContactName = data.postingAsDisplayName || data.actingAsContactName || data.contactName;
-            this.actingAsAccountId = data.accountId;
-            this.actingAsAccountName = data.accountName;
             this.isLoading = false;
         } else if (error) {
             this.error = error.body?.message || 'Error loading user information';
@@ -170,50 +232,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
         } else if (error) {
             console.error('Error loading categories:', error);
         }
-    }
-
-    // Event handlers
-    handleOwnerChange(event) {
-        this.ownedBy = event.target.value;
-        if (this.ownedBy === 'Self') {
-            // Clear organization fields when switching to Self
-            this.ownerOrganizationId = '';
-            this.ownerOrganizationName = '';
-            this.organizationRelationship = '';
-        }
-    }
-
-    handleOrganizationSearchChange(event) {
-        this.organizationSearchTerm = event.target.value;
-        if (this.organizationSearchTerm.length >= 2) {
-            this.searchForOrganizations();
-        } else {
-            this.organizationSearchResults = [];
-            this.showOrganizationSearch = false;
-        }
-    }
-
-    async searchForOrganizations() {
-        try {
-            const results = await searchOrganizations({ searchTerm: this.organizationSearchTerm });
-            this.organizationSearchResults = results;
-            this.showOrganizationSearch = results.length > 0;
-        } catch (error) {
-            console.error('Error searching organizations:', error);
-        }
-    }
-
-    handleOrganizationSelect(event) {
-        const selectedId = event.currentTarget.dataset.id;
-        const selectedName = event.currentTarget.dataset.name;
-        this.ownerOrganizationId = selectedId;
-        this.ownerOrganizationName = selectedName;
-        this.organizationSearchTerm = selectedName;
-        this.showOrganizationSearch = false;
-    }
-
-    handleOrganizationRelationshipChange(event) {
-        this.organizationRelationship = event.target.value;
     }
 
     handleTitleChange(event) {
@@ -281,8 +299,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
                 description: this.description.trim(),
                 category: this.selectedCategory,
                 maxLendingDays: this.maxLendingDays,
-                ownedBy: this.ownedBy,
-                ownerOrganizationId: this.isOrganizationOwned ? this.ownerOrganizationId : null,
                 autoAcceptRequests: this.autoAcceptRequests,
                 autoShareContactInfo: this.autoShareContactInfo,
                 damageWaiverConfirmed: this.damageWaiverConfirmed
@@ -346,10 +362,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     }
 
     resetForm() {
-        this.ownedBy = 'Self';
-        this.ownerOrganizationId = '';
-        this.ownerOrganizationName = '';
-        this.organizationRelationship = '';
         this.title = '';
         this.description = '';
         this.selectedCategory = '';

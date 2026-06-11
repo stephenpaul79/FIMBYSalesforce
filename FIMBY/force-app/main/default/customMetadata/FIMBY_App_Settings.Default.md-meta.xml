@@ -270,4 +270,20 @@
         <field>Lending_Confirmation_Expiry_Days__c</field>
         <value xsi:type="xsd:double">3.0</value>
     </values>
+    <values>
+        <field>Refresh_Cooldown_Days__c</field>
+        <value xsi:type="xsd:double">7.0</value>
+    </values>
+    <values>
+        <field>Refresh_Max_Count__c</field>
+        <value xsi:type="xsd:double">2.0</value>
+    </values>
+    <values>
+        <field>Refresh_Reminder_Min_Age_Days__c</field>
+        <value xsi:type="xsd:double">7.0</value>
+    </values>
+    <values>
+        <field>Refresh_Reminder_Lead_Days__c</field>
+        <value xsi:type="xsd:double">1.0</value>
+    </values>
 </CustomMetadata>

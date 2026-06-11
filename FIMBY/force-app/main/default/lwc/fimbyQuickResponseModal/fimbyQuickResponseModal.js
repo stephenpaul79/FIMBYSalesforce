@@ -9,7 +9,11 @@ import createResponse from '@salesforce/apex/FimbyResponseController.createRespo
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import createReservation from '@salesforce/apex/FimbyBulkBuyReservationController.createReservation';
 import createLendingRequest from '@salesforce/apex/FimbyLibraryController.createLendingRequest';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer';
+import requestSkillHelp from '@salesforce/apex/FimbySkillsController.requestSkillHelp';
 import searchContactsForMention from '@salesforce/apex/FimbyStoryCommentController.searchContactsForMention';
+import { getCategoryIconUrl, getCategoryColor } from 'c/fimbySkillCategoryConfig';
 
 const TYPE_CONFIG = {
     story: {
@@ -65,6 +69,15 @@ const TYPE_CONFIG = {
         successMessage: 'Request submitted!',
         loadingContext: 'lending',
         submittingContext: 'lending'
+    },
+    skill: {
+        modalTitle: 'Ask for Help',
+        identityLabel: 'Messaging as',
+        submitLabel: 'Send Message',
+        celebrationAction: 'response',
+        successMessage: 'Message sent!',
+        loadingContext: 'general',
+        submittingContext: 'messaging'
     }
 };
 
@@ -125,6 +138,12 @@ export default class FimbyQuickResponseModal extends LightningElement {
     @track _requestedDate = '';
     @track _daysNeeded = '';
     @track _noteToLender = '';
+
+    /* ================================================================
+     * Skill Form State
+     * ================================================================ */
+    @track _skillNote = '';
+    @track _skillCategoryIconUrl = '';
 
     /* ================================================================
      * Submit State
@@ -217,6 +236,7 @@ export default class FimbyQuickResponseModal extends LightningElement {
     get isAskOfferType() { return this._responseType === 'askOffer' || this._responseType === 'gathering'; }
     get isBulkBuyType() { return this._responseType === 'bulkBuy'; }
     get isLibraryType() { return this._responseType === 'library'; }
+    get isSkillType() { return this._responseType === 'skill'; }
 
     get showFormFooter() {
         return this.isForm && !this.isOpenEventType;
@@ -235,6 +255,7 @@ export default class FimbyQuickResponseModal extends LightningElement {
         if (this.isStoryType) return this._context.story?.name || '';
         if (this.isBulkBuyType) return this._context.post?.Name || '';
         if (this.isLibraryType) return this._context.item?.name || '';
+        if (this.isSkillType) return this._context.title || '';
         return this._context.name || '';
     }
 
@@ -249,7 +270,12 @@ export default class FimbyQuickResponseModal extends LightningElement {
     }
 
     get hasSummaryImage() {
+        if (this.isSkillType) return !!this._skillCategoryIconUrl;
         return !!this.summaryImageUrl;
+    }
+
+    get summaryIconUrl() {
+        return this._skillCategoryIconUrl;
     }
 
     get summarySubtitle() {
@@ -265,6 +291,7 @@ export default class FimbyQuickResponseModal extends LightningElement {
             return (first + ' ' + last).trim();
         }
         if (this.isLibraryType) return this._context.item?.ownerName || '';
+        if (this.isSkillType) return this._context.ownerName || '';
         return this._context.posterName || '';
     }
 
@@ -294,6 +321,9 @@ export default class FimbyQuickResponseModal extends LightningElement {
         }
         if (this.isLibraryType) {
             return this._context.item?.category || '';
+        }
+        if (this.isSkillType) {
+            return this._context.category || '';
         }
         return '';
     }
@@ -402,6 +432,19 @@ export default class FimbyQuickResponseModal extends LightningElement {
         return this.noteCharCount >= 255 ? 'char-count over-limit' : (this.noteCharCount > 230 ? 'char-count near-limit' : 'char-count');
     }
 
+    get skillNoteLength() { return this._skillNote.length; }
+    get skillNoteDisplay() { return `${this.skillNoteLength}/1000`; }
+    get skillNoteCountClass() {
+        if (this.skillNoteLength >= 1000) return 'char-count at-limit';
+        if (this.skillNoteLength >= 900) return 'char-count near-limit';
+        return 'char-count';
+    }
+
+    get skillSummaryIconStyle() {
+        const color = getCategoryColor(this._context?.category);
+        return `background-color: ${color};`;
+    }
+
     get dateValidationError() {
         if (!this._requestedDate) return '';
         const max = new Date();
@@ -455,6 +498,9 @@ export default class FimbyQuickResponseModal extends LightningElement {
             if (this.daysValidationError) return true;
             if (this.noteCharCount > 255) return true;
             return false;
+        }
+        if (this.isSkillType) {
+            return this.skillNoteLength > 1000;
         }
         return true;
     }
@@ -522,6 +568,11 @@ export default class FimbyQuickResponseModal extends LightningElement {
     async _loadContext() {
         this._viewState = 'loading';
         try {
+            if (this.isSkillType) {
+                await this._loadSkillContext();
+                return;
+            }
+
             const result = await getQuickResponseContext({
                 recordId: this._recordId,
                 responseType: this._responseType
@@ -676,6 +727,42 @@ export default class FimbyQuickResponseModal extends LightningElement {
     handleDateChange(event) { this._requestedDate = event.target.value; }
     handleDaysChange(event) { this._daysNeeded = event.target.value; }
     handleNoteChange(event) { this._noteToLender = event.target.value; }
+    handleSkillNoteChange(event) { this._skillNote = event.target.value; }
+
+    async _loadSkillContext() {
+        try {
+            const [skill, identity] = await Promise.all([
+                getSkillOffer({ recordId: this._recordId }),
+                getActingAsContact()
+            ]);
+
+            if (identity) {
+                this._actingAsContactId = identity.actingAsContactId || identity.contactId;
+                this._actingAsContactName = identity.postingAsDisplayName || identity.actingAsContactName || identity.contactName || 'You';
+            } else {
+                this._actingAsContactName = 'You';
+            }
+
+            if (skill.isOwner) {
+                this._viewState = 'unavailable';
+                this._errorMessage = 'This is your own skill offer.';
+                return;
+            }
+
+            if (skill.status !== 'Active') {
+                this._viewState = 'unavailable';
+                this._errorMessage = 'This skill is not available right now.';
+                return;
+            }
+
+            this._context = skill;
+            this._skillCategoryIconUrl = getCategoryIconUrl(IMPACT_ICONS, skill.category);
+            this._viewState = 'form';
+        } catch (error) {
+            this._errorMessage = error.body?.message || error.message || 'Unable to load skill.';
+            this._viewState = 'error';
+        }
+    }
 
     /* ================================================================
      * SUBMIT DISPATCHER
@@ -705,6 +792,9 @@ export default class FimbyQuickResponseModal extends LightningElement {
                     break;
                 case 'library':
                     result = await this._submitBorrowRequest();
+                    break;
+                case 'skill':
+                    result = await this._submitSkillHelp();
                     break;
                 default:
                     throw new Error('Unknown response type');
@@ -787,6 +877,20 @@ export default class FimbyQuickResponseModal extends LightningElement {
         return { reservationId: result.reservationId, amount: this._reserveAmount };
     }
 
+    async _submitSkillHelp() {
+        const result = await requestSkillHelp({
+            skillOfferId: this._recordId,
+            note: this._skillNote.trim() || null
+        });
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to send message.');
+        }
+        return {
+            conversationId: result.conversationId,
+            messageId: result.messageId
+        };
+    }
+
     async _submitBorrowRequest() {
         const requestData = {
             itemId: this._recordId,
@@ -836,6 +940,9 @@ export default class FimbyQuickResponseModal extends LightningElement {
         this._daysNeeded = '';
         this._noteToLender = '';
         this._isItemAvailable = true;
+
+        this._skillNote = '';
+        this._skillCategoryIconUrl = '';
     }
 
     /* ================================================================
@@ -847,6 +954,13 @@ export default class FimbyQuickResponseModal extends LightningElement {
             location.href = `/sharedlife/${this._recordId}`;
         } else if (this.isLibraryType) {
             location.href = `/library-item/${this._recordId}`;
+        } else if (this.isSkillType) {
+            const convId = this._submittedResponseData?.conversationId;
+            if (convId) {
+                location.href = `/conversation?id=${convId}`;
+            } else {
+                location.href = `/skill-offer/${this._recordId}`;
+            }
         } else {
             location.href = `/asks-offers/${this._recordId}`;
         }

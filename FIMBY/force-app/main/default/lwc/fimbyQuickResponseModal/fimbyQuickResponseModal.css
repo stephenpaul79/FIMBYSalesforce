@@ -316,6 +316,22 @@
     flex-shrink: 0;
 }
 
+.summary-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-skill-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
 .summary-info {
     display: flex;
     flex-direction: column;
@@ -383,7 +399,8 @@
     font-weight: 500;
 }
 
-.char-count.over-limit {
+.char-count.over-limit,
+.char-count.at-limit {
     color: var(--fimby-error, #C13030);
     font-weight: 600;
 }

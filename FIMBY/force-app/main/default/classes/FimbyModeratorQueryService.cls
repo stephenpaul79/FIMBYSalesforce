@@ -282,6 +282,27 @@ public without sharing class FimbyModeratorQueryService {
                 result.put('imageUrls', buildImageList(new List<String>{ r.Image_URL__c }));
                 result.put('contentType', 'Library Item');
             }
+        } else if (recordType == 'Skill_Offer__c') {
+            List<Skill_Offer__c> records = [
+                SELECT Id, Name, Description_Text__c, Skill_Category__c, Status__c,
+                       Owner_Contact__c, Owner_Contact__r.Name, Owner_Contact__r.Image_URL__c,
+                       Listed_By__c, Listed_By__r.Name,
+                       Moderation_Status__c, Hidden_By_Moderator__c, Hidden_Date__c,
+                       Hidden_Reason_Code__c, CreatedDate
+                FROM Skill_Offer__c WHERE Id = :recordId LIMIT 1
+            ];
+            if (!records.isEmpty()) {
+                Skill_Offer__c r = records[0];
+                result.put('contentTitle', r.Name);
+                result.put('contentBody', r.Description_Text__c);
+                result.put('authorName', r.Owner_Contact__r != null ? r.Owner_Contact__r.Name : '');
+                result.put('authorPhotoUrl', r.Owner_Contact__r != null ? r.Owner_Contact__r.Image_URL__c : null);
+                result.put('authorContactId', r.Owner_Contact__c);
+                result.put('postDate', String.valueOf(r.CreatedDate));
+                result.put('moderationStatus', r.Moderation_Status__c);
+                result.put('imageUrls', new List<String>());
+                result.put('contentType', 'Skill Offer');
+            }
         } else if (recordType == 'Story_Comment__c') {
             List<Story_Comment__c> records = [
                 SELECT Id, Body__c, Status__c, Edit_Count__c, Edited_Date__c,

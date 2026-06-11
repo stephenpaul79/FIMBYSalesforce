@@ -583,4 +583,45 @@ public class FimbyMyStuffControllerTest {
         System.assertEquals('Ring the side gate', sci.Additional_Info__c,
             'Additional info should be preserved when not sent in payload');
     }
+
+    @IsTest
+    static void testGetNeighbourProfile_sameNeighbourhood() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        List<Contact> contacts = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate];
+        Contact viewer = contacts[0];
+        Contact neighbour = contacts[1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> profile = FimbyMyStuffController.getNeighbourProfile(neighbour.Id);
+            System.assertEquals(neighbour.Id, profile.get('contactId'));
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetNeighbourProfile_deniedCrossNeighbourhood() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Account otherNeighbourhood = FimbyTestDataFactory.createNeighbourhood(true);
+        otherNeighbourhood.Name = 'Remote Neighbourhood';
+        update otherNeighbourhood;
+        Contact remoteContact = FimbyTestDataFactory.createNeighbourhoodContact(otherNeighbourhood.Id, true);
+
+        Boolean threw = false;
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyMyStuffController.getNeighbourProfile(remoteContact.Id);
+            } catch (AuraHandledException e) {
+                threw = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, threw, 'Cross-neighbourhood profile should be denied');
+    }
 }

@@ -192,6 +192,12 @@ public with sharing class FimbyMessageController {
                     ];
                     return records.isEmpty() ? null : records[0].Name;
                 }
+                if (sObjectType == 'Skill_Offer__c') {
+                    List<Skill_Offer__c> records = [
+                        SELECT Name FROM Skill_Offer__c WHERE Id = :recordId LIMIT 1
+                    ];
+                    return records.isEmpty() ? null : records[0].Name;
+                }
             } catch (Exception e) {
                 return null;
             }

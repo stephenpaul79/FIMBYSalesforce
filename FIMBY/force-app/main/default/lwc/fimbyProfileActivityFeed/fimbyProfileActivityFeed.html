@@ -1,0 +1,49 @@
+<template>
+    <template lwc:if={showSection}>
+        <section class="profile-activity-section">
+            <div class="section-header">
+                <h3 class="section-title">Recent posts</h3>
+            </div>
+
+            <c-fimby-infinite-scroll
+                class="profile-activity-scroll"
+                has-more-data={hasMoreContent}
+                is-loading={isLoading}
+                show-empty-state={showEmptyState}
+                empty-state-title="No active posts right now"
+                empty-state-message="When they post something new, it will show up here."
+                threshold="200"
+                onloadmore={handleLoadMore}>
+                <div class="activity-list">
+                    <template for:each={activityItems} for:item="item">
+                        <button
+                            type="button"
+                            class="activity-row-wrapper"
+                            key={item.recordId}
+                            data-record-id={item.recordId}
+                            aria-label="View post"
+                            onclick={handleCardClick}>
+                            <c-fimby-card
+                                card-type={item.feedType}
+                                layout="list"
+                                card-accent-color={item.cardAccentColor}
+                                title={item.name}
+                                description={item.description}
+                                truncate-description="true"
+                                description-max-lines="2"
+                                show-header="false"
+                                show-footer="false"
+                                show-menu="false"
+                                timestamp={item.displayTimestamp}
+                                badge-label={item.badgeLabel}
+                                badge-icon-url={item.badgeIconUrl}
+                                badge-style={item.badgeStyle}
+                                is-clickable="true">
+                            </c-fimby-card>
+                        </button>
+                    </template>
+                </div>
+            </c-fimby-infinite-scroll>
+        </section>
+    </template>
+</template>

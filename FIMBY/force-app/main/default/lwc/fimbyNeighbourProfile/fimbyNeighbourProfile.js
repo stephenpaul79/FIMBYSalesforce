@@ -3,7 +3,6 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
-import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
 
@@ -165,13 +164,9 @@ export default class FimbyNeighbourProfile extends LightningElement {
         return val.split(';').map(s => s.trim()).filter(Boolean).join(', ');
     }
 
-    async handleMessage() {
-        try {
-            const result = await getOrCreateConversation({ targetContactId: this.neighbourContactId });
-            location.href = '/conversation?id=' + result.conversationId;
-        } catch (error) {
-            console.error('Error starting conversation:', error);
-        }
+    handleMessage() {
+        if (!this.neighbourContactId) return;
+        location.href = '/conversation?contactId=' + this.neighbourContactId;
     }
 
     handleBack() {

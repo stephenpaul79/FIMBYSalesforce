@@ -8,8 +8,6 @@ import uploadOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileCon
 import removeOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileController.removeOrganizationLogo';
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
-import getOrCreateConversation from '@salesforce/apex/FimbyConversationController.getOrCreateConversation';
-
 export default class FimbyOrganizationProfile extends LightningElement {
     @track org = null;
     @track neighbourhoods = [];
@@ -242,17 +240,9 @@ export default class FimbyOrganizationProfile extends LightningElement {
         }
     }
 
-    async handleMessage() {
-        if (!this.orgContactId || this.isMessaging) return;
-        this.isMessaging = true;
-        try {
-            const result = await getOrCreateConversation({ targetContactId: this.orgContactId });
-            location.href = '/conversation?id=' + result.conversationId;
-        } catch (err) {
-            this.showToast('Error', err?.body?.message || 'Could not start conversation.', 'error');
-        } finally {
-            this.isMessaging = false;
-        }
+    handleMessage() {
+        if (!this.orgContactId) return;
+        location.href = '/conversation?contactId=' + this.orgContactId;
     }
 
     showToast(title, message, variant) {

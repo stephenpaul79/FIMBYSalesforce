@@ -1161,6 +1161,50 @@ public class FimbyModeratorDashboardTest {
     }
 
     @isTest
+    static void testFlagAndRepublishSkillOffer() {
+        Account nh = getNeighbourhood();
+        List<Contact> contacts = getContacts();
+
+        Skill_Offer__c skill = new Skill_Offer__c(
+            Name = 'Tech Help',
+            Skill_Category__c = 'Tech Help',
+            Owner_Contact__c = contacts[1].Id,
+            Listed_By__c = contacts[1].Id,
+            Neighbourhood__c = nh.Id,
+            Status__c = FimbyConstants.SKILL_ACTIVE,
+            Moderation_Status__c = 'Visible'
+        );
+        insert skill;
+
+        Test.startTest();
+        FimbyModeratorActionService.flagContent(
+            String.valueOf(skill.Id), 'Skill_Offer__c', 'Spam', contacts[0].Id
+        );
+
+        Skill_Offer__c hidden = [
+            SELECT Moderation_Status__c, Hidden_By_Moderator__c
+            FROM Skill_Offer__c WHERE Id = :skill.Id
+        ];
+        System.assertEquals('Hidden_By_Moderator', hidden.Moderation_Status__c);
+        System.assertEquals(contacts[0].Id, hidden.Hidden_By_Moderator__c);
+
+        Map<String, Object> review = FimbyModeratorQueryService.getContentReviewData(
+            String.valueOf(skill.Id), 'Skill_Offer__c', null
+        );
+        System.assertNotEquals(null, review.get('recordId'));
+
+        FimbyModeratorActionService.republishContent(String.valueOf(skill.Id), 'Skill_Offer__c', null);
+
+        Skill_Offer__c visible = [
+            SELECT Moderation_Status__c, Hidden_By_Moderator__c
+            FROM Skill_Offer__c WHERE Id = :skill.Id
+        ];
+        System.assertEquals('Visible', visible.Moderation_Status__c);
+        System.assertEquals(null, visible.Hidden_By_Moderator__c);
+        Test.stopTest();
+    }
+
+    @isTest
     static void testKeepContentHidden() {
         Account nh = getNeighbourhood();
         List<Contact> contacts = getContacts();
