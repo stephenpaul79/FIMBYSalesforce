@@ -103,11 +103,51 @@ public class FimbyContactControllerTest {
 
     @isTest
     static void testSearchContactsForOnBehalfOf() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        // A neighbour in the same boundary account — should be findable.
+        Contact neighbour = FimbyTestDataFactory.createNeighbourhoodContact(testContact.AccountId, true);
+
         Test.startTest();
-        List<Map<String, String>> results = FimbyContactController.searchContactsForOnBehalfOf('Test');
+        List<Map<String, String>> results;
+        System.runAs(testUser) {
+            results = FimbyContactController.searchContactsForOnBehalfOf('Resident');
+        }
         Test.stopTest();
 
         System.assertNotEquals(null, results, 'Should return results list');
+        Set<Id> returnedIds = new Set<Id>();
+        for (Map<String, String> r : results) {
+            returnedIds.add((Id) r.get('id'));
+        }
+        System.assert(returnedIds.contains(neighbour.Id),
+            'Should surface neighbours in the same boundary account');
+        System.assert(!returnedIds.contains(testContact.Id),
+            'Should never surface the caller themselves');
+    }
+
+    @isTest
+    static void testSearchContactsForOnBehalfOf_ExcludesOtherNeighbourhoods() {
+        User testUser = getTestUser();
+
+        // A contact in a completely separate boundary account.
+        Account otherNeighbourhood = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact outsider = FimbyTestDataFactory.createNeighbourhoodContact(otherNeighbourhood.Id, true);
+
+        Test.startTest();
+        List<Map<String, String>> results;
+        System.runAs(testUser) {
+            results = FimbyContactController.searchContactsForOnBehalfOf('Resident');
+        }
+        Test.stopTest();
+
+        Set<Id> returnedIds = new Set<Id>();
+        for (Map<String, String> r : results) {
+            returnedIds.add((Id) r.get('id'));
+        }
+        System.assert(!returnedIds.contains(outsider.Id),
+            'Must not surface contacts from outside the caller\'s neighbourhood');
     }
 
     @isTest

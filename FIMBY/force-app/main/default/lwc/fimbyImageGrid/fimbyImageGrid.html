@@ -16,6 +16,7 @@
                         data-index={singleImage.index}
                         data-original={singleImage.url}
                         onclick={handleImageClick}
+                        onload={handleImageLoad}
                         onerror={handleImageError}>
                 </div>
             </div>
@@ -37,6 +38,7 @@
                             data-index={img.index}
                             data-original={img.url}
                             onclick={handleImageClick}
+                            onload={handleImageLoad}
                             onerror={handleImageError}>
                     </div>
                 </template>
@@ -58,6 +60,7 @@
                         data-index={threeImageHero.index}
                         data-original={threeImageHero.url}
                         onclick={handleImageClick}
+                        onload={handleImageLoad}
                         onerror={handleImageError}>
                 </div>
                 <template for:each={threeImageSecondary} for:item="img">
@@ -73,6 +76,7 @@
                             data-index={img.index}
                             data-original={img.url}
                             onclick={handleImageClick}
+                            onload={handleImageLoad}
                             onerror={handleImageError}>
                     </div>
                 </template>
@@ -95,6 +99,7 @@
                             data-index={img.index}
                             data-original={img.url}
                             onclick={handleImageClick}
+                            onload={handleImageLoad}
                             onerror={handleImageError}>
                     </div>
                 </template>

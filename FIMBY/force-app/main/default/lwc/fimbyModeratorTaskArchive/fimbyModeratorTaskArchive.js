@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import getModeratorAssignments from '@salesforce/apex/FimbyModeratorDashboardController.getModeratorAssignments';
 import getClosedTasks from '@salesforce/apex/FimbyModeratorDashboardController.getClosedTasks';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { getUrl } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 
@@ -279,14 +280,6 @@ export default class FimbyModeratorTaskArchive extends LightningElement {
 
     handleBottomTabChange(event) {
         const selectedTab = event.detail.tab;
-        const validPages = {
-            home: '/',
-            library: '/library-list',
-            messages: '/messages',
-            mine: '/my-stuff'
-        };
-        if (validPages[selectedTab]) {
-            window.location.href = validPages[selectedTab];
-        }
+        window.location.href = getUrl(selectedTab);
     }
 }

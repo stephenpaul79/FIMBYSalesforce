@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "respira-wordpress": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@respira/wordpress-mcp-server"
+      ],
+      "env": {
+        "RESPIRA_CONFIG_B64": "eyJzaXRlcyI6W3siaWQiOiJmaW1ieS1jb20iLCJuYW1lIjoiZmltYnkuY29tIiwidXJsIjoiaHR0cHM6Ly9maW1ieS5jb20iLCJhcGlLZXkiOiJyZXNwaXJhX3NpdGVfNTBhM2MzMmNiYTljNTRlOWQ1NWE3MjdlIiwiZGVmYXVsdCI6dHJ1ZX1dLCJwcmVmZXJlbmNlcyI6eyJhdXRvRHVwbGljYXRlIjp0cnVlLCJzZWN1cml0eUNoZWNrcyI6dHJ1ZX0sIm1ldGFkYXRhIjp7ImdlbmVyYXRlZEF0IjoiMjAyNi0wMy0yMVQyMzoxNjo0Mi44OTZaIiwic291cmNlIjoicmVzcGlyYS5wcmVzcy1kYXNoYm9hcmQiLCJ0b3RhbFNlYXRzIjoxLCJ1c2VkU2VhdHMiOjF9fQ=="
+      }
+    }
+  }
+}

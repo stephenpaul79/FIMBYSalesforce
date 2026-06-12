@@ -3,7 +3,7 @@ id: 431
 title: "Our Approach"
 slug: our-approach
 status: publish
-url: https://fimby.com/family-in-my-backyard/our-approach/
+url: https://fimby.com/our-approach/
 modified: 2026-03-28
 ---
 
@@ -93,7 +93,7 @@ The early church described in Acts shared meals, pooled resources, and looked af
 
 No ads. No data harvesting. No engagement metrics. FIMBY doesn't sell your attention or your information.
 
-It's funded by community, governed by neighbours, and built to serve the people who use it — not the people who want to reach them.
+It's a non-profit endeavour — sustained by donations, grants, and community contributions, governed by neighbours, and built to serve the people who use it, not the people who want to reach them.
 
 > Your data is not the product. Your neighbours are not an audience to be monetized.
 

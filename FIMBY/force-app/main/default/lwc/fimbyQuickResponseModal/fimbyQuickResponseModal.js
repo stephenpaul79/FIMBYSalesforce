@@ -950,6 +950,9 @@ export default class FimbyQuickResponseModal extends LightningElement {
      * ================================================================ */
 
     handleViewDetails() {
+        // Close the modal before navigating so it isn't left stranded in the
+        // persistent shell once these links move to soft navigation.
+        this.hide();
         if (this.isStoryType) {
             location.href = `/sharedlife/${this._recordId}`;
         } else if (this.isLibraryType) {

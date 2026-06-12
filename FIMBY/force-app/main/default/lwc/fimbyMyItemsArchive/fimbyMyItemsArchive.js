@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getMyLibraryItemsArchive from '@salesforce/apex/FimbyMyStuffController.getMyLibraryItemsArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { getUrl } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [];
@@ -134,14 +135,6 @@ export default class FimbyMyItemsArchive extends NavigationMixin(LightningElemen
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'myStuff': '/my-stuff'
-        };
-        if (validPages[selectedTab]) {
-            location.href = validPages[selectedTab];
-        }
+        location.href = getUrl(selectedTab);
     }
 }

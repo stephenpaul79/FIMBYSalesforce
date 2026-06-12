@@ -92,10 +92,11 @@
                                 </button>
 
                                 <div class="swipe-foreground">
-                                    <a href={notification.navigationUrl}
+                                    <div role="button" tabindex="0"
                                        class={notification.containerClass}
                                        data-notification-id={notification.id}
-                                       onclick={handleNotificationClick}>
+                                       onclick={handleNotificationClick}
+                                       onkeydown={handleNotificationKeydown}>
 
                                         <img src={notification.typeIconUrl} alt="" class="type-icon">
                                         <div class="notification-content">
@@ -113,7 +114,7 @@
                                             </template>
                                             <div class="notification-time">{notification.formattedTime}</div>
                                         </div>
-                                    </a>
+                                    </div>
 
                                     <!-- Desktop kebab trigger -->
                                     <div class="notif-kebab-container">

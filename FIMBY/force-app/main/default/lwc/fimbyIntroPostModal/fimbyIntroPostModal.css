@@ -183,6 +183,39 @@
     min-height: 220px;
 }
 
+.intro-modal-photo-reuse {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+    text-align: center;
+}
+
+.intro-modal-photo-reuse-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--fimby-border-soft, #e9e3d2);
+    box-shadow: var(--fimby-shadow-card, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.intro-modal-photo-reuse-prompt {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary, #3a3526);
+}
+
+.intro-modal-photo-reuse-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
 .intro-modal-celebration-text {
     margin: 16px 0 0;
     font-size: 1.1rem;

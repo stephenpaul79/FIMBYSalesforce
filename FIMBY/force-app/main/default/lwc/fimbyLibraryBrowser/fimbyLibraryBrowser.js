@@ -1,5 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { getRecordPageReference, startNavTiming } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -63,6 +64,8 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     _pendingScrollY = null;
     _restoredFromCache = false;
     _saveThrottleTimer = null;
+    // Holds the feed invisible during a cache-resume scroll restore.
+    @track _resumeHidden = false;
 
     // Auto-load for thin filters
     minFilteredItems = 5;
@@ -88,7 +91,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         this._restoreViewPreference();
         this.loadCategories();
 
-        if (!this._restoreLibraryState()) {
+        if (this._restoreLibraryState()) {
+            // Cache resume: hide the feed from the first paint so the upcoming
+            // scroll-position restore happens while invisible (no top→saved
+            // jump). Revealed in renderedCallback once scroll is set.
+            this._resumeHidden = true;
+        } else {
             this.loadInitialData();
         }
 
@@ -115,6 +123,14 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
         }
+        // Under the persistent shell this view remounts on every soft nav and
+        // pagehide never fires, so flush any pending scroll-state save now;
+        // otherwise back-navigation would restore a stale scroll position.
+        if (this._saveThrottleTimer) {
+            clearTimeout(this._saveThrottleTimer);
+            this._saveThrottleTimer = null;
+        }
+        this._saveLibraryState();
     }
 
     _handleScrollDirection() {
@@ -392,6 +408,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             : 'library-sticky-header';
     }
 
+    get scrollContainerClass() {
+        return this._resumeHidden
+            ? 'library-scroll-container is-resume-hidden'
+            : 'library-scroll-container';
+    }
+
     get refreshIconUrl() {
         return `${IMPACT_ICONS}/refresh.png`;
     }
@@ -642,10 +664,18 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         const item = this.allItems.find(i => i.id === itemId)
             || this.filteredItems.find(i => i.id === itemId);
         if (item?.isSkill) {
-            location.href = `/skill-offer/${itemId}`;
+            this._navigateToRecord('Skill_Offer__c', itemId);
         } else {
-            location.href = `/library-item/${itemId}`;
+            this._navigateToRecord('Library_Item__c', itemId);
         }
+    }
+
+    // Soft-nav to an object detail page (keeps the persistent shell mounted).
+    _navigateToRecord(objectApiName, recordId) {
+        const ref = getRecordPageReference(objectApiName, recordId);
+        if (!ref) return;
+        startNavTiming('detail');
+        this[NavigationMixin.Navigate](ref);
     }
 
     handleCardKeydown(event) {
@@ -680,7 +710,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             const modal = this.template.querySelector('c-fimby-quick-response-modal');
             if (modal) modal.show(itemId, 'library');
         } else {
-            location.href = `/library-item/${itemId}`;
+            this._navigateToRecord('Library_Item__c', itemId);
         }
     }
 
@@ -835,7 +865,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this._applyCategoryFilter();
             this.loadCategories();
 
-            this._pendingScrollY = state.scrollY;
+            this._pendingScrollY = state.scrollY || 0;
             this._restoredFromCache = true;
             return true;
         } catch (e) {
@@ -859,6 +889,10 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this._restoredFromCache = false;
             requestAnimationFrame(() => {
                 window.scrollTo(0, savedY);
+                // Reveal only after scroll is positioned, so the jump is unseen.
+                requestAnimationFrame(() => {
+                    this._resumeHidden = false;
+                });
             });
         }
     }

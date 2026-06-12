@@ -129,8 +129,8 @@
 }
 
 .filter-button.sub-filter.active {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -141,8 +141,8 @@
 }
 
 .filter-button.sub-filter.active:hover {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
     color: #ffffff;
 }
 
@@ -311,7 +311,7 @@ button.list-row {
     border-radius: var(--fimby-btn-radius, 12px);
     background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
     box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
-    color: #4A3526 !important;
+    color: var(--fimby-text-primary) !important;
     font-size: var(--fimby-btn-font-size, 0.9375rem);
     font-weight: 700;
     cursor: pointer;

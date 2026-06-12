@@ -342,7 +342,6 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
      * --------------------------------------------------------------- */
 
     async handleNotificationClick(event) {
-        event.preventDefault();
         const notificationId = event.currentTarget.dataset.notificationId;
 
         if (this._openSwipeId === notificationId) {
@@ -368,6 +367,13 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         const target = this._resolveSafeUrl(notification);
         if (target) {
             window.location.href = target;
+        }
+    }
+
+    handleNotificationKeydown(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleNotificationClick(event);
         }
     }
 

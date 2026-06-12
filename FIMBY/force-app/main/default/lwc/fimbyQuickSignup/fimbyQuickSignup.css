@@ -228,11 +228,11 @@
 
 .social-btn.google {
     background: var(--fimby-surface-card);
-    color: #333;
+    color: var(--fimby-text-primary);
 }
 
 .social-btn.google:hover {
-    background: #f5f5f5;
+    background: var(--fimby-hover-bg);
 }
 
 .social-btn.facebook {

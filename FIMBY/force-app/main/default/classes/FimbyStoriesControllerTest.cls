@@ -451,6 +451,83 @@ public class FimbyStoriesControllerTest {
         System.assert(caught, 'Non-author should not be able to update');
     }
 
+    @IsTest
+    static void testUseProfilePhotoForStory_Success() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        testContact.Image_URL__c = 'http://example.com/avatar.jpg';
+        testContact.Image_Ratio__c = '300X300';
+        update testContact;
+
+        User testUser = createTestUser(testContact.Id);
+
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            Id storyId = FimbyStoriesController.createStory(
+                'Hi neighbours', 'My intro', 'Bio', null, null, false
+            );
+            FimbyStoriesController.useProfilePhotoForStory(storyId);
+
+            Story__c updated = [SELECT Image_URL__c, Image_Ratio__c FROM Story__c WHERE Id = :storyId];
+            System.assertEquals('http://example.com/avatar.jpg', updated.Image_URL__c, 'Story should reuse the profile photo URL');
+            System.assertEquals('300X300', updated.Image_Ratio__c, 'Story should reuse the profile photo ratio');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testUseProfilePhotoForStory_NoPhoto() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = createTestUser(testContact.Id);
+
+        Boolean caught = false;
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            Id storyId = FimbyStoriesController.createStory(
+                'Hi neighbours', 'My intro', 'Bio', null, null, false
+            );
+            try {
+                FimbyStoriesController.useProfilePhotoForStory(storyId);
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Reusing a missing profile photo should throw');
+    }
+
+    @IsTest
+    static void testUseProfilePhotoForStory_NotOwner() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Story__c targetStory = [SELECT Id FROM Story__c WHERE Type__c = 'Prayer' LIMIT 1];
+
+        Contact other = new Contact(
+            FirstName = 'Other', LastName = 'PhotoUser',
+            AccountId = testNeighbourhood.Id, Email = 'otherphotouser@example.com',
+            Image_URL__c = 'http://example.com/other.jpg'
+        );
+        insert other;
+        User otherUser = createTestUser(other.Id);
+
+        Boolean caught = false;
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(otherUser) {
+            try {
+                FimbyStoriesController.useProfilePhotoForStory(targetStory.Id);
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Non-owner should not be able to reuse a photo on another story');
+    }
+
     private static User createTestUser(Id contactId) {
         Profile p = [SELECT Id FROM Profile WHERE Name = 'Customer Community Plus User' OR Name = 'Partner Community User' LIMIT 1];
 

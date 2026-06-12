@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming } from 'c/fimbyNavigation';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
@@ -21,6 +22,13 @@ const SEARCH_ICON = 'Magnify.png';
 const MENU_ICON = 'Kebab.png';
 
 const BADGE_COOLDOWN_MS = 30000;
+const BADGE_CACHE_KEY = 'fimby-badge-counts';
+
+// Re-record an "app open" (and re-sync quiet hours) only after the session has
+// been backgrounded for at least this long, so a quick tab-away doesn't inflate
+// the metric. With the persistent shell the header mounts once per session, so
+// the resume path is what keeps long-lived sessions registering real opens.
+const APP_OPEN_RESUME_THRESHOLD_MS = 1800000; // 30 minutes
 
 const MENU_ICONS = {
     profile:  'ProfileActive.png',
@@ -36,18 +44,7 @@ const MAX_KEBAB_IDENTITIES = 3;
 const NO_PROFILE_PHOTO = 'NoProfilePhoto.png';
 const NO_ORG_PHOTO = 'NoOrgPhoto.png';
 
-/* ---------------------------------------------------------------
- * Route-prefix → tab mapping.
- * Matches the consolidated 5-tab navigation.
- * Legacy story/askOffer routes map to the home tab since those
- * feeds have been absorbed into the cascading-filter home feed.
- * --------------------------------------------------------------- */
-const TAB_ROUTES = [
-    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item', '/skill-offer'] },
-    { tab: 'messages', prefixes: ['/messages', '/conversation', '/new-message'] },
-    { tab: 'mine',     prefixes: ['/mine', '/my-stuff', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-skills', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/moderator-dashboard', '/moderator-task-archive', '/help-and-support', '/community-guidelines', '/feedback'] },
-    { tab: 'home',     prefixes: ['/shared-life-list', '/stories', '/story', '/create-story', '/shared-life-post', '/ask-offer-list', '/ask-or-offer-post', '/asks-offers', '/needs-offers', '/quick-post', '/respond', '/response-detail', '/response-reply'] }
-];
+/* Tab-prefix → tab mapping now lives in c/fimbyNavigation (resolveTabFromPath). */
 
 /* Icon file-name map (inside the Impact_Icons static resource zip) */
 const TAB_ICONS = {
@@ -84,8 +81,21 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     /* --- Lifecycle ------------------------------------------------- */
 
+    _lastAppOpenTs = 0;
+
+    // Reactive active-tab highlight. Because soft navigation keeps this header
+    // mounted, the highlight can no longer be set once in connectedCallback —
+    // it must recompute whenever the current page changes. CurrentPageReference
+    // fires on every (soft or hard) navigation. Also closes out nav-timing.
+    @wire(CurrentPageReference)
+    wiredPageRef() {
+        this.activeTab = this._detectActiveTab();
+        endNavTiming();
+    }
+
     connectedCallback() {
         this.activeTab = this._detectActiveTab();
+        this._hydrateBadgeCountsFromCache();
         this._pollBadgeCounts();
         this._recordAppOpenAndSyncQuietHours();
         this._checkOnboarding();
@@ -101,6 +111,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this._visibilityHandler = () => {
             if (document.visibilityState === 'visible') {
                 this._pollBadgeCountsIfStale();
+                this._recordAppOpenOnResume();
             }
         };
         document.addEventListener('visibilitychange', this._visibilityHandler);
@@ -109,7 +120,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         // foreground after an absence. visibilitychange is unreliable in iOS
         // WKWebView after long background, so this bridges that gap. Older app
         // builds never dispatch it, so the listener simply stays idle.
-        this._appResumedHandler = () => this._pollBadgeCountsIfStale();
+        this._appResumedHandler = () => {
+            this._pollBadgeCountsIfStale();
+            this._recordAppOpenOnResume();
+        };
         window.addEventListener('fimby-app-resumed', this._appResumedHandler);
     }
 
@@ -128,6 +142,35 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
     }
 
+    /**
+     * Tab navigation triggers a full page reload (location.href), which tears
+     * down and rebuilds this header. Without a primed value the bell renders
+     * BellInactive first, then swaps to BellActive once the async badge fetch
+     * returns — a visible flash on every navigation. Reading the last-known
+     * counts synchronously on mount lets the bell render in its correct state
+     * immediately; the background poll then reconciles any change.
+     */
+    _hydrateBadgeCountsFromCache() {
+        try {
+            const cached = sessionStorage.getItem(BADGE_CACHE_KEY);
+            if (!cached) return;
+            const counts = JSON.parse(cached);
+            this.notificationCount = counts.notifications || 0;
+            this.hasNotifications = this.notificationCount > 0;
+            this.messageCount = counts.messages || 0;
+            this.hasUnread = this.messageCount > 0;
+        } catch (e) { /* ignore corrupt/unavailable cache */ }
+    }
+
+    _writeBadgeCountsToCache() {
+        try {
+            sessionStorage.setItem(BADGE_CACHE_KEY, JSON.stringify({
+                notifications: this.notificationCount,
+                messages: this.messageCount
+            }));
+        } catch (e) { /* ignore unavailable storage */ }
+    }
+
     _pollBadgeCounts() {
         this._lastBadgeFetch = Date.now();
         getBadgeCounts()
@@ -136,6 +179,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
                 this.hasNotifications = this.notificationCount > 0;
                 this.messageCount = result.messages || 0;
                 this.hasUnread = this.messageCount > 0;
+                this._writeBadgeCountsToCache();
                 this._broadcastCounts();
             })
             .catch(err => {
@@ -424,15 +468,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
                 return 'home';
             }
 
-            for (const route of TAB_ROUTES) {
-                for (const prefix of route.prefixes) {
-                    if (pagePath === prefix || pagePath.startsWith(prefix + '/')) {
-                        return route.tab;
-                    }
-                }
-            }
-
-            return 'home';
+            return resolveTabFromPath(pagePath);
         } catch (e) {
             return 'home';
         }
@@ -604,34 +640,15 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     /* --- Shared navigation helper ---------------------------------- */
 
     navigateToPage(tab) {
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'mine': '/my-stuff',
-            'profile': '/profile',
-            'search': '/search',
-            'notifications': '/notifications',
-            'settings': '/settings',
-            'help': '/help-support',
-            'help-support': '/help-support',
-            'feedback': '/feedback',
-            'create-story': '/create-story',
-            'create-post': '/ask-or-offer-post',
-            'add-library-item': '/library-item-post',
-            'ask-post': '/ask-or-offer-post?type=Need',
-            'offer-post': '/ask-or-offer-post?type=Offer',
-            'shared-life-post': '/shared-life-post',
-            'library-item-post': '/library-item-post',
-            'responses': '/responses',
-            'loaned-items': '/loaned-items',
-            'shared-contacts': '/shared-contacts'
-        };
-
-        if (validPages[tab]) {
-            location.href = validPages[tab];
+        startNavTiming(tab);
+        // Soft navigation (NavigationMixin) keeps the theme layout mounted and
+        // only swaps the content region. Routes with no clean named-page
+        // equivalent fall back to location.href through the same chokepoint.
+        const pageRef = getPageReference(tab);
+        if (pageRef) {
+            this[NavigationMixin.Navigate](pageRef);
         } else {
-            location.href = '/';
+            location.href = getUrl(tab);
         }
     }
 
@@ -641,12 +658,14 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     updateUnreadCount(count) {
         this.messageCount = count || 0;
         this.hasUnread = this.messageCount > 0;
+        this._writeBadgeCountsToCache();
     }
 
     @api
     updateNotificationCount(count) {
         this.notificationCount = count || 0;
         this.hasNotifications = this.notificationCount > 0;
+        this._writeBadgeCountsToCache();
     }
 
     @api
@@ -657,6 +676,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     /* --- App-open tracking + quiet hours sync ----------------------- */
 
     _recordAppOpenAndSyncQuietHours() {
+        this._lastAppOpenTs = Date.now();
         recordAppOpen()
             .then(result => {
                 if (result?.quietHoursPreference && window.ReactNativeWebView) {
@@ -671,6 +691,19 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             .catch(err => {
                 console.error('Error recording app open:', err);
             });
+    }
+
+    /**
+     * Under the persistent shell the header mounts once per session, so
+     * connectedCallback fires recordAppOpen only once. Re-fire it (and re-sync
+     * quiet hours) when the WebView returns to the foreground after being
+     * backgrounded long enough to count as a genuine new "app open" — this also
+     * picks up a mid-session quiet-hours preference change.
+     */
+    _recordAppOpenOnResume() {
+        if (Date.now() - this._lastAppOpenTs >= APP_OPEN_RESUME_THRESHOLD_MS) {
+            this._recordAppOpenAndSyncQuietHours();
+        }
     }
 
     /* --- Onboarding ------------------------------------------------ */

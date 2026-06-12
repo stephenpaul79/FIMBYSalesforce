@@ -1,5 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
 
+// Minimum time the cold-load curtain stays up once shown, so a fast load can't
+// blink the wheel for a few frames (the mirror of the spinner-flicker we're
+// killing). Content paints underneath at opacity 0 and reveals together.
+const MIN_CURTAIN_MS = 350;
+
 const END_MESSAGE_BASE = "You're all caught up!";
 const END_MESSAGE_VARIANTS = [
     "You're all caught up. Nice work!",
@@ -23,7 +28,22 @@ export default class FimbyInfiniteScroll extends LightningElement {
 
     @api
     get isLoading() { return this._isLoading; }
-    set isLoading(value) { this._isLoading = value; }
+    set isLoading(value) { this._updateLoading(value); }
+
+    // Optional calm label under the cold-load wheel (default: wheel only).
+    @api initialLoadingLabel = '';
+
+    // ── Hide-until-ready curtain state ──────────────────────────────────────
+    // A cold load is inferred: isLoading goes true before any reveal has
+    // happened since the last reset(). While the curtain is up the slotted
+    // content is held at opacity 0 (still laid out) and the area is reserved,
+    // then the whole feed reveals in one opacity fade — no per-card pop-in, no
+    // empty/spinner flash. A cache hit (restoreState) skips the curtain since
+    // content is already present.
+    @track _curtainActive = false;
+    _hasRevealedOnce = false;
+    _curtainShownAt = 0;
+    _revealTimer = null;
 
     @api
     get hasMoreData() { return this._hasMoreData; }
@@ -82,7 +102,34 @@ export default class FimbyInfiniteScroll extends LightningElement {
     }
 
     get showEndMessage() {
-        return !this._hasMoreData && !this._showEmptyState && !this._isLoading;
+        return !this._hasMoreData && !this._showEmptyState && !this._isLoading && !this._curtainActive;
+    }
+
+    /* ── Curtain-derived render state ───────────────────────────────────────
+     * showCurtain        — the cold-load wheel overlay
+     * showLoadMoreSpinner — the bottom "Loading more…" spinner (post-reveal only)
+     * showEmptyResolved   — empty state, suppressed while the curtain is up
+     * scrollContentClass  — holds content at opacity 0 under the curtain
+     * rootClass           — reserves vertical space while loading (all viewports)
+     */
+    get showCurtain() {
+        return this._curtainActive && !this._showError;
+    }
+
+    get showLoadMoreSpinner() {
+        return this._isLoading && !this._curtainActive;
+    }
+
+    get showEmptyResolved() {
+        return this._showEmptyState && !this._curtainActive;
+    }
+
+    get scrollContentClass() {
+        return this._curtainActive ? 'scroll-content is-curtained' : 'scroll-content';
+    }
+
+    get rootClass() {
+        return this._curtainActive ? 'fimby-infinite-scroll is-initial-loading' : 'fimby-infinite-scroll';
     }
 
     get endMessageText() {
@@ -124,6 +171,11 @@ export default class FimbyInfiniteScroll extends LightningElement {
         if (this.windowScrollHandler) {
             window.removeEventListener('scroll', this.windowScrollHandler);
             console.log('📜 Infinite scroll: Removed window scroll listener');
+        }
+        // Tear down the curtain reveal timer (persistent shell no longer GCs it)
+        if (this._revealTimer) {
+            clearTimeout(this._revealTimer);
+            this._revealTimer = null;
         }
     }
 
@@ -300,9 +352,12 @@ export default class FimbyInfiniteScroll extends LightningElement {
     reset() {
         this.hasInitialLoadChecked = false;
         this._hasMoreData = true;
-        this._isLoading = false;
         this.isLoadingMore = false;
         this._clearEndMessage();
+        // Re-arm the curtain so the next isLoading=true shows the cold-load wheel
+        // (filter switch / full reload behave like a fresh cold load).
+        this._armCurtain();
+        this._isLoading = false;
     }
 
     @api
@@ -311,17 +366,63 @@ export default class FimbyInfiniteScroll extends LightningElement {
         this._hasMoreData = hasMoreData;
         this._isLoading = false;
         this.isLoadingMore = false;
+        // Content was restored from cache — paint it immediately, never curtain.
+        if (this._revealTimer) {
+            clearTimeout(this._revealTimer);
+            this._revealTimer = null;
+        }
+        this._curtainActive = false;
+        this._hasRevealedOnce = true;
     }
 
     @api
     finishLoading(hasMoreData = true) {
         console.log('📜 finishLoading called with hasMoreData:', hasMoreData);
-        this._isLoading = false;
         this.isLoadingMore = false;
         this._hasMoreData = hasMoreData;
         this._showError = false;
+        // Route through _updateLoading so the curtain reveals on this transition
+        // (consumers that call finishLoading directly bypass the isLoading setter).
+        this._updateLoading(false);
         // Note: We deliberately do NOT auto-load more here.
         // Users must scroll to trigger additional loads (standard infinite scroll behavior)
+    }
+
+    /* ── Curtain lifecycle ──────────────────────────────────────────────── */
+
+    // Central loading transition: show the curtain on the first load, schedule
+    // the reveal when that load resolves. Called by the isLoading setter and by
+    // finishLoading so both paths behave identically.
+    _updateLoading(value) {
+        this._isLoading = value;
+        if (value) {
+            if (!this._hasRevealedOnce && !this._curtainActive) {
+                this._curtainActive = true;
+                this._curtainShownAt = Date.now();
+            }
+        } else if (this._curtainActive && !this._revealTimer) {
+            this._scheduleReveal();
+        }
+    }
+
+    _scheduleReveal() {
+        const elapsed = Date.now() - this._curtainShownAt;
+        const delay = Math.max(0, MIN_CURTAIN_MS - elapsed);
+        this._revealTimer = setTimeout(() => {
+            this._revealTimer = null;
+            this._curtainActive = false;   // drops the overlay + fades content in
+            this._hasRevealedOnce = true;
+        }, delay);
+    }
+
+    _armCurtain() {
+        if (this._revealTimer) {
+            clearTimeout(this._revealTimer);
+            this._revealTimer = null;
+        }
+        this._hasRevealedOnce = false;
+        this._curtainActive = false;
+        this._curtainShownAt = 0;
     }
 
     @api
@@ -329,6 +430,14 @@ export default class FimbyInfiniteScroll extends LightningElement {
         this._isLoading = false;
         this.isLoadingMore = false;
         this._showError = true;
+        // A failed cold load exits the curtain to the error state — never a
+        // stuck wheel. Next load re-arms via reset().
+        if (this._revealTimer) {
+            clearTimeout(this._revealTimer);
+            this._revealTimer = null;
+        }
+        this._curtainActive = false;
+        this._hasRevealedOnce = true;
         if (message) {
             this.errorMessage = message;
         }

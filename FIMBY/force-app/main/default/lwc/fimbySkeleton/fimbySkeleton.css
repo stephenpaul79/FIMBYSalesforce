@@ -1,0 +1,141 @@
+:host {
+    display: block;
+}
+
+.skeleton-region {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── Base placeholder shape + shimmer ─────────────────────────────── */
+.sk-shape {
+    background-color: var(--fimby-skeleton-base);
+    border-radius: var(--fimby-radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer sweep — a moving highlight band built from the theme tokens so it
+   reads correctly in light and dark. Gated behind prefers-reduced-motion. */
+.sk-shape::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        transparent 0,
+        var(--fimby-skeleton-highlight) 50%,
+        transparent 100%
+    );
+    opacity: 0.6;
+    animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes sk-shimmer {
+    100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sk-shape::after {
+        animation: none;
+    }
+}
+
+/* ── Shared shape primitives ──────────────────────────────────────── */
+.sk-line { height: 12px; }
+.sk-line-30 { width: 30%; }
+.sk-line-40 { width: 40%; }
+.sk-line-50 { width: 50%; }
+.sk-line-60 { width: 60%; }
+.sk-line-70 { width: 70%; }
+.sk-line-80 { width: 80%; }
+.sk-line-90 { width: 90%; }
+.sk-center { margin-left: auto; margin-right: auto; }
+
+.sk-avatar { width: 44px; height: 44px; border-radius: var(--fimby-radius-full); flex-shrink: 0; }
+.sk-avatar-lg { width: 56px; height: 56px; }
+.sk-avatar-xl { width: 88px; height: 88px; }
+
+.sk-badge { width: 64px; height: 20px; border-radius: var(--fimby-badge-radius, 9999px); flex-shrink: 0; }
+.sk-pill { width: 96px; height: 32px; border-radius: var(--fimby-radius-full); }
+.sk-btn { width: 120px; height: 44px; border-radius: var(--fimby-btn-radius, 12px); }
+.sk-time { width: 36px; height: 12px; flex-shrink: 0; }
+.sk-media { width: 100%; height: 180px; border-radius: var(--fimby-radius-md); }
+.sk-media-tall { height: 240px; }
+.sk-tile { height: 72px; border-radius: var(--fimby-radius-md); }
+
+/* ── Card variant ─────────────────────────────────────────────────── */
+.sk-card {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.sk-card-header { display: flex; align-items: center; gap: 12px; }
+.sk-card-headtext { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sk-card-footer { display: flex; gap: 12px; margin-top: 4px; }
+
+/* ── List-row variant ─────────────────────────────────────────────── */
+.sk-row {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sk-row-text { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Detail variant ───────────────────────────────────────────────── */
+.sk-detail {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.sk-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.sk-detail-actions { display: flex; gap: 12px; margin-top: 8px; }
+
+/* ── Profile-hub variant ──────────────────────────────────────────── */
+.sk-hub {
+    background-color: var(--fimby-surface-card);
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.sk-hub .sk-avatar-xl { margin-bottom: 4px; }
+.sk-hub-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+@media (min-width: 768px) {
+    .sk-hub-grid { grid-template-columns: repeat(4, 1fr); }
+}

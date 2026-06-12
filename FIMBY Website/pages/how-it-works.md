@@ -3,7 +3,7 @@ id: 30
 title: "How It Works"
 slug: how-it-works
 status: publish
-url: https://fimby.com/family-in-my-backyard/how-it-works/
+url: https://fimby.com/how-it-works/
 modified: 2026-03-28
 ---
 

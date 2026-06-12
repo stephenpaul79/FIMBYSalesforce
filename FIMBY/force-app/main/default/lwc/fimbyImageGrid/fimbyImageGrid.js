@@ -58,6 +58,19 @@ export default class FimbyImageGrid extends LightningElement {
 
     renderedCallback() {
         this.classList.toggle('layout-thumbnail', this.layout === 'thumbnail');
+        // Cached images can already be complete before onload binds — reveal
+        // them so they never get stuck at opacity 0 (the classic onload pitfall).
+        this.template.querySelectorAll('img.grid-image').forEach((img) => {
+            if (img.complete && img.naturalWidth > 0) {
+                img.classList.add('is-loaded');
+            }
+        });
+    }
+
+    // Soft-fade each photo into its already-reserved aspect-ratio box once it
+    // decodes, instead of a hard pop.
+    handleImageLoad(event) {
+        event.target.classList.add('is-loaded');
     }
 
     get singleImageContainerStyle() {

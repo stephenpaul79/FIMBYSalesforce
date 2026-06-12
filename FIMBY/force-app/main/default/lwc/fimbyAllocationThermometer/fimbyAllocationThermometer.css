@@ -18,14 +18,14 @@
     min-width: 80px;
     height: 8px;
     border-radius: var(--fimby-radius-sm, 6px);
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
     overflow: hidden;
 }
 
 .bar-fill-compact {
     height: 100%;
     border-radius: var(--fimby-radius-sm, 6px);
-    background: #6CBCD1;
+    background-color: var(--fimby-chart-fill);
     transition: width 0.3s ease;
 }
 
@@ -45,7 +45,7 @@
     height: 20px;
     border-radius: var(--fimby-radius-sm, 6px);
     overflow: hidden;
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
 }
 
 .segment {
@@ -61,15 +61,15 @@
 }
 
 .segment-filled {
-    background: #6CBCD1;
+    background-color: var(--fimby-chart-fill);
 }
 
 .segment-mine {
-    background: var(--fimby-earth-ochre, #A38045);
+    background-color: var(--fimby-earth-ochre, #A38045);
 }
 
 .segment-owner {
-    background: var(--fimby-text-secondary, #8B8178);
+    background-color: var(--fimby-chart-owner);
 }
 
 /* Responsive */

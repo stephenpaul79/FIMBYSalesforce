@@ -1,5 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { getUrl } from 'c/fimbyNavigation';
 
 export default class FimbyResponsesList extends NavigationMixin(LightningElement) {
     @track responses = [];
@@ -362,18 +363,7 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
         // Map valid pages for Digital Experience
-        const validPages = {
-            'home': '/',
-            'stories': '/?filter=story',
-            'askOffer': '/ask-offer-list',
-            'library': '/library-list',
-            'messages': '/messages',
-            'profile': '/profile'
-        };
-
-        if (validPages[selectedTab]) {
-            location.href = validPages[selectedTab];
-        }
+        location.href = getUrl(selectedTab);
     }
 
     handleLoadMore() {

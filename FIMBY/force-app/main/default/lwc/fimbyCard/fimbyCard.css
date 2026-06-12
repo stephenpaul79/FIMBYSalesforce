@@ -853,6 +853,7 @@ button.action-button:focus-visible {
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 6px;
+    min-width: 0;
 }
 
 .compact-title-row .card-title {
@@ -904,7 +905,9 @@ button.action-button:focus-visible {
 }
 
 .card-compact .card-content {
-    padding: 10px 12px 6px;
+    padding: 12px 16px 6px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .card-compact .card-title {
@@ -946,6 +949,7 @@ button.action-button:focus-visible {
     gap: 6px;
     flex-wrap: wrap;
     margin-bottom: 4px;
+    min-width: 0;
 }
 
 .compact-badge {
@@ -1153,10 +1157,11 @@ button.action-button:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
+    padding: 10px 16px;
     border-top: 1px solid var(--fimby-divider-subtle);
     gap: 10px;
     margin-top: auto;
+    min-width: 0;
 }
 
 .compact-owner {

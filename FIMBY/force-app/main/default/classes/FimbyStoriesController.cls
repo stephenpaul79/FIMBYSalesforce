@@ -119,6 +119,51 @@ public with sharing class FimbyStoriesController {
     }
 
     /**
+     * @description Reuses the acting-as identity's existing profile photo as a story's
+     * image, sparing the author a redundant upload during the intro-post flow. Copies the
+     * Contact's Image_URL__c / Image_Ratio__c onto the story; no file is duplicated, so
+     * clearing either record's image later only nulls its own field.
+     * @param storyId Id of the Story__c the running user just created
+     */
+    @AuraEnabled
+    public static void useProfilePhotoForStory(Id storyId) {
+        try {
+            if (storyId == null) {
+                throw new AuraHandledException('Story not found.');
+            }
+
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Id realContactId = identity.currentUser.ContactId;
+            Id actingAsContactId = identity.actingAsContactId;
+
+            StoryUpdateHelper helper = new StoryUpdateHelper();
+            Story__c story = helper.queryStory(storyId);
+            if (story == null) {
+                throw new AuraHandledException('Story not found.');
+            }
+            if (story.Contact__c != realContactId && story.Posted_By__c != actingAsContactId) {
+                throw new AuraHandledException('You can only update stories you created.');
+            }
+
+            Contact avatarContact = helper.queryContactAvatar(actingAsContactId);
+            if (avatarContact == null || String.isBlank(avatarContact.Image_URL__c)) {
+                throw new AuraHandledException('No profile photo found to reuse.');
+            }
+
+            story.Image_URL__c = avatarContact.Image_URL__c;
+            story.Image_Ratio__c = avatarContact.Image_Ratio__c;
+            helper.updateStory(story);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyStoriesController', 'useProfilePhotoForStory', e);
+            AuraHandledException ex = new AuraHandledException('Error reusing profile photo: ' + e.getMessage());
+            ex.setMessage('Error reusing profile photo: ' + e.getMessage());
+            throw ex;
+        }
+    }
+
+    /**
      * @description LWC-callable method that updates an existing Story__c for the author.
      * @param storyData JSON with recordId, title, content, category, shareOnSocial
      * @return Map with success flag and recordId
@@ -345,6 +390,19 @@ public with sharing class FimbyStoriesController {
                 SELECT Id, Posted_By__c, Contact__c, Name, Message__c, Type__c, Share_on_Social_Media__c
                 FROM Story__c
                 WHERE Id = :storyId
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
+
+        public Contact queryContactAvatar(Id contactId) {
+            if (contactId == null) {
+                return null;
+            }
+            List<Contact> rows = [
+                SELECT Id, Image_URL__c, Image_Ratio__c
+                FROM Contact
+                WHERE Id = :contactId
                 LIMIT 1
             ];
             return rows.isEmpty() ? null : rows[0];

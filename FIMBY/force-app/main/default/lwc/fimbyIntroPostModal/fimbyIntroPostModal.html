@@ -35,12 +35,46 @@
 
                     <template lwc:elseif={_showPhotoStep}>
                         <div class="intro-modal-photo-step">
-                            <c-fimby-image-uploader
-                                record-id={_createdStoryId}
-                                object-api-name="Story__c"
-                                label="Upload photo"
-                                onimageuploaded={handlePhotoUploaded}>
-                            </c-fimby-image-uploader>
+                            <template lwc:if={showProfilePhotoReuse}>
+                                <div class="intro-modal-photo-reuse">
+                                    <img src={_profilePhotoUrl} alt="Your profile photo" class="intro-modal-photo-reuse-preview" />
+                                    <p class="intro-modal-photo-reuse-prompt">Use your profile photo for this post?</p>
+                                    <div class="intro-modal-photo-reuse-actions">
+                                        <button type="button"
+                                                class="intro-modal-post"
+                                                onclick={handleUseProfilePhoto}
+                                                disabled={_isApplyingProfilePhoto}>
+                                            <template lwc:if={_isApplyingProfilePhoto}>
+                                                <lightning-spinner alternative-text="Adding photo" size="small"></lightning-spinner>
+                                                <span>Adding&hellip;</span>
+                                            </template>
+                                            <template lwc:else>
+                                                Use this photo
+                                            </template>
+                                        </button>
+                                        <button type="button"
+                                                class="intro-modal-skip"
+                                                onclick={handleUploadDifferent}
+                                                disabled={_isApplyingProfilePhoto}>
+                                            Upload a different one
+                                        </button>
+                                    </div>
+                                    <template lwc:if={_errorMessage}>
+                                        <div class="intro-modal-error" role="alert">
+                                            <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                                            <span>{_errorMessage}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:if={showPhotoUploader}>
+                                <c-fimby-image-uploader
+                                    record-id={_createdStoryId}
+                                    object-api-name="Story__c"
+                                    label="Upload photo"
+                                    onimageuploaded={handlePhotoUploaded}>
+                                </c-fimby-image-uploader>
+                            </template>
                         </div>
                     </template>
 

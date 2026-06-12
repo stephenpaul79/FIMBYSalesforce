@@ -3,6 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getMyBorrowHistory from '@salesforce/apex/FimbyMyStuffController.getMyBorrowHistory';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
+import { getUrl } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [];
@@ -162,14 +163,6 @@ export default class FimbyBorrowHistory extends NavigationMixin(LightningElement
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'myStuff': '/my-stuff'
-        };
-        if (validPages[selectedTab]) {
-            location.href = validPages[selectedTab];
-        }
+        location.href = getUrl(selectedTab);
     }
 }

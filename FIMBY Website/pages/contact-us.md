@@ -3,7 +3,7 @@ id: 210
 title: "Contact"
 slug: contact-us
 status: publish
-url: https://fimby.com/family-in-my-backyard/contact-us/
+url: https://fimby.com/contact-us/
 modified: 2026-03-25
 ---
 

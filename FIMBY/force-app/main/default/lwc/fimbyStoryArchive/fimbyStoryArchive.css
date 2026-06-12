@@ -215,7 +215,7 @@ button.list-row {
     border-radius: var(--fimby-btn-radius, 12px);
     background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card));
     box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
-    color: #4A3526 !important;
+    color: var(--fimby-text-primary) !important;
     font-size: var(--fimby-btn-font-size, 0.9375rem);
     font-weight: 700;
     cursor: pointer;

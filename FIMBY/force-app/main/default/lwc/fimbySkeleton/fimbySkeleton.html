@@ -1,0 +1,78 @@
+<template>
+    <div class="skeleton-region" role="status" aria-busy="true">
+        <span class="sr-only">{label}</span>
+
+        <!-- Card variant: feed/list cards -->
+        <template lwc:if={isCard}>
+            <template for:each={items} for:item="item">
+                <div key={item.key} class="sk-card" aria-hidden="true">
+                    <div class="sk-card-header">
+                        <div class="sk-shape sk-avatar"></div>
+                        <div class="sk-card-headtext">
+                            <div class="sk-shape sk-line sk-line-60"></div>
+                            <div class="sk-shape sk-line sk-line-40"></div>
+                        </div>
+                        <div class="sk-shape sk-badge"></div>
+                    </div>
+                    <div class="sk-shape sk-line sk-line-90"></div>
+                    <div class="sk-shape sk-line sk-line-80"></div>
+                    <div class="sk-shape sk-media"></div>
+                    <div class="sk-card-footer">
+                        <div class="sk-shape sk-pill"></div>
+                        <div class="sk-shape sk-pill"></div>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- List-row variant: compact rows -->
+        <template lwc:if={isListRow}>
+            <template for:each={items} for:item="item">
+                <div key={item.key} class="sk-row" aria-hidden="true">
+                    <div class="sk-shape sk-avatar"></div>
+                    <div class="sk-row-text">
+                        <div class="sk-shape sk-line sk-line-50"></div>
+                        <div class="sk-shape sk-line sk-line-80"></div>
+                    </div>
+                    <div class="sk-shape sk-time"></div>
+                </div>
+            </template>
+        </template>
+
+        <!-- Detail variant: single record -->
+        <template lwc:if={isDetail}>
+            <div class="sk-detail" aria-hidden="true">
+                <div class="sk-detail-head">
+                    <div class="sk-shape sk-avatar sk-avatar-lg"></div>
+                    <div class="sk-row-text">
+                        <div class="sk-shape sk-line sk-line-60"></div>
+                        <div class="sk-shape sk-line sk-line-40"></div>
+                    </div>
+                </div>
+                <div class="sk-shape sk-media sk-media-tall"></div>
+                <div class="sk-shape sk-line sk-line-90"></div>
+                <div class="sk-shape sk-line sk-line-90"></div>
+                <div class="sk-shape sk-line sk-line-70"></div>
+                <div class="sk-detail-actions">
+                    <div class="sk-shape sk-btn"></div>
+                    <div class="sk-shape sk-btn"></div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Profile-hub variant: avatar + name + stat grid -->
+        <template lwc:if={isProfileHub}>
+            <div class="sk-hub" aria-hidden="true">
+                <div class="sk-shape sk-avatar sk-avatar-xl"></div>
+                <div class="sk-shape sk-line sk-line-50 sk-center"></div>
+                <div class="sk-shape sk-line sk-line-30 sk-center"></div>
+                <div class="sk-hub-grid">
+                    <div class="sk-shape sk-tile"></div>
+                    <div class="sk-shape sk-tile"></div>
+                    <div class="sk-shape sk-tile"></div>
+                    <div class="sk-shape sk-tile"></div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

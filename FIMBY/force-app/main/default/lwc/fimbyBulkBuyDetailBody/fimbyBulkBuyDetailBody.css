@@ -47,7 +47,7 @@
     height: 14px;
     border-radius: var(--fimby-radius-md);
     overflow: hidden;
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
     transition: background 0.3s ease;
 }
 
@@ -73,15 +73,15 @@
 }
 
 .dot-buyer {
-    background: #8B8178;
+    background-color: var(--fimby-chart-owner);
 }
 
 .dot-reserved {
-    background: var(--fimby-btn-primary-bg);
+    background-color: var(--fimby-btn-primary-bg);
 }
 
 .dot-available {
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
     border: 1px solid var(--fimby-border-default, #d0cbc3);
 }
 

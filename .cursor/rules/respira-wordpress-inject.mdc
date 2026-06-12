@@ -8,6 +8,7 @@ alwaysApply: false
 
 ## Recipe (follow in order — no side paths)
 
+0. **Extract first** — `respira_extract_builder_content` on the target `page_id` BEFORE building anything. Confirm the page is the one you think it is (its current content matches the local `.html` you're about to push) and keep the extracted body as a manual baseline for rollback. Mandatory whenever the `page_id` is not already verified in the Page ID map below. Abort if the page identity does not match — an inject is a full-page replace and goes live instantly.
 1. **Read** MCP schema: `respira_inject_builder_content.json`
 2. **Build** staging payload:
    ```powershell
@@ -24,7 +25,7 @@ alwaysApply: false
    - `builder`, `page_id`, `mode`, `confirm_replace`, `edit_target`, `content`
    - Load via `require()` on the staging path; pass the parsed object **verbatim** to `CallMcpTool`
    - Do **not** hand-type HTML, truncate, or substitute content in the tool call
-6. **Verify** — `respira_extract_builder_content` on same `page_id`; confirm required markers present and forbidden strings absent.
+6. **Verify** — `respira_extract_builder_content` on same `page_id`; confirm required markers present and forbidden strings absent. Also assert the task's own success condition: any string the edit was meant to add is present, and any string it was meant to remove is gone (e.g. for a link-path fix, `/family-in-my-backyard/` must be absent and the new path present). Markers prove nothing was truncated; the task assertion proves the edit actually landed.
 7. **Record** `snapshot_uuid` from inject response (rollback only if user asks).
 8. **Delete** `.respira/staging/inject-{pageId}.json` only after step 6 passes.
 
@@ -58,6 +59,7 @@ FIMBY Website/.respira/staging/inject-{pageId}.json  # gitignored; delete after 
 | `vision.html` | 568 |
 | `faq.html` | 59 |
 | `contact.html` | 210 |
+| `delete-account.html` | 697 |
 
 Update when IDs change.
 

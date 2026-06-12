@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>Full_URL__c</field>
-        <value xsi:type="xsd:string">https://fimby.com/family-in-my-backyard/delete-account/</value>
+        <value xsi:type="xsd:string">https://fimby.com/delete-account/</value>
     </values>
     <values>
         <field>Description__c</field>

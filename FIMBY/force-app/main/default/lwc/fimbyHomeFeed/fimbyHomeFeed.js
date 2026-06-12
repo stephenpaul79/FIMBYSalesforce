@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { getRecordPageReference, startNavTiming } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -156,6 +157,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @track filterHidden = false;
     _lastScrollY = 0;
     _scrollTicking = false;
+    _loadSeq = 0;
 
     loadedRecordIds = new Set();
 
@@ -166,6 +168,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     /* --- State persistence for back-navigation restore ------------- */
     _pendingScrollY = null;
     _restoredFromCache = false;
+    // Holds the feed invisible during a cache-resume scroll restore.
+    @track _resumeHidden = false;
     _saveThrottleTimer = null;
 
     defaultAvatarUrl = `${IMPACT_ICONS}/NoProfilePhoto.png`;
@@ -331,6 +335,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         if (!this._restoreFeedState()) {
             this.loadInitialData();
         } else {
+            // Cache resume: hide the feed from the first paint so the upcoming
+            // scroll-position restore happens while invisible (no top→saved
+            // jump). Revealed in renderedCallback once scroll is set.
+            this._resumeHidden = true;
             // Session cache must not pin another user's contact ids — that makes isPoster wrong for everyone.
             this.currentContactId = null;
             this.actingAsContactId = null;
@@ -365,6 +373,14 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         }
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
+        }
+        // Under the persistent shell this view remounts on every soft nav, so a
+        // pending throttle timer would otherwise fire against a torn-down
+        // component. Persist immediately and clear the timer.
+        if (this._saveThrottleTimer) {
+            clearTimeout(this._saveThrottleTimer);
+            this._saveThrottleTimer = null;
+            this._saveFeedState();
         }
     }
 
@@ -404,6 +420,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     async loadInitialData() {
+        // Stale-response guard: faster soft nav + instant paint invites rapid
+        // filter tapping, so an older in-flight fetch must not overwrite a newer
+        // result. Each fresh load bumps the token; loadNextBatch drops any
+        // response whose token is no longer current.
+        const seq = ++this._loadSeq;
         this.isLoading = true;
         this.feedOffset = 0;
         this.feedItems = [];
@@ -423,8 +444,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             console.error('Error loading initial data:', error);
             this.showErrorToast('Failed to load feed content');
         } finally {
-            this.isLoading = false;
-            this.updateScrollContainer();
+            // Only the most recent load may flip the loading flag / repaint.
+            if (seq === this._loadSeq) {
+                this.isLoading = false;
+                this.updateScrollContainer();
+            }
         }
     }
 
@@ -432,6 +456,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      * Data loading — sends filter params to Apex
      * =============================================================== */
     async loadNextBatch() {
+        const seq = this._loadSeq;
         const category = this.activeFilter === 'all' ? null : this.activeFilter;
         const subType  = this.activeSubFilter === 'All' ? null : this.activeSubFilter;
         const effectivePageSize = this.feedOffset === 0 ? INITIAL_FETCH_SIZE : SCROLL_BATCH_SIZE;
@@ -442,6 +467,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             category: category,
             subType: subType
         });
+
+        // A newer load started while this fetch was in flight — discard it so it
+        // can't append stale rows onto the reset feed.
+        if (seq !== this._loadSeq) {
+            return;
+        }
 
         if (result?.currentContactId) {
             this.currentContactId = result.currentContactId;
@@ -828,6 +859,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         return this.feedItems && this.feedItems.length > 0;
     }
 
+    get scrollContainerClass() {
+        return this._resumeHidden
+            ? 'home-scroll-container is-resume-hidden'
+            : 'home-scroll-container';
+    }
+
     get showEmptyState() {
         return !this.isLoading && this.feedItems.length === 0;
     }
@@ -897,13 +934,20 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     navigateToDetailPage(item) {
-        const detailPages = {
-            'story': '/sharedlife',
-            'askOffer': '/asks-offers',
-            'library': '/library-item'
+        const objectByFeedType = {
+            story: 'Story__c',
+            askOffer: 'Needs_Offers__c',
+            library: 'Library_Item__c'
         };
-        const page = detailPages[item.feedType];
-        if (page) location.href = `${page}/${item.recordId}`;
+        this._navigateToRecord(objectByFeedType[item.feedType], item.recordId);
+    }
+
+    // Soft-nav to an object detail page (keeps the persistent shell mounted).
+    _navigateToRecord(objectApiName, recordId) {
+        const ref = getRecordPageReference(objectApiName, recordId);
+        if (!ref) return;
+        startNavTiming('detail');
+        this[NavigationMixin.Navigate](ref);
     }
 
     handleStoryComment(event) {
@@ -948,7 +992,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this._openQuickResponseModal(recordId, 'story');
         } else if (item.isBulkBuy) {
             if (item.responsePillClass === 'response-pill-reserved') {
-                location.href = `/asks-offers/${recordId}`;
+                this._navigateToRecord('Needs_Offers__c', recordId);
             } else {
                 this._openQuickResponseModal(recordId, 'bulkBuy');
             }
@@ -1058,7 +1102,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     async _handleCommunityEventInline(recordId, item) {
         if (item.responsePillClass === 'response-pill-responded') {
-            location.href = `/asks-offers/${recordId}`;
+            this._navigateToRecord('Needs_Offers__c', recordId);
             return;
         }
         if (this._communityEventProcessingIds.has(recordId)) return;
@@ -1216,7 +1260,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this.hasMoreContent = state.hasMoreContent;
             this.totalCount = state.totalCount || 0;
 
-            this._pendingScrollY = state.scrollY;
+            this._pendingScrollY = state.scrollY || 0;
             this._restoredFromCache = true;
             return true;
         } catch (e) {
@@ -1240,8 +1284,24 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this._restoredFromCache = false;
             requestAnimationFrame(() => {
                 window.scrollTo(0, savedY);
+                // Reveal only after scroll is positioned, so the jump is unseen.
+                requestAnimationFrame(() => {
+                    this._resumeHidden = false;
+                });
             });
         }
+
+        // Reveal cached Library thumbnails that completed before onload bound,
+        // so they never stay at opacity 0 (matches fimbyImageGrid behaviour).
+        this.template.querySelectorAll('img.library-listed-thumb').forEach((img) => {
+            if (img.complete && img.naturalWidth > 0) {
+                img.classList.add('is-loaded');
+            }
+        });
+    }
+
+    handleThumbLoad(event) {
+        event.target.classList.add('is-loaded');
     }
 
     /* ===============================================================
@@ -1252,7 +1312,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) return `Good morning, ${this._userFirstName}`;
         if (hour >= 12 && hour < 17) return `Good afternoon, ${this._userFirstName}`;
-        if (hour >= 17 && hour < 21) return `Good evening, ${this._userFirstName}`;
+        if (hour >= 17 && hour < 24) return `Good evening, ${this._userFirstName}`;
         return `Burning the midnight oil, ${this._userFirstName}?`;
     }
 

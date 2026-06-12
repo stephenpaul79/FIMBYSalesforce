@@ -289,7 +289,7 @@
 
 .thermometer-bar-wrap {
     height: 14px;
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
     border-radius: var(--fimby-radius-md);
     overflow: hidden;
     display: flex;
@@ -297,21 +297,21 @@
 
 .thermo-committed {
     height: 100%;
-    background: #6CBCD1;
+    background-color: var(--fimby-chart-fill);
     transition: width 0.3s ease;
     flex-shrink: 0;
 }
 
 .thermo-selection {
     height: 100%;
-    background: #F5C87A;
+    background-color: var(--fimby-chart-pending);
     transition: width 0.3s ease;
     flex-shrink: 0;
 }
 
 .thermometer-bar {
     height: 100%;
-    background: #6CBCD1;
+    background-color: var(--fimby-chart-fill);
     border-radius: var(--fimby-radius-md);
     transition: width 0.3s ease;
 }
@@ -563,7 +563,7 @@
 
 /* Success thermometer: green segment for just-reserved */
 .success-bar-wrap {
-    background: #C1DFE5;
+    background-color: var(--fimby-chart-track);
 }
 
 .thermo-just-reserved {

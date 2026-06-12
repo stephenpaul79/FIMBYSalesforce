@@ -1,25 +1,12 @@
-import { LightningElement, api, track } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming } from 'c/fimbyNavigation';
 
 const FOOTER_HEIGHT_PX = 72;
 
-/* ---------------------------------------------------------------
- * Route-prefix → tab mapping.
- * Any page whose path starts with one of these prefixes lights up
- * that tab as active. Order matters — first match wins.
- * Home ('/') is handled separately as an exact match.
- *
- * Legacy story/askOffer routes now map to the home tab since those
- * feeds have been absorbed into the cascading-filter home feed.
- * --------------------------------------------------------------- */
-const TAB_ROUTES = [
-    { tab: 'library',  prefixes: ['/library-list', '/library-item', '/library-item-post', '/add-library-item', '/borrow-item', '/skill-offer'] },
-    { tab: 'messages', prefixes: ['/messages', '/conversation', '/new-message'] },
-    { tab: 'mine',     prefixes: ['/my-stuff', '/mine', '/my-stuff/my-contacts', '/my-stuff/my-posts', '/my-stuff/my-shared-life', '/my-stuff/my-library-items', '/my-stuff/my-skills', '/my-stuff/my-borrowing', '/my-items', '/post-archive', '/story-archive', '/borrowing-history', '/profile', '/edit-profile', '/responses', '/loaned-items', '/settings', '/notifications', '/help-and-support', '/community-guidelines'] },
-    { tab: 'home',     prefixes: ['/shared-life-list', '/stories', '/story', '/create-story', '/shared-life-post', '/ask-offer-list', '/ask-or-offer-post', '/asks-offers', '/needs-offers', '/quick-post', '/respond', '/response-detail', '/response-reply'] }
-];
+/* Tab-prefix → tab mapping now lives in c/fimbyNavigation (resolveTabFromPath). */
 
 /* Icon file-name map (inside the Impact_Icons static resource zip) */
 const TAB_ICONS = {
@@ -41,6 +28,14 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
      * --------------------------------------------------------------- */
     _resizeHandler;
     _badgeCountHandler;
+
+    // Reactive active-tab highlight under the persistent shell (the footer no
+    // longer remounts per navigation, so the tab must recompute on page change).
+    @wire(CurrentPageReference)
+    wiredPageRef() {
+        this.activeTab = this._detectActiveTab();
+        endNavTiming();
+    }
 
     connectedCallback() {
         this.activeTab = this._detectActiveTab();
@@ -104,15 +99,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
                 return 'home';
             }
 
-            for (const route of TAB_ROUTES) {
-                for (const prefix of route.prefixes) {
-                    if (pagePath === prefix || pagePath.startsWith(prefix + '/')) {
-                        return route.tab;
-                    }
-                }
-            }
-
-            return 'home';
+            return resolveTabFromPath(pagePath);
         } catch (e) {
             return 'home';
         }
@@ -183,17 +170,14 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
     }
 
     navigateToPage(tab) {
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'mine': '/my-stuff'
-        };
-
-        if (validPages[tab]) {
-            location.href = validPages[tab];
+        startNavTiming(tab);
+        // Soft navigation keeps the theme layout mounted; fall back to a hard
+        // load only for routes without a named-page equivalent.
+        const pageRef = getPageReference(tab);
+        if (pageRef) {
+            this[NavigationMixin.Navigate](pageRef);
         } else {
-            location.href = '/';
+            location.href = getUrl(tab);
         }
     }
 

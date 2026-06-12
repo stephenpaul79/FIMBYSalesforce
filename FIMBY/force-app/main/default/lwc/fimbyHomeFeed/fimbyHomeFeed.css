@@ -19,6 +19,20 @@
 .home-scroll-container {
     flex: 1;
     overflow: hidden;
+    /* Fade the feed in after a cache-resume scroll restore (see is-resume-hidden). */
+    transition: opacity 220ms ease;
+}
+
+/* Held invisible from first paint during a cache resume so the scroll-position
+   restore (top → saved) happens unseen, then fades in already at position. */
+.home-scroll-container.is-resume-hidden {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-scroll-container {
+        transition: none;
+    }
 }
 
 /* ================================================================
@@ -326,8 +340,8 @@
 }
 
 .filter-button.sub-filter.active {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -338,8 +352,8 @@
 }
 
 .filter-button.sub-filter.active:hover {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
     color: #ffffff;
 }
 
@@ -356,7 +370,6 @@
     margin-bottom: 16px;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    animation: slideInUp 0.3s ease-out;
 }
 
 .feed-card-wrapper:hover {
@@ -661,6 +674,13 @@
     max-height: 260px;
     object-fit: cover;
     display: block;
+    /* Soft fade into the reserved box on load (matches feed-card photos). */
+    opacity: 0;
+    transition: opacity 250ms ease;
+}
+
+.library-listed-thumb.is-loaded {
+    opacity: 1;
 }
 
 .library-listed-content {
@@ -849,19 +869,8 @@ button.feed-card-wrapper {
     .feed-section { max-width: 800px; }
 }
 
-/* ================================================================
-   Animation
-   ================================================================ */
-@keyframes slideInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.feed-card-wrapper:nth-child(1) { animation-delay: 0ms; }
-.feed-card-wrapper:nth-child(2) { animation-delay: 50ms; }
-.feed-card-wrapper:nth-child(3) { animation-delay: 100ms; }
-.feed-card-wrapper:nth-child(4) { animation-delay: 150ms; }
-.feed-card-wrapper:nth-child(5) { animation-delay: 200ms; }
+/* Cards no longer animate in individually — fimbyInfiniteScroll reveals the
+   whole feed in one opacity fade once content is ready (hide-until-ready). */
 
 /* Keyboard focus visibility */
 .filter-button:focus-visible,
@@ -881,5 +890,13 @@ button.feed-card-wrapper {
     .refresh-icon {
         transition: none !important;
         animation: none !important;
+    }
+
+    /* No fade — show the thumbnail immediately once loaded. */
+    .library-listed-thumb {
+        transition: none;
+    }
+    .library-listed-thumb:not(.is-loaded) {
+        opacity: 1;
     }
 }

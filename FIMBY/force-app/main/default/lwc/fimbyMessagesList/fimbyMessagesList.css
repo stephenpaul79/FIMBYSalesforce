@@ -90,15 +90,15 @@
 }
 
 .filter-chip.active {
-    background: var(--fimby-text-primary, #4A3526);
-    border-color: var(--fimby-text-primary, #4A3526);
+    background: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-weight: 600;
 }
 
 .filter-chip.active:hover {
-    background: var(--fimby-text-primary, #4A3526);
-    border-color: var(--fimby-text-primary, #4A3526);
+    background: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
     color: #ffffff;
 }
 

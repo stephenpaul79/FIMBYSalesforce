@@ -32,7 +32,7 @@
     box-sizing: border-box;
     padding: 10px 12px;
     margin-bottom: 16px;
-    border: 1px solid var(--fimby-border, #c7d2d2);
+    border: 1px solid var(--fimby-border-default);
     border-radius: 8px;
     font-size: 1rem;
 }
@@ -43,7 +43,7 @@
     padding: 10px 16px;
     border: none;
     border-radius: 9999px;
-    background-color: var(--fimby-primary, #357280);
+    background-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-size: 1rem;
     cursor: pointer;

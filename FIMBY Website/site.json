@@ -23,10 +23,10 @@
   "pages": {
     "published": [
       { "id": 26,  "title": "Family In My Backyard", "slug": "family-in-my-backyard", "url": "/", "file": "pages/home.md" },
-      { "id": 30,  "title": "How It Works", "slug": "how-it-works", "url": "/family-in-my-backyard/how-it-works/", "file": "pages/how-it-works.md" },
-      { "id": 431, "title": "Our Approach", "slug": "our-approach", "url": "/family-in-my-backyard/our-approach/", "file": "pages/our-approach.md" },
-      { "id": 59,  "title": "Frequently Asked Questions (FAQ)", "slug": "faq", "url": "/family-in-my-backyard/faq/", "file": "pages/faq.md" },
-      { "id": 210, "title": "Contact", "slug": "contact-us", "url": "/family-in-my-backyard/contact-us/", "file": "pages/contact-us.md" }
+      { "id": 30,  "title": "How It Works", "slug": "how-it-works", "url": "/how-it-works/", "file": "pages/how-it-works.md" },
+      { "id": 431, "title": "Our Approach", "slug": "our-approach", "url": "/our-approach/", "file": "pages/our-approach.md" },
+      { "id": 59,  "title": "Frequently Asked Questions (FAQ)", "slug": "faq", "url": "/faq/", "file": "pages/faq.md" },
+      { "id": 210, "title": "Contact", "slug": "contact-us", "url": "/contact-us/", "file": "pages/contact-us.md" }
     ],
     "drafts": [
       { "id": 568, "title": "Vision", "slug": "vision", "file": "pages/vision.md" },

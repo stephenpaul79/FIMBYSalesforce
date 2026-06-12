@@ -164,13 +164,22 @@ public with sharing class FimbyContactController {
     }
 
     /**
-     * Search contacts for "On Behalf Of" lookup
+     * Search contacts for "On Behalf Of" lookup.
+     * Scoped to the caller's neighbourhood (the trust boundary) and excludes the
+     * caller themselves, so the support-person lookup never surfaces people from
+     * outside the linked boundary account.
      */
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> searchContactsForOnBehalfOf(String searchTerm) {
         List<Map<String, String>> results = new List<Map<String, String>>();
 
         try {
+            Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
+            if (neighbourhoodId == null) {
+                return results;
+            }
+            Id myContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+
             String searchPattern = '%' + String.escapeSingleQuotes(searchTerm) + '%';
 
             List<Contact> contacts = [
@@ -178,6 +187,8 @@ public with sharing class FimbyContactController {
                 FROM Contact
                 WHERE Name LIKE :searchPattern
                   AND Is_Organization_Contact__c = false
+                  AND AccountId = :neighbourhoodId
+                  AND Id != :myContactId
                 ORDER BY Name
                 LIMIT 20
             ];

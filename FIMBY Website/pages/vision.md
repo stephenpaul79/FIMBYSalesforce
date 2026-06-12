@@ -3,7 +3,7 @@ id: 568
 title: "Vision"
 slug: vision
 status: draft
-url: https://fimby.com/family-in-my-backyard/vision/
+url: https://fimby.com/vision/
 modified: 2026-03-28
 ---
 

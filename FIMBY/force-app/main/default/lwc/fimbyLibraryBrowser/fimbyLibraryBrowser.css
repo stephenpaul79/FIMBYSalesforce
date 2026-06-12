@@ -25,6 +25,20 @@
     flex: 1;
     overflow: hidden;
     --fimby-end-message-inset-x: 0;
+    /* Fade the feed in after a cache-resume scroll restore (see is-resume-hidden). */
+    transition: opacity 220ms ease;
+}
+
+/* Held invisible from first paint during a cache resume so the scroll-position
+   restore (top → saved) happens unseen, then fades in already at position. */
+.library-scroll-container.is-resume-hidden {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .library-scroll-container {
+        transition: none;
+    }
 }
 
 /* =============================================
@@ -415,10 +429,11 @@
    ============================================= */
 .feed-section {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     justify-content: center;
     gap: 16px;
     padding: 16px 0;
+    overflow-x: clip;
 }
 
 .feed-card-wrapper {

@@ -3,7 +3,7 @@ id: 59
 title: "Frequently Asked Questions (FAQ)"
 slug: faq
 status: publish
-url: https://fimby.com/family-in-my-backyard/faq/
+url: https://fimby.com/faq/
 modified: 2026-03-25
 ---
 
@@ -25,7 +25,7 @@ Anyone who lives in an active FIMBY neighbourhood. You don't need to be part of 
 Enter your postal code on our [homepage](https://fimby.com/). If your neighbourhood is active, you'll be guided through a short onboarding that includes setting your name, photo, and care preferences.
 
 **Is it free?**
-Yes. FIMBY is free to use. There are no ads, no premium tiers, and no hidden costs.
+Yes — free to you. There are no ads, no premium tiers, no fees, and we don't sell your data. FIMBY does cost money to run; as a non-profit endeavour, those costs are covered by donations, grants, and community contributions — never by charging neighbours to take part.
 
 ---
 
@@ -57,7 +57,7 @@ Only people in your neighbourhood can see your posts and profile. Contact inform
 Yes. Blocking is bidirectional — neither person can see the other's posts, send messages, or interact in any way. Blocks are private and can be undone at any time.
 
 **What happens if I want to leave?**
-You can delete your account at any time from **Settings → Delete my account**. Your login is revoked right away, and there is a 30-day grace window during which you can restore your account via a link we email you. After 30 days, your posts, messages, and profile are permanently removed. The confirm screen also has an opt-in checkbox to skip the grace and delete immediately if you need to. Full details at [/delete-account](/family-in-my-backyard/delete-account/).
+You can delete your account at any time from **Settings → Delete my account**. Your login is revoked right away, and there is a 30-day grace window during which you can restore your account via a link we email you. After 30 days, your posts, messages, and profile are permanently removed. The confirm screen also has an opt-in checkbox to skip the grace and delete immediately if you need to. Full details at [/delete-account](/delete-account/).
 
 **How are disputes handled?**
 FIMBY uses restorative language and processes. If something goes sideways, the system reaches for check-ins and follow-ups — not penalties or reports. The goal is always to help neighbours sort things out.
@@ -73,7 +73,7 @@ No. FIMBY was shaped by a church community, but it is for neighbours of all back
 FIMBY was created by Stephen Rathjen and the community of [Strathcona Vineyard](https://www.strathconavineyard.com/), a church in Vancouver's Downtown Eastside that has spent 20+ years learning what it means to be neighbours — not perfectly, not heroically, but together.
 
 **How is FIMBY funded?**
-FIMBY is community-funded. There are no ads, no data sales, and no venture capital. It's built to serve the people who use it, not to generate profit.
+FIMBY is a non-profit endeavour, operated under the charitable status of Strathcona Vineyard Church. There are no ads, no data sales, and no venture capital — the aim is to cover the cost of running FIMBY, not to generate profit or sell your attention. Those costs are met by major donations, grants, and contributions from individuals and community groups.
 
 **How can my neighbourhood get involved?**
 FIMBY grows neighbourhood by neighbourhood. If you'd like FIMBY in your area, [let us know](https://fimby.com/contact/) — we'll add you to the waitlist and reach out when we're ready to expand.

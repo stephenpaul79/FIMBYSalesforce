@@ -167,6 +167,12 @@
 @property --fimby-chip-neutral-text { syntax: '<color>'; inherits: true; initial-value: #94a3b8; }
 @property --fimby-chip-teal-bg      { syntax: '<color>'; inherits: true; initial-value: #eaf6fa; }
 
+/* ── Data-Viz / Thermometer (allocation bars, legend dots) ──────── */
+@property --fimby-chart-track   { syntax: '<color>'; inherits: true; initial-value: #C1DFE5; }
+@property --fimby-chart-fill    { syntax: '<color>'; inherits: true; initial-value: #6CBCD1; }
+@property --fimby-chart-pending { syntax: '<color>'; inherits: true; initial-value: #F5C87A; }
+@property --fimby-chart-owner   { syntax: '<color>'; inherits: true; initial-value: #8B8178; }
+
 
 /* ──────────────────────────────────────────────────────────────────
    LIGHT MODE (defaults)
@@ -180,6 +186,9 @@
   --fimby-surface-raised:   #FAF7F2;   /* Cream      — modals                      */
   --fimby-surface-popover:  #FAF7F2;   /* Cream      — menus, popovers             */
   --fimby-surface-input:    #F7F3EB;   /* Linen      — inputs, footers, chip bg    */
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  --fimby-feed-curtain-min-height: 60vh; /* reserved height under the cold-load wheel (viewport-relative, all sizes) */
 
   /* ── Borders ──────────────────────────────────────────────────── */
   --fimby-border-subtle:    #E0D9CF;   /* Sandstone  — lightest borders             */
@@ -244,6 +253,23 @@
   --fimby-input-bg-error:        rgba(231, 76, 60, 0.06);
   --fimby-validation-text-error: #C62828;
 
+  /* ── SLDS Checkbox / Radio Hooks ──────────────────────────────────
+     lightning-input checkbox renders the SLDS faux box in shadow DOM.
+     These hooks inherit in and map it to FIMBY tokens so the unchecked
+     box stays visible in dark mode. References swap with light/dark via
+     the underlying --fimby-* tokens — no per-mode duplication needed.  */
+  --slds-c-checkbox-color-background:          var(--fimby-surface-input);
+  --slds-c-checkbox-color-border:              var(--fimby-input-border-default);
+  --slds-c-checkbox-color-background-checked:  var(--fimby-btn-primary-bg);
+  --slds-c-checkbox-color-border-checked:      var(--fimby-btn-primary-bg);
+  --slds-c-checkbox-mark-color:                #ffffff;
+  --slds-c-checkbox-radius-border:             var(--fimby-radius-sm);
+  --slds-c-radio-color-background:             var(--fimby-surface-input);
+  --slds-c-radio-color-border:                 var(--fimby-input-border-default);
+  --slds-c-radio-color-background-checked:     var(--fimby-btn-primary-bg);
+  --slds-c-radio-color-border-checked:         var(--fimby-btn-primary-bg);
+  --slds-c-radio-mark-color:                   #ffffff;
+
   /* ── On-Behalf-Of Messaging Accent ────────────────────────────── */
   --fimby-on-behalf-solid:      #7c4dff;                    /* Violet — sent bubble bg       */
   --fimby-on-behalf-tint:       rgba(124, 77, 255, 0.08);   /* Violet wash — received bubble */
@@ -295,6 +321,12 @@
   --fimby-chip-lament-bg:    #fef9c3;   --fimby-chip-lament-text:    #854d0e;
   --fimby-chip-neutral-bg:   #f1f5f9;   --fimby-chip-neutral-text:   #94a3b8;
   --fimby-chip-teal-bg:      #eaf6fa;
+
+  /* ── Data-Viz / Thermometer ───────────────────────────────────── */
+  --fimby-chart-track:    #C1DFE5;   /* unfilled bar track / available  */
+  --fimby-chart-fill:     #6CBCD1;   /* filled / committed              */
+  --fimby-chart-pending:  #F5C87A;   /* in-flight selection             */
+  --fimby-chart-owner:    #8B8178;   /* owner / buyer segment           */
 
   /* ── CTA Button Fills (WCAG AA 4.5:1+ with white text) ──────── */
   --fimby-btn-primary-bg:         #3A7D8C;
@@ -484,6 +516,12 @@ body {
     --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
     --fimby-chip-teal-bg:      rgba(58, 125, 140, 0.15);
 
+    /* ── Data-Viz / Thermometer (darker track, lifted fills) ─────── */
+    --fimby-chart-track:    #2A3A3E;   /* muted dark track, visible on dark surface */
+    --fimby-chart-fill:     #3D8494;   /* matches --fimby-earth-teal dark           */
+    --fimby-chart-pending:  #C79A4E;   /* muted amber, readable on dark             */
+    --fimby-chart-owner:    #8A8076;   /* warm grey, visible on dark                */
+
     /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
     --fimby-btn-primary-bg:         #3A7D8C;
     --fimby-btn-primary-bg-hover:   #336F7D;
@@ -636,6 +674,12 @@ body {
   --fimby-chip-lament-bg:    rgba(245, 158, 11, 0.15);  --fimby-chip-lament-text:    #fde68a;
   --fimby-chip-neutral-bg:   rgba(245, 245, 245, 0.08); --fimby-chip-neutral-text:   #94a3b8;
   --fimby-chip-teal-bg:      rgba(58, 125, 140, 0.15);
+
+  /* ── Data-Viz / Thermometer (darker track, lifted fills) ─────── */
+  --fimby-chart-track:    #2A3A3E;
+  --fimby-chart-fill:     #3D8494;
+  --fimby-chart-pending:  #C79A4E;
+  --fimby-chart-owner:    #8A8076;
 
   /* ── CTA Button Fills (same hues, dark-mode surface contrast) ── */
   --fimby-btn-primary-bg:         #3A7D8C;

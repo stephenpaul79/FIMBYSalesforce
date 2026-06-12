@@ -114,8 +114,8 @@
 }
 
 .filter-button.sub-filter.active {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg);
+    border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
 }
 
@@ -126,8 +126,8 @@
 }
 
 .filter-button.sub-filter.active:hover {
-    background-color: var(--fimby-text-primary);
-    border-color: var(--fimby-text-primary);
+    background-color: var(--fimby-btn-primary-bg-hover);
+    border-color: var(--fimby-btn-primary-bg-hover);
     color: #ffffff;
 }
 

@@ -1,9 +1,11 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { completeImageUrl } from 'c/fimbyImageUrl';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
 import createStory from '@salesforce/apex/FimbyStoriesController.createStory';
+import useProfilePhotoForStory from '@salesforce/apex/FimbyStoriesController.useProfilePhotoForStory';
 import markBioPostCompleted from '@salesforce/apex/FimbyOnboardingController.markBioPostCompleted';
 
 const DEFAULT_TITLE = 'Say hi to your neighbours';
@@ -21,6 +23,9 @@ export default class FimbyIntroPostModal extends LightningElement {
     @track _createdStoryId = null;
     @track _actingAsName = '';
     @track _hasMultipleIdentities = false;
+    @track _profilePhotoUrl = '';
+    @track _showFreshUploader = false;
+    @track _isApplyingProfilePhoto = false;
 
     @api
     get isOpen() {
@@ -56,6 +61,8 @@ export default class FimbyIntroPostModal extends LightningElement {
         this._showPhotoStep = false;
         this._showCelebration = false;
         this._createdStoryId = null;
+        this._showFreshUploader = false;
+        this._isApplyingProfilePhoto = false;
         this._loadDraft();
         document.body.classList.add('fimby-modal-open');
     }
@@ -103,6 +110,14 @@ export default class FimbyIntroPostModal extends LightningElement {
         return this._isPosting || !this._draftText || !this._draftText.trim();
     }
 
+    get showProfilePhotoReuse() {
+        return this._showPhotoStep && !!this._profilePhotoUrl && !this._showFreshUploader;
+    }
+
+    get showPhotoUploader() {
+        return this._showPhotoStep && (!this._profilePhotoUrl || this._showFreshUploader);
+    }
+
     get characterCount() {
         return this._draftText ? this._draftText.length : 0;
     }
@@ -121,6 +136,8 @@ export default class FimbyIntroPostModal extends LightningElement {
                 || actingAs?.actingAsContactName
                 || actingAs?.contactName
                 || '';
+
+            this._profilePhotoUrl = completeImageUrl(profile?.imageUrl || '');
 
             const neighbourhoodName = profile?.neighbourhood || 'this neighbourhood';
 
@@ -215,6 +232,28 @@ export default class FimbyIntroPostModal extends LightningElement {
 
     handlePhotoUploaded() {
         this._goToCelebration();
+    }
+
+    async handleUseProfilePhoto() {
+        if (this._isApplyingProfilePhoto) {
+            return;
+        }
+        this._isApplyingProfilePhoto = true;
+        this._errorMessage = '';
+        try {
+            await useProfilePhotoForStory({ storyId: this._createdStoryId });
+            this._goToCelebration();
+        } catch (err) {
+            console.error('fimbyIntroPostModal: error reusing profile photo', err);
+            this._errorMessage = err?.body?.message || err?.message || 'We could not reuse your photo. Try uploading one instead.';
+            this._showFreshUploader = true;
+        } finally {
+            this._isApplyingProfilePhoto = false;
+        }
+    }
+
+    handleUploadDifferent() {
+        this._showFreshUploader = true;
     }
 
     handleSkipPhoto() {

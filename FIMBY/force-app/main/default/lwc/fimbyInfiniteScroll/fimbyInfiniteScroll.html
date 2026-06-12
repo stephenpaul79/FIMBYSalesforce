@@ -1,5 +1,5 @@
 <template>
-    <div class="fimby-infinite-scroll">
+    <div class={rootClass}>
         <!-- Loading indicator at top for pull-to-refresh -->
         <div lwc:if={showPullRefresh} class="pull-refresh-indicator">
             <div class={pullRefreshClasses}>
@@ -16,12 +16,12 @@
              ontouchend={handleTouchEnd}>
 
             <!-- Content slot -->
-            <div class="scroll-content">
+            <div class={scrollContentClass}>
                 <slot></slot>
             </div>
 
-            <!-- Loading indicator at bottom -->
-            <div lwc:if={isLoading} class="loading-indicator">
+            <!-- Loading indicator at bottom (load-more only; cold load uses the curtain) -->
+            <div lwc:if={showLoadMoreSpinner} class="loading-indicator">
                 <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
                 <div class="loading-text">Loading more...</div>
             </div>
@@ -32,8 +32,8 @@
                 <span>{endMessageText}</span>
             </div>
 
-            <!-- Empty state -->
-            <div lwc:if={showEmptyState} class="empty-state">
+            <!-- Empty state (only after a load resolves — never under the curtain) -->
+            <div lwc:if={showEmptyResolved} class="empty-state">
                 <template lwc:if={emptyStateImageUrl}>
                     <img src={emptyStateImageUrl} alt="" class="empty-state-gif" />
                 </template>
@@ -64,6 +64,14 @@
                     </lightning-button>
                 </div>
             </div>
+        </div>
+
+        <!-- Cold-load curtain: covers the feed area with a single calm wheel and
+             reserves vertical space, then unmounts so content fades in together
+             (hide-until-ready — no per-card pop-in, no empty/spinner flash). -->
+        <div lwc:if={showCurtain} class="initial-curtain" role="status" aria-live="polite" aria-busy="true">
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            <span lwc:if={initialLoadingLabel} class="initial-curtain-label">{initialLoadingLabel}</span>
         </div>
     </div>
 </template>

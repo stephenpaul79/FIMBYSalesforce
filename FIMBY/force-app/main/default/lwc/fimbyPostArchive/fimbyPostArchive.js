@@ -3,6 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getMyPostsArchive from '@salesforce/apex/FimbyMyStuffController.getMyPostsArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { getUrl } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [
@@ -165,14 +166,6 @@ export default class FimbyPostArchive extends NavigationMixin(LightningElement) 
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'myStuff': '/my-stuff'
-        };
-        if (validPages[selectedTab]) {
-            location.href = validPages[selectedTab];
-        }
+        location.href = getUrl(selectedTab);
     }
 }

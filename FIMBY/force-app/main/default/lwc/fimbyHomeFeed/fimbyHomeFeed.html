@@ -69,7 +69,7 @@
 
         <!-- Feed Content with Infinite Scroll -->
         <c-fimby-infinite-scroll
-            class="home-scroll-container"
+            class={scrollContainerClass}
             enable-pull-to-refresh="true"
             has-more-data={displayHasMoreContent}
             is-loading={isLoading}
@@ -254,6 +254,7 @@
                                                 class="library-listed-thumb"
                                                 loading="lazy"
                                                 decoding="async"
+                                                onload={handleThumbLoad}
                                                 data-original={feedItem.imageUrl} />
                                         </div>
                                     </template>

@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { getUrl } from 'c/fimbyNavigation';
 import getThreads from '@salesforce/apex/FimbyCommunicationController.getThreads';
 import getUnifiedUnreadCount from '@salesforce/apex/FimbyCommunicationController.getUnifiedUnreadCount';
 import markThreadUnread from '@salesforce/apex/FimbyCommunicationController.markThreadUnread';
@@ -735,15 +736,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        const validPages = {
-            'home': '/',
-            'library': '/library-list',
-            'messages': '/messages',
-            'mine': '/my-stuff'
-        };
-        if (validPages[selectedTab]) {
-            location.href = validPages[selectedTab];
-        }
+        location.href = getUrl(selectedTab);
     }
 
     async refreshUnreadCount() {

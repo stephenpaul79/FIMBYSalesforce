@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/.claude/skills/fimby-apex/**)",
+      "Read(//c/Users/srathjen/.cursor/plans/**)"
+    ]
+  }
+}
