@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getRecordPageReference, startNavTiming } from 'c/fimbyNavigation';
+import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -14,7 +14,6 @@ import updateLastAppVisit from '@salesforce/apex/FimbyProfileController.updateLa
 import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCelebrationContext';
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
-import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 
@@ -972,8 +971,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     handleAvatarNavigation(event) {
         event.stopPropagation();
-        const url = toExperiencePath(event.detail?.url);
-        if (url) location.href = url;
+        const url = event.detail?.url;
+        if (url) navigate(this, url);
     }
 
     handleCardRespond(event) {
@@ -1053,10 +1052,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     handleLibraryAvatarClick(event) {
-        const url = toExperiencePath(event.currentTarget.dataset.url);
+        const url = event.currentTarget.dataset.url;
         if (!url) return;
         event.stopPropagation();
-        location.href = url;
+        navigate(this, url);
     }
 
     handleLibraryView(event) {

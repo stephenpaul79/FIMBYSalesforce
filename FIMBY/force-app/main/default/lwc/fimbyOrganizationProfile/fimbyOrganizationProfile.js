@@ -1,6 +1,8 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 import getOrganizationProfile from '@salesforce/apex/FimbyOrganizationProfileController.getOrganizationProfile';
 import canEditOrganization from '@salesforce/apex/FimbyOrganizationProfileController.canEditOrganization';
 import updateOrganizationProfile from '@salesforce/apex/FimbyOrganizationProfileController.updateOrganizationProfile';
@@ -8,7 +10,7 @@ import uploadOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileCon
 import removeOrganizationLogo from '@salesforce/apex/FimbyOrganizationProfileController.removeOrganizationLogo';
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
-export default class FimbyOrganizationProfile extends LightningElement {
+export default class FimbyOrganizationProfile extends NavigationMixin(LightningElement) {
     @track org = null;
     @track neighbourhoods = [];
     @track people = [];
@@ -242,7 +244,7 @@ export default class FimbyOrganizationProfile extends LightningElement {
 
     handleMessage() {
         if (!this.orgContactId) return;
-        location.href = '/conversation?contactId=' + this.orgContactId;
+        navigate(this, '/conversation?contactId=' + this.orgContactId);
     }
 
     showToast(title, message, variant) {

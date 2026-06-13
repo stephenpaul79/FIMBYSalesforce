@@ -1,7 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyModeratorHealthPanel extends LightningElement {
+export default class FimbyModeratorHealthPanel extends NavigationMixin(LightningElement) {
     @api neighbourhoodId;
     @api overdueLoans = [];
     @api stalePosts = [];
@@ -45,6 +47,11 @@ export default class FimbyModeratorHealthPanel extends LightningElement {
     get loansExpanded() { return this._loansExpanded ? 'true' : 'false'; }
     get postsExpanded() { return this._postsExpanded ? 'true' : 'false'; }
     get membersExpanded() { return this._membersExpanded ? 'true' : 'false'; }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
 
     toggleLoans() { this._loansExpanded = !this._loansExpanded; }
     togglePosts() { this._postsExpanded = !this._postsExpanded; }

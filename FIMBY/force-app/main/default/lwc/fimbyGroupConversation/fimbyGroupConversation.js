@@ -1,4 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import getGroupMessages from '@salesforce/apex/FimbyGroupConversationController.getGroupMessages';
 import sendGroupMessage from '@salesforce/apex/FimbyGroupConversationController.sendGroupMessage';
 import getGroupMembers from '@salesforce/apex/FimbyGroupConversationController.getGroupMembers';
@@ -24,7 +26,7 @@ const ZONE_THRESHOLD = 3;
 const PILL_THRESHOLD = 5;
 const SNIPPET_LENGTH = 80;
 
-export default class FimbyGroupConversation extends LightningElement {
+export default class FimbyGroupConversation extends NavigationMixin(LightningElement) {
     @api conversationId = '';
 
     @track messages = [];
@@ -447,7 +449,7 @@ export default class FimbyGroupConversation extends LightningElement {
     }
 
     handleBack() {
-        location.href = '/messages';
+        navigate(this, '/messages');
     }
 
     handleRevealMiddle() {

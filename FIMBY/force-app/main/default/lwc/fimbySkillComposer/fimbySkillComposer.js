@@ -1,8 +1,10 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryColor, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { navigate } from 'c/fimbyNavigation';
 
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -15,7 +17,7 @@ const TITLE_MAX = 80;
 const DESCRIPTION_MAX = 255;
 const AVAILABILITY_MAX = 255;
 
-export default class FimbySkillComposer extends LightningElement {
+export default class FimbySkillComposer extends NavigationMixin(LightningElement) {
     @api mode = 'create';
     @api editSkillId;
 
@@ -230,9 +232,9 @@ export default class FimbySkillComposer extends LightningElement {
     handleBack() {
         if (this.isEditMode) {
             if (this.editSkillId) {
-                location.href = `/skill-offer/${this.editSkillId}`;
+                navigate(this, `/skill-offer/${this.editSkillId}`);
             } else {
-                location.href = '/library-list';
+                navigate(this, '/library-list');
             }
             return;
         }
@@ -335,7 +337,7 @@ export default class FimbySkillComposer extends LightningElement {
     }
 
     handleViewMySkills() {
-        location.href = '/my-stuff/my-skills';
+        navigate(this, '/my-stuff/my-skills');
     }
 
     _notifyCelebration(active) {

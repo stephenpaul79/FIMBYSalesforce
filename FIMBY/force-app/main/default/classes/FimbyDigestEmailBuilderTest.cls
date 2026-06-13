@@ -376,6 +376,52 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildCard_portraitRatio_usesTwoColumnLayout() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
+        stories[0].Image_Ratio__c = '1080x1350'; // portrait 4:5 -> ratio 0.8
+        insert stories;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today()
+            );
+        Test.stopTest();
+
+        // ratio 0.8 -> imgWidth = round(210 * 0.8) = 168, fixed height 210, image flush left.
+        System.assert(
+            result.html.contains('width="168" height="210"'),
+            'Portrait photo should render a ratio-sized two-column image. HTML: ' + result.html
+        );
+    }
+
+    @IsTest
+    static void buildCard_landscapeRatio_usesStackedLayoutAtTrueHeight() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
+        stories[0].Image_Ratio__c = '200x100'; // landscape 2:1 -> ratio 2.0
+        insert stories;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today()
+            );
+        Test.stopTest();
+
+        // ratio 2.0 -> stacked full width 552 at true height 552 / 2 = 276.
+        System.assert(
+            result.html.contains('width="552" height="276"'),
+            'Landscape photo should render stacked at its true height. HTML: ' + result.html
+        );
+    }
+
+    @IsTest
     static void formatRecurrenceFrequencyBadge_weekly() {
         System.assertEquals(
             'WEEKLY',

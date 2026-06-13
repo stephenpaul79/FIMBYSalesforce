@@ -12,10 +12,10 @@
 
             <!-- Left: Breadcrumb trail -->
             <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link">Home</a>
+                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
                 <template lwc:if={hasParent}>
                     <span class="breadcrumb-separator">&rsaquo;</span>
-                    <a href={parentUrl} class="breadcrumb-link">{parentLabel}</a>
+                    <a href={parentUrl} class="breadcrumb-link" onclick={handleNavLink}>{parentLabel}</a>
                 </template>
                 <span class="breadcrumb-separator">&rsaquo;</span>
                 <span class="breadcrumb-current">{pageTitle}</span>

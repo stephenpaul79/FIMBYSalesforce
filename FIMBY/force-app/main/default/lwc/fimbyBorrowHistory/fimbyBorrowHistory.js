@@ -3,7 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getMyBorrowHistory from '@salesforce/apex/FimbyMyStuffController.getMyBorrowHistory';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [];
@@ -139,7 +139,7 @@ export default class FimbyBorrowHistory extends NavigationMixin(LightningElement
     handleCardClick(event) {
         const itemId = event.currentTarget.dataset.id;
         if (itemId) {
-            window.location.href = '/library-item/' + itemId;
+            navigate(this, '/library-item/' + itemId);
         }
     }
 
@@ -157,12 +157,17 @@ export default class FimbyBorrowHistory extends NavigationMixin(LightningElement
         }
     }
 
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     handleBack() {
-        window.location.href = '/my-stuff';
+        navigate(this, '/my-stuff');
     }
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 }

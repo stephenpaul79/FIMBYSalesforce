@@ -2,7 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getMyLibraryItemsArchive from '@salesforce/apex/FimbyMyStuffController.getMyLibraryItemsArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [];
@@ -112,7 +112,7 @@ export default class FimbyMyItemsArchive extends NavigationMixin(LightningElemen
 
     handleCardClick(event) {
         const itemId = event.currentTarget.dataset.id;
-        window.location.href = '/library-item/' + itemId;
+        navigate(this, '/library-item/' + itemId);
     }
 
     handlePrevPage() {
@@ -130,11 +130,11 @@ export default class FimbyMyItemsArchive extends NavigationMixin(LightningElemen
     }
 
     handleBack() {
-        window.location.href = '/my-stuff';
+        navigate(this, '/my-stuff');
     }
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 }

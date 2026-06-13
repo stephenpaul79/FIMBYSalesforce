@@ -1,7 +1,8 @@
 import { LightningElement, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { navigate } from 'c/fimbyNavigation';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 import { getModeratorContext, invalidateModeratorContext } from 'c/fimbyModeratorContext';
 
@@ -170,7 +171,7 @@ const EMPTY_STATES = {
     health: { title: 'Neighbourhood health', message: 'Patterns and signals worth watching.' }
 };
 
-export default class FimbyModeratorDashboard extends LightningElement {
+export default class FimbyModeratorDashboard extends NavigationMixin(LightningElement) {
     @track assignments = [];
     @track selectedNeighbourhoodId;
     @track categoryCounts = {};
@@ -658,12 +659,12 @@ export default class FimbyModeratorDashboard extends LightningElement {
                 : tab === 'mine' ? '/my-stuff'
                 : tab === 'library' ? '/library-list'
                 : `/${tab}`;
-            window.location.href = path;
+            navigate(this, path);
         }
     }
 
     handleArchiveClick() {
-        window.location.href = this.archiveHref;
+        navigate(this, this.archiveHref);
     }
 
     // ================================================================
@@ -676,7 +677,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
         const isDesktop = this._desktopQuery?.matches;
 
         if (action === 'review' && this._isComplexCategory(category)) {
-            window.location.href = `/moderator-task?recordId=${task.Id}`;
+            navigate(this, `/moderator-task?recordId=${task.Id}`);
             return;
         }
 
@@ -699,7 +700,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                 break;
             case 'escalate':
             case 'escalateUrgent':
-                window.location.href = `/moderator-task?recordId=${task.Id}`;
+                navigate(this, `/moderator-task?recordId=${task.Id}`);
                 break;
             default:
                 break;
@@ -851,30 +852,67 @@ export default class FimbyModeratorDashboard extends LightningElement {
     }
 
     async _resolveTaskInline(task, resolution) {
+        // Optimistically drop the row so the list reflows in place (no spinner flash).
+        // The synchronous removal also closes the double-tap window before the await.
+        const removed = this._removeTaskAndCounts(task);
         try {
             await resolveTask({ taskId: task.Id, resolution, notes: '' });
-            this._showSuccess('Task resolved');
-            await this._refreshAfterAction();
+            invalidateModeratorContext();
+            this._loadSummary();
         } catch (error) {
             this._showError('Failed to resolve task', error);
+            if (removed) await this._refreshAfterAction();
         }
     }
 
     async _markWelcomedInline(task) {
+        const removed = this._removeTaskAndCounts(task);
         try {
             const contactId = task.Subject_Contact__c || task.Related_Record_Id__c;
             await markWelcomed({ contactId, taskId: task.Id, notes: '' });
-            this._showSuccess('Marked as welcomed');
-            await this._refreshAfterAction();
+            invalidateModeratorContext();
+            this._loadSummary();
         } catch (error) {
             this._showError('Failed to mark welcomed', error);
+            if (removed) await this._refreshAfterAction();
         }
+    }
+
+    // Remove a single resolved task from every section list and decrement its
+    // counts, without re-fetching — keeps the other rows mounted.
+    _removeTaskAndCounts(task) {
+        const removed = this._removeTaskLocally(task.Id);
+        if (removed) this._decrementCounts(task.Category__c);
+        return removed;
+    }
+
+    _removeTaskLocally(taskId) {
+        let removed = false;
+        const next = {};
+        for (const key of Object.keys(this._sectionTasks)) {
+            const arr = this._sectionTasks[key] || [];
+            const filtered = arr.filter(t => t.Id !== taskId);
+            if (filtered.length !== arr.length) removed = true;
+            next[key] = filtered;
+        }
+        if (removed) this._sectionTasks = next;
+        return removed;
+    }
+
+    _decrementCounts(category) {
+        if (category && this.categoryCounts[category] > 0) {
+            this.categoryCounts = {
+                ...this.categoryCounts,
+                [category]: this.categoryCounts[category] - 1
+            };
+        }
+        if (this.totalCount > 0) this.totalCount -= 1;
     }
 
     _navigateToProfile(task) {
         const contactId = task.Subject_Contact__c || task.Related_Record_Id__c;
         if (contactId) {
-            window.location.href = `/neighbour?id=${contactId}`;
+            navigate(this, `/neighbour?id=${contactId}`);
         }
     }
 
@@ -895,8 +933,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         recordType: payload.recordType || task.Related_Record_Type__c,
                         taskId: task.Id
                     });
-                    this._showSuccess('Content republished');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'keepHidden':
@@ -906,8 +943,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         statement: payload.statement || '',
                         notes: payload.notes || ''
                     });
-                    this._showSuccess('Content will remain hidden');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'checkIn':
@@ -917,8 +953,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         reasonCode: payload.reasonCode || '',
                         messageBody: payload.messageBody || ''
                     });
-                    this._showSuccess('Check-in issued');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'recordConcern':
@@ -928,8 +963,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         reasonCode: payload.reasonCode || '',
                         statement: payload.statement || ''
                     });
-                    this._showSuccess('Concern recorded');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'contactAuthor':
@@ -960,15 +994,14 @@ export default class FimbyModeratorDashboard extends LightningElement {
                     this._closeModal();
                     invalidateModeratorContext();
                     this._refreshAfterAction();
-                    window.location.href = `/conversation?id=${conversationId}`;
+                    navigate(this, `/conversation?id=${conversationId}`);
                     break;
                 }
 
                 case 'markWelcomed': {
                     const contactId = payload.contactId || task.Subject_Contact__c || task.Related_Record_Id__c;
                     await markWelcomed({ contactId, taskId: task.Id, notes: payload.notes || '' });
-                    this._showSuccess('Marked as welcomed');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
                 }
 
@@ -976,8 +1009,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                 case 'dismiss':
                 case 'noAction':
                     await resolveTask({ taskId: task.Id, resolution: 'Dismissed', notes: payload.notes || '' });
-                    this._showSuccess('Task resolved');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'triageTraining':
@@ -986,8 +1018,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         triageStatus: 'Training_Needed',
                         taskId: task.Id
                     });
-                    this._showSuccess('Flagged for training');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'triageEnhancement':
@@ -996,8 +1027,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         triageStatus: 'Enhancement_Flagged',
                         taskId: task.Id
                     });
-                    this._showSuccess('Flagged as enhancement');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'triageNotActionable':
@@ -1006,8 +1036,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         triageStatus: 'Not_Actionable',
                         taskId: task.Id
                     });
-                    this._showSuccess('Marked not actionable');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'approve':
@@ -1015,8 +1044,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         supportRelationshipId: payload.supportRelationshipId || task.Related_Record_Id__c,
                         taskId: task.Id
                     });
-                    this._showSuccess('Support relationship approved');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'decline':
@@ -1026,8 +1054,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         statement: payload.statement || '',
                         taskId: task.Id
                     });
-                    this._showSuccess('Support relationship declined');
-                    this._closeModalAndRefresh();
+                    this._closeModalAndRemoveTask(task);
                     break;
 
                 case 'requestMoreInfo':
@@ -1041,14 +1068,13 @@ export default class FimbyModeratorDashboard extends LightningElement {
                         reason: payload.reason || '',
                         adminContactId: payload.adminContactId || null
                     });
-                    this._showSuccess('Task escalated');
                     this._closeModalAndRefresh();
                     break;
 
                 case 'viewOriginal':
                 case 'viewBulkBuy':
                     if (payload.url) {
-                        window.location.href = toExperiencePath(payload.url) || payload.url;
+                        navigate(this, payload.url);
                     }
                     break;
 
@@ -1061,7 +1087,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
 
                 case 'viewProfile':
                     if (payload.contactId || this.modalPanelData?.contactId) {
-                        window.location.href = `/neighbour?id=${payload.contactId || this.modalPanelData?.contactId}`;
+                        navigate(this, `/neighbour?id=${payload.contactId || this.modalPanelData?.contactId}`);
                     }
                     break;
 
@@ -1075,13 +1101,11 @@ export default class FimbyModeratorDashboard extends LightningElement {
 
                 case 'reopen':
                     await reopenTask({ taskId: task.Id });
-                    this._showSuccess('Task reopened');
                     this._closeModalAndRefresh();
                     break;
 
                 case 'transferOwnership':
                     await reopenTask({ taskId: task.Id });
-                    this._showSuccess('Task reassigned');
                     this._closeModalAndRefresh();
                     break;
 
@@ -1109,13 +1133,13 @@ export default class FimbyModeratorDashboard extends LightningElement {
         const { action, recordId, contactId } = event.detail || {};
         switch (action) {
             case 'viewItem':
-                if (recordId) window.location.href = `/library-item/${recordId}`;
+                if (recordId) navigate(this, `/library-item/${recordId}`);
                 break;
             case 'viewPost':
-                if (recordId) window.location.href = `/ask-or-offer-post?recordId=${recordId}`;
+                if (recordId) navigate(this, `/ask-or-offer-post?recordId=${recordId}`);
                 break;
             case 'viewProfile':
-                if (recordId) window.location.href = `/neighbour?id=${recordId}`;
+                if (recordId) navigate(this, `/neighbour?id=${recordId}`);
                 break;
             case 'contactBorrower':
             case 'contactOwner':
@@ -1149,6 +1173,15 @@ export default class FimbyModeratorDashboard extends LightningElement {
         this._refreshAfterAction();
     }
 
+    // For modal actions that resolve a task in place: drop the underlying row and
+    // refresh counts only, so closing the modal doesn't flash the list behind it.
+    _closeModalAndRemoveTask(task) {
+        if (task) this._removeTaskAndCounts(task);
+        this._closeModal();
+        invalidateModeratorContext();
+        this._loadSummary();
+    }
+
     async _refreshAfterAction() {
         invalidateModeratorContext();
         this._sectionTasks = {};
@@ -1166,7 +1199,7 @@ export default class FimbyModeratorDashboard extends LightningElement {
         try {
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: contactId });
             this._closeModal();
-            window.location.href = `/conversation?id=${conversationId}`;
+            navigate(this, `/conversation?id=${conversationId}`);
         } catch (error) {
             this._showError('Failed to open conversation', error);
         }
@@ -1202,12 +1235,10 @@ export default class FimbyModeratorDashboard extends LightningElement {
     // Toast Helpers
     // ================================================================
 
-    _showSuccess(message) {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Done', message, variant: 'success' }));
-    }
-
+    // Success needs no banner here: every action closes the modal and removes
+    // the task from the queue, so the surface itself confirms the change.
+    // Operation failures route to the shell toast (assertive, global).
     _showError(title, error) {
-        const message = error?.body?.message || error?.message || 'Something went wrong';
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant: 'error' }));
+        fireErrorToast(error);
     }
 }

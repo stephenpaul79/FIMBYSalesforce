@@ -27,7 +27,7 @@
             </div>
         </template>
 
-        <template lwc:if={shouldRenderRecord}>
+        <template lwc:if={showContent}>
             <div class="detail-content">
                 <div class="item-card">
                     <div class={cardLayoutClass}>
@@ -145,7 +145,7 @@
                                 <button class="action-btn primary" onclick={handleConfirmPickup}>I Have the Item</button>
                             </template>
                             <template lwc:if={showBannerMessageOwner}>
-                                <a href={messageOwnerUrl} class="action-btn">Message Owner</a>
+                                <a href={messageOwnerUrl} class="action-btn" onclick={handleNavLink}>Message Owner</a>
                             </template>
                             <template lwc:if={showBannerCancelRequest}>
                                 <button class="action-btn action-btn-muted" onclick={handleCancelRequest}>Cancel Request</button>
@@ -224,7 +224,7 @@
                                         </div>
                                         <template lwc:if={bh.hasConversation}>
                                             <div class="borrower-history-actions">
-                                                <a href={bh.conversationUrl} class="bh-msg-btn" aria-label="Message lender">
+                                                <a href={bh.conversationUrl} class="bh-msg-btn" aria-label="Message lender" onclick={handleNavLink}>
                                                     <img src={messageIconUrl} alt="" class="bh-msg-icon">
                                                     <span>Message</span>
                                                 </a>

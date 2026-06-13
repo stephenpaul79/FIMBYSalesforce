@@ -723,6 +723,11 @@ export default function IndexScreen() {
   // to avoid backgrounding the app mid-navigation. Cleared after it fires.
   const pendingPushPromptRef = useRef<string | null>(null);
 
+  // Guards the device-token-rotation re-registration below. Re-acquiring the
+  // Expo token internally fetches a device token, which can re-fire the
+  // rotation listener; this prevents that from looping.
+  const pushReRegisterInFlightRef = useRef(false);
+
   const navigateFromPush = useCallback(
     (data: NotificationData): boolean => {
       if (!webViewUrl || !webViewRef.current) {
@@ -871,16 +876,30 @@ export default function IndexScreen() {
     await registerPushNotificationsAsync(token, { prompt: true });
   }, [registerPushNotificationsAsync]);
 
-  // Hardening: Expo can rotate the push token mid-session. Re-register the new
-  // token with the backend so a long-lived session keeps receiving pushes
-  // without waiting for the next cold start. Only acts when signed in.
+  // Hardening: the OS device push token can rotate mid-session. When it does,
+  // re-acquire the *Expo* push token and re-register it so a long-lived session
+  // keeps receiving pushes without waiting for the next cold start. Only acts
+  // when signed in.
+  //
+  // addPushTokenListener emits a DevicePushToken (raw APNs/FCM string), NOT an
+  // Expo token. Registering that raw value directly would fail the backend's
+  // Expo-format validator, so we ignore tokenData.data and go through
+  // registerPushNotificationsAsync, which calls getExpoPushTokenAsync to mint
+  // the correctly formatted ExponentPushToken[...]. An in-flight guard stops
+  // that internal device-token fetch from re-firing this listener into a loop.
   React.useEffect(() => {
-    const sub = Notifications.addPushTokenListener((tokenData) => {
+    const sub = Notifications.addPushTokenListener(() => {
       const token = accessTokenRef.current;
-      if (token && tokenData?.data) {
-        log("[PUSH] Expo token rotated; re-registering");
-        registerTokenWithBackend(token, tokenData.data).catch(() => {});
+      if (!token || pushReRegisterInFlightRef.current) {
+        return;
       }
+      log("[PUSH] Device push token rotated; re-acquiring Expo token");
+      pushReRegisterInFlightRef.current = true;
+      registerPushNotificationsAsync(token, { prompt: false })
+        .catch(() => {})
+        .finally(() => {
+          pushReRegisterInFlightRef.current = false;
+        });
     });
     return () => {
       try {
@@ -889,7 +908,7 @@ export default function IndexScreen() {
         // Safe to ignore (e.g. Expo Go)
       }
     };
-  }, [registerTokenWithBackend]);
+  }, [registerPushNotificationsAsync]);
 
   // Salesforce OAuth discovery endpoints for Experience Cloud host
   const discovery = React.useMemo(

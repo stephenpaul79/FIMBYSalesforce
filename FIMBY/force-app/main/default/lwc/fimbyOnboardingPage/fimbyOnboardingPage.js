@@ -1,5 +1,7 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 import completeProfileSetup from '@salesforce/apex/FimbyOnboardingController.completeProfileSetup';
 import saveQuietHoursPreference from '@salesforce/apex/FimbyOnboardingController.saveQuietHoursPreference';
@@ -59,7 +61,7 @@ const CARE_UNHELPFUL_VALUES = [
     'Other'
 ];
 
-export default class FimbyOnboardingPage extends LightningElement {
+export default class FimbyOnboardingPage extends NavigationMixin(LightningElement) {
     /* ----- phase / routing ----- */
     @track _isReady = false;
     @track _currentPhase = 1;
@@ -134,6 +136,11 @@ export default class FimbyOnboardingPage extends LightningElement {
 
     disconnectedCallback() {
         this._removeKeyboardListener();
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     /* =============================

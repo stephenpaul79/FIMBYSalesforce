@@ -37,7 +37,7 @@
                                         <template for:each={overdueLoans} for:item="loan">
                                             <tr key={loan.id}>
                                                 <td>
-                                                    <a href={loan.itemLink} class="record-link">{loan.itemName}</a>
+                                                    <a href={loan.itemLink} class="record-link" onclick={handleNavLink}>{loan.itemName}</a>
                                                 </td>
                                                 <td>{loan.borrowerName}</td>
                                                 <td>{loan.ownerName}</td>
@@ -73,7 +73,7 @@
                                 <template for:each={overdueLoans} for:item="loan">
                                     <div key={loan.id} class="data-card">
                                         <div class="card-row-main">
-                                            <a href={loan.itemLink} class="record-link card-title">{loan.itemName}</a>
+                                            <a href={loan.itemLink} class="record-link card-title" onclick={handleNavLink}>{loan.itemName}</a>
                                             <span class={loan._overdueClass}>{loan.daysOverdue}d overdue</span>
                                         </div>
                                         <div class="card-meta">
@@ -138,7 +138,7 @@
                                         <template for:each={stalePosts} for:item="post">
                                             <tr key={post.id}>
                                                 <td>
-                                                    <a href={post.postLink} class="record-link">{post.title}</a>
+                                                    <a href={post.postLink} class="record-link" onclick={handleNavLink}>{post.title}</a>
                                                 </td>
                                                 <td>
                                                     <span class="type-badge-inline">{post.type}</span>
@@ -168,7 +168,7 @@
                                 <template for:each={stalePosts} for:item="post">
                                     <div key={post.id} class="data-card">
                                         <div class="card-row-main">
-                                            <a href={post.postLink} class="record-link card-title">{post.title}</a>
+                                            <a href={post.postLink} class="record-link card-title" onclick={handleNavLink}>{post.title}</a>
                                             <span class="type-badge-inline">{post.type}</span>
                                         </div>
                                         <div class="card-meta">

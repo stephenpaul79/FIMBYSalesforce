@@ -1,7 +1,9 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 import getSettingsData from '@salesforce/apex/FimbyProfileController.getSettingsData';
 import updateSettingsField from '@salesforce/apex/FimbyProfileController.updateSettingsField';
@@ -55,7 +57,7 @@ const NOTIFICATION_CATEGORIES = [
     { key: 'bulkBuy', label: 'Bulk Buys', pushField: 'Push_Bulk_Buy__c', pushKey: 'pushBulkBuy', emailField: 'Email_Alert_Bulk_Buy__c', emailKey: 'emailAlertBulkBuy' }
 ];
 
-export default class FimbySettingsView extends LightningElement {
+export default class FimbySettingsView extends NavigationMixin(LightningElement) {
     @track isLoading = true;
     @track settings = {};
     @track themePreference = 'auto'; // 'light', 'dark', 'auto'
@@ -760,7 +762,7 @@ export default class FimbySettingsView extends LightningElement {
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            location.href = '/my-stuff';
+            navigate(this, '/my-stuff');
         }
     }
 
@@ -772,10 +774,10 @@ export default class FimbySettingsView extends LightningElement {
         // fimbyOnboardingPage is flag-driven, so a returning member who taps
         // Run Walkthrough lands directly on Phase 2 (the 5-screen tour) and
         // skips the Phase 3 intro-post modal.
-        window.location.href = '/onboarding';
+        navigate(this, '/onboarding');
     }
 
     handleTabChange(event) {
-        location.href = '/' + (event.detail.tab === 'home' ? '' : event.detail.tab);
+        navigateToRoute(this, event.detail.tab);
     }
 }

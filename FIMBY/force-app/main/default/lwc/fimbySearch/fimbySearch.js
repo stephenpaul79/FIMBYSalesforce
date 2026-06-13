@@ -5,6 +5,7 @@ import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { navigate } from 'c/fimbyNavigation';
 import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
 
 const SORT_OPTIONS = [
@@ -429,7 +430,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
 
         const route = routes[resultType];
         if (route) {
-            location.href = route;
+            navigate(this, route);
         }
     }
 

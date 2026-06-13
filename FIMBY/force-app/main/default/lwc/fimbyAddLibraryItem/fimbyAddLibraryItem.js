@@ -1,5 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 // Static resources
@@ -177,7 +178,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
                 this.isLoading = false;
             }
             if (editId) {
-                location.href = `/skill-offer/${editId}?action=edit`;
+                navigate(this, `/skill-offer/${editId}?action=edit`);
                 return;
             }
         } catch (e) {

@@ -3,6 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -688,7 +689,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
 
     _navigateToPost() {
         if (this.createdRecordId) {
-            window.location.href = '/asks-offers/' + this.createdRecordId;
+            navigate(this, '/asks-offers/' + this.createdRecordId);
         }
     }
 

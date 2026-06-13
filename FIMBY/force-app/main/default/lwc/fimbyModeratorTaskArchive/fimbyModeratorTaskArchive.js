@@ -1,8 +1,9 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import getModeratorAssignments from '@salesforce/apex/FimbyModeratorDashboardController.getModeratorAssignments';
 import getClosedTasks from '@salesforce/apex/FimbyModeratorDashboardController.getClosedTasks';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 
@@ -54,7 +55,7 @@ const CATEGORY_BADGE_CLASS_MAP = {
     New_Signup: 'category-badge badge-signup'
 };
 
-export default class FimbyModeratorTaskArchive extends LightningElement {
+export default class FimbyModeratorTaskArchive extends NavigationMixin(LightningElement) {
     @track items = [];
     @track isLoading = true;
     @track accessDenied = false;
@@ -257,10 +258,15 @@ export default class FimbyModeratorTaskArchive extends LightningElement {
         }
     }
 
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     handleRowClick(event) {
         const url = event.currentTarget.dataset.url;
         if (url) {
-            window.location.href = url;
+            navigate(this, url);
         }
     }
 
@@ -280,6 +286,6 @@ export default class FimbyModeratorTaskArchive extends LightningElement {
 
     handleBottomTabChange(event) {
         const selectedTab = event.detail.tab;
-        window.location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 }

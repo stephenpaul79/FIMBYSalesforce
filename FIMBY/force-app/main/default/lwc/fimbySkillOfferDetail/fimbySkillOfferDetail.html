@@ -7,11 +7,12 @@
         <template lwc:elseif={showErrorState}>
             <div class="error-state" role="alert">
                 <p>{error}</p>
-                <a href="/library-list" class="back-link">Back to Library</a>
+                <a href="/library-list" class="back-link" onclick={handleNavLink}>Back to Library</a>
             </div>
         </template>
 
         <template lwc:elseif={showContent}>
+            <div class="detail-content">
             <c-fimby-page-header
                 page-title={skill.title}
                 parent-label="Library"
@@ -77,6 +78,7 @@
                         </div>
                     </div>
                 </template>
+            </div>
             </div>
         </template>
 

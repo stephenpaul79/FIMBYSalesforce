@@ -1,4 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getProfileActivity from '@salesforce/apex/FimbyProfileActivityController.getProfileActivity';
 import { completeImageUrl } from 'c/fimbyImageUrl';
@@ -30,7 +32,7 @@ const STORY_BADGE_ICONS = {
     'Neighbourhood Moment': 'tulips.png'
 };
 
-export default class FimbyProfileActivityFeed extends LightningElement {
+export default class FimbyProfileActivityFeed extends NavigationMixin(LightningElement) {
     _profileContactId;
 
     @api
@@ -220,7 +222,7 @@ export default class FimbyProfileActivityFeed extends LightningElement {
         };
         const page = detailPages[item.feedType];
         if (page) {
-            location.href = `${page}/${item.recordId}`;
+            navigate(this, `${page}/${item.recordId}`);
         }
     }
 }

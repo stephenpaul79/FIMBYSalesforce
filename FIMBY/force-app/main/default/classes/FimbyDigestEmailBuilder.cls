@@ -17,6 +17,17 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static final Integer MAX_CARDS_PER_SECTION = 5;
     private static final Integer SNIPPET_LENGTH = 120;
+
+    // Adaptive image layout: photos with a width/height ratio below this render in a
+    // two-column card (image left, text right) so portrait/square faces are never cropped;
+    // wider photos stay stacked (image on top, text below) at their true height.
+    private static final Decimal LANDSCAPE_MIN_RATIO = 1.15;
+    private static final Integer CARD_WIDTH = 552;
+    private static final Integer STACKED_MIN_HEIGHT = 180;
+    private static final Integer STACKED_MAX_HEIGHT = 460;
+    private static final Integer TWO_COL_IMG_HEIGHT = 210;
+    private static final Integer TWO_COL_IMG_MIN_WIDTH = 120;
+    private static final Integer TWO_COL_IMG_MAX_WIDTH = 240;
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
 
     private static String stripTrailingSlash(String url) {
@@ -284,7 +295,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static String buildStoriesSection(Id nhId, Datetime startDt, Datetime endDt) {
         List<Story__c> stories = [
-            SELECT Id, Name, Message__c, Type__c, Image_URL__c,
+            SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c,
                    Posted_By__r.Name, Posted_By__r.FirstName, Posted_By__r.Image_URL__c,
                    Message_Preview__c, CreatedDate
             FROM Story__c
@@ -316,7 +327,7 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt) {
-        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Is_Urgent__c, Refresh_Count__c, ' +
+        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
             'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
         String baseWhere = 'FROM Needs_Offers__c ' +
@@ -379,7 +390,7 @@ public without sharing class FimbyDigestEmailBuilder {
         Set<Id> liveRecurringOccurrenceIds,
         Date today
     ) {
-        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, ' +
+        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
             'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
             'Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
             'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
@@ -475,7 +486,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static String buildBulkBuysSection(Id nhId, Datetime startDt, Datetime endDt) {
         List<Needs_Offers__c> bulkBuys = [
-            SELECT Id, Name, Details__c, Image_1_URL__c,
+            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
@@ -503,7 +514,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static String buildLibrarySection(Id nhId, Datetime startDt, Datetime endDt) {
         List<Library_Item__c> items = [
-            SELECT Id, Name, Description__c, Image_URL__c, Category__c,
+            SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
                    Owner_Contact__r.Name, Owner_Contact__r.FirstName, Owner_Contact__r.Image_URL__c,
                    CreatedDate
             FROM Library_Item__c
@@ -543,15 +554,11 @@ public without sharing class FimbyDigestEmailBuilder {
             );
         }
 
-        String html = openCard();
-        html += FimbyEmailHtmlBuilder.buildCardImage(post.Image_1_URL__c, 180);
-        html += openCardBody();
-        html += badgeAvatarRow(badgeLabel, rt, refreshPill, post.Contact__r);
-        html += titleRow(post.Name);
-        html += snippetRow(post.Details__c);
-        html += FimbyEmailHtmlBuilder.buildCtaButton('Respond', ctaUrl, 'reply.png');
-        html += closeCardBody();
-        return html;
+        String body = badgeAvatarRow(badgeLabel, rt, refreshPill, post.Contact__r)
+            + titleRow(post.Name)
+            + snippetRow(post.Details__c)
+            + FimbyEmailHtmlBuilder.buildCtaButton('Respond', ctaUrl, 'reply.png');
+        return buildCard(post.Image_1_URL__c, post.Image_1_Ratio__c, body);
     }
 
     private static String buildEventCard(Needs_Offers__c evt) {
@@ -577,34 +584,26 @@ public without sharing class FimbyDigestEmailBuilder {
             ? FimbyEmailHtmlBuilder.buildBadgePill(freqBadge, FimbyEmailHtmlBuilder.getBadgeColor(evtType), null)
             : null;
 
-        String html = openCard();
-        html += FimbyEmailHtmlBuilder.buildCardImage(evt.Image_1_URL__c, 180);
-        html += openCardBody();
-        html += badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r);
-        html += titleRow(evt.Name);
-        html += FimbyEmailHtmlBuilder.buildDateLocationLine(evt.Start_Date__c, evt.Location__c);
-        html += snippetRow(evt.Details__c);
-        html += FimbyEmailHtmlBuilder.buildCtaButton(ctaLabel, ctaUrl, FimbyEmailHtmlBuilder.getCtaIcon(evtType));
-        html += closeCardBody();
-        return html;
+        String body = badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r)
+            + titleRow(evt.Name)
+            + FimbyEmailHtmlBuilder.buildDateLocationLine(evt.Start_Date__c, evt.Location__c)
+            + snippetRow(evt.Details__c)
+            + FimbyEmailHtmlBuilder.buildCtaButton(ctaLabel, ctaUrl, FimbyEmailHtmlBuilder.getCtaIcon(evtType));
+        return buildCard(evt.Image_1_URL__c, evt.Image_1_Ratio__c, body);
     }
 
     private static String buildBulkBuyCard(Needs_Offers__c bb) {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
-        String html = openCard();
-        html += FimbyEmailHtmlBuilder.buildCardImage(bb.Image_1_URL__c, 180);
-        html += openCardBody();
-        html += badgeAvatarRow('BULK BUY', 'Bulk_Buy', bb.Contact__r);
-        html += titleRow(bb.Name);
-        html += snippetRow(bb.Details__c);
-        html += FimbyEmailHtmlBuilder.buildThermometer(
-            bb.Total_Reserved__c, bb.Total_Quantity__c,
-            bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
-        );
-        html += FimbyEmailHtmlBuilder.buildCtaButton('Reserve-A-Share', ctaUrl, 'buy.png');
-        html += closeCardBody();
-        return html;
+        String body = badgeAvatarRow('BULK BUY', 'Bulk_Buy', bb.Contact__r)
+            + titleRow(bb.Name)
+            + snippetRow(bb.Details__c)
+            + FimbyEmailHtmlBuilder.buildThermometer(
+                bb.Total_Reserved__c, bb.Total_Quantity__c,
+                bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
+            )
+            + FimbyEmailHtmlBuilder.buildCtaButton('Reserve-A-Share', ctaUrl, 'buy.png');
+        return buildCard(bb.Image_1_URL__c, bb.Image_1_Ratio__c, body);
     }
 
     private static String buildStoryCard(Story__c story) {
@@ -613,31 +612,24 @@ public without sharing class FimbyDigestEmailBuilder {
         String ctaUrl = FimbySettings.getUrl('Story', story.Id);
         String body = String.isNotBlank(story.Message_Preview__c) ? story.Message_Preview__c : story.Message__c;
 
-        String html = openCard();
-        html += FimbyEmailHtmlBuilder.buildCardImage(story.Image_URL__c, 180);
-        html += openCardBody();
-        html += badgeAvatarRow(badgeLabel, storyType, story.Posted_By__r);
-        html += titleRow(story.Name);
-        html += snippetRow(body);
-        html += FimbyEmailHtmlBuilder.buildCtaButton('Read More', ctaUrl, 'comment.png');
-        html += closeCardBody();
-        return html;
+        String cardBody = badgeAvatarRow(badgeLabel, storyType, story.Posted_By__r)
+            + titleRow(story.Name)
+            + snippetRow(body)
+            + FimbyEmailHtmlBuilder.buildCtaButton('Read More', ctaUrl, 'comment.png');
+        return buildCard(story.Image_URL__c, story.Image_Ratio__c, cardBody);
     }
 
     private static String buildLibraryCard(Library_Item__c item) {
         String ctaUrl = FimbySettings.getUrl('Library_Item', item.Id);
 
-        String html = openCard();
-        html += FimbyEmailHtmlBuilder.buildCardImage(item.Image_URL__c, 180);
-        html += openCardBody();
-        String categoryPill = String.isNotBlank(item.Category__c)
-            ? FimbyEmailHtmlBuilder.buildCategoryPill(item.Category__c, null) : null;
-        html += badgeAvatarRow('LIBRARY', 'Library', categoryPill, item.Owner_Contact__r);
-        html += titleRow(item.Name);
-        html += snippetRow(item.Description__c);
-        html += FimbyEmailHtmlBuilder.buildCtaButton('Borrow', ctaUrl, 'borrow.png');
-        html += closeCardBody();
-        return html;
+        // Section heading already says "Library"; show the category as the single badge,
+        // falling back to LIBRARY only when the item has no category.
+        String badgeLabel = String.isNotBlank(item.Category__c) ? item.Category__c : 'LIBRARY';
+        String body = badgeAvatarRow(badgeLabel, 'Library', item.Owner_Contact__r)
+            + titleRow(item.Name)
+            + snippetRow(item.Description__c)
+            + FimbyEmailHtmlBuilder.buildCtaButton('Borrow', ctaUrl, 'borrow.png');
+        return buildCard(item.Image_URL__c, item.Image_Ratio__c, body);
     }
 
     /* ---------------------------------------------------------------
@@ -647,6 +639,43 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String openCard() {
         return '<table cellpadding="0" cellspacing="0" border="0" width="552" '
             + 'style="max-width:552px;width:100%;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid ' + BORDER_LIGHT + ';background-color:#FFFFFF;">';
+    }
+
+    /**
+     * @description Assembles a feed card, choosing the layout from the photo's aspect ratio:
+     * portrait/square photos use a two-column layout (image left, text right) so faces are
+     * never cropped; landscape photos stay stacked (image on top) at their true height.
+     * Records with no stored ratio fall back to the legacy stacked letterbox.
+     */
+    private static String buildCard(String imageUrl, String ratioStr, String bodyHtml) {
+        Boolean hasImage = String.isNotBlank(imageUrl);
+        Decimal ratio = FimbyEmailHtmlBuilder.parseImageRatio(ratioStr);
+
+        String html = openCard();
+        if (hasImage && ratio != null && ratio < LANDSCAPE_MIN_RATIO) {
+            Integer imgWidth = clampInt(
+                (TWO_COL_IMG_HEIGHT * ratio).round(System.RoundingMode.HALF_UP).intValue(),
+                TWO_COL_IMG_MIN_WIDTH, TWO_COL_IMG_MAX_WIDTH
+            );
+            html += FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, imgWidth, TWO_COL_IMG_HEIGHT, bodyHtml);
+            html += '</table>';
+            return html;
+        }
+
+        if (hasImage) {
+            Integer stackedHeight = (ratio != null)
+                ? clampInt((CARD_WIDTH / ratio).round(System.RoundingMode.HALF_UP).intValue(), STACKED_MIN_HEIGHT, STACKED_MAX_HEIGHT)
+                : 200;
+            html += FimbyEmailHtmlBuilder.buildCardImage(imageUrl, stackedHeight);
+        }
+        html += openCardBody() + bodyHtml + closeCardBody();
+        return html;
+    }
+
+    private static Integer clampInt(Integer value, Integer lo, Integer hi) {
+        if (value < lo) { return lo; }
+        if (value > hi) { return hi; }
+        return value;
     }
 
     private static String openCardBody() {

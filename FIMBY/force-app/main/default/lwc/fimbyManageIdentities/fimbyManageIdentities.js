@@ -1,5 +1,7 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 import getManagedRelationships from '@salesforce/apex/FimbySupportRelationshipController.getManagedRelationships';
 import getMyPaperRelationships from '@salesforce/apex/FimbySupportRelationshipController.getMyPaperRelationships';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
@@ -21,7 +23,7 @@ const ICONS = {
     add: 'add.png'
 };
 
-export default class FimbyManageIdentities extends LightningElement {
+export default class FimbyManageIdentities extends NavigationMixin(LightningElement) {
     @track peopleISupport = [];
     @track peopleWhoSupportMe = [];
     @track communityGroups = [];
@@ -165,6 +167,11 @@ export default class FimbyManageIdentities extends LightningElement {
             return 'status-badge status-inactive';
         }
         return 'status-badge status-pending';
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     handlePaperResume(event) {

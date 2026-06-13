@@ -403,6 +403,45 @@ body {
 
 
 /* ──────────────────────────────────────────────────────────────────
+   FLOW RUNTIME CARD SURFACE — dark mode
+   Screen flows (e.g. public sign-up) render inside <flowruntime-lwc-body>,
+   whose body div (.flowruntimeBody / .slds-card_body) the flow runtime
+   paints white from its own bundle.  Nothing keyed to --fimby-* reaches it,
+   so in dark mode the (now light) labels land on a white card and vanish.
+   Lives in this head-markup file because the CMS site stylesheet does not
+   load on the public custom-sign-up route — this file does.
+   ────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) flowruntime-lwc-body,
+  :root:not([data-theme="light"]) .flowruntimeBody,
+  :root:not([data-theme="light"]) .slds-card_body {
+    background-color: var(--fimby-surface-card, #1B1512) !important;
+  }
+}
+:root[data-theme="dark"] flowruntime-lwc-body,
+:root[data-theme="dark"] .flowruntimeBody,
+:root[data-theme="dark"] .slds-card_body {
+  background-color: var(--fimby-surface-card, #1B1512) !important;
+}
+
+/* Flow brand buttons (Next / Sign Up) — FIMBY teal fill, white text, both modes.
+   variant="brand" reads these SLDS button hooks; the flow's white-card default
+   leaves them low-contrast otherwise. */
+flowruntime-lwc-body .slds-button_brand,
+flowruntime-lwc-body lightning-button {
+  --slds-c-button-brand-color-background:        var(--fimby-btn-primary-bg, #3A7D8C);
+  --slds-c-button-brand-color-background-hover:  var(--fimby-btn-primary-bg-hover, #336F7D);
+  --slds-c-button-brand-color-background-active: var(--fimby-btn-primary-bg-active, #2B5F6D);
+  --slds-c-button-brand-color-border:            var(--fimby-btn-primary-bg, #3A7D8C);
+  --slds-c-button-text-color:                    #ffffff;
+  --slds-c-button-text-color-hover:              #ffffff;
+}
+flowruntime-lwc-body .slds-button_brand {
+  color: #ffffff !important;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────
    DARK MODE — OS auto-detection
    Applies when the OS prefers dark AND the user hasn't forced light.
    ────────────────────────────────────────────────────────────────── */

@@ -1,7 +1,9 @@
 import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { getContents } from 'experience/cmsDeliveryApi';
 import currentSiteId from '@salesforce/site/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 import getNeighbourhoodModerator from '@salesforce/apex/FimbyModeratorDashboardController.getNeighbourhoodModerator';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
 
@@ -14,7 +16,7 @@ const FALLBACK_FAQ = [
     { id: 'fb-6', question: 'How do I change my notification settings?', answer: 'Go to Settings (via the menu) and scroll to the Notifications section. You can toggle push notifications, email summaries, and choose which types of updates you want to receive.', sortOrder: '060' }
 ];
 
-export default class FimbyHelpSupportPage extends LightningElement {
+export default class FimbyHelpSupportPage extends NavigationMixin(LightningElement) {
     @track faqItems = [];
     @track isLoadingFaq = true;
     _cmsLoaded = false;
@@ -76,7 +78,12 @@ export default class FimbyHelpSupportPage extends LightningElement {
 
     /* --- Navigation handlers --------------------------------------- */
 
-    handleBack() { location.href = '/my-stuff'; }
+    handleBack() { navigate(this, '/my-stuff'); }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
 
     handleGoFimby() {
         window.open('https://www.fimby.com', '_blank', 'noopener,noreferrer');
@@ -87,14 +94,8 @@ export default class FimbyHelpSupportPage extends LightningElement {
     }
 
     handleTabChange(event) {
-        const routes = {
-            home: '/',
-            library: '/library-list',
-            messages: '/messages',
-            mine: '/my-stuff'
-        };
         const tab = event.detail?.tab;
-        if (routes[tab]) location.href = routes[tab];
+        if (tab) navigateToRoute(this, tab);
     }
 
     /* --- Tour re-launch -------------------------------------------- */
@@ -104,7 +105,7 @@ export default class FimbyHelpSupportPage extends LightningElement {
         // fimbyOnboardingPage handles Phase 1 vs Phase 2 (replay viewers skip
         // straight to the walkthrough, returning members don't see the
         // intro-post modal again).
-        window.location.href = '/onboarding';
+        navigate(this, '/onboarding');
     }
 
     /* --- FAQ accordion --------------------------------------------- */
@@ -149,7 +150,7 @@ export default class FimbyHelpSupportPage extends LightningElement {
             const conversationId = await getOrCreateModeratorConversation({
                 targetContactId: this._moderatorData.contactId
             });
-            window.location.href = `/conversation?id=${conversationId}`;
+            navigate(this, `/conversation?id=${conversationId}`);
         } catch (e) {
             // Silently fail
         }

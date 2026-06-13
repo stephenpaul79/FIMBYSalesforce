@@ -203,7 +203,7 @@
                             <p class="detail-name">{detailRecord.name}</p>
                             <span class={detailRecord.statusClass}>{detailRecord.statusLabel}</span>
                             <template lwc:if={detailRecord.organizationId}>
-                                <a href={detailProfileUrl} class="view-profile-link">View Profile</a>
+                                <a href={detailProfileUrl} class="view-profile-link" onclick={handleNavLink}>View Profile</a>
                             </template>
                             <template lwc:if={detailRecord.neighbourhood}>
                                 <p class="detail-line">Neighbourhood: {detailRecord.neighbourhood}</p>

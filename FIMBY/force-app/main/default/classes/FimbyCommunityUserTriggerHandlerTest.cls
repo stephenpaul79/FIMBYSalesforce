@@ -61,4 +61,90 @@ private class FimbyCommunityUserTriggerHandlerTest {
         System.assertEquals('Marcus', updated.FirstName,
             'Before-update trigger should restore Contact first name on community users');
     }
+
+    @IsTest
+    static void newActiveCommunityUser_createsWelcomeTask() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        User thisUser = new User(Id = UserInfo.getUserId());
+
+        Test.startTest();
+        System.runAs(thisUser) {
+            FimbyTestDataFactory.createCommunityUser(c.Id, null, true);
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, countSignupTasks(nh.Id, c.Id),
+            'Activating a community user should queue exactly one welcome task');
+    }
+
+    @IsTest
+    static void activationUpdate_createsWelcomeTask() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        User thisUser = new User(Id = UserInfo.getUserId());
+
+        User u = FimbyTestDataFactory.createCommunityUser(c.Id, null, false);
+        u.IsActive = false;
+        System.runAs(thisUser) {
+            insert u;
+        }
+
+        Test.startTest();
+        System.runAs(thisUser) {
+            u.IsActive = true;
+            update u;
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, countSignupTasks(nh.Id, c.Id),
+            'Reactivating an inactive community user should queue a welcome task');
+    }
+
+    @IsTest
+    static void existingWelcomeTask_isNotDuplicated() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+
+        insert new Moderator_Task__c(
+            Neighbourhood__c = nh.Id,
+            Category__c = 'New_Signup',
+            Priority__c = 'Standard',
+            Status__c = 'Resolved',
+            Subject_Contact__c = c.Id,
+            Summary__c = 'Already welcomed',
+            Report_Count__c = 1,
+            Task_Dedup_Key__c = nh.Id + ':New_Signup:Contact:' + c.Id
+        );
+
+        Test.startTest();
+        System.enqueueJob(new FimbyWelcomeTaskQueueable(new Set<Id>{ c.Id }));
+        Test.stopTest();
+
+        System.assertEquals(1, countSignupTasks(nh.Id, c.Id),
+            'A neighbour with an existing welcome task should not be welcomed again');
+    }
+
+    @IsTest
+    static void emptyContactSet_createsNoTask() {
+        Integer before = [SELECT COUNT() FROM Moderator_Task__c WHERE Category__c = 'New_Signup'];
+
+        Test.startTest();
+        System.enqueueJob(new FimbyWelcomeTaskQueueable(new Set<Id>()));
+        Test.stopTest();
+
+        System.assertEquals(before, [
+            SELECT COUNT() FROM Moderator_Task__c WHERE Category__c = 'New_Signup'
+        ], 'An empty contact set should never create a welcome task');
+    }
+
+    private static Integer countSignupTasks(Id neighbourhoodId, Id contactId) {
+        return [
+            SELECT COUNT()
+            FROM Moderator_Task__c
+            WHERE Category__c = 'New_Signup'
+              AND Subject_Contact__c = :contactId
+              AND Neighbourhood__c = :neighbourhoodId
+        ];
+    }
 }

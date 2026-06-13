@@ -1,4 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationController.cancelReservation';
@@ -7,7 +9,7 @@ import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationControlle
  * Detail page body for Bulk Buy posts.
  * Rendered inside c-fimby-need-offer-detail when recordType is Bulk_Buy.
  */
-export default class FimbyBulkBuyDetailBody extends LightningElement {
+export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningElement) {
     @api post;
     @api isOrganiser;
     @api reservations = [];
@@ -449,7 +451,7 @@ export default class FimbyBulkBuyDetailBody extends LightningElement {
 
     handleOpenGroupChat() {
         if (this.groupChatUrl) {
-            window.location.href = this.groupChatUrl;
+            navigate(this, this.groupChatUrl);
         }
     }
 

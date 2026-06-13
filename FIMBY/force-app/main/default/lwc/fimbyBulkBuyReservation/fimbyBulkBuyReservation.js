@@ -3,6 +3,8 @@
  * This full-page form and its /reserve-share route should be unpublished in Experience Builder and then deleted.
  */
 import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 
 import getReservationContext from '@salesforce/apex/FimbyBulkBuyReservationController.getReservationContext';
 import createReservation from '@salesforce/apex/FimbyBulkBuyReservationController.createReservation';
@@ -13,7 +15,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
-export default class FimbyBulkBuyReservation extends LightningElement {
+export default class FimbyBulkBuyReservation extends NavigationMixin(LightningElement) {
     recordId;
 
     // View states: 'loading', 'unavailable', 'alreadyReserved', 'fullyReserved', 'blocked', 'form', 'success', 'error'
@@ -355,24 +357,29 @@ export default class FimbyBulkBuyReservation extends LightningElement {
     }
 
     handleBackToFeed() {
-        window.location.href = '/';
+        navigate(this, '/');
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     handleDone() {
-        window.location.href = '/';
+        navigate(this, '/');
     }
 
     handleViewGroupChat() {
         const url = this.groupChatUrl;
         if (url) {
-            window.location.href = url;
+            navigate(this, url);
         }
     }
 
     handleTabChange(event) {
         const tab = event.detail?.tab;
         const routes = { home: '/', library: '/library-list', messages: '/messages', mine: '/my-stuff' };
-        window.location.href = routes[tab] || '/';
+        navigate(this, routes[tab] || '/');
     }
 
     // View state getters

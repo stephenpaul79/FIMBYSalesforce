@@ -1,14 +1,16 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { getPageReference, navigate } from 'c/fimbyNavigation';
 
 import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer';
 import setSkillStatus from '@salesforce/apex/FimbySkillsController.setSkillStatus';
 
-export default class FimbySkillOfferDetail extends LightningElement {
+export default class FimbySkillOfferDetail extends NavigationMixin(LightningElement) {
     _recordId;
     @track _extractedRecordId = null;
     @track isLoading = true;
@@ -241,7 +243,22 @@ export default class FimbySkillOfferDetail extends LightningElement {
     handleResponseSaved(event) {
         const conversationId = event.detail?.responseData?.conversationId;
         if (conversationId) {
-            location.href = `/conversation?id=${conversationId}`;
+            this._softNav('conversation', conversationId, `/conversation?id=${conversationId}`);
+        }
+    }
+
+    // Soft-nav to a record-scoped custom route (?id=) with a hard-nav fallback.
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
+    _softNav(routeKey, id, fallbackUrl) {
+        const ref = getPageReference(routeKey, { state: { id } });
+        if (ref) {
+            this[NavigationMixin.Navigate](ref);
+        } else {
+            location.href = fallbackUrl;
         }
     }
 
@@ -269,7 +286,7 @@ export default class FimbySkillOfferDetail extends LightningElement {
         try {
             await setSkillStatus({ recordId: this.effectiveRecordId, status });
             if (status === 'Removed') {
-                location.href = '/my-stuff/my-skills';
+                navigate(this, '/my-stuff/my-skills');
                 return;
             }
             await this._loadSkill();
@@ -298,7 +315,7 @@ export default class FimbySkillOfferDetail extends LightningElement {
 
     handleOwnerClick() {
         if (this.skill?.ownerContactId) {
-            location.href = `/neighbour?id=${this.skill.ownerContactId}`;
+            this._softNav('neighbour', this.skill.ownerContactId, `/neighbour?id=${this.skill.ownerContactId}`);
         }
     }
 }

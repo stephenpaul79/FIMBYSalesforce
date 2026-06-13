@@ -1,7 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
-export default class FimbyQuickPostForm extends LightningElement {
+export default class FimbyQuickPostForm extends NavigationMixin(LightningElement) {
     @api selectedType = ''; // Can be passed from parent component
     @api isModal = false;   // Modal mode flag
 
@@ -73,7 +75,7 @@ export default class FimbyQuickPostForm extends LightningElement {
             this.hide();
         } else {
             // Navigate back to home in full-page mode
-            window.location.href = '/';
+            navigate(this, '/');
         }
     }
 
@@ -93,7 +95,7 @@ export default class FimbyQuickPostForm extends LightningElement {
     navigateTo(contentType) {
         const url = this.routeMap[contentType];
         if (url) {
-            window.location.href = url;
+            navigate(this, url);
         }
     }
 }

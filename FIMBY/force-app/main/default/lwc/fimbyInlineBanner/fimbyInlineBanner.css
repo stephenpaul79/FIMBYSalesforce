@@ -1,0 +1,52 @@
+/* Canonical inline banner — tinted surface + status border, status-coloured
+   text. Icon + text so colour is never the sole signal (WCAG 1.4.1). */
+
+.inline-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--fimby-radius-sm, 8px);
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.inline-banner-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.inline-banner-text {
+    min-width: 0;
+    word-break: break-word;
+}
+
+.inline-banner--success {
+    background-color: var(--fimby-success-tint);
+    border-color: var(--fimby-success-border);
+    border-left-color: var(--fimby-success);
+    color: var(--fimby-text-strong);
+}
+
+.inline-banner--error {
+    background-color: var(--fimby-error-tint);
+    border-color: var(--fimby-error-border);
+    border-left-color: var(--fimby-error);
+    color: var(--fimby-text-strong);
+}
+
+.inline-banner--warning {
+    background-color: var(--fimby-warning-tint);
+    border-color: var(--fimby-warning-border);
+    border-left-color: var(--fimby-warning);
+    color: var(--fimby-text-strong);
+}
+
+.inline-banner--info {
+    background-color: var(--fimby-info-tint);
+    border-color: var(--fimby-info-border);
+    border-left-color: var(--fimby-info);
+    color: var(--fimby-text-strong);
+}

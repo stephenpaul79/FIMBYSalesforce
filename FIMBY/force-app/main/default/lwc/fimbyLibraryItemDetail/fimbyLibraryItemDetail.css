@@ -25,6 +25,13 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    /* Hide-until-loaded reveal: rendered only once record + context resolve. */
+    animation: detailFadeIn 220ms ease;
+}
+
+@keyframes detailFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .content-removed-card {
@@ -928,5 +935,8 @@ button.item-image-container {
     .section-close-btn,
     .image-overlay {
         transition: none;
+    }
+    .detail-content {
+        animation: none;
     }
 }

@@ -1,5 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { getPageReference, navigate } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
@@ -60,6 +61,12 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     @track isLoading = true;
+    // Hide-until-loaded reveal: hold the body behind the spinner until both the
+    // story and its comments resolve, then reveal in one fade (no card-then-
+    // comments pop).
+    @track _detailReady = false;
+    _recordDone = false;
+    _commentsDone = false;
     @track _extractedRecordId = null;
     @track showImageModal = false;
     @track isContentExpanded = false;
@@ -169,7 +176,22 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         if (this.showRemovedState) {
             return false;
         }
-        return this.isLoading || !this.effectiveRecordId;
+        return !this._detailReady;
+    }
+
+    // Reveal once the story and its comments are both in.
+    _maybeMarkReady() {
+        if (this.isRemoved) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this._recordDone) return;
+        if (!this.record) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this._commentsDone) return;
+        this._detailReady = true;
     }
 
     get showRemovedState() {
@@ -187,6 +209,9 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
 
     _resetDetailLoadState() {
         this.isLoading = true;
+        this._detailReady = false;
+        this._recordDone = false;
+        this._commentsDone = false;
         this.isRemoved = false;
         this.removedMessage = '';
         this.record = null;
@@ -231,11 +256,13 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             return;
         }
         this.isLoading = false;
+        this._recordDone = true;
         if (data) {
             if (data.removed) {
                 this.isRemoved = true;
                 this.removedMessage = data.message || 'This story is no longer available.';
                 this.record = null;
+                this._maybeMarkReady();
                 return;
             }
             this.isRemoved = false;
@@ -248,6 +275,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             this.removedMessage = 'This story is no longer available.';
             this.record = null;
         }
+        this._maybeMarkReady();
     }
 
     async loadComments() {
@@ -268,6 +296,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             // Quiet: empty-state copy explains the missing data path
         } finally {
             this.isLoadingComments = false;
+            this._commentsDone = true;
+            this._maybeMarkReady();
         }
     }
 
@@ -545,7 +575,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         try {
             await deleteStory({ storyId: this.effectiveRecordId });
             this.dispatchEvent(new ShowToastEvent({ title: 'Removed', message: 'Your story has been removed.', variant: 'success' }));
-            window.location.href = '/my-stuff/my-shared-life';
+            navigate(this, '/my-stuff/my-shared-life');
         } catch (err) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Something went sideways',
@@ -690,7 +720,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Story__c', flagValue: 'Moderator_Review' });
             this.dispatchEvent(new ShowToastEvent({ title: 'Flagged for review', message: 'This story is now under review.', variant: 'success' }));
-            window.location.href = '/moderator-dashboard';
+            navigate(this, '/moderator-dashboard');
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Something went sideways',
@@ -718,7 +748,12 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             const authorContactId = this._getAuthorContactId();
             if (!authorContactId) return;
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: authorContactId });
-            window.location.href = `/conversation?id=${conversationId}`;
+            const ref = getPageReference('conversation', { state: { id: conversationId } });
+            if (ref) {
+                this[NavigationMixin.Navigate](ref);
+            } else {
+                window.location.href = `/conversation?id=${conversationId}`;
+            }
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Something went sideways',

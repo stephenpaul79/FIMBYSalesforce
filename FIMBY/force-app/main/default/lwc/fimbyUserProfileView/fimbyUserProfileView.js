@@ -1,4 +1,5 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
@@ -6,6 +7,7 @@ import updateProfileSection from '@salesforce/apex/FimbyProfileController.update
 import removeImage from '@salesforce/apex/FimbyLibraryController.removeImage';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 const CARE_WELCOME_OPTIONS = [
     'A check-in message', 'A meal drop-off', 'Help with errands',
@@ -36,7 +38,7 @@ const AVAILABILITY_OPTIONS = [
     'Flexible anytime'
 ];
 
-export default class FimbyUserProfileView extends LightningElement {
+export default class FimbyUserProfileView extends NavigationMixin(LightningElement) {
     @track isLoading = true;
     @track profile = {};
     @track showImageUploader = false;
@@ -496,7 +498,7 @@ export default class FimbyUserProfileView extends LightningElement {
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            location.href = '/my-stuff';
+            navigate(this, '/my-stuff');
         }
     }
 
@@ -510,6 +512,6 @@ export default class FimbyUserProfileView extends LightningElement {
     }
 
     handleTabChange(event) {
-        location.href = '/' + (event.detail.tab === 'home' ? '' : event.detail.tab);
+        navigateToRoute(this, event.detail.tab);
     }
 }

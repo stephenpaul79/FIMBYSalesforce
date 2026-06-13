@@ -18,6 +18,7 @@ import cancelLendingRequest from '@salesforce/apex/FimbyLendingController.cancel
 import declineLendingRequest from '@salesforce/apex/FimbyLendingController.declineLendingRequest';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
+import { getPageReference, navigate } from 'c/fimbyNavigation';
 import flagContent from '@salesforce/apex/FimbyModeratorDashboardController.flagContent';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
 
@@ -64,6 +65,11 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     @track _extractedRecordId = null;
     @track isLoading = true;
+    // Hide-until-loaded reveal: hold the body behind the spinner until the
+    // record + viewer context (and, for owners, the admin panel data) resolve,
+    // then reveal in one fade instead of sections popping in.
+    @track _detailReady = false;
+    _recordDone = false;
     @track showImageModal = false;
     @track showPhotoUploader = false;
     @track showDeleteConfirm = false;
@@ -141,7 +147,27 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         if (this.showRemovedState) {
             return false;
         }
-        return this.isLoading || !this.effectiveRecordId;
+        return !this._detailReady;
+    }
+
+    get showContent() {
+        return this._detailReady && this.shouldRenderRecord;
+    }
+
+    // Reveal once the record + viewer context (and admin data for owners) are in.
+    _maybeMarkReady() {
+        if (this.isRemoved) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this._recordDone) return;
+        if (!this.record) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this.userContextLoaded) return;
+        if (this.isOwner && !this.adminDataLoaded) return;
+        this._detailReady = true;
     }
 
     get showRemovedState() {
@@ -170,6 +196,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     _resetDetailLoadState() {
         this.isLoading = true;
+        this._detailReady = false;
+        this._recordDone = false;
         this.isRemoved = false;
         this.removedMessage = '';
         this.record = undefined;
@@ -226,6 +254,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
                 this.removedMessage = data.message || 'This item is no longer available.';
                 this.isLoading = false;
                 this.record = undefined;
+                this._maybeMarkReady();
             } else {
                 this.isRemoved = false;
                 this.removedMessage = '';
@@ -236,6 +265,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             this.removedMessage = 'This item is no longer available.';
             this.isLoading = false;
             this.record = undefined;
+            this._maybeMarkReady();
         }
     }
 
@@ -247,6 +277,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             return;
         }
         this.isLoading = false;
+        this._recordDone = true;
         if (data) {
             this.record = data;
             this.error = undefined;
@@ -256,6 +287,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             this.error = error;
             this.record = undefined;
         }
+        this._maybeMarkReady();
     }
 
     get recordIdIfVisible() {
@@ -280,6 +312,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             console.error('Error loading user context:', e);
         }
         this.userContextLoaded = true;
+        this._maybeMarkReady();
         await this.loadAdminDataIfOwner();
     }
 
@@ -294,6 +327,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             console.error('Error loading admin data:', e);
         }
         this.adminDataLoaded = true;
+        this._maybeMarkReady();
     }
 
     // ============================================
@@ -794,7 +828,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         try {
             await deleteLibraryItem({ recordId: this.recordId });
             this.dispatchEvent(new ShowToastEvent({ title: 'Deleted', message: 'Item has been deleted', variant: 'success' }));
-            window.location.href = '/library-list/';
+            navigate(this, '/library-list/');
         } catch (error) {
             console.error('Delete error:', error);
             this.dispatchEvent(new ShowToastEvent({
@@ -990,6 +1024,11 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // HANDOFF + CANCEL + REMOVE HANDLERS
     // ============================================
 
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     handleConfirmPickup() {
         const reqId = this.userContext?.request?.id;
         if (!reqId) return;
@@ -1128,7 +1167,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Library_Item__c', flagValue: 'Moderator_Review' });
             this.dispatchEvent(new ShowToastEvent({ title: 'Content flagged', message: 'This item is now under review.', variant: 'success' }));
-            window.location.href = '/moderator-dashboard';
+            navigate(this, '/moderator-dashboard');
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not flag content.', variant: 'error' }));
         }
@@ -1148,7 +1187,12 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             const ownerContactId = this._getOwnerContactId();
             if (!ownerContactId) return;
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: ownerContactId });
-            window.location.href = `/conversation?id=${conversationId}`;
+            const ref = getPageReference('conversation', { state: { id: conversationId } });
+            if (ref) {
+                this[NavigationMixin.Navigate](ref);
+            } else {
+                window.location.href = `/conversation?id=${conversationId}`;
+            }
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not start conversation.', variant: 'error' }));
         }

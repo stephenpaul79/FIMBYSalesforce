@@ -10,6 +10,7 @@ import getNeedsOffersForResponse from '@salesforce/apex/FimbyResponseController.
 import checkExistingResponse from '@salesforce/apex/FimbyResponseController.checkExistingResponse';
 import createResponse from '@salesforce/apex/FimbyResponseController.createResponse';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { navigate } from 'c/fimbyNavigation';
 
 /**
  * Quick Response component for responding to Needs & Offers
@@ -225,19 +226,19 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     handleDeclineChange(event) { this.decline = event.target.checked; }
 
     handleViewExistingResponse() {
-        window.location.href = toExperiencePath(this.existingResponseUrl) || this.existingResponseUrl;
+        navigate(this, this.existingResponseUrl);
     }
 
     handleBackToNeedOffer() {
-        window.location.href = '/asks-offers/' + this.recordId;
+        navigate(this, '/asks-offers/' + this.recordId);
     }
 
     handleViewNewResponse() {
-        window.location.href = toExperiencePath(this.newResponseUrl) || this.newResponseUrl;
+        navigate(this, this.newResponseUrl);
     }
 
     handleDone() {
-        window.location.href = '/asks-offers/' + this.recordId;
+        navigate(this, '/asks-offers/' + this.recordId);
     }
 
     async handleSubmit() {

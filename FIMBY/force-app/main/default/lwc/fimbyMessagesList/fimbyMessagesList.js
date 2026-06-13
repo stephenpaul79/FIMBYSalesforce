@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import getThreads from '@salesforce/apex/FimbyCommunicationController.getThreads';
 import getUnifiedUnreadCount from '@salesforce/apex/FimbyCommunicationController.getUnifiedUnreadCount';
 import markThreadUnread from '@salesforce/apex/FimbyCommunicationController.markThreadUnread';
@@ -13,7 +14,6 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import {
     getInboxBadge,
@@ -301,7 +301,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         return {
             ...thread,
-            actionUrl: toExperiencePath(thread.actionUrl) || thread.actionUrl,
+            actionUrl: thread.actionUrl,
             formattedDate: this.formatGmailDate(thread.lastActivityDate),
             rowClass: 'inbox-row' + (isUnread ? ' unread' : '') + ' has-kebab',
             rowAriaLabel,
@@ -405,7 +405,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         const actionUrl = event.currentTarget.dataset.actionUrl;
         if (actionUrl) {
-            location.href = toExperiencePath(actionUrl) || actionUrl;
+            navigate(this, toExperiencePath(actionUrl));
         }
     }
 
@@ -710,7 +710,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         this.showNewMessageModal = false;
         this.contactSearchTerm = '';
         this.messageableContacts = [];
-        location.href = '/conversation?contactId=' + contactId;
+        navigate(this, '/conversation?contactId=' + contactId);
     }
 
     // ── Search / pagination / nav ─────────────────────
@@ -736,7 +736,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 
     async refreshUnreadCount() {

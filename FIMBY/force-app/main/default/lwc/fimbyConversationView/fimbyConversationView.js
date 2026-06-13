@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -567,8 +568,28 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         const libraryItemId = this.lendingContext?.libraryItemId;
         const loanId = this.lendingContext?.loanId;
         if (libraryItemId && loanId) {
-            window.location.href = `/library-item/${libraryItemId}/?action=return&loanId=${loanId}`;
+            navigate(this, `/library-item/${libraryItemId}/?action=return&loanId=${loanId}`);
         }
+    }
+
+    handleRelatedRecordNav(event) {
+        if (event) event.preventDefault();
+        navigate(this, this.relatedRecordHref);
+    }
+
+    handleViewItemNav(event) {
+        if (event) event.preventDefault();
+        navigate(this, this.lendingViewItemUrl);
+    }
+
+    handleRequestExtensionNav(event) {
+        if (event) event.preventDefault();
+        navigate(this, this.lendingExtensionUrl);
+    }
+
+    handleApproveExtensionNav(event) {
+        if (event) event.preventDefault();
+        navigate(this, this.lendingApproveExtensionUrl);
     }
 
     get lendingExtensionUrl() {
@@ -598,7 +619,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         const libId = this.lendingContext?.libraryItemId;
         const reqId = this.lendingContext?.requestId;
         if (libId && reqId) {
-            window.location.href = `/library-item/${libId}/?action=confirmPickup&requestId=${reqId}`;
+            navigate(this, `/library-item/${libId}/?action=confirmPickup&requestId=${reqId}`);
         }
     }
 
@@ -917,7 +938,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     // Navigation
     handleBack() {
-        location.href = '/messages';
+        navigate(this, '/messages');
     }
 
     // Block/Report
@@ -953,7 +974,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
                 reportDetails: this.reportDetails
             });
             this.showBlockModal = false;
-            location.href = '/messages';
+            navigate(this, '/messages');
         } catch (error) {
             console.error('Error blocking contact:', error);
         }

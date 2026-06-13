@@ -1,11 +1,13 @@
 import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 import getAppPromptConfig from '@salesforce/apex/FimbyAppPromptController.getAppPromptConfig';
 
 const STORAGE_KEY = 'fimby.appPrompt.v1';
 const MS_PER_DAY = 86400000;
 
-export default class FimbyAppPrompt extends LightningElement {
+export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
     @track _show = false;
     @track _config = null;
 
@@ -123,7 +125,7 @@ export default class FimbyAppPrompt extends LightningElement {
         this.writeState({ lastShownAt: Date.now(), converted: true });
         this.close();
         if (url) {
-            window.location.href = url;
+            navigate(this, url);
         }
     };
 

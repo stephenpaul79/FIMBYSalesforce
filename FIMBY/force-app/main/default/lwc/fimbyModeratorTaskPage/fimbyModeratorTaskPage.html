@@ -68,6 +68,11 @@
             <!-- Contextual Stage Prompt -->
             <div class="stage-prompt">{stagePrompt}</div>
 
+            <!-- Inline success confirmation (actions that keep you on the page) -->
+            <template lwc:if={_successMessage}>
+                <c-fimby-inline-banner variant="success" message={_successMessage} class="task-success-banner"></c-fimby-inline-banner>
+            </template>
+
             <template lwc:if={isClosed}>
                 <div class={closedSummaryCardClass}>
                     <div class="closed-summary-title">Task closed</div>

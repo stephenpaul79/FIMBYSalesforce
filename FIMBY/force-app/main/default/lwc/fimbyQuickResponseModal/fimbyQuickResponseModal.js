@@ -1,4 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 import { completeImageUrl } from 'c/fimbyImageUrl';
@@ -81,7 +83,7 @@ const TYPE_CONFIG = {
     }
 };
 
-export default class FimbyQuickResponseModal extends LightningElement {
+export default class FimbyQuickResponseModal extends NavigationMixin(LightningElement) {
 
     /* ================================================================
      * Modal State
@@ -954,18 +956,18 @@ export default class FimbyQuickResponseModal extends LightningElement {
         // persistent shell once these links move to soft navigation.
         this.hide();
         if (this.isStoryType) {
-            location.href = `/sharedlife/${this._recordId}`;
+            navigate(this, `/sharedlife/${this._recordId}`);
         } else if (this.isLibraryType) {
-            location.href = `/library-item/${this._recordId}`;
+            navigate(this, `/library-item/${this._recordId}`);
         } else if (this.isSkillType) {
             const convId = this._submittedResponseData?.conversationId;
             if (convId) {
-                location.href = `/conversation?id=${convId}`;
+                navigate(this, `/conversation?id=${convId}`);
             } else {
-                location.href = `/skill-offer/${this._recordId}`;
+                navigate(this, `/skill-offer/${this._recordId}`);
             }
         } else {
-            location.href = `/asks-offers/${this._recordId}`;
+            navigate(this, `/asks-offers/${this._recordId}`);
         }
     }
 

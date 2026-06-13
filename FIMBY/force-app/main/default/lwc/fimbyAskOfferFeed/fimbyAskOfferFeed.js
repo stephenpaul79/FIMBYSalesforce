@@ -9,13 +9,15 @@
  * any existing links or bookmarks still work.
  */
 import { LightningElement, api } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyAskOfferFeed extends LightningElement {
+export default class FimbyAskOfferFeed extends NavigationMixin(LightningElement) {
     @api feedType = 'all';
     @api showFilters = false;
     @api pageSize = 10;
 
     connectedCallback() {
-        location.href = '/?filter=askOffer';
+        navigate(this, '/?filter=askOffer');
     }
 }

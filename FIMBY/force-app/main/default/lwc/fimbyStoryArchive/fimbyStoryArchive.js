@@ -3,7 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getMyStoriesArchive from '@salesforce/apex/FimbyMyStuffController.getMyStoriesArchive';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const FILTERS = [
@@ -130,7 +130,7 @@ export default class FimbyStoryArchive extends NavigationMixin(LightningElement)
 
     handleCardClick(event) {
         const itemId = event.currentTarget.dataset.id;
-        window.location.href = '/story/' + itemId;
+        navigate(this, '/story/' + itemId);
     }
 
     handlePrevPage() {
@@ -147,12 +147,17 @@ export default class FimbyStoryArchive extends NavigationMixin(LightningElement)
         }
     }
 
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     handleBack() {
-        window.location.href = '/my-stuff';
+        navigate(this, '/my-stuff');
     }
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
-        location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 }

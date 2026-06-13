@@ -57,10 +57,10 @@ public class FimbyPushBatchJobTest {
         System.assert(true, 'Empty batch should exit without error');
     }
 
-    /* ── Active session: user skipped, records stay Pending ──────────── */
+    /* ── Recent login no longer suppresses push ──────────────────────── */
 
     @IsTest
-    static void testBatchJob_SkipsActiveSession() {
+    static void testBatchJob_PushesEvenWhenRecentlyLoggedIn() {
         Contact testContact = getTestContact();
         User testUser = getTestUser();
 
@@ -71,18 +71,21 @@ public class FimbyPushBatchJobTest {
         Notification__c notif = new Notification__c(
             Contact__c = testContact.Id,
             Type__c = 'Response',
-            Title__c = 'Active session test',
+            Title__c = 'Recent login test',
             Body__c = 'Body',
             Push_Status__c = 'Pending'
         );
         insert notif;
+
+        Test.setMock(HttpCalloutMock.class, new MockPushResponse(200, '{"sent":true}'));
 
         Test.startTest();
         new FimbyPushBatchJob().execute(null);
         Test.stopTest();
 
         Notification__c result = [SELECT Push_Status__c FROM Notification__c WHERE Id = :notif.Id];
-        System.assertEquals('Pending', result.Push_Status__c, 'Should stay Pending when user is active');
+        System.assertNotEquals('Pending', result.Push_Status__c,
+            'Recent login should no longer hold the push back');
     }
 
     /* ── Quiet hours: user skipped ───────────────────────────────────── */
@@ -95,27 +98,6 @@ public class FimbyPushBatchJobTest {
         );
         System.assertEquals(false, FimbyPushBatchJob.isInQuietHours(u),
             'NONE preference means no quiet hours');
-    }
-
-    @IsTest
-    static void testIsActiveSession_NullLastOpen() {
-        User u = new User(Last_App_Open_At__c = null);
-        System.assertEquals(false, FimbyPushBatchJob.isActiveSession(u),
-            'Null Last_App_Open_At__c means not active');
-    }
-
-    @IsTest
-    static void testIsActiveSession_RecentOpen() {
-        User u = new User(Last_App_Open_At__c = Datetime.now().addMinutes(-5));
-        System.assertEquals(true, FimbyPushBatchJob.isActiveSession(u),
-            'Open 5 min ago should be active');
-    }
-
-    @IsTest
-    static void testIsActiveSession_OldOpen() {
-        User u = new User(Last_App_Open_At__c = Datetime.now().addMinutes(-30));
-        System.assertEquals(false, FimbyPushBatchJob.isActiveSession(u),
-            'Open 30 min ago should not be active');
     }
 
     /* ── DM and Activity partitioning ────────────────────────────────── */
@@ -149,6 +131,42 @@ public class FimbyPushBatchJobTest {
         Test.stopTest();
 
         System.assert(true, 'Combined DM + Activity batch should execute');
+    }
+
+    /* ── Activity-only batch collapses to generic "Neighbourhood activity" ── */
+
+    @IsTest
+    static void testBatchJob_ActivityOnly_DispatchesGenericActivityPayload() {
+        Contact testContact = getTestContact();
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        List<Notification__c> notifs = new List<Notification__c>{
+            new Notification__c(
+                Contact__c = testContact.Id,
+                Type__c = 'Response',
+                Title__c = 'Activity 1', Body__c = 'b',
+                Push_Status__c = 'Pending'
+            ),
+            new Notification__c(
+                Contact__c = testContact.Id,
+                Type__c = 'Response',
+                Title__c = 'Activity 2', Body__c = 'b',
+                Push_Status__c = 'Pending'
+            )
+        };
+        insert notifs;
+
+        CapturingMock mock = new CapturingMock(200, '{"sent":true}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        System.assert(String.isNotBlank(mock.capturedBody), 'A payload should have been sent');
+        Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(mock.capturedBody);
+        System.assertEquals('Neighbourhood activity', parsed.get('title'),
+            'Multiple activity notifications collapse to the generic activity title');
     }
 
     private class MockPushResponse implements HttpCalloutMock {

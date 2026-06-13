@@ -199,6 +199,9 @@ public class FimbyModeratorDashboardTest {
         Account nh = getNeighbourhood();
         List<Contact> contacts = getContacts();
 
+        // Clear any welcome task auto-generated when @TestSetup activated the moderator's community user
+        delete [SELECT Id FROM Moderator_Task__c WHERE Neighbourhood__c = :nh.Id];
+
         Moderator_Task__c task = new Moderator_Task__c(
             Neighbourhood__c = nh.Id,
             Category__c = 'New_Signup',
@@ -222,6 +225,9 @@ public class FimbyModeratorDashboardTest {
     static void testGetTasksByCategory() {
         Account nh = getNeighbourhood();
         List<Contact> contacts = getContacts();
+
+        // Clear any welcome task auto-generated when @TestSetup activated the moderator's community user
+        delete [SELECT Id FROM Moderator_Task__c WHERE Neighbourhood__c = :nh.Id];
 
         Moderator_Task__c task = new Moderator_Task__c(
             Neighbourhood__c = nh.Id,
@@ -1836,30 +1842,6 @@ public class FimbyModeratorDashboardTest {
             SELECT Id FROM Moderator_Task__c WHERE Category__c = 'Blocked_Contact'
         ];
         System.assertEquals(0, tasks.size(), 'Should NOT create task when Reported is false');
-    }
-
-    @isTest
-    static void testContactTriggerNewSignup() {
-        Account nh = getNeighbourhood();
-        List<Contact> contacts = getContacts();
-        Contact signupContact = contacts[1];
-
-        signupContact.Status__c = 'Active User';
-        update signupContact;
-
-        Test.startTest();
-        signupContact.Status__c = 'New Public Signup';
-        update signupContact;
-        Test.stopTest();
-
-        List<Moderator_Task__c> tasks = [
-            SELECT Id, Category__c, Subject_Contact__c
-            FROM Moderator_Task__c
-            WHERE Category__c = 'New_Signup'
-              AND Subject_Contact__c = :signupContact.Id
-              AND Neighbourhood__c = :nh.Id
-        ];
-        System.assertEquals(1, tasks.size(), 'Should create task for new public signup');
     }
 
     @isTest

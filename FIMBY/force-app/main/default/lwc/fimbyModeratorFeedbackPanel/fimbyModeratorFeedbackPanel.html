@@ -32,7 +32,7 @@
 
         <!-- Related record -->
         <template lwc:if={panelData.relatedRecordLink}>
-            <a href={panelData.relatedRecordLink} class="related-link">
+            <a href={panelData.relatedRecordLink} class="related-link" onclick={handleNavLink}>
                 <img src={linkIconUrl} alt="" class="related-icon">
                 <span>View related record</span>
             </a>

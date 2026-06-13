@@ -241,6 +241,31 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
+    static void parseImageRatio_parsesValidPortraitAndLandscape() {
+        System.assertEquals(0.8, FimbyEmailHtmlBuilder.parseImageRatio('1080x1350'), 'Portrait 4:5 -> 0.8');
+        System.assertEquals(2, FimbyEmailHtmlBuilder.parseImageRatio('200X100'), 'Uppercase X landscape -> 2');
+    }
+
+    @IsTest
+    static void parseImageRatio_returnsNullForBadInput() {
+        System.assertEquals(null, FimbyEmailHtmlBuilder.parseImageRatio(null));
+        System.assertEquals(null, FimbyEmailHtmlBuilder.parseImageRatio(''));
+        System.assertEquals(null, FimbyEmailHtmlBuilder.parseImageRatio('nope'));
+        System.assertEquals(null, FimbyEmailHtmlBuilder.parseImageRatio('100x0'));
+        System.assertEquals(null, FimbyEmailHtmlBuilder.parseImageRatio('axb'));
+    }
+
+    @IsTest
+    static void buildSplitCardRow_emitsSizedImageAndBodyCells() {
+        String html = FimbyEmailHtmlBuilder.buildSplitCardRow(
+            'https://example.com/photo.jpg', 168, 210, '<p>body</p>'
+        );
+        System.assert(html.contains('width="168" height="210"'), 'Image cell sized to ratio: ' + html);
+        System.assert(html.contains('<p>body</p>'), 'Body html should be embedded in right cell');
+        System.assert(html.startsWith('<tr>'), 'Should be a single table row');
+    }
+
+    @IsTest
     static void completeImageUrl_appendsOrgId() {
         String partial = 'https://fimby.file.force.com/sfc/dist/version/renditionDownload?versionId=abc&oid=';
         String result = FimbyEmailHtmlBuilder.completeImageUrl(partial);

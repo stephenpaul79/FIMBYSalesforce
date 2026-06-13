@@ -28,6 +28,34 @@ Read this before writing or changing any LWC. All components are prefixed `fimby
 | `fimbyUniversalHeader` / `fimbyBottomNavigation` | Site nav: 4 tabs + Create + identity switcher + acting-as chip |
 | `fimbyManageIdentities`, `fimbyRelationshipSetupModal`, `fimbyOrganizationProfile` | Identity/relationship/org UIs |
 
+## Navigation — soft nav only (no `location.href`, no internal `<a href>`)
+FIMBY is a persistent-shell SPA on LWR. **All in-app navigation MUST be client-side (soft) navigation** so the header/footer shell stays mounted and only the content region swaps. A full reload remounts the shell and causes the empty → spinner → content flash we are eliminating. Route every in-app navigation through `c/fimbyNavigation`:
+
+```javascript
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+
+export default class FimbyThing extends NavigationMixin(LightningElement) {
+    goToItem(id)  { navigate(this, `/asks-offers/${id}`); }      // any internal path
+    goToConvo(id) { navigate(this, `/conversation?id=${id}`); }   // query → state preserved
+    goToTab()     { navigateToRoute(this, 'library'); }           // known route key
+}
+```
+- `navigate(this, url)` resolves any internal path: record-detail (`/asks-offers|sharedlife|story|library-item|skill-offer/{id}`) → `standard__recordPage`; custom routes with query (`/conversation`, `/neighbour`, `/response-reply`, `/search`, `/organization-profile`, `/moderator-task`, …) → `comm__namedPage` + `state`; named pages (`/messages`, `/settings`, `/my-stuff/*`) → `comm__namedPage`. Unknown paths fall back to a hard load — it never breaks.
+- `navigateToRoute(this, key, opts)` for logical route keys (e.g. tab handlers: `navigateToRoute(this, selectedTab)`).
+- Component **must** `extend NavigationMixin(LightningElement)`, or the helper degrades to a hard load.
+
+**FORBIDDEN for in-app nav:** ❌ `location.href = '/...'`, `window.location.href = '/...'`, `location.assign('/...')`; ❌ internal anchors `<a href="/messages">`. For internal links in markup use `<button onclick={…}>` → `navigate(this, …)`, or `<a href={url} onclick={handleNav}>` with `event.preventDefault()` then `navigate(this, url)`.
+
+**ALLOWED hard nav** (`navigate()` passes these through): external (`http(s):`, `mailto:`, `tel:`, `sms:`), auth/session (`/secur/logout.jsp`, login), and deliberate full-reset reloads at a flow boundary (`window.location.replace('/onboarding')` post-signup, `'/'` after onboarding). Reading `window.location` (e.g. `new URL(window.location.href)` for a record id) is not navigation — fine.
+
+## Loading choreography — smooth, fully-formed reveals (no chunky pop-in)
+Hide intermediate loading states; reveal each surface fully formed, once, with a gentle fade. Four codified patterns:
+1. **Hide-until-loaded reveal (detail pages):** gate the entire body behind a single `_detailReady` flag set only when **all** critical layout-defining loads resolve (call `_maybeMarkReady()` from each load's success **and** error). Spinner until ready, then render + `detailFadeIn` 220ms opacity fade; reduced-motion disables it. Refs: `fimbyNeedOfferDetail`, `fimbyStoryDetail`, `fimbyLibraryItemDetail`, `fimbySkillOfferDetail`. Never reveal sections incrementally.
+2. **Feed curtain (lists):** use `fimbyInfiniteScroll` for every feed (Home, Notifications, Messages, Library) — it lays content out at `opacity:0` behind a curtain and reveals in one fade (≥350ms min, reserves `--fimby-feed-curtain-min-height`). Don't roll your own list shell.
+3. **Image fade-in:** user images start `opacity:0` → `1` on `load`; `renderedCallback` sweep marks already-`complete` (cached) images loaded so they don't flash; reduced-motion instant. Ref: `fimbyImageGrid`.
+4. **Silent scroll restore:** on cached back-restore, hold the list invisible from first paint, `scrollTo` while hidden (nested rAF), then fade in at position. Flush cached scroll state in `disconnectedCallback` (soft nav doesn't fire `pagehide`). Refs: `fimbyHomeFeed`, `fimbyLibraryBrowser`.
+
 ## Conditional templates
 Use `lwc:if` / `lwc:elseif` / `lwc:else` — **never** the deprecated `if:true` / `if:false` (removed at API 58.0). For `!condition`, add an inverse getter in JS.
 

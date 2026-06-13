@@ -1,6 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { navigate } from 'c/fimbyNavigation';
 
 // Static resources
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -239,7 +240,7 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
 
     handleViewStory() {
         if (this.createdStoryId) {
-            window.location.href = '/sharedlife/' + this.createdStoryId;
+            navigate(this, '/sharedlife/' + this.createdStoryId);
         }
     }
 

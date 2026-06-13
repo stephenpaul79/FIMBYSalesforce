@@ -2,6 +2,11 @@
 
 Review before finishing or deploying any LWC change. Consider each item if it affects your change.
 
+## Navigation & loading
+- [ ] In-app navigation uses `navigate(this, url)` / `navigateToRoute(this, key)` from `c/fimbyNavigation` — never `location.href`/`window.location.href`/`location.assign` to an internal path, and no internal `<a href="/...">`. Component extends `NavigationMixin(LightningElement)`. (External links, `/secur/` auth, and deliberate `location.replace` flow-resets stay hard nav.)
+- [ ] Detail pages reveal fully-formed: single `_detailReady` gate over all critical loads + `detailFadeIn`; no incremental section pop-in. Reduced-motion disables the fade.
+- [ ] Feeds use `fimbyInfiniteScroll` (curtain reveal); user images fade in on load (cached sweep); cached back-restore hides the scroll jump.
+
 ## Templates & structure
 - [ ] Conditional templates use `lwc:if`/`lwc:elseif`/`lwc:else` — never deprecated `if:true`/`if:false`. For `!condition`, add an inverse getter.
 - [ ] All pages use `c-fimby-page-header` — never a custom header `<div>` with back buttons.
@@ -59,6 +64,13 @@ Review before finishing or deploying any LWC change. Consider each item if it af
 - [ ] "Next" has `utility:chevronright`; final submit has no icon.
 - [ ] Both "Next" and Submit use `.nav-next` (teal, `#ffffff`); "Back" uses `.nav-back` (neutral).
 - [ ] Character counters: `maxlength` matches the field length exactly, counter turns red at the limit (`>=`).
+
+## User feedback (toasts & banners)
+- [ ] **Never** `ShowToastEvent` / `lightning/platformShowToastEvent` — it silently no-ops in our LWR site. Removed from any file you touch.
+- [ ] Operation failures (server/FLS/network: "Couldn't save") → `fireToast`/`fireErrorToast` from `c/fimbyToastHelper` (shell-mounted `c-fimby-toast`, assertive/global).
+- [ ] In-form validation errors ("Name is required", "Pick a date") → inline next to the action via `c-fimby-inline-banner variant="error"` — **not** a toast.
+- [ ] Success → `c-fimby-inline-banner variant="success"` only when the user stays on the surface; **nothing** when the action navigates away or removes the item from a list (the surface change is the confirmation).
+- [ ] No bespoke `errorMessage`/`_error`/`this.error` banner markup — render through `c-fimby-inline-banner` so roles/`aria-live`/styling are uniform.
 
 ## Experience Builder
 - [ ] If exposing `<property>` entries: flag enum fields, icon refs, or 5+ props for a CPE.

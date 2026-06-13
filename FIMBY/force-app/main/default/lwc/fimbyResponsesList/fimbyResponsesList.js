@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getUrl } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 
 export default class FimbyResponsesList extends NavigationMixin(LightningElement) {
     @track responses = [];
@@ -217,7 +217,7 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
 
     // Event handlers
     handleBack() {
-        location.href = '/';
+        navigate(this, '/');
     }
 
     handleShowFilters() {
@@ -357,13 +357,13 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
     }
 
     handleNewPost() {
-        location.href = '/create-story';
+        navigate(this, '/create-story');
     }
 
     handleTabChange(event) {
         const selectedTab = event.detail.tab;
         // Map valid pages for Digital Experience
-        location.href = getUrl(selectedTab);
+        navigateToRoute(this, selectedTab);
     }
 
     handleLoadMore() {
@@ -375,10 +375,10 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
     }
 
     navigateToResponseDetail(responseId) {
-        location.href = '/response-reply?recordId=' + responseId;
+        navigate(this, '/response-reply?recordId=' + responseId);
     }
 
     navigateToConversation(participantId, participantName) {
-        location.href = '/conversation?participantId=' + participantId + '&participantName=' + participantName;
+        navigate(this, '/conversation?participantId=' + participantId + '&participantName=' + participantName);
     }
 }

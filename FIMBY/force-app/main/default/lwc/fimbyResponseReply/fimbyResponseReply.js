@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getResponseForReply from '@salesforce/apex/FimbyResponseController.getResponseForReply';
@@ -311,7 +312,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            window.location.href = '/messages';
+            navigate(this, '/messages');
         }
     }
 
@@ -332,11 +333,12 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     }
 
     handleGoToResponse() {
-        window.location.href = this.responseUrl;
+        navigate(this, this.responseUrl);
     }
 
-    handleGoToNeedOffer() {
-        window.location.href = this.needOfferUrl;
+    handleGoToNeedOffer(event) {
+        if (event) event.preventDefault();
+        navigate(this, this.needOfferUrl);
     }
 
     // ============================================
@@ -417,7 +419,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
             // Land on Messages so the user is out of the reply context for
             // the person they just blocked, matching fimbyConversationView
             // and fimbyResponseThread.
-            window.location.href = '/messages';
+            navigate(this, '/messages');
         } catch (error) {
             console.error('Error blocking contact:', error);
             this.blockError = error?.body?.message
@@ -456,7 +458,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
                 // If share contact info was checked, launch that flow/component
                 if (this.shareContactInfo && result.shareContactInfoUrl) {
                     // Navigate to share contact info
-                    window.location.href = result.shareContactInfoUrl;
+                    navigate(this, result.shareContactInfoUrl);
                     return;
                 }
 

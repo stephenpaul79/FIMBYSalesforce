@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import getResponseForStatusUpdate from '@salesforce/apex/FimbyResponseController.getResponseForStatusUpdate';
 import updateResponseStatus from '@salesforce/apex/FimbyResponseController.updateResponseStatus';
 
@@ -148,7 +149,7 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
     }
 
     handleGoToResponse() {
-        window.location.href = this.responseUrl;
+        navigate(this, this.responseUrl);
     }
 
     // ============================================

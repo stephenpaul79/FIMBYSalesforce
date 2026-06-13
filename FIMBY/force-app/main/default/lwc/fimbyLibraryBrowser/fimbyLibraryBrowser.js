@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getRecordPageReference, startNavTiming } from 'c/fimbyNavigation';
+import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -670,6 +670,11 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         }
     }
 
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     // Soft-nav to an object detail page (keeps the persistent shell mounted).
     _navigateToRecord(objectApiName, recordId) {
         const ref = getRecordPageReference(objectApiName, recordId);
@@ -720,9 +725,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     handleAddItem() {
         if (this.isSkillsMode) {
-            location.href = '/library-item-post?type=skill';
+            navigate(this, '/library-item-post?type=skill');
         } else {
-            location.href = '/library-item-post';
+            navigate(this, '/library-item-post');
         }
     }
 

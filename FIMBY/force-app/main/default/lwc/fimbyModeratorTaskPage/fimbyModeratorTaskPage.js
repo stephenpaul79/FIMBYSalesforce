@@ -1,7 +1,9 @@
 import { LightningElement, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { invalidateModeratorContext } from 'c/fimbyModeratorContext';
+import { navigate } from 'c/fimbyNavigation';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 import getTaskPageBootstrap from '@salesforce/apex/FimbyModeratorDashboardController.getTaskPageBootstrap';
 import getContentReviewData from '@salesforce/apex/FimbyModeratorDashboardController.getContentReviewData';
@@ -72,7 +74,7 @@ const REASON_SUBTYPE_LABELS = {
     Other: 'Other'
 };
 
-export default class FimbyModeratorTaskPage extends LightningElement {
+export default class FimbyModeratorTaskPage extends NavigationMixin(LightningElement) {
     @track _task = null;
     @track _category = '';
     @track _panelData = null;
@@ -89,6 +91,7 @@ export default class FimbyModeratorTaskPage extends LightningElement {
     @track _showReadMore = false;
     @track _collapsedSections = {};
     @track _isProcessing = false;
+    @track _successMessage = '';
     @track _showReopenConfirm = false;
     @track _reporterStats = null;
     @track _subjectHistoryExpanded = window.matchMedia('(min-width: 1024px)').matches;
@@ -823,7 +826,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 taskId: this._task.Id
             });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Content republished');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -843,7 +845,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 notes: ''
             });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Content will remain hidden');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -862,7 +863,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         try {
             await resolveTask({ taskId: this._task.Id, resolution: 'Dismissed', notes: '' });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Block reviewed');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -883,7 +883,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 supportRelationshipId: this._task.Related_Record_Id__c,
                 taskId: this._task.Id
             });
-            this._showSuccess('Support relationship approved');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -902,7 +901,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 statement: '',
                 taskId: this._task.Id
             });
-            this._showSuccess('Support relationship declined');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -958,7 +956,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 accountId: this._task.Related_Record_Id__c,
                 taskId: this._task.Id
             });
-            this._showSuccess('Organization approved');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -977,7 +974,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 statement: '',
                 taskId: this._task.Id
             });
-            this._showSuccess('Organization request declined');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -996,7 +992,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 supportRelationshipId: this._panelData?.pendingSupportRelationshipId,
                 repTaskId: this._panelData?.pendingRepTaskId
             });
-            this._showSuccess('Organization and representative approved');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -1015,7 +1010,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         try {
             await resolveTask({ taskId: this._task.Id, resolution: 'Dismissed', notes: 'No action needed' });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Marked as no action needed');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -1084,7 +1078,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 isConfirmed: true
             });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Flag confirmed');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -1103,7 +1096,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
                 isConfirmed: false
             });
             await this._advanceStage('Resolved', null);
-            this._showSuccess('Flag cleared');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -1113,7 +1105,7 @@ export default class FimbyModeratorTaskPage extends LightningElement {
     }
 
     handleViewBulkBuy() {
-        if (this.bulkBuyUrl) window.location.href = this.bulkBuyUrl;
+        if (this.bulkBuyUrl) navigate(this, this.bulkBuyUrl);
     }
 
     // ================================================================
@@ -1175,7 +1167,6 @@ export default class FimbyModeratorTaskPage extends LightningElement {
             });
             this._status = 'Escalated';
             this._enforcementLevel = 'Admin_Review';
-            this._showSuccess('Task escalated');
             this._navigateBack();
         } catch (error) {
             this._showError('Action failed', error);
@@ -1186,7 +1177,7 @@ export default class FimbyModeratorTaskPage extends LightningElement {
 
     handleViewOriginalPost() {
         const url = this._buildOriginalUrl();
-        if (url) window.location.href = url;
+        if (url) navigate(this, url);
     }
 
     // ================================================================
@@ -1206,14 +1197,14 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         } catch {
             /* use default */
         }
-        window.location.href = destination;
+        navigate(this, destination);
     }
 
     async _navigateToConversation(contactId) {
         if (!contactId) return;
         try {
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: contactId });
-            window.location.href = `/conversation?id=${conversationId}`;
+            navigate(this, `/conversation?id=${conversationId}`);
         } catch (error) {
             this._showError('Failed to open conversation', error);
         }
@@ -1324,12 +1315,15 @@ export default class FimbyModeratorTaskPage extends LightningElement {
         }
     }
 
+    // Inline success banner — shown only when the action keeps the user on the
+    // page (check-in, concern, reopen-in-place). Actions that navigate back show
+    // nothing, per the FIMBY feedback standard.
     _showSuccess(message) {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Done', message, variant: 'success' }));
+        this._successMessage = message;
     }
 
+    // Operation failures route to the shell toast (assertive, global).
     _showError(title, error) {
-        const message = error?.body?.message || error?.message || 'Something went wrong';
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant: 'error' }));
+        fireErrorToast(error);
     }
 }

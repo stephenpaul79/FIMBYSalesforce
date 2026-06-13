@@ -3,9 +3,9 @@
         <!-- Header card: breadcrumb + optional contacts sub-filters -->
         <div class={headerCardClass}>
             <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link">Home</a>
+                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <a href="/my-stuff" class="breadcrumb-link" onclick={handleNavLink}>My Stuff</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
                 <span class="breadcrumb-current">{sectionTitle}</span>
             </nav>
@@ -65,7 +65,7 @@
                             </button>
                         </template>
                         <div class="section-footer">
-                            <a href="/post-archive" class="archive-btn">
+                            <a href="/post-archive" class="archive-btn" onclick={handleNavLink}>
                                 <img src={archiveIconUrl} alt="" class="archive-btn-icon">
                                 Post Archive
                             </a>
@@ -95,7 +95,7 @@
                             </button>
                         </template>
                         <div class="section-footer">
-                            <a href="/story-archive" class="archive-btn">
+                            <a href="/story-archive" class="archive-btn" onclick={handleNavLink}>
                                 <img src={archiveIconUrl} alt="" class="archive-btn-icon">
                                 Shared Life Archive
                             </a>
@@ -143,7 +143,7 @@
                             </template>
                         </template>
                         <div class="section-footer">
-                            <a href="/my-items" class="archive-btn">
+                            <a href="/my-items" class="archive-btn" onclick={handleNavLink}>
                                 <img src={archiveIconUrl} alt="" class="archive-btn-icon">
                                 Library Archive
                             </a>
@@ -175,7 +175,7 @@
                     <template lwc:else>
                         <div class="empty-section">
                             <p>You haven't offered any skills yet.</p>
-                            <a href="/library-item-post?type=skill" class="empty-action-link">Offer a skill</a>
+                            <a href="/library-item-post?type=skill" class="empty-action-link" onclick={handleNavLink}>Offer a skill</a>
                         </div>
                     </template>
                 </template>
@@ -198,7 +198,7 @@
                             </button>
                         </template>
                         <div class="section-footer">
-                            <a href="/borrowing-history" class="archive-btn">
+                            <a href="/borrowing-history" class="archive-btn" onclick={handleNavLink}>
                                 <img src={archiveIconUrl} alt="" class="archive-btn-icon">
                                 Borrowing History
                             </a>
@@ -209,7 +209,7 @@
                             <p>You're not currently borrowing any items.</p>
                         </div>
                         <div class="section-footer">
-                            <a href="/borrowing-history" class="archive-btn">
+                            <a href="/borrowing-history" class="archive-btn" onclick={handleNavLink}>
                                 <img src={archiveIconUrl} alt="" class="archive-btn-icon">
                                 Borrowing History
                             </a>

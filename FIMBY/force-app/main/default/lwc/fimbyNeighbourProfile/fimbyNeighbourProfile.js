@@ -1,12 +1,14 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
 
-export default class FimbyNeighbourProfile extends LightningElement {
+export default class FimbyNeighbourProfile extends NavigationMixin(LightningElement) {
     @track isLoading = true;
     @track profile = {};
     @track neighbourContactId = null;
@@ -166,14 +168,14 @@ export default class FimbyNeighbourProfile extends LightningElement {
 
     handleMessage() {
         if (!this.neighbourContactId) return;
-        location.href = '/conversation?contactId=' + this.neighbourContactId;
+        navigate(this, '/conversation?contactId=' + this.neighbourContactId);
     }
 
     handleBack() {
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            location.href = '/my-stuff/my-contacts';
+            navigate(this, '/my-stuff/my-contacts');
         }
     }
 
@@ -187,6 +189,6 @@ export default class FimbyNeighbourProfile extends LightningElement {
     }
 
     handleTabChange(event) {
-        location.href = '/' + (event.detail.tab === 'home' ? '' : event.detail.tab);
+        navigateToRoute(this, event.detail.tab);
     }
 }

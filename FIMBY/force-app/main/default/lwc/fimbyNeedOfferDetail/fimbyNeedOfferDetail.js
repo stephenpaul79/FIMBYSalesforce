@@ -1,5 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
@@ -173,6 +174,13 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     @track _extractedRecordId = null;
     @track isLoading = true;
+    // Hide-until-loaded reveal: hold the whole detail body behind the spinner
+    // until every layout-defining load resolves, then reveal in one fade so
+    // sections don't pop in and shift the page ("chunk chunk chunk").
+    @track _detailReady = false;
+    _recordDone = false;
+    _responsesDone = false;
+    _bulkBuyDone = false;
     @track showLightbox = false;
     @track lightboxImages = [];
     @track lightboxStartIndex = 0;
@@ -276,7 +284,28 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         if (this.showRemovedState) {
             return false;
         }
-        return this.isLoading || !this.effectiveRecordId;
+        return !this._detailReady;
+    }
+
+    get showContent() {
+        return this._detailReady && this.shouldRenderRecord;
+    }
+
+    // Reveal once the record plus every layout-defining secondary load is in.
+    _maybeMarkReady() {
+        if (this.isRemoved) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this._recordDone) return;
+        // Record failed to load — reveal so we don't sit on the spinner forever.
+        if (!this.record) {
+            this._detailReady = true;
+            return;
+        }
+        if (!this._responsesDone) return;
+        if (this.isBulkBuyType && !this._bulkBuyDone) return;
+        this._detailReady = true;
     }
 
     get showRemovedState() {
@@ -305,6 +334,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     _resetDetailLoadState() {
         this.isLoading = true;
+        this._detailReady = false;
+        this._recordDone = false;
+        this._responsesDone = false;
+        this._bulkBuyDone = false;
         this.isRemoved = false;
         this.removedMessage = '';
         this.record = undefined;
@@ -395,6 +428,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             this.error = error;
             this.record = undefined;
         }
+        this._recordDone = true;
+        this._maybeMarkReady();
     }
 
     get recordIdIfVisible() {
@@ -431,6 +466,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             this.responses = [];
         } finally {
             this.isLoadingResponses = false;
+            this._responsesDone = true;
+            this._maybeMarkReady();
         }
     }
 
@@ -1060,6 +1097,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             this.bulkBuyFollowUpStatus = fuResult?.statusByReservation || {};
         } catch (error) {
             console.error('Error loading bulk buy detail:', error);
+        } finally {
+            this._bulkBuyDone = true;
+            this._maybeMarkReady();
         }
     }
 
@@ -1208,7 +1248,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         const conversationId = event.detail?.conversationId;
         this.loadBulkBuyDetail();
         if (conversationId) {
-            window.location.href = `/conversation?id=${conversationId}`;
+            navigate(this, `/conversation?id=${conversationId}`);
         }
     }
 
@@ -1755,7 +1795,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     handleOpenMyResponseThread() {
         if (!this.currentUserResponse?.id) return;
-        window.location.href = '/response-reply?recordId=' + this.currentUserResponse.id;
+        navigate(this, '/response-reply?recordId=' + this.currentUserResponse.id);
     }
 
     handleSayThanks(event) {
@@ -1946,14 +1986,14 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     handleMessagePoster() {
         if (this.quickResponseId) {
-            window.location.href = '/response-reply?recordId=' + this.quickResponseId + '&mode=message';
+            navigate(this, '/response-reply?recordId=' + this.quickResponseId + '&mode=message');
         }
     }
 
     handleMessageAttendee(event) {
         const responseId = event.currentTarget.dataset.responseId;
         if (responseId) {
-            window.location.href = '/response-reply?recordId=' + responseId + '&mode=message';
+            navigate(this, '/response-reply?recordId=' + responseId + '&mode=message');
         }
     }
 
@@ -1962,7 +2002,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const convId = await createEventGroupChat({ eventId: this.recordId });
             if (convId) {
                 this._eventGroupConversationId = convId;
-                window.location.href = '/conversation?id=' + convId;
+                navigate(this, '/conversation?id=' + convId);
             }
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
@@ -1976,7 +2016,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     handleOpenEventChat() {
         const convId = this._resolvedEventGroupConversationId;
         if (convId) {
-            window.location.href = '/conversation?id=' + convId;
+            navigate(this, '/conversation?id=' + convId);
         }
     }
 
@@ -2150,7 +2190,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             }
             await deleteNeedsOffersPost(params);
             this.dispatchEvent(new ShowToastEvent({ title: 'Deleted', message: 'Post has been deleted', variant: 'success' }));
-            window.location.href = '/';
+            navigate(this, '/');
         } catch (error) {
             console.error('Delete error:', error);
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to delete post', variant: 'error' }));
@@ -2164,7 +2204,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     handleResponseClick(event) {
         const responseId = event.currentTarget.dataset.responseId;
         if (!responseId) return;
-        window.location.href = '/response-reply?recordId=' + responseId;
+        navigate(this, '/response-reply?recordId=' + responseId);
     }
 
     handleImageClick() {
@@ -2204,7 +2244,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Needs_Offers__c', flagValue: 'Moderator_Review' });
             this.dispatchEvent(new ShowToastEvent({ title: 'Content flagged', message: 'This content is now under review.', variant: 'success' }));
-            window.location.href = '/moderator-dashboard';
+            navigate(this, '/moderator-dashboard');
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not flag content.', variant: 'error' }));
         }
@@ -2224,7 +2264,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const authorContactId = this._getAuthorContactId();
             if (!authorContactId) return;
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: authorContactId });
-            window.location.href = `/conversation?id=${conversationId}`;
+            navigate(this, `/conversation?id=${conversationId}`);
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not start conversation.', variant: 'error' }));
         }

@@ -1,5 +1,7 @@
 import { LightningElement, api } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 
 const TYPE_BADGE_MAP = {
     Bug: 'type-badge badge-bug',
@@ -8,8 +10,13 @@ const TYPE_BADGE_MAP = {
     Content_Report: 'type-badge badge-content-report'
 };
 
-export default class FimbyModeratorFeedbackPanel extends LightningElement {
+export default class FimbyModeratorFeedbackPanel extends NavigationMixin(LightningElement) {
     @api panelData = {};
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
 
     get submitterPhoto() {
         return this.panelData?.submitterPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;

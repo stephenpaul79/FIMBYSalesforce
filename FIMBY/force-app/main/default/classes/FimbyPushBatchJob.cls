@@ -1,6 +1,6 @@
 /**
  * @description Schedulable batch dispatcher for push notifications. Runs every 15 minutes.
- * Queries Pending notifications, groups by user, checks quiet hours and active session,
+ * Queries Pending notifications, groups by user, checks quiet hours,
  * builds one generic push per eligible user, then hands everything to FimbyPushQueueable.
  * Performs ZERO DML -- all writes happen in the Queueable after confirmed delivery.
  */
@@ -71,10 +71,6 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             }
 
             if (isInQuietHours(u)) {
-                continue;
-            }
-
-            if (isActiveSession(u)) {
                 continue;
             }
 
@@ -189,14 +185,6 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             return (localHour < endHour);
         }
         return (localHour >= startHour && localHour < endHour);
-    }
-
-    @TestVisible
-    private static Boolean isActiveSession(User u) {
-        if (u.Last_App_Open_At__c == null) {
-            return false;
-        }
-        return u.Last_App_Open_At__c.addMinutes(15) > Datetime.now();
     }
 
     @TestVisible

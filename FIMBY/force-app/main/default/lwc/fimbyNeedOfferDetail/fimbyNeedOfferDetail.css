@@ -22,6 +22,20 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    /* Hide-until-loaded reveal: the whole body is rendered only once every
+       layout-defining load resolves, so it fades in fully-formed in one go. */
+    animation: detailFadeIn 220ms ease;
+}
+
+@keyframes detailFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .detail-content {
+        animation: none;
+    }
 }
 
 .content-removed-card {

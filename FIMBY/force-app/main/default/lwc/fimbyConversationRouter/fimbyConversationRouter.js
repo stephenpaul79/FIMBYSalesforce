@@ -1,7 +1,9 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import isGroupConversation from '@salesforce/apex/FimbyCommunicationController.isGroupConversation';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyConversationRouter extends LightningElement {
+export default class FimbyConversationRouter extends NavigationMixin(LightningElement) {
     @track conversationId = '';
     @track targetContactId = '';
     @track isGroup = false;
@@ -15,6 +17,11 @@ export default class FimbyConversationRouter extends LightningElement {
     get showDirectView() {
         return !this.isLoading && !this.hasError && !this.isGroup
             && (!!this.conversationId || !!this.targetContactId);
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     async connectedCallback() {

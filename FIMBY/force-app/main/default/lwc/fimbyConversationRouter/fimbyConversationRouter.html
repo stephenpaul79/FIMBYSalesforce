@@ -19,7 +19,7 @@
     <template lwc:if={hasError}>
         <div class="error-container">
             <p>This conversation could not be found.</p>
-            <a href="/messages">Back to Messages</a>
+            <a href="/messages" onclick={handleNavLink}>Back to Messages</a>
         </div>
     </template>
 </template>

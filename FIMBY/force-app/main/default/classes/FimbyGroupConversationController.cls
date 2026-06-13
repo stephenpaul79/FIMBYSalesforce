@@ -326,10 +326,11 @@ public with sharing class FimbyGroupConversationController {
             incrementUnreadForOthers(conversationId, senderExcludeContactIds);
 
             Conversation__c conv = [
-                SELECT Id, Group_Name__c FROM Conversation__c
+                SELECT Id, Group_Name__c, Context_Type__c FROM Conversation__c
                 WHERE Id = :conversationId LIMIT 1
             ];
             String groupName = conv.Group_Name__c != null ? conv.Group_Name__c : 'group chat';
+            String notifType = notifTypeForContext(conv.Context_Type__c);
 
             List<Contact> senders = [
                 SELECT Id, Full_Name__c, Is_Organization_Contact__c,
@@ -367,7 +368,7 @@ public with sharing class FimbyGroupConversationController {
                 for (Conversation_Member__c cm : recipients) {
                     notifications.add(new Notification__c(
                         Contact__c = cm.Contact__c,
-                        Type__c = FimbyConstants.NOTIF_EVENT_CHAT,
+                        Type__c = notifType,
                         Title__c = senderName + ' in ' + groupName,
                         Body__c = truncatedBody,
                         Related_Record_Id__c = convIdStr,
@@ -380,6 +381,21 @@ public with sharing class FimbyGroupConversationController {
             }
 
             return new Map<String, Object>{ 'success' => true, 'messageId' => msg.Id };
+        }
+
+        /**
+         * @description Maps a conversation's context to the notification type so the in-app row,
+         * email digest badge/CTA, and push category match the thread (a Bulk Buy chat must not
+         * surface as "EVENT CHAT"). Event chats stay Event_Chat; everything else is a plain message.
+         */
+        private String notifTypeForContext(String contextType) {
+            if (contextType == FimbyConstants.CTX_BULK_BUY) {
+                return FimbyConstants.NOTIF_BULK_BUY_STATUS;
+            }
+            if (contextType == FimbyConstants.CTX_EVENT) {
+                return FimbyConstants.NOTIF_EVENT_CHAT;
+            }
+            return FimbyConstants.NOTIF_MESSAGE;
         }
 
         public void doSendSystemMessage(Id conversationId, String body, String messageType, Boolean bumpConversationActivity) {

@@ -1,3 +1,6 @@
+import { NavigationMixin } from 'lightning/navigation';
+import basePath from '@salesforce/community/basePath';
+
 /**
  * Shared navigation service for the FIMBY1 LWR Experience Cloud site.
  *
@@ -51,6 +54,10 @@ const ROUTES = {
     notifications:       { url: '/notifications',            name: 'Notifications__c', tab: 'mine' },
     settings:            { url: '/settings',                 name: 'Settings__c',     tab: 'mine' },
 
+    // Record-scoped custom routes reached with state:{id} (→ ?id= query param).
+    neighbour:           { url: '/neighbour',                name: 'Neighbour__c',    tab: null },
+    conversation:        { url: '/conversation',             name: 'Conversation__c', tab: 'messages' },
+
     // Secondary destinations — kept on URL fallback (no verified named-page
     // mapping yet); they still route correctly via location.href.
     help:                { url: '/help-support',             tab: 'mine' },
@@ -83,6 +90,199 @@ const TAB_ROUTES = [
 ];
 
 const DEFAULT_TAB = 'home';
+
+/* ---------------------------------------------------------------------------
+ * Path → page-reference resolution for the universal `navigate()` helper.
+ *
+ * Verified against digitalExperiences/site/FIMBY1/sfdc_cms__route/* (every
+ * route's urlPrefix/urlName). `comm__namedPage` resolves by ROUTE API NAME, so
+ * the canonical URL is correct regardless of the legacy path string a caller
+ * passes (e.g. '/my-stuff/my-skills' and '/my-skills' both → 'My_Skills__c').
+ * ------------------------------------------------------------------------- */
+
+/**
+ * First-path-segment → object API name for record-detail pages. These resolve
+ * via `standard__recordPage` (LWR picks the object's detail route), which is
+ * how the list+detail prefix collisions (asks-offers, sharedlife, library-item,
+ * skill-offer all carry list + detail + related routes) are disambiguated.
+ */
+const RECORD_DETAIL_OBJECTS = {
+    'asks-offers': 'Needs_Offers__c',
+    'needs-offers': 'Needs_Offers__c',
+    'sharedlife': 'Story__c',
+    'story': 'Story__c',
+    'library-item': 'Library_Item__c',
+    'skill-offer': 'Skill_Offer__c'
+};
+
+/**
+ * Internal path → route API name for `comm__namedPage` soft nav. Keys are the
+ * path tail without the leading slash; nested `my-stuff/*` aliases are included
+ * because legacy code hard-codes `/my-stuff/my-skills` etc.
+ */
+const NAMED_ROUTES_BY_PATH = {
+    '': 'Home',
+    'library-list': 'Library_List__c',
+    'messages': 'messages__c',
+    'my-stuff': 'My_Stuff__c',
+    'profile': 'profile__c',
+    'search': 'Search__c',
+    'notifications': 'Notifications__c',
+    'settings': 'Settings__c',
+    'neighbour': 'Neighbour__c',
+    'conversation': 'Conversation__c',
+    'response-reply': 'Response_Reply__c',
+    'response-detail': 'Response_Detail__c',
+    'moderator-dashboard': 'Moderator_Dashboard__c',
+    'moderator-task': 'Moderator_Task__c',
+    'moderator-task-archive': 'Moderator_Task_Archive__c',
+    'help-support': 'Help_and_Support__c',
+    'help-and-support': 'Help_and_Support__c',
+    'organization-profile': 'Organization_Profile__c',
+    'manage-identities': 'Manage_Identities__c',
+    'new-message': 'New_Message__c',
+    'quick-post': 'Quick_Post__c',
+    'ask-or-offer-post': 'Ask_or_Offer_Post__c',
+    'library-item-post': 'Library_Item_Post__c',
+    'shared-life-post': 'Stories__c',
+    'shared-life-list': 'Shared_Life_List__c',
+    'share-contact': 'Share_Contact__c',
+    'feedback': 'Feedback__c',
+    'post-archive': 'Post_Archive__c',
+    'story-archive': 'Story_Archive__c',
+    'borrowing-history': 'Borrowing_History__c',
+    'my-items': 'My_Items__c',
+    'my-contacts': 'My_Contacts__c',
+    'my-posts': 'My_Posts__c',
+    'my-shared-life': 'My_Shared_Life__c',
+    'my-skills': 'My_Skills__c',
+    'my-library-items': 'My_Library_Items__c',
+    'my-borrowing': 'My_Borrowing__c',
+    'my-bulk-buys': 'My_Bulk_Buys__c',
+    'my-stuff/my-contacts': 'My_Contacts__c',
+    'my-stuff/my-posts': 'My_Posts__c',
+    'my-stuff/my-shared-life': 'My_Shared_Life__c',
+    'my-stuff/my-skills': 'My_Skills__c',
+    'my-stuff/my-library-items': 'My_Library_Items__c',
+    'my-stuff/my-borrowing': 'My_Borrowing__c',
+    'my-stuff/my-bulk-buys': 'My_Bulk_Buys__c'
+};
+
+/** Schemes / paths that must always perform a full (hard) load. */
+const HARD_NAV_PATTERN = /^(https?:|mailto:|tel:|sms:|fimby:|javascript:|data:)/i;
+
+function parseQueryToState(rawQuery) {
+    const state = {};
+    if (!rawQuery) return state;
+    for (const pair of rawQuery.split('&')) {
+        if (!pair) continue;
+        const idx = pair.indexOf('=');
+        const key = idx === -1 ? pair : pair.slice(0, idx);
+        const val = idx === -1 ? '' : pair.slice(idx + 1);
+        if (!key) continue;
+        try {
+            state[decodeURIComponent(key)] = decodeURIComponent(val.replace(/\+/g, ' '));
+        } catch (e) {
+            state[key] = val;
+        }
+    }
+    return state;
+}
+
+/**
+ * Resolve an internal app path (e.g. '/asks-offers/abc?x=1') to a soft-nav page
+ * reference, or null when the path has no known mapping (caller hard-navigates).
+ */
+function resolvePageReference(url) {
+    try {
+        let [rawPath, rawQuery] = String(url).split('?');
+        const state = parseQueryToState(rawQuery);
+        // Strip the community basePath (e.g. '/fimby') when the URL was already
+        // run through toExperiencePath, so server-built / notification action
+        // URLs still resolve to a soft-nav route.
+        if (basePath && rawPath.startsWith(basePath)) {
+            rawPath = rawPath.slice(basePath.length);
+        }
+        const segments = rawPath.split('/').filter(s => s && s !== 's');
+
+        // Home (optionally with ?filter=).
+        if (segments.length === 0) {
+            const ref = { type: 'comm__namedPage', attributes: { name: 'Home' } };
+            if (Object.keys(state).length) ref.state = state;
+            return ref;
+        }
+
+        // Record-detail page: <prefix>/<recordId>.
+        const first = segments[0];
+        if (RECORD_DETAIL_OBJECTS[first] && segments.length >= 2) {
+            const ref = getRecordPageReference(RECORD_DETAIL_OBJECTS[first], segments[1]);
+            if (ref && Object.keys(state).length) ref.state = state;
+            return ref;
+        }
+
+        // Named route: try the full path tail first (for nested my-stuff/*),
+        // then the leading segment.
+        const fullPath = segments.join('/');
+        const name = NAMED_ROUTES_BY_PATH[fullPath] || NAMED_ROUTES_BY_PATH[first];
+        if (name) {
+            const ref = { type: 'comm__namedPage', attributes: { name } };
+            if (Object.keys(state).length) ref.state = state;
+            return ref;
+        }
+        return null;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Universal soft-navigation entry point. Converts an internal app URL into a
+ * client-side (`NavigationMixin.Navigate`) navigation that keeps the persistent
+ * shell mounted. External links, auth/session paths, and any unmapped internal
+ * path fall back to a full `location.href` load so nothing ever breaks.
+ *
+ * Replaces every `location.href = '/...'` / `window.location.href = '/...'` and
+ * internal `<a href>` in the app. The calling component MUST extend
+ * `NavigationMixin(LightningElement)`; if it does not, this degrades to a hard
+ * load automatically.
+ *
+ * @param {object} cmp  the component instance (`this`)
+ * @param {string} url  an internal app path or absolute/external URL
+ */
+function navigate(cmp, url) {
+    if (!url || typeof url !== 'string') return;
+    const target = url.trim();
+    if (!target || target === '#') return;
+
+    // External / scheme / Salesforce auth endpoints → full load.
+    if (HARD_NAV_PATTERN.test(target) || target.startsWith('/secur/')) {
+        window.location.href = target;
+        return;
+    }
+
+    const ref = resolvePageReference(target);
+    if (ref && cmp && typeof cmp[NavigationMixin.Navigate] === 'function') {
+        startNavTiming(resolveTabFromPath(target));
+        cmp[NavigationMixin.Navigate](ref);
+        return;
+    }
+    window.location.href = target;
+}
+
+/**
+ * Soft-navigate to a known logical route key (e.g. tab handlers that already
+ * have 'home' / 'library' / 'messages'), with optional page-reference state.
+ * Falls back through `navigate()` (URL) when the key has no named-page mapping.
+ */
+function navigateToRoute(cmp, key, opts = {}) {
+    const ref = getPageReference(key, opts);
+    if (ref && cmp && typeof cmp[NavigationMixin.Navigate] === 'function') {
+        startNavTiming(tabForKey(key));
+        cmp[NavigationMixin.Navigate](ref);
+        return;
+    }
+    navigate(cmp, getUrl(key));
+}
 
 /** Resolve the location.href URL for a logical route key. */
 function getUrl(key) {
@@ -210,6 +410,9 @@ export {
     getUrl,
     getPageReference,
     getRecordPageReference,
+    resolvePageReference,
+    navigate,
+    navigateToRoute,
     resolveTabFromPath,
     tabForKey,
     startNavTiming,

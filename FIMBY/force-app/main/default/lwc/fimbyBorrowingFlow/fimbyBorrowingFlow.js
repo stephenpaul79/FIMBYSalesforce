@@ -4,6 +4,7 @@
  */
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -268,7 +269,7 @@ export default class FimbyBorrowingFlow extends NavigationMixin(LightningElement
 
     handleDone() {
         const itemId = this.item?.Id || this.recordId;
-        window.location.href = itemId ? `/library-item/${itemId}/` : '/library-list/';
+        navigate(this, itemId ? `/library-item/${itemId}/` : '/library-list/');
     }
 
     async handleSubmitRequest() {

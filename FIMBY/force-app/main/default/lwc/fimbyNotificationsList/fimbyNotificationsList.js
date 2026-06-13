@@ -8,6 +8,7 @@ import deleteNotification from '@salesforce/apex/FimbyNotificationController.del
 import deleteAllNotifications from '@salesforce/apex/FimbyNotificationController.deleteAllNotifications';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
+import { navigate } from 'c/fimbyNavigation';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
@@ -275,7 +276,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
     }
 
     handleSettingsClick() {
-        window.location.href = '/settings';
+        navigate(this, '/settings');
     }
 
     /* ---------------------------------------------------------------
@@ -366,7 +367,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
         const target = this._resolveSafeUrl(notification);
         if (target) {
-            window.location.href = target;
+            navigate(this, target);
         }
     }
 
@@ -750,7 +751,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             myStuff: '/my-stuff'
         };
         if (routes[selectedTab]) {
-            window.location.href = routes[selectedTab];
+            navigate(this, routes[selectedTab]);
         }
     }
 }

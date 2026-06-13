@@ -1,4 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getThread from '@salesforce/apex/FimbyResponseThreadController.getThread';
@@ -27,7 +29,7 @@ const ZONE_THRESHOLD = 3;
 const PILL_THRESHOLD = 5;
 const SNIPPET_LENGTH = 80;
 
-export default class FimbyResponseThread extends LightningElement {
+export default class FimbyResponseThread extends NavigationMixin(LightningElement) {
     @api responseId = '';
 
     @track isLoading = true;
@@ -997,7 +999,7 @@ export default class FimbyResponseThread extends LightningElement {
             this.showBlockModal = false;
             // Land back on Messages so the user is out of the thread they
             // just blocked, matching fimbyConversationView's redirect.
-            window.location.href = '/messages';
+            navigate(this, '/messages');
         } catch (error) {
             console.error('Error blocking contact:', error);
             this.blockError = error?.body?.message
@@ -1014,13 +1016,13 @@ export default class FimbyResponseThread extends LightningElement {
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            window.location.href = '/messages';
+            navigate(this, '/messages');
         }
     }
 
     handlePostClick() {
         if (this.post.id) {
-            window.location.href = '/asks-offers/' + this.post.id;
+            navigate(this, '/asks-offers/' + this.post.id);
         }
     }
 

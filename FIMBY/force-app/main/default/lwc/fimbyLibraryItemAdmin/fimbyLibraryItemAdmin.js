@@ -1,10 +1,11 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { formatLocalDate, formatShortDate } from 'c/fimbyDateUtils';
-import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { navigate } from 'c/fimbyNavigation';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 
-export default class FimbyLibraryItemAdmin extends LightningElement {
+export default class FimbyLibraryItemAdmin extends NavigationMixin(LightningElement) {
     @api recordId;
     @api adminData;
     @api adminDataLoaded = false;
@@ -204,9 +205,9 @@ export default class FimbyLibraryItemAdmin extends LightningElement {
     // ── Action Handlers ────────────────────────────────────────────
 
     handleNavigate(event) {
-        const url = toExperiencePath(event.currentTarget.dataset.url);
+        const url = event.currentTarget.dataset.url;
         if (url) {
-            window.location.href = url;
+            navigate(this, url);
         }
     }
 

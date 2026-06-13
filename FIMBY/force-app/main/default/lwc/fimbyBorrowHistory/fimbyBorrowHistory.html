@@ -2,11 +2,11 @@
     <div class="fimby-archive-page">
         <div class="header-card">
             <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link">Home</a>
+                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <a href="/my-stuff" class="breadcrumb-link" onclick={handleNavLink}>My Stuff</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff/my-borrowing" class="breadcrumb-link">My Borrowing</a>
+                <a href="/my-stuff/my-borrowing" class="breadcrumb-link" onclick={handleNavLink}>My Borrowing</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
                 <span class="breadcrumb-current">History</span>
             </nav>
@@ -54,7 +54,7 @@
                 </template>
 
                 <div class="section-footer">
-                    <a href="/my-stuff/my-borrowing" class="archive-btn">
+                    <a href="/my-stuff/my-borrowing" class="archive-btn" onclick={handleNavLink}>
                         <img src={recentIconUrl} alt="" class="archive-btn-icon">
                         Recent Borrowing
                     </a>

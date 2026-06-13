@@ -1,5 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { navigate } from 'c/fimbyNavigation';
 import submitContentReport from '@salesforce/apex/FimbyContentReportController.submitContentReport';
 import checkExistingReport from '@salesforce/apex/FimbyContentReportController.checkExistingReport';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
@@ -11,7 +13,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
  * via FimbyModeratorTaskService — see /community-guidelines for the public
  * promise this UI implements (24h SLA, plain-English reasons).
  */
-export default class FimbyReportContent extends LightningElement {
+export default class FimbyReportContent extends NavigationMixin(LightningElement) {
     @api contentId = '';
     @api contentType = ''; // 'Story', 'Need_Offer', 'Library_Item', 'Response', etc.
     @track showModal = false;
@@ -146,6 +148,11 @@ export default class FimbyReportContent extends LightningElement {
 
     handleClose() {
         this.hide();
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     handleCancel() {

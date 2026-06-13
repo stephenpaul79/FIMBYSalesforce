@@ -714,9 +714,46 @@ public without sharing class FimbyEmailHtmlBuilder {
         if (String.isBlank(url)) { return ''; }
         Integer h = height != null ? height : 180;
         return '<tr><td style="padding:0;font-size:0;line-height:0;">'
-            + '<img src="' + url + '" width="552" alt="" '
+            + '<img src="' + url + '" width="552" height="' + h + '" alt="" '
             + 'style="display:block;width:100%;height:' + h + 'px;object-fit:cover;" />'
             + '</td></tr>';
+    }
+
+    /**
+     * @description Parses a stored "WxH" ratio string (e.g. "1080x1350") into a width/height
+     * ratio. Returns null when the value is blank or unparseable so callers can fall back to
+     * a default layout. Mirrors the feed's calculateAspectRatioStyle parsing (uppercase 'X').
+     */
+    public static Decimal parseImageRatio(String ratioStr) {
+        if (String.isBlank(ratioStr)) { return null; }
+        List<String> parts = ratioStr.toUpperCase().split('X');
+        if (parts.size() != 2) { return null; }
+        try {
+            Decimal w = Decimal.valueOf(parts[0].trim());
+            Decimal h = Decimal.valueOf(parts[1].trim());
+            if (w <= 0 || h <= 0) { return null; }
+            return w / h;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * @description Builds a single two-column card row (image left, body right) for
+     * portrait/square photos so faces are never cropped by a fixed letterbox. The image is
+     * sized to explicit width/height attributes derived from its true ratio (Outlook-safe);
+     * object-fit:cover only matters for the rare ultra-tall clamp case in modern clients.
+     */
+    public static String buildSplitCardRow(String imageUrl, Integer imgWidth, Integer imgHeight, String bodyHtml) {
+        String url = completeImageUrl(imageUrl);
+        Integer w = (imgWidth != null && imgWidth > 0) ? imgWidth : 200;
+        Integer h = (imgHeight != null && imgHeight > 0) ? imgHeight : 210;
+        String imgCell = '<td width="' + w + '" valign="top" style="width:' + w + 'px;padding:0;font-size:0;line-height:0;">'
+            + '<img src="' + url + '" width="' + w + '" height="' + h + '" alt="" '
+            + 'style="display:block;width:' + w + 'px;height:' + h + 'px;object-fit:cover;border:0;" />'
+            + '</td>';
+        String bodyCell = '<td valign="top" style="padding:12px 16px;">' + (bodyHtml != null ? bodyHtml : '') + '</td>';
+        return '<tr>' + imgCell + bodyCell + '</tr>';
     }
 
     public static String buildBadgePill(String label, String bgColor, String iconFilename) {

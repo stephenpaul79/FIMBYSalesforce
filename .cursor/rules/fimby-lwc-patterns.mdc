@@ -10,6 +10,34 @@ alwaysApply: false
 
 All prefixed `fimby*`. Areas: home feed, stories, ask/offer, library/lending, messaging (DM + response threads + group chat), bulk buy, profile/my-stuff, search, notifications, onboarding, identity management, admin lists, shared utilities. Components support dual-mode (page vs modal via `isModalMode`).
 
+## Navigation — Soft Nav Only (no `location.href`, no internal `<a href>`)
+
+FIMBY is a persistent-shell SPA on LWR. **All in-app navigation MUST be client-side (soft) navigation** so the header/footer shell stays mounted and the content region swaps without a full reload. A full reload remounts the shell and produces the empty-state → spinner → content flash we are eliminating.
+
+**The rule:** route every in-app navigation through the shared helper in `c/fimbyNavigation`:
+
+```javascript
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+
+export default class FimbyThing extends NavigationMixin(LightningElement) {
+    goToItem(id)   { navigate(this, `/asks-offers/${id}`); }       // any internal path
+    goToConvo(id)  { navigate(this, `/conversation?id=${id}`); }    // query state preserved
+    goToTab()      { navigateToRoute(this, 'library'); }            // known route key
+}
+```
+
+- `navigate(this, url)` accepts any internal path and resolves it to the correct page reference: **record-detail** pages (`/asks-offers/{id}`, `/sharedlife|/story/{id}`, `/library-item/{id}`, `/skill-offer/{id}`) → `standard__recordPage`; **custom routes with `?id=` / query params** (`/conversation`, `/neighbour`, `/response-reply`, `/search`, `/organization-profile`, `/moderator-task`, …) → `comm__namedPage` + `state`; **named pages** (`/messages`, `/settings`, `/my-stuff/*`, …) → `comm__namedPage`. Unknown paths fall back to a hard load, so it never breaks.
+- `navigateToRoute(this, key, opts)` is for when you already hold a logical route key (e.g. bottom-tab handlers): `navigateToRoute(this, selectedTab)`.
+- The component **must** `extend NavigationMixin(LightningElement)`. If it doesn't, the helper degrades to a hard load.
+
+**FORBIDDEN for in-app navigation:**
+- ❌ `location.href = '/...'`, `window.location.href = '/...'`, `location.assign('/...')`
+- ❌ internal anchors: `<a href="/messages">`, `<a href={internalUrlGetter}>`
+- For internal links in markup, use `<button>` + `onclick` → `navigate(this, …)`. If you need anchor semantics/styling, use `<a href={url} onclick={handleNav}>` and `event.preventDefault()` then `navigate(this, url)` (keeps the href for accessibility/right-click but soft-navigates on click).
+
+**ALLOWED hard navigation** (keep `location.href` / `location.replace` — `navigate()` passes these through automatically): external links (`http(s):`, `mailto:`, `tel:`, `sms:`), auth/session boundaries (`/secur/logout.jsp`, login), and deliberate full-reset reloads at a flow boundary (e.g. `window.location.replace('/onboarding')` right after signup, or `'/'` after onboarding completes). Reading `window.location` (e.g. `new URL(window.location.href)` to extract a record id) is **not** navigation and is fine.
+
 ## Reusable Primitives
 
 Build on these before creating new components:
@@ -149,6 +177,50 @@ Some components use `char-count` as the base class instead of `character-count` 
 ## Collapsible Sections
 
 Tracked boolean + chevron `<button>` + `slideDown` CSS. Mobile default: collapsed. Desktop: expanded (via `window.matchMedia('(min-width: 768px)')` in `connectedCallback`). Respect `prefers-reduced-motion`. Inline per consumer — no shared component. Used in `fimbyRecordDetailCard` and `fimbyNeedOfferDetail`.
+
+## Loading Choreography (smooth transitions, no chunky reveals)
+
+FIMBY hides intermediate loading states and reveals each surface **fully formed, once**, with a gentle fade. Never let a page render an empty frame, then a spinner, then content popping in piece by piece. Four codified patterns:
+
+### 1. Hide-until-loaded reveal (detail pages)
+
+Gate the **entire** content body behind a single readiness flag; show only the spinner until **every** critical, layout-defining load resolves, then render and fade in once.
+
+```javascript
+@track _detailReady = false;
+_recordDone = false; _secondaryDone = false;
+
+get showLoadingState() { return this.showRemovedState ? false : !this._detailReady; }
+get showContent()      { return this._detailReady && this.shouldRenderRecord; }
+
+_maybeMarkReady() {                       // call from every load's completion (success AND error)
+    if (this.isRemoved) { this._detailReady = true; return; }
+    if (!this._recordDone) return;
+    if (!this.record) { this._detailReady = true; return; }   // error → reveal the error state
+    if (!this._secondaryDone) return;     // wait for responses/comments/admin/etc.
+    this._detailReady = true;
+}
+```
+
+```css
+.detail-content { animation: detailFadeIn 220ms ease; }
+@keyframes detailFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .detail-content { animation: none; } }
+```
+
+Reference: `fimbyNeedOfferDetail`, `fimbyStoryDetail`, `fimbyLibraryItemDetail`, `fimbySkillOfferDetail`. Don't reveal sections incrementally; don't gate on non-layout/optional fetches.
+
+### 2. Feed curtain (lists)
+
+Use `fimbyInfiniteScroll` for all feeds (Home, Notifications, Messages, Library) — **don't roll your own list shell.** It lays content out at `opacity: 0` behind a curtain and reveals in a single fade once the first page renders, with a ~350ms minimum to avoid a flash and a reserved `--fimby-feed-curtain-min-height` so the page doesn't jump. Pass `initial-loading-label` for the curtain copy.
+
+### 3. Image fade-in
+
+User-uploaded images start `opacity: 0` and transition to `1` on `load`; a `renderedCallback` sweep marks already-`complete` (cached) images loaded immediately so they don't flash. Reduced-motion shows instantly. Reference: `fimbyImageGrid` (`handleImageLoad` + `.is-loaded`). Apply the same to thumbnails rendered outside the grid.
+
+### 4. Silent scroll restore (cache resume)
+
+When restoring a cached feed + scroll position on back-navigation, hold the list invisible from first paint, `window.scrollTo` while hidden (nested `requestAnimationFrame`), then fade in at the restored position so the scroll jump is never visible. Reduced-motion instant. Reference: `fimbyHomeFeed`, `fimbyLibraryBrowser` (`_resumeHidden` + `scrollContainerClass`). Pairs with the soft-nav back-restore (flush cached scroll state in `disconnectedCallback`, since `pagehide` doesn't fire on soft nav).
 
 ## Onboarding Structure
 

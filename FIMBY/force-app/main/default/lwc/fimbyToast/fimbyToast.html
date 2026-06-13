@@ -1,0 +1,30 @@
+<template>
+    <template lwc:if={hasToasts}>
+        <div class="toast-region" aria-live="polite">
+            <template for:each={_toasts} for:item="toast">
+                <div key={toast.id} class={toast.cssClass} role={toast.ariaRole} aria-live={toast.ariaLive}>
+                    <lightning-icon
+                        icon-name={toast.iconName}
+                        size="small"
+                        variant="inverse"
+                        class="toast-icon">
+                    </lightning-icon>
+                    <div class="toast-body">
+                        <template lwc:if={toast.hasTitle}>
+                            <span class="toast-title">{toast.title}</span>
+                        </template>
+                        <span class="toast-message">{toast.message}</span>
+                    </div>
+                    <button
+                        type="button"
+                        class="toast-dismiss"
+                        data-id={toast.id}
+                        onclick={handleDismiss}
+                        aria-label="Dismiss notification">
+                        <lightning-icon icon-name="utility:close" size="xx-small" variant="inverse"></lightning-icon>
+                    </button>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

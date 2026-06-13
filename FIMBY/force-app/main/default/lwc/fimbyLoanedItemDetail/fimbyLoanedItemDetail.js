@@ -1,6 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import { navigate } from 'c/fimbyNavigation';
 
 const FIELDS = [
     'Loaned_Item__c.Id',
@@ -152,21 +153,21 @@ export default class FimbyLoanedItemDetail extends NavigationMixin(LightningElem
     handleReturn() {
         const libraryItemId = this.record ? getFieldValue(this.record, 'Loaned_Item__c.Library_Item__c') : null;
         if (libraryItemId) {
-            window.location.href = `/library-item/${libraryItemId}/?action=return&loanId=${this.recordId}`;
+            navigate(this, `/library-item/${libraryItemId}/?action=return&loanId=${this.recordId}`);
         }
     }
 
     handleExtend() {
         const libraryItemId = this.record ? getFieldValue(this.record, 'Loaned_Item__c.Library_Item__c') : null;
         if (libraryItemId) {
-            window.location.href = `/library-item/${libraryItemId}/?action=requestExtension&loanId=${this.recordId}`;
+            navigate(this, `/library-item/${libraryItemId}/?action=requestExtension&loanId=${this.recordId}`);
         }
     }
 
     handleMessage() {
         const libraryItemId = this.record ? getFieldValue(this.record, 'Loaned_Item__c.Library_Item__c') : null;
         if (libraryItemId) {
-            window.location.href = `/library-item/${libraryItemId}/`;
+            navigate(this, `/library-item/${libraryItemId}/`);
         }
     }
 

@@ -1,9 +1,11 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getMineSummary from '@salesforce/apex/FimbyMyStuffController.getMineSummary';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyMyStuffHub extends LightningElement {
+export default class FimbyMyStuffHub extends NavigationMixin(LightningElement) {
     contactsIconUrl = `${IMPACT_ICONS}/people.png`;
     postsIconUrl = `${IMPACT_ICONS}/BulletinBoardActive.png`;
     sharedLifeIconUrl = `${IMPACT_ICONS}/GodStoryActive.png`;
@@ -63,7 +65,7 @@ export default class FimbyMyStuffHub extends LightningElement {
     handleRowClick(event) {
         const path = event.currentTarget.dataset.path;
         if (path) {
-            location.href = path;
+            navigate(this, path);
         }
     }
 }

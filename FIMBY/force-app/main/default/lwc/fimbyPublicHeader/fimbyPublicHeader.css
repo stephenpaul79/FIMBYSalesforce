@@ -3,9 +3,9 @@
 }
 
 .site-header {
-    background-color: #FAF7F2;
-    border-bottom: 1px solid #E0D9CF;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
+    box-shadow: var(--fimby-shadow-card, 0 2px 8px rgba(0, 0, 0, 0.08));
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -43,14 +43,14 @@ a.nav-link,
 a.nav-link:link,
 a.nav-link:visited,
 a.nav-link:active {
-    color: #8B7355;
+    color: var(--fimby-text-secondary, #8B7355);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.15s ease;
 }
 
 a.nav-link:hover {
-    color: #4A3526;
+    color: var(--fimby-text-primary, #4A3526);
     text-decoration: none;
 }
 
@@ -64,7 +64,7 @@ a.btn-donate:active {
     font-size: 0.85rem;
     font-weight: 700;
     white-space: nowrap;
-    background: #FAF7F2;
+    background-color: var(--fimby-surface-card, #FAF7F2);
     color: #448E9E;
     border: 1px solid #448E9E;
     text-decoration: none;
@@ -72,11 +72,11 @@ a.btn-donate:active {
     align-items: center;
     justify-content: center;
     box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
-    transition: background 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 a.btn-donate:hover {
-    background: #EBE6DD;
+    background-color: var(--fimby-hover-bg, #EBE6DD);
     color: #448E9E;
     text-decoration: none;
 }
@@ -91,20 +91,20 @@ a.btn-join:active {
     font-size: 0.85rem;
     font-weight: 700;
     white-space: nowrap;
-    background: #3A7D8C;
-    color: #FAF7F2;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
     border: none;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15)), var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0,0,0,0.15));
-    transition: background 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 a.btn-join:hover {
-    background: #336F7D;
-    color: #FAF7F2;
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+    color: #ffffff;
     text-decoration: none;
 }
 
@@ -125,7 +125,7 @@ a.btn-join:hover {
     display: block;
     width: 100%;
     height: 2px;
-    background: #4A3526;
+    background-color: var(--fimby-text-primary, #4A3526);
     border-radius: 2px;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -137,8 +137,8 @@ a.btn-join:hover {
 .mobile-nav {
     display: none;
     flex-direction: column;
-    background: #FAF7F2;
-    border-top: 1px solid #E0D9CF;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    border-top: 1px solid var(--fimby-border-subtle, #E0D9CF);
     padding: 8px 0;
 }
 
@@ -154,12 +154,12 @@ a.mobile-link:active {
     padding: 14px 20px;
     font-size: 1rem;
     font-weight: 600;
-    color: #4A3526;
+    color: var(--fimby-text-primary, #4A3526);
     text-decoration: none;
 }
 
 a.mobile-link:hover {
-    background: #EBE6DD;
+    background-color: var(--fimby-hover-bg, #EBE6DD);
     text-decoration: none;
 }
 
@@ -171,15 +171,15 @@ a.mobile-join:active {
     margin: 8px 20px 12px;
     text-align: center;
     padding: 12px 20px;
-    border-radius: 12px;
-    background: #3A7D8C;
-    color: #FAF7F2;
+    border-radius: var(--fimby-btn-radius, 12px);
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
     font-weight: 700;
     text-decoration: none;
 }
 
 a.mobile-join:hover {
-    background: #336F7D;
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
     text-decoration: none;
 }
 

@@ -23,7 +23,7 @@
                     <template lwc:if={hasRelatedRecord}>
                         <div class="related-record-row">
                             <span class={headerBadgeCssClass}>{headerBadgeLabel}</span>
-                            <a href={relatedRecordHref} class="related-record-link">
+                            <a href={relatedRecordHref} class="related-record-link" onclick={handleRelatedRecordNav}>
                                 {relatedRecordDisplayTitle}<span class="link-chevron"> &#8250;</span>
                             </a>
                         </div>
@@ -340,21 +340,21 @@
                             </button>
                         </template>
                         <template lwc:if={showLendingCancelRequest}>
-                            <a href={lendingViewItemUrl} class="lending-link lending-link-muted">Cancel Request</a>
+                            <a href={lendingViewItemUrl} class="lending-link lending-link-muted" onclick={handleViewItemNav}>Cancel Request</a>
                         </template>
                         <template lwc:if={showLendingReturnAction}>
                             <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Return Item</button>
                         </template>
                         <template lwc:if={showLendingExtensionAction}>
-                            <a href={lendingExtensionUrl} class="lending-link">Request Extension</a>
+                            <a href={lendingExtensionUrl} class="lending-link" onclick={handleRequestExtensionNav}>Request Extension</a>
                         </template>
                         <template lwc:if={showLendingApproveExtension}>
-                            <a href={lendingApproveExtensionUrl} class="lending-btn lending-btn-primary">Approve Extension</a>
+                            <a href={lendingApproveExtensionUrl} class="lending-btn lending-btn-primary" onclick={handleApproveExtensionNav}>Approve Extension</a>
                         </template>
                         <template lwc:if={showLendingVerifyReturn}>
                             <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Verify Return &amp; Condition</button>
                         </template>
-                        <a href={lendingViewItemUrl} class="lending-link">View Item</a>
+                        <a href={lendingViewItemUrl} class="lending-link" onclick={handleViewItemNav}>View Item</a>
                     </div>
                 </div>
             </template>

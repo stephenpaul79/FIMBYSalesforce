@@ -1,5 +1,7 @@
 import { LightningElement, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { navigate } from 'c/fimbyNavigation';
 
 import getMyPosts from '@salesforce/apex/FimbyMyStuffController.getMyPosts';
 import getMyStories from '@salesforce/apex/FimbyMyStuffController.getMyStories';
@@ -88,7 +90,7 @@ const SKILL_STATUS_CLASSES = {
     'Removed': 'status-badge status-expired'
 };
 
-export default class FimbyMyStuffPage extends LightningElement {
+export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) {
     @track activeFilter = null;
     @track isLoading = true;
 
@@ -140,7 +142,7 @@ export default class FimbyMyStuffPage extends LightningElement {
     async connectedCallback() {
         this.activeFilter = this._parseSectionFromPath();
         if (!this.activeFilter) {
-            location.href = '/my-stuff';
+            navigate(this, '/my-stuff');
             return;
         }
         this.isLoading = true;
@@ -434,29 +436,34 @@ export default class FimbyMyStuffPage extends LightningElement {
     /* ===============================================================
      * Navigation handlers
      * =============================================================== */
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
+    }
+
     handlePostClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
-        if (recordId) location.href = `/asks-offers/${recordId}`;
+        if (recordId) navigate(this, `/asks-offers/${recordId}`);
     }
 
     handleStoryClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
-        if (recordId) location.href = `/story/${recordId}`;
+        if (recordId) navigate(this, `/story/${recordId}`);
     }
 
     handleLibraryItemClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
-        if (recordId) location.href = `/library-item/${recordId}`;
+        if (recordId) navigate(this, `/library-item/${recordId}`);
     }
 
     handleSkillClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
-        if (recordId) location.href = `/skill-offer/${recordId}`;
+        if (recordId) navigate(this, `/skill-offer/${recordId}`);
     }
 
     handleBorrowedItemClick(event) {
         const recordId = event.currentTarget.dataset.recordId;
-        if (recordId) location.href = `/library-item/${recordId}`;
+        if (recordId) navigate(this, `/library-item/${recordId}`);
     }
 
     /* ===============================================================
@@ -490,7 +497,7 @@ export default class FimbyMyStuffPage extends LightningElement {
         event.stopPropagation();
         const contactId = event.currentTarget.dataset.contactId;
         if (contactId) {
-            location.href = '/neighbour?id=' + contactId;
+            navigate(this, '/neighbour?id=' + contactId);
         }
     }
 
@@ -498,7 +505,7 @@ export default class FimbyMyStuffPage extends LightningElement {
         event.stopPropagation();
         const contactId = event.currentTarget.dataset.contactId;
         if (!contactId) return;
-        location.href = '/conversation?contactId=' + contactId;
+        navigate(this, '/conversation?contactId=' + contactId);
     }
 
     handleEditSharedInfo(event) {

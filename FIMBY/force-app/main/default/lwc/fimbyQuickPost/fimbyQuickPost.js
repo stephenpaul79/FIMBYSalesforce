@@ -1,4 +1,6 @@
 import { LightningElement } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 
 /**
  * fimbyQuickPost - Quick Post Navigation Card
@@ -13,7 +15,7 @@ import { LightningElement } from 'lwc';
  * - Lend → /library-item-post
  * - Skill → /library-item-post?type=skill
  */
-export default class FimbyQuickPost extends LightningElement {
+export default class FimbyQuickPost extends NavigationMixin(LightningElement) {
 
     routeMap = {
         need: '/ask-or-offer-post?type=Need',
@@ -39,8 +41,7 @@ export default class FimbyQuickPost extends LightningElement {
     navigateTo(contentType) {
         const url = this.routeMap[contentType];
         if (url) {
-            // eslint-disable-next-line @lwc/lwc/no-document-query
-            window.location.href = url;
+            navigate(this, url);
         }
     }
 }

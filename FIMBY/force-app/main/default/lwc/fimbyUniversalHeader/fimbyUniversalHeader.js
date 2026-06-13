@@ -1,7 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming } from 'c/fimbyNavigation';
+import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming, navigate } from 'c/fimbyNavigation';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
@@ -409,7 +409,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     handleManageIdentitiesClick() {
         this.showMenuOverlay = false;
-        location.href = '/manage-identities';
+        navigate(this, '/manage-identities');
     }
 
     /* --- Moderator context ----------------------------------------- */
@@ -439,7 +439,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     handleModeratorClick() {
-        location.href = '/moderator-dashboard';
+        navigate(this, '/moderator-dashboard');
     }
 
     _clearFeedCaches() {
@@ -579,7 +579,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     _navigateToSearchResults() {
         const term = encodeURIComponent(this.searchModalTerm.trim());
         this.showSearchModal = false;
-        location.href = '/search?q=' + term;
+        navigate(this, '/search?q=' + term);
     }
 
     handleMenuClick() {
@@ -604,7 +604,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     handleProfileClick() {
         this.showMenuOverlay = false;
         if (this._isOrgContact && this._orgAccountId) {
-            location.href = `/organization-profile?id=${this._orgAccountId}`;
+            navigate(this, `/organization-profile?id=${this._orgAccountId}`);
         } else {
             this.navigateToPage('profile');
         }
@@ -720,6 +720,6 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         // Replay tour entry point. Onboarding lives on a dedicated page; flag-driven
         // routing inside fimbyOnboardingPage decides whether to land on Phase 1 or
         // Phase 2 based on the user's existing onboarding state.
-        window.location.href = '/onboarding';
+        navigate(this, '/onboarding');
     }
 }

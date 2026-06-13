@@ -1,8 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { toExperiencePath } from 'c/fimbyExperienceUrl';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyPageHeader extends LightningElement {
+export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
     _pageTitle = '';
     _pageSubtitle = '';
     @api parentLabel = '';
@@ -200,10 +201,15 @@ export default class FimbyPageHeader extends LightningElement {
             return;
         }
         if (this.parentUrl) {
-            window.location.href = toExperiencePath(this.parentUrl) || this.parentUrl;
+            navigate(this, this.parentUrl);
             return;
         }
-        window.location.href = '/';
+        navigate(this, '/');
+    }
+
+    handleNavLink(event) {
+        event.preventDefault();
+        navigate(this, event.currentTarget.getAttribute('href'));
     }
 
     handleSearchClick() {

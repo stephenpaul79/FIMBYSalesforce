@@ -8,6 +8,8 @@ alwaysApply: false
 
 Consider these rules if they affect your changes.
 
+- [ ] In-app navigation uses `navigate(this, url)` / `navigateToRoute(this, key)` from `c/fimbyNavigation` — never `location.href`/`window.location.href`/`location.assign` to an internal path, and no internal `<a href="/...">`. Component extends `NavigationMixin(LightningElement)`. (External links, `/secur/` auth, and deliberate `location.replace` flow-resets stay hard nav.)
+- [ ] Detail pages reveal fully-formed: single `_detailReady` gate over all critical loads + `detailFadeIn`; no incremental section pop-in. Feeds use `fimbyInfiniteScroll` curtain; user images fade in on load; cached back-restore hides the scroll jump. Reduced-motion disables animations.
 - [ ] Conditional templates use `lwc:if` / `lwc:elseif` / `lwc:else` — never the deprecated `if:true` / `if:false` (removed at API 58.0). For `!condition`, add an inverse getter in JS rather than reverting to `if:false`.
 - [ ] Page-level components use `var(--fimby-surface-page)` for both `:host` and outer wrapper background
 - [ ] `min-height` uses `calc(100vh - var(--fimby-header-height, 78px))` + `calc(100dvh - …)` — never bare `100vh`

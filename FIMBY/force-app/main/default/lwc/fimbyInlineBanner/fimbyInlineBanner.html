@@ -1,0 +1,13 @@
+<template>
+    <template lwc:if={hasMessage}>
+        <div class={bannerClass} role={ariaRole} aria-live={ariaLive}>
+            <lightning-icon
+                icon-name={iconName}
+                size="x-small"
+                variant={iconVariant}
+                class="inline-banner-icon">
+            </lightning-icon>
+            <span class="inline-banner-text">{message}</span>
+        </div>
+    </template>
+</template>

@@ -9,12 +9,14 @@
  * any existing links or bookmarks still work.
  */
 import { LightningElement, api } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
+import { navigate } from 'c/fimbyNavigation';
 
-export default class FimbyStoriesFeed extends LightningElement {
+export default class FimbyStoriesFeed extends NavigationMixin(LightningElement) {
     @api pageSize = 15;
     @api selectedCategory = 'All';
 
     connectedCallback() {
-        location.href = '/?filter=story';
+        navigate(this, '/?filter=story');
     }
 }

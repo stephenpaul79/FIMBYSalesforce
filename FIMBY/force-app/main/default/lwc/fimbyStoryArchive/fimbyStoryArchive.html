@@ -2,11 +2,11 @@
     <div class="fimby-archive-page">
         <div class="header-card">
             <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link">Home</a>
+                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff" class="breadcrumb-link">My Stuff</a>
+                <a href="/my-stuff" class="breadcrumb-link" onclick={handleNavLink}>My Stuff</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff/my-shared-life" class="breadcrumb-link">My Shared Life</a>
+                <a href="/my-stuff/my-shared-life" class="breadcrumb-link" onclick={handleNavLink}>My Shared Life</a>
                 <span class="breadcrumb-separator">&rsaquo;</span>
                 <span class="breadcrumb-current">Archive</span>
             </nav>
@@ -57,7 +57,7 @@
                     </template>
 
                     <div class="section-footer">
-                        <a href="/my-stuff/my-shared-life" class="archive-btn">
+                        <a href="/my-stuff/my-shared-life" class="archive-btn" onclick={handleNavLink}>
                             <img src={recentIconUrl} alt="" class="archive-btn-icon">
                             Recent Shared Life
                         </a>
