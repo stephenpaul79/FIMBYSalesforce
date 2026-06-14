@@ -204,16 +204,6 @@
     outline-offset: 2px;
 }
 
-.modal-error {
-    margin: 12px 0 0;
-    padding: 10px 12px;
-    background-color: var(--fimby-error-tint);
-    border: 1px solid var(--fimby-error-border);
-    border-radius: var(--fimby-radius-sm);
-    color: var(--fimby-text-strong);
-    font-size: 0.9rem;
-}
-
 .modal-footer {
     display: flex;
     justify-content: space-between;

@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import declineVouch from '@salesforce/apex/FimbyVouchController.declineVouch';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
 
 const REASONS = [
     { value: 'Do_Not_Know_Person', label: "I don't know this person" },
@@ -19,7 +20,6 @@ export default class FimbyVouchDeclineModal extends LightningElement {
     @track selectedReason = '';
     @track details = '';
     @track isSubmitting = false;
-    @track errorMessage = '';
 
     @track actingAsContact = null;
 
@@ -48,7 +48,6 @@ export default class FimbyVouchDeclineModal extends LightningElement {
         this.vouchRecordId = vouchRecordId;
         this.selectedReason = '';
         this.details = '';
-        this.errorMessage = '';
         this.isOpen = true;
         Promise.resolve().then(() => {
             const first = this.template.querySelector('input[type="radio"]');
@@ -121,11 +120,10 @@ export default class FimbyVouchDeclineModal extends LightningElement {
     async handleSubmit() {
         if (this.isSubmitDisabled) return;
         if (this.isBlockedByActingAs) {
-            this.errorMessage = this.actingAsBlockMessage;
+            fireToast({ message: this.actingAsBlockMessage, variant: 'warning' });
             return;
         }
         this.isSubmitting = true;
-        this.errorMessage = '';
         try {
             await declineVouch({
                 vouchRecordId: this.vouchRecordId,
@@ -135,8 +133,7 @@ export default class FimbyVouchDeclineModal extends LightningElement {
             this.dispatchEvent(new CustomEvent('declinesubmitted'));
             this.isOpen = false;
         } catch (error) {
-            this.errorMessage = error?.body?.message || error?.message
-                || 'Something went wrong. Please try again.';
+            fireErrorToast(error);
         } finally {
             this.isSubmitting = false;
         }

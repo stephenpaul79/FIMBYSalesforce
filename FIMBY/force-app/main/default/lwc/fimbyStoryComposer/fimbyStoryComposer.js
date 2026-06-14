@@ -1,6 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import { navigate } from 'c/fimbyNavigation';
 
 // Static resources
@@ -220,7 +220,7 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
             }
 
         } catch (error) {
-            this.showErrorToast('Couldn\u2019t share your story right now. Please try again.');
+            fireErrorToast(error);
         } finally {
             this.isPosting = false;
         }
@@ -244,19 +244,4 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
         }
     }
 
-    showSuccessToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Saved',
-            message: message,
-            variant: 'success'
-        }));
-    }
-
-    showErrorToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Something went sideways',
-            message: message,
-            variant: 'error'
-        }));
-    }
 }

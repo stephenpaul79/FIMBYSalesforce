@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I borrow an item?",
+  "contentBody" : {
+    "question" : "How do I borrow an item?",
+    "answer" : "<p>Open the item in the <a href='/library-list'>Library</a> and tap <strong>Borrow</strong>, then <strong>Submit Request</strong>. (If the item is currently out, you will see <strong>Join Waitlist</strong> instead.)</p><p>The owner reviews your request and, once they approve, shares pickup details with you. When you have collected it, tap <strong>I Have the Item</strong> then <strong>Confirm Pickup</strong>. Use <strong>Message Owner</strong> any time to coordinate, and tap <strong>Return Item</strong> when you are finished.</p><p>The first time you borrow, a neighbour needs to vouch for you - tap <strong>Request a vouch</strong> when prompted. Track what you have borrowed under <a href='/my-stuff/my-borrowing'>My Stuff</a>.</p>",
+    "sortOrder" : "210",
+    "category" : "Lending Library"
+  },
+  "urlName" : "how-do-i-borrow-an-item"
+}

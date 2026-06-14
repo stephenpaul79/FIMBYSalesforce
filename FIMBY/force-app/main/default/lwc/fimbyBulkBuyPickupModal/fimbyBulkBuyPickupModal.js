@@ -3,6 +3,7 @@ import notifyForPickup from '@salesforce/apex/FimbyBulkBuyController.notifyForPi
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 export default class FimbyBulkBuyPickupModal extends LightningElement {
     @api postId;
@@ -12,7 +13,6 @@ export default class FimbyBulkBuyPickupModal extends LightningElement {
     message = '';
     receiptImageUrl = '';
     isLoading = false;
-    errorMessage = '';
 
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
@@ -73,20 +73,17 @@ export default class FimbyBulkBuyPickupModal extends LightningElement {
         this.isOpen = true;
         this.message = '';
         this.receiptImageUrl = '';
-        this.errorMessage = '';
     }
 
     @api
     hide() {
         this.isOpen = false;
         this.isLoading = false;
-        this.errorMessage = '';
     }
 
     async handleSubmit() {
         if (!this.isMessageValid || this.isLoading || !this.postId) return;
         this.isLoading = true;
-        this.errorMessage = '';
         try {
             await notifyForPickup({
                 postId: this.postId,
@@ -96,7 +93,7 @@ export default class FimbyBulkBuyPickupModal extends LightningElement {
             this.dispatchEvent(new CustomEvent('pickupnotified'));
             this.hide();
         } catch (err) {
-            this.errorMessage = err?.body?.message || err?.message || 'Failed to send notification';
+            fireErrorToast(err);
         } finally {
             this.isLoading = false;
         }

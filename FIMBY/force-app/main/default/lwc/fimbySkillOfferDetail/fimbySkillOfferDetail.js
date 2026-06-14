@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -290,17 +290,8 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
                 return;
             }
             await this._loadSkill();
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Updated',
-                message: status === 'Paused' ? 'Your skill is paused for now.' : 'Your skill is active again.',
-                variant: 'success'
-            }));
         } catch (e) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: e.body?.message || e.message || 'Could not update skill.',
-                variant: 'error'
-            }));
+            fireErrorToast(e);
         } finally {
             this.isUpdatingStatus = false;
         }

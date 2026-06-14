@@ -28,6 +28,7 @@
         </template>
 
         <template lwc:if={showContent}>
+            <c-fimby-inline-banner variant="success" message={moderatorSuccessMessage}></c-fimby-inline-banner>
             <!-- Bulk Buy Detail Body -->
             <template lwc:if={isBulkBuyType}>
                 <div class="detail-content">
@@ -331,6 +332,7 @@
                 <!-- ========== POSTER: REFRESH / CLOSE PANEL (asks & offers) ========== -->
                 <template lwc:if={showRefreshPanel}>
                     <div class="refresh-panel" role="region" aria-label="Post refresh options">
+                        <c-fimby-inline-banner variant="success" message={refreshSuccessMessage}></c-fimby-inline-banner>
                         <p class="refresh-panel-prompt">{refreshPrompt}</p>
                         <template lwc:if={refreshHelperText}>
                             <p class="refresh-panel-helper">{refreshHelperText}</p>

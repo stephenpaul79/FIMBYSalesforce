@@ -3,6 +3,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import searchVouchers from '@salesforce/apex/FimbyVouchController.searchVouchers';
 import submitVoucherRequest from '@salesforce/apex/FimbyVouchController.submitVoucherRequest';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
 
 const STATE_EXPLAINER = 'explainer';
 const STATE_FORM = 'form';
@@ -26,7 +27,6 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
 
     @track isSubmitting = false;
     @track submitMessage = '';
-    @track errorMessage = '';
 
     _searchTimeout = null;
     _searchSeq = 0;
@@ -63,7 +63,6 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
         this.state = STATE_EXPLAINER;
         this.resetForm();
         this.submitMessage = '';
-        this.errorMessage = '';
         this.isOpen = true;
     }
 
@@ -139,11 +138,10 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
 
     handleRequestVouchClick() {
         if (this.isBlockedByActingAs) {
-            this.errorMessage = this.actingAsBlockMessage;
+            fireToast({ message: this.actingAsBlockMessage, variant: 'warning' });
             return;
         }
         this.state = STATE_FORM;
-        this.errorMessage = '';
         this.submitMessage = '';
         this.resetForm();
     }
@@ -177,13 +175,11 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
         this.searchResults = [];
         this.selectedVoucher = null;
         this.hasSearched = false;
-        this.errorMessage = '';
         clearTimeout(this._searchTimeout);
     }
 
     handleSearchInput(event) {
         this.searchTerm = event.target.value;
-        this.errorMessage = '';
 
         clearTimeout(this._searchTimeout);
         if (this.searchTerm.trim().length < SEARCH_MIN_CHARS) {
@@ -233,12 +229,11 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
     async handleSubmit() {
         if (this.isSubmitDisabled) return;
         if (this.isBlockedByActingAs) {
-            this.errorMessage = this.actingAsBlockMessage;
+            fireToast({ message: this.actingAsBlockMessage, variant: 'warning' });
             return;
         }
         this.isSubmitting = true;
         this.submitMessage = '';
-        this.errorMessage = '';
         try {
             const result = await submitVoucherRequest({
                 voucherType: this.selectedVoucher.voucherType,
@@ -249,8 +244,7 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
                 setTimeout(() => this.close(), 1500);
             }
         } catch (error) {
-            this.errorMessage = error?.body?.message || error?.message
-                || 'Something went wrong sending your introduction. Please try again.';
+            fireErrorToast(error, 'Something went wrong sending your introduction. Please try again.');
         } finally {
             this.isSubmitting = false;
         }

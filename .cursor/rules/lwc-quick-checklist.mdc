@@ -53,3 +53,7 @@ Consider these rules if they affect your changes.
 - [ ] "Next" has `utility:chevronright`; final submit has no icon
 - [ ] Both "Next" and Submit use `.nav-next` (teal, `#ffffff`). "Back" uses `.nav-back` (neutral)
 - [ ] If exposing Experience Builder `<property>` entries: flag enum fields, icon refs, or 5+ props for CPE
+- [ ] No `ShowToastEvent` / `lightning/platformShowToastEvent` (silently no-ops in LWR) — removed from any file touched
+- [ ] Operation failures → `fireToast`/`fireErrorToast` from `c/fimbyToastHelper` (shell `c-fimby-toast`)
+- [ ] In-form validation → `c-fimby-inline-banner variant="error"` inline; success → `c-fimby-inline-banner variant="success"` only if staying on page, nothing if navigating away
+- [ ] No bespoke `errorMessage`/`_error`/`this.error` banner markup — render via `c-fimby-inline-banner`

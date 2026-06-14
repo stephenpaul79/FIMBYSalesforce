@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "I am new here - where do I start?",
+  "contentBody" : {
+    "question" : "I am new here - where do I start?",
+    "answer" : "<p>Welcome! A lovely first step is to introduce yourself: tap the <strong>+</strong> button, choose <strong>Share in Shared Life</strong>, and pick <strong>Introduction</strong> so neighbours can say hello (<a href='/shared-life-post'>start an introduction</a>).</p><p>From there, <a href='/profile'>fill in your profile</a> so people recognise you, browse the <a href='/library-list'>Library</a> to see what neighbours are sharing, and check <a href='/'>Home</a> for asks and offers you can help with. You can replay the guided tour any time using the <strong>Take the Tour</strong> button at the top of this page.</p>",
+    "sortOrder" : "020",
+    "category" : "Getting Started"
+  },
+  "urlName" : "how-do-i-get-started"
+}

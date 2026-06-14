@@ -119,21 +119,6 @@
     font-weight: 500;
 }
 
-/* Error */
-.error-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background-color: var(--fimby-error-tint, #FFF0F0);
-    border: 1px solid var(--fimby-error-border, #FFC9C9);
-    border-radius: var(--fimby-radius-sm, 8px);
-    color: var(--fimby-error, #C13030);
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
 .retry-btn,
 .view-details-btn,
 .close-state-btn {
@@ -436,12 +421,6 @@
 .form-input:focus {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 1px;
-}
-
-.field-error {
-    font-size: 12px;
-    color: var(--fimby-error, #C13030);
-    margin-top: 4px;
 }
 
 .field-hint {

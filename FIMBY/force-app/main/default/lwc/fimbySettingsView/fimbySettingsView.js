@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
 import { navigate, navigateToRoute } from 'c/fimbyNavigation';
@@ -61,6 +61,12 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track isLoading = true;
     @track settings = {};
     @track themePreference = 'auto'; // 'light', 'dark', 'auto'
+
+    // Inline success banner — shown when a save keeps the user on this page
+    // (password reset, regional settings). Auto-dismisses. Operation failures
+    // go to the shell toast instead.
+    @track _successMessage = '';
+    _successTimer = null;
 
     // Regional edit
     @track isEditingRegional = false;
@@ -245,6 +251,10 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             delete window.__fimbyPushResult;
         }
         this._pushResultHandler = null;
+        if (this._successTimer) {
+            clearTimeout(this._successTimer);
+            this._successTimer = null;
+        }
     }
 
     // The native shell calls window.__fimbyPushResult({ granted }) after it
@@ -278,7 +288,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             this.settings = await getSettingsData();
             this._syncThemeFromServer();
         } catch (error) {
-            this.showToast('Error', 'Could not load settings.', 'error');
+            this._showError('Could not load your settings. Please try again.');
         } finally {
             this.isLoading = false;
         }
@@ -291,9 +301,9 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         this.isResettingPassword = true;
         try {
             const result = await triggerPasswordReset();
-            this.showToast('Email Sent', result.message || 'Password reset email sent.', 'success');
+            this._showSuccess(result.message || 'Password reset email sent. Check your inbox.');
         } catch (error) {
-            this.showToast('Error', error.body?.message || 'Could not send reset email.', 'error');
+            this._showError(error.body?.message || 'Could not send the reset email. Please try again.');
         } finally {
             this.isResettingPassword = false;
         }
@@ -308,7 +318,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             await updateSettingsField({ fieldName: 'FIMBY_Summary_Emails__c', value });
             this.settings = { ...this.settings, summaryEmailFrequency: value };
         } catch (error) {
-            this.showToast('Error', 'Could not update email preference.', 'error');
+            this._showError('Could not update your email preference. Please try again.');
         }
     }
 
@@ -318,7 +328,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             await updateSettingsField({ fieldName: 'Quiet_Hours_Preference__c', value });
             this.settings = { ...this.settings, quietHoursPreference: value };
         } catch (error) {
-            this.showToast('Error', 'Could not update quiet hours.', 'error');
+            this._showError('Could not update your quiet hours. Please try again.');
         }
     }
 
@@ -345,7 +355,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
                 this._firePreviewConfetti(['🎉', '🥳', '✨', '💛']);
             }
         } catch (error) {
-            this.showToast('Error', 'Could not update setting.', 'error');
+            this._showError('Could not update that setting. Please try again.');
             event.target.checked = !checked;
         }
     }
@@ -380,7 +390,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
                 this._notifyNativePushToggle(checked);
             }
         } catch (error) {
-            this.showToast('Error', 'Could not update notification setting.', 'error');
+            this._showError('Could not update that notification setting. Please try again.');
             event.target.checked = !checked;
         }
     }
@@ -454,10 +464,10 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
                 await updateSettingsField({ fieldName: 'LanguageLocaleKey', value: this.editLanguage });
             }
             this.isEditingRegional = false;
-            this.showToast('Saved', 'Regional settings updated.', 'success');
+            this._showSuccess('Your regional settings have been updated.');
             await this.loadSettings();
         } catch (error) {
-            this.showToast('Error', error.body?.message || 'Could not save regional settings.', 'error');
+            this._showError(error.body?.message || 'Could not save your regional settings. Please try again.');
         } finally {
             this.isSavingRegional = false;
         }
@@ -534,7 +544,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             await updateSettingsField({ fieldName: 'Theme_Preference__c', value: sfValue });
         } catch (error) {
-            this.showToast('Error', 'Could not save theme preference.', 'error');
+            this._showError('Could not save your theme preference. Please try again.');
         }
     }
 
@@ -568,10 +578,11 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         const contactId = event.currentTarget.dataset.contactId;
         try {
             await unblockContact({ blockedContactId: contactId });
+            // The neighbour drops off the blocked list — the surface change is the
+            // confirmation, so no banner.
             this.blockedContacts = this.blockedContacts.filter(bc => bc.contactId !== contactId);
-            this.showToast('Unblocked', 'Contact has been unblocked.', 'success');
         } catch (error) {
-            this.showToast('Error', 'Could not unblock contact.', 'error');
+            this._showError('Could not unblock that contact. Please try again.');
         }
     }
 
@@ -624,7 +635,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         } catch (error) {
             console.error('Block search error:', error);
             this.blockSearchResults = [];
-            this.showToast('Error', 'Could not search neighbours.', 'error');
+            this._showError('Could not search neighbours just now. Please try again.');
         } finally {
             this.blockSearching = false;
         }
@@ -665,31 +676,21 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         }
         this.isBlocking = true;
         try {
-            const result = await blockContact({
+            await blockContact({
                 blockedContactId: this.blockSelectedContactId,
                 reason: this.blockReason,
                 isReport: this.blockIsReporting,
                 reportDetails: this.blockReportDetails
             });
-            const alreadyBlocked = result?.alreadyBlocked === true;
+            // Whether newly blocked or already on the list, the modal closes and the
+            // neighbour now appears in the (expanded) blocked section \u2014 the surface
+            // change is the confirmation, so no banner.
             this.showBlockModal = false;
             this._resetBlockModal();
             await this.loadBlockedContacts();
             this.showBlockedSection = true;
-            const message = alreadyBlocked
-                ? 'That neighbour was already on your blocked list.'
-                : 'You will no longer see each other\u2019s content or be able to message.';
-            this.showToast(
-                alreadyBlocked ? 'Already blocked' : 'Neighbour blocked',
-                message,
-                alreadyBlocked ? 'info' : 'success'
-            );
         } catch (error) {
-            this.showToast(
-                'Error',
-                error.body?.message || 'Could not block that neighbour.',
-                'error'
-            );
+            this._showError(error.body?.message || 'Could not block that neighbour. Please try again.');
         } finally {
             this.isBlocking = false;
         }
@@ -717,18 +718,13 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             await requestAccountDeletion({ skipGrace: this.skipGrace });
             this.showDeleteConfirm = false;
-            const toastTitle = this.skipGrace
-                ? 'Account deleted'
-                : 'Account deactivated';
-            const toastBody = this.skipGrace
-                ? 'Your account has been deleted. You\u2019ll be logged out shortly.'
-                : 'Your account is scheduled for deletion in 30 days. Check your email for the restore link if you change your mind. You\u2019ll be logged out shortly.';
-            this.showToast(toastTitle, toastBody, 'warning');
+            // The user is logged out moments later, so there's no surface left to
+            // confirm on \u2014 drop the message and let the logout speak for itself.
             setTimeout(() => {
                 window.location.href = '/secur/logout.jsp';
             }, 2500);
         } catch (error) {
-            this.showToast('Error', error.body?.message || 'Could not process the request.', 'error');
+            this._showError(error.body?.message || 'Could not process that request. Please try again.');
         } finally {
             this.isDeleting = false;
         }
@@ -754,8 +750,27 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         }
     }
 
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+    get successMessage() {
+        return this._successMessage;
+    }
+
+    // Quiet, contextual success — the surface stays put, so we show an inline
+    // banner that fades away on its own rather than a toast.
+    _showSuccess(message) {
+        this._successMessage = message;
+        if (this._successTimer) {
+            clearTimeout(this._successTimer);
+        }
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._successTimer = setTimeout(() => {
+            this._successMessage = '';
+            this._successTimer = null;
+        }, 5000);
+    }
+
+    // Operation failures route to the shell toast (assertive, global).
+    _showError(message) {
+        fireToast({ message, variant: 'error' });
     }
 
     handleBack() {

@@ -1,7 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -89,6 +89,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     @track _isModeratorForNeighbourhood = false;
     @track isRemoved = false;
     @track removedMessage = '';
+    // Inline success banner — shown only when the action keeps the user on the page.
+    @track _moderatorSuccessMessage = '';
     _wiredRecordResult;
 
     // Requester context
@@ -387,6 +389,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // ============================================
 
     get detailPageTitle() { return 'Item Details'; }
+
+    get moderatorSuccessMessage() { return this._moderatorSuccessMessage; }
 
     get ownerLabel() {
         return this.ownerName ? `by ${this.ownerName}` : 'Owner';
@@ -751,7 +755,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     }
 
     async handleEditSave() {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Item updated', variant: 'success' }));
+        // Success is self-evident — the record refreshes in place below.
         if (this._wiredRecordResult) {
             await refreshApex(this._wiredRecordResult);
         }
@@ -802,7 +806,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     handlePhotoUploaded() {
         this.showPhotoUploader = false;
-        this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Photo uploaded', variant: 'success' }));
+        // Reload surfaces the new photo; no banner needed.
         window.location.reload();
     }
 
@@ -827,15 +831,10 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         this.isDeleting = true;
         try {
             await deleteLibraryItem({ recordId: this.recordId });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Deleted', message: 'Item has been deleted', variant: 'success' }));
             navigate(this, '/library-list/');
         } catch (error) {
             console.error('Delete error:', error);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || 'Failed to delete item',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.isDeleting = false;
             this.showDeleteConfirm = false;
@@ -1047,19 +1046,11 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         if (!reqId) return;
         try {
             await cancelLendingRequest({ recordId: reqId });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Request cancelled',
-                message: 'Your borrow request has been cancelled.',
-                variant: 'success'
-            }));
+            // The requester banner clears as the context reloads — surface reflects it.
             await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             await this.loadContextData();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || 'Failed to cancel request.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -1132,20 +1123,12 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
                 recordId: this.removeTargetId,
                 declineReason: this.removeReason.trim()
             });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Removed',
-                message: `${this.removeTargetName || 'Request'} removed from the waitlist.`,
-                variant: 'success'
-            }));
+            // Modal closes and the waitlist reloads — the removal is visible on the page.
             this.handleRemoveCancel();
             await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             await this.loadContextData();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || 'Failed to remove request.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.isRemoving = false;
         }
@@ -1166,19 +1149,19 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     async _handleModeratorFlag() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Library_Item__c', flagValue: 'Moderator_Review' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Content flagged', message: 'This item is now under review.', variant: 'success' }));
             navigate(this, '/moderator-dashboard');
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not flag content.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 
     async _handleModeratorHide() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Library_Item__c', flagValue: 'Moderator_Hidden' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Content hidden', message: 'This item has been hidden from the library.', variant: 'success' }));
+            // Confirm inline — the user stays on the (now hidden) item.
+            this._moderatorSuccessMessage = 'This item has been hidden from the library.';
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not hide content.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 
@@ -1194,7 +1177,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
                 window.location.href = `/conversation?id=${conversationId}`;
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not start conversation.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 

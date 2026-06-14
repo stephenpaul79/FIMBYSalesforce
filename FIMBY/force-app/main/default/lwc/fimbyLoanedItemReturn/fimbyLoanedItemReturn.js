@@ -94,16 +94,18 @@ export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElem
         return !this.isLoading && !this.hasError && !this.showConfirmation;
     }
 
-    get showNotAuthorizedError() {
-        return this.hasError && this.errorType === 'notAuthorized';
+    get showErrorWall() {
+        return this.hasError;
     }
 
-    get showAlreadyReturnedError() {
-        return this.hasError && this.errorType === 'alreadyReturned';
-    }
-
-    get showGenericError() {
-        return this.hasError && !this.showNotAuthorizedError && !this.showAlreadyReturnedError;
+    get errorWallMessage() {
+        if (this.errorType === 'notAuthorized') {
+            return 'You are not the owner or the borrower of this item.';
+        }
+        if (this.errorType === 'alreadyReturned') {
+            return 'This item has already been returned.';
+        }
+        return 'An error occurred. Please try again.';
     }
 
     get itemName() {

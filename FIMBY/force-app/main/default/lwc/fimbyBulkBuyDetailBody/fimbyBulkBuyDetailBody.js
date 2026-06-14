@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationController.cancelReservation';
 
@@ -473,19 +473,10 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
         try {
             await cancelReservation({ responseId: this.userReservation.id });
             this.cancelConfirmVisible = false;
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Reservation cancelled',
-                message: 'Your shares have been released.',
-                variant: 'success'
-            }));
         } catch (error) {
             console.error('Error cancelling reservation:', error);
             this.cancelConfirmVisible = false;
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went wrong',
-                message: error.body?.message || 'Could not cancel your reservation.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.isCancelling = false;
             this.dispatchEvent(new CustomEvent('cancelreservation'));

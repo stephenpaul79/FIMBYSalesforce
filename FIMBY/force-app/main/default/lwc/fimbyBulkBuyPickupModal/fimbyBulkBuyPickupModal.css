@@ -191,17 +191,6 @@
     color: var(--fimby-text-secondary);
 }
 
-/* Error message */
-.error-message {
-    margin-top: 1rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-    color: var(--fimby-error);
-    background: var(--fimby-error-tint);
-    border-radius: var(--fimby-radius-sm);
-    border: 1px solid var(--fimby-error);
-}
-
 /* Modal Footer */
 .modal-footer {
     display: flex;

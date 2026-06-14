@@ -108,13 +108,7 @@
                             </template>
                         </div>
 
-                        <template lwc:if={submitMessage}>
-                            <p class="submit-message">{submitMessage}</p>
-                        </template>
-
-                        <template lwc:if={errorMessage}>
-                            <p class="modal-error" role="alert">{errorMessage}</p>
-                        </template>
+                        <c-fimby-inline-banner variant="success" message={submitMessage} class="submit-message"></c-fimby-inline-banner>
                     </template>
                 </div>
 

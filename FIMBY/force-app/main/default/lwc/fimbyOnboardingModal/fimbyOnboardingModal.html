@@ -310,13 +310,6 @@
                         </template>
                     </div>
 
-                    <template lwc:if={saveError}>
-                        <div class="save-error-banner">
-                            <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
-                            <span>{saveError}</span>
-                        </div>
-                    </template>
-
                     <div class="modal-footer">
                         <template lwc:if={showCelebration}>
                             <button class="btn btn-neutral" onclick={handleSkipTour}>Skip Tour</button>

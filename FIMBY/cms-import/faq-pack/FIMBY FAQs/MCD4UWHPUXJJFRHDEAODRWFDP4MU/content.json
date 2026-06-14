@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What is my neighbourhood, and who can see what I share?",
+  "contentBody" : {
+    "question" : "What is my neighbourhood, and who can see what I share?",
+    "answer" : "<p>FIMBY is organised by neighbourhood, and your neighbourhood is your trust boundary. Your profile, posts, shared life, and library items are visible only to other registered neighbours in your neighbourhood - never to the public or to anyone outside it.</p><p>Your contact details (email, phone, address) stay private until you decide to <a href='/shared-contacts'>share them</a> with a specific neighbour. You are always in control of who sees them.</p>",
+    "sortOrder" : "040",
+    "category" : "Getting Started"
+  },
+  "urlName" : "what-is-my-neighbourhood"
+}

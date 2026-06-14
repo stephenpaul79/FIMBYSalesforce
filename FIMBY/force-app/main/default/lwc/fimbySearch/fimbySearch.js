@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -304,7 +304,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             this._hasSearched = true;
         } catch (error) {
             console.error('Search error:', error);
-            this.showToast('Search Error', 'Something went wrong. Please try again.', 'error');
+            fireToast({ message: 'Something went wrong with your search. Please try again.', variant: 'error' });
         } finally {
             this.isSearching = false;
         }
@@ -408,11 +408,10 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
         const hasShared = event.currentTarget.dataset.shared;
 
         if (resultType === 'people' && hasShared !== 'true') {
-            this.showToast(
-                'Contact Not Shared',
-                'You can only view profiles of neighbours who have shared their contact info with you.',
-                'info'
-            );
+            fireToast({
+                message: 'You can only view profiles of neighbours who have shared their contact info with you.',
+                variant: 'info'
+            });
             return;
         }
 
@@ -511,11 +510,4 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
         }
     }
 
-    // ========================================================
-    // Utility
-    // ========================================================
-
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant, mode: 'pester' }));
-    }
 }

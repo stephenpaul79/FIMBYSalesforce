@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I edit or delete something I posted?",
+  "contentBody" : {
+    "question" : "How do I edit or delete something I posted?",
+    "answer" : "<p>Open your own post or Shared Life story. In the header you will see <strong>Edit</strong>, <strong>Photo</strong>, and <strong>Delete</strong> - as buttons on a wide screen, or tucked under the three-dot menu on a phone.</p><ul><li><strong>Edit</strong> changes the title and details</li><li><strong>Photo</strong> adds, swaps, or removes images</li><li><strong>Delete</strong> removes it for good</li></ul><p>These options only appear on content you created. You can review everything you have posted under <a href='/my-stuff'>My Stuff</a>.</p>",
+    "sortOrder" : "160",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "how-do-i-edit-or-delete"
+}

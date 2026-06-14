@@ -24,10 +24,7 @@
                     <!-- ========== ERROR ========== -->
                     <template lwc:elseif={isError}>
                         <div class="state-container error-state">
-                            <div class="error-banner" role="alert">
-                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                                <span>{errorMessage}</span>
-                            </div>
+                            <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
                             <button class="retry-btn" onclick={handleRetry}>Try Again</button>
                         </div>
                     </template>
@@ -298,11 +295,8 @@
                                         <input id="qr-date" type="date" class="form-input"
                                                value={_requestedDate}
                                                onchange={handleDateChange}
-                                               min={todayDate} max={maxPickupDate}
-                                               aria-describedby="date-error">
-                                        <template lwc:if={dateValidationError}>
-                                            <span id="date-error" class="field-error" role="alert">{dateValidationError}</span>
-                                        </template>
+                                               min={todayDate} max={maxPickupDate}>
+                                        <c-fimby-inline-banner variant="error" message={dateValidationError}></c-fimby-inline-banner>
                                     </div>
                                 </template>
 
@@ -312,11 +306,8 @@
                                            value={_daysNeeded}
                                            onchange={handleDaysChange}
                                            min="1" max={maxLendingDays}
-                                           placeholder="e.g. 3"
-                                           aria-describedby="days-error">
-                                    <template lwc:if={daysValidationError}>
-                                        <span id="days-error" class="field-error" role="alert">{daysValidationError}</span>
-                                    </template>
+                                           placeholder="e.g. 3">
+                                    <c-fimby-inline-banner variant="error" message={daysValidationError}></c-fimby-inline-banner>
                                 </div>
 
                                 <template lwc:if={showDateHint}>

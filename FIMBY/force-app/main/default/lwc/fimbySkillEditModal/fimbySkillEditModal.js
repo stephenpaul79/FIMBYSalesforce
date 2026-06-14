@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
@@ -324,31 +324,13 @@ export default class FimbySkillEditModal extends LightningElement {
 
                 }));
 
-                this.dispatchEvent(new ShowToastEvent({
-
-                    title: 'Saved',
-
-                    message: 'Your skill offer is updated.',
-
-                    variant: 'success'
-
-                }));
-
             }
 
         } catch (e) {
 
-            this.saveError = e.body?.message || e.message || 'Could not save changes.';
+            this.saveError = e.body?.message || e.message || 'We couldn\'t save your changes. Please try again.';
 
-            this.dispatchEvent(new ShowToastEvent({
-
-                title: 'Could not save',
-
-                message: this.saveError,
-
-                variant: 'error'
-
-            }));
+            fireErrorToast(e);
 
         } finally {
 

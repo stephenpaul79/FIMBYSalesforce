@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import { completeImageUrl } from 'c/fimbyImageUrl';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
@@ -17,7 +18,6 @@ export default class FimbyIntroPostModal extends LightningElement {
     @track _isPosting = false;
     @track _showPhotoStep = false;
     @track _showCelebration = false;
-    @track _errorMessage = '';
     @track _draftText = '';
     @track _firstName = '';
     @track _createdStoryId = null;
@@ -57,7 +57,6 @@ export default class FimbyIntroPostModal extends LightningElement {
     @api
     show() {
         this._isVisible = true;
-        this._errorMessage = '';
         this._showPhotoStep = false;
         this._showCelebration = false;
         this._createdStoryId = null;
@@ -153,7 +152,10 @@ export default class FimbyIntroPostModal extends LightningElement {
             });
         } catch (err) {
             console.error('fimbyIntroPostModal: error loading draft', err);
-            this._errorMessage = 'We could not pre-fill your intro. You can still write something below.';
+            fireToast({
+                message: 'We could not pre-fill your intro. You can still write something below.',
+                variant: 'info'
+            });
             this._draftText = '';
         } finally {
             this._isLoading = false;
@@ -203,7 +205,6 @@ export default class FimbyIntroPostModal extends LightningElement {
             return;
         }
         this._isPosting = true;
-        this._errorMessage = '';
 
         try {
             const storyId = await createStory({
@@ -225,7 +226,7 @@ export default class FimbyIntroPostModal extends LightningElement {
             this._showPhotoStep = true;
         } catch (err) {
             console.error('fimbyIntroPostModal: error posting bio', err);
-            this._errorMessage = err?.body?.message || err?.message || 'Something went wrong. Try again?';
+            fireErrorToast(err, 'Something went wrong. Try again?');
             this._isPosting = false;
         }
     }
@@ -239,13 +240,12 @@ export default class FimbyIntroPostModal extends LightningElement {
             return;
         }
         this._isApplyingProfilePhoto = true;
-        this._errorMessage = '';
         try {
             await useProfilePhotoForStory({ storyId: this._createdStoryId });
             this._goToCelebration();
         } catch (err) {
             console.error('fimbyIntroPostModal: error reusing profile photo', err);
-            this._errorMessage = err?.body?.message || err?.message || 'We could not reuse your photo. Try uploading one instead.';
+            fireErrorToast(err, 'We could not reuse your photo. Try uploading one instead.');
             this._showFreshUploader = true;
         } finally {
             this._isApplyingProfilePhoto = false;
@@ -283,7 +283,6 @@ export default class FimbyIntroPostModal extends LightningElement {
             return;
         }
         this._isPosting = true;
-        this._errorMessage = '';
 
         try {
             await markBioPostCompleted({ posted: false, storyId: null });

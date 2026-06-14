@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I lend my things and approve requests?",
+  "contentBody" : {
+    "question" : "How do I lend my things and approve requests?",
+    "answer" : "<p>Tap the <strong>+</strong> button, choose <strong>Add an Item / Skill</strong>, then <strong>Lend an Item</strong> (<a href='/library-item-post'>add an item</a>). When a neighbour asks to borrow it:</p><ul><li>Tap <strong>Review</strong> to see the request</li><li>Tap <strong>Approve &amp; Share</strong> to approve and share pickup details</li><li>When they collect it, tap <strong>Mark as Picked Up</strong></li><li>When it comes back, tap <strong>Verify Return &amp; Condition</strong></li></ul><p>Prefer not to review each request? Turn on <strong>Auto-Accept Requests</strong> when you add or edit the item. Your items live under <a href='/my-stuff/my-library-items'>My Stuff</a>.</p>",
+    "sortOrder" : "220",
+    "category" : "Lending Library"
+  },
+  "urlName" : "how-do-i-lend-and-approve"
+}

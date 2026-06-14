@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 import getWalkthroughSlides from '@salesforce/apex/FimbyOnboardingController.getWalkthroughSlides';
@@ -76,7 +77,6 @@ export default class FimbyOnboardingModal extends LightningElement {
     @track selectedVoucher = null;
     @track isVouchSearching = false;
     @track hasVouchSearched = false;
-    @track saveError = '';
 
     _vouchSearchTimeout = null;
     _vouchSearchSeq = 0;
@@ -342,7 +342,6 @@ export default class FimbyOnboardingModal extends LightningElement {
 
         if (this.currentStep < TOTAL_PROFILE_STEPS) {
             this.currentStep++;
-            this.saveError = '';
             this._scrollToTop();
             return;
         }
@@ -362,14 +361,12 @@ export default class FimbyOnboardingModal extends LightningElement {
     handleBack() {
         if (this.currentStep > 1) {
             this.currentStep--;
-            this.saveError = '';
             this._scrollToTop();
         }
     }
 
     async _saveProfileAndAdvanceToVouchStep() {
         this.isSaving = true;
-        this.saveError = '';
         try {
             const fieldValues = {
                 'FirstName': this.firstName?.trim() || '',
@@ -395,8 +392,7 @@ export default class FimbyOnboardingModal extends LightningElement {
             this._scrollToTop();
         } catch (error) {
             console.error('Error saving profile:', error);
-            const msg = error?.body?.message || error?.message || 'Something went wrong saving your profile. Please try again.';
-            this.saveError = msg;
+            fireErrorToast(error, 'Something went wrong saving your profile. Please try again.');
         } finally {
             this.isSaving = false;
         }
@@ -405,7 +401,6 @@ export default class FimbyOnboardingModal extends LightningElement {
     async _submitVouchAndCelebrate() {
         if (!this.isVouchStep7Valid) return;
         this.isSaving = true;
-        this.saveError = '';
         try {
             const result = await submitVoucherRequest({
                 voucherType: this.selectedVoucher.voucherType,
@@ -415,12 +410,13 @@ export default class FimbyOnboardingModal extends LightningElement {
                 this.showCelebration = true;
                 return;
             }
-            this.saveError = result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.';
+            fireToast({
+                message: result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.',
+                variant: 'error'
+            });
         } catch (error) {
             console.error('Error submitting vouch request:', error);
-            const msg = error?.body?.message || error?.message
-                || 'Something went wrong sending your vouch request. Please try again or skip for now.';
-            this.saveError = msg;
+            fireErrorToast(error, 'Something went wrong sending your vouch request. Please try again or skip for now.');
         } finally {
             this.isSaving = false;
         }

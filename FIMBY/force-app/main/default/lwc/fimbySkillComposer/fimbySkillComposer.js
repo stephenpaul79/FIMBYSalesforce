@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryColor, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
@@ -325,12 +325,7 @@ export default class FimbySkillComposer extends NavigationMixin(LightningElement
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (e) {
-            this.error = e.body?.message || e.message || 'Failed to save skills.';
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Could not save',
-                message: this.error,
-                variant: 'error'
-            }));
+            fireErrorToast(e);
         } finally {
             this.isSaving = false;
         }

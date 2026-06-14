@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I update my profile?",
+  "contentBody" : {
+    "question" : "How do I update my profile?",
+    "answer" : "<p>Open the top-right menu and choose <strong>Profile</strong>, or <a href='/profile'>go straight there</a>. Your profile is edited in sections - each one has a small pencil. Tap a pencil, make your changes, and tap <strong>Save</strong>. You can update:</p><ul><li>Your <strong>photo</strong>, <strong>name</strong>, and <strong>pronouns</strong></li><li><strong>Contact information</strong> (kept private until you choose to share it)</li><li><strong>About You</strong> - a few optional prompts that help neighbours get to know you</li><li><strong>Accessibility and availability</strong></li><li>Your <strong>care preferences</strong></li></ul>",
+    "sortOrder" : "030",
+    "category" : "Getting Started"
+  },
+  "urlName" : "how-do-i-update-my-profile"
+}

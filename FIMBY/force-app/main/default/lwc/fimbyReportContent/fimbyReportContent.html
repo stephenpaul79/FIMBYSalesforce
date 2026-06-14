@@ -72,12 +72,7 @@
                         </template>
                         <p class="report-intro">Tell us what&rsquo;s not feeling right. Your report is private &mdash; the person you reported is not told who flagged this.</p>
 
-                        <template lwc:if={errorMessage}>
-                            <div class="error-banner" role="alert">
-                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                                <span>{errorMessage}</span>
-                            </div>
-                        </template>
+                        <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
 
                         <div class="report-reasons">
                             <template for:each={reportReasons} for:item="reason">

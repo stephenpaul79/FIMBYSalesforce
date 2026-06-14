@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate } from 'c/fimbyNavigation';
 import getOrganizationProfile from '@salesforce/apex/FimbyOrganizationProfileController.getOrganizationProfile';
@@ -186,10 +186,9 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
                 }
             });
             this.isEditing = false;
-            this.showToast('Saved', 'Organization updated.', 'success');
             await this._loadProfile();
         } catch (err) {
-            this.showToast('Error', err?.body?.message || 'Could not save changes.', 'error');
+            fireErrorToast(err);
         } finally {
             this.isSaving = false;
         }
@@ -221,10 +220,9 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
                 imageHeight: height
             });
             this.showImageUploader = false;
-            this.showToast('Success', 'Logo updated.', 'success');
             await this._loadProfile();
         } catch (err) {
-            this.showToast('Error', err?.body?.message || 'Could not upload logo.', 'error');
+            fireErrorToast(err);
         } finally {
             this.logoUploading = false;
         }
@@ -235,19 +233,14 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
         try {
             await removeOrganizationLogo({ organizationId: this.org.Id });
             this.showImageUploader = false;
-            this.showToast('Success', 'Logo removed.', 'success');
             await this._loadProfile();
         } catch (err) {
-            this.showToast('Error', err?.body?.message || 'Could not remove logo.', 'error');
+            fireErrorToast(err);
         }
     }
 
     handleMessage() {
         if (!this.orgContactId) return;
         navigate(this, '/conversation?contactId=' + this.orgContactId);
-    }
-
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 }

@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What are care preferences?",
+  "contentBody" : {
+    "question" : "What are care preferences?",
+    "answer" : "<p>Care preferences are an optional way to let neighbours know how best to support you - what kind of help tends to be welcome, how you would like someone to reach out, and anything that can feel like too much.</p><p>You can set them during onboarding and edit them any time in your <a href='/profile'>profile</a>. They are always optional, kept off your profile by default, and you choose exactly what to share.</p>",
+    "sortOrder" : "620",
+    "category" : "Privacy & Account"
+  },
+  "urlName" : "what-are-care-preferences"
+}

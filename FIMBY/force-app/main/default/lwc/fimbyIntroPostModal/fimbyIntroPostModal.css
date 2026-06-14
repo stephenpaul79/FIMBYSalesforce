@@ -153,17 +153,6 @@
     font-weight: 500;
 }
 
-.intro-modal-error {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border-radius: var(--fimby-radius-sm, 8px);
-    background: var(--fimby-surface-danger-soft, #fdecea);
-    color: var(--fimby-text-danger, #a23a2c);
-    font-size: 0.9rem;
-}
-
 .intro-modal-loading,
 .intro-modal-celebration {
     display: flex;

@@ -748,7 +748,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         String url = completeImageUrl(imageUrl);
         Integer w = (imgWidth != null && imgWidth > 0) ? imgWidth : 200;
         Integer h = (imgHeight != null && imgHeight > 0) ? imgHeight : 210;
-        String imgCell = '<td width="' + w + '" valign="top" style="width:' + w + 'px;padding:0;font-size:0;line-height:0;">'
+        String imgCell = '<td width="' + w + '" valign="middle" style="width:' + w + 'px;padding:0;font-size:0;line-height:0;">'
             + '<img src="' + url + '" width="' + w + '" height="' + h + '" alt="" '
             + 'style="display:block;width:' + w + 'px;height:' + h + 'px;object-fit:cover;border:0;" />'
             + '</td>';

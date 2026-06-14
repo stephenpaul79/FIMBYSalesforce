@@ -1,5 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -22,6 +22,7 @@ export default class FimbyBulkBuyForm extends LightningElement {
     @track autoLockDays = '7';
 
     @track isPosting = false;
+    @track validationError = '';
 
     // ============================================
     // SECTION HEADER ICONS
@@ -290,25 +291,26 @@ export default class FimbyBulkBuyForm extends LightningElement {
         if (this.isSubmitDisabled) return;
 
         // Validation
+        this.validationError = '';
         if (!this.title.trim()) {
-            this.showErrorToast('Title is required.');
+            this.validationError = 'Please add a title so neighbours know what you\'re buying together.';
             return;
         }
         if (this.parsedTotal < 1) {
-            this.showErrorToast('Total units you\'re purchasing must be at least 1.');
+            this.validationError = 'Total units you\'re purchasing must be at least 1.';
             return;
         }
         if (this.parsedOwnerShares >= this.parsedTotal) {
-            this.showErrorToast('You must make at least 1 share available for neighbours.');
+            this.validationError = 'Please make at least 1 share available for neighbours.';
             return;
         }
         if (this.isExpiryVisible && !this.expiryDateTime) {
-            this.showErrorToast('Expiry date and time are required when using "Expires At Date".');
+            this.validationError = 'Please add an expiry date and time when using "Expires At Date".';
             return;
         }
         const limit = this.parsedPerResponseLimit;
         if (limit != null && limit > this.availableForNeighbours) {
-            this.showErrorToast(`Per person limit can't exceed the ${this.availableForNeighbours} shares available for neighbours.`);
+            this.validationError = `Per person limit can't exceed the ${this.availableForNeighbours} shares available for neighbours.`;
             return;
         }
 
@@ -346,21 +348,13 @@ export default class FimbyBulkBuyForm extends LightningElement {
                     }
                 }));
             } else {
-                this.showErrorToast(result.message || 'Failed to create bulk buy post.');
+                fireErrorToast(result.message || 'We couldn\'t create your bulk buy. Please try again.');
             }
         } catch (error) {
             console.error('Bulk buy post error:', error);
-            this.showErrorToast(error.body?.message || 'Failed to create bulk buy post. Please try again.');
+            fireErrorToast(error);
         } finally {
             this.isPosting = false;
         }
-    }
-
-    showErrorToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Error',
-            message: message,
-            variant: 'error'
-        }));
     }
 }

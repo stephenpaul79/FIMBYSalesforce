@@ -1,6 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate } from 'c/fimbyNavigation';
@@ -543,7 +543,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
             }
         } catch (error) {
             console.error('Post creation error:', error);
-            this.showErrorToast(error.body?.message || 'Failed to create post. Please try again.');
+            fireErrorToast(error);
         } finally {
             this.isPosting = false;
         }
@@ -694,6 +694,6 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     }
 
     showErrorToast(message) {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Error', message, variant: 'error' }));
+        fireToast({ message, variant: 'error' });
     }
 }

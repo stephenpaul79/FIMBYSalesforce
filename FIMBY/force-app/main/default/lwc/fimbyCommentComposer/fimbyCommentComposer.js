@@ -36,7 +36,6 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     @track isLoading = true;
     @track isSubmitting = false;
     @track errorMessage = '';
-    @track showSuccess = false;
 
     // Modal state - start hidden, only show when show() is called
     @track isModalMode = true; // Always use modal mode when embedded
@@ -59,10 +58,6 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
     get submitButtonLabel() {
         return this.isEditMode ? 'Save Changes' : 'Post Comment';
-    }
-
-    get successMessage() {
-        return this.isEditMode ? 'Comment updated' : 'Comment posted!';
     }
 
     get showStoryContext() {
@@ -107,7 +102,6 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
     resetForm() {
         this.commentText = '';
-        this.showSuccess = false;
         this.errorMessage = '';
         this.isLoading = false;
         this.commentId = null;
@@ -189,7 +183,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     }
 
     get showForm() {
-        return !this.showSuccess && !this.isLoading;
+        return !this.isLoading;
     }
 
     handleCommentChange(event) {
@@ -251,7 +245,6 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
             }
 
             if (result && result.success) {
-                this.showSuccess = true;
                 this.commentText = '';
                 this.showCancel = false;
 
@@ -265,9 +258,9 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
                     }
                 }));
 
-                setTimeout(() => {
-                    this.hide();
-                }, 1500);
+                // Success is confirmed by the comment appearing in the parent
+                // thread — close the composer immediately (no success banner).
+                this.hide();
             } else {
                 this.errorMessage = (result && result.message)
                     || (this.isEditMode

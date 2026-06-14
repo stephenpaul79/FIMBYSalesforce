@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import sendThanks from '@salesforce/apex/FimbyThanksController.sendThanks';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -14,7 +15,6 @@ export default class FimbyThanksGiving extends LightningElement {
     @track isModalVisible = false;
     @track isSubmitting = false;
     @track showSuccess = false;
-    @track errorMessage = '';
 
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
@@ -73,7 +73,6 @@ export default class FimbyThanksGiving extends LightningElement {
     resetForm() {
         this.thankYouMessage = '';
         this.showSuccess = false;
-        this.errorMessage = '';
         this.isSubmitting = false;
     }
 
@@ -105,7 +104,6 @@ export default class FimbyThanksGiving extends LightningElement {
         if (this.isSubmitDisabled) return;
 
         this.isSubmitting = true;
-        this.errorMessage = '';
 
         try {
             const result = await sendThanks({
@@ -134,11 +132,11 @@ export default class FimbyThanksGiving extends LightningElement {
                     }, 1500);
                 }
             } else {
-                this.errorMessage = result.message || 'Failed to send thanks.';
+                fireToast({ message: result.message || 'We couldn’t send your thanks just now. Please try again.', variant: 'error' });
             }
         } catch (error) {
             console.error('Error sending thanks:', error);
-            this.errorMessage = error?.body?.message || error?.message || 'Something went wrong. Please try again.';
+            fireErrorToast(error);
         } finally {
             this.isSubmitting = false;
         }

@@ -33,7 +33,7 @@
                 </div>
                 <h2 class="state-title error-title">Oh No!</h2>
                 <template lwc:if={errorMessage}>
-                    <p class="state-message">{errorMessage}</p>
+                    <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
                 </template>
                 <template lwc:else>
                     <p class="state-message">This post has already been spoken for.</p>
@@ -66,7 +66,7 @@
                     <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
                 </div>
                 <h2 class="state-title error-title">Something went wrong</h2>
-                <p class="state-message">{errorMessage}</p>
+                <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
                 <button class="btn btn-primary" onclick={handleBack}>Go Back</button>
             </div>
         </template>

@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What is a Bulk Buy?",
+  "contentBody" : {
+    "question" : "What is a Bulk Buy?",
+    "answer" : "<p>A Bulk Buy is a shared purchase a neighbour coordinates - buying something in bulk and splitting it into shares. To start one, tap the <strong>+</strong> button and choose <strong>Bulk Buy</strong> (<a href='/ask-or-offer-post?type=BulkBuy'>start a bulk buy</a>).</p><p>To join one, open the post and tap <strong>Reserve A Share</strong>. The organiser confirms pickup details and notifies everyone when it is ready to collect.</p><p>FIMBY helps neighbours coordinate - it does not handle payments, refunds, or money disputes. Those are arranged directly between neighbours.</p>",
+    "sortOrder" : "110",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "what-is-a-bulk-buy"
+}

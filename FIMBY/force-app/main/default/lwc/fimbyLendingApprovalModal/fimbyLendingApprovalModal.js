@@ -1,5 +1,4 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 import getLendingRequestForApproval from '@salesforce/apex/FimbyLendingController.getLendingRequestForApproval';
@@ -304,11 +303,6 @@ export default class FimbyLendingApprovalModal extends LightningElement {
             });
 
             if (result.success) {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Request Declined',
-                    message: 'The requester has been notified.',
-                    variant: 'info'
-                }));
                 this._notifyComplete();
                 this.hide();
             } else {

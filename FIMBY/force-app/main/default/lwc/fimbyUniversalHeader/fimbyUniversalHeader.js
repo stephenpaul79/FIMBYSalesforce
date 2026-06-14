@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming, navigate } from 'c/fimbyNavigation';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -377,12 +377,11 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             .catch(error => {
                 console.error('Identity switch failed:', JSON.stringify(error));
                 this._identitySwitching = false;
-                this.dispatchEvent(new ShowToastEvent({
+                fireToast({
                     title: 'Unable to switch',
                     message: error?.body?.message || 'Something went wrong. Please try again.',
-                    variant: 'error',
-                    mode: 'pester'
-                }));
+                    variant: 'error'
+                });
             });
     }
 
@@ -398,12 +397,11 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             .catch(error => {
                 console.error('Switch back failed:', JSON.stringify(error));
                 this._identitySwitching = false;
-                this.dispatchEvent(new ShowToastEvent({
+                fireToast({
                     title: 'Unable to switch back',
                     message: error?.body?.message || 'Something went wrong. Please try again.',
-                    variant: 'error',
-                    mode: 'pester'
-                }));
+                    variant: 'error'
+                });
             });
     }
 

@@ -6,44 +6,10 @@
         </div>
     </template>
 
-    <!-- Not Authorized Error -->
-    <template lwc:if={showNotAuthorizedError}>
+    <!-- Error Wall (not authorized / already returned / generic) -->
+    <template lwc:if={showErrorWall}>
         <div class="error-container">
-            <div class="error-message">
-                <p><strong>You are not the owner or the borrower of this item.</strong></p>
-            </div>
-            <div class="button-container">
-                <lightning-button
-                    label="Go to Library"
-                    onclick={handleGoToLibraryItem}
-                    variant="brand">
-                </lightning-button>
-            </div>
-        </div>
-    </template>
-
-    <!-- Already Returned Error -->
-    <template lwc:if={showAlreadyReturnedError}>
-        <div class="error-container">
-            <div class="error-message">
-                <p><strong>This item has already been returned.</strong></p>
-            </div>
-            <div class="button-container">
-                <lightning-button
-                    label="Go to Library"
-                    onclick={handleGoToLibraryItem}
-                    variant="brand">
-                </lightning-button>
-            </div>
-        </div>
-    </template>
-
-    <!-- Generic Error -->
-    <template lwc:if={showGenericError}>
-        <div class="error-container">
-            <div class="error-message">
-                <p><strong>An error occurred. Please try again.</strong></p>
-            </div>
+            <c-fimby-inline-banner variant="error" message={errorWallMessage}></c-fimby-inline-banner>
             <div class="button-container">
                 <lightning-button
                     label="Go to Library"

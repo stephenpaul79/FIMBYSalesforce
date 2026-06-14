@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What are the community guidelines?",
+  "contentBody" : {
+    "question" : "What are the community guidelines?",
+    "answer" : "<p>The community guidelines explain how we treat each other on FIMBY, what is not allowed, and how reports are handled. They are worth a quick read so everyone knows what to expect.</p><p>Open them any time from the <strong>Community Guidelines &amp; Safety</strong> section on this page, or <a href='/community-guidelines'>read them here</a>.</p>",
+    "sortOrder" : "440",
+    "category" : "Trust & Safety"
+  },
+  "urlName" : "what-are-community-guidelines"
+}

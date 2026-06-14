@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I message a neighbour?",
+  "contentBody" : {
+    "question" : "How do I message a neighbour?",
+    "answer" : "<p>Open <a href='/messages'>Messages</a> and tap <strong>New</strong> to search for someone and start a conversation. You can also tap <strong>Message</strong> on a neighbour's profile.</p><p>To keep everyone safe, you can message neighbours you have <strong>shared contact info</strong> with (in either direction), plus community groups in your neighbourhood. If you have not connected yet, share your details first - see <strong>How do I share my contact info?</strong> below.</p>",
+    "sortOrder" : "300",
+    "category" : "Messaging"
+  },
+  "urlName" : "how-do-i-message-a-neighbour"
+}

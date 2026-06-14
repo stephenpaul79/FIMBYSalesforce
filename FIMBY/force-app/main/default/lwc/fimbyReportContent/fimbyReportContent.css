@@ -128,19 +128,6 @@
     line-height: 1.5;
 }
 
-.error-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: var(--fimby-error-tint);
-    border: 1px solid var(--fimby-error-tint);
-    border-radius: var(--fimby-radius-sm);
-    color: var(--fimby-error);
-    font-size: 14px;
-    margin-bottom: 16px;
-}
-
 .report-reasons {
     display: flex;
     flex-direction: column;

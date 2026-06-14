@@ -239,26 +239,36 @@
                                     </div>
                                 </template>
                                 <template lwc:else>
-                                    <div class={item.cardClass}>
-                                        <div class="message-card-header">
-                                            <div class="card-avatar">
-                                                <template lwc:if={item.hasAvatarImage}>
-                                                    <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
-                                                </template>
-                                                <template lwc:else>
-                                                    {item.senderInitials}
-                                                </template>
+                                    <template lwc:if={item.isSystemMessage}>
+                                        <div class="message-item system-message">
+                                            <div class="system-bubble">
+                                                <span class="system-text">{item.body}</span>
+                                                <span class="system-time">{item.formattedTimeShort}<span class="relative-hint">{item.formattedTimeRelative}</span></span>
                                             </div>
-                                            <span class="card-sender">{item.senderDisplayName}</span>
-                                            <span class="card-timestamp">{item.formattedTime}</span>
                                         </div>
-                                        <div class="message-card-body">
-                                            <p class="message-text">{item.body}</p>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class={item.cardClass}>
+                                            <div class="message-card-header">
+                                                <div class="card-avatar">
+                                                    <template lwc:if={item.hasAvatarImage}>
+                                                        <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
+                                                    </template>
+                                                    <template lwc:else>
+                                                        {item.senderInitials}
+                                                    </template>
+                                                </div>
+                                                <span class="card-sender">{item.senderDisplayName}</span>
+                                                <span class="card-timestamp">{item.formattedTime}</span>
+                                            </div>
+                                            <div class="message-card-body">
+                                                <p class="message-text">{item.body}</p>
+                                            </div>
+                                            <template lwc:if={item.showViaLabel}>
+                                                <div class="via-label">{item.viaLabel}</div>
+                                            </template>
                                         </div>
-                                        <template lwc:if={item.showViaLabel}>
-                                            <div class="via-label">{item.viaLabel}</div>
-                                        </template>
-                                    </div>
+                                    </template>
                                 </template>
                             </div>
                         </template>

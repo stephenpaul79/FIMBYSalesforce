@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How does the Library work?",
+  "contentBody" : {
+    "question" : "How does the Library work?",
+    "answer" : "<p>The <a href='/library-list'>Library</a> is your neighbourhood's shared shelf. Use the <strong>All</strong>, <strong>Items</strong>, and <strong>Skills</strong> filters at the top to browse what neighbours are sharing, and the <strong>Filter</strong> dropdown to narrow by category.</p><p>To add your own, tap the <strong>+</strong> button and choose <strong>Add an Item / Skill</strong>, then pick <strong>Lend an Item</strong> or <strong>Offer a Skill</strong> (<a href='/library-item-post'>add to the Library</a>).</p><p>Borrowing opens up once a neighbour vouches for you - see <strong>What is vouching?</strong> below. Until then you can still browse and add your own items.</p>",
+    "sortOrder" : "200",
+    "category" : "Lending Library"
+  },
+  "urlName" : "how-does-the-library-work"
+}

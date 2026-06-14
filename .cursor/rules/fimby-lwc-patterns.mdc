@@ -227,3 +227,13 @@ When restoring a cached feed + scroll position on back-navigation, hold the list
 - **Signup** (pre-account): `FIMBY_Public_Signup_Page` flow at `/sign-up`; standard Experience Cloud self-register at `/register`. No LWC — not `fimbyUserRegistration` (removed; was never wired live).
 - **Profile setup** (`fimbyOnboardingPage` at `/onboarding`): post-login Phase 1 — name required; photo, about-you, care prefs, vouch optional. Replaces legacy `fimbyOnboardingModal`.
 - **Walkthrough**: Phase 2 of `fimbyOnboardingPage` (hard-coded content in `fimbyWalkthroughContent.js`); dismissible per-session or permanently via Apex flags.
+
+## User Feedback — Toasts & Inline Banners (NO ShowToastEvent)
+
+`ShowToastEvent` / `lightning/platformShowToastEvent` does **not** render in our LWR Experience Cloud site — it silently no-ops. Never import or dispatch it. Two mechanisms, each one job:
+
+- **Operation failure** (server/FLS/network): `fireToast` / `fireErrorToast` from `c/fimbyToastHelper` → shell-mounted `c-fimby-toast` (global, assertive, auto-dismiss). Mounted once in `fimbyUniversalHeader` — don't add per page. Variants: `error` (default) / `warning` / `info` (no `success`).
+- **In-form validation** ("Name is required"): `c-fimby-inline-banner variant="error"` next to the field — never a toast.
+- **Success**: `c-fimby-inline-banner variant="success"` only if the user stays on the surface; **nothing** if the action navigates away or removes the item from a list (the surface change is the confirmation).
+
+`c-fimby-inline-banner` handles `role`/`aria-live` (error/warning = alert/assertive, success/info = status/polite), renders nothing when `message` is empty, icon + text always. Don't hand-roll `errorMessage`/`_error`/`this.error` banner markup — route through it. Reference: `fimbyModeratorTaskPage` + `fimbyModeratorDashboard`.

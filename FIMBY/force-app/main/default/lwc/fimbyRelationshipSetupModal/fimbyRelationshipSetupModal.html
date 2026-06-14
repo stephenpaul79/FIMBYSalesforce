@@ -31,9 +31,7 @@
                                 onimageuploaded={handleUploadComplete}
                                 onimageselected={handleUploadSelected}>
                             </c-fimby-image-uploader>
-                            <template lwc:if={error}>
-                                <div class="error-msg" role="alert">{error}</div>
-                            </template>
+                            <c-fimby-inline-banner variant="error" message={error}></c-fimby-inline-banner>
                             <button type="button" class="nav-btn nav-next" disabled={isSubmitting} onclick={handleSubmitUpload}>
                                 <template lwc:if={isSubmitting}>Submitting…</template>
                                 <template lwc:else>Submit signed form</template>
@@ -322,9 +320,6 @@
                         <template lwc:if={authImageUploading}>
                             <p class="helper-text">Uploading...</p>
                         </template>
-                        <template lwc:if={authImageError}>
-                            <p class="error-msg" role="alert">{authImageError}</p>
-                        </template>
                     </div>
                 </template>
 
@@ -429,9 +424,6 @@
 
                             <template lwc:if={submitHint}>
                                 <p class="helper-text helper-text--quiet">{submitHint}</p>
-                            </template>
-                            <template lwc:if={error}>
-                                <div class="error-msg" role="alert">{error}</div>
                             </template>
                         </template>
                     </div>

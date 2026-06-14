@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I return an item or ask for more time?",
+  "contentBody" : {
+    "question" : "How do I return an item or ask for more time?",
+    "answer" : "<p>To return something you borrowed, open the item (or its message thread) and tap <strong>Return Item</strong>, then <strong>Confirm Return</strong>.</p><p>Need it longer? Tap <strong>Request Extension</strong> and suggest a new due date - the owner can approve or decline. Owners confirm returns with <strong>Verify Return &amp; Condition</strong> and can say yes to more time with <strong>Approve Extension</strong>.</p><p>Your current and past loans are under <a href='/my-stuff/my-borrowing'>My Stuff</a>.</p>",
+    "sortOrder" : "230",
+    "category" : "Lending Library"
+  },
+  "urlName" : "how-do-i-return-or-extend"
+}

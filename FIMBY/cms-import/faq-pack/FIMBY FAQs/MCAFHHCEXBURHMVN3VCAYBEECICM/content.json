@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "Can I start a group chat?",
+  "contentBody" : {
+    "question" : "Can I start a group chat?",
+    "answer" : "<p>Group chats are available for <strong>Open Events</strong>. If you are hosting one, open your event and choose <strong>Create Event Chat</strong> from the menu to start a group conversation with everyone going; after that it shows as <strong>Event Chat</strong>.</p><p>For everything else, one-to-one messages work great - start one from <a href='/messages'>Messages</a>.</p>",
+    "sortOrder" : "310",
+    "category" : "Messaging"
+  },
+  "urlName" : "can-i-start-a-group-chat"
+}

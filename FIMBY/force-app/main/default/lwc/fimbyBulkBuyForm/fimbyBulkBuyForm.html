@@ -222,6 +222,8 @@
                 </div>
             </div>
 
+            <c-fimby-inline-banner variant="error" message={validationError}></c-fimby-inline-banner>
+
             <div class="form-navigation">
                 <button class="nav-btn nav-back" onclick={handleBack} type="button" aria-label="Go back to type selection">&lt; Back&nbsp;&nbsp;</button>
                 <button class="nav-btn nav-next" onclick={handleSubmit} disabled={isSubmitDisabled} type="button">{submitLabel}</button>

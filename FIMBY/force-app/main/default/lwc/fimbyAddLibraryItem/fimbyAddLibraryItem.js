@@ -1,7 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 // Static resources
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -315,14 +315,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
             }
         } catch (error) {
             console.error('Error creating library item:', error);
-            this.error = error.body?.message || 'An error occurred while creating the library item.';
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Error',
-                    message: this.error,
-                    variant: 'error'
-                })
-            );
+            fireErrorToast(error);
         } finally {
             this.isSaving = false;
         }

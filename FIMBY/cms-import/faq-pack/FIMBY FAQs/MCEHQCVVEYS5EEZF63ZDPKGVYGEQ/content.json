@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "Can I post or respond on behalf of someone else?",
+  "contentBody" : {
+    "question" : "Can I post or respond on behalf of someone else?",
+    "answer" : "<p>Yes, if you support a neighbour or represent a community group. Once a support connection is approved, you can switch into that person's or group's identity and act for them. Whenever you do, FIMBY shows a green <strong>Posting as</strong> banner so it is always clear who you are acting for.</p><p>To set this up, open <a href='/manage-identities'>Manage identities</a> from the top-right menu and tap <strong>New</strong>, then choose <strong>Support a neighbour</strong> or <strong>Represent a community group</strong>. A neighbourhood moderator reviews the request before it goes live. Vouching always has to be done as yourself.</p>",
+    "sortOrder" : "500",
+    "category" : "Acting for Others"
+  },
+  "urlName" : "can-i-post-on-behalf"
+}

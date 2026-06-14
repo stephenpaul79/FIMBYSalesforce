@@ -11,6 +11,7 @@ import getCurrentCgaVersion from '@salesforce/apex/FimbyTosController.getCurrent
 import getCurrentCgaEffectiveDate from '@salesforce/apex/FimbyTosController.getCurrentCgaEffectiveDate';
 
 import createOrganizationRequest from '@salesforce/apex/FimbyOrganizationRequestService.createOrganizationRequest';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 const STEPS = ['type', 'identity', 'neighbourhood', 'authorization', 'notes', 'review'];
 const CG_CREATE_STEPS = ['type', 'identity', 'createOrg', 'authorization', 'notes', 'review'];
@@ -34,7 +35,6 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
     @track authImageFileName = '';
     @track authImageUploaded = false;
     @track authImageUploading = false;
-    @track authImageError = '';
     @track notes = '';
     @track isSubmitting = false;
     @track error = '';
@@ -284,7 +284,6 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
         this.authImageFileName = '';
         this.authImageUploaded = false;
         this.authImageUploading = false;
-        this.authImageError = '';
         this.notes = '';
         this.error = '';
         this.searchTerm = '';
@@ -447,7 +446,6 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             this.authImageData = base64;
             this.authImageFileName = fileName;
             this.authImageUploaded = true;
-            this.authImageError = '';
         }
     }
 
@@ -460,7 +458,6 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
         this.authImageData = base64;
         this.authImageFileName = fileName;
         this.authImageUploaded = true;
-        this.authImageError = '';
     }
 
     handleNext() {
@@ -567,7 +564,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             })
             .catch(err => {
                 this.isSubmitting = false;
-                this.error = err?.body?.message || 'Something went wrong. Please try again.';
+                fireErrorToast(err);
             });
     }
 
@@ -604,7 +601,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             })
             .catch(err => {
                 this.isSubmitting = false;
-                this.error = err?.body?.message || 'Something went wrong. Please try again.';
+                fireErrorToast(err);
             });
     }
 
@@ -642,7 +639,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             })
             .catch(err => {
                 this.isSubmitting = false;
-                this.error = err?.body?.message || 'Could not create the paper draft. Please try again.';
+                fireErrorToast(err, 'Could not create the paper draft. Please try again.');
             });
     }
 
@@ -680,7 +677,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             });
             this.uploadSubmitted = true;
         } catch (err) {
-            this.error = err?.body?.message || 'We could not submit your upload. Please try again.';
+            fireErrorToast(err, 'We could not submit your upload. Please try again.');
         } finally {
             this.isSubmitting = false;
         }

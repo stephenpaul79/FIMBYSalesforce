@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I RSVP or join an event?",
+  "contentBody" : {
+    "question" : "How do I RSVP or join an event?",
+    "answer" : "<p>Open the event on <a href='/'>Home</a> and tap its button:</p><ul><li><strong>Gathering</strong> - tap <strong>RSVP</strong>. The host accepts guests until the spots run out.</li><li><strong>Open Event</strong> - tap <strong>I'm Going</strong> (you can note any guests you are bringing).</li><li><strong>Community Event</strong> - tap <strong>I'm Interested</strong>.</li></ul><p>You can change your mind any time by tapping the same button again to withdraw. For an Open Event, the host can also start an event group chat for everyone going.</p>",
+    "sortOrder" : "130",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "how-do-i-rsvp"
+}

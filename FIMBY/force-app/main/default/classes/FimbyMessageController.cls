@@ -253,15 +253,24 @@ public with sharing class FimbyMessageController {
             // Bypass SCI check when either participant is an org contact
             Id p1 = conv.Participant_1__c;
             Id p2 = conv.Participant_2__c;
+            Id otherParticipantId = isP1 ? p2 : p1;
             Boolean eitherIsOrg = identity.isOrgContact;
             if (!eitherIsOrg) {
-                Id otherParticipantId = isP1 ? p2 : p1;
                 eitherIsOrg = [
                     SELECT COUNT() FROM Contact
                     WHERE Id = :otherParticipantId AND Is_Organization_Contact__c = true
                 ] > 0;
             }
-            if (!eitherIsOrg) {
+
+            // Moderators can message any neighbour without a prior contact-sharing
+            // connection — unless a block exists between the two parties.
+            Boolean senderIsModerator = !eitherIsOrg && isActiveModerator((Id) actingAsContactId);
+            if (senderIsModerator
+                && FimbyBlockingHelper.getBidirectionalBlocks((Id) actingAsContactId).contains(otherParticipantId)) {
+                throw new AuraHandledException('You are no longer connected to this contact.');
+            }
+
+            if (!eitherIsOrg && !senderIsModerator) {
                 Integer activeSciCount = [
                     SELECT COUNT() FROM Shared_Contact_Info__c
                     WHERE ((Contact__c = :p1 AND Shared_To__c = :p2)
@@ -330,6 +339,15 @@ public with sharing class FimbyMessageController {
                 'messageId' => newMsg.Id,
                 'sentDate' => now
             };
+        }
+
+        private Boolean isActiveModerator(Id contactId) {
+            if (contactId == null) return false;
+            return [
+                SELECT COUNT()
+                FROM Moderator_Assignment__c
+                WHERE Contact__c = :contactId AND Status__c = 'Active'
+            ] > 0;
         }
 
     }

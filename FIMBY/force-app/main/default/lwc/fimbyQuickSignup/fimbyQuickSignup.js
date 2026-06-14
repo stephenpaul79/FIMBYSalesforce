@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 
 export default class FimbyQuickSignup extends NavigationMixin(LightningElement) {
     @track firstName = '';
@@ -104,12 +104,13 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
             // Simulate signup
             await this.delay(1500);
 
-            this.showSuccessToast('Account created! Welcome to FIMBY!');
+            // Success navigates straight to the welcome screen — the new
+            // surface is its own confirmation, so no banner here.
             this.navigateToWelcome();
 
         } catch (error) {
             console.error('Quick signup error:', error);
-            this.showErrorToast('Failed to create account. Please try again.');
+            fireToast({ message: 'We couldn’t create your account just now. Please try again.', variant: 'error' });
         } finally {
             this.isSigningUp = false;
         }
@@ -141,17 +142,17 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
     // Social login handlers
     handleGoogleSignup() {
         // Implement Google OAuth
-        this.showInfoToast('Google signup coming soon!');
+        fireToast({ message: 'Google signup is coming soon.', variant: 'info' });
     }
 
     handleFacebookSignup() {
         // Implement Facebook OAuth
-        this.showInfoToast('Facebook signup coming soon!');
+        fireToast({ message: 'Facebook signup is coming soon.', variant: 'info' });
     }
 
     handleAppleSignup() {
         // Implement Apple Sign In
-        this.showInfoToast('Apple Sign In coming soon!');
+        fireToast({ message: 'Apple Sign In is coming soon.', variant: 'info' });
     }
 
     // Helper methods
@@ -171,29 +172,5 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
                 pageName: 'welcome'
             }
         });
-    }
-
-    showSuccessToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Success',
-            message: message,
-            variant: 'success'
-        }));
-    }
-
-    showErrorToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Error',
-            message: message,
-            variant: 'error'
-        }));
-    }
-
-    showInfoToast(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Info',
-            message: message,
-            variant: 'info'
-        }));
     }
 }

@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What is Shared Life?",
+  "contentBody" : {
+    "question" : "What is Shared Life?",
+    "answer" : "<p>Shared Life is where neighbours share what is happening in their lives. Tap the <strong>+</strong> button and choose <strong>Share in Shared Life</strong> (<a href='/shared-life-post'>share something</a>), then pick a type:</p><ul><li><strong>Thank You</strong> - express gratitude to someone</li><li><strong>God Story</strong> - share a faith experience</li><li><strong>Prayer Request</strong> - ask for prayer and support</li><li><strong>Introduction</strong> - introduce yourself to neighbours</li><li><strong>Support Needed</strong> - share a struggle and seek comfort</li><li><strong>Neighbourhood Moment</strong> - share a moment you noticed</li></ul><p>Your post appears in the <a href='/'>Home</a> feed for neighbours to read and respond to.</p>",
+    "sortOrder" : "140",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "what-is-shared-life"
+}

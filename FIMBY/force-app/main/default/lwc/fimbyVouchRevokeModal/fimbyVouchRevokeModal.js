@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import revokeVouch from '@salesforce/apex/FimbyVouchController.revokeVouch';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
 
 const COUNTING_CATEGORIES = [
     { value: 'Safety_Trust_Concern',       label: 'Safety / Trust Concern' },
@@ -29,7 +30,6 @@ export default class FimbyVouchRevokeModal extends LightningElement {
     @track selectedCategory = '';
     @track details = '';
     @track isSubmitting = false;
-    @track errorMessage = '';
 
     @track actingAsContact = null;
 
@@ -58,7 +58,6 @@ export default class FimbyVouchRevokeModal extends LightningElement {
         this.vouchRecordId = vouchRecordId;
         this.selectedCategory = '';
         this.details = '';
-        this.errorMessage = '';
         this.isOpen = true;
     }
 
@@ -135,11 +134,10 @@ export default class FimbyVouchRevokeModal extends LightningElement {
     async handleSubmit() {
         if (this.isSubmitDisabled) return;
         if (this.isBlockedByActingAs) {
-            this.errorMessage = this.actingAsBlockMessage;
+            fireToast({ message: this.actingAsBlockMessage, variant: 'warning' });
             return;
         }
         this.isSubmitting = true;
-        this.errorMessage = '';
         try {
             await revokeVouch({
                 vouchRecordId: this.vouchRecordId,
@@ -149,8 +147,7 @@ export default class FimbyVouchRevokeModal extends LightningElement {
             this.dispatchEvent(new CustomEvent('revokesubmitted'));
             this.isOpen = false;
         } catch (error) {
-            this.errorMessage = error?.body?.message || error?.message
-                || 'Something went wrong. Please try again.';
+            fireErrorToast(error);
         } finally {
             this.isSubmitting = false;
         }

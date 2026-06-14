@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I report content or a concern?",
+  "contentBody" : {
+    "question" : "How do I report content or a concern?",
+    "answer" : "<p>If something does not feel right, open the <strong>three-dot menu</strong> on the post or message and choose <strong>Report</strong>. Pick a reason and add a note if you like.</p><p>Your report is private - the person is never told who flagged it - and a moderator reviews it within 24 hours. Reporting is separate from blocking. For anything urgent or safety-related, email <a href='mailto:safety@fimby.ca'>safety@fimby.ca</a>, and you can always read the <a href='/community-guidelines'>community guidelines</a>.</p>",
+    "sortOrder" : "410",
+    "category" : "Trust & Safety"
+  },
+  "urlName" : "how-do-i-report"
+}

@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I delete or deactivate my account?",
+  "contentBody" : {
+    "question" : "How do I delete or deactivate my account?",
+    "answer" : "<p>Open <a href='/settings'>Settings</a> from the top-right menu and scroll to <strong>Delete account</strong>, then tap <strong>Delete my account</strong>.</p><p>Deleting deactivates your login right away. Your data is kept for <strong>30 days</strong> so you can restore your account if you change your mind - we email you a restore link - and then it is permanently removed. If you prefer, you can tick the option to skip the 30-day window and delete immediately.</p><p>To change your username instead, email <a href='mailto:help@fimby.com'>help@fimby.com</a>.</p>",
+    "sortOrder" : "630",
+    "category" : "Privacy & Account"
+  },
+  "urlName" : "how-do-i-delete-my-account"
+}

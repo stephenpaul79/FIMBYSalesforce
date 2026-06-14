@@ -5,9 +5,7 @@
         </template>
 
         <template lwc:else>
-            <template lwc:if={error}>
-                <div class="error-banner" role="alert">{error}</div>
-            </template>
+            <c-fimby-inline-banner variant="error" message={error}></c-fimby-inline-banner>
 
             <c-fimby-page-header
                 page-title="Manage Identities"
@@ -291,9 +289,7 @@
                               value={lifecycleReason}
                               oninput={handleLifecycleReasonInput}
                               placeholder="A short note for the moderator. Optional."></textarea>
-                    <template lwc:if={lifecycleError}>
-                        <p class="lifecycle-error" role="alert">{lifecycleError}</p>
-                    </template>
+                    <c-fimby-inline-banner variant="error" message={lifecycleError}></c-fimby-inline-banner>
                     <div class="modal-actions">
                         <button type="button"
                                 class="pill-btn ghost"
@@ -351,9 +347,7 @@
                            oninput={handleDeleteConfirmTextInput}
                            autocomplete="off"
                            placeholder="Type the group name exactly" />
-                    <template lwc:if={lifecycleError}>
-                        <p class="lifecycle-error" role="alert">{lifecycleError}</p>
-                    </template>
+                    <c-fimby-inline-banner variant="error" message={lifecycleError}></c-fimby-inline-banner>
                     <div class="modal-actions">
                         <button type="button"
                                 class="pill-btn ghost"

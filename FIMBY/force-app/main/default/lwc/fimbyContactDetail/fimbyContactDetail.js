@@ -1,7 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -137,11 +136,6 @@ export default class FimbyContactDetail extends NavigationMixin(LightningElement
     }
 
     async handleEditSave() {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Success',
-            message: 'Contact updated successfully',
-            variant: 'success'
-        }));
         if (this._wiredContactResult) {
             await refreshApex(this._wiredContactResult);
         }

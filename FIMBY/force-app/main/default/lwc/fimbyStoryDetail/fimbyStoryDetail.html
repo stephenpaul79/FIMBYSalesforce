@@ -30,6 +30,7 @@
 
         <template lwc:else>
             <div class="detail-content">
+                <c-fimby-inline-banner variant="success" message={moderatorSuccessMessage}></c-fimby-inline-banner>
                 <!-- Story Card -->
                 <article class="story-card">
                     <template lwc:if={hasBadge}>

@@ -14,6 +14,9 @@
         <template lwc:if={settings.success}>
             <div class="settings-content">
 
+                <!-- Inline success banner — saves that keep you on this page -->
+                <c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
+
                 <!-- ========== 1. ACCOUNT ========== -->
                 <div class="info-section">
                     <h3 class="section-title">

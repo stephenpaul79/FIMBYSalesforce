@@ -1,7 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getPageReference, navigate } from 'c/fimbyNavigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -78,6 +78,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     @track _isModeratorForNeighbourhood = false;
     @track isRemoved = false;
     @track removedMessage = '';
+    // Inline success banner — shown only when the action keeps the user on the page.
+    @track _moderatorSuccessMessage = '';
 
     // Identity (real Contact and acting-as Contact). Powers the
     // author dual-check (Contact__c === realContactId OR Posted_By__c === actingAsContactId).
@@ -100,6 +102,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     get commentIconUrl() {
         return `${IMPACT_ICONS}/comment.png`;
     }
+
+    get moderatorSuccessMessage() { return this._moderatorSuccessMessage; }
 
     get headerMenuItems() {
         if (this.isAuthor) {
@@ -523,11 +527,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
 
     handleEdit() {
         if (!this.isAuthor) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Only the post owner can edit this',
-                message: 'You can only edit stories you have posted.',
-                variant: 'warning'
-            }));
+            fireToast({ message: 'You can only edit stories you have posted.', variant: 'warning' });
             return;
         }
 
@@ -536,11 +536,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     async handleEditSave() {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Saved',
-            message: 'Your story is updated.',
-            variant: 'success'
-        }));
+        // Success is self-evident — the story refreshes in place below.
         if (this._wiredStoryDetailResult) {
             await refreshApex(this._wiredStoryDetailResult);
         }
@@ -558,7 +554,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
 
     handlePhotoUploaded() {
         this.showPhotoUploader = false;
-        this.dispatchEvent(new ShowToastEvent({ title: 'Saved', message: 'Your photo is updated.', variant: 'success' }));
+        // Reload surfaces the new photo; no banner needed.
         window.location.reload();
     }
 
@@ -574,14 +570,9 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         this.isDeleting = true;
         try {
             await deleteStory({ storyId: this.effectiveRecordId });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Removed', message: 'Your story has been removed.', variant: 'success' }));
             navigate(this, '/my-stuff/my-shared-life');
         } catch (err) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went sideways',
-                message: err?.body?.message || 'We could not remove the story. Try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(err);
         } finally {
             this.isDeleting = false;
             this.showDeleteConfirm = false;
@@ -659,18 +650,10 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         this.isDeletingComment = true;
         try {
             await softDeleteStoryComment({ commentId: this.pendingDeleteCommentId });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Removed',
-                message: 'Your comment has been removed.',
-                variant: 'success'
-            }));
+            // The comment drops out of the reloaded list — the surface reflects it.
             await this.loadComments();
         } catch (err) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went sideways',
-                message: err?.body?.message || 'We could not remove the comment. Try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(err);
         } finally {
             this.isDeletingComment = false;
             this.pendingDeleteCommentId = null;
@@ -719,27 +702,19 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     async _handleModeratorFlag() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Story__c', flagValue: 'Moderator_Review' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Flagged for review', message: 'This story is now under review.', variant: 'success' }));
             navigate(this, '/moderator-dashboard');
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went sideways',
-                message: error?.body?.message || 'We could not flag this content. Try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
     async _handleModeratorHide() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Story__c', flagValue: 'Moderator_Hidden' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Hidden', message: 'This story is no longer in the feed.', variant: 'success' }));
+            // Confirm inline — the user stays on the (now hidden) story.
+            this._moderatorSuccessMessage = 'This story is no longer in the feed.';
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went sideways',
-                message: error?.body?.message || 'We could not hide this content. Try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -755,11 +730,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
                 window.location.href = `/conversation?id=${conversationId}`;
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Something went sideways',
-                message: error?.body?.message || 'We could not open the conversation. Try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 

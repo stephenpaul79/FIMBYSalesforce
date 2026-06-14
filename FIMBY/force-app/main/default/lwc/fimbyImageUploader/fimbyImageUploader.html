@@ -92,21 +92,11 @@
             </div>
         </template>
 
-        <!-- Error Message -->
-        <template lwc:if={errorMessage}>
-            <div class="message error-message">
-                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
-                <span>{errorMessage}</span>
-            </div>
-        </template>
+        <!-- Error Message (client-side validation + self-contained upload/remove failures) -->
+        <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
 
-        <!-- Success Message -->
-        <template lwc:if={successMessage}>
-            <div class="message success-message">
-                <lightning-icon icon-name="utility:success" size="x-small" variant="success"></lightning-icon>
-                <span>{successMessage}</span>
-            </div>
-        </template>
+        <!-- Success Message (uploader stays on screen) -->
+        <c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
 
         <!-- Avatar crop step -->
         <template lwc:if={showCropper}>

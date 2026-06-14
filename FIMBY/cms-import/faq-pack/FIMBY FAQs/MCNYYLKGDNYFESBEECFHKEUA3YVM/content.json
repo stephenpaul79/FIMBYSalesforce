@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I share my contact info with a neighbour?",
+  "contentBody" : {
+    "question" : "How do I share my contact info with a neighbour?",
+    "answer" : "<p>Your email, phone, and address stay private until you choose to share them - and sharing is what lets the two of you message each other.</p><p>In a response or conversation, tap <strong>Share Contact Info</strong> and tick exactly what you want to share: <strong>Email</strong>, <strong>Phone</strong>, or <strong>Address</strong>. You will see the details before they are sent. You can also turn on <strong>Auto-Share Contact Info</strong> when you create an ask or offer so it is shared automatically with whoever responds.</p><p>See who you are connected with under <a href='/shared-contacts'>Shared Contacts</a>.</p>",
+    "sortOrder" : "600",
+    "category" : "Privacy & Account"
+  },
+  "urlName" : "how-do-i-share-contact-info"
+}

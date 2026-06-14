@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I find my way around the app?",
+  "contentBody" : {
+    "question" : "How do I find my way around the app?",
+    "answer" : "<p>Everything is reachable from two places. The bar along the bottom has four tabs:</p><ul><li><strong>Home</strong> - your neighbourhood feed of shared life, asks, offers, and events (<a href='/'>open Home</a>)</li><li><strong>Library</strong> - items and skills neighbours are lending (<a href='/library-list'>open the Library</a>)</li><li><strong>Messages</strong> - your conversations (<a href='/messages'>open Messages</a>)</li><li><strong>My Stuff</strong> - your posts, borrowing, contacts, and more (<a href='/my-stuff'>open My Stuff</a>)</li></ul><p>The round <strong>+</strong> button in the middle of the bar is how you create anything new. The menu in the top-right corner holds your <a href='/profile'>Profile</a>, <a href='/settings'>Settings</a>, and Help, and the bell opens your <a href='/notifications'>notifications</a>.</p>",
+    "sortOrder" : "010",
+    "category" : "Getting Started"
+  },
+  "urlName" : "finding-your-way-around"
+}

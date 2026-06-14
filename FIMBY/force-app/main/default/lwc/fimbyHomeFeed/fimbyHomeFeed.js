@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
@@ -151,6 +151,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @track lightboxImages = [];
     @track lightboxStartIndex = 0;
     @track _openLibraryMenuRecordId = null;
+
+    // Quiet, contextual confirmation for the clipboard share fallback (user stays
+    // on the feed, so it's an inline banner, not a toast).
+    @track _shareConfirmation = '';
+    _shareConfirmationTimer = null;
 
     /* Sticky header / scroll-direction detection */
     @track filterHidden = false;
@@ -381,6 +386,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this._saveThrottleTimer = null;
             this._saveFeedState();
         }
+        if (this._shareConfirmationTimer) {
+            clearTimeout(this._shareConfirmationTimer);
+            this._shareConfirmationTimer = null;
+        }
     }
 
     _handleScrollDirection() {
@@ -441,7 +450,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             await this.loadNextBatch();
         } catch (error) {
             console.error('Error loading initial data:', error);
-            this.showErrorToast('Failed to load feed content');
+            fireToast({ message: 'We couldn’t load your feed just now. Please try again.', variant: 'error' });
         } finally {
             // Only the most recent load may flip the loading flag / repaint.
             if (seq === this._loadSeq) {
@@ -892,7 +901,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             await this.loadNextBatch();
         } catch (error) {
             console.error('Error loading more content:', error);
-            this.showErrorToast('Failed to load more content');
+            fireToast({ message: 'We couldn’t load more right now. Please try again.', variant: 'error' });
         } finally {
             this.isLoading = false;
             this.updateScrollContainer();
@@ -1133,7 +1142,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     engagementCount: prevCount
                 };
             });
-            this.showErrorToast(error.body?.message || 'Something went wrong.');
+            fireErrorToast(error, 'Something went wrong.');
         } finally {
             this._communityEventProcessingIds.delete(recordId);
         }
@@ -1189,9 +1198,27 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         } else {
             const text = `${item.name}\n\n${item.description || ''}\n\n${shareUrl}`;
             navigator.clipboard.writeText(text).then(() => {
-                this.showSuccessToast('Link copied to clipboard!');
+                this._showShareConfirmation('Link copied to clipboard.');
             });
         }
+    }
+
+    get shareConfirmation() {
+        return this._shareConfirmation;
+    }
+
+    // Quiet success after the clipboard fallback — the user stays on the feed,
+    // so it's an inline banner that fades away on its own.
+    _showShareConfirmation(message) {
+        this._shareConfirmation = message;
+        if (this._shareConfirmationTimer) {
+            clearTimeout(this._shareConfirmationTimer);
+        }
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._shareConfirmationTimer = setTimeout(() => {
+            this._shareConfirmation = '';
+            this._shareConfirmationTimer = null;
+        }, 4000);
     }
 
     /* ===============================================================
@@ -1200,14 +1227,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     updateScrollContainer() {
         const scrollContainer = this.template.querySelector('c-fimby-infinite-scroll');
         if (scrollContainer) scrollContainer.finishLoading(this.hasMoreContent);
-    }
-
-    showSuccessToast(message) {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Success', message, variant: 'success', mode: 'pester' }));
-    }
-
-    showErrorToast(message) {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Error', message, variant: 'error', mode: 'pester' }));
     }
 
     /* ===============================================================

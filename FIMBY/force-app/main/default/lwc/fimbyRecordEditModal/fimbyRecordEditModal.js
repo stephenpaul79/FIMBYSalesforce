@@ -5,6 +5,7 @@ import getFieldSetFields from '@salesforce/apex/FimbyFieldSetController.getField
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { fireToast } from 'c/fimbyToastHelper';
 
 export default class FimbyRecordEditModal extends LightningElement {
     @api recordId;
@@ -195,7 +196,9 @@ export default class FimbyRecordEditModal extends LightningElement {
 
     handleError(event) {
         this.isSaving = false;
-        console.error('Save error:', event.detail);
-        // Error messages are shown by lightning-messages component
+        const detail = event?.detail || {};
+        const message =
+            detail.detail || detail.message || 'We couldn’t save your changes. Please try again.';
+        fireToast({ message, variant: 'error' });
     }
 }

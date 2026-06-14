@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { getRecord, getFieldValue, getRecordNotifyChange } from 'lightning/uiRecordApi';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -700,12 +700,7 @@ export default class FimbyPostEditModal extends LightningElement {
             }));
             this.hide();
         } catch (error) {
-            const msg = error.body?.message || error.message || 'Failed to save changes.';
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: msg,
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.isSaving = false;
         }

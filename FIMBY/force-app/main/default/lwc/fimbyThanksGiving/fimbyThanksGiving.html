@@ -22,13 +22,6 @@
                 <template lwc:else>
                     <div class="modal-content">
                         <!-- Form -->
-                        <template lwc:if={errorMessage}>
-                            <div class="error-banner">
-                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                                <span>{errorMessage}</span>
-                            </div>
-                        </template>
-
                         <template lwc:if={showIdentityBanner}>
                             <div class="posting-as">
                                 <img src={posterIconUrl} alt="" class="posting-as-icon">

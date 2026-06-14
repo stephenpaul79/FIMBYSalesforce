@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What is a community group profile?",
+  "contentBody" : {
+    "question" : "What is a community group profile?",
+    "answer" : "<p>A community group profile is a page for a local organisation - a church, charity, or group - that neighbours can view and message. Approved groups show a verified badge.</p><p>If you represent an approved group, you can switch into it and edit its profile: logo, description, website, and contact details. Set up your connection from <a href='/manage-identities'>Manage identities</a>.</p>",
+    "sortOrder" : "520",
+    "category" : "Acting for Others"
+  },
+  "urlName" : "what-is-a-community-group-profile"
+}

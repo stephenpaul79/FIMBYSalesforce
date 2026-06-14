@@ -153,6 +153,46 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void formatCrossFimbyLine_singularUsesSingularGrammar() {
+        System.assertEquals(
+            'across FIMBY this day, 1 neighbour offered something.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 1, 'day')
+        );
+        System.assertEquals(
+            'across FIMBY this day, 1 ask was met by someone close by.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 1, 'day')
+        );
+        System.assertEquals(
+            'across FIMBY this day, 1 thing changed hands and came back.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 1, 'day')
+        );
+        System.assertEquals(
+            'across FIMBY this day, 1 story was shared.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 1, 'day')
+        );
+    }
+
+    @IsTest
+    static void formatCrossFimbyLine_pluralUsesPluralGrammar() {
+        System.assertEquals(
+            'across FIMBY this week, 3 neighbours offered something.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 3, 'week')
+        );
+        System.assertEquals(
+            'across FIMBY this week, 2 asks were met by someone close by.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 2, 'week')
+        );
+        System.assertEquals(
+            'across FIMBY this week, 5 things changed hands and came back.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 5, 'week')
+        );
+        System.assertEquals(
+            'across FIMBY this week, 4 stories were shared.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 4, 'week')
+        );
+    }
+
+    @IsTest
     static void getCrossFimbyStat_emptyWindow_returnsBlank() {
         Datetime startDt = Datetime.newInstance(Date.today().addYears(-50), Time.newInstance(0, 0, 0, 0));
         Datetime endDt = Datetime.newInstance(Date.today().addYears(-50), Time.newInstance(23, 59, 59, 0));
@@ -376,7 +416,7 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void buildCard_portraitRatio_usesTwoColumnLayout() {
+    static void buildCard_portraitRatio_usesFixedWidthFlexibleHeight() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
@@ -391,15 +431,15 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // ratio 0.8 -> imgWidth = round(210 * 0.8) = 168, fixed height 210, image flush left.
+        // Fixed width 220, height follows ratio: round(220 / 0.8) = 275.
         System.assert(
-            result.html.contains('width="168" height="210"'),
-            'Portrait photo should render a ratio-sized two-column image. HTML: ' + result.html
+            result.html.contains('width="220" height="275"'),
+            'Portrait photo should render at fixed width with ratio-derived height. HTML: ' + result.html
         );
     }
 
     @IsTest
-    static void buildCard_landscapeRatio_usesStackedLayoutAtTrueHeight() {
+    static void buildCard_landscapeRatio_usesFixedWidthFlexibleHeight() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
@@ -414,10 +454,10 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // ratio 2.0 -> stacked full width 552 at true height 552 / 2 = 276.
+        // Same fixed width 220, shorter height: round(220 / 2.0) = 110.
         System.assert(
-            result.html.contains('width="552" height="276"'),
-            'Landscape photo should render stacked at its true height. HTML: ' + result.html
+            result.html.contains('width="220" height="110"'),
+            'Landscape photo should render at the same fixed width, shorter height. HTML: ' + result.html
         );
     }
 

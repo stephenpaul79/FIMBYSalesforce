@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { CATEGORY_COLORS, getCategoryIconUrl, getCategoryStyle, getCategoryColor } from 'c/fimbyLibraryCategoryConfig';
@@ -202,7 +202,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             await this.loadNextBatch();
         } catch (e) {
             console.error('Initial load error', e);
-            this.showToast('Error', 'Failed to load library items', 'error');
+            fireToast({ message: 'We couldn’t load the library just now. Please try again.', variant: 'error' });
         } finally {
             this.isLoading = false;
             this.updateScrollContainer();
@@ -762,7 +762,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             await this.loadNextBatch();
         } catch (e) {
             console.error('Load more error', e);
-            this.showToast('Error', 'Failed to load more items', 'error');
+            fireToast({ message: 'We couldn’t load more items just now. Please try again.', variant: 'error' });
         } finally {
             this.isLoading = false;
             this.updateScrollContainer();
@@ -911,10 +911,6 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         if (scroll && scroll.finishLoading) {
             scroll.finishLoading(this.hasMoreContent);
         }
-    }
-
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant, mode: 'pester' }));
     }
 
     /* --- Vouching gate ---------------------------------------------- */

@@ -45,6 +45,9 @@
             </template>
         </div>
 
+        <!-- Quiet confirmation after the clipboard share fallback (auto-dismisses) -->
+        <c-fimby-inline-banner variant="success" message={shareConfirmation}></c-fimby-inline-banner>
+
         <!-- Say-hi banner: shown until the user posts (or skips past) their bio intro -->
         <template lwc:if={showBioBanner}>
             <div class="say-hi-banner" role="status">

@@ -2,7 +2,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -213,6 +213,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @track _eventGroupConversationId = null;
     @track refreshState = null;
     @track refreshActionLoading = false;
+    // Inline success banners — shown only when the action keeps the user on the page.
+    @track _refreshSuccessMessage = '';
+    @track _moderatorSuccessMessage = '';
     _wiredRecordResult;
 
     // ============================================
@@ -1121,9 +1124,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             await completeBulkBuy({ postId: this.recordId });
             this.loadBulkBuyDetail();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error', message: error.body?.message || 'Could not complete.', variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -1132,9 +1133,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             await cancelBulkBuy({ postId: this.recordId });
             this.loadBulkBuyDetail();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error', message: error.body?.message || 'Could not cancel.', variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -1351,6 +1350,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get canRefreshPost() {
         return this.refreshState?.canRefresh === true && !this.refreshActionLoading;
     }
+
+    get refreshSuccessMessage() { return this._refreshSuccessMessage; }
+    get moderatorSuccessMessage() { return this._moderatorSuccessMessage; }
 
     get refreshHelperText() {
         if (!this.refreshState?.showPanel) return '';
@@ -1875,7 +1877,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     async handleEditSave() {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Post updated successfully', variant: 'success' }));
+        // Success is self-evident — the record refreshes in place below.
         if (this._wiredRecordResult) {
             await refreshApex(this._wiredRecordResult);
         }
@@ -1918,11 +1920,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 await this.loadResponses();
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || 'Something went wrong',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.quickResponseProcessing = false;
         }
@@ -1945,11 +1943,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 await this.loadResponses();
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || 'Something went wrong',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.quickResponseProcessing = false;
         }
@@ -2005,11 +1999,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 navigate(this, '/conversation?id=' + convId);
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Unable to create event chat',
-                message: error.body?.message || 'Something went wrong',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -2032,21 +2022,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         try {
             const result = await declineResponseApex({ responseId });
             if (result.success) {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Removed',
-                    message: 'Attendee removed from the event',
-                    variant: 'success'
-                }));
                 await this.loadResponses();
             } else {
                 throw new Error(result.message || 'Unable to remove attendee');
             }
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || error.message || 'Unable to remove attendee',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -2065,18 +2046,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             if (responseId) {
                 await declineResponseApex({ responseId });
             }
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Blocked',
-                message: 'This neighbour has been blocked and removed from the event',
-                variant: 'success'
-            }));
             await this.loadResponses();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: error.body?.message || error.message || 'Unable to block attendee',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         }
     }
 
@@ -2106,7 +2078,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     handlePhotoUploaded() {
-        this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Photo updated', variant: 'success' }));
+        // Reload surfaces the new photo; no banner needed.
         window.location.reload();
     }
 
@@ -2119,19 +2091,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this.refreshActionLoading = true;
         try {
             const result = await refreshPost({ recordId: this.effectiveRecordId });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Refreshed',
-                message: result.message || 'Your post has been refreshed.',
-                variant: 'success'
-            }));
+            // Stays on the page — the refresh isn't otherwise visible, so confirm inline.
+            this._refreshSuccessMessage = result.message || 'Your post has been refreshed.';
             await refreshApex(this._wiredRecordResult);
             await this.loadRefreshState();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Could not refresh',
-                message: error.body?.message || 'Please try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.refreshActionLoading = false;
         }
@@ -2149,20 +2114,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         if (this.refreshActionLoading) return;
         this.refreshActionLoading = true;
         try {
-            const result = await closePost({ recordId: this.effectiveRecordId, outcome });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Updated',
-                message: result.message || 'Thanks for letting neighbours know.',
-                variant: 'success'
-            }));
+            await closePost({ recordId: this.effectiveRecordId, outcome });
+            // Closing visibly changes the post status/panel on the page itself.
             await refreshApex(this._wiredRecordResult);
             await this.loadRefreshState();
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Could not update',
-                message: error.body?.message || 'Please try again in a moment.',
-                variant: 'error'
-            }));
+            fireErrorToast(error);
         } finally {
             this.refreshActionLoading = false;
         }
@@ -2189,11 +2146,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 params.seriesDeleteScope = this.seriesDeleteScope;
             }
             await deleteNeedsOffersPost(params);
-            this.dispatchEvent(new ShowToastEvent({ title: 'Deleted', message: 'Post has been deleted', variant: 'success' }));
             navigate(this, '/');
         } catch (error) {
             console.error('Delete error:', error);
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to delete post', variant: 'error' }));
+            fireErrorToast(error);
         } finally {
             this.isDeleting = false;
             this.showDeleteConfirm = false;
@@ -2243,19 +2199,19 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     async _handleModeratorFlag() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Needs_Offers__c', flagValue: 'Moderator_Review' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Content flagged', message: 'This content is now under review.', variant: 'success' }));
             navigate(this, '/moderator-dashboard');
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not flag content.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 
     async _handleModeratorHide() {
         try {
             await flagContent({ recordId: this.effectiveRecordId, recordType: 'Needs_Offers__c', flagValue: 'Moderator_Hidden' });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Content hidden', message: 'This content has been hidden from the feed.', variant: 'success' }));
+            // Confirm inline — the user stays on the (now hidden) post.
+            this._moderatorSuccessMessage = 'This content has been hidden from the feed.';
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not hide content.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 
@@ -2266,7 +2222,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const conversationId = await getOrCreateModeratorConversation({ targetContactId: authorContactId });
             navigate(this, `/conversation?id=${conversationId}`);
         } catch (error) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error?.body?.message || 'Could not start conversation.', variant: 'error' }));
+            fireErrorToast(error);
         }
     }
 

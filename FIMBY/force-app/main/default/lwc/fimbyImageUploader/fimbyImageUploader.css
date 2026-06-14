@@ -193,29 +193,6 @@
     margin-top: 4px;
 }
 
-/* Messages */
-.message {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    margin-top: 8px;
-}
-
-.error-message {
-    background: var(--fimby-error-tint);
-    color: var(--fimby-error);
-    border: 1px solid var(--fimby-error-tint);
-}
-
-.success-message {
-    background: var(--fimby-success-tint);
-    color: var(--fimby-success);
-    border: 1px solid var(--fimby-success-tint);
-}
-
 /* Responsive - Larger screens */
 @media (min-width: 768px) {
     .upload-area {

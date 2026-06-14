@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I change my notification settings?",
+  "contentBody" : {
+    "question" : "How do I change my notification settings?",
+    "answer" : "<p>Open <a href='/settings'>Settings</a> from the top-right menu and go to <strong>Notifications &amp; Email</strong>. You can:</p><ul><li>Turn <strong>Push Notifications</strong> and <strong>Email Alerts</strong> on or off</li><li>Set <strong>Quiet Hours</strong> so alerts wait until a quiet window ends</li><li>Choose which categories reach you by push or email - Messages, Asks &amp; Offers, Events, Library, Shared Life, Reminders, and Bulk Buys</li><li>Pick how often you get the <strong>Neighbourhood Digest</strong> (Daily, Weekly, or Never)</li></ul><p>Important account and safety messages always come through.</p>",
+    "sortOrder" : "610",
+    "category" : "Privacy & Account"
+  },
+  "urlName" : "how-do-i-change-notifications"
+}

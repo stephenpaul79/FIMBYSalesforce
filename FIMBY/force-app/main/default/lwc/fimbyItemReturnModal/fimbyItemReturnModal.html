@@ -24,10 +24,7 @@
                     <!-- Error -->
                     <template lwc:elseif={isError}>
                         <div class="state-container error-state">
-                            <div class="error-banner" role="alert">
-                                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                                <span>{_errorMessage}</span>
-                            </div>
+                            <c-fimby-inline-banner variant="error" message={_errorMessage}></c-fimby-inline-banner>
                             <button class="secondary-btn" onclick={handleRetry}>Try Again</button>
                         </div>
                     </template>

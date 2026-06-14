@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate } from 'c/fimbyNavigation';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 import completeProfileSetup from '@salesforce/apex/FimbyOnboardingController.completeProfileSetup';
 import saveQuietHoursPreference from '@salesforce/apex/FimbyOnboardingController.saveQuietHoursPreference';
@@ -72,7 +73,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
     @track _currentStep = 1;
     @track _showCelebration = false;
     @track _isSaving = false;
-    @track _saveError = '';
 
     @track _contactId = '';
     @track _firstName = '';
@@ -236,7 +236,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             && this._vouchSearchResults.length === 0
             && this._vouchSearchTerm.trim().length >= VOUCH_SEARCH_MIN_CHARS;
     }
-    get saveError()         { return this._saveError; }
     get isSaving()          { return this._isSaving; }
     get contactId()         { return this._contactId; }
 
@@ -642,7 +641,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
         }
         if (this._currentStep < TOTAL_PROFILE_STEPS) {
             this._currentStep++;
-            this._saveError = '';
             this._scrollToTop();
             return;
         }
@@ -652,7 +650,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
     handleBack() {
         if (this._currentStep > 1) {
             this._currentStep--;
-            this._saveError = '';
             this._scrollToTop();
         }
     }
@@ -664,7 +661,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
 
     async _saveProfileAndAdvanceToVouchStep() {
         this._isSaving = true;
-        this._saveError = '';
         try {
             const fieldValues = {
                 FirstName: this._firstName?.trim() || '',
@@ -690,7 +686,7 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             this._scrollToTop();
         } catch (err) {
             console.error('Error saving profile:', err);
-            this._saveError = err?.body?.message || err?.message || 'Something went wrong saving your profile. Please try again.';
+            fireErrorToast(err, 'Something went wrong saving your profile. Please try again.');
         } finally {
             this._isSaving = false;
         }
@@ -699,7 +695,6 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
     async _submitVouchAndCelebrate() {
         if (!this._isVouchStep6Valid) return;
         this._isSaving = true;
-        this._saveError = '';
         try {
             const result = await submitVoucherRequest({
                 voucherType: this._selectedVoucher.voucherType,
@@ -710,11 +705,13 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
                 this._scrollToTop();
                 return;
             }
-            this._saveError = result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.';
+            fireToast({
+                message: result?.message || 'Something went wrong sending your vouch request. Please try again or skip for now.',
+                variant: 'error'
+            });
         } catch (err) {
             console.error('Error submitting vouch request:', err);
-            this._saveError = err?.body?.message || err?.message
-                || 'Something went wrong sending your vouch request. Please try again or skip for now.';
+            fireErrorToast(err, 'Something went wrong sending your vouch request. Please try again or skip for now.');
         } finally {
             this._isSaving = false;
         }

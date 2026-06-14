@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -103,11 +103,10 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
         this.isBlocking = true;
         try {
             await blockContact({ blockedContactId: this.neighbourContactId, reason: 'Blocked from profile', isReport: false, reportDetails: null });
-            this.dispatchEvent(new ShowToastEvent({ title: 'Blocked', message: 'This neighbour has been blocked', variant: 'success' }));
             this.showBlockConfirm = false;
             window.history.back();
         } catch (err) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: err?.body?.message || 'Could not block this neighbour', variant: 'error' }));
+            fireErrorToast(err);
         } finally {
             this.isBlocking = false;
         }

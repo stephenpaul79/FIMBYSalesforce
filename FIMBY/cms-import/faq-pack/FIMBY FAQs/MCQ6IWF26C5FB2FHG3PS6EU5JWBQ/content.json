@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I block someone?",
+  "contentBody" : {
+    "question" : "How do I block someone?",
+    "answer" : "<p>You can block a neighbour from their <strong>profile</strong> - open the three-dot menu and choose <strong>Block</strong> - or from a conversation using <strong>Block or report</strong>. You can also go to <a href='/settings'>Settings</a>, open <strong>Blocked Contacts</strong>, and tap <strong>Block someone</strong>.</p><p>Blocking is mutual: neither of you will see each other's posts, messages, or profile. You can <strong>Unblock</strong> from the same Blocked Contacts list any time. You need to be acting as yourself to block or unblock.</p>",
+    "sortOrder" : "420",
+    "category" : "Trust & Safety"
+  },
+  "urlName" : "how-do-i-block-someone"
+}

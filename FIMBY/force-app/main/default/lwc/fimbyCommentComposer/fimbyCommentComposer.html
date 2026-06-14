@@ -15,19 +15,7 @@
                         </div>
                     </template>
 
-                    <template lwc:if={errorMessage}>
-                        <div class="error-banner" role="alert">
-                            <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                            <span>{errorMessage}</span>
-                        </div>
-                    </template>
-
-                    <template lwc:if={showSuccess}>
-                        <div class="success-container compact">
-                            <lightning-icon icon-name="utility:check" size="medium" variant="success"></lightning-icon>
-                            <span class="success-text">{successMessage}</span>
-                        </div>
-                    </template>
+                    <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
 
                     <template lwc:if={showForm}>
                         <template lwc:if={showStoryContext}>

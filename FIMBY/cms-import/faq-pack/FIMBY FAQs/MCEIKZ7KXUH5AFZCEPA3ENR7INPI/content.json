@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What are Asks and Offers?",
+  "contentBody" : {
+    "question" : "What are Asks and Offers?",
+    "answer" : "<p>Asks and Offers is your neighbourhood bulletin board. Tap the <strong>+</strong> button and choose <strong>Make an Ask</strong> (something you need) or <strong>Make an Offer</strong> (something to share) - <a href='/ask-or-offer-post?type=Need'>start an ask</a> or <a href='/ask-or-offer-post?type=Offer'>start an offer</a>.</p><p>Give it a title and description, and optionally add photos. Browse what neighbours have posted on <a href='/'>Home</a>, open any post, and tap <strong>Respond</strong> to reply. Responding opens a private thread where the two of you sort out the details.</p>",
+    "sortOrder" : "100",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "what-are-asks-and-offers"
+}

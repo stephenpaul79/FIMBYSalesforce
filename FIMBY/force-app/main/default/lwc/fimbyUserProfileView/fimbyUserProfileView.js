@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
 import updateProfileSection from '@salesforce/apex/FimbyProfileController.updateProfileSection';
@@ -293,7 +293,7 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
             this.profile = await getProfileData();
             this._checkIfModerator();
         } catch (error) {
-            this.showToast('Error', 'Could not load profile data.', 'error');
+            fireToast({ message: 'We couldn’t load your profile just now. Please try again.', variant: 'error' });
         } finally {
             this.isLoading = false;
         }
@@ -445,7 +445,6 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
 
     handlePhotoUploaded() {
         this.showImageUploader = false;
-        this.showToast('Success', 'Photo updated.', 'success');
         this.loadProfile();
     }
 
@@ -456,10 +455,9 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
                 objectApiName: 'Contact',
                 imageSlot: null
             });
-            this.showToast('Success', 'Photo removed.', 'success');
             await this.loadProfile();
         } catch (error) {
-            this.showToast('Error', 'Could not remove photo.', 'error');
+            fireErrorToast(error);
         }
     }
 
@@ -471,10 +469,9 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
         try {
             await updateProfileSection({ fieldValues: fieldMap });
             this[editFlag] = false;
-            this.showToast('Saved', 'Profile updated.', 'success');
             await this.loadProfile();
         } catch (error) {
-            this.showToast('Error', error.body?.message || 'Could not save changes.', 'error');
+            fireErrorToast(error);
         } finally {
             this.isSaving = false;
         }
@@ -488,10 +485,6 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
     _multiSelectToDisplay(val) {
         if (!val) return '';
         return val.split(';').map(s => s.trim()).filter(Boolean).join(', ');
-    }
-
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 
     handleBack() {

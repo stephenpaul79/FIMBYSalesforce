@@ -267,21 +267,30 @@ public with sharing class FimbyModeratorDashboardController {
     public static Map<String, Object> getNeighbourhoodModerator() {
         Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
         if (neighbourhoodId == null) return null;
+        return new ModeratorReader().getPrimaryModerator(neighbourhoodId);
+    }
 
-        List<Moderator_Assignment__c> mods = [
-            SELECT Contact__c, Contact__r.Name, Contact__r.Pronouns__c, Contact__r.PhotoUrl
-            FROM Moderator_Assignment__c
-            WHERE Neighbourhood__c = :neighbourhoodId AND Status__c = 'Active' AND Role__c = 'Primary'
-            LIMIT 1
-        ];
-        if (mods.isEmpty()) return null;
+    // Moderator_Assignment__c is private to external (community) users, so a
+    // with-sharing query returns nothing for them. The primary moderator's
+    // name/photo is meant to be visible to every neighbour, so read it without
+    // sharing, scoped strictly to the caller's own neighbourhood.
+    private without sharing class ModeratorReader {
+        Map<String, Object> getPrimaryModerator(Id neighbourhoodId) {
+            List<Moderator_Assignment__c> mods = [
+                SELECT Contact__c, Contact__r.Name, Contact__r.Pronouns__c, Contact__r.PhotoUrl
+                FROM Moderator_Assignment__c
+                WHERE Neighbourhood__c = :neighbourhoodId AND Status__c = 'Active' AND Role__c = 'Primary'
+                LIMIT 1
+            ];
+            if (mods.isEmpty()) return null;
 
-        return new Map<String, Object>{
-            'contactId' => mods[0].Contact__c,
-            'name'      => mods[0].Contact__r.Name,
-            'pronouns'  => mods[0].Contact__r.Pronouns__c,
-            'photoUrl'  => mods[0].Contact__r.PhotoUrl
-        };
+            return new Map<String, Object>{
+                'contactId' => mods[0].Contact__c,
+                'name'      => mods[0].Contact__r.Name,
+                'pronouns'  => mods[0].Contact__r.Pronouns__c,
+                'photoUrl'  => mods[0].Contact__r.PhotoUrl
+            };
+        }
     }
 
     @AuraEnabled(cacheable=true)

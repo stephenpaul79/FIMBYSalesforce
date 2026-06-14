@@ -48,27 +48,34 @@
                 </template>
 
                 <template lwc:if={hasFaqItems}>
-                    <div class="faq-list">
-                        <template for:each={faqItems} for:item="faq">
-                            <div key={faq.id} class="faq-item">
-                                <button class="faq-question" onclick={handleToggleFaq}
-                                        data-id={faq.id} aria-expanded={faq.expanded}>
-                                    <span>{faq.question}</span>
-                                    <lightning-icon icon-name={faq.chevronIcon} size="x-small"></lightning-icon>
-                                </button>
-                                <template lwc:if={faq.expanded}>
-                                    <div class="faq-answer">
-                                        <template lwc:if={faq.isRichText}>
-                                            <lightning-formatted-rich-text value={faq.answer}></lightning-formatted-rich-text>
-                                        </template>
-                                        <template lwc:else>
-                                            <p>{faq.answer}</p>
+                    <template for:each={faqGroups} for:item="group">
+                        <div key={group.key} class="faq-group">
+                            <template lwc:if={group.hasCategory}>
+                                <h3 class="faq-category">{group.category}</h3>
+                            </template>
+                            <div class="faq-list">
+                                <template for:each={group.items} for:item="faq">
+                                    <div key={faq.id} class="faq-item">
+                                        <button class="faq-question" onclick={handleToggleFaq}
+                                                data-id={faq.id} aria-expanded={faq.expanded}>
+                                            <span>{faq.question}</span>
+                                            <lightning-icon icon-name={faq.chevronIcon} size="x-small"></lightning-icon>
+                                        </button>
+                                        <template lwc:if={faq.expanded}>
+                                            <div class="faq-answer" onclick={handleAnswerClick}>
+                                                <template lwc:if={faq.isRichText}>
+                                                    <lightning-formatted-rich-text value={faq.answer}></lightning-formatted-rich-text>
+                                                </template>
+                                                <template lwc:else>
+                                                    <p>{faq.answer}</p>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                 </template>
                             </div>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                 </template>
             </div>
 

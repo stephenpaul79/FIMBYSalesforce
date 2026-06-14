@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I comment on or respond to a post?",
+  "contentBody" : {
+    "question" : "How do I comment on or respond to a post?",
+    "answer" : "<p>It depends on the post:</p><ul><li>On a <strong>Shared Life</strong> post, tap <strong>Comment</strong> to leave a note. Type <strong>@</strong> to mention a neighbour by name.</li><li>On an <strong>ask</strong> or <strong>offer</strong>, tap <strong>Respond</strong>. This opens a private thread where you and the poster work out the details.</li><li>On an <strong>event</strong>, tap <strong>RSVP</strong>, <strong>I'm Going</strong>, or <strong>I'm Interested</strong> depending on the type.</li></ul><p>You will find replies to your own posts in <a href='/messages'>Messages</a> and on the post itself.</p>",
+    "sortOrder" : "150",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "how-do-i-comment-or-respond"
+}

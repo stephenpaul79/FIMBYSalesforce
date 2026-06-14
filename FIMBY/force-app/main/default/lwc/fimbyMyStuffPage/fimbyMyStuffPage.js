@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { fireToast } from 'c/fimbyToastHelper';
 import { navigate } from 'c/fimbyNavigation';
 
 import getMyPosts from '@salesforce/apex/FimbyMyStuffController.getMyPosts';
@@ -726,16 +726,13 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             };
             const result = await shareContactInfoDirect({ shareDataJson: JSON.stringify(shareData) });
             if (result && result.success) {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Shared',
-                    message: result.message || 'Contact info shared successfully.',
-                    variant: 'success'
-                }));
+                // Modal closes and the contacts list reloads to reflect the share —
+                // that's the confirmation, so no banner.
                 this.handleCloseShareModal();
             }
         } catch (error) {
-            const msg = error.body?.message || error.message || 'Failed to share.';
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));
+            const msg = error.body?.message || error.message || 'We couldn’t share your info just now. Please try again.';
+            fireToast({ message: msg, variant: 'error' });
         } finally {
             this.shareSubmitting = false;
         }
@@ -753,35 +750,28 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         }
         try {
             await revokeSharedContactInfo({ sharedContactInfoId: sharedInfoId });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Revoked',
-                message: `Sharing with ${contactName} has been revoked.`,
-                variant: 'success'
-            }));
+            // The contact moves to the Revoked list on reload — the surface change
+            // is the confirmation, so no banner.
             this._contactsLoaded = false;
             await this._loadContacts();
         } catch (error) {
-            const msg = error.body?.message || error.message || 'Failed to revoke.';
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));
+            const msg = error.body?.message || error.message || 'We couldn’t revoke sharing just now. Please try again.';
+            fireToast({ message: msg, variant: 'error' });
         }
     }
 
     async handleUndoRevoke(event) {
         event.stopPropagation();
         const sharedInfoId = event.currentTarget.dataset.sharedInfoId;
-        const contactName = event.currentTarget.dataset.contactName;
         try {
             await undoRevokeSharedContactInfo({ sharedContactInfoId: sharedInfoId });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Restored',
-                message: `Sharing with ${contactName} has been restored.`,
-                variant: 'success'
-            }));
+            // The contact moves back to the Shared list on reload — the surface
+            // change is the confirmation, so no banner.
             this._contactsLoaded = false;
             await this._loadContacts();
         } catch (error) {
-            const msg = error.body?.message || error.message || 'Failed to restore.';
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));
+            const msg = error.body?.message || error.message || 'We couldn’t restore sharing just now. Please try again.';
+            fireToast({ message: msg, variant: 'error' });
         }
     }
 

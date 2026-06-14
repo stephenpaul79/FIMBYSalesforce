@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate } from 'c/fimbyNavigation';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import getManagedRelationships from '@salesforce/apex/FimbySupportRelationshipController.getManagedRelationships';
 import getMyPaperRelationships from '@salesforce/apex/FimbySupportRelationshipController.getMyPaperRelationships';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
@@ -284,7 +285,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
                 location.href = '/';
             })
             .catch(err => {
-                this.error = err?.body?.message || 'We couldn\'t switch right now. Give it another try?';
+                fireErrorToast(err, 'We couldn’t switch right now. Give it another try?');
             });
     }
 
@@ -445,7 +446,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         action
             .then(() => { this.loadRelationships(); })
             .catch(err => {
-                this.error = err?.body?.message || 'Something went wrong.';
+                fireErrorToast(err);
             });
         this._pendingRelId = null;
     }
@@ -468,7 +469,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         confirmRelationship({ relationshipId: relId })
             .then(() => { this.loadRelationships(); })
             .catch(err => {
-                this.error = err?.body?.message || 'Could not confirm the connection.';
+                fireErrorToast(err, 'Could not confirm the connection.');
             });
     }
 

@@ -387,20 +387,6 @@
     line-height: 1.5;
 }
 
-/* ========== ERROR BANNER ========== */
-
-.save-error-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 2rem;
-    background: var(--fimby-error-tint, #fef2f2);
-    color: var(--fimby-error, #c23934);
-    font-size: 0.85rem;
-    line-height: 1.4;
-    border-top: 1px solid var(--fimby-error, #c23934);
-}
-
 /* ========== FOOTER ========== */
 
 .modal-footer {

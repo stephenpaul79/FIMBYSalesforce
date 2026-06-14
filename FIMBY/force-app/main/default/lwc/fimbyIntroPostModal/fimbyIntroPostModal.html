@@ -59,12 +59,6 @@
                                             Upload a different one
                                         </button>
                                     </div>
-                                    <template lwc:if={_errorMessage}>
-                                        <div class="intro-modal-error" role="alert">
-                                            <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
-                                            <span>{_errorMessage}</span>
-                                        </div>
-                                    </template>
                                 </div>
                             </template>
                             <template lwc:if={showPhotoUploader}>
@@ -98,13 +92,6 @@
                             <span class="intro-modal-meta-label">Posting to Shared Life &middot; Bio</span>
                             <span class="intro-modal-meta-count">{characterCount} characters</span>
                         </div>
-
-                        <template lwc:if={_errorMessage}>
-                            <div class="intro-modal-error" role="alert">
-                                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
-                                <span>{_errorMessage}</span>
-                            </div>
-                        </template>
                     </template>
                 </div>
 

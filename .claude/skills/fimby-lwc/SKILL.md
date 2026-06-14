@@ -105,6 +105,31 @@ Apply to all Apex/record image URLs. **Not** to static resources (`IMPACT_ICONS`
 ## Quick-Response Modal (`fimbyQuickResponseModal`)
 All feed response interactions use this single reusable modal with type-switching variants. **Do not** navigate to deprecated `/respond`, `/reserve-share`, `/borrow-item`. Community Event = inline 1-click (no modal); Open Event = modal w/ guest stepper from feed, inline from detail; Gathering/Ask/Offer/Bulk Buy/Library = form modal; Story = comment modal (feed) or `fimbyCommentComposer` (detail). After close/inline action, cards/detail update in-place (no reload, scroll preserved).
 
+## User feedback — toasts & inline banners (NO `ShowToastEvent`)
+`ShowToastEvent` / `lightning/platformShowToastEvent` **does not render** in our LWR Experience Cloud site — it silently no-ops. Never import or dispatch it. Two mechanisms, each with one job:
+
+| Outcome | Mechanism | Why |
+|---------|-----------|-----|
+| **Operation failure** (server/FLS/network: "Couldn't save — try again") | **`fireToast` / `fireErrorToast`** from `c/fimbyToastHelper` → shell-mounted `c-fimby-toast` | Must interrupt and be seen regardless of scroll. Global, assertive, auto-dismiss. |
+| **In-form validation** ("Name is required", "Pick a date") | **`c-fimby-inline-banner`** `variant="error"`, next to the field | Validation belongs in context. Toasting it is an anti-pattern. |
+| **Success** | **`c-fimby-inline-banner`** `variant="success"` if the user **stays**; **nothing** if the action navigates away / removes the item from a list | Success is contextual and quiet. The surface change is its own confirmation. |
+
+```javascript
+import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
+// operation failure:
+catch (error) { fireErrorToast(error); }            // pulls AuraHandledException message
+// or explicit: fireToast({ message: 'Couldn’t reach the server.', variant: 'error' });
+```
+```html
+<!-- success kept on-page -->
+<c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
+<!-- in-form validation -->
+<c-fimby-inline-banner variant="error" message={fieldError}></c-fimby-inline-banner>
+```
+- `c-fimby-toast` is mounted **once** in the shell (`fimbyUniversalHeader`) so it survives soft nav — don't add it per page. `fireToast` variants: `error` (default) / `warning` / `info` (no `success` — success is never a toast).
+- `c-fimby-inline-banner` handles `role`/`aria-live` itself (error/warning = `alert`/assertive, success/info = `status`/polite) and renders nothing when `message` is empty. Icon + text always (colour never the sole signal).
+- **Don't** hand-roll `errorMessage`/`_error`/`this.error` banner markup — route through `c-fimby-inline-banner` for uniform roles/styling. Reference implementation: `fimbyModeratorTaskPage` (success banner + toast on failure) and `fimbyModeratorDashboard` (toast on failure, no success banner because actions clear the task from the queue).
+
 ## Confetti — DOM-based only
 Use `fireEmojiConfetti({ emojis, style, intensity })` from `fimbyConfettiHelper` (pure-DOM `element.animate()`). **Do not** import `loadScript(CONFETTI)`, `buildEmojiShapes`, or canvas confetti — deprecated (WebView emoji failures). The `Confetti` static resource is rollback insurance only.
 

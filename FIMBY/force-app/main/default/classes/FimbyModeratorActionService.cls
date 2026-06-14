@@ -304,10 +304,31 @@ public without sharing class FimbyModeratorActionService {
     }
 
     public static void sendWelcomeMessage(Id contactId, String messageBody, Id taskId, Id moderatorContactId) {
+        if (String.isBlank(messageBody)) {
+            throw new AuraHandledException('Please write a short welcome message before sending.');
+        }
+
         Contact c = [SELECT Id, Welcomed_By__c FROM Contact WHERE Id = :contactId LIMIT 1];
         c.Welcomed_By__c = moderatorContactId;
         c.Welcomed_Date__c = Datetime.now();
         update c;
+
+        Id conversationId = getOrCreateModeratorConversation(moderatorContactId, contactId);
+
+        // Terse, static context line so the new neighbour knows this DM is an
+        // official welcome and not a stranger reaching out.
+        insert new Message__c(
+            Conversation__c = conversationId,
+            Body__c = 'Neighbourhood moderator welcome',
+            Sent_Date__c = Datetime.now(),
+            Status__c = FimbyConstants.MESSAGE_SENT,
+            Is_System_Message__c = true
+        );
+
+        // Send the moderator's actual message through the normal DM path so the
+        // recipient gets the conversation preview, unread badge, and message
+        // notification exactly like any other message.
+        FimbyMessageController.sendMessage(conversationId, messageBody);
 
         if (taskId != null) {
             resolveTask(taskId, 'Resolved', 'Welcome sent', moderatorContactId);

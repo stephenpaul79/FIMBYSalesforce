@@ -3,6 +3,7 @@ import reportFollowUp from '@salesforce/apex/FimbyFollowUpController.reportFollo
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 
 const REASON_OPTIONS = [
     { label: 'Missed pickup', value: 'Missed_Pickup_Window' },
@@ -19,7 +20,6 @@ export default class FimbyNotRespondingModal extends LightningElement {
     @track message = '';
     @track reasonSubtype = '';
     @track isSubmitting = false;
-    @track errorMessage = '';
 
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
@@ -99,20 +99,17 @@ export default class FimbyNotRespondingModal extends LightningElement {
         this.isOpen = true;
         this.message = '';
         this.reasonSubtype = '';
-        this.errorMessage = '';
     }
 
     @api
     hide() {
         this.isOpen = false;
         this.isSubmitting = false;
-        this.errorMessage = '';
     }
 
     async handleSubmit() {
         if (!this.isValid || this.isSubmitting || !this.reservationId) return;
         this.isSubmitting = true;
-        this.errorMessage = '';
         try {
             const result = await reportFollowUp({
                 reservationId: this.reservationId,
@@ -128,8 +125,7 @@ export default class FimbyNotRespondingModal extends LightningElement {
             );
             this.hide();
         } catch (err) {
-            this.errorMessage =
-                err?.body?.message || err?.message || 'Failed to send check-in';
+            fireErrorToast(err, 'We couldn’t send your check-in just now. Please try again.');
         } finally {
             this.isSubmitting = false;
         }

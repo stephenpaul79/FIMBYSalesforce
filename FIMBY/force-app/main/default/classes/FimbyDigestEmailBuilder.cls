@@ -18,16 +18,13 @@ public without sharing class FimbyDigestEmailBuilder {
     private static final Integer MAX_CARDS_PER_SECTION = 5;
     private static final Integer SNIPPET_LENGTH = 120;
 
-    // Adaptive image layout: photos with a width/height ratio below this render in a
-    // two-column card (image left, text right) so portrait/square faces are never cropped;
-    // wider photos stay stacked (image on top, text below) at their true height.
-    private static final Decimal LANDSCAPE_MIN_RATIO = 1.15;
-    private static final Integer CARD_WIDTH = 552;
-    private static final Integer STACKED_MIN_HEIGHT = 180;
-    private static final Integer STACKED_MAX_HEIGHT = 460;
-    private static final Integer TWO_COL_IMG_HEIGHT = 210;
-    private static final Integer TWO_COL_IMG_MIN_WIDTH = 120;
-    private static final Integer TWO_COL_IMG_MAX_WIDTH = 240;
+    // Adaptive image layout: every card is side-by-side (image left, text right). The image
+    // uses one fixed width across all orientations so the text column aligns down the whole
+    // email; its height follows the photo's true ratio (no crop) and the card height flexes
+    // to whichever column is taller. The image is vertically centred beside the text.
+    private static final Integer IMG_WIDTH = 220;
+    // Legacy records store no ratio; fall back to a landscape-shaped thumbnail (center-cropped).
+    private static final Integer LEGACY_IMG_HEIGHT = 165;
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
 
     private static String stripTrailingSlash(String url) {
@@ -146,7 +143,6 @@ public without sharing class FimbyDigestEmailBuilder {
             String windowWord = resolveCrossFimbyWindowWord(frequency, startDt, endDt);
             Integer variant = Math.mod(Math.abs(Crypto.getRandomInteger()), 4);
             Integer count;
-            String formatString;
 
             if (variant == 0) {
                 count = [
@@ -154,7 +150,6 @@ public without sharing class FimbyDigestEmailBuilder {
                     WHERE RecordType.DeveloperName = 'Offer'
                       AND CreatedDate >= :startDt AND CreatedDate <= :endDt
                 ];
-                formatString = 'across FIMBY this {window}, {n} neighbours offered something.';
             } else if (variant == 1) {
                 count = [
                     SELECT COUNT() FROM Needs_Offers__c
@@ -162,30 +157,55 @@ public without sharing class FimbyDigestEmailBuilder {
                       AND Status__c = 'Completed (Offer Accepted / Need Met)'
                       AND LastModifiedDate >= :startDt AND LastModifiedDate <= :endDt
                 ];
-                formatString = 'across FIMBY this {window}, {n} asks were met by someone close by.';
             } else if (variant == 2) {
                 count = [
                     SELECT COUNT() FROM Loaned_Item__c
                     WHERE CreatedDate >= :startDt AND CreatedDate <= :endDt
                 ];
-                formatString = 'across FIMBY this {window}, {n} things changed hands and came back.';
             } else {
                 count = [
                     SELECT COUNT() FROM Story__c
                     WHERE CreatedDate >= :startDt AND CreatedDate <= :endDt
                 ];
-                formatString = 'across FIMBY this {window}, {n} stories were shared.';
             }
 
             if (count == null || count == 0) {
                 return '';
             }
-            return formatString
-                .replace('{window}', windowWord)
-                .replace('{n}', String.valueOf(count));
+            return formatCrossFimbyLine(variant, count, windowWord);
         } catch (Exception e) {
             return '';
         }
+    }
+
+    /**
+     * @description Formats one cross-FIMBY aggregate line, choosing singular or plural copy
+     * from the count so a value of 1 never reads "1 stories were shared".
+     */
+    @TestVisible
+    private static String formatCrossFimbyLine(Integer variant, Integer count, String windowWord) {
+        Boolean isOne = (count == 1);
+        String formatString;
+        if (variant == 0) {
+            formatString = isOne
+                ? 'across FIMBY this {window}, {n} neighbour offered something.'
+                : 'across FIMBY this {window}, {n} neighbours offered something.';
+        } else if (variant == 1) {
+            formatString = isOne
+                ? 'across FIMBY this {window}, {n} ask was met by someone close by.'
+                : 'across FIMBY this {window}, {n} asks were met by someone close by.';
+        } else if (variant == 2) {
+            formatString = isOne
+                ? 'across FIMBY this {window}, {n} thing changed hands and came back.'
+                : 'across FIMBY this {window}, {n} things changed hands and came back.';
+        } else {
+            formatString = isOne
+                ? 'across FIMBY this {window}, {n} story was shared.'
+                : 'across FIMBY this {window}, {n} stories were shared.';
+        }
+        return formatString
+            .replace('{window}', windowWord)
+            .replace('{n}', String.valueOf(count));
     }
 
     @TestVisible
@@ -642,40 +662,26 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Assembles a feed card, choosing the layout from the photo's aspect ratio:
-     * portrait/square photos use a two-column layout (image left, text right) so faces are
-     * never cropped; landscape photos stay stacked (image on top) at their true height.
-     * Records with no stored ratio fall back to the legacy stacked letterbox.
+     * @description Assembles a feed card with a side-by-side layout: a fixed-width image on
+     * the left and the text on the right. The image uses one width for every orientation so
+     * the text column aligns across all cards; its height follows the photo's true ratio so
+     * faces are never cropped, and the card height flexes to whichever column is taller.
+     * Records with no stored ratio fall back to a center-cropped landscape thumbnail. Cards
+     * with no image render text only.
      */
     private static String buildCard(String imageUrl, String ratioStr, String bodyHtml) {
-        Boolean hasImage = String.isNotBlank(imageUrl);
+        if (String.isBlank(imageUrl)) {
+            return openCard() + openCardBody() + bodyHtml + closeCardBody();
+        }
+
         Decimal ratio = FimbyEmailHtmlBuilder.parseImageRatio(ratioStr);
+        Integer imgHeight = (ratio == null)
+            ? LEGACY_IMG_HEIGHT
+            : (IMG_WIDTH / ratio).round(System.RoundingMode.HALF_UP).intValue();
 
-        String html = openCard();
-        if (hasImage && ratio != null && ratio < LANDSCAPE_MIN_RATIO) {
-            Integer imgWidth = clampInt(
-                (TWO_COL_IMG_HEIGHT * ratio).round(System.RoundingMode.HALF_UP).intValue(),
-                TWO_COL_IMG_MIN_WIDTH, TWO_COL_IMG_MAX_WIDTH
-            );
-            html += FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, imgWidth, TWO_COL_IMG_HEIGHT, bodyHtml);
-            html += '</table>';
-            return html;
-        }
-
-        if (hasImage) {
-            Integer stackedHeight = (ratio != null)
-                ? clampInt((CARD_WIDTH / ratio).round(System.RoundingMode.HALF_UP).intValue(), STACKED_MIN_HEIGHT, STACKED_MAX_HEIGHT)
-                : 200;
-            html += FimbyEmailHtmlBuilder.buildCardImage(imageUrl, stackedHeight);
-        }
-        html += openCardBody() + bodyHtml + closeCardBody();
-        return html;
-    }
-
-    private static Integer clampInt(Integer value, Integer lo, Integer hi) {
-        if (value < lo) { return lo; }
-        if (value > hi) { return hi; }
-        return value;
+        return openCard()
+            + FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, IMG_WIDTH, imgHeight, bodyHtml)
+            + '</table>';
     }
 
     private static String openCardBody() {

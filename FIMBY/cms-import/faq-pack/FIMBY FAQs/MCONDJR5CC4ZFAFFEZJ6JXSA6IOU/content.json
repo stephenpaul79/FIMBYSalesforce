@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I thank someone?",
+  "contentBody" : {
+    "question" : "How do I thank someone?",
+    "answer" : "<p>When a neighbour helps you through an ask, offer, or a lend, open that response and tap <strong>Say Thanks</strong>, write a short note, and tap <strong>Send Thanks</strong>.</p><p>Your thank-you appears as a little celebration right inside the conversation, and the neighbour gets a notification. You will find your responses in <a href='/messages'>Messages</a>.</p>",
+    "sortOrder" : "320",
+    "category" : "Messaging"
+  },
+  "urlName" : "how-do-i-thank-someone"
+}

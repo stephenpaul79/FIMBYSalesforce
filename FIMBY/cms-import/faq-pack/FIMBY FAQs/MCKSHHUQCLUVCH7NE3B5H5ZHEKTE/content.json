@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What are Events, and what is the difference between the types?",
+  "contentBody" : {
+    "question" : "What are Events, and what is the difference between the types?",
+    "answer" : "<p>Events are posts for things happening nearby. Tap the <strong>+</strong> button and choose <strong>Post an Event</strong> (<a href='/ask-or-offer-post?type=Event'>post an event</a>), then pick a type:</p><ul><li><strong>Gathering</strong> - a smaller hosted get-together with limited spots. Guests <strong>RSVP</strong> and the host accepts them until it is full.</li><li><strong>Open Event</strong> - everyone is welcome and there is no limit. Neighbours tap <strong>I'm Going</strong>.</li><li><strong>Community Event</strong> - something a neighbour is sharing that someone else is running. Neighbours tap <strong>I'm Interested</strong>.</li></ul><p>Only Gatherings have limited spots - Open and Community Events never fill up.</p>",
+    "sortOrder" : "120",
+    "category" : "Posting & Sharing"
+  },
+  "urlName" : "what-are-events"
+}

@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "How do I switch who I am acting as?",
+  "contentBody" : {
+    "question" : "How do I switch who I am acting as?",
+    "answer" : "<p>Open the menu in the top-right corner. Near the top you will see yourself and anyone you support or represent - tap one to switch into it.</p><p>While you are acting as someone else, a small chip with their name appears next to the FIMBY logo. Tap it any time to switch back to yourself. You manage all of your connections from <a href='/manage-identities'>Manage identities</a>.</p>",
+    "sortOrder" : "510",
+    "category" : "Acting for Others"
+  },
+  "urlName" : "how-do-i-switch-identity"
+}

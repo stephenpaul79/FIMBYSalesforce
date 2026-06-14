@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "Who is my neighbourhood moderator?",
+  "contentBody" : {
+    "question" : "Who is my neighbourhood moderator?",
+    "answer" : "<p>Your moderator is a neighbour who helps keep your neighbourhood safe and welcoming. They review reports and lend a hand with things that affect the community.</p><p>If your neighbourhood has one, you will see them on this Help page under <strong>Your Neighbourhood Moderator</strong>, with a <strong>Message Your Moderator</strong> button so you can reach out.</p>",
+    "sortOrder" : "430",
+    "category" : "Trust & Safety"
+  },
+  "urlName" : "who-is-my-moderator"
+}

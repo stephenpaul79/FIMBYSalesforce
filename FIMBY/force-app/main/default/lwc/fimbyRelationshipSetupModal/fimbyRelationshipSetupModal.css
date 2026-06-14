@@ -246,15 +246,6 @@
     color: var(--fimby-text-muted);
     margin: 0 0 16px;
 }
-.error-msg {
-    background-color: var(--fimby-error-tint, #fef2f2);
-    color: var(--fimby-error, #dc2626);
-    padding: 10px 14px;
-    border-radius: var(--fimby-radius-sm);
-    margin-top: 12px;
-    font-size: 0.85rem;
-}
-
 .modal-footer {
     display: flex;
     justify-content: space-between;

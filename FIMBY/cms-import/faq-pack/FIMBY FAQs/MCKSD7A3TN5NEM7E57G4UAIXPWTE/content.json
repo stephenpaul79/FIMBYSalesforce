@@ -1,0 +1,11 @@
+{
+  "type" : "fimby_faq_item",
+  "title" : "What is vouching, and why does it matter?",
+  "contentBody" : {
+    "question" : "What is vouching, and why does it matter?",
+    "answer" : "<p>Vouching is how neighbours welcome one another into the trusted circle. A vouch is personal - one neighbour, or a community group representative, saying they know you and you belong here. A vouch is what opens the <a href='/library-list'>lending library</a> for you.</p><p>To ask for one, tap <strong>Request a vouch</strong> - you will see this on your <a href='/profile'>profile</a> and in the Library before you are vouched. Choose a <strong>Neighbour</strong> or a <strong>Community group</strong> and send the request; they can approve or decline privately.</p><p>You need to be acting as yourself to give or request a vouch.</p>",
+    "sortOrder" : "400",
+    "category" : "Trust & Safety"
+  },
+  "urlName" : "what-is-vouching"
+}

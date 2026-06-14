@@ -127,20 +127,6 @@
     min-height: 120px;
 }
 
-.error-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background-color: var(--fimby-error-tint, #FFF0F0);
-    border: 1px solid var(--fimby-error-border, #FFC9C9);
-    border-radius: var(--fimby-radius-sm, 8px);
-    color: var(--fimby-error, #C13030);
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
 .secondary-btn {
     padding: 10px 20px;
     border: 1px solid var(--fimby-border-default, #D4CCBF);

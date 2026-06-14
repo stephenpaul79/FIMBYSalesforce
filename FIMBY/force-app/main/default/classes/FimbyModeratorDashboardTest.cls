@@ -1280,11 +1280,46 @@ public class FimbyModeratorDashboardTest {
         Moderator_Task__c task = insertPreClaimedTask(nh.Id, 'New_Signup', 'welcome');
 
         Test.startTest();
-        FimbyModeratorActionService.sendWelcomeMessage(contacts[1].Id, 'Welcome neighbour!', task.Id, contacts[0].Id);
+        System.runAs(getModeratorUser()) {
+            FimbyModeratorActionService.sendWelcomeMessage(contacts[1].Id, 'Welcome neighbour!', task.Id, contacts[0].Id);
+        }
         Test.stopTest();
 
         Contact updated = [SELECT Welcomed_By__c FROM Contact WHERE Id = :contacts[1].Id];
         System.assertEquals(contacts[0].Id, updated.Welcomed_By__c);
+
+        // The conversation now holds the terse system line + the actual welcome.
+        List<Message__c> messages = [
+            SELECT Body__c, Is_System_Message__c
+            FROM Message__c
+            ORDER BY Is_System_Message__c DESC
+        ];
+        System.assertEquals(2, messages.size(), 'A system context line and the welcome message should both be created.');
+        System.assertEquals('Neighbourhood moderator welcome', messages[0].Body__c, 'System context line should be present.');
+        System.assertEquals(true, messages[0].Is_System_Message__c, 'Context line should be a system message.');
+        System.assertEquals('Welcome neighbour!', messages[1].Body__c, 'The moderator message body should be posted.');
+        System.assertEquals(false, messages[1].Is_System_Message__c, 'The welcome itself is a normal message.');
+    }
+
+    @isTest
+    static void testSendWelcomeMessageBlankBodyThrows() {
+        Account nh = getNeighbourhood();
+        List<Contact> contacts = getContacts();
+        Moderator_Task__c task = insertPreClaimedTask(nh.Id, 'New_Signup', 'welcomeblank');
+
+        Boolean threw = false;
+        Test.startTest();
+        System.runAs(getModeratorUser()) {
+            try {
+                FimbyModeratorActionService.sendWelcomeMessage(contacts[1].Id, '   ', task.Id, contacts[0].Id);
+            } catch (AuraHandledException e) {
+                threw = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, threw, 'A blank welcome body should be rejected.');
+        System.assertEquals(0, [SELECT COUNT() FROM Message__c], 'No messages should be created when the body is blank.');
     }
 
     @isTest
