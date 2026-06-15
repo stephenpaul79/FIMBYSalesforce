@@ -120,7 +120,7 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
           name: "Default",
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: "#67BBD2",
+          lightColor: "#3A7D8C",
         });
 
         // Additional channels for different notification types
@@ -129,14 +129,14 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
           description: "Direct message notifications",
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: "#67BBD2",
+          lightColor: "#3A7D8C",
         });
 
         await Notifications.setNotificationChannelAsync("activity", {
           name: "Activity",
           description: "Marketplace, library, and story notifications",
           importance: Notifications.AndroidImportance.DEFAULT,
-          lightColor: "#67BBD2",
+          lightColor: "#3A7D8C",
         });
       }
 

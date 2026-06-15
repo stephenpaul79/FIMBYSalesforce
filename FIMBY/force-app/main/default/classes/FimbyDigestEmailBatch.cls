@@ -76,15 +76,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                     continue;
                 }
 
-                List<Id> userIds = new List<Id>();
-                for (User u : recipients) {
-                    userIds.add(u.Id);
-                }
-
-                System.enqueueJob(new FimbyDigestEmailSendQueueable(
-                    nh.Id, nh.Name, frequency, windowStart, windowEnd,
-                    content.html, content.itemCount, userIds
-                ));
+                dispatchRecipients(nh, builderCadence, content, recipients, skippedLogs);
             } catch (Exception e) {
                 FimbyLogger.error('FimbyDigestEmailBatch', 'execute', e, nh.Id);
             }
@@ -97,6 +89,121 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                 FimbyLogger.error('FimbyDigestEmailBatch', 'execute-upsert-skipped', e);
             }
         }
+    }
+
+    /**
+     * @description Partitions a neighbourhood's recipients into a clean cohort (no active
+     * blocks — reuses the shared HTML + base idempotency key) and one or more blocker cohorts.
+     * Recipients on either side of a block get a per-cohort filtered build that hides the
+     * blocked author's cards. Cohorts with identical exclusion sets share one filtered build
+     * (de-duped by a sorted-Id signature), and that signature is the variant key threaded
+     * into the queueable + any Skipped log so variant rows never collide with the base row.
+     */
+    private void dispatchRecipients(
+        Account nh, String builderCadence,
+        FimbyDigestEmailBuilder.DigestResult sharedContent,
+        List<User> recipients, List<Digest_Email_Log__c> skippedLogs
+    ) {
+        Map<Id, Set<Id>> exclusionByContact = buildBidirectionalExclusionMap(recipients);
+
+        List<Id> cleanUserIds = new List<Id>();
+        Map<String, List<Id>> userIdsBySignature = new Map<String, List<Id>>();
+        Map<String, Set<Id>> exclusionBySignature = new Map<String, Set<Id>>();
+
+        for (User u : recipients) {
+            Set<Id> excl = u.ContactId != null ? exclusionByContact.get(u.ContactId) : null;
+            if (excl == null || excl.isEmpty()) {
+                cleanUserIds.add(u.Id);
+                continue;
+            }
+            String signature = buildExclusionSignature(excl);
+            if (!userIdsBySignature.containsKey(signature)) {
+                userIdsBySignature.put(signature, new List<Id>());
+                exclusionBySignature.put(signature, excl);
+            }
+            userIdsBySignature.get(signature).add(u.Id);
+        }
+
+        if (!cleanUserIds.isEmpty()) {
+            System.enqueueJob(new FimbyDigestEmailSendQueueable(
+                nh.Id, nh.Name, frequency, windowStart, windowEnd,
+                sharedContent.html, sharedContent.itemCount, cleanUserIds
+            ));
+        }
+
+        for (String signature : userIdsBySignature.keySet()) {
+            FimbyDigestEmailBuilder.DigestResult filtered =
+                FimbyDigestEmailBuilder.buildDigestContent(
+                    nh.Id, nh.Name, builderCadence, windowStart, windowEnd,
+                    exclusionBySignature.get(signature)
+                );
+
+            if (filtered.isEmpty) {
+                skippedLogs.add(buildSkippedLog(
+                    nh.Id, filtered.itemCount, SKIP_REASON_NO_CONTENT, signature
+                ));
+                continue;
+            }
+
+            System.enqueueJob(new FimbyDigestEmailSendQueueable(
+                nh.Id, nh.Name, frequency, windowStart, windowEnd,
+                filtered.html, filtered.itemCount, userIdsBySignature.get(signature), signature
+            ));
+        }
+    }
+
+    /**
+     * @description Batched form of FimbyBlockingHelper.getBidirectionalBlocks: one query
+     * resolves, per recipient Contact, the set of Contact Ids to hide. If A blocks B then
+     * A's set contains B AND B's set contains A (symmetry). Recipients with no blocks are
+     * absent from the map.
+     */
+    @TestVisible
+    private Map<Id, Set<Id>> buildBidirectionalExclusionMap(List<User> recipients) {
+        Set<Id> recipientContactIds = new Set<Id>();
+        for (User u : recipients) {
+            if (u.ContactId != null) {
+                recipientContactIds.add(u.ContactId);
+            }
+        }
+
+        Map<Id, Set<Id>> exclusionByContact = new Map<Id, Set<Id>>();
+        if (recipientContactIds.isEmpty()) {
+            return exclusionByContact;
+        }
+
+        for (Blocked_Contact__c bc : [
+            SELECT Blocker__c, Blocked__c
+            FROM Blocked_Contact__c
+            WHERE Blocker__c IN :recipientContactIds OR Blocked__c IN :recipientContactIds
+        ]) {
+            if (bc.Blocker__c != null && bc.Blocked__c != null) {
+                if (recipientContactIds.contains(bc.Blocker__c)) {
+                    addExclusion(exclusionByContact, bc.Blocker__c, bc.Blocked__c);
+                }
+                if (recipientContactIds.contains(bc.Blocked__c)) {
+                    addExclusion(exclusionByContact, bc.Blocked__c, bc.Blocker__c);
+                }
+            }
+        }
+        return exclusionByContact;
+    }
+
+    private static void addExclusion(Map<Id, Set<Id>> exclusionByContact, Id viewer, Id hidden) {
+        if (!exclusionByContact.containsKey(viewer)) {
+            exclusionByContact.put(viewer, new Set<Id>());
+        }
+        exclusionByContact.get(viewer).add(hidden);
+    }
+
+    @TestVisible
+    private static String buildExclusionSignature(Set<Id> excluded) {
+        List<String> ids = new List<String>();
+        for (Id excludedId : excluded) {
+            ids.add(String.valueOf(excludedId));
+        }
+        ids.sort();
+        return String.join(ids, ',');
     }
 
     global void finish(Database.BatchableContext ctx) {
@@ -157,6 +264,16 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
     }
 
     private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason) {
+        return buildSkippedLog(nhId, itemCount, reason, null);
+    }
+
+    /**
+     * @description Skipped log row. variantKey is null for the base no-content / no-recipients
+     * skips and set (to the cohort's exclusion signature) for an empty-filtered variant cohort,
+     * so a variant's Skipped row keys on the variant idempotency key and never overwrites the
+     * clean cohort's base row for the same neighbourhood + cadence + window.
+     */
+    private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason, String variantKey) {
         return new Digest_Email_Log__c(
             Neighbourhood__c = nhId,
             Cadence__c = resolveLogCadence(frequency),
@@ -167,7 +284,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
             Template_Version__c = 'FimbyEmailHtmlBuilder',
             Error_Message__c = reason?.abbreviate(255),
             Idempotency_Key__c = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
-                nhId, frequency, windowStart, windowEnd
+                nhId, frequency, windowStart, windowEnd, variantKey
             )
         );
     }

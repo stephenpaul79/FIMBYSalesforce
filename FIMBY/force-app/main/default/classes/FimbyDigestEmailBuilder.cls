@@ -53,16 +53,37 @@ public without sharing class FimbyDigestEmailBuilder {
         Id neighbourhoodId, String neighbourhoodName,
         String frequency, Date windowStart, Date windowEnd
     ) {
+        return buildDigestContent(
+            neighbourhoodId, neighbourhoodName, frequency,
+            windowStart, windowEnd, new Set<Id>()
+        );
+    }
+
+    /**
+     * @description Per-viewer build: identical to the 5-arg build but excludes any feed card
+     * whose represented owner OR real author is in excludedAuthorContactIds. Used by the batch
+     * to hide blocked neighbours' content from recipients on either side of a block. The
+     * 5-arg signature delegates here with an empty set (NOT IN :emptySet matches all rows).
+     * The exclusion flows into each section's count query too, so "and N more" counts never
+     * include hidden authors. Resolution + cross-FIMBY rollups and the anchor card stay
+     * unfiltered by design — they are counts / evergreen content with no PII.
+     */
+    public static DigestResult buildDigestContent(
+        Id neighbourhoodId, String neighbourhoodName,
+        String frequency, Date windowStart, Date windowEnd,
+        Set<Id> excludedAuthorContactIds
+    ) {
         DigestResult result = new DigestResult();
+        Set<Id> excluded = excludedAuthorContactIds != null ? excludedAuthorContactIds : new Set<Id>();
         Datetime windowStartDt = Datetime.newInstance(windowStart, Time.newInstance(0, 0, 0, 0));
         Datetime windowEndDt = Datetime.newInstance(windowEnd, Time.newInstance(23, 59, 59, 0));
 
         String resolutionHtml = buildResolutionSection(neighbourhoodId, frequency, windowStartDt, windowEndDt);
-        String storiesHtml = buildStoriesSection(neighbourhoodId, windowStartDt, windowEndDt);
-        String asksOffersHtml = buildAsksOffersSection(neighbourhoodId, windowStartDt, windowEndDt);
-        String eventsHtml = buildEventsSection(neighbourhoodId, windowStartDt, windowEndDt);
-        String bulkBuysHtml = buildBulkBuysSection(neighbourhoodId, windowStartDt, windowEndDt);
-        String libraryHtml = buildLibrarySection(neighbourhoodId, windowStartDt, windowEndDt);
+        String storiesHtml = buildStoriesSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
+        String asksOffersHtml = buildAsksOffersSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
+        String eventsHtml = buildEventsSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
+        String bulkBuysHtml = buildBulkBuysSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
+        String libraryHtml = buildLibrarySection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
 
         Integer feedCardCount = countItems(storiesHtml) + countItems(asksOffersHtml)
             + countItems(eventsHtml) + countItems(bulkBuysHtml) + countItems(libraryHtml);
@@ -313,7 +334,7 @@ public without sharing class FimbyDigestEmailBuilder {
      * Feed-card sections
      * --------------------------------------------------------------- */
 
-    private static String buildStoriesSection(Id nhId, Datetime startDt, Datetime endDt) {
+    private static String buildStoriesSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Story__c> stories = [
             SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c,
                    Posted_By__r.Name, Posted_By__r.FirstName, Posted_By__r.Image_URL__c,
@@ -321,6 +342,8 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
               AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Posted_By__c NOT IN :excluded
+              AND Contact__c NOT IN :excluded
             ORDER BY CreatedDate DESC
             LIMIT 10
         ];
@@ -346,7 +369,7 @@ public without sharing class FimbyDigestEmailBuilder {
         }
     }
 
-    private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt) {
+    private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
             'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
@@ -355,7 +378,8 @@ public without sharing class FimbyDigestEmailBuilder {
             'AND RecordType.DeveloperName IN (\'Need\', \'Offer\') ' +
             'AND Type__c != \'Event\' ' +
             'AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt ' +
-            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\') ';
+            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\') ' +
+            'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
 
         Integer max = MAX_CARDS_PER_SECTION;
         List<Needs_Offers__c> tier1 = Database.query(
@@ -408,7 +432,8 @@ public without sharing class FimbyDigestEmailBuilder {
         Datetime startDt,
         Datetime endDt,
         Set<Id> liveRecurringOccurrenceIds,
-        Date today
+        Date today,
+        Set<Id> excluded
     ) {
         String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
             'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
@@ -420,7 +445,8 @@ public without sharing class FimbyDigestEmailBuilder {
             'AND CreatedDate >= :startDt AND CreatedDate <= :endDt ' +
             'AND Status__c IN (\'Posted\', \'Available\') ' +
             'AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today)) ' +
-            'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ';
+            'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ' +
+            'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
 
         Integer max = MAX_CARDS_PER_SECTION;
         List<Needs_Offers__c> tier1 = Database.query(
@@ -450,8 +476,8 @@ public without sharing class FimbyDigestEmailBuilder {
         return new TieredDigestResult(cards, totalCount);
     }
 
-    private static String buildAsksOffersSection(Id nhId, Datetime startDt, Datetime endDt) {
-        TieredDigestResult result = queryTieredAskOffers(nhId, startDt, endDt);
+    private static String buildAsksOffersSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
+        TieredDigestResult result = queryTieredAskOffers(nhId, startDt, endDt, excluded);
         if (result.cards.isEmpty()) { return ''; }
 
         String html = buildSectionHeader('Asks & Offers', EARTH_SAGE);
@@ -486,11 +512,11 @@ public without sharing class FimbyDigestEmailBuilder {
         return liveIds;
     }
 
-    private static String buildEventsSection(Id nhId, Datetime startDt, Datetime endDt) {
+    private static String buildEventsSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         Date today = Date.today();
         Set<Id> liveRecurringOccurrenceIds = resolveLiveRecurringOccurrenceIds(nhId);
         TieredDigestResult result = queryTieredEvents(
-            nhId, startDt, endDt, liveRecurringOccurrenceIds, today
+            nhId, startDt, endDt, liveRecurringOccurrenceIds, today, excluded
         );
         if (result.cards.isEmpty()) { return ''; }
 
@@ -504,7 +530,7 @@ public without sharing class FimbyDigestEmailBuilder {
         return html;
     }
 
-    private static String buildBulkBuysSection(Id nhId, Datetime startDt, Datetime endDt) {
+    private static String buildBulkBuysSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Needs_Offers__c> bulkBuys = [
             SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
@@ -516,6 +542,8 @@ public without sharing class FimbyDigestEmailBuilder {
               AND RecordType.DeveloperName = 'Bulk_Buy'
               AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
+              AND Contact__c NOT IN :excluded
+              AND Posted_By__c NOT IN :excluded
             ORDER BY Posted_Date__c DESC
             LIMIT 10
         ];
@@ -532,7 +560,7 @@ public without sharing class FimbyDigestEmailBuilder {
         return html;
     }
 
-    private static String buildLibrarySection(Id nhId, Datetime startDt, Datetime endDt) {
+    private static String buildLibrarySection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Library_Item__c> items = [
             SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
                    Owner_Contact__r.Name, Owner_Contact__r.FirstName, Owner_Contact__r.Image_URL__c,
@@ -540,6 +568,8 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Library_Item__c
             WHERE Neighbourhood__c = :nhId
               AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Owner_Contact__c NOT IN :excluded
+              AND Listed_By__c NOT IN :excluded
             ORDER BY CreatedDate DESC
             LIMIT 10
         ];

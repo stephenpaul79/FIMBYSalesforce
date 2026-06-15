@@ -2028,7 +2028,10 @@ export default function IndexScreen() {
     const themeColors = THEME_COLORS[appTheme];
     const handoffPalette = PREAUTH_COLORS[appTheme];
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: themeColors.statusBar }]} edges={["top"]}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: themeColors.statusBar }]}
+        edges={Platform.OS === "android" ? ["top", "bottom"] : ["top"]}
+      >
         <StatusBar style={themeColors.barStyle} backgroundColor={themeColors.statusBar} />
         <Stack.Screen options={{ headerShown: false }} />
         <WebView

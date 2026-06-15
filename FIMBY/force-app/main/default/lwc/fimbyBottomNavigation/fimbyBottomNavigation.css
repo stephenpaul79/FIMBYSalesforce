@@ -23,7 +23,11 @@
     background-color: var(--fimby-surface-card, #FAF7F2);
     border-top: 1px solid var(--fimby-border-subtle, #E0D9CF);
     z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom);
+    /* Bottom safe-area inset is owned by the native app's SafeAreaView
+       (edges includes "bottom" on Android). env(safe-area-inset-bottom)
+       here would double-count: it reports 0 in the release WebView but the
+       real inset in dev builds, so the two layers stacked into a blank band.
+       Keep this as the single source of truth in native; web adds nothing. */
     box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
 }
 

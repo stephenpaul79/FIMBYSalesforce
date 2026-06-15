@@ -41,7 +41,10 @@
               "host": "app.fimby.com"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -69,8 +72,8 @@
       [
         "expo-notifications",
         {
-        "icon": "./assets/images/notification-icon.png",
-        "color": "#67BBD2",
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3A7D8C",
           "sounds": []
         }
       ],
@@ -87,7 +90,8 @@
             "deploymentTarget": "15.1"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -137,6 +137,61 @@ private class FimbyDigestEmailSendQueueableTest {
     }
 
     @IsTest
+    static void buildIdempotencyKey_variantKey_appendsDistinctSuffix() {
+        Date window = Date.newInstance(2026, 4, 9);
+        String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', window, window
+        );
+        String variantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', window, window, '003000000000001'
+        );
+        String otherVariantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', window, window, '003000000000002'
+        );
+        System.assertNotEquals(baseKey, variantKey, 'Variant key must differ from base.');
+        System.assertNotEquals(variantKey, otherVariantKey, 'Distinct variants must not collide.');
+        System.assert(variantKey.startsWith(baseKey + '_v'), 'Variant key should extend the base key.');
+    }
+
+    @IsTest
+    static void buildIdempotencyKey_blankVariantKey_returnsBaseKey() {
+        Date window = Date.newInstance(2026, 4, 9);
+        String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', window, window
+        );
+        String withNull = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            '001000000000001', 'Daily', window, window, null
+        );
+        System.assertEquals(baseKey, withNull, 'Blank variant key must collapse to the base key.');
+    }
+
+    @IsTest
+    static void execute_variantCohort_writesRowUnderVariantKey() {
+        FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
+
+        Id userId = UserInfo.getUserId();
+        Date window = Date.today().addDays(-1);
+        String variantKey = 'someContactSignature';
+
+        Test.startTest();
+        new FimbyDigestEmailSendQueueable(
+            null, 'VariantNH', 'Daily', window, window,
+            '<p>Filtered content</p>', 2, new List<Id>{ userId }, variantKey
+        ).execute(null);
+        Test.stopTest();
+
+        String expectedKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            null, 'Daily', window, window, variantKey
+        );
+        List<Digest_Email_Log__c> logs = [
+            SELECT Idempotency_Key__c FROM Digest_Email_Log__c
+            WHERE Idempotency_Key__c = :expectedKey
+        ];
+        System.assertEquals(1, logs.size(),
+            'Variant cohort must log under its variant idempotency key.');
+    }
+
+    @IsTest
     static void buildIdempotencyKey_weeklyDifferentFromDaily() {
         String dailyKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
             '001000000000001', 'Daily', Date.newInstance(2026, 4, 9)

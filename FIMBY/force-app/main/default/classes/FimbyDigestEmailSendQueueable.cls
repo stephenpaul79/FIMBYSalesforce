@@ -29,11 +29,25 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     private String contentHtml;
     private Integer contentItemCount;
     private List<Id> userIds;
+    // Non-null only for filtered (blocked-author) cohorts. Distinguishes a variant build's
+    // idempotency key from the shared/base build so the two never collide on upsert.
+    private String variantKey;
 
     public FimbyDigestEmailSendQueueable(
         Id neighbourhoodId, String neighbourhoodName, String frequency,
         Date windowStart, Date windowEnd, String contentHtml, Integer contentItemCount,
         List<Id> userIds
+    ) {
+        this(
+            neighbourhoodId, neighbourhoodName, frequency, windowStart, windowEnd,
+            contentHtml, contentItemCount, userIds, null
+        );
+    }
+
+    public FimbyDigestEmailSendQueueable(
+        Id neighbourhoodId, String neighbourhoodName, String frequency,
+        Date windowStart, Date windowEnd, String contentHtml, Integer contentItemCount,
+        List<Id> userIds, String variantKey
     ) {
         this.neighbourhoodId = neighbourhoodId;
         this.neighbourhoodName = neighbourhoodName;
@@ -43,6 +57,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         this.contentHtml = contentHtml;
         this.contentItemCount = contentItemCount;
         this.userIds = userIds;
+        this.variantKey = variantKey;
     }
 
     public void execute(QueueableContext ctx) {
@@ -50,7 +65,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             return;
         }
 
-        String idempotencyKey = buildIdempotencyKey(neighbourhoodId, frequency, windowStart, windowEnd);
+        String idempotencyKey = buildIdempotencyKey(neighbourhoodId, frequency, windowStart, windowEnd, variantKey);
         Digest_Email_Log__c existingLog = loadExistingLog(idempotencyKey);
 
         // Build-level early exit: a fully successful build never reruns.
@@ -362,7 +377,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             try {
                 System.enqueueJob(new FimbyDigestEmailSendQueueable(
                     neighbourhoodId, neighbourhoodName, frequency,
-                    windowStart, windowEnd, contentHtml, contentItemCount, remaining
+                    windowStart, windowEnd, contentHtml, contentItemCount, remaining, variantKey
                 ));
             } catch (Exception e) {
                 FimbyLogger.error('FimbyDigestEmailSendQueueable', 'chainIfNeeded', e);
@@ -379,6 +394,21 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             return String.valueOf(nhId) + '_DailySundayRest_' + String.valueOf(windowStartDt);
         }
         return String.valueOf(nhId) + '_' + freq + '_' + String.valueOf(windowStartDt);
+    }
+
+    /**
+     * @description Variant-aware idempotency key. For the shared/base cohort (variantKey blank)
+     * this is identical to the 4-arg base key. For a filtered cohort it appends a deterministic
+     * _v{hash} suffix so the variant's log row never collides with the base row or another
+     * variant. The same suffix must be used for that cohort's Skipped log, send, and chain
+     * re-enqueue, or skip-already-sent / resume would re-resolve under the wrong key.
+     */
+    public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt, Date windowEndDt, String variantKey) {
+        String base = buildIdempotencyKey(nhId, freq, windowStartDt, windowEndDt);
+        if (String.isBlank(variantKey)) {
+            return base;
+        }
+        return base + '_v' + String.valueOf(Math.abs(variantKey.hashCode()));
     }
 
     @TestVisible

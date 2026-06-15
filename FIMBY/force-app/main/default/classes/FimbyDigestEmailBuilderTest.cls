@@ -462,6 +462,100 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildDigestContent_excludedAuthor_hidesOnlyTheirCards() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact authorA = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact authorB = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+
+        insert new Story__c(
+            Name = 'Keep This Story', Message__c = 'Visible content here.',
+            Type__c = 'Thank You', Neighbourhood__c = nh.Id, Posted_By__c = authorA.Id
+        );
+        insert new Story__c(
+            Name = 'Hidden Blocked Story', Message__c = 'Blocked author content.',
+            Type__c = 'Thank You', Neighbourhood__c = nh.Id, Posted_By__c = authorB.Id
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today(),
+                new Set<Id>{ authorB.Id }
+            );
+        Test.stopTest();
+
+        System.assert(
+            result.html.contains('Keep This Story'),
+            'Non-blocked author cards must remain in the digest.'
+        );
+        System.assert(
+            !result.html.contains('Hidden Blocked Story'),
+            'Blocked author cards must be excluded from the digest.'
+        );
+    }
+
+    @IsTest
+    static void buildDigestContent_excludedAuthor_dropsAndNMoreCount() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact authorA = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact authorB = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Id needRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        List<Needs_Offers__c> asks = new List<Needs_Offers__c>();
+        for (Integer i = 0; i < 6; i++) {
+            asks.add(new Needs_Offers__c(
+                Name = 'A Ask ' + i, Details__c = 'detail',
+                Type__c = 'Goods - Unperishable', Status__c = 'Posted',
+                Neighbourhood__c = nh.Id, Contact__c = authorA.Id, Posted_By__c = authorA.Id,
+                RecordTypeId = needRt, Posted_Date__c = Datetime.now(),
+                End_Date__c = Date.today().addDays(7)
+            ));
+        }
+        for (Integer i = 0; i < 3; i++) {
+            asks.add(new Needs_Offers__c(
+                Name = 'B Ask ' + i, Details__c = 'detail',
+                Type__c = 'Goods - Unperishable', Status__c = 'Posted',
+                Neighbourhood__c = nh.Id, Contact__c = authorB.Id, Posted_By__c = authorB.Id,
+                RecordTypeId = needRt, Posted_Date__c = Datetime.now(),
+                End_Date__c = Date.today().addDays(7)
+            ));
+        }
+        insert asks;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult unfiltered =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+            );
+        FimbyDigestEmailBuilder.DigestResult filtered =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today(),
+                new Set<Id>{ authorB.Id }
+            );
+        Test.stopTest();
+
+        // 9 asks total -> 5 cards + "and 4 more". With B's 3 hidden -> 6 asks -> "and 1 more".
+        System.assert(
+            unfiltered.html.contains('and 4 more'),
+            'Unfiltered digest should count all 9 asks: ' + unfiltered.html
+        );
+        System.assert(
+            filtered.html.contains('and 1 more'),
+            'Filtered "and N more" count must drop to exclude the blocked author: ' + filtered.html
+        );
+        System.assert(
+            !filtered.html.contains('and 4 more'),
+            'Filtered digest must not retain the unfiltered count.'
+        );
+        System.assert(
+            !filtered.html.contains('B Ask'),
+            'Blocked author asks must not render as cards.'
+        );
+    }
+
+    @IsTest
     static void formatRecurrenceFrequencyBadge_weekly() {
         System.assertEquals(
             'WEEKLY',

@@ -21,7 +21,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 16px;
-    background-color: var(--fimby-surface-input, #F7F3EB);
+    background-color: var(--fimby-surface-card, #FAF7F2);
 }
 
 /* Zone 1 — Brand / Logo + Acting-as chip */

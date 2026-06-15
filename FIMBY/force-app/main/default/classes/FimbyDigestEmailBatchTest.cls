@@ -247,6 +247,156 @@ private class FimbyDigestEmailBatchTest {
             'Per-build idempotency key should prevent duplicate Skipped rows for the same window.');
     }
 
+    private static User makeWeeklyRecipient(Id contactId) {
+        User u;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            u = FimbyTestDataFactory.createCommunityUser(contactId, 'Customer Community User', false);
+            u.FIMBY_Summary_Emails__c = 'Weekly';
+            insert u;
+        }
+        return u;
+    }
+
+    private static void makeWindowedAsk(Id nhId, Id contactId, String name) {
+        Id needRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+        insert new Needs_Offers__c(
+            Name = name, Details__c = 'detail',
+            Type__c = 'Goods - Unperishable', Status__c = 'Posted',
+            Neighbourhood__c = nhId, Contact__c = contactId, Posted_By__c = contactId,
+            RecordTypeId = needRt,
+            Posted_Date__c = Datetime.now().addDays(-3),
+            End_Date__c = Date.today().addDays(7)
+        );
+    }
+
+    @IsTest
+    static void batchExecute_blockSymmetry_writesDistinctVariantRows() {
+        FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
+
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact a = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact b = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        makeWeeklyRecipient(a.Id);
+        makeWeeklyRecipient(b.Id);
+        makeWeeklyRecipient(c.Id);
+
+        makeWindowedAsk(nh.Id, a.Id, 'Alpha Ask');
+        makeWindowedAsk(nh.Id, b.Id, 'Beta Ask');
+        makeWindowedAsk(nh.Id, c.Id, 'Gamma Ask');
+
+        // A blocks B (single row) -> bidirectional: A hides B AND B hides A.
+        insert new Blocked_Contact__c(Blocker__c = a.Id, Blocked__c = b.Id);
+
+        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
+        Date ws = batch.getWindowStartForTest();
+        Date we = batch.getWindowEndForTest();
+
+        Test.startTest();
+        batch.execute(null, new List<Account>{ nh });
+        Test.stopTest();
+
+        String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(nh.Id, 'Weekly', ws, we);
+        String variantKeyA = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            nh.Id, 'Weekly', ws, we, String.valueOf(b.Id)
+        );
+        String variantKeyB = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            nh.Id, 'Weekly', ws, we, String.valueOf(a.Id)
+        );
+
+        System.assertNotEquals(baseKey, variantKeyA, 'Variant A key must differ from base.');
+        System.assertNotEquals(baseKey, variantKeyB, 'Variant B key must differ from base.');
+        System.assertNotEquals(variantKeyA, variantKeyB, 'A and B variant keys must differ.');
+
+        Map<String, Digest_Email_Log__c> byKey = new Map<String, Digest_Email_Log__c>();
+        for (Digest_Email_Log__c log : [
+            SELECT Idempotency_Key__c, Email_Body_Preview__c, Status__c
+            FROM Digest_Email_Log__c WHERE Neighbourhood__c = :nh.Id
+        ]) {
+            byKey.put(log.Idempotency_Key__c, log);
+        }
+
+        System.assert(byKey.containsKey(baseKey), 'Clean cohort (C) keeps the shared base row.');
+        System.assert(byKey.containsKey(variantKeyA), 'A gets a filtered variant row.');
+        System.assert(byKey.containsKey(variantKeyB), 'B gets a filtered variant row.');
+
+        System.assert(
+            byKey.get(baseKey).Email_Body_Preview__c.contains('Alpha Ask')
+                && byKey.get(baseKey).Email_Body_Preview__c.contains('Beta Ask')
+                && byKey.get(baseKey).Email_Body_Preview__c.contains('Gamma Ask'),
+            'Shared base build keeps every author.'
+        );
+
+        String aPreview = byKey.get(variantKeyA).Email_Body_Preview__c;
+        System.assert(aPreview.contains('Alpha Ask') && aPreview.contains('Gamma Ask'),
+            'A\'s filtered digest keeps its own + unrelated cards.');
+        System.assert(!aPreview.contains('Beta Ask'),
+            'A\'s filtered digest must exclude blocked B\'s cards.');
+
+        String bPreview = byKey.get(variantKeyB).Email_Body_Preview__c;
+        System.assert(bPreview.contains('Beta Ask') && bPreview.contains('Gamma Ask'),
+            'B\'s filtered digest keeps its own + unrelated cards.');
+        System.assert(!bPreview.contains('Alpha Ask'),
+            'Symmetry: B\'s filtered digest must exclude A\'s cards too.');
+    }
+
+    @IsTest
+    static void batchExecute_emptyFilteredCohort_writesSkippedVariantRowNotCollidingWithBase() {
+        FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
+
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact x = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact d = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact e = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        makeWeeklyRecipient(x.Id);
+        makeWeeklyRecipient(d.Id);
+        makeWeeklyRecipient(e.Id);
+
+        // X is the only content author.
+        makeWindowedAsk(nh.Id, x.Id, 'Solo Ask');
+
+        // D blocks X -> D's filtered build hides X, which empties D's digest.
+        insert new Blocked_Contact__c(Blocker__c = d.Id, Blocked__c = x.Id);
+
+        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
+        Date ws = batch.getWindowStartForTest();
+        Date we = batch.getWindowEndForTest();
+
+        Test.startTest();
+        batch.execute(null, new List<Account>{ nh });
+        Test.stopTest();
+
+        String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(nh.Id, 'Weekly', ws, we);
+        String dVariantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            nh.Id, 'Weekly', ws, we, String.valueOf(x.Id)
+        );
+        System.assertNotEquals(baseKey, dVariantKey, 'Empty cohort variant key must differ from base.');
+
+        Map<String, Digest_Email_Log__c> byKey = new Map<String, Digest_Email_Log__c>();
+        for (Digest_Email_Log__c log : [
+            SELECT Idempotency_Key__c, Status__c, Recipient_Count__c, Email_Body_Preview__c, Error_Message__c
+            FROM Digest_Email_Log__c WHERE Neighbourhood__c = :nh.Id
+        ]) {
+            byKey.put(log.Idempotency_Key__c, log);
+        }
+
+        System.assert(byKey.containsKey(baseKey), 'Clean cohort (E) keeps the shared base row.');
+        System.assertNotEquals('Skipped', byKey.get(baseKey).Status__c,
+            'Base row must retain content and not be overwritten by the empty variant skip.');
+        System.assert(byKey.get(baseKey).Email_Body_Preview__c.contains('Solo Ask'),
+            'Base row keeps the only author\'s content.');
+
+        System.assert(byKey.containsKey(dVariantKey),
+            'Empty-filtered cohort (D) writes a Skipped variant row under the variant key.');
+        System.assertEquals('Skipped', byKey.get(dVariantKey).Status__c);
+        System.assertEquals(0, byKey.get(dVariantKey).Recipient_Count__c);
+        System.assertEquals(
+            FimbyDigestEmailBatch.SKIP_REASON_NO_CONTENT,
+            byKey.get(dVariantKey).Error_Message__c
+        );
+    }
+
     @IsTest
     static void batchFinish_logsCleanly() {
         Test.startTest();
