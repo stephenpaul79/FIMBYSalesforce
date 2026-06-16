@@ -48,7 +48,9 @@
     align-items: center;
     justify-content: center;
     z-index: 9000;
-    padding: max(16px, env(safe-area-inset-top)) 16px 16px;
+    /* Native SafeAreaView owns top inset; env() is a no-op on iOS and a
+       double-count band on Android. Use the plain 16px gutter. */
+    padding: 16px 16px 16px;
 }
 
 @media (min-width: 481px) {
@@ -217,7 +219,8 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+    /* Native SafeAreaView owns bottom inset; env() double-counts. */
+    padding: 14px 24px;
     border-top: 1px solid var(--fimby-border-soft, #e9e3d2);
     background: var(--fimby-surface-card, #fffaef);
 }

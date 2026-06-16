@@ -180,28 +180,7 @@ public with sharing class FimbyProfileActivityController {
         Id viewerContactId
     ) {
         Set<Id> blockedContactIds = FimbyBlockingHelper.getBidirectionalBlocks(viewerContactId);
-        if (blockedContactIds.isEmpty()) {
-            return allItems;
-        }
-
-        List<FimbyFeedItem> visibleItems = new List<FimbyFeedItem>();
-        for (FimbyFeedItem item : allItems) {
-            if (!isBlockedFeedAuthor(item, blockedContactIds)) {
-                visibleItems.add(item);
-            }
-        }
-        return visibleItems;
-    }
-
-    @TestVisible
-    private static Boolean isBlockedFeedAuthor(FimbyFeedItem item, Set<Id> blockedContactIds) {
-        if (item.ownerContactId != null && blockedContactIds.contains(item.ownerContactId)) {
-            return true;
-        }
-        if (item.realAuthorContactId != null && blockedContactIds.contains(item.realAuthorContactId)) {
-            return true;
-        }
-        return false;
+        return FimbyBlockingHelper.filterVisibleFeedItems(allItems, blockedContactIds);
     }
 
     public class ProfileActivityResult {

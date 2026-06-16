@@ -10,6 +10,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
 import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
+import endAllSessions from '@salesforce/apex/FimbySessionController.endAllSessions';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 
@@ -628,8 +629,19 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this.navigateToPage('feedback');
     }
 
-    handleLogoutClick() {
+    async handleLogoutClick() {
         this.showMenuOverlay = false;
+        // End every server-side session first so re-entry requires real
+        // re-authentication. /secur/logout.jsp only clears the WebView's cookie;
+        // the OAuth browser keeps a live session that lets Salesforce silently
+        // re-issue an auth code. Deleting the AuthSession records kills the
+        // session regardless of which cookie jar holds it. Best-effort — never
+        // block the logout redirect on it.
+        try {
+            await endAllSessions();
+        } catch (e) {
+            // Swallow: the redirect below still tears down the WebView session.
+        }
         const sitePrefix = basePath.replace(/\/s$/i, '');
         const logoutUrl = sitePrefix + '/secur/logout.jsp';
         window.location.href = logoutUrl;

@@ -3,7 +3,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { apiHygiene } from "../lib/api-hygiene.js";
 import { rateLimit } from "../lib/rate-limit.js";
-import { FIMBY_APP_JWT_AUDIENCE } from "../lib/sessions.js";
+import { FIMBY_APP_JWT_AUDIENCE, isUserDenied } from "../lib/sessions.js";
 import { buildFrontdoorPayload, normalizeFrontdoorRet } from "../lib/frontdoor-core.js";
 
 const DEBUG = process.env.DEBUG_AUTH === "true";
@@ -107,6 +107,13 @@ export default async function handler(req, res) {
 
   try {
     const appSession = requireAppSession(req);
+
+    // Revocation check: a valid access JWT is not enough if the user has been
+    // logged out. The denylist entry expires with the access-token window.
+    if (await isUserDenied(appSession.sub)) {
+      console.log(JSON.stringify({ event: "frontdoor_denied", reqId, sub: appSession.sub }));
+      return oauthError(res, 401, "invalid_token");
+    }
 
     const userRl = await rateLimit(req, res, {
       keyPrefix: "rl:frontdoor:user",

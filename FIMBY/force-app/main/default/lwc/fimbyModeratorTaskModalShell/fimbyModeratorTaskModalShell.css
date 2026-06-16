@@ -34,7 +34,8 @@
     background-color: var(--fimby-surface-card, #FAF7F2);
     overflow: hidden;
     outline: none;
-    padding-top: env(safe-area-inset-top);
+    /* No safe-area inset: native SafeAreaView owns top inset. env() here is a
+       no-op on iOS and a double-count band on Android. */
 }
 
 /* ── Header ───────────────────────────────────── */

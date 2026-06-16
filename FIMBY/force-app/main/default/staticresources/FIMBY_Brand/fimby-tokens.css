@@ -396,6 +396,15 @@ body {
   background: var(--fimby-surface-page, #F0EBE3) !important;
 }
 
+/* Global type baseline. Nearly all FIMBY sizing is rem/em off the root, so this
+   one value is the app-wide "make everything slightly bigger" knob. 17px (vs the
+   browser-default 16) lifts text + rem-based spacing ~6% for better readability.
+   The native WebView pins Android's device-font override to 100% (textZoom), so
+   this baseline renders identically on iOS and Android. Dial 17→18 for more. */
+html {
+  font-size: 17px;
+}
+
 :root {
   --dxp-c-section-image-overlay-color: transparent;
   --dxp-c-section-background-color: var(--fimby-surface-page, #F0EBE3);

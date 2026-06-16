@@ -484,15 +484,7 @@ public with sharing class FimbyHomeController {
             Id viewerContactId = FimbyIdentityRepository.getActingAsContactId();
             if (viewerContactId != null) {
                 Set<Id> blockedContactIds = FimbyBlockingHelper.getBidirectionalBlocks(viewerContactId);
-                if (!blockedContactIds.isEmpty()) {
-                    List<FimbyFeedItem> visibleItems = new List<FimbyFeedItem>();
-                    for (FimbyFeedItem item : allItems) {
-                        if (!isBlockedFeedAuthor(item, blockedContactIds)) {
-                            visibleItems.add(item);
-                        }
-                    }
-                    allItems = visibleItems;
-                }
+                allItems = FimbyBlockingHelper.filterVisibleFeedItems(allItems, blockedContactIds);
             }
 
             // Apply pagination
@@ -523,20 +515,6 @@ public with sharing class FimbyHomeController {
      */
     public static UnifiedFeedResult getUnifiedFeed(Integer offset, Integer pageSize) {
         return getUnifiedFeed(offset, pageSize, null, null);
-    }
-
-    @TestVisible
-    private static Boolean isBlockedFeedAuthor(FimbyFeedItem item, Set<Id> blockedContactIds) {
-        if (item == null || blockedContactIds == null || blockedContactIds.isEmpty()) {
-            return false;
-        }
-        if (item.ownerContactId != null && blockedContactIds.contains(item.ownerContactId)) {
-            return true;
-        }
-        if (item.realAuthorContactId != null && blockedContactIds.contains(item.realAuthorContactId)) {
-            return true;
-        }
-        return false;
     }
 
     // Inner classes for return types

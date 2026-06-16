@@ -43,6 +43,8 @@ public class FimbyFeedItem implements Comparable {
 
     private Datetime sortDate;
 
+    public FimbyFeedItem() {}
+
     public FimbyFeedItem(Story__c story) {
         this.recordId = story.Id;
         this.name = story.Name;

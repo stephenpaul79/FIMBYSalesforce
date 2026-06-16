@@ -181,6 +181,43 @@ public class FimbySearchControllerTest {
     }
 
     @IsTest
+    static void testSearchSkillsHidesBlockedAuthor() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id, AccountId FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Contact blockedAuthor = FimbyTestDataFactory.createNeighbourhoodContact(testNeighbourhood.Id, true);
+        Skill_Offer__c blockedSkill = new Skill_Offer__c(
+            Name = 'Test Blocked Skill',
+            Skill_Category__c = 'Tech Help',
+            Owner_Contact__c = blockedAuthor.Id,
+            Listed_By__c = blockedAuthor.Id,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Status__c = FimbyConstants.SKILL_ACTIVE,
+            Moderation_Status__c = 'Visible'
+        );
+        insert blockedSkill;
+        insert new Blocked_Contact__c(Blocker__c = viewer.Id, Blocked__c = blockedAuthor.Id);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Test.setFixedSearchResults(new List<Id>{ blockedSkill.Id });
+
+            FimbySearchController.SearchResult result = FimbySearchController.search(
+                'Test', 'skills', 'relevance', 20, 0
+            );
+
+            System.assertEquals(0, result.countsByType.get('skills'),
+                'A blocked author\'s skill must not be counted.');
+            for (FimbySearchController.SearchResultItem item : result.items) {
+                System.assertNotEquals(blockedSkill.Id, item.recordId,
+                    'A blocked author\'s skill must not be returned.');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testSearchEmptyTerm() {
         Test.startTest();
         FimbySearchController.SearchResult result = FimbySearchController.search(

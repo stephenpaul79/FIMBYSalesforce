@@ -454,12 +454,11 @@ public with sharing class FimbyStoryCommentController {
                     LIMIT :commentsLim
                 ];
 
-                for (Story_Comment__c row : rows) {
-                    if (blockedContactIds.contains(row.Posted_By__c)
-                            || blockedContactIds.contains(row.Contact__c)) {
-                        continue;
-                    }
-                    comments.add(toDto(row, viewerContactId, identity?.contact?.Id));
+                List<SObject> visibleRows = FimbyBlockingHelper.filterVisible(
+                    rows, blockedContactIds, new List<String>{ 'Posted_By__c', 'Contact__c' }
+                );
+                for (SObject row : visibleRows) {
+                    comments.add(toDto((Story_Comment__c) row, viewerContactId, identity?.contact?.Id));
                 }
             } catch (Exception e) {
                 FimbyLogger.error('FimbyStoryCommentController', 'queryComments', e);

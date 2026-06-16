@@ -12,7 +12,9 @@
     backdrop-filter: blur(20px);
     box-shadow: var(--fimby-shadow-card);
     z-index: 900;
-    padding-top: env(safe-area-inset-top);
+    /* No safe-area inset: this is a subheader below fimbyUniversalHeader, never
+       at the device edge. The native SafeAreaView owns top inset; env() here is
+       a no-op on iOS and a double-count band on Android. */
     border-radius: var(--fimby-radius-md);
     overflow: hidden;
 }

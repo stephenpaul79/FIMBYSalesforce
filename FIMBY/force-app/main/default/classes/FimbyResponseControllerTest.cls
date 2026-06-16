@@ -1330,6 +1330,33 @@ public class FimbyResponseControllerTest {
     }
 
     @isTest
+    static void testGetOrCreateEventConversation_BlockedContactThrows() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Account neighbourhood = [SELECT Id FROM Account WHERE Id = :testContact.AccountId LIMIT 1];
+        Contact posterContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
+        User posterUser = FimbyTestDataFactory.createCommunityUser(posterContact.Id, null, true);
+        Needs_Offers__c evt = createTestEvent(posterUser, 'Open_Event');
+
+        System.runAs(testUser) {
+            FimbyResponseController.quickEventResponse(evt.Id, 'respond', 1);
+        }
+        insert new Blocked_Contact__c(Blocker__c = testContact.Id, Blocked__c = posterContact.Id);
+
+        Test.startTest();
+        Boolean blockedError = false;
+        System.runAs(testUser) {
+            try {
+                FimbyResponseController.getOrCreateEventConversation(evt.Id, null);
+            } catch (AuraHandledException e) {
+                blockedError = true;
+            }
+        }
+        Test.stopTest();
+        System.assert(blockedError, 'Messaging a blocked poster must throw.');
+    }
+
+    @isTest
     static void testGetOrCreateEventConversation_PosterInitiated() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();

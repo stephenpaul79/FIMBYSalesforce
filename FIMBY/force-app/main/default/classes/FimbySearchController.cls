@@ -98,16 +98,13 @@ public with sharing class FimbySearchController {
             Set<Id> blockedIds = currentContactId != null
                 ? FimbyBlockingHelper.getBidirectionalBlocks((Id) currentContactId)
                 : new Set<Id>();
-            Integer skillCount = 0;
-            for (Skill_Offer__c sk : skillOffers) {
-                if (!blockedIds.isEmpty()
-                    && (blockedIds.contains(sk.Owner_Contact__c) || blockedIds.contains(sk.Listed_By__c))) {
-                    continue;
-                }
-                skillCount++;
-                allItems.add(buildSkillItem(sk));
+            List<SObject> visibleSkills = FimbyBlockingHelper.filterVisible(
+                skillOffers, blockedIds, new List<String>{ 'Owner_Contact__c', 'Listed_By__c' }
+            );
+            for (SObject sk : visibleSkills) {
+                allItems.add(buildSkillItem((Skill_Offer__c) sk));
             }
-            countsByType.put('skills', skillCount);
+            countsByType.put('skills', visibleSkills.size());
             resultSetIndex++;
         }
 

@@ -8,6 +8,7 @@ import {
   refreshTokenIsFamilyMember,
   revokeRefreshFamily,
   parseRefreshTokenSafe,
+  isUserDenied,
 } from "../../lib/sessions.js";
 import { getRedis } from "../../lib/redis.js";
 import { apiHygiene } from "../../lib/api-hygiene.js";
@@ -92,6 +93,14 @@ export default async function handler(req, res) {
     }
 
     const { key, data } = validated;
+
+    // Revocation check: refuse to mint new tokens for a denied user even if the
+    // refresh token still validates (logout sets the denylist before the family
+    // revoke completes, and this guards any token that slips past that).
+    if (await isUserDenied(data.sub)) {
+      console.log(JSON.stringify({ event: "refresh_denied", reqId, sub: data.sub }));
+      return oauthError(res, 401, "invalid_grant");
+    }
 
     // Debug only: fingerprints, never the token itself
     log("[REFRESH] refresh key fp (debug)", String(key || "").slice(0, 12));

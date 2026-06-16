@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { getRedis } from "../lib/redis.js";
 import { apiHygiene } from "../lib/api-hygiene.js";
 import { rateLimit } from "../lib/rate-limit.js";
-import { FIMBY_APP_JWT_AUDIENCE } from "../lib/sessions.js";
+import { FIMBY_APP_JWT_AUDIENCE, indexUserKey, unindexUserKey } from "../lib/sessions.js";
 
 const getRequestId = (req) =>
   req.headers["x-request-id"] || crypto.randomUUID();
@@ -127,11 +127,25 @@ export default async function handler(req, res) {
         return json(res, 400, { error: "invalid_request", message: "Invalid push token format" });
       }
 
+      // If this user previously registered a *different* token, retire the old
+      // reverse mapping first. Otherwise push_token_user:<oldToken> keys orphan
+      // and linger for the full TTL (180d), one per device/token rotation.
+      const priorToken = await redis.get(`push_token:${userId}`);
+      if (priorToken && priorToken !== push_token) {
+        await redis.del(`push_token_user:${priorToken}`);
+        await unindexUserKey(userId, `push_token_user:${priorToken}`);
+      }
+
       // Store push token mapped to user ID with a TTL. Each successful
       // registration refreshes the TTL, so active users always have a
       // valid mapping while abandoned accounts age out.
       await redis.setEx(`push_token:${userId}`, PUSH_TOKEN_TTL_SECONDS, push_token);
       await redis.setEx(`push_token_user:${push_token}`, PUSH_TOKEN_TTL_SECONDS, userId);
+      // Mirror both push-token keys into the per-user index so a user lookup
+      // surfaces them alongside refresh tokens. push_token_user:<token> carries
+      // the userId in its value, not its key, so it would otherwise be invisible.
+      await indexUserKey(userId, `push_token:${userId}`);
+      await indexUserKey(userId, `push_token_user:${push_token}`);
 
       console.log(JSON.stringify({ event: "push_token_registered", reqId, user_id: userId }));
 
@@ -145,6 +159,9 @@ export default async function handler(req, res) {
         // Delete both mappings
         await redis.del(`push_token:${userId}`);
         await redis.del(`push_token_user:${existingToken}`);
+        // Keep the per-user index in sync.
+        await unindexUserKey(userId, `push_token:${userId}`);
+        await unindexUserKey(userId, `push_token_user:${existingToken}`);
       }
 
       console.log(JSON.stringify({ event: "push_token_deleted", reqId, user_id: userId }));

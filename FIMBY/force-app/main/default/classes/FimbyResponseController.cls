@@ -833,12 +833,7 @@ public with sharing class FimbyResponseController {
                 otherContactId = posterContactId;
             }
 
-            Integer blockCount = [
-                SELECT COUNT() FROM Blocked_Contact__c
-                WHERE (Blocker__c = :actingAsContactId AND Blocked__c = :otherContactId)
-                   OR (Blocker__c = :otherContactId AND Blocked__c = :actingAsContactId)
-            ];
-            if (blockCount > 0) {
+            if (FimbyBlockingHelper.areBlocked(actingAsContactId, otherContactId)) {
                 throw newAuraException('This contact is blocked.');
             }
 

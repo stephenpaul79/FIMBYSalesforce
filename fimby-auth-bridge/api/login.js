@@ -1,7 +1,7 @@
 // api/login.js
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { mintAccessToken, mintRefreshToken } from "../lib/sessions.js";
+import { mintAccessToken, mintRefreshToken, allowUser } from "../lib/sessions.js";
 import { getRedis } from "../lib/redis.js";
 import { apiHygiene } from "../lib/api-hygiene.js";
 import { rateLimit } from "../lib/rate-limit.js";
@@ -257,6 +257,10 @@ export default async function handler(req, res) {
       console.log("[LOGIN] identity missing fields");
       return oauthError(res, 401, "unauthorized_client");
     }
+
+    // Fresh OAuth login is proof of life — clear any prior revocation denylist
+    // so this new session works. We never block fresh logins.
+    await allowUser(userId);
 
     // Mint app session tokens
     const access_token = mintAccessToken({ sub: userId, username });

@@ -1295,8 +1295,8 @@
         bottom: 0;
         left: 0;
         right: 0;
+        /* Native SafeAreaView owns bottom inset; env() double-counts. */
         padding: 12px 16px;
-        padding-bottom: calc(12px + env(safe-area-inset-bottom));
         background-color: var(--fimby-surface-card);
         border-top: 1px solid var(--fimby-divider-default);
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);

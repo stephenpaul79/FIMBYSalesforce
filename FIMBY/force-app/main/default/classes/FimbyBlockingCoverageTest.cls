@@ -159,18 +159,15 @@ private class FimbyBlockingCoverageTest {
         Set<Id> blocked = new Set<Id>{ authorContact().Id };
 
         Test.startTest();
-        // Home and ProfileActivity share this per-item predicate before rendering a card.
+        // Home and ProfileActivity now share this per-item predicate via FimbyBlockingHelper
+        // before rendering a card.
         System.assert(
-            FimbyHomeController.isBlockedFeedAuthor(item, blocked),
-            'Home feed must flag a card whose author is blocked.'
+            FimbyBlockingHelper.isBlockedFeedAuthor(item, blocked),
+            'Feed surfaces must flag a card whose author is blocked.'
         );
         System.assert(
-            !FimbyHomeController.isBlockedFeedAuthor(item, new Set<Id>()),
+            !FimbyBlockingHelper.isBlockedFeedAuthor(item, new Set<Id>()),
             'No block set means the card is shown.'
-        );
-        System.assert(
-            FimbyProfileActivityController.isBlockedFeedAuthor(item, blocked),
-            'Profile activity must flag a card whose author is blocked.'
         );
         Test.stopTest();
     }

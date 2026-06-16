@@ -805,7 +805,9 @@ section[role="dialog"] {
 /* ── Revoked banner ──────────────────────────────── */
 .conversation-revoked-banner {
     position: fixed;
-    bottom: calc(56px + env(safe-area-inset-bottom));
+    /* 56px clears the always-present bottom nav. Native SafeAreaView owns the
+       bottom inset; env() here double-counts (blank band on Android dev). */
+    bottom: 56px;
     left: 0;
     right: 0;
     z-index: 999;
@@ -839,7 +841,8 @@ section[role="dialog"] {
 
 @media (min-width: 892px) {
     .conversation-revoked-banner {
-        bottom: env(safe-area-inset-bottom);
+        /* Desktop has no bottom nav; sit flush at the bottom. */
+        bottom: 0;
     }
 }
 

@@ -208,6 +208,22 @@ function isFimbyLoginRedirect(url: string): boolean {
   return false;
 }
 
+// Standard Experience Cloud error route. Salesforce lands users here on a bad
+// URL, an unknown/inaccessible record, or an unauthorized/expired-session
+// request. The page renders only a static "Page not available" message with no
+// navigation of its own, so inside the WebView (no browser back button) the
+// user is trapped until they force-quit. We detect it and surface our own
+// escape hatch instead.
+function isFimbyErrorPage(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (!SF_EC_HOST_PATTERN.test(u.hostname)) return false;
+    return /^\/error\/?$/i.test(u.pathname);
+  } catch {
+    return false;
+  }
+}
+
 // WebView origin allowlist. Anything outside this set is handed off to the
 // system browser so the FIMBY Experience Cloud session cookie is never
 // exposed to third-party sites a neighbour clicks through to.
@@ -350,6 +366,27 @@ async function jsonOrText(res: Response) {
   }
 }
 
+/**
+ * Revoke the refresh token server-side. Retries once on a transient failure
+ * (network error or non-2xx) so a momentary blip doesn't strand a still-valid
+ * token in Redis. Resolves true only when the server confirms revocation.
+ */
+async function revokeRefreshTokenOnBackend(refresh: string): Promise<boolean> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(BACKEND_LOGOUT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refresh }),
+      });
+      if (res.ok) return true;
+    } catch {
+      // fall through to retry / give up
+    }
+  }
+  return false;
+}
+
 export default function IndexScreen() {
   // Theme state — synced from WebView via postMessage, persisted in AsyncStorage
   const [appTheme, setAppTheme] = React.useState<'light' | 'dark'>('light');
@@ -389,6 +426,9 @@ export default function IndexScreen() {
   // process is terminated (iOS) or killed (Android) — recovers a blank page.
   const [webViewKey, setWebViewKey] = React.useState(0);
   const [webViewError, setWebViewError] = React.useState<string | null>(null);
+  // True while the WebView is sitting on the Experience Cloud /error route, so
+  // we can overlay our own recovery card (the EC error page has no navigation).
+  const [stuckOnErrorPage, setStuckOnErrorPage] = React.useState(false);
   const [webViewHandoffVisible, setWebViewHandoffVisible] = React.useState(false);
   const webViewHandoffFade = useRef(new Animated.Value(1)).current;
   const webViewHandoffShownAtRef = useRef<number | null>(null);
@@ -948,6 +988,15 @@ export default function IndexScreen() {
     sessionExpired?: boolean;
     message?: string;
   }> => {
+    // Never mint a fresh token while a logout is tearing down the session.
+    // Refresh rotates the slot (mints a new family member server-side); if that
+    // races a logout, the new token outlives the revoke and silently re-auths
+    // the user on next open. Logout owns the session during teardown.
+    if (logoutInProgressRef.current) {
+      log("[AUTH] refresh skipped — logout in progress");
+      return { token: null };
+    }
+
     const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
     if (!refresh) return { token: null };
 
@@ -981,6 +1030,16 @@ export default function IndexScreen() {
     if (!data?.access_token || !data?.refresh_token) {
       log("Refresh returned unexpected payload:", data);
       await SecureStore.deleteItemAsync(REFRESH_KEY);
+      return { token: null };
+    }
+
+    // A logout may have started while this refresh was in flight. The server
+    // has already minted a new token (data.refresh_token) — if we persist it,
+    // it outlives logout's revoke and re-auths the user. Drop it: revoke the
+    // just-minted token and leave the slot for logout to clear.
+    if (logoutInProgressRef.current) {
+      log("[AUTH] refresh completed during logout — discarding minted token");
+      void revokeRefreshTokenOnBackend(data.refresh_token);
       return { token: null };
     }
 
@@ -1179,21 +1238,24 @@ export default function IndexScreen() {
 
   const logout = React.useCallback(async () => {
     setBusy(true);
+    // Claim the session for teardown so an in-flight/triggered refresh can't
+    // mint a new token behind us (see refreshSession's logout guards).
+    logoutInProgressRef.current = true;
     try {
-      const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
-
       // Unregister push token (best-effort, don't block logout)
       if (accessToken) {
         unregisterTokenFromBackend(accessToken).catch(() => {});
       }
 
-      // Best-effort call backend logout (swallow errors)
+      // Revoke server-side first (with one retry). Read the slot last-moment so
+      // we revoke whatever token is actually current. Log if it didn't confirm
+      // so a stranded, still-valid token in Redis is visible rather than silent.
+      const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
       if (refresh) {
-        await fetch(BACKEND_LOGOUT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh_token: refresh }),
-        }).catch(() => {});
+        const revoked = await revokeRefreshTokenOnBackend(refresh);
+        if (!revoked) {
+          warn("[LOGOUT] backend revoke not confirmed; clearing locally anyway");
+        }
       }
 
       await SecureStore.deleteItemAsync(REFRESH_KEY);
@@ -1205,6 +1267,7 @@ export default function IndexScreen() {
       bootstrapRanRef.current = false;
       setStatus("Until next time!");
     } finally {
+      logoutInProgressRef.current = false;
       setBusy(false);
     }
   }, [accessToken, unregisterTokenFromBackend, discardDeepLinkIntent, clearInjectFallback, dismissWebViewHandoff]);
@@ -1246,11 +1309,10 @@ export default function IndexScreen() {
           try {
             const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
             if (refresh) {
-              await fetch(BACKEND_LOGOUT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ refresh_token: refresh }),
-              }).catch(() => {});
+              const revoked = await revokeRefreshTokenOnBackend(refresh);
+              if (!revoked) {
+                warn("[WebView] backend revoke not confirmed; clearing locally anyway");
+              }
             }
             await SecureStore.deleteItemAsync(REFRESH_KEY);
             setAccessToken(null);
@@ -1302,9 +1364,19 @@ export default function IndexScreen() {
         url &&
         url !== "about:blank" &&
         isAllowedWebViewUrl(url) &&
-        !isFimbyLoginRedirect(url)
+        !isFimbyLoginRedirect(url) &&
+        !isFimbyErrorPage(url)
       ) {
         lastEcUrlRef.current = url;
+      }
+
+      // The EC /error page is a dead end (static message, no navigation). Show
+      // our recovery card so the user can get back instead of force-quitting.
+      // Clear it again as soon as they navigate anywhere else.
+      if (isFimbyErrorPage(url)) {
+        setStuckOnErrorPage(true);
+      } else if (!navState.loading) {
+        setStuckOnErrorPage(false);
       }
 
       if (injectFallbackRef.current && isExperienceCloudUrl(url)) {
@@ -1339,11 +1411,10 @@ export default function IndexScreen() {
           try {
             const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
             if (refresh) {
-              await fetch(BACKEND_LOGOUT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ refresh_token: refresh }),
-              }).catch(() => {});
+              const revoked = await revokeRefreshTokenOnBackend(refresh);
+              if (!revoked) {
+                warn("[WebView] Fallback backend revoke not confirmed; clearing locally anyway");
+              }
             }
             await SecureStore.deleteItemAsync(REFRESH_KEY);
             setAccessToken(null);
@@ -2058,6 +2129,11 @@ export default function IndexScreen() {
           )}
           sharedCookiesEnabled={true}
           thirdPartyCookiesEnabled={true}
+          // Android scales web content by the OS font/display-size setting;
+          // iOS (WKWebView) ignores it. Pin to 100% so both platforms render
+          // the LWR site at the same baseline — the device-font scaling was
+          // what made everything (text + rem-based spacing) larger on Android.
+          textZoom={100}
           applicationNameForUserAgent="FIMBY-WebView/1.0"
           injectedJavaScriptBeforeContentLoaded={"window.__FIMBY_NATIVE_APP__ = true; true;"}
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
@@ -2116,6 +2192,37 @@ export default function IndexScreen() {
               }}
             >
               <Text style={styles.errorOverlaySignOutText}>Sign Out</Text>
+            </Pressable>
+          </View>
+        )}
+        {stuckOnErrorPage && !webViewError && (
+          <View style={styles.stuckOverlay} pointerEvents="box-none">
+            <Pressable
+              style={[styles.stuckPrimaryButton, { backgroundColor: handoffPalette.primaryBg }]}
+              onPress={() => {
+                setStuckOnErrorPage(false);
+                const target = lastEcUrlRef.current ?? `${SF_AUTH_HOST}/home`;
+                setWebViewUrl(target);
+                setWebViewKey((k) => k + 1);
+              }}
+            >
+              <Text style={[styles.stuckPrimaryButtonText, { color: handoffPalette.primaryText }]}>
+                Back to FIMBY
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.stuckSecondaryButton,
+                { backgroundColor: handoffPalette.bg, borderColor: handoffPalette.signUpOutline },
+              ]}
+              onPress={() => {
+                setStuckOnErrorPage(false);
+                logout();
+              }}
+            >
+              <Text style={[styles.stuckSecondaryButtonText, { color: handoffPalette.signUpOutline }]}>
+                Sign in again
+              </Text>
             </Pressable>
           </View>
         )}
@@ -2413,6 +2520,54 @@ const styles = StyleSheet.create({
   errorOverlaySignOutText: {
     color: "#aaaaaa",
     fontSize: 14,
+  },
+  // Recovery buttons shown over the EC /error dead-end. Centered vertically so
+  // they land in the middle of the screen — clear of the error page's own
+  // illustration up top and sitting on the empty (black) lower half. No panel:
+  // the buttons float directly on the page to avoid overlapping a backdrop with
+  // existing content.
+  stuckOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  stuckPrimaryButton: {
+    alignSelf: "stretch",
+    maxWidth: 340,
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 14,
+    // Lift the button off whatever is behind it in both themes.
+    shadowColor: "#000000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  stuckPrimaryButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  stuckSecondaryButton: {
+    alignSelf: "stretch",
+    maxWidth: 340,
+    width: "100%",
+    paddingVertical: 13,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    shadowColor: "#000000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  stuckSecondaryButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
 

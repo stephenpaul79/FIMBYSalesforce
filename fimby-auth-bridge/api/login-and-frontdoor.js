@@ -1,6 +1,6 @@
 // api/login-and-frontdoor.js — PKCE login + frontdoor in one round trip for mobile OAuth
 import crypto from "crypto";
-import { mintAccessToken, mintRefreshToken } from "../lib/sessions.js";
+import { mintAccessToken, mintRefreshToken, allowUser } from "../lib/sessions.js";
 import { apiHygiene } from "../lib/api-hygiene.js";
 import { rateLimit } from "../lib/rate-limit.js";
 import { exchangePkceCode } from "../lib/pkce-exchange.js";
@@ -65,6 +65,10 @@ export default async function handler(req, res) {
       bucketKey: userId,
     });
     if (!userRl.ok) return oauthError(res, 429, "slow_down", "Too many requests");
+
+    // Fresh OAuth login is proof of life — clear any prior revocation denylist
+    // so this new session works. We never block fresh logins.
+    await allowUser(userId);
 
     const access_token = mintAccessToken({ sub: userId, username });
     const { refreshToken: refresh_token } = await mintRefreshToken({

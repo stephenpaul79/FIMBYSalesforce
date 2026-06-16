@@ -61,6 +61,63 @@ function buildRefreshKey(userId, createdAt, tokenHash) {
   return `refresh:${userId}:${createdAt}:${shortHash}`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Per-user secondary index
+// user_index:<userId> → SET of every live Redis key that belongs to the user
+// (refresh tokens, family sets, push-token mappings, …). Lets us enumerate or
+// revoke everything for a user in one round-trip instead of KEYS/SCAN, which
+// blocks the whole Upstash cache. Mirror every user-scoped write/delete into
+// this set. Members can outlive their keys (Redis can't TTL set members), so
+// the index lifetime is bumped on each write and listUserKeys() self-heals
+// stale members on read.
+// ─────────────────────────────────────────────────────────────────────────────
+const USER_INDEX_TTL_SECONDS = REFRESH_TTL_SECONDS + 60;
+
+function buildUserIndexKey(userId) {
+  return `user_index:${userId}`;
+}
+
+export async function indexUserKey(userId, memberKey) {
+  const redis = await getRedis();
+  const indexKey = buildUserIndexKey(userId);
+  await redis.sAdd(indexKey, memberKey);
+  await redis.expire(indexKey, USER_INDEX_TTL_SECONDS);
+}
+
+export async function unindexUserKey(userId, memberKey) {
+  const redis = await getRedis();
+  await redis.sRem(buildUserIndexKey(userId), memberKey);
+}
+
+/**
+ * Enumerate every live Redis key belonging to a user via the secondary index.
+ * Self-heals: any member whose underlying key has expired is pruned from the
+ * set and omitted from the result, so the index converges on truth over time.
+ */
+export async function listUserKeys(userId) {
+  const redis = await getRedis();
+  const indexKey = buildUserIndexKey(userId);
+  const members = await redis.sMembers(indexKey);
+  if (!Array.isArray(members) || members.length === 0) return [];
+
+  const live = [];
+  const stale = [];
+  for (const member of members) {
+    // The index set itself should never be a member, but guard anyway.
+    if (member === indexKey) continue;
+    const exists = await redis.exists(member);
+    if (exists === 1) {
+      live.push(member);
+    } else {
+      stale.push(member);
+    }
+  }
+  if (stale.length > 0) {
+    await redis.sRem(indexKey, stale);
+  }
+  return live;
+}
+
 // Default audience is the mobile bundle ID. Override via env var if you ever
 // need to issue tokens to a second audience (e.g. a web console). Verifiers
 // MUST require this exact audience — a mismatched token is a leaked token.
@@ -127,6 +184,10 @@ export async function mintRefreshToken({ sub, username, createdAt = null, refres
   // index is always the last thing to expire.
   await redis.sAdd(familyKey, key);
   await redis.expire(familyKey, REFRESH_TTL_SECONDS + 60);
+  // Mirror into the per-user index so all of a user's keys are findable in one
+  // round-trip. We index both the token and the family set.
+  await indexUserKey(sub, key);
+  await indexUserKey(sub, familyKey);
 
   return { refreshToken: rawToken, refreshHash: hash };
 }
@@ -163,9 +224,14 @@ export async function revokeRefreshToken(rawRefreshToken) {
   const hash = sha256(rawRefreshToken);
   const key = buildRefreshKey(parsed.userId, parsed.createdAt, hash);
   const familyKey = buildFamilyKey(parsed.userId, parsed.createdAt);
+  // Surface Redis failures to the caller (logout returns 500 → client retries)
+  // rather than silently leaving an orphaned, still-valid token in Redis.
   await redis.del(key);
   // Keep the family set in sync so it doesn't grow unboundedly.
   await redis.sRem(familyKey, key);
+  // Keep the per-user index in sync too. The family set may still exist (other
+  // rotations live in it), so only drop the token key here.
+  await unindexUserKey(parsed.userId, key);
 }
 
 /**
@@ -180,6 +246,9 @@ export async function revokeRefreshFamily({ sub, createdAt }) {
     await redis.del(members);
   }
   await redis.del(familyKey);
+  // Drop the revoked token keys and the family set from the per-user index.
+  const toUnindex = [familyKey, ...(Array.isArray(members) ? members : [])];
+  await redis.sRem(buildUserIndexKey(sub), toUnindex);
   return { revoked: Array.isArray(members) ? members.length : 0 };
 }
 
@@ -237,6 +306,42 @@ export function parseRefreshTokenSafe(rawToken) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Revocation denylist
+// denylist:<userId> neutralizes an already-issued access token. Access tokens
+// are stateless JWTs (frontdoor only verifies the signature, never Redis), so
+// without this a revoked user keeps walking in until their token expires. On
+// logout we set the key; frontdoor and refresh check it. A genuine fresh OAuth
+// login clears it (re-auth is proof of life — we never block fresh logins).
+//
+// TTL = access-token lifetime: that is the exact window a held access JWT can
+// still verify. After it lapses the token is dead on its own, so the key
+// self-expires and can never get stuck.
+// ─────────────────────────────────────────────────────────────────────────────
+const DENYLIST_TTL_SECONDS = ACCESS_TTL_SECONDS;
+
+function buildDenylistKey(userId) {
+  return `denylist:${userId}`;
+}
+
+export async function denyUser(userId) {
+  if (!userId) return;
+  const redis = await getRedis();
+  await redis.setEx(buildDenylistKey(userId), DENYLIST_TTL_SECONDS, "1");
+}
+
+export async function allowUser(userId) {
+  if (!userId) return;
+  const redis = await getRedis();
+  await redis.del(buildDenylistKey(userId));
+}
+
+export async function isUserDenied(userId) {
+  if (!userId) return false;
+  const redis = await getRedis();
+  return (await redis.exists(buildDenylistKey(userId))) === 1;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Session TTL Validation
 // Returns { valid: true } or { valid: false, reason, code }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -277,11 +382,11 @@ export function validateSessionTTL(sessionData) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NOTE: listUserSessions / revokeAllUserSessions were removed in the Phase 1
-// hardening pass. Both relied on redis.keys(...) which is O(N) and blocks
-// the whole cache on Upstash. If per-user session management is needed
-// again, build it on top of a maintained session-index SET
-// (e.g. SADD refresh_index:<userId> <key>) rather than KEYS/SCAN.
+// Per-user session management is built on the user_index:<userId> SET above
+// (see indexUserKey / listUserKeys). This replaces the removed
+// listUserSessions / revokeAllUserSessions, which relied on redis.keys(...) —
+// O(N) and blocking on Upstash. Enumerate or revoke a user's keys via
+// listUserKeys(userId); never reintroduce KEYS/SCAN on the hot path.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────────────────────

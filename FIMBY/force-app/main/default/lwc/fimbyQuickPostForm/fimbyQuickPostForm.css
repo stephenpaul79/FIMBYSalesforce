@@ -53,18 +53,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px 20px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--fimby-border-subtle);
     background: var(--fimby-surface-input);
     position: relative;
 }
 
 .modal-title {
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 4.2vw, 1.1rem);
     font-weight: 600;
     color: var(--fimby-text-strong);
     margin: 0;
     text-align: center;
+    white-space: nowrap;
 }
 
 .modal-content {
@@ -167,6 +168,7 @@
 .close-button {
     width: 40px;
     height: 40px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -188,7 +190,8 @@
 
 .modal-header .close-button {
     position: absolute;
-    right: 20px;
+    top: 4px;
+    right: 4px;
 }
 
 .form-title {
