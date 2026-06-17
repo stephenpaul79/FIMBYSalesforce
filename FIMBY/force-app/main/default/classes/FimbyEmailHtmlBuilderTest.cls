@@ -256,12 +256,14 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
-    static void buildSplitCardRow_emitsSizedImageAndBodyCells() {
+    static void buildSplitCardRow_emitsPercentImageAndBodyCells() {
         String html = FimbyEmailHtmlBuilder.buildSplitCardRow(
-            'https://example.com/photo.jpg', 168, 210, '<p>body</p>'
+            'https://example.com/photo.jpg', '<p>body</p>'
         );
-        System.assert(html.contains('width="168" height="210"'), 'Image cell sized to ratio: ' + html);
-        System.assert(html.contains('<p>body</p>'), 'Body html should be embedded in right cell');
+        System.assert(html.contains('width="34%"'), 'Image cell uses percentage width: ' + html);
+        System.assert(html.contains('width="66%"'), 'Body cell uses percentage width: ' + html);
+        System.assert(html.contains('height:auto'), 'Image keeps its natural aspect ratio: ' + html);
+        System.assert(html.contains('<p>body</p>'), 'Body html should be embedded in left cell');
         System.assert(html.startsWith('<tr>'), 'Should be a single table row');
     }
 

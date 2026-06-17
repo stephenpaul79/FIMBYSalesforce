@@ -228,7 +228,7 @@ public with sharing class FimbyLibraryController {
             Library_Item__c item = [
                 SELECT Id, Name, Description__c, Status__c, Image_URL__c, Image__c,
                        Max_Lending_Time_In_Days__c, Expected_Return_Date__c,
-                       Owner_Contact__c, Owner_Contact__r.Name
+                       Owner_Contact__c, Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c
                 FROM Library_Item__c
                 WHERE Id = :recordId
                 WITH SECURITY_ENFORCED
@@ -251,7 +251,7 @@ public with sharing class FimbyLibraryController {
                     'maxLendingDays' => item.Max_Lending_Time_In_Days__c,
                     'expectedReturnDate' => item.Expected_Return_Date__c,
                     'ownerContactId' => item.Owner_Contact__c,
-                    'ownerName' => item.Owner_Contact__r?.Name
+                    'ownerName' => item.Owner_Contact__r?.Full_Name__c
                 }
             };
         } catch (Exception e) {
@@ -646,7 +646,7 @@ public with sharing class FimbyLibraryController {
             // Borrower's lending history for this item
             List<Lending_History__c> borrowerHist = [
                 SELECT Id, Start_Date__c, End_Date__c, Condition_Upon_Return__c,
-                       Lent_By__r.Full_Name__c, Lent_By__r.Image_URL__c
+                       Lent_By__r.Full_Name__c, Lent_By__r.Image_URL__c, Lent_By__r.Display_Avatar_URL__c
                 FROM Lending_History__c
                 WHERE Borrowed_By__c = :actingAsContactId
                 AND Library_Item__c = :itemId
@@ -676,7 +676,7 @@ public with sharing class FimbyLibraryController {
                         'endDate' => bh.End_Date__c,
                         'condition' => bh.Condition_Upon_Return__c,
                         'lenderName' => bh.Lent_By__r?.Full_Name__c,
-                        'lenderAvatar' => bh.Lent_By__r?.Image_URL__c
+                        'lenderAvatar' => bh.Lent_By__r?.Display_Avatar_URL__c
                     };
                     String bhIdStr = String.valueOf(bh.Id);
                     if (bhConvMap.containsKey(bhIdStr)) {
@@ -726,7 +726,7 @@ public with sharing class FimbyLibraryController {
             // Current loan — includes "Owner to Confirm Return" where borrower has set Returned_Date__c
             List<Loaned_Item__c> activeLoans = [
                 SELECT Id, Status__c, Loan_Due_Date__c, Loan_Start_Date__c,
-                       Loaned_To__r.Full_Name__c, Loaned_To__r.Image_URL__c,
+                       Loaned_To__r.Full_Name__c, Loaned_To__r.Image_URL__c, Loaned_To__r.Display_Avatar_URL__c,
                        Requested_Due_Date_Extension__c, Return_Confirmed_By_Borrower__c
                 FROM Loaned_Item__c
                 WHERE Library_Item__c = :itemId
@@ -755,7 +755,7 @@ public with sharing class FimbyLibraryController {
                     'dueDate' => loan.Loan_Due_Date__c,
                     'startDate' => loan.Loan_Start_Date__c,
                     'borrowerName' => loan.Loaned_To__r?.Full_Name__c,
-                    'borrowerAvatar' => loan.Loaned_To__r?.Image_URL__c,
+                    'borrowerAvatar' => loan.Loaned_To__r?.Display_Avatar_URL__c,
                     'conversationId' => loanConvId,
                     'requestedDueDateExtension' => loan.Requested_Due_Date_Extension__c,
                     'returnConfirmedByBorrower' => loan.Return_Confirmed_By_Borrower__c
@@ -766,7 +766,7 @@ public with sharing class FimbyLibraryController {
             List<Lending_Request__c> reqRecords = [
                 SELECT Id, Status__c, Waitlist_Position__c, Requested_Date__c,
                        of_Days_Needed__c, Estimated_Available_Date__c,
-                       Requested_By__r.Full_Name__c, Requested_By__r.Image_URL__c
+                       Requested_By__r.Full_Name__c, Requested_By__r.Image_URL__c, Requested_By__r.Display_Avatar_URL__c
                 FROM Lending_Request__c
                 WHERE Library_Item__c = :itemId
                 AND Status__c NOT IN ('Cancelled', 'Declined')
@@ -802,7 +802,7 @@ public with sharing class FimbyLibraryController {
                     'daysNeeded' => req.of_Days_Needed__c,
                     'estimatedAvailableDate' => req.Estimated_Available_Date__c,
                     'requesterName' => req.Requested_By__r?.Full_Name__c,
-                    'requesterAvatar' => req.Requested_By__r?.Image_URL__c
+                    'requesterAvatar' => req.Requested_By__r?.Display_Avatar_URL__c
                 };
                 if (reqConvMap.containsKey(String.valueOf(req.Id))) {
                     reqMap.put('conversationId', String.valueOf(reqConvMap.get(String.valueOf(req.Id))));
@@ -815,7 +815,7 @@ public with sharing class FimbyLibraryController {
             List<Lending_History__c> histRecords = [
                 SELECT Id, Start_Date__c, End_Date__c, Condition_Upon_Return__c,
                        Lender_Rating__c, Borrow_Rating__c,
-                       Borrowed_By__r.Full_Name__c, Borrowed_By__r.Image_URL__c
+                       Borrowed_By__r.Full_Name__c, Borrowed_By__r.Image_URL__c, Borrowed_By__r.Display_Avatar_URL__c
                 FROM Lending_History__c
                 WHERE Library_Item__c = :itemId
                 ORDER BY End_Date__c DESC
@@ -848,7 +848,7 @@ public with sharing class FimbyLibraryController {
                     'lenderRating' => hist.Lender_Rating__c,
                     'borrowRating' => hist.Borrow_Rating__c,
                     'borrowerName' => hist.Borrowed_By__r?.Full_Name__c,
-                    'borrowerAvatar' => hist.Borrowed_By__r?.Image_URL__c
+                    'borrowerAvatar' => hist.Borrowed_By__r?.Display_Avatar_URL__c
                 };
                 String histIdStr = String.valueOf(hist.Id);
                 if (histConvMap.containsKey(histIdStr)) {

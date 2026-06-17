@@ -1,0 +1,29 @@
+<template>
+    <template lwc:if={isVisible}>
+        <div class="safety-note">
+            <button
+                type="button"
+                class="safety-note__dismiss"
+                onclick={handleDismiss}
+                aria-label="Dismiss safety reminder">
+                <lightning-icon icon-name="utility:close" size="xx-small" alternative-text="Dismiss"></lightning-icon>
+            </button>
+
+            <c-fimby-inline-banner variant="info" message={headline}></c-fimby-inline-banner>
+
+            <ul class="safety-note__points">
+                <li>Pick a spot you&rsquo;re comfortable with &mdash; your porch, a doorway, or a public place.</li>
+                <li>You&rsquo;re welcome to bring someone with you.</li>
+                <li>You decide whether and how to meet &mdash; there&rsquo;s no pressure.</li>
+                <li>If something feels off, you can pause anytime.</li>
+            </ul>
+
+            <a
+                href={guidelinesUrl}
+                class="safety-note__link"
+                onclick={handleStandardsLink}>
+                Read our Community Standards
+            </a>
+        </div>
+    </template>
+</template>

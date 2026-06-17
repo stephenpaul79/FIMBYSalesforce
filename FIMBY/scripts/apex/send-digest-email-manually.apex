@@ -34,17 +34,12 @@ if (u.Contact.AccountId == null) {
             + windowStart + ' to ' + windowEnd + '. Widen the window and retry.');
     } else {
         String subject = 'Your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
-        String timeRange = (windowEnd > windowStart)
-            ? windowStart.format() + ' - ' + windowEnd.format()
-            : windowStart.format();
-        String bodyContent =
-            '<p style="margin:0 0 12px;font-family:Verdana, Geneva, sans-serif;font-size:13px;color:#6B6B6B;">'
-            + timeRange.escapeHtml4() + '</p>' + content.html;
+        String displaySubject = 'Here\'s your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
 
         String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
-            bodyContent, subject, nhName,
-            FimbyEmailHtmlBuilder.getRandomIntentLine(),
-            false, false, u.FirstName
+            content.html, displaySubject, nhName,
+            null,
+            false, false, u.FirstName, true
         );
 
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();

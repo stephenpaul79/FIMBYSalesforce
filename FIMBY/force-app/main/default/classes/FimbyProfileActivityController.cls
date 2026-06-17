@@ -74,7 +74,7 @@ public with sharing class FimbyProfileActivityController {
         List<Story__c> stories = [
             SELECT Id, Name, Message__c, Type__c, CreatedDate,
                    Posted_By__c, Contact__c, Comment_Count__c,
-                   Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c,
+                   Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c,
                    Posted_By__r.Organization_Account__r.Logo_URL__c,
                    Image_URL__c, Image_Ratio__c
@@ -113,10 +113,10 @@ public with sharing class FimbyProfileActivityController {
 
         List<Needs_Offers__c> aoItems = [
             SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
-                   Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c,
+                   Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c,
                    Posted_By__r.Organization_Account__r.Logo_URL__c,
-                   Contact__r.Full_Name__c, Contact__r.Image_URL__c,
+                   Contact__r.Full_Name__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__c,
                    Contact__r.Organization_Account__r.Logo_URL__c,
                    Image_1_URL__c, Image_1_Ratio__c,
@@ -155,7 +155,7 @@ public with sharing class FimbyProfileActivityController {
         List<Library_Item__c> libItems = [
             SELECT Id, Name, Description__c, Category__c, Status__c, CreatedDate,
                    Owner_Contact__c, Listed_By__c,
-                   Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c,
+                   Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
                    Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__c,
                    Owner_Contact__r.Organization_Account__r.Logo_URL__c,
                    Image_URL__c, Image_Ratio__c

@@ -113,6 +113,12 @@
                             <template lwc:if={formattedMemberSince}>
                                 <p class="identity-meta">Member since {formattedMemberSince}</p>
                             </template>
+                            <template lwc:if={showPrivacyPointer}>
+                                <p class="privacy-pointer">
+                                    Neighbours see {privacyVisibilitySummary}.
+                                    <button type="button" class="privacy-pointer-link" onclick={handleOpenPrivacySettings}>Change in Settings &rarr;</button>
+                                </p>
+                            </template>
                         </div>
                     </template>
                 </div>

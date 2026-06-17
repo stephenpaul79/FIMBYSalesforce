@@ -8,7 +8,8 @@ public class FimbyPushQueueableTest {
 
     private static User getTestUser() {
         return [
-            SELECT Id, ContactId, Last_DM_Push_At__c, Last_Activity_Push_At__c
+            SELECT Id, ContactId, Last_DM_Push_At__c, Last_Activity_Push_At__c,
+                   Last_Quiet_Refresh_At__c
             FROM User
             WHERE Profile.Name = 'Customer Community User'
             AND IsActive = true
@@ -19,6 +20,10 @@ public class FimbyPushQueueableTest {
     private static Contact getTestContact() {
         User u = getTestUser();
         return [SELECT Id FROM Contact WHERE Id = :u.ContactId LIMIT 1];
+    }
+
+    private static Map<Id, List<Id>> markMap(Id userId, List<Id> notifIds) {
+        return new Map<Id, List<Id>>{ userId => notifIds };
     }
 
     /* ── Success: marks Sent + stamps gate ────────────────────────────── */
@@ -45,16 +50,13 @@ public class FimbyPushQueueableTest {
                 FimbyPushNotificationService.NotificationType.GENERAL
             );
 
-        List<Id> notifIds = new List<Id>{ notif.Id };
-        Map<Id, String> gateUpdates = new Map<Id, String>{ testUser.Id => 'ACTIVITY' };
-
-        Test.setMock(HttpCalloutMock.class, new MockPushResponse(200, '{"sent":true}'));
+        Test.setMock(HttpCalloutMock.class, new EchoMock(true));
 
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             new List<FimbyPushNotificationService.PushPayload>{ payload },
-            notifIds,
-            gateUpdates
+            markMap(testUser.Id, new List<Id>{ notif.Id }),
+            new Map<Id, String>{ testUser.Id => 'ACTIVITY' }
         ));
         Test.stopTest();
 
@@ -66,7 +68,7 @@ public class FimbyPushQueueableTest {
             'Activity gate timestamp should be stamped');
     }
 
-    /* ── Failure: marks Failed, gate NOT stamped ─────────────────────── */
+    /* ── Failure (HTTP 500): marks Failed, gate NOT stamped ──────────── */
 
     @IsTest
     static void testQueueable_Failure_MarksFailedNoGateStamp() {
@@ -90,16 +92,13 @@ public class FimbyPushQueueableTest {
                 FimbyPushNotificationService.NotificationType.MESSAGE
             );
 
-        List<Id> notifIds = new List<Id>{ notif.Id };
-        Map<Id, String> gateUpdates = new Map<Id, String>{ testUser.Id => 'DM' };
-
         Test.setMock(HttpCalloutMock.class, new MockPushResponse(500, '{"error":"server_error"}'));
 
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             new List<FimbyPushNotificationService.PushPayload>{ payload },
-            notifIds,
-            gateUpdates
+            markMap(testUser.Id, new List<Id>{ notif.Id }),
+            new Map<Id, String>{ testUser.Id => 'DM' }
         ));
         Test.stopTest();
 
@@ -133,22 +132,118 @@ public class FimbyPushQueueableTest {
                 FimbyPushNotificationService.NotificationType.GENERAL
             );
 
-        List<Id> notifIds = new List<Id>{ notif1.Id, notif2.Id };
-        Map<Id, String> gateUpdates = new Map<Id, String>{ testUser.Id => 'BOTH' };
-
-        Test.setMock(HttpCalloutMock.class, new MockPushResponse(200, '{"sent":true}'));
+        Test.setMock(HttpCalloutMock.class, new EchoMock(true));
 
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             new List<FimbyPushNotificationService.PushPayload>{ payload },
-            notifIds,
-            gateUpdates
+            markMap(testUser.Id, new List<Id>{ notif1.Id, notif2.Id }),
+            new Map<Id, String>{ testUser.Id => 'BOTH' }
         ));
         Test.stopTest();
 
         User u = [SELECT Last_DM_Push_At__c, Last_Activity_Push_At__c FROM User WHERE Id = :testUser.Id];
         System.assertNotEquals(null, u.Last_DM_Push_At__c, 'DM gate should be stamped');
         System.assertNotEquals(null, u.Last_Activity_Push_At__c, 'Activity gate should be stamped');
+    }
+
+    /* ── Batch POST carries { notifications: [...] } ─────────────────── */
+
+    @IsTest
+    static void testQueueable_BatchBodyShape() {
+        User testUser = getTestUser();
+
+        FimbyPushNotificationService.PushPayload payload =
+            new FimbyPushNotificationService.PushPayload(
+                testUser.Id, 'T', 'B', FimbyPushNotificationService.NotificationType.GENERAL
+            );
+
+        EchoMock mock = new EchoMock(true);
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        System.enqueueJob(new FimbyPushQueueable(
+            new List<FimbyPushNotificationService.PushPayload>{ payload },
+            new Map<Id, List<Id>>(),
+            new Map<Id, String>()
+        ));
+        Test.stopTest();
+
+        System.assert(mock.capturedBody.contains('"notifications"'),
+            'Batch POST must wrap payloads in a notifications array');
+    }
+
+    /* ── Per-entry result: not-accepted Pending_Quiet stays Pending_Quiet ── */
+
+    @IsTest
+    static void testQueueable_QuietNotAccepted_StaysPendingQuiet() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Notification__c notif = new Notification__c(
+            Contact__c = testContact.Id, Type__c = 'Response',
+            Title__c = 'Quiet', Body__c = 'Body', Push_Status__c = 'Pending_Quiet'
+        );
+        insert notif;
+
+        FimbyPushNotificationService.PushPayload payload =
+            new FimbyPushNotificationService.PushPayload(
+                testUser.Id, 'Activity', 'Body',
+                FimbyPushNotificationService.NotificationType.GENERAL
+            );
+        payload.quiet = true;
+
+        Test.setMock(HttpCalloutMock.class, new EchoMock(false));
+
+        Test.startTest();
+        System.enqueueJob(new FimbyPushQueueable(
+            new List<FimbyPushNotificationService.PushPayload>{ payload },
+            markMap(testUser.Id, new List<Id>{ notif.Id }),
+            new Map<Id, String>{ testUser.Id => 'QUIET' }
+        ));
+        Test.stopTest();
+
+        Notification__c result = [SELECT Push_Status__c FROM Notification__c WHERE Id = :notif.Id];
+        System.assertEquals('Pending_Quiet', result.Push_Status__c,
+            'A not-accepted quiet row stays Pending_Quiet (retried next cycle), never Failed');
+
+        User u = [SELECT Last_Quiet_Refresh_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertEquals(null, u.Last_Quiet_Refresh_At__c,
+            'Not-accepted quiet push does not stamp the quiet-refresh timestamp');
+    }
+
+    /* ── Per-entry result: not-accepted Pending → Failed ─────────────── */
+
+    @IsTest
+    static void testQueueable_AudibleNotAccepted_MarksFailed() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Notification__c notif = new Notification__c(
+            Contact__c = testContact.Id, Type__c = 'Response',
+            Title__c = 'Audible', Body__c = 'Body', Push_Status__c = 'Pending'
+        );
+        insert notif;
+
+        FimbyPushNotificationService.PushPayload payload =
+            new FimbyPushNotificationService.PushPayload(
+                testUser.Id, 'Activity', 'Body',
+                FimbyPushNotificationService.NotificationType.GENERAL
+            );
+
+        Test.setMock(HttpCalloutMock.class, new EchoMock(false));
+
+        Test.startTest();
+        System.enqueueJob(new FimbyPushQueueable(
+            new List<FimbyPushNotificationService.PushPayload>{ payload },
+            markMap(testUser.Id, new List<Id>{ notif.Id }),
+            new Map<Id, String>{ testUser.Id => 'ACTIVITY' }
+        ));
+        Test.stopTest();
+
+        Notification__c result = [SELECT Push_Status__c FROM Notification__c WHERE Id = :notif.Id];
+        System.assertEquals('Failed', result.Push_Status__c,
+            'A not-accepted audible row is marked Failed');
     }
 
     /* ── Empty payload list: exits cleanly ───────────────────────────── */
@@ -158,7 +253,7 @@ public class FimbyPushQueueableTest {
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             new List<FimbyPushNotificationService.PushPayload>(),
-            new List<Id>(),
+            new Map<Id, List<Id>>(),
             new Map<Id, String>()
         ));
         Test.stopTest();
@@ -192,12 +287,12 @@ public class FimbyPushQueueableTest {
             ));
         }
 
-        Test.setMock(HttpCalloutMock.class, new MockPushResponse(200, '{"sent":true}'));
+        Test.setMock(HttpCalloutMock.class, new EchoMock(true));
 
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             bigBatch,
-            new List<Id>(),
+            new Map<Id, List<Id>>(),
             new Map<Id, String>()
         ));
         Test.stopTest();
@@ -252,15 +347,13 @@ public class FimbyPushQueueableTest {
                 FimbyPushNotificationService.NotificationType.GENERAL
             );
 
-        Map<Id, String> gateUpdates = new Map<Id, String>{ testUser.Id => 'ACTIVITY' };
-
-        Test.setMock(HttpCalloutMock.class, new MockPushResponse(200, '{"sent":true}'));
+        Test.setMock(HttpCalloutMock.class, new EchoMock(true));
 
         Test.startTest();
         System.enqueueJob(new FimbyPushQueueable(
             new List<FimbyPushNotificationService.PushPayload>{ payload },
-            notifIds,
-            gateUpdates
+            markMap(testUser.Id, notifIds),
+            new Map<Id, String>{ testUser.Id => 'ACTIVITY' }
         ));
         Test.stopTest();
 
@@ -269,6 +362,7 @@ public class FimbyPushQueueableTest {
         System.assertEquals(5, sentCount, 'All 5 notifications should be Sent');
     }
 
+    /* Static-status mock for explicit-body / HTTP-failure tests. */
     private class MockPushResponse implements HttpCalloutMock {
         private Integer statusCode;
         private String body;
@@ -282,6 +376,44 @@ public class FimbyPushQueueableTest {
             HttpResponse res = new HttpResponse();
             res.setStatusCode(statusCode);
             res.setBody(body);
+            return res;
+        }
+    }
+
+    /**
+     * Parses the outbound batch body and returns a per-entry results array
+     * echoing the configured accepted verdict for each user_id — mirrors the
+     * bridge's { results: [{ user_id, accepted }] } contract.
+     */
+    private class EchoMock implements HttpCalloutMock {
+        private Boolean accepted;
+        public String capturedBody;
+
+        public EchoMock(Boolean accepted) {
+            this.accepted = accepted;
+        }
+
+        public HTTPResponse respond(HTTPRequest req) {
+            capturedBody = req.getBody();
+            List<Object> results = new List<Object>();
+            try {
+                Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(capturedBody);
+                Object notifsRaw = parsed.get('notifications');
+                if (notifsRaw instanceof List<Object>) {
+                    for (Object o : (List<Object>) notifsRaw) {
+                        Map<String, Object> n = (Map<String, Object>) o;
+                        results.add(new Map<String, Object>{
+                            'user_id' => n.get('user_id'),
+                            'accepted' => accepted
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                // leave results empty
+            }
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setBody(JSON.serialize(new Map<String, Object>{ 'results' => results }));
             return res;
         }
     }

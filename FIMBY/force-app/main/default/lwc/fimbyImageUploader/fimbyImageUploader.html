@@ -3,6 +3,9 @@
         <!-- Label -->
         <div lwc:if={displayLabel} class="upload-label">{displayLabel}</div>
 
+        <!-- People-in-photo consent reminder (opt-in via require-people-consent) -->
+        <c-fimby-inline-banner lwc:if={showPeopleConsentNote} variant="info" message={peopleConsentMessage}></c-fimby-inline-banner>
+
         <!-- Loading State -->
         <template lwc:if={isLoading}>
             <div class="loading-container">

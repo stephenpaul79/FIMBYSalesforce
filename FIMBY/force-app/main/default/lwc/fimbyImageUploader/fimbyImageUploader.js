@@ -29,9 +29,22 @@ export default class FimbyImageUploader extends LightningElement {
     @api cropSize = 300;
     @api cropShape = 'circle';
 
+    // When true, shows a calm reminder to get consent before sharing photos of other people.
+    // Enable on people-facing composers (Story, Ask/Offer, Library) — never the user's own profile photo.
+    @api requirePeopleConsent = false;
+
     /** Bare `allow-documents` in markup sets "" not true — normalize before use. */
     get documentsEnabled() {
         return this.allowDocuments === true || this.allowDocuments === '';
+    }
+
+    /** Bare `require-people-consent` in markup sets "" not true — normalize before use. */
+    get showPeopleConsentNote() {
+        return this.requirePeopleConsent === true || this.requirePeopleConsent === '';
+    }
+
+    get peopleConsentMessage() {
+        return "Is someone else in this photo? Please make sure they're okay with it being shared.";
     }
 
     get cropEnabled() {

@@ -689,9 +689,9 @@ public with sharing class FimbyMyStuffController {
         public List<ContactCardWrapper> getContactCards(String contactId, String searchTerm) {
             Integer sharedLim = FimbySettings.sharedContactsLimit();
             List<Shared_Contact_Info__c> shared = [
-                SELECT Id, Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName,
+                SELECT Id, Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.LastName,
                        Contact__r.Account.Name,
-                       Shared_To__c, Shared_To__r.Name, Shared_To__r.FirstName, Shared_To__r.LastName,
+                       Shared_To__c, Shared_To__r.Name, Shared_To__r.Full_Name__c, Shared_To__r.FirstName, Shared_To__r.LastName,
                        Shared_To__r.Account.Name,
                        Email__c, Phone__c, Street__c, City__c, Province_State__c, Postal_Code__c,
                        Country__c, Additional_Info__c, Status__c, Origin__c, CreatedDate
@@ -710,13 +710,13 @@ public with sharing class FimbyMyStuffController {
 
                 if (iShared) {
                     otherId = sci.Shared_To__c;
-                    otherName = sci.Shared_To__r?.Name;
+                    otherName = sci.Shared_To__r?.Full_Name__c;
                     otherFirstName = sci.Shared_To__r?.FirstName;
                     otherLastName = sci.Shared_To__r?.LastName;
                     otherNeighbourhood = sci.Shared_To__r?.Account?.Name;
                 } else {
                     otherId = sci.Contact__c;
-                    otherName = sci.Contact__r?.Name;
+                    otherName = sci.Contact__r?.Full_Name__c;
                     otherFirstName = sci.Contact__r?.FirstName;
                     otherLastName = sci.Contact__r?.LastName;
                     otherNeighbourhood = sci.Contact__r?.Account?.Name;
@@ -932,8 +932,8 @@ public with sharing class FimbyMyStuffController {
             ];
 
             Contact c = [
-                SELECT Id, FirstName, LastName, Full_Name__c, Pronouns__c,
-                       Image_URL__c, Image_Ratio__c, AccountId, Account.Name, CreatedDate,
+                SELECT Id, FirstName, LastName, Full_Name__c, Mask_Last_Name__c, Pronouns__c,
+                       Image_URL__c, Display_Avatar_URL__c, Image_Ratio__c, AccountId, Account.Name, CreatedDate,
                        Languages_Spoken__c, Accessibility_Notes__c, General_Availability__c,
                        About_Neighbourhood_Tenure__c, About_What_Brought_You__c,
                        About_Local_Place__c, About_Enjoys_Doing__c, About_Fun_Fact__c,
@@ -944,6 +944,10 @@ public with sharing class FimbyMyStuffController {
                 WHERE Id = :neighbourContactId
                 LIMIT 1
             ];
+
+            String displayLastName = (c.Mask_Last_Name__c == true)
+                ? (String.isBlank(c.LastName) ? '' : c.LastName.left(1) + '.')
+                : c.LastName;
 
             Boolean sameNeighbourhood = viewer.AccountId != null && viewer.AccountId == c.AccountId;
             Set<Id> blockedIds = FimbyBlockingHelper.getBidirectionalBlocks((Id) myContactId);
@@ -965,10 +969,10 @@ public with sharing class FimbyMyStuffController {
             Map<String, Object> result = new Map<String, Object>{
                 'contactId' => c.Id,
                 'firstName' => c.FirstName,
-                'lastName' => c.LastName,
+                'lastName' => displayLastName,
                 'fullName' => c.Full_Name__c,
                 'pronouns' => c.Pronouns__c,
-                'imageUrl' => c.Image_URL__c,
+                'imageUrl' => c.Display_Avatar_URL__c,
                 'imageRatio' => c.Image_Ratio__c,
                 'neighbourhood' => c.Account?.Name,
                 'memberSince' => c.CreatedDate,

@@ -276,6 +276,18 @@
     margin-bottom: 18px;
 }
 
+.privacy-toggle {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.privacy-help {
+    margin: 4px 0 0 28px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--fimby-text-soft, var(--fimby-text-muted));
+}
+
 .care-expander-btn {
     display: block;
     width: 100%;

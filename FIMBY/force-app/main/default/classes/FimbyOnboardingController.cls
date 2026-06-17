@@ -12,7 +12,12 @@ public with sharing class FimbyOnboardingController {
         'About_Neighbourhood_Tenure__c', 'About_What_Brought_You__c', 'About_Local_Place__c',
         'About_Enjoys_Doing__c', 'About_Fun_Fact__c',
         'Care_Welcome_Support__c', 'Care_Unhelpful_Things__c', 'Care_How_To_Ask__c', 'Care_Hard_Nos__c',
-        'Care_Standing_Visible__c', 'Care_Updated_Date__c'
+        'Care_Standing_Visible__c', 'Care_Updated_Date__c',
+        'Mask_Last_Name__c', 'Mask_Avatar__c'
+    };
+
+    private static final Set<String> BOOLEAN_PROFILE_FIELDS = new Set<String>{
+        'Care_Standing_Visible__c', 'Mask_Last_Name__c', 'Mask_Avatar__c'
     };
 
     private static final Set<String> CARE_PROFILE_FIELDS = new Set<String>{
@@ -191,8 +196,8 @@ public with sharing class FimbyOnboardingController {
                 if (CARE_PROFILE_FIELDS.contains(fieldName)) {
                     careTouched = true;
                 }
-                if (fieldName == 'Care_Standing_Visible__c') {
-                    c.Care_Standing_Visible__c = 'true'.equalsIgnoreCase(fieldValues.get(fieldName));
+                if (BOOLEAN_PROFILE_FIELDS.contains(fieldName)) {
+                    c.put(fieldName, 'true'.equalsIgnoreCase(fieldValues.get(fieldName)));
                 } else {
                     c.put(fieldName, fieldValues.get(fieldName));
                 }

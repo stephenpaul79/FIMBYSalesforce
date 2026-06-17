@@ -53,13 +53,13 @@ public with sharing class FimbyMessageController {
             Conversation__c conv = [
                 SELECT Id, Participant_1__c, Participant_2__c,
                        Context_Type__c, Related_Record_Id__c, Locked__c,
-                       Participant_1__r.Name, Participant_1__r.FirstName,
-                       Participant_1__r.Image_URL__c,
+                       Participant_1__r.Name, Participant_1__r.Full_Name__c, Participant_1__r.FirstName,
+                       Participant_1__r.Image_URL__c, Participant_1__r.Display_Avatar_URL__c,
                        Participant_1__r.Is_Organization_Contact__c,
                        Participant_1__r.Organization_Account__r.Name,
                        Participant_1__r.Organization_Account__r.Logo_URL__c,
-                       Participant_2__r.Name, Participant_2__r.FirstName,
-                       Participant_2__r.Image_URL__c,
+                       Participant_2__r.Name, Participant_2__r.Full_Name__c, Participant_2__r.FirstName,
+                       Participant_2__r.Image_URL__c, Participant_2__r.Display_Avatar_URL__c,
                        Participant_2__r.Is_Organization_Contact__c,
                        Participant_2__r.Organization_Account__r.Name,
                        Participant_2__r.Organization_Account__r.Logo_URL__c,
@@ -78,12 +78,12 @@ public with sharing class FimbyMessageController {
             Boolean otherIsOrg = otherParticipant?.Is_Organization_Contact__c == true;
             result.otherParticipantName = otherIsOrg
                 ? otherParticipant.Organization_Account__r?.Name
-                : otherParticipant?.Name;
+                : otherParticipant?.Full_Name__c;
             result.otherParticipantFirstName = otherParticipant?.FirstName;
             result.otherParticipantId = isP1 ? conv.Participant_2__c : conv.Participant_1__c;
             result.otherParticipantImageUrl = otherIsOrg
                 ? otherParticipant.Organization_Account__r?.Logo_URL__c
-                : otherParticipant?.Image_URL__c;
+                : otherParticipant?.Display_Avatar_URL__c;
             result.isOtherParticipantOrg = otherIsOrg;
             result.isActingAsSelf = (identity.currentUser.ContactId == identity.actingAsContactId);
             result.actingAsContactName = identity.orgDisplayName;
@@ -101,11 +101,12 @@ public with sharing class FimbyMessageController {
 
             List<Message__c> messages = [
                 SELECT Id, Body__c, Sender__c, Sender__r.Name, Sender__r.FirstName,
-                       Sender__r.Image_URL__c,
+                       Sender__r.Full_Name__c,
+                       Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c,
                        Sender__r.Is_Organization_Contact__c,
                        Sender__r.Organization_Account__r.Name,
                        Sender__r.Organization_Account__r.Logo_URL__c,
-                       Sent_By__c, Sent_By__r.Name, Sent_By__r.FirstName,
+                       Sent_By__c, Sent_By__r.Name, Sent_By__r.Full_Name__c, Sent_By__r.FirstName,
                        Sent_Date__c, Status__c, Read_Date__c,
                        Is_System_Message__c, System_Message_Type__c
                 FROM Message__c
@@ -134,12 +135,12 @@ public with sharing class FimbyMessageController {
                     );
                     w.senderImageUrl = msg.Sender__r.Organization_Account__r?.Logo_URL__c;
                 } else {
-                    w.senderName = msg.Sender__r?.Name;
-                    w.senderImageUrl = msg.Sender__r?.Image_URL__c;
+                    w.senderName = msg.Sender__r?.Full_Name__c;
+                    w.senderImageUrl = msg.Sender__r?.Display_Avatar_URL__c;
                 }
                 w.senderFirstName = msg.Sender__r?.FirstName;
                 w.sentByContactId = msg.Sent_By__c;
-                w.sentByName = msg.Sent_By__r?.Name;
+                w.sentByName = msg.Sent_By__r?.Full_Name__c;
                 w.sentByFirstName = msg.Sent_By__r?.FirstName;
                 w.isOnBehalfOf = (msg.Sender__c != msg.Sent_By__c);
                 w.sentDate = msg.Sent_Date__c;

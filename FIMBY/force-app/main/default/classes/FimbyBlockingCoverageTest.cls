@@ -151,6 +151,7 @@ private class FimbyBlockingCoverageTest {
         Story__c story = [
             SELECT Id, Name, Message__c, Type__c, CreatedDate, Posted_By__c, Contact__c,
                    Comment_Count__c, Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c,
+                   Posted_By__r.Display_Avatar_URL__c,
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c,
                    Image_URL__c, Image_Ratio__c
             FROM Story__c WHERE Name = :STORY_NAME LIMIT 1

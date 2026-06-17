@@ -60,7 +60,7 @@ public class FimbyFeedItem implements Comparable {
         if (this.isOrgContact && story.Posted_By__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = story.Posted_By__r.Organization_Account__r.Logo_URL__c;
         } else {
-            this.postedByImageUrl = story.Posted_By__r?.Image_URL__c;
+            this.postedByImageUrl = story.Posted_By__r?.Display_Avatar_URL__c;
         }
         this.hasImage = String.isNotBlank(story.Image_URL__c);
         this.imageUrl = story.Image_URL__c;
@@ -97,9 +97,9 @@ public class FimbyFeedItem implements Comparable {
                 : item.Posted_By__r?.Organization_Account__r?.Logo_URL__c;
             this.postedByImageUrl = logoUrl != null
                 ? logoUrl
-                : (hasContact ? item.Contact__r.Image_URL__c : item.Posted_By__r?.Image_URL__c);
+                : (hasContact ? item.Contact__r.Display_Avatar_URL__c : item.Posted_By__r?.Display_Avatar_URL__c);
         } else {
-            this.postedByImageUrl = hasContact ? item.Contact__r.Image_URL__c : item.Posted_By__r?.Image_URL__c;
+            this.postedByImageUrl = hasContact ? item.Contact__r.Display_Avatar_URL__c : item.Posted_By__r?.Display_Avatar_URL__c;
         }
         this.hasImage = String.isNotBlank(item.Image_1_URL__c);
         this.imageUrl = item.Image_1_URL__c;
@@ -145,7 +145,7 @@ public class FimbyFeedItem implements Comparable {
         if (this.isOrgContact && item.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = item.Owner_Contact__r.Organization_Account__r.Logo_URL__c;
         } else {
-            this.postedByImageUrl = item.Owner_Contact__r?.Image_URL__c;
+            this.postedByImageUrl = item.Owner_Contact__r?.Display_Avatar_URL__c;
         }
         this.hasImage = String.isNotBlank(item.Image_URL__c);
         this.imageUrl = item.Image_URL__c;

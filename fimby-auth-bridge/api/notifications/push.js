@@ -5,6 +5,57 @@ import crypto from "crypto";
 import { getRedis } from "../../lib/redis.js";
 import { apiHygiene } from "../../lib/api-hygiene.js";
 import { rateLimit } from "../../lib/rate-limit.js";
+import {
+  pruneDeadToken,
+  receiptKey,
+  RECEIPT_PENDING_SET,
+  RECEIPT_TTL_SECONDS,
+} from "../../lib/push-tokens.js";
+
+// Ticket-time error codes that mean the token is dead — prune immediately, no
+// receipt poll needed. Other errors (MessageRateExceeded, MessageTooBig) are
+// sender-side and must NOT prune a token.
+const DEAD_TOKEN_TICKET_ERRORS = new Set(["DeviceNotRegistered", "MismatchSenderId"]);
+
+/**
+ * Phase 5: process Expo tickets index-aligned to `toSend`. Dead-token tickets
+ * are pruned now; `ok` tickets stash their receiptId for the cron to poll.
+ * Best-effort — never throws into the push response path.
+ */
+async function captureTickets(redis, tickets, toSend, reqId) {
+  let pruned = 0;
+  let pending = 0;
+  for (let i = 0; i < toSend.length; i++) {
+    const ticket = tickets[i];
+    const entry = toSend[i];
+    if (!ticket || !entry) continue;
+    try {
+      if (ticket.status === "ok" && ticket.id) {
+        await redis.setEx(
+          receiptKey(ticket.id),
+          RECEIPT_TTL_SECONDS,
+          JSON.stringify({ userId: entry.user_id, token: entry.pushToken })
+        );
+        await redis.sAdd(RECEIPT_PENDING_SET, ticket.id);
+        pending++;
+      } else if (ticket.status === "error") {
+        const code = ticket?.details?.error;
+        if (DEAD_TOKEN_TICKET_ERRORS.has(code)) {
+          await pruneDeadToken(redis, entry.user_id, entry.pushToken, code);
+          pruned++;
+        } else if (code) {
+          // Sender-side (rate/size) — log, do not touch the token.
+          console.log(JSON.stringify({ event: "push_ticket_error", reqId, code }));
+        }
+      }
+    } catch (e) {
+      console.log(JSON.stringify({ event: "push_ticket_capture_error", reqId, message: e?.message }));
+    }
+  }
+  if (pruned || pending) {
+    console.log(JSON.stringify({ event: "push_tickets_captured", reqId, pruned, pending }));
+  }
+}
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 
@@ -119,9 +170,13 @@ const PUSH_LIMITS = {
   dataKeyMax: 40,
   dataValueMax: 400,
   dataKeyCount: 20,
-  allowedChannelIds: new Set(["messages", "activity", "default"]),
+  allowedChannelIds: new Set(["messages", "messages_quiet", "activity", "default"]),
   notificationTypeMax: 40,
+  collapseIdMax: 64,
 };
+
+// iOS interruption levels (passive = quiet, in-place refresh; no sound/banner).
+const ALLOWED_INTERRUPTION = new Set(["active", "passive", "time-sensitive", "critical"]);
 
 // Top-level notification_type values originate in Salesforce
 // (FimbyPushNotificationService.NotificationType). The bridge only checks shape;
@@ -174,6 +229,20 @@ function validatePushNotification(n) {
       return { ok: false, reason: "invalid_notification_type" };
     }
   }
+  if (n.collapse_id !== undefined && n.collapse_id !== null) {
+    if (typeof n.collapse_id !== "string" ||
+        n.collapse_id.length === 0 ||
+        n.collapse_id.length > PUSH_LIMITS.collapseIdMax ||
+        !/^[A-Za-z0-9:_-]+$/.test(n.collapse_id)) {
+      return { ok: false, reason: "invalid_collapse_id" };
+    }
+  }
+  if (n.interruption_level !== undefined && n.interruption_level !== null) {
+    if (typeof n.interruption_level !== "string" ||
+        !ALLOWED_INTERRUPTION.has(n.interruption_level)) {
+      return { ok: false, reason: "invalid_interruption_level" };
+    }
+  }
 
   // Data is a shallow string-keyed bag. Reject arrays, deep trees, oversized
   // values, and anything we haven't explicitly allowed.
@@ -222,6 +291,9 @@ function validatePushNotification(n) {
       badge: Number.isInteger(n.badge) ? n.badge : undefined,
       notification_type:
         typeof n.notification_type === "string" ? n.notification_type : undefined,
+      collapse_id: typeof n.collapse_id === "string" ? n.collapse_id : undefined,
+      interruption_level:
+        typeof n.interruption_level === "string" ? n.interruption_level : undefined,
     },
   };
 }
@@ -251,6 +323,18 @@ async function sendToExpo(pushToken, notification) {
     message.channelId = data.channelId;
   }
 
+  if (notification.collapse_id) {
+    message.collapseId = notification.collapse_id; // iOS apns-collapse-id + Android collapse_key
+    message.tag = notification.collapse_id;        // Android: replace already-displayed
+  }
+
+  if (notification.interruption_level === "passive") {
+    message.interruptionLevel = "passive";
+    delete message.sound; // no sound for a quiet, in-place refresh
+  } else if (notification.interruption_level) {
+    message.interruptionLevel = notification.interruption_level;
+  }
+
   log("[PUSH] Sending to Expo:", JSON.stringify(message));
 
   const response = await fetch(EXPO_PUSH_URL, {
@@ -273,15 +357,19 @@ async function sendToExpo(pushToken, notification) {
 async function sendBatchToExpo(notifications) {
   const messages = notifications.map((n) => {
     const data = n.data || {};
+    const passive = n.interruption_level === "passive";
     return {
       to: n.pushToken,
-      sound: "default",
+      // Passive (quiet) refresh: no sound. Otherwise default alert sound.
+      ...(passive ? {} : { sound: "default" }),
       title: n.title,
       body: n.body,
       data,
       ...(n.badge !== undefined && { badge: n.badge }),
       ...(n.notification_type && { categoryId: n.notification_type.toLowerCase() }),
       ...(data.channelId && { channelId: data.channelId }),
+      ...(n.collapse_id && { collapseId: n.collapse_id, tag: n.collapse_id }),
+      ...(n.interruption_level && { interruptionLevel: n.interruption_level }),
     };
   });
 
@@ -388,28 +476,69 @@ export default async function handler(req, res) {
         }
 
         toSend.push({
+          user_id: clean.user_id,
           pushToken,
           title: clean.title,
           body: clean.body,
           data: clean.data,
           badge: clean.badge,
           notification_type: clean.notification_type,
+          collapse_id: clean.collapse_id,
+          interruption_level: clean.interruption_level,
         });
       }
 
+      // skipped entries (no token / invalid) are not-accepted from the start.
+      const skippedResults = skipped.map((s) => ({
+        user_id: s.user_id,
+        accepted: false,
+        reason: s.reason,
+      }));
+
       if (toSend.length === 0) {
         console.log(JSON.stringify({ event: "push_batch_empty", reqId, skipped: skipped.length }));
-        return json(res, 200, { sent: 0, skipped: skipped.length, details: skipped });
+        return json(res, 200, {
+          sent: 0,
+          skipped: skipped.length,
+          details: skipped,
+          results: skippedResults,
+        });
       }
 
       // Send batch to Expo
       const { success, result } = await sendBatchToExpo(toSend);
+
+      // Expo's ticket array is index-aligned to the messages we sent, so
+      // ticket i maps to toSend[i].user_id. 'ok' = ingest-accepted (NOT
+      // delivered — Phase 5's receipt poll keyed by receiptId is authoritative).
+      const tickets = Array.isArray(result?.data) ? result.data : [];
+      const sentResults = toSend.map((entry, i) => {
+        const ticket = tickets[i];
+        const accepted = success && ticket?.status === "ok";
+        return {
+          user_id: entry.user_id,
+          accepted,
+          ...(accepted ? {} : { reason: ticket?.details?.error || ticket?.message || "ticket_error" }),
+          ...(ticket?.id ? { receipt_id: ticket.id } : {}),
+        };
+      });
+      const results = [...sentResults, ...skippedResults];
+
+      // Phase 5: capture tickets — prune dead tokens now, stash ok receiptIds
+      // for the cron to poll. Best-effort; never blocks the response.
+      await captureTickets(redis, tickets, toSend, reqId);
+
+      const passiveCount = toSend.filter((n) => n.interruption_level === "passive").length;
+      if (passiveCount > 0) {
+        console.log(JSON.stringify({ event: "push_passive_sent", reqId, count: passiveCount }));
+      }
 
       console.log(JSON.stringify({
         event: "push_batch_sent",
         reqId,
         sent: toSend.length,
         skipped: skipped.length,
+        passive: passiveCount,
         success
       }));
 
@@ -417,6 +546,7 @@ export default async function handler(req, res) {
         sent: toSend.length,
         skipped: skipped.length,
         success,
+        results,
         result,
       });
 
@@ -427,7 +557,7 @@ export default async function handler(req, res) {
         console.log(JSON.stringify({ event: "push_invalid", reqId, reason: v.reason }));
         return json(res, 400, { error: "invalid_request", message: v.reason });
       }
-      const { user_id, title, body: notifBody, data, badge, notification_type } = v.clean;
+      const { user_id, title, body: notifBody, data, badge, notification_type, collapse_id, interruption_level } = v.clean;
 
       const redis = await getRedis();
       const pushToken = await redis.get(`push_token:${user_id}`);
@@ -449,6 +579,8 @@ export default async function handler(req, res) {
         data: notificationData,
         badge,
         notification_type,
+        collapse_id,
+        interruption_level,
       });
 
       console.log(JSON.stringify({

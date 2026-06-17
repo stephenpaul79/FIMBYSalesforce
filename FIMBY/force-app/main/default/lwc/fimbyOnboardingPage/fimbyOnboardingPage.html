@@ -42,6 +42,14 @@
                                            placeholder="e.g. she/her, they/them"
                                            maxlength="40" onchange={handleInputChange}>
                                 </div>
+                                <div class="care-question privacy-toggle">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" checked={maskLastName}
+                                               onchange={handleMaskLastNameToggle}>
+                                        <span class="checkbox-label">Hide last name (initial only)</span>
+                                    </label>
+                                    <p class="privacy-help">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</p>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -64,6 +72,14 @@
                                     </c-fimby-image-uploader>
                                 </div>
                             </template>
+                            <div class="care-question privacy-toggle">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" checked={maskAvatar}
+                                           onchange={handleMaskAvatarToggle}>
+                                    <span class="checkbox-label">Hide profile photo (initials only)</span>
+                                </label>
+                                <p class="privacy-help">Neighbours will see your initials instead of your photo.</p>
+                            </div>
                         </div>
                     </template>
 

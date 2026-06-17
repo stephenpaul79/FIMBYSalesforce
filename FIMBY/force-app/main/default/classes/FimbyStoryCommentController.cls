@@ -54,7 +54,7 @@ public with sharing class FimbyStoryCommentController {
                     'imageUrl' => story.Image_URL__c,
                     'ownerId' => story.OwnerId,
                     'ownerContactId' => story.Posted_By__c,
-                    'ownerName' => story.Posted_By__r?.Name
+                    'ownerName' => story.Posted_By__r?.Full_Name__c
                 }
             };
         } catch (AuraHandledException e) {
@@ -444,8 +444,10 @@ public with sharing class FimbyStoryCommentController {
                 List<Story_Comment__c> rows = [
                     SELECT Id, Body__c, CreatedDate, Status__c,
                            Edit_Count__c, Edited_Date__c, Mention_Contact_Ids__c,
-                           Contact__c, Contact__r.Name, Contact__r.Image_URL__c,
-                           Posted_By__c, Posted_By__r.Name, Posted_By__r.Image_URL__c
+                           Contact__c, Contact__r.Name, Contact__r.Full_Name__c,
+                           Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                           Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c,
+                           Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c
                     FROM Story_Comment__c
                     WHERE Story__c = :storyId
                       AND Status__c = 'Active'
@@ -468,13 +470,13 @@ public with sharing class FimbyStoryCommentController {
         }
 
         private Map<String, Object> toDto(Story_Comment__c row, Id viewerActingAsId, Id viewerRealId) {
-            String authorName = row.Posted_By__r != null ? row.Posted_By__r.Name : null;
+            String authorName = row.Posted_By__r != null ? row.Posted_By__r.Full_Name__c : null;
             if (String.isBlank(authorName) && row.Contact__r != null) {
-                authorName = row.Contact__r.Name;
+                authorName = row.Contact__r.Full_Name__c;
             }
-            String authorPhoto = row.Posted_By__r != null ? row.Posted_By__r.Image_URL__c : null;
+            String authorPhoto = row.Posted_By__r != null ? row.Posted_By__r.Display_Avatar_URL__c : null;
             if (String.isBlank(authorPhoto) && row.Contact__r != null) {
-                authorPhoto = row.Contact__r.Image_URL__c;
+                authorPhoto = row.Contact__r.Display_Avatar_URL__c;
             }
             Boolean isAuthorView =
                 (viewerRealId != null && row.Contact__c == viewerRealId)
@@ -527,7 +529,7 @@ public with sharing class FimbyStoryCommentController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String query = 'SELECT Id, Name, Message__c, Image_URL__c, OwnerId, Posted_By__c, Posted_By__r.Name FROM Story__c WHERE Id = :storyId '
+            String query = 'SELECT Id, Name, Message__c, Image_URL__c, OwnerId, Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c FROM Story__c WHERE Id = :storyId '
                 + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
 
             if (String.isNotBlank(neighbourhoodAccountId)) {

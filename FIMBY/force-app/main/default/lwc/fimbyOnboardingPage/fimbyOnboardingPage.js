@@ -89,6 +89,8 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
     @track _careHardNos = '';
     @track _careExpanded = false;
     @track _careStandingVisible = false;
+    @track _maskLastName = false;
+    @track _maskAvatar = false;
     @track _quietHoursPreference = '10PM_6AM';
     @track _voucherType = VOUCH_TYPE_PEER;
     @track _vouchSearchTerm = '';
@@ -309,6 +311,8 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
 
     get careExpanded() { return this._careExpanded; }
     get careStandingVisible() { return this._careStandingVisible; }
+    get maskLastName() { return this._maskLastName; }
+    get maskAvatar() { return this._maskAvatar; }
     get careExpanderLabel() {
         return this._careExpanded
             ? 'Hide optional care questions'
@@ -562,6 +566,14 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
         this._careStandingVisible = event.target.checked;
     }
 
+    handleMaskLastNameToggle(event) {
+        this._maskLastName = event.target.checked;
+    }
+
+    handleMaskAvatarToggle(event) {
+        this._maskAvatar = event.target.checked;
+    }
+
     handleQuietHoursChange(event) {
         this._quietHoursPreference = event.target.value;
     }
@@ -677,6 +689,8 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             if (this._careHowToAsk.length > 0) fieldValues.Care_How_To_Ask__c = this._careHowToAsk.join(';');
             if (this._careHardNos?.trim()) fieldValues.Care_Hard_Nos__c = this._careHardNos.trim();
             if (this._careStandingVisible) fieldValues.Care_Standing_Visible__c = 'true';
+            fieldValues.Mask_Last_Name__c = this._maskLastName ? 'true' : 'false';
+            fieldValues.Mask_Avatar__c = this._maskAvatar ? 'true' : 'false';
 
             await completeProfileSetup({ fieldValues });
             if (this._quietHoursPreference) {
@@ -843,6 +857,8 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             this._firstName = profile.firstName || '';
             this._lastName = profile.lastName || '';
             this._pronouns = profile.pronouns || '';
+            this._maskLastName = profile.maskLastName === true;
+            this._maskAvatar = profile.maskAvatar === true;
             this._aboutTenure = profile.aboutNeighbourhoodTenure || '';
             this._aboutBroughtYou = profile.aboutWhatBroughtYou || '';
             this._aboutLocalPlace = profile.aboutLocalPlace || '';

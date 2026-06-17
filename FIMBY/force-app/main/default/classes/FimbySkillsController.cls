@@ -338,7 +338,7 @@ public with sharing class FimbySkillsController {
                 SELECT Id, Name, Description_Text__c, Skill_Category__c, Availability_Note__c,
                        Status__c, CreatedDate,
                        Owner_Contact__c, Owner_Contact__r.Full_Name__c,
-                       Owner_Contact__r.Image_URL__c,
+                       Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
                        Owner_Contact__r.Is_Organization_Contact__c,
                        Owner_Contact__r.Organization_Account__c,
                        Owner_Contact__r.Organization_Account__r.Logo_URL__c,
@@ -357,7 +357,7 @@ public with sharing class FimbySkillsController {
                 SELECT Id, Name, Description_Text__c, Skill_Category__c, Availability_Note__c,
                        Status__c, Is_Standing__c, CreatedDate,
                        Owner_Contact__c, Owner_Contact__r.Full_Name__c,
-                       Owner_Contact__r.Image_URL__c,
+                       Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
                        Owner_Contact__r.Is_Organization_Contact__c,
                        Owner_Contact__r.Organization_Account__c,
                        Owner_Contact__r.Organization_Account__r.Logo_URL__c,
@@ -425,7 +425,7 @@ public with sharing class FimbySkillsController {
 
     private static Map<String, Object> buildSkillRow(Skill_Offer__c skill) {
         String displayName = skill.Owner_Contact__r?.Full_Name__c;
-        String avatarUrl = skill.Owner_Contact__r?.Image_URL__c;
+        String avatarUrl = skill.Owner_Contact__r?.Display_Avatar_URL__c;
         if (skill.Owner_Contact__r?.Is_Organization_Contact__c == true
             && skill.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
             avatarUrl = skill.Owner_Contact__r.Organization_Account__r.Logo_URL__c;

@@ -14,13 +14,20 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
         'NONE'     => null
     };
 
+    // Actor_Name__c values that are team/icon tokens, not real neighbour names
+    // (notification-contract §4). Skipped when leading an aggregate with a name.
+    private static final Set<String> NON_PERSON_ACTORS = new Set<String>{
+        'FIMBY', 'Neighbourhood team', 'care', 'system'
+    };
+    private static final String FALLBACK_ACTOR = 'A neighbour';
+
     global void execute(SchedulableContext ctx) {
         Integer batchCap = FimbySettings.pushBatchCap();
 
         List<Notification__c> pending = [
-            SELECT Id, Type__c, Contact__c, Title__c, Body__c, Action_URL__c, Actor_Name__c
+            SELECT Id, Type__c, Contact__c, Title__c, Body__c, Action_URL__c, Actor_Name__c, Push_Status__c
             FROM Notification__c
-            WHERE Push_Status__c = 'Pending'
+            WHERE Push_Status__c IN ('Pending', 'Pending_Quiet')
             ORDER BY CreatedDate ASC
             LIMIT :batchCap
         ];
@@ -35,6 +42,19 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             if (n.Contact__c != null) {
                 contactIds.add(n.Contact__c);
             }
+        }
+
+        // True unread badge (Phase 3): one read-only grouped aggregate over the
+        // cycle's contacts. Counts EVERY unread row (incl. skipPush in-app-only)
+        // so the icon badge mirrors the in-app unread list. Zero DML.
+        Map<Id, Integer> unreadCountByContact = new Map<Id, Integer>();
+        for (AggregateResult ar : [
+            SELECT Contact__c cid, COUNT(Id) cnt
+            FROM Notification__c
+            WHERE Contact__c IN :contactIds AND Read_Date__c = null
+            GROUP BY Contact__c
+        ]) {
+            unreadCountByContact.put((Id) ar.get('cid'), (Integer) ar.get('cnt'));
         }
 
         Map<Id, User> userByContactId = new Map<Id, User>();
@@ -59,10 +79,15 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             pendingByContact.get(n.Contact__c).add(n);
         }
 
-        List<FimbyPushNotificationService.PushPayload> payloads =
-            new List<FimbyPushNotificationService.PushPayload>();
-        List<Id> notifIdsToMarkSent = new List<Id>();
-        Map<Id, String> userGateUpdates = new Map<Id, String>();
+        // ── Decision pass ──────────────────────────────────────────────────
+        // Determine, per Contact, which rows drive this cycle's push and
+        // whether it is audible (has a 'Pending' row, gate was open) or quiet
+        // (only 'Pending_Quiet'). The audible-only skip rules (quiet hours,
+        // Sunday direct-only) apply to the audible path; a quiet-only cycle is
+        // non-disturbing so it proceeds through them.
+        Map<Id, List<Notification__c>> driverRowsByContact = new Map<Id, List<Notification__c>>();
+        Map<Id, Boolean> isAudibleByContact = new Map<Id, Boolean>();
+        Map<Id, User> userByContact = new Map<Id, User>();
 
         for (Id contactId : pendingByContact.keySet()) {
             User u = userByContactId.get(contactId);
@@ -70,48 +95,118 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
                 continue;
             }
 
-            if (isInQuietHours(u)) {
-                continue;
+            List<Notification__c> rows = pendingByContact.get(contactId);
+            Boolean hasAudible = false;
+            for (Notification__c n : rows) {
+                if (n.Push_Status__c == 'Pending') {
+                    hasAudible = true;
+                    break;
+                }
             }
 
-            List<Notification__c> userPending = pendingByContact.get(contactId);
-
-            if (isSunday && u.Include_Sundays__c != true) {
-                List<Notification__c> directOnly = new List<Notification__c>();
-                for (Notification__c n : userPending) {
-                    if (FimbyEmailAlertService.isDirectActionType(n.Type__c)
-                        || n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
-                        directOnly.add(n);
+            if (hasAudible) {
+                // Audible cycle: honour the doorbell suppression rules.
+                if (isInQuietHours(u)) {
+                    // Quiet hours mute the buzz; demote to a passive refresh so the
+                    // card/badge still becomes current without disturbing anyone.
+                    hasAudible = false;
+                } else if (isSunday && u.Include_Sundays__c != true) {
+                    List<Notification__c> directOnly = new List<Notification__c>();
+                    for (Notification__c n : rows) {
+                        if (FimbyEmailAlertService.isDirectActionType(n.Type__c)
+                            || n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
+                            directOnly.add(n);
+                        }
+                    }
+                    if (directOnly.isEmpty()) {
+                        // Nothing audible survives the Sunday filter; fall back to a
+                        // passive refresh over the full row set.
+                        hasAudible = false;
+                    } else {
+                        rows = directOnly;
                     }
                 }
-                userPending = directOnly;
-                if (userPending.isEmpty()) {
-                    continue;
-                }
             }
-            Boolean hasDM = false;
-            Boolean hasActivity = false;
 
-            for (Notification__c n : userPending) {
+            driverRowsByContact.put(contactId, rows);
+            isAudibleByContact.put(contactId, hasAudible);
+            userByContact.put(contactId, u);
+        }
+
+        if (driverRowsByContact.isEmpty()) {
+            return;
+        }
+
+        // ── Content pass (requirement #2) ──────────────────────────────────
+        // Card title/body/badge are built from the user's CURRENT UNREAD set,
+        // not just this cycle's delta rows, so the named lead and the count come
+        // from the same snapshot and can never disagree. Read-only (zero DML).
+        Set<Id> pushContactIds = driverRowsByContact.keySet();
+        Map<Id, List<Notification__c>> unreadByContact = new Map<Id, List<Notification__c>>();
+        for (Notification__c n : [
+            SELECT Id, Contact__c, Type__c, Actor_Name__c, Title__c, Body__c, Action_URL__c
+            FROM Notification__c
+            WHERE Contact__c IN :pushContactIds AND Read_Date__c = null
+            ORDER BY CreatedDate DESC
+            LIMIT :batchCap
+        ]) {
+            if (!unreadByContact.containsKey(n.Contact__c)) {
+                unreadByContact.put(n.Contact__c, new List<Notification__c>());
+            }
+            unreadByContact.get(n.Contact__c).add(n);
+        }
+
+        // ── Build pass ─────────────────────────────────────────────────────
+        List<FimbyPushNotificationService.PushPayload> payloads =
+            new List<FimbyPushNotificationService.PushPayload>();
+        Map<Id, List<Id>> notifIdsByUser = new Map<Id, List<Id>>();
+        Map<Id, String> userGateUpdates = new Map<Id, String>();
+
+        for (Id contactId : driverRowsByContact.keySet()) {
+            User u = userByContact.get(contactId);
+            List<Notification__c> driverRows = driverRowsByContact.get(contactId);
+            Boolean isAudible = isAudibleByContact.get(contactId);
+
+            // The mark-Sent set is this cycle's driver rows (the trigger), keyed
+            // by user so the queueable can mark granularly per delivery outcome.
+            List<Id> markIds = new List<Id>();
+            for (Notification__c n : driverRows) {
+                markIds.add(n.Id);
+            }
+            notifIdsByUser.put(u.Id, markIds);
+
+            // Content is built from current unread (falling back to the driver
+            // rows if the unread snapshot is somehow empty, e.g. just-read race).
+            List<Notification__c> contentRows = unreadByContact.containsKey(contactId)
+                ? unreadByContact.get(contactId) : driverRows;
+
+            Boolean contentHasDM = false;
+            Boolean contentHasActivity = false;
+            List<Notification__c> dmList = new List<Notification__c>();
+            List<Notification__c> activityList = new List<Notification__c>();
+            for (Notification__c n : contentRows) {
                 if (n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
-                    hasDM = true;
+                    contentHasDM = true;
+                    dmList.add(n);
                 } else {
-                    hasActivity = true;
+                    contentHasActivity = true;
+                    activityList.add(n);
                 }
-                notifIdsToMarkSent.add(n.Id);
             }
 
             FimbyPushNotificationService.PushPayload payload =
                 new FimbyPushNotificationService.PushPayload();
             payload.userId = u.Id;
-            payload.badge = 1;
+            Integer unread = unreadCountByContact.get(contactId);
+            payload.badge = (unread == null) ? 0 : Math.min(unread, 9999);
 
-            // Single-notification batch: send the actual title/body + deep
-            // link so the device can route straight to the surface. Dormant
-            // until the mobile client consumes data.action_url and
-            // data.notification_id, but harmless to ship today.
-            if (userPending.size() == 1) {
-                Notification__c only = userPending[0];
+            // Single-notification AUDIBLE cycle: send the actual title/body +
+            // deep link so the device can route straight to the surface.
+            // (Quiet refreshes always use the aggregate path so content reflects
+            // the whole unread set, never one drifting row.)
+            if (isAudible && driverRows.size() == 1 && contentRows.size() == 1) {
+                Notification__c only = contentRows[0];
+                Boolean onlyIsDM = only.Type__c == FimbyConstants.NOTIF_MESSAGE;
                 payload.title = String.isNotBlank(only.Title__c) ? only.Title__c : 'New activity';
                 payload.body = String.isNotBlank(only.Body__c) ? only.Body__c : '';
                 payload.notificationType = mapTypeToPushCategory(only.Type__c);
@@ -123,25 +218,41 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
                 if (String.isNotBlank(only.Type__c)) {
                     payload.data.put('notification_type', only.Type__c);
                 }
-                userGateUpdates.put(u.Id, hasDM ? 'DM' : 'ACTIVITY');
-            } else if (hasDM && hasActivity) {
-                payload.title = 'New messages and activity';
-                payload.body = 'You have messages, and something\'s happening in your neighbourhood.';
+                payload.collapseId = u.Id + ':' + (onlyIsDM ? 'dm' : 'activity');
+                userGateUpdates.put(u.Id, onlyIsDM ? 'DM' : 'ACTIVITY');
+            } else if (contentHasDM && contentHasActivity) {
+                // Lead with a DM name (more personal signal); fall back to an
+                // activity name when the DM bucket has no real names.
+                List<String> bothNames = extractRealNames(dmList);
+                if (bothNames.isEmpty()) {
+                    bothNames = extractRealNames(activityList);
+                }
+                payload.title = buildAggregateTitle(bothNames, 'BOTH');
+                payload.body = buildAggregateBody(0, 'BOTH');
                 payload.notificationType = FimbyPushNotificationService.NotificationType.GENERAL;
                 payload.data.put('channelId', 'default');
-                userGateUpdates.put(u.Id, 'BOTH');
-            } else if (hasDM) {
-                payload.title = 'New messages';
-                payload.body = 'You have new messages from your neighbours.';
+                payload.collapseId = u.Id + ':both';
+                userGateUpdates.put(u.Id, isAudible ? 'BOTH' : 'QUIET');
+            } else if (contentHasDM) {
+                payload.title = buildAggregateTitle(extractRealNames(dmList), 'DM');
+                payload.body = buildAggregateBody(dmList.size(), 'DM');
                 payload.notificationType = FimbyPushNotificationService.NotificationType.MESSAGE;
-                payload.data.put('channelId', 'messages');
-                userGateUpdates.put(u.Id, 'DM');
+                // Quiet DM refresh routes to the low-importance channel so a
+                // tag-replacement does not re-alert on Android (requirement #1).
+                payload.data.put('channelId', isAudible ? 'messages' : 'messages_quiet');
+                payload.collapseId = u.Id + ':dm';
+                userGateUpdates.put(u.Id, isAudible ? 'DM' : 'QUIET');
             } else {
-                payload.title = 'Neighbourhood activity';
-                payload.body = 'Something\'s happening in your neighbourhood.';
+                payload.title = buildAggregateTitle(extractRealNames(activityList), 'ACTIVITY');
+                payload.body = buildAggregateBody(activityList.size(), 'ACTIVITY');
                 payload.notificationType = FimbyPushNotificationService.NotificationType.GENERAL;
                 payload.data.put('channelId', 'activity');
-                userGateUpdates.put(u.Id, 'ACTIVITY');
+                payload.collapseId = u.Id + ':activity';
+                userGateUpdates.put(u.Id, isAudible ? 'ACTIVITY' : 'QUIET');
+            }
+
+            if (!isAudible) {
+                payload.quiet = true;
             }
 
             payloads.add(payload);
@@ -152,7 +263,7 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
         }
 
         try {
-            System.enqueueJob(new FimbyPushQueueable(payloads, notifIdsToMarkSent, userGateUpdates));
+            System.enqueueJob(new FimbyPushQueueable(payloads, notifIdsByUser, userGateUpdates));
         } catch (Exception e) {
             FimbyLogger.error('FimbyPushBatchJob', 'execute', e);
         }
@@ -193,6 +304,120 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
         Datetime dt = Datetime.newInstance(today.year(), today.month(), today.day());
         String dayOfWeek = dt.format('u');
         return dayOfWeek == '7';
+    }
+
+    /**
+     * Collects real neighbour names from a bucket, deduped while preserving
+     * first-seen (CreatedDate ASC) order. Team/icon tokens and blanks are
+     * skipped (notification-contract §4). Works on any Notification__c list.
+     */
+    @TestVisible
+    static List<String> extractRealNames(List<Notification__c> bucket) {
+        List<String> ordered = new List<String>();
+        Set<String> seen = new Set<String>();
+        if (bucket == null) {
+            return ordered;
+        }
+        for (Notification__c n : bucket) {
+            String name = n.Actor_Name__c;
+            if (String.isBlank(name) || NON_PERSON_ACTORS.contains(name)) {
+                continue;
+            }
+            if (seen.contains(name)) {
+                continue;
+            }
+            seen.add(name);
+            ordered.add(name);
+        }
+        return ordered;
+    }
+
+    /**
+     * Builds a name-led aggregate push title for a bucket. gateKind ∈
+     * {'DM','ACTIVITY','BOTH'}. Falls back to today's generic strings when no
+     * real name is available. Always capped at 80 chars on a word boundary.
+     */
+    @TestVisible
+    static String buildAggregateTitle(List<String> names, String gateKind) {
+        String title;
+        if (names == null || names.isEmpty()) {
+            if (gateKind == 'DM') {
+                title = 'New messages';
+            } else if (gateKind == 'BOTH') {
+                title = 'New messages and activity';
+            } else {
+                title = 'Neighbourhood activity';
+            }
+            return truncateAtWord(title, 80);
+        }
+
+        String first = names[0];
+        Integer count = names.size();
+
+        if (gateKind == 'DM') {
+            if (count == 1) {
+                title = first + ' messaged you';
+            } else if (count == 2) {
+                title = first + ' and ' + names[1] + ' messaged you';
+            } else {
+                title = first + ' and ' + (count - 1) + ' others messaged you';
+            }
+        } else if (gateKind == 'BOTH') {
+            title = first + ' messaged you, plus neighbourhood activity';
+        } else {
+            if (count == 1) {
+                title = first + ' posted in your neighbourhood';
+            } else if (count == 2) {
+                title = first + ' and ' + names[1] + ' posted nearby';
+            } else {
+                title = first + ', plus ' + (count - 1) + ' more updates';
+            }
+        }
+        return truncateAtWord(title, 80);
+    }
+
+    /**
+     * Builds the deciding-context body line. The count semantics differ per
+     * bucket (see plan): DM passes the unread-message count, ACTIVITY passes the
+     * total activity count (body shows the remainder), BOTH ignores the count.
+     * Never returns null; capped at 140 chars on a word boundary.
+     */
+    @TestVisible
+    static String buildAggregateBody(Integer count, String gateKind) {
+        String body;
+        if (gateKind == 'DM') {
+            // count is the number of unread DM notifications (one per message),
+            // not distinct threads, so the noun is "messages" not "conversations".
+            body = (count == 1)
+                ? '1 new message waiting.'
+                : count + ' new messages waiting.';
+        } else if (gateKind == 'BOTH') {
+            body = 'Messages and neighbourhood updates are waiting.';
+        } else {
+            body = (count <= 1)
+                ? 'Tap to see what\'s new nearby.'
+                : 'and ' + (count - 1) + ' more updates from your neighbourhood.';
+        }
+        return truncateAtWord(body, 140);
+    }
+
+    /**
+     * Trims a string to max chars on the last word boundary. No ellipsis.
+     */
+    @TestVisible
+    static String truncateAtWord(String s, Integer max) {
+        if (s == null) {
+            return '';
+        }
+        if (s.length() <= max) {
+            return s;
+        }
+        String cut = s.substring(0, max);
+        Integer lastSpace = cut.lastIndexOf(' ');
+        if (lastSpace > 0) {
+            cut = cut.substring(0, lastSpace);
+        }
+        return cut.trim();
     }
 
     private static FimbyPushNotificationService.NotificationType mapTypeToPushCategory(String type) {

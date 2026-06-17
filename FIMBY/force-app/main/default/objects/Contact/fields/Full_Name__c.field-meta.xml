@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Full_Name__c</fullName>
     <externalId>false</externalId>
-    <formula>FirstName + &quot; &quot; + LastName</formula>
+    <formula>IF( OR(Is_Organization_Contact__c, NOT(Mask_Last_Name__c)), FirstName + &quot; &quot; + LastName, IF(ISBLANK(LastName), FirstName, FirstName + &quot; &quot; + LEFT(LastName, 1) + &quot;.&quot;) )</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Full Name</label>
     <required>false</required>

@@ -109,10 +109,10 @@ public class FimbyNotificationServiceTest {
         System.assertEquals(null, notif.Push_Status__c, 'Type toggle off → null status');
     }
 
-    /* ── Gate closed (already pushed today, no login since) → null ──────── */
+    /* ── Gate closed (already pushed today, no login since) → Pending_Quiet ── */
 
     @IsTest
-    static void testCreateNotification_GateClosed_SetsNull() {
+    static void testCreateNotification_GateClosed_SetsPendingQuiet() {
         Contact testContact = getTestContact();
         User testUser = getTestUser();
 
@@ -141,7 +141,8 @@ public class FimbyNotificationServiceTest {
         Notification__c notif = [
             SELECT Push_Status__c FROM Notification__c WHERE Contact__c = :testContact.Id LIMIT 1
         ];
-        System.assertEquals(null, notif.Push_Status__c, 'Gate closed → null status');
+        System.assertEquals('Pending_Quiet', notif.Push_Status__c,
+            'Gate closed but master + category ON → Pending_Quiet (passive refresh)');
     }
 
     /* ── A4: Events push category routes through Push_Events__c ──────────── */
@@ -430,7 +431,7 @@ public class FimbyNotificationServiceTest {
         Notification__c first = [
             SELECT Push_Status__c FROM Notification__c WHERE Contact__c = :testContact.Id LIMIT 1
         ];
-        System.assertEquals(null, first.Push_Status__c, 'Gate closed → null');
+        System.assertEquals('Pending_Quiet', first.Push_Status__c, 'Gate closed → Pending_Quiet');
 
         System.runAs(new User(Id = UserInfo.getUserId())) {
             update new User(Id = testUser.Id, Last_App_Open_At__c = Datetime.now());
@@ -447,7 +448,7 @@ public class FimbyNotificationServiceTest {
             WHERE Contact__c = :testContact.Id ORDER BY CreatedDate ASC
         ];
         System.assertEquals(2, results.size(), 'Two separate rows');
-        System.assertEquals(null, results[0].Push_Status__c, 'First row stays null (gate was closed)');
+        System.assertEquals('Pending_Quiet', results[0].Push_Status__c, 'First row is Pending_Quiet (gate was closed)');
         System.assertEquals('Pending', results[1].Push_Status__c, 'Second row is Pending (gate reopened)');
     }
 
@@ -476,7 +477,8 @@ public class FimbyNotificationServiceTest {
         Notification__c notif = [
             SELECT Push_Status__c FROM Notification__c WHERE Contact__c = :testContact.Id LIMIT 1
         ];
-        System.assertEquals(null, notif.Push_Status__c, 'Fatigue dampener → gate stays closed');
+        System.assertEquals('Pending_Quiet', notif.Push_Status__c,
+            'Fatigue dampener keeps the gate closed → Pending_Quiet (passive, not audible)');
     }
 
     /* ── skipPush overload → null Push_Status regardless of gate ──────── */
@@ -624,7 +626,7 @@ public class FimbyNotificationServiceTest {
             WHERE Contact__c = :testContact.Id AND Type__c = 'Message' LIMIT 1
         ];
 
-        System.assertEquals(null, actNotif.Push_Status__c, 'Activity gate closed');
+        System.assertEquals('Pending_Quiet', actNotif.Push_Status__c, 'Activity gate closed → Pending_Quiet');
         System.assertEquals('Pending', dmNotif.Push_Status__c, 'DM gate open (never pushed)');
     }
 

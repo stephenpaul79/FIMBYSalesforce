@@ -37,6 +37,7 @@ public with sharing class FimbyBulkBuyController {
                 Details__c = details,
                 Full_Details__c = description,
                 Status__c = FimbyConstants.NEEDS_OFFERS_AVAILABLE,
+                Posted_Date__c = Datetime.now(),
                 Contact__c = actingAsContactId,
                 Posted_By__c = realContactId,
                 Neighbourhood__c = neighbourhoodId,

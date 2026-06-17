@@ -235,6 +235,9 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
     get isStoryType() { return this._responseType === 'story'; }
     get isOpenEventType() { return this._responseType === 'openEvent'; }
+    // First-meeting safety note shows for every event RSVP (gathering + open event).
+    // Community events are 1-click inline and never open this modal. Not gated on capacity.
+    get isEventType() { return this._responseType === 'openEvent' || this._responseType === 'gathering'; }
     get isAskOfferType() { return this._responseType === 'askOffer' || this._responseType === 'gathering'; }
     get isBulkBuyType() { return this._responseType === 'bulkBuy'; }
     get isLibraryType() { return this._responseType === 'library'; }

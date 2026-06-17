@@ -233,6 +233,60 @@ private class FimbyProfileControllerTest {
     }
 
     @IsTest
+    static void testUpdatePrivacyPreference() {
+        User testUser = getTestUser();
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> r1 = FimbyProfileController.updatePrivacyPreference('Mask_Last_Name__c', true);
+            System.assertEquals(true, r1.get('success'));
+            Map<String, Object> r2 = FimbyProfileController.updatePrivacyPreference('Mask_Avatar__c', true);
+            System.assertEquals(true, r2.get('success'));
+        }
+        Test.stopTest();
+
+        Contact updated = [
+            SELECT Mask_Last_Name__c, Mask_Avatar__c
+            FROM Contact WHERE Id = :testUser.ContactId LIMIT 1
+        ];
+        System.assertEquals(true, updated.Mask_Last_Name__c, 'Last name masking should persist');
+        System.assertEquals(true, updated.Mask_Avatar__c, 'Avatar masking should persist');
+    }
+
+    @IsTest
+    static void testUpdatePrivacyPreferenceBlockedField() {
+        User testUser = getTestUser();
+
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyProfileController.updatePrivacyPreference('Is_Organization_Contact__c', true);
+                System.assert(false, 'Should have thrown for a non-allowlisted field');
+            } catch (Exception e) {
+                System.assert(true);
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetSettingsDataExposesMaskPreferences() {
+        User testUser = getTestUser();
+
+        System.runAs(testUser) {
+            FimbyProfileController.updatePrivacyPreference('Mask_Last_Name__c', true);
+        }
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyProfileController.getSettingsData();
+            System.assertEquals(true, result.get('maskLastName'), 'Settings should report last-name masking');
+            System.assertEquals(false, result.get('maskAvatar'), 'Avatar masking defaults off');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testUpdateThemePreference() {
         User testUser = getTestUser();
 

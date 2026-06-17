@@ -119,21 +119,31 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void resolveCrossFimbyWindowWord_multiDayDaily_usesWeekend() {
+    static void resolveCrossFimbyTimePhrase_multiDayDaily_usesWeekend() {
         Datetime sat = Datetime.newInstance(2026, 4, 11, 0, 0, 0);
         Datetime sun = Datetime.newInstance(2026, 4, 12, 23, 59, 59);
         System.assertEquals(
-            'weekend',
-            FimbyDigestEmailBuilder.resolveCrossFimbyWindowWord('Daily', sat, sun)
+            'this weekend',
+            FimbyDigestEmailBuilder.resolveCrossFimbyTimePhrase('Daily', sat, sun)
         );
     }
 
     @IsTest
-    static void resolveCrossFimbyWindowWord_singleDayDaily_usesDay() {
+    static void resolveCrossFimbyTimePhrase_singleDayDaily_usesYesterday() {
         Datetime day = Datetime.newInstance(2026, 4, 12, 12, 0, 0);
         System.assertEquals(
-            'day',
-            FimbyDigestEmailBuilder.resolveCrossFimbyWindowWord('Daily', day, day)
+            'yesterday',
+            FimbyDigestEmailBuilder.resolveCrossFimbyTimePhrase('Daily', day, day)
+        );
+    }
+
+    @IsTest
+    static void resolveCrossFimbyTimePhrase_weekly_usesThisWeek() {
+        Datetime startDt = Datetime.newInstance(2026, 4, 6, 0, 0, 0);
+        Datetime endDt = Datetime.newInstance(2026, 4, 12, 23, 59, 59);
+        System.assertEquals(
+            'this week',
+            FimbyDigestEmailBuilder.resolveCrossFimbyTimePhrase('Weekly', startDt, endDt)
         );
     }
 
@@ -143,52 +153,53 @@ private class FimbyDigestEmailBuilderTest {
         Datetime endDt = Datetime.newInstance(Date.today(), Time.newInstance(23, 59, 59, 0));
 
         Test.startTest();
-        String line = FimbyDigestEmailBuilder.getCrossFimbyStat('Daily', startDt, endDt);
+        FimbyDigestEmailBuilder.CrossFimbyStat stat =
+            FimbyDigestEmailBuilder.getCrossFimbyStat('Daily', startDt, endDt);
         Test.stopTest();
 
-        System.assertNotEquals(null, line);
-        if (String.isNotBlank(line)) {
-            System.assert(line.contains('across FIMBY'), 'Cross-FIMBY line should mention the platform: ' + line);
+        System.assertNotEquals(null, stat);
+        if (stat.count > 0) {
+            System.assert(stat.line.contains('across FIMBY'), 'Cross-FIMBY line should mention the platform: ' + stat.line);
         }
     }
 
     @IsTest
     static void formatCrossFimbyLine_singularUsesSingularGrammar() {
         System.assertEquals(
-            'across FIMBY this day, 1 neighbour offered something.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 1, 'day')
+            'across FIMBY, 1 neighbour set something out for whoever needed it.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 1)
         );
         System.assertEquals(
-            'across FIMBY this day, 1 ask was met by someone close by.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 1, 'day')
+            'across FIMBY, 1 ask was met by someone close by.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 1)
         );
         System.assertEquals(
-            'across FIMBY this day, 1 thing changed hands and came back.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 1, 'day')
+            'across FIMBY, 1 thing was passed from one neighbour to the next.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 1)
         );
         System.assertEquals(
-            'across FIMBY this day, 1 story was shared.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 1, 'day')
+            'across FIMBY, 1 neighbour shared a piece of their life.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 1)
         );
     }
 
     @IsTest
     static void formatCrossFimbyLine_pluralUsesPluralGrammar() {
         System.assertEquals(
-            'across FIMBY this week, 3 neighbours offered something.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 3, 'week')
+            'across FIMBY, 3 neighbours set something out for whoever needed it.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(0, 3)
         );
         System.assertEquals(
-            'across FIMBY this week, 2 asks were met by someone close by.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 2, 'week')
+            'across FIMBY, 2 asks were met by someone close by.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(1, 2)
         );
         System.assertEquals(
-            'across FIMBY this week, 5 things changed hands and came back.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 5, 'week')
+            'across FIMBY, 5 things were passed from one neighbour to the next.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(2, 5)
         );
         System.assertEquals(
-            'across FIMBY this week, 4 stories were shared.',
-            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 4, 'week')
+            'across FIMBY, 4 neighbours shared a piece of their life.',
+            FimbyDigestEmailBuilder.formatCrossFimbyLine(3, 4)
         );
     }
 
@@ -198,10 +209,12 @@ private class FimbyDigestEmailBuilderTest {
         Datetime endDt = Datetime.newInstance(Date.today().addYears(-50), Time.newInstance(23, 59, 59, 0));
 
         Test.startTest();
-        String line = FimbyDigestEmailBuilder.getCrossFimbyStat('Weekly', startDt, endDt);
+        FimbyDigestEmailBuilder.CrossFimbyStat stat =
+            FimbyDigestEmailBuilder.getCrossFimbyStat('Weekly', startDt, endDt);
         Test.stopTest();
 
-        System.assertEquals('', line, 'Window with zero counts should return blank line.');
+        System.assertEquals(0, stat.count, 'Window with zero counts should report a zero count.');
+        System.assertEquals('', stat.line, 'Window with zero counts should return a blank line.');
     }
 
     @IsTest
@@ -385,7 +398,7 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void buildAskOfferCard_showsStillNeededBadgeWhenRefreshed() {
+    static void buildAskOfferCard_omitsStillNeededBadgeWhenRefreshed() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
         Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
         Id needRt = Schema.SObjectType.Needs_Offers__c
@@ -412,15 +425,17 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        System.assert(result.html.contains('STILL NEEDED'), 'Refreshed ask should show badge');
+        System.assert(!result.html.contains('STILL NEEDED'), 'Refresh badge should no longer appear in digests');
+        System.assert(!result.html.contains('STILL AVAILABLE'), 'Refresh badge should no longer appear in digests');
+        System.assert(result.html.contains('Refreshed Ask'), 'Refreshed ask should still render in the digest');
     }
 
     @IsTest
-    static void buildCard_portraitRatio_usesFixedWidthFlexibleHeight() {
+    static void buildCard_withImage_usesPercentageSplitRow() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
-        stories[0].Image_Ratio__c = '1080x1350'; // portrait 4:5 -> ratio 0.8
+        stories[0].Image_Ratio__c = '1080x1350'; // portrait 4:5
         insert stories;
 
         Test.startTest();
@@ -431,19 +446,23 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // Fixed width 220, height follows ratio: round(220 / 0.8) = 275.
+        // Image column is percentage-based so it scales to ~1/3 of the row on every viewport.
         System.assert(
-            result.html.contains('width="220" height="275"'),
-            'Portrait photo should render at fixed width with ratio-derived height. HTML: ' + result.html
+            result.html.contains('width="34%"') && result.html.contains('width="66%"'),
+            'Card should use a 34/66 percentage split row. HTML: ' + result.html
+        );
+        System.assert(
+            result.html.contains('height:auto'),
+            'Image should keep its natural aspect ratio (no fixed height). HTML: ' + result.html
         );
     }
 
     @IsTest
-    static void buildCard_landscapeRatio_usesFixedWidthFlexibleHeight() {
+    static void buildCard_imageSizingIgnoresRatio() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
-        stories[0].Image_Ratio__c = '200x100'; // landscape 2:1 -> ratio 2.0
+        stories[0].Image_Ratio__c = '200x100'; // landscape 2:1 — must not drive a fixed px size
         insert stories;
 
         Test.startTest();
@@ -454,10 +473,14 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // Same fixed width 220, shorter height: round(220 / 2.0) = 110.
+        // No ratio-derived pixel height: the image fills its percentage cell at height:auto.
         System.assert(
-            result.html.contains('width="220" height="110"'),
-            'Landscape photo should render at the same fixed width, shorter height. HTML: ' + result.html
+            result.html.contains('width="34%"') && result.html.contains('height:auto'),
+            'Landscape photo should still use the percentage column, not a fixed pixel size. HTML: ' + result.html
+        );
+        System.assert(
+            !result.html.contains('width="220" height='),
+            'Card should no longer emit a fixed 220px image width. HTML: ' + result.html
         );
     }
 

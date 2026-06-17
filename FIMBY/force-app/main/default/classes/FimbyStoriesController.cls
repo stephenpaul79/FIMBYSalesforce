@@ -315,7 +315,7 @@ public with sharing class FimbyStoriesController {
 
             String query = 'SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c, '
                 + 'Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c, '
-                + 'Posted_By__r.Image_URL__c, '
+                + 'Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, '
                 + 'Contact__c, Neighbourhood__c, Visibility_Scope__c, '
                 + 'Moderation_Status__c, CreatedDate, OwnerId, Comment_Count__c '
                 + 'FROM Story__c WHERE Id = :storyId '

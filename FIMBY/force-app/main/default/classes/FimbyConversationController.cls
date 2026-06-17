@@ -215,8 +215,8 @@ public with sharing class FimbyConversationController {
 
             // Main query
             String mainQuery = 'SELECT Id, Participant_1__c, Participant_2__c,'
-                + ' Participant_1__r.Name, Participant_1__r.FirstName, Participant_1__r.LastName,'
-                + ' Participant_2__r.Name, Participant_2__r.FirstName, Participant_2__r.LastName,'
+                + ' Participant_1__r.Name, Participant_1__r.Full_Name__c, Participant_1__r.FirstName, Participant_1__r.LastName,'
+                + ' Participant_2__r.Name, Participant_2__r.Full_Name__c, Participant_2__r.FirstName, Participant_2__r.LastName,'
                 + ' Last_Message_Preview__c, Last_Message_Date__c, Last_Message_Sender__c,'
                 + ' Participant_1_Unread_Count__c, Participant_2_Unread_Count__c,'
                 + ' Participant_1_Archived__c, Participant_2_Archived__c, Status__c'
@@ -229,7 +229,7 @@ public with sharing class FimbyConversationController {
             for (Conversation__c conv : conversations) {
                 // Determine other participant
                 Boolean isP1 = (conv.Participant_1__c == myContactId);
-                String otherName = isP1 ? conv.Participant_2__r?.Name : conv.Participant_1__r?.Name;
+                String otherName = isP1 ? conv.Participant_2__r?.Full_Name__c : conv.Participant_1__r?.Full_Name__c;
                 String otherFirstName = isP1 ? conv.Participant_2__r?.FirstName : conv.Participant_1__r?.FirstName;
                 String otherId = isP1 ? conv.Participant_2__c : conv.Participant_1__c;
 
@@ -366,7 +366,7 @@ public with sharing class FimbyConversationController {
             Conversation__c existingConv
         ) {
             List<Contact> targets = [
-                SELECT Id, Name, FirstName, Image_URL__c,
+                SELECT Id, Name, Full_Name__c, FirstName, Image_URL__c, Display_Avatar_URL__c,
                        Is_Organization_Contact__c,
                        Organization_Account__r.Name,
                        Organization_Account__r.Logo_URL__c
@@ -387,11 +387,11 @@ public with sharing class FimbyConversationController {
             result.otherParticipantId = other.Id;
             result.otherParticipantName = otherIsOrg
                 ? other.Organization_Account__r?.Name
-                : other.Name;
+                : other.Full_Name__c;
             result.otherParticipantFirstName = other.FirstName;
             result.otherParticipantImageUrl = otherIsOrg
                 ? other.Organization_Account__r?.Logo_URL__c
-                : other.Image_URL__c;
+                : other.Display_Avatar_URL__c;
             result.isOtherParticipantOrg = otherIsOrg;
             result.myContactId = myContactId;
             result.myContactImageUrl = identity.orgAvatarUrl;
@@ -626,7 +626,7 @@ public with sharing class FimbyConversationController {
             if (String.isBlank(myContactId)) return result;
 
             for (Blocked_Contact__c bc : [
-                SELECT Id, Blocked__c, Blocked__r.Name, Blocked__r.FirstName,
+                SELECT Id, Blocked__c, Blocked__r.Name, Blocked__r.Full_Name__c, Blocked__r.FirstName,
                        Reason__c, Reported__c, CreatedDate
                 FROM Blocked_Contact__c
                 WHERE Blocker__c = :myContactId
@@ -635,7 +635,7 @@ public with sharing class FimbyConversationController {
                 BlockedContactWrapper w = new BlockedContactWrapper();
                 w.id = bc.Id;
                 w.contactId = bc.Blocked__c;
-                w.contactName = bc.Blocked__r?.Name;
+                w.contactName = bc.Blocked__r?.Full_Name__c;
                 w.contactFirstName = bc.Blocked__r?.FirstName;
                 w.reason = bc.Reason__c;
                 w.isReported = bc.Reported__c;
@@ -714,8 +714,8 @@ public with sharing class FimbyConversationController {
             // Get all contacts who have shared info with me or I've shared with (Active only)
             Integer contactsLimit = FimbySettings.messageableContactsLimit();
             List<Shared_Contact_Info__c> shared = [
-                SELECT Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
-                       Shared_To__c, Shared_To__r.Name, Shared_To__r.FirstName, Shared_To__r.Image_URL__c
+                SELECT Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                       Shared_To__c, Shared_To__r.Name, Shared_To__r.Full_Name__c, Shared_To__r.FirstName, Shared_To__r.Image_URL__c, Shared_To__r.Display_Avatar_URL__c
                 FROM Shared_Contact_Info__c
                 WHERE (Contact__c = :myContactId OR Shared_To__c = :myContactId)
                   AND (Status__c = 'Active' OR Status__c = null)
@@ -729,12 +729,12 @@ public with sharing class FimbyConversationController {
             for (Shared_Contact_Info__c sci : shared) {
                 Id otherId = (sci.Contact__c == myContactId) ? sci.Shared_To__c : sci.Contact__c;
                 String otherName = (sci.Contact__c == myContactId)
-                    ? sci.Shared_To__r?.Name : sci.Contact__r?.Name;
+                    ? sci.Shared_To__r?.Full_Name__c : sci.Contact__r?.Full_Name__c;
                 String otherFirstName = (sci.Contact__c == myContactId)
                     ? sci.Shared_To__r?.FirstName : sci.Contact__r?.FirstName;
 
                 String otherImageUrl = (sci.Contact__c == myContactId)
-                    ? sci.Shared_To__r?.Image_URL__c : sci.Contact__r?.Image_URL__c;
+                    ? sci.Shared_To__r?.Display_Avatar_URL__c : sci.Contact__r?.Display_Avatar_URL__c;
 
                 if (otherId == null || seen.contains(otherId) || blockedIds.contains(otherId)) continue;
                 seen.add(otherId);
@@ -787,7 +787,7 @@ public with sharing class FimbyConversationController {
             }
             if (!modNeighbourhoodIds.isEmpty()) {
                 List<Contact> nhContacts = [
-                    SELECT Id, Name, FirstName, Image_URL__c
+                    SELECT Id, Name, Full_Name__c, FirstName, Image_URL__c, Display_Avatar_URL__c
                     FROM Contact
                     WHERE AccountId IN :modNeighbourhoodIds
                       AND Id != :myContactId
@@ -802,10 +802,10 @@ public with sharing class FimbyConversationController {
                     if (term != null && (c.Name == null || !c.Name.toLowerCase().contains(term))) continue;
                     result.add(new Map<String, Object>{
                         'contactId' => c.Id,
-                        'contactName' => c.Name,
+                        'contactName' => c.Full_Name__c,
                         'contactFirstName' => c.FirstName,
                         'isOrgContact' => false,
-                        'avatarUrl' => c.Image_URL__c
+                        'avatarUrl' => c.Display_Avatar_URL__c
                     });
                 }
             }

@@ -8,6 +8,12 @@ private class FimbySupportRelationshipControllerTest {
     @TestSetup
     static void setupTestData() {
         Account neighbourhood = FimbyTestDataFactory.createNeighbourhood(true);
+        neighbourhood.Active__c = 'Yes';
+        update neighbourhood;
+        insert new Postal_Codes__c(
+            Name = 'V6B 2B2',
+            Neighbourhood_Account__c = neighbourhood.Id
+        );
 
         Contact helperContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
         helperContact.LastName = HELPER_CONTACT_NAME;

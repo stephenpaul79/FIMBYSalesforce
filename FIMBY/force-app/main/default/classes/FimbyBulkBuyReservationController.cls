@@ -170,7 +170,8 @@ public with sharing class FimbyBulkBuyReservationController {
                        Total_Estimated_Cost__c, Estimated_Cost_Per_Share__c,
                        Image_1_URL__c, Posted_By__c, Contact__c,
                        Posted_By__r.FirstName, Posted_By__r.LastName,
-                       Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c
+                       Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c,
+                       Posted_By__r.Display_Avatar_URL__c
                 FROM Needs_Offers__c
                 WHERE Id = :postId
                 /* with sharing enforces record access */

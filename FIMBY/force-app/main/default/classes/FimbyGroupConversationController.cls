@@ -55,7 +55,7 @@ public with sharing class FimbyGroupConversationController {
                     senderAvatarUrl = m.Sender__r.Organization_Account__r?.Logo_URL__c;
                 } else {
                     senderDisplayName = null;
-                    senderAvatarUrl = m.Sender__r?.Image_URL__c;
+                    senderAvatarUrl = m.Sender__r?.Display_Avatar_URL__c;
                 }
 
                 messageList.add(new Map<String, Object>{
@@ -159,7 +159,7 @@ public with sharing class FimbyGroupConversationController {
                 String displayName = isOrg ? cm.Contact__r.Organization_Account__r?.Name : null;
                 String avatarUrl = isOrg
                     ? cm.Contact__r.Organization_Account__r?.Logo_URL__c
-                    : cm.Contact__r?.Image_URL__c;
+                    : cm.Contact__r?.Display_Avatar_URL__c;
 
                 members.add(new Map<String, Object>{
                     'id' => cm.Id,
@@ -567,7 +567,8 @@ public with sharing class FimbyGroupConversationController {
         public List<Message__c> queryMessages(Id conversationId, Integer pSize, Integer pOffset) {
             return [
                 SELECT Id, Body__c, Sender__c, Sender__r.FirstName, Sender__r.LastName,
-                       Sender__r.Image_URL__c, Sender__r.Is_Organization_Contact__c,
+                       Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c,
+                       Sender__r.Is_Organization_Contact__c,
                        Sender__r.Organization_Account__r.Name,
                        Sender__r.Organization_Account__r.Logo_URL__c,
                        Sent_By__c, Sent_By__r.FirstName,
@@ -587,7 +588,8 @@ public with sharing class FimbyGroupConversationController {
         public List<Conversation_Member__c> queryActiveMembers(Id conversationId) {
             return [
                 SELECT Id, Contact__c, Contact__r.FirstName, Contact__r.LastName,
-                       Contact__r.Image_URL__c, Contact__r.Is_Organization_Contact__c,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                       Contact__r.Is_Organization_Contact__c,
                        Contact__r.Organization_Account__r.Name,
                        Contact__r.Organization_Account__r.Logo_URL__c,
                        Role__c, Status__c, Joined_Date__c

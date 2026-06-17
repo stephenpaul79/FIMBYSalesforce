@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mask_Avatar__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When true, neighbours see the member's initials instead of their profile photo. Default false = photo shown. Honoured by the Display_Avatar_URL__c formula.</description>
+    <label>Hide Profile Photo (Initials Only)</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

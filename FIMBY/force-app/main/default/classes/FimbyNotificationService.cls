@@ -259,10 +259,10 @@ public without sharing class FimbyNotificationService {
         }
         String gateType = GATE_TYPE_MAP.containsKey(notifType)
             ? GATE_TYPE_MAP.get(notifType) : 'ACTIVITY';
-        if (!isGateOpen(u, gateType)) {
-            return null;
-        }
-        return 'Pending';
+        // Master + category are ON (guards above). Gate open -> audible 'Pending';
+        // gate closed (mid-window) -> 'Pending_Quiet' for a passive in-place
+        // refresh (Phase 2). Suppression (null) is reserved for master/category off.
+        return isGateOpen(u, gateType) ? 'Pending' : 'Pending_Quiet';
     }
 
     private static Boolean isTypeToggleEnabled(String notifType, User u) {

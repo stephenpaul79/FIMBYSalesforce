@@ -21,18 +21,74 @@ const PUSH_TOKEN_URL = `${BACKEND_BASE_URL}/api/push-token`;
 
 // Configure how notifications appear when app is foregrounded
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async (notification) => {
+    // Passive (quiet) refreshes carry data.quiet=true: update the list + badge
+    // in place without a banner or sound. Audible pushes alert as usual.
+    const quiet = notification.request.content.data?.quiet === true;
+    return {
+      shouldShowBanner: !quiet,
+      shouldShowList: true,
+      shouldPlaySound: !quiet,
+      shouldSetBadge: true,
+    };
+  },
 });
 
 export type NotificationData = {
   notification_type?: string;
   [key: string]: any;
 };
+
+// Action identifier for the "Mark read" quick action button. Matches the
+// branch in index.tsx that calls the bridge /api/notifications/action endpoint.
+export const MARK_READ_ACTION = "mark_read";
+export const VIEW_ACTION = "view";
+
+// The bridge sets each single push's categoryId = notification_type.toLowerCase()
+// (FimbyPushNotificationService). We register the quick-action category for the
+// single-notification types that carry a deep link, so the lock-screen card
+// shows [Mark read] + [View]. Aggregate/quiet pushes carry no categoryId and
+// render without buttons (correct — they cover multiple items).
+const QUICK_ACTION_CATEGORY_IDS = [
+  "message",
+  "response",
+  "comment",
+  "lending_request",
+  "loan_approved",
+  "extension_request",
+  "extension_approved",
+  "overdue_reminder",
+  "item_returned",
+  "bulk_buy_reservation",
+  "bulk_buy_status",
+  "bulk_buy_pickup",
+  "event_reminder",
+  "event_chat",
+  "thanks_received",
+];
+
+async function registerQuickActionCategories() {
+  // "Mark read" does not open the app; "View" does (default tap also opens).
+  const actions = [
+    {
+      identifier: MARK_READ_ACTION,
+      buttonTitle: "Mark read",
+      options: { opensAppToForeground: false },
+    },
+    {
+      identifier: VIEW_ACTION,
+      buttonTitle: "View",
+      options: { opensAppToForeground: true },
+    },
+  ];
+  for (const categoryId of QUICK_ACTION_CATEGORY_IDS) {
+    try {
+      await Notifications.setNotificationCategoryAsync(categoryId, actions);
+    } catch {
+      // Non-fatal: a missing category just means no buttons for that type.
+    }
+  }
+}
 
 export type PushNotificationState = {
   expoPushToken: string | null;
@@ -43,6 +99,9 @@ export type PushNotificationState = {
 type UsePushNotificationsOptions = {
   onNotificationReceived?: (notification: Notifications.Notification) => void;
   onNotificationTapped?: (data: NotificationData) => void;
+  // Fired when the user picks a quick-action button (e.g. "Mark read") instead
+  // of tapping the card. actionId is the action identifier (MARK_READ_ACTION etc).
+  onNotificationAction?: (actionId: string, data: NotificationData) => void;
 };
 
 /**
@@ -57,7 +116,7 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
   const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
   const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
 
-  const { onNotificationReceived, onNotificationTapped } = options;
+  const { onNotificationReceived, onNotificationTapped, onNotificationAction } = options;
 
   /**
    * Request permissions and get Expo push token.
@@ -132,6 +191,16 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
           lightColor: "#3A7D8C",
         });
 
+        // Low-importance sibling for quiet DM refreshes. LOW means a
+        // tag-replacement updates the card without a heads-up or sound, so the
+        // one-buzz-per-window promise holds on Android (Phase 2 requirement #1).
+        await Notifications.setNotificationChannelAsync("messages_quiet", {
+          name: "Message updates",
+          description: "Quiet updates to message notifications you've already seen",
+          importance: Notifications.AndroidImportance.LOW,
+          lightColor: "#3A7D8C",
+        });
+
         await Notifications.setNotificationChannelAsync("activity", {
           name: "Activity",
           description: "Marketplace, library, and story notifications",
@@ -139,6 +208,10 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
           lightColor: "#3A7D8C",
         });
       }
+
+      // Quick-action categories ([Mark read] / [View]) for single-notification
+      // pushes. Registered on both platforms; harmless where unsupported.
+      await registerQuickActionCategories();
 
       return token;
     } catch (e: any) {
@@ -241,15 +314,28 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
         }
       );
 
-      // Listener for when user taps on a notification
+      // Listener for when user taps a notification OR picks a quick action.
       responseListener.current = Notifications.addNotificationResponseReceivedListener(
         (response) => {
-          log("[PUSH] Notification tapped");
           const data = response.notification.request.content.data as NotificationData;
+          const actionId = response.actionIdentifier;
 
-          // Clear badge when user interacts with notification
+          if (
+            actionId &&
+            actionId !== Notifications.DEFAULT_ACTION_IDENTIFIER &&
+            actionId !== VIEW_ACTION
+          ) {
+            // A non-default, non-"View" quick action (e.g. "Mark read"). Do NOT
+            // navigate; let the handler perform the action in the background.
+            log("[PUSH] Notification action:", actionId);
+            Notifications.setBadgeCountAsync(0);
+            onNotificationAction?.(actionId, data);
+            return;
+          }
+
+          // Default tap or the "View" button: open + navigate.
+          log("[PUSH] Notification tapped");
           Notifications.setBadgeCountAsync(0);
-
           onNotificationTapped?.(data);
         }
       );
@@ -267,7 +353,7 @@ export function usePushNotifications(options: UsePushNotificationsOptions = {}) 
         // Safe to ignore - expected in Expo Go
       }
     };
-  }, [onNotificationReceived, onNotificationTapped]);
+  }, [onNotificationReceived, onNotificationTapped, onNotificationAction]);
 
   /**
    * Check if we should prompt for permissions

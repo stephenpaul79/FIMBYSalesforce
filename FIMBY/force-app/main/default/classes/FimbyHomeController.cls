@@ -34,7 +34,7 @@ public with sharing class FimbyHomeController {
             String ttlFilter = (ttlDays > 0) ? 'CreatedDate >= LAST_N_DAYS:' + ttlDays : '';
 
             String query = 'SELECT Id, Name, Message__c, Type__c, CreatedDate, ' +
-                          'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
+                          'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                           'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                           'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
                           'Image_URL__c, Portal_Image__c, ' +
@@ -114,10 +114,10 @@ public with sharing class FimbyHomeController {
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
             String askOfferQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
-                          'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
+                          'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                           'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                           'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
-                          'Contact__r.Full_Name__c, Contact__r.Image_URL__c, ' +
+                          'Contact__r.Full_Name__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
                           'Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__c, ' +
                           'Contact__r.Organization_Account__r.Logo_URL__c, ' +
                           'Portal_Image__c, RecordType.Name, ' +
@@ -169,7 +169,7 @@ public with sharing class FimbyHomeController {
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
             String query = 'SELECT Id, Name, Description__c, Category__c, Status__c, CreatedDate, ' +
-                          'Owner_Contact__c, Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, ' +
+                          'Owner_Contact__c, Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, ' +
                           'Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__c, ' +
                           'Owner_Contact__r.Organization_Account__r.Logo_URL__c, ' +
                           'Image_URL__c, Portal_Image__c, ' +
@@ -274,7 +274,7 @@ public with sharing class FimbyHomeController {
 
         // Owner avatar
         String ownerName = item.Owner_Contact__r?.Full_Name__c;
-        String ownerAvatar = item.Owner_Contact__r?.Image_URL__c;
+        String ownerAvatar = item.Owner_Contact__r?.Display_Avatar_URL__c;
         Boolean isOrgContact = item.Owner_Contact__r?.Is_Organization_Contact__c == true;
         if (isOrgContact && item.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
             ownerAvatar = item.Owner_Contact__r.Organization_Account__r.Logo_URL__c;
@@ -350,7 +350,7 @@ public with sharing class FimbyHomeController {
                 Integer storyTtl = FimbySettings.storyFeedTtlDays();
                 String storyQuery = 'SELECT Id, Name, Message__c, Type__c, CreatedDate, ' +
                                    'Posted_By__c, Contact__c, Comment_Count__c, ' +
-                                   'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
+                                   'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                                    'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                                    'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
                                    'Image_URL__c, Image_Ratio__c ' +
@@ -401,10 +401,10 @@ public with sharing class FimbyHomeController {
                 }
 
                 String aoQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
-                                 'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, ' +
+                                 'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                                  'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                                  'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
-                                 'Contact__r.Full_Name__c, Contact__r.Image_URL__c, ' +
+                                 'Contact__r.Full_Name__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
                                  'Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__c, ' +
                                  'Contact__r.Organization_Account__r.Logo_URL__c, ' +
                                  'Image_1_URL__c, Image_1_Ratio__c, ' +
@@ -457,7 +457,7 @@ public with sharing class FimbyHomeController {
             if (isAllCategory) {
                 String libQuery = 'SELECT Id, Name, Description__c, Category__c, Status__c, CreatedDate, ' +
                                  'Owner_Contact__c, Listed_By__c, ' +
-                                 'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, ' +
+                                 'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, ' +
                                  'Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__c, ' +
                                  'Owner_Contact__r.Organization_Account__r.Logo_URL__c, ' +
                                  'Image_URL__c, Image_Ratio__c ' +

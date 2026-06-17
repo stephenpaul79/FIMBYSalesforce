@@ -112,6 +112,11 @@
                             </div>
                         </div>
 
+                        <!-- First-meeting safety guidance for any event RSVP -->
+                        <template lwc:if={isEventType}>
+                            <c-fimby-safety-note></c-fimby-safety-note>
+                        </template>
+
                         <!-- ===== STORY COMMENT FORM ===== -->
                         <template lwc:if={isStoryType}>
                             <div class="form-section">

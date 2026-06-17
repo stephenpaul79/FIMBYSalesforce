@@ -16,15 +16,12 @@
 public without sharing class FimbyDigestEmailBuilder {
 
     private static final Integer MAX_CARDS_PER_SECTION = 5;
-    private static final Integer SNIPPET_LENGTH = 120;
+    private static final Integer SNIPPET_LENGTH = 280;
 
-    // Adaptive image layout: every card is side-by-side (image left, text right). The image
-    // uses one fixed width across all orientations so the text column aligns down the whole
-    // email; its height follows the photo's true ratio (no crop) and the card height flexes
-    // to whichever column is taller. The image is vertically centred beside the text.
-    private static final Integer IMG_WIDTH = 220;
-    // Legacy records store no ratio; fall back to a landscape-shaped thumbnail (center-cropped).
-    private static final Integer LEGACY_IMG_HEIGHT = 165;
+    // Adaptive card layout: badge/avatar header and CTA footer span the full card width;
+    // only the title/body share a two-column row with the photo (text left, image right).
+    // That row is percentage-based (34% image / 66% text) so the photo scales to ~1/3 on
+    // every viewport and keeps its true aspect ratio (no crop). See buildSplitCardRow.
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
 
     private static String stripTrailingSlash(String url) {
@@ -128,40 +125,81 @@ public without sharing class FimbyDigestEmailBuilder {
               AND LastModifiedDate >= :startDt AND LastModifiedDate <= :endDt
         ];
 
-        String crossFimbyLine = getCrossFimbyStat(frequency, startDt, endDt);
+        CrossFimbyStat cross = getCrossFimbyStat(frequency, startDt, endDt);
 
-        Boolean hasLocal = (fulfilledAsks > 0 || completedLoans > 0);
-        Boolean hasCross = String.isNotBlank(crossFimbyLine);
-        if (!hasLocal && !hasCross) {
+        // Surface the platform-wide line only when it outshines the local tally, so the
+        // zoom-out always feels additive rather than smaller than what happened at home.
+        Integer localAggregate = fulfilledAsks + completedLoans;
+        Boolean showCross = cross.count > localAggregate;
+
+        List<String> lines = new List<String>();
+        if (fulfilledAsks > 0) {
+            lines.add(fulfilledAsks == 1
+                ? '1 ask was answered by a neighbour.'
+                : fulfilledAsks + ' asks were answered by neighbours.');
+        }
+        if (completedLoans > 0) {
+            lines.add(completedLoans == 1
+                ? '1 borrowed thing made its way home again.'
+                : completedLoans + ' borrowed things made their way home again.');
+        }
+        if (showCross) {
+            lines.add(cross.line);
+        }
+
+        if (lines.isEmpty()) {
             return '';
         }
 
-        String html = buildSectionHeader('Good things happening', EARTH_SAGE);
-        if (fulfilledAsks > 0) {
-            String label = fulfilledAsks + ' ask' + (fulfilledAsks > 1 ? 's were' : ' was') + ' fulfilled.';
-            html += '<p style="margin:4px 0;font-size:14px;color:' + TEXT_BODY + ';padding-left:8px;">&#10003; ' + label + '</p>';
-        }
-        if (completedLoans > 0) {
-            String label = completedLoans + ' library item' + (completedLoans > 1 ? 's found' : ' found') + ' a new home.';
-            html += '<p style="margin:4px 0;font-size:14px;color:' + TEXT_BODY + ';padding-left:8px;">&#10003; ' + label + '</p>';
-        }
-        if (hasCross) {
-            html += '<p style="margin:8px 0 0;font-size:13px;font-style:italic;color:' + TEXT_SECONDARY + ';padding-left:8px;">'
-                + escHtml(crossFimbyLine) + '</p>';
-        }
-        html += '<div style="height:16px;"></div>';
-        return html;
+        String timePhrase = resolveCrossFimbyTimePhrase(frequency, startDt, endDt);
+        return buildSectionHeader('Good things happening ' + timePhrase, EARTH_SAGE)
+            + buildResolutionProse(lines);
     }
 
     /**
-     * @description Picks one of four cross-FIMBY aggregate metrics at random and returns
-     * the formatted plain-text line. Empty string when the count is zero. Counts are
+     * @description Renders the "Good things happening" lines in a plain white card that matches
+     * the other digest sections: a gentle italic intro caption followed by the count lines as
+     * encouraging sentences. The dynamic timeframe lives in the section title, so the prose
+     * carries no time reference of its own.
+     */
+    private static String buildResolutionProse(List<String> lines) {
+        String body = '<p style="margin:0 0 10px;' + FimbyEmailHtmlBuilder.F
+            + 'font-size:13px;font-style:italic;color:' + TEXT_SECONDARY + ';">small kindnesses, close to home</p>';
+        for (String line : lines) {
+            body += '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F
+                + 'font-size:14px;line-height:1.6;color:' + TEXT_BODY + ';">' + line + '</p>';
+        }
+        return '<table cellpadding="0" cellspacing="0" border="0" width="600" '
+            + 'style="max-width:600px;width:100%;margin-bottom:12px;border-radius:8px;'
+            + 'border:1px solid ' + BORDER_LIGHT + ';background-color:' + BG_CARD + ';">'
+            + '<tr><td style="padding:14px 18px;">'
+            + body
+            + '</td></tr></table>';
+    }
+
+    /**
+     * @description Carries the chosen cross-FIMBY metric's count alongside its formatted
+     * line so the caller can compare the platform-wide count to the local tally before
+     * deciding whether to render it.
+     */
+    @TestVisible
+    private class CrossFimbyStat {
+        @TestVisible Integer count;
+        @TestVisible String line;
+        CrossFimbyStat(Integer count, String line) {
+            this.count = count;
+            this.line = line;
+        }
+    }
+
+    /**
+     * @description Picks one of four cross-FIMBY aggregate metrics at random and returns its
+     * count plus the formatted line. Count 0 / blank line when nothing happened. Counts are
      * platform-wide and contain no PII — cross-neighbourhood scoping is intentional.
      */
     @TestVisible
-    private static String getCrossFimbyStat(String frequency, Datetime startDt, Datetime endDt) {
+    private static CrossFimbyStat getCrossFimbyStat(String frequency, Datetime startDt, Datetime endDt) {
         try {
-            String windowWord = resolveCrossFimbyWindowWord(frequency, startDt, endDt);
             Integer variant = Math.mod(Math.abs(Crypto.getRandomInteger()), 4);
             Integer count;
 
@@ -191,53 +229,53 @@ public without sharing class FimbyDigestEmailBuilder {
             }
 
             if (count == null || count == 0) {
-                return '';
+                return new CrossFimbyStat(0, '');
             }
-            return formatCrossFimbyLine(variant, count, windowWord);
+            return new CrossFimbyStat(count, formatCrossFimbyLine(variant, count));
         } catch (Exception e) {
-            return '';
+            return new CrossFimbyStat(0, '');
         }
     }
 
     /**
-     * @description Formats one cross-FIMBY aggregate line, choosing singular or plural copy
-     * from the count so a value of 1 never reads "1 stories were shared".
+     * @description Formats one cross-FIMBY aggregate line. The timeframe lives in the section
+     * title, so the line carries none of its own. The real count is always shown (even for 1)
+     * so it reads as a count, with singular/plural grammar so a value of 1 never reads
+     * "1 stories were shared".
      */
     @TestVisible
-    private static String formatCrossFimbyLine(Integer variant, Integer count, String windowWord) {
+    private static String formatCrossFimbyLine(Integer variant, Integer count) {
         Boolean isOne = (count == 1);
-        String formatString;
+        String body;
         if (variant == 0) {
-            formatString = isOne
-                ? 'across FIMBY this {window}, {n} neighbour offered something.'
-                : 'across FIMBY this {window}, {n} neighbours offered something.';
+            body = isOne
+                ? '{n} neighbour set something out for whoever needed it.'
+                : '{n} neighbours set something out for whoever needed it.';
         } else if (variant == 1) {
-            formatString = isOne
-                ? 'across FIMBY this {window}, {n} ask was met by someone close by.'
-                : 'across FIMBY this {window}, {n} asks were met by someone close by.';
+            body = isOne
+                ? '{n} ask was met by someone close by.'
+                : '{n} asks were met by someone close by.';
         } else if (variant == 2) {
-            formatString = isOne
-                ? 'across FIMBY this {window}, {n} thing changed hands and came back.'
-                : 'across FIMBY this {window}, {n} things changed hands and came back.';
+            body = isOne
+                ? '{n} thing was passed from one neighbour to the next.'
+                : '{n} things were passed from one neighbour to the next.';
         } else {
-            formatString = isOne
-                ? 'across FIMBY this {window}, {n} story was shared.'
-                : 'across FIMBY this {window}, {n} stories were shared.';
+            body = isOne
+                ? '{n} neighbour shared a piece of their life.'
+                : '{n} neighbours shared a piece of their life.';
         }
-        return formatString
-            .replace('{window}', windowWord)
-            .replace('{n}', String.valueOf(count));
+        return ('across FIMBY, ' + body).replace('{n}', String.valueOf(count));
     }
 
     @TestVisible
-    private static String resolveCrossFimbyWindowWord(String frequency, Datetime startDt, Datetime endDt) {
+    private static String resolveCrossFimbyTimePhrase(String frequency, Datetime startDt, Datetime endDt) {
         if (frequency == 'Weekly') {
-            return 'week';
+            return 'this week';
         }
         if (startDt != null && endDt != null && startDt.date() != endDt.date()) {
-            return 'weekend';
+            return 'this weekend';
         }
-        return 'day';
+        return 'yesterday';
     }
 
     /* ---------------------------------------------------------------
@@ -297,8 +335,8 @@ public without sharing class FimbyDigestEmailBuilder {
         String body = String.isNotBlank(record.Body__c) ? record.Body__c : '';
 
         String html = buildSectionHeader(header, EARTH_DRIFTWOOD);
-        html += '<table cellpadding="0" cellspacing="0" border="0" width="552" '
-            + 'style="max-width:552px;width:100%;margin-bottom:12px;border-radius:8px;'
+        html += '<table cellpadding="0" cellspacing="0" border="0" width="600" '
+            + 'style="max-width:600px;width:100%;margin-bottom:12px;border-radius:8px;'
             + 'border:1px solid ' + BORDER_LIGHT + ';background-color:' + BG_CARD + ';">'
             + '<tr><td style="padding:14px 18px;">';
 
@@ -337,7 +375,8 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String buildStoriesSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Story__c> stories = [
             SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c,
-                   Posted_By__r.Name, Posted_By__r.FirstName, Posted_By__r.Image_URL__c,
+                   Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
+                   Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    Message_Preview__c, CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
@@ -371,7 +410,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
-            'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
+            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
         String baseWhere = 'FROM Needs_Offers__c ' +
             'WHERE Neighbourhood__c = :nhId ' +
@@ -436,7 +475,7 @@ public without sharing class FimbyDigestEmailBuilder {
         Set<Id> excluded
     ) {
         String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
-            'Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c, ' +
+            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
             'Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
             'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
         String baseWhere = 'FROM Needs_Offers__c ' +
@@ -533,7 +572,8 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String buildBulkBuysSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Needs_Offers__c> bulkBuys = [
             SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
-                   Contact__r.Name, Contact__r.FirstName, Contact__r.Image_URL__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
                    Posted_Date__c, CreatedDate
@@ -563,7 +603,8 @@ public without sharing class FimbyDigestEmailBuilder {
     private static String buildLibrarySection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Library_Item__c> items = [
             SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
-                   Owner_Contact__r.Name, Owner_Contact__r.FirstName, Owner_Contact__r.Image_URL__c,
+                   Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c, Owner_Contact__r.FirstName,
+                   Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
                    CreatedDate
             FROM Library_Item__c
             WHERE Neighbourhood__c = :nhId
@@ -594,21 +635,11 @@ public without sharing class FimbyDigestEmailBuilder {
         String rt = post.RecordType != null ? post.RecordType.DeveloperName : 'Need';
         String badgeLabel = rt == 'Need' ? 'ASK' : 'OFFER';
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
-        String refreshPill = null;
-        if (post.Refresh_Count__c != null && post.Refresh_Count__c > 0) {
-            String refreshLabel = rt == 'Need' ? 'STILL NEEDED' : 'STILL AVAILABLE';
-            refreshPill = FimbyEmailHtmlBuilder.buildBadgePill(
-                refreshLabel,
-                FimbyEmailHtmlBuilder.getBadgeColor(rt),
-                null
-            );
-        }
 
-        String body = badgeAvatarRow(badgeLabel, rt, refreshPill, post.Contact__r)
-            + titleRow(post.Name)
-            + snippetRow(post.Details__c)
-            + FimbyEmailHtmlBuilder.buildCtaButton('Respond', ctaUrl, 'reply.png');
-        return buildCard(post.Image_1_URL__c, post.Image_1_Ratio__c, body);
+        String header = badgeAvatarRow(badgeLabel, rt, post.Contact__r);
+        String middle = titleRow(post.Name) + snippetRow(post.Details__c);
+        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Respond', ctaUrl, 'reply.png');
+        return buildCard(post.Image_1_URL__c, header, middle, footer);
     }
 
     private static String buildEventCard(Needs_Offers__c evt) {
@@ -634,26 +665,25 @@ public without sharing class FimbyDigestEmailBuilder {
             ? FimbyEmailHtmlBuilder.buildBadgePill(freqBadge, FimbyEmailHtmlBuilder.getBadgeColor(evtType), null)
             : null;
 
-        String body = badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r)
-            + titleRow(evt.Name)
+        String header = badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r);
+        String middle = titleRow(evt.Name)
             + FimbyEmailHtmlBuilder.buildDateLocationLine(evt.Start_Date__c, evt.Location__c)
-            + snippetRow(evt.Details__c)
-            + FimbyEmailHtmlBuilder.buildCtaButton(ctaLabel, ctaUrl, FimbyEmailHtmlBuilder.getCtaIcon(evtType));
-        return buildCard(evt.Image_1_URL__c, evt.Image_1_Ratio__c, body);
+            + snippetRow(evt.Details__c);
+        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton(ctaLabel, ctaUrl, FimbyEmailHtmlBuilder.getCtaIcon(evtType));
+        return buildCard(evt.Image_1_URL__c, header, middle, footer);
     }
 
     private static String buildBulkBuyCard(Needs_Offers__c bb) {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
-        String body = badgeAvatarRow('BULK BUY', 'Bulk_Buy', bb.Contact__r)
-            + titleRow(bb.Name)
-            + snippetRow(bb.Details__c)
-            + FimbyEmailHtmlBuilder.buildThermometer(
+        String header = badgeAvatarRow('BULK BUY', 'Bulk_Buy', bb.Contact__r);
+        String middle = titleRow(bb.Name) + snippetRow(bb.Details__c);
+        String footer = FimbyEmailHtmlBuilder.buildThermometer(
                 bb.Total_Reserved__c, bb.Total_Quantity__c,
                 bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
             )
-            + FimbyEmailHtmlBuilder.buildCtaButton('Reserve-A-Share', ctaUrl, 'buy.png');
-        return buildCard(bb.Image_1_URL__c, bb.Image_1_Ratio__c, body);
+            + FimbyEmailHtmlBuilder.buildCenteredCtaButton('Reserve-A-Share', ctaUrl, 'buy.png');
+        return buildCard(bb.Image_1_URL__c, header, middle, footer);
     }
 
     private static String buildStoryCard(Story__c story) {
@@ -662,11 +692,10 @@ public without sharing class FimbyDigestEmailBuilder {
         String ctaUrl = FimbySettings.getUrl('Story', story.Id);
         String body = String.isNotBlank(story.Message_Preview__c) ? story.Message_Preview__c : story.Message__c;
 
-        String cardBody = badgeAvatarRow(badgeLabel, storyType, story.Posted_By__r)
-            + titleRow(story.Name)
-            + snippetRow(body)
-            + FimbyEmailHtmlBuilder.buildCtaButton('Read More', ctaUrl, 'comment.png');
-        return buildCard(story.Image_URL__c, story.Image_Ratio__c, cardBody);
+        String header = badgeAvatarRow(badgeLabel, storyType, story.Posted_By__r);
+        String middle = titleRow(story.Name) + snippetRow(body);
+        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Read More', ctaUrl, 'comment.png');
+        return buildCard(story.Image_URL__c, header, middle, footer);
     }
 
     private static String buildLibraryCard(Library_Item__c item) {
@@ -675,11 +704,10 @@ public without sharing class FimbyDigestEmailBuilder {
         // Section heading already says "Library"; show the category as the single badge,
         // falling back to LIBRARY only when the item has no category.
         String badgeLabel = String.isNotBlank(item.Category__c) ? item.Category__c : 'LIBRARY';
-        String body = badgeAvatarRow(badgeLabel, 'Library', item.Owner_Contact__r)
-            + titleRow(item.Name)
-            + snippetRow(item.Description__c)
-            + FimbyEmailHtmlBuilder.buildCtaButton('Borrow', ctaUrl, 'borrow.png');
-        return buildCard(item.Image_URL__c, item.Image_Ratio__c, body);
+        String header = badgeAvatarRow(badgeLabel, 'Library', item.Owner_Contact__r);
+        String middle = titleRow(item.Name) + snippetRow(item.Description__c);
+        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Borrow', ctaUrl, 'borrow.png');
+        return buildCard(item.Image_URL__c, header, middle, footer);
     }
 
     /* ---------------------------------------------------------------
@@ -687,30 +715,29 @@ public without sharing class FimbyDigestEmailBuilder {
      * --------------------------------------------------------------- */
 
     private static String openCard() {
-        return '<table cellpadding="0" cellspacing="0" border="0" width="552" '
-            + 'style="max-width:552px;width:100%;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid ' + BORDER_LIGHT + ';background-color:#FFFFFF;">';
+        return '<table cellpadding="0" cellspacing="0" border="0" width="600" '
+            + 'style="max-width:600px;width:100%;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid ' + BORDER_LIGHT + ';background-color:#FFFFFF;">';
     }
 
     /**
-     * @description Assembles a feed card with a side-by-side layout: a fixed-width image on
-     * the left and the text on the right. The image uses one width for every orientation so
-     * the text column aligns across all cards; its height follows the photo's true ratio so
-     * faces are never cropped, and the card height flexes to whichever column is taller.
-     * Records with no stored ratio fall back to a center-cropped landscape thumbnail. Cards
-     * with no image render text only.
+     * @description Assembles a feed card in three stacked bands: the badge + avatar header
+     * and the CTA footer each span the full card width, while only the title/body share a
+     * two-column row with the photo (text left, image right). Pulling the widest, least-
+     * wrappable elements (the name row and the button) out of the narrow column, plus a
+     * percentage-based image column (see buildSplitCardRow) that scales to ~1/3 of the row on
+     * every viewport, keeps cards readable on ~375px phones where a fixed-width photo would
+     * otherwise crush the text. The image keeps its true aspect ratio (no crop). Cards with
+     * no image render the three bands stacked in a single full-width column.
      */
-    private static String buildCard(String imageUrl, String ratioStr, String bodyHtml) {
+    private static String buildCard(String imageUrl, String headerHtml, String middleHtml, String footerHtml) {
         if (String.isBlank(imageUrl)) {
-            return openCard() + openCardBody() + bodyHtml + closeCardBody();
+            return openCard() + openCardBody() + headerHtml + middleHtml + footerHtml + closeCardBody();
         }
 
-        Decimal ratio = FimbyEmailHtmlBuilder.parseImageRatio(ratioStr);
-        Integer imgHeight = (ratio == null)
-            ? LEGACY_IMG_HEIGHT
-            : (IMG_WIDTH / ratio).round(System.RoundingMode.HALF_UP).intValue();
-
         return openCard()
-            + FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, IMG_WIDTH, imgHeight, bodyHtml)
+            + '<tr><td colspan="2" style="padding:14px 16px 8px;">' + headerHtml + '</td></tr>'
+            + FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, middleHtml)
+            + '<tr><td colspan="2" style="padding:8px 16px 14px;">' + footerHtml + '</td></tr>'
             + '</table>';
     }
 
@@ -736,9 +763,9 @@ public without sharing class FimbyDigestEmailBuilder {
 
         String rightHtml = '';
         if (contactRef != null) {
-            String imageUrl = (String) contactRef.get('Image_URL__c');
+            String imageUrl = (String) contactRef.get('Display_Avatar_URL__c');
             String firstName = (String) contactRef.get('FirstName');
-            String fullName = (String) contactRef.get('Name');
+            String fullName = (String) contactRef.get('Full_Name__c');
             rightHtml = FimbyEmailHtmlBuilder.buildAvatar(imageUrl, firstName, null)
                 + '<span style="' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:' + TEXT_SECONDARY + ';vertical-align:middle;">'
                 + escHtml(fullName) + '</span>';
@@ -765,7 +792,7 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     private static String buildSectionHeader(String title, String accentColor) {
-        return '<table cellpadding="0" cellspacing="0" border="0" width="552" style="max-width:552px;width:100%;margin-bottom:8px;margin-top:16px;">'
+        return '<table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;margin-bottom:8px;margin-top:16px;">'
             + '<tr><td style="background:' + accentColor + ';border-radius:8px;padding:8px 12px;">'
             + '<span style="' + FimbyEmailHtmlBuilder.F + 'color:#FFFFFF;font-size:15px;font-weight:600;">' + escHtml(title) + '</span>'
             + '</td></tr></table>';

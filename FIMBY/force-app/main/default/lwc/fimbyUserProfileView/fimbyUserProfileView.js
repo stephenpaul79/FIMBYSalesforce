@@ -222,6 +222,29 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
         const d = new Date(this.profile.memberSince);
         return d.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
     }
+
+    // Privacy pointer — only on your own profile (not when acting as someone else),
+    // since masking is a personal preference that lives in Settings.
+    get showPrivacyPointer() {
+        return this.profile?.isActingAsSelf === true && !!this.profile?.contactId;
+    }
+    get privacyVisibilitySummary() {
+        const maskName = this.profile?.maskLastName === true;
+        const maskPhoto = this.profile?.maskAvatar === true;
+        if (maskName && maskPhoto) {
+            return 'your first name and last initial, with your initials instead of your photo';
+        }
+        if (maskName) {
+            return 'your first name and last initial, with your photo';
+        }
+        if (maskPhoto) {
+            return 'your full name, with your initials instead of your photo';
+        }
+        return 'your full name and photo';
+    }
+    handleOpenPrivacySettings() {
+        navigate(this, '/settings');
+    }
     get mailingAddress() {
         const parts = [
             this.profile.mailingStreet, this.profile.mailingCity,

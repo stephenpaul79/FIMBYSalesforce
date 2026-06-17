@@ -60,8 +60,11 @@ public with sharing class FimbyProfileController {
                 throw new AuraHandledException('No contact associated with current user.');
             }
 
+            Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+            Boolean isActingAsSelf = (realContactId != null && realContactId == contactId);
+
             Contact c = [
-                SELECT Id, FirstName, LastName, Full_Name__c, Email, Phone,
+                SELECT Id, FirstName, LastName, Full_Name__c, Mask_Last_Name__c, Mask_Avatar__c, Email, Phone,
                        MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry,
                        Pronouns__c, Image_URL__c, Image_Ratio__c,
                        Account.Name, CreatedDate,
@@ -82,7 +85,7 @@ public with sharing class FimbyProfileController {
                 'contactId' => c.Id,
                 'firstName' => c.FirstName,
                 'lastName' => c.LastName,
-                'fullName' => c.Full_Name__c,
+                'fullName' => (String.isBlank(c.LastName) ? c.FirstName : c.FirstName + ' ' + c.LastName),
                 'email' => c.Email,
                 'phone' => c.Phone,
                 'mailingStreet' => c.MailingStreet,
@@ -93,6 +96,9 @@ public with sharing class FimbyProfileController {
                 'pronouns' => c.Pronouns__c,
                 'imageUrl' => c.Image_URL__c,
                 'imageRatio' => c.Image_Ratio__c,
+                'maskLastName' => c.Mask_Last_Name__c,
+                'maskAvatar' => c.Mask_Avatar__c,
+                'isActingAsSelf' => isActingAsSelf,
                 'neighbourhood' => c.Account?.Name,
                 'memberSince' => c.CreatedDate,
                 'languagesSpoken' => c.Languages_Spoken__c,
@@ -223,11 +229,26 @@ public with sharing class FimbyProfileController {
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
             Boolean isActingAsSelf = (realContactId != null && realContactId == actingAsContactId);
 
+            Boolean maskLastName = false;
+            Boolean maskAvatar = false;
+            if (realContactId != null) {
+                List<Contact> selfRows = [
+                    SELECT Mask_Last_Name__c, Mask_Avatar__c
+                    FROM Contact WHERE Id = :realContactId LIMIT 1
+                ];
+                if (!selfRows.isEmpty()) {
+                    maskLastName = selfRows[0].Mask_Last_Name__c == true;
+                    maskAvatar = selfRows[0].Mask_Avatar__c == true;
+                }
+            }
+
             return new Map<String, Object>{
                 'success' => true,
                 'userId' => u.Id,
                 'username' => u.Username,
                 'isActingAsSelf' => isActingAsSelf,
+                'maskLastName' => maskLastName,
+                'maskAvatar' => maskAvatar,
                 'summaryEmailFrequency' => u.FIMBY_Summary_Emails__c,
                 'pushNotificationsEnabled' => u.Push_Notifications_Enabled__c,
                 'pushMessages' => u.Push_Messages__c,
@@ -340,6 +361,40 @@ public with sharing class FimbyProfileController {
             return new Map<String, Object>{ 'success' => true };
         } catch (Exception e) {
             throw new AuraHandledException('Error updating toggle: ' + e.getMessage());
+        }
+    }
+
+    private static final Set<String> ALLOWED_PRIVACY_FIELDS = new Set<String>{
+        'Mask_Last_Name__c', 'Mask_Avatar__c'
+    };
+
+    /**
+     * @description LWC-callable setter for the member's own identity-display privacy
+     *              preferences (Contact fields). Always writes the REAL logged-in
+     *              contact's preference, never a represented identity's, since masking
+     *              is a personal choice about how the member appears to neighbours.
+     * @param fieldName Mask_Last_Name__c or Mask_Avatar__c
+     * @param value New boolean value (true = mask / hide)
+     * @return Map with success status
+     */
+    @AuraEnabled
+    public static Map<String, Object> updatePrivacyPreference(String fieldName, Boolean value) {
+        try {
+            if (!ALLOWED_PRIVACY_FIELDS.contains(fieldName)) {
+                throw new AuraHandledException('Field not allowed: ' + fieldName);
+            }
+            Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+            if (realContactId == null) {
+                throw new AuraHandledException('No contact associated with current user.');
+            }
+
+            Contact c = new Contact(Id = realContactId);
+            c.put(fieldName, value);
+            new ContactUpdater().doUpdate(c);
+
+            return new Map<String, Object>{ 'success' => true };
+        } catch (Exception e) {
+            throw new AuraHandledException('Error updating privacy preference: ' + e.getMessage());
         }
     }
 

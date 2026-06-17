@@ -212,11 +212,11 @@ public with sharing class FimbyCommunicationController {
             }
 
             String query = 'SELECT Id, Participant_1__c, Participant_2__c,'
-                + ' Participant_1__r.Name, Participant_1__r.FirstName, Participant_1__r.LastName,'
-                + ' Participant_1__r.Image_URL__c, Participant_1__r.Is_Organization_Contact__c,'
+                + ' Participant_1__r.Name, Participant_1__r.Full_Name__c, Participant_1__r.FirstName, Participant_1__r.LastName,'
+                + ' Participant_1__r.Image_URL__c, Participant_1__r.Display_Avatar_URL__c, Participant_1__r.Is_Organization_Contact__c,'
                 + ' Participant_1__r.Organization_Account__r.Name, Participant_1__r.Organization_Account__r.Logo_URL__c,'
-                + ' Participant_2__r.Name, Participant_2__r.FirstName, Participant_2__r.LastName,'
-                + ' Participant_2__r.Image_URL__c, Participant_2__r.Is_Organization_Contact__c,'
+                + ' Participant_2__r.Name, Participant_2__r.Full_Name__c, Participant_2__r.FirstName, Participant_2__r.LastName,'
+                + ' Participant_2__r.Image_URL__c, Participant_2__r.Display_Avatar_URL__c, Participant_2__r.Is_Organization_Contact__c,'
                 + ' Participant_2__r.Organization_Account__r.Name, Participant_2__r.Organization_Account__r.Logo_URL__c,'
                 + ' Last_Message_Preview__c, Last_Message_Date__c, Last_Message_Sender__c,'
                 + ' Participant_1_Unread_Count__c, Participant_2_Unread_Count__c,'
@@ -310,8 +310,8 @@ public with sharing class FimbyCommunicationController {
                     otherImageUrl = other.Organization_Account__r?.Logo_URL__c;
                     otherInitials = buildOrgInitials(otherName);
                 } else {
-                    otherName = other?.Name;
-                    otherImageUrl = other?.Image_URL__c;
+                    otherName = other?.Full_Name__c;
+                    otherImageUrl = other?.Display_Avatar_URL__c;
                     otherInitials = buildInitials(other?.FirstName, other?.LastName);
                 }
 
@@ -488,12 +488,12 @@ public with sharing class FimbyCommunicationController {
             List<Response__c> responses = [
                 SELECT Id, Name, Status__c, Response__c, Last_Reply__c, Last_Reply_Date__c,
                        Last_Reply_Contact_Lookup__c,
-                       Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName,
-                       Contact__r.Image_URL__c, Contact__r.Is_Organization_Contact__c,
+                       Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.LastName,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Is_Organization_Contact__c,
                        Contact__r.Organization_Account__r.Name, Contact__r.Organization_Account__r.Logo_URL__c,
-                       On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name,
+                       On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name, On_Behalf_Of_Contact__r.Full_Name__c,
                        On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
-                       On_Behalf_Of_Contact__r.Image_URL__c, On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
+                       On_Behalf_Of_Contact__r.Image_URL__c, On_Behalf_Of_Contact__r.Display_Avatar_URL__c, On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Name,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Logo_URL__c,
                        Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.Name,
@@ -503,9 +503,11 @@ public with sharing class FimbyCommunicationController {
                        Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Name,
+                       Need_Offer_Responded_To__r.Posted_By__r.Full_Name__c,
                        Need_Offer_Responded_To__r.Posted_By__r.FirstName,
                        Need_Offer_Responded_To__r.Posted_By__r.LastName,
                        Need_Offer_Responded_To__r.Posted_By__r.Image_URL__c,
+                       Need_Offer_Responded_To__r.Posted_By__r.Display_Avatar_URL__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Is_Organization_Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Logo_URL__c,
@@ -583,8 +585,8 @@ public with sharing class FimbyCommunicationController {
                     otherImageUrl = otherContact.Organization_Account__r?.Logo_URL__c;
                     otherInitials = buildOrgInitials(otherName);
                 } else {
-                    otherName = otherContact?.Name;
-                    otherImageUrl = otherContact?.Image_URL__c;
+                    otherName = otherContact?.Full_Name__c;
+                    otherImageUrl = otherContact?.Display_Avatar_URL__c;
                     otherInitials = buildInitials(otherContact?.FirstName, otherContact?.LastName);
                 }
 

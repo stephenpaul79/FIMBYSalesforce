@@ -195,7 +195,21 @@ public without sharing class FimbyEmailHtmlBuilder {
     }
 
     public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName) {
+        return wrapInBrandedShell(innerHtml, subject, neighbourhoodName, intentLine, skipSubjectBlock, minimalChrome, recipientFirstName, false);
+    }
+
+    /**
+     * @description neighbourhoodAsBadge (digests): instead of the small neighbourhood line
+     * above the greeting, render the neighbourhood as a sage pill on the right of the
+     * "Hi {name}," row. Only the greeting row is split into two columns so the full-width
+     * subject heading below still wraps cleanly on narrow phones.
+     */
+    public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName, Boolean neighbourhoodAsBadge) {
         String nhDisplay = String.isNotBlank(neighbourhoodName) ? escapeHtml(neighbourhoodName) : 'your neighbourhood';
+        String nhBadgeHtml = buildBadgePill(
+            String.isNotBlank(neighbourhoodName) ? neighbourhoodName : 'your neighbourhood',
+            EARTH_SAGE, null
+        );
         String safeSubject = String.isNotBlank(subject) ? escapeHtml(subject) : 'Update from FIMBY';
         Boolean minimal = minimalChrome == true;
         // skipSubjectBlock + minimalChrome: drop the whole intro block (transactional).
@@ -264,19 +278,14 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '</tr></table>'
             + '</td></tr>'
 
-            + (fullSkipSubjectArea
-                ? ''
-                : neighbourhoodOnlyHeader
-                    ? buildNeighbourhoodOnlyBlockHtml(nhDisplay)
-                    : '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
-                      + '<p style="margin:0 0 2px;' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">' + nhDisplay + '</p>'
-                      + greetingHtml
-                      + '<p style="margin:0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">' + safeSubject + '</p>'
-                      + intentHtml
-                      + '</td></tr>')
+            + buildSubjectBlock(
+                fullSkipSubjectArea, neighbourhoodOnlyHeader, neighbourhoodAsBadge,
+                nhDisplay, nhBadgeHtml, greetingHtml, safeSubject, intentHtml
+            )
 
-            // Content area — no background, BG_PAGE shows between section groups
-            + '<tr><td style="padding:16px 24px 20px;">'
+            // Content area — full container width (no side indent) so section cards align
+            // edge-to-edge with the header and footer bars; BG_PAGE shows between sections.
+            + '<tr><td style="padding:16px 0 20px;">'
             + (String.isNotBlank(innerHtml) ? innerHtml : '')
             + '</td></tr>'
 
@@ -294,6 +303,43 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '</table>'  // End inner container
             + '</td></tr></table>'  // End outer
             + '</body></html>';
+    }
+
+    /**
+     * @description Builds the intro/subject band. Default layout keeps the small neighbourhood
+     * line above the greeting. The badge layout (digests) drops that line and instead splits
+     * only the greeting row: "Hi {name}," on the left, a sage neighbourhood pill on the right,
+     * with the full-width subject heading and intent line below so they wrap cleanly on phones.
+     */
+    private static String buildSubjectBlock(
+        Boolean fullSkipSubjectArea, Boolean neighbourhoodOnlyHeader, Boolean neighbourhoodAsBadge,
+        String nhDisplay, String nhBadgeHtml, String greetingHtml, String safeSubject, String intentHtml
+    ) {
+        if (fullSkipSubjectArea) {
+            return '';
+        }
+        if (neighbourhoodOnlyHeader) {
+            return buildNeighbourhoodOnlyBlockHtml(nhDisplay);
+        }
+        String subjectHeading = '<p style="margin:0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">'
+            + safeSubject + '</p>';
+        if (neighbourhoodAsBadge) {
+            return '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
+                + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
+                + '<td style="vertical-align:middle;">' + greetingHtml + '</td>'
+                + '<td align="right" style="vertical-align:middle;">' + nhBadgeHtml + '</td>'
+                + '</tr></table>'
+                + '<p style="margin:12px 0 0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">'
+                + safeSubject + '</p>'
+                + intentHtml
+                + '</td></tr>';
+        }
+        return '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
+            + '<p style="margin:0 0 2px;' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">' + nhDisplay + '</p>'
+            + greetingHtml
+            + subjectHeading
+            + intentHtml
+            + '</td></tr>';
     }
 
     /**
@@ -714,7 +760,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         if (String.isBlank(url)) { return ''; }
         Integer h = height != null ? height : 180;
         return '<tr><td style="padding:0;font-size:0;line-height:0;">'
-            + '<img src="' + url + '" width="552" height="' + h + '" alt="" '
+            + '<img src="' + url + '" width="600" height="' + h + '" alt="" '
             + 'style="display:block;width:100%;height:' + h + 'px;object-fit:cover;" />'
             + '</td></tr>';
     }
@@ -739,21 +785,22 @@ public without sharing class FimbyEmailHtmlBuilder {
     }
 
     /**
-     * @description Builds a single two-column card row (image left, body right) for
-     * portrait/square photos so faces are never cropped by a fixed letterbox. The image is
-     * sized to explicit width/height attributes derived from its true ratio (Outlook-safe);
-     * object-fit:cover only matters for the rare ultra-tall clamp case in modern clients.
+     * @description Builds a single two-column card row (body left, image right) for digest
+     * cards. The columns are percentage-based (34% image / 66% text) so the photo scales
+     * proportionally on every viewport instead of a fixed pixel width that crushes the text
+     * on narrow phones. The image fills its cell at height:auto so it keeps its true aspect
+     * ratio (no crop). The text is top-aligned (reads from the first line) while the photo is
+     * vertically centred against the text block so a short photo doesn't sit awkwardly high.
      */
-    public static String buildSplitCardRow(String imageUrl, Integer imgWidth, Integer imgHeight, String bodyHtml) {
+    public static String buildSplitCardRow(String imageUrl, String bodyHtml) {
         String url = completeImageUrl(imageUrl);
-        Integer w = (imgWidth != null && imgWidth > 0) ? imgWidth : 200;
-        Integer h = (imgHeight != null && imgHeight > 0) ? imgHeight : 210;
-        String imgCell = '<td width="' + w + '" valign="middle" style="width:' + w + 'px;padding:0;font-size:0;line-height:0;">'
-            + '<img src="' + url + '" width="' + w + '" height="' + h + '" alt="" '
-            + 'style="display:block;width:' + w + 'px;height:' + h + 'px;object-fit:cover;border:0;" />'
+        String bodyCell = '<td width="66%" valign="top" style="width:66%;padding:0 12px 0 16px;">'
+            + (bodyHtml != null ? bodyHtml : '') + '</td>';
+        String imgCell = '<td width="34%" valign="middle" style="width:34%;padding:0 16px 0 0;font-size:0;line-height:0;">'
+            + '<img src="' + url + '" width="100%" alt="" '
+            + 'style="display:block;width:100%;height:auto;border:0;border-radius:8px;" />'
             + '</td>';
-        String bodyCell = '<td valign="top" style="padding:12px 16px;">' + (bodyHtml != null ? bodyHtml : '') + '</td>';
-        return '<tr>' + imgCell + bodyCell + '</tr>';
+        return '<tr>' + bodyCell + imgCell + '</tr>';
     }
 
     public static String buildBadgePill(String label, String bgColor, String iconFilename) {
@@ -885,6 +932,28 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<tr><td style="background:' + CTA_BG + ';border-radius:12px;padding:12px 28px;">'
             + '<a href="' + url + '" style="color:' + CTA_TEXT
             + ';text-decoration:none;font-size:15px;font-weight:600;font-family:' + FONT_STACK + ';">' + escapeHtml(label) + '</a>'
+            + '</td></tr></table>'
+            + '</td></tr></table>';
+    }
+
+    /**
+     * @description Center-aligned CTA with an optional leading icon. Used by digest cards,
+     * where the button sits in its own full-width footer band and centering balances the
+     * card under the image/text split row.
+     */
+    public static String buildCenteredCtaButton(String label, String url, String iconFilename) {
+        String iconHtml = '';
+        if (String.isNotBlank(iconFilename)) {
+            iconHtml = '<img src="' + ICON_BASE_URL + iconFilename + '" width="20" height="20" alt="" '
+                + 'style="vertical-align:middle;margin-right:6px;border:0;" />';
+        }
+        return '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px;">'
+            + '<tr><td align="center">'
+            + '<table cellpadding="0" cellspacing="0" border="0">'
+            + '<tr><td style="background:' + CTA_BG + ';border-radius:12px;">'
+            + '<a href="' + url + '" style="display:inline-block;padding:10px 20px;color:' + CTA_TEXT
+            + ';font-size:15px;font-weight:600;font-family:' + FONT_STACK + ';text-decoration:none;">'
+            + iconHtml + escapeHtml(label) + '</a>'
             + '</td></tr></table>'
             + '</td></tr></table>';
     }

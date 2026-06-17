@@ -428,7 +428,7 @@ public with sharing class FimbyAskOfferController {
                 'unreadCount' => unreadCount,
                 'ownerId' => resp.OwnerId,
                 'contactId' => resp.On_Behalf_Of_Contact__c,
-                'avatarUrl' => resp.On_Behalf_Of_Contact__r?.Image_URL__c,
+                'avatarUrl' => resp.On_Behalf_Of_Contact__r?.Display_Avatar_URL__c,
                 'posterThanked' => resp.Poster_Thanked__c,
                 'responderThanked' => resp.Responder_Thanked__c
             });
@@ -871,6 +871,7 @@ public with sharing class FimbyAskOfferController {
                        Poster_Unread_Count__c, OwnerId,
                        On_Behalf_Of_Contact__c,
                        On_Behalf_Of_Contact__r.Image_URL__c,
+                       On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
                        Poster_Thanked__c, Responder_Thanked__c
                 FROM Response__c
                 WHERE Need_Offer_Responded_To__c = :needOfferId
@@ -891,6 +892,7 @@ public with sharing class FimbyAskOfferController {
                        Poster_Unread_Count__c, OwnerId,
                        On_Behalf_Of_Contact__c,
                        On_Behalf_Of_Contact__r.Image_URL__c,
+                       On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
                        Poster_Thanked__c, Responder_Thanked__c
                 FROM Response__c
                 WHERE Need_Offer_Responded_To__c = :needOfferId

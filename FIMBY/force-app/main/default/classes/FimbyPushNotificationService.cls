@@ -40,6 +40,8 @@ public with sharing class FimbyPushNotificationService {
         public NotificationType notificationType;
         public Map<String, Object> data; // Additional data payload
         public Integer badge;           // Badge count (null = don't change)
+        public String collapseId;       // "{userId}:{bucket}" — device-side rolling key
+        public Boolean quiet;           // true → passive (silent, in-place) refresh
 
         /**
          * @description Default constructor. Initializes empty data map.
@@ -75,6 +77,17 @@ public with sharing class FimbyPushNotificationService {
 
             if (this.badge != null) {
                 payload.put('badge', this.badge);
+            }
+
+            if (String.isNotBlank(this.collapseId)) {
+                payload.put('collapse_id', this.collapseId);
+            }
+
+            if (this.quiet == true) {
+                payload.put('interruption_level', 'passive');
+                // Surface inside data so the mobile foreground handler can branch
+                // (top-level Expo fields never reach notification.request.content.data).
+                ((Map<String, Object>) payload.get('data')).put('quiet', true);
             }
 
             return JSON.serialize(payload);

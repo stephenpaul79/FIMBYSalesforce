@@ -8,6 +8,7 @@ import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 import getSettingsData from '@salesforce/apex/FimbyProfileController.getSettingsData';
 import updateSettingsField from '@salesforce/apex/FimbyProfileController.updateSettingsField';
 import updateSettingsToggle from '@salesforce/apex/FimbyProfileController.updateSettingsToggle';
+import updatePrivacyPreference from '@salesforce/apex/FimbyProfileController.updatePrivacyPreference';
 import triggerPasswordReset from '@salesforce/apex/FimbyProfileController.triggerPasswordReset';
 import requestAccountDeletion from '@salesforce/apex/FimbyProfileController.requestAccountDeletion';
 import getBlockedContacts from '@salesforce/apex/FimbyConversationController.getBlockedContacts';
@@ -367,6 +368,23 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             fireEmojiConfetti({ emojis, style, intensity: 'normal' });
         } catch (e) {
             // Non-critical -- confetti is progressive enhancement
+        }
+    }
+
+    // ============================================
+    // PRIVACY TOGGLES (how neighbours see you)
+    // ============================================
+    async handlePrivacyToggle(event) {
+        const field = event.target.dataset.field;
+        const checked = event.target.checked;
+        const settingsKey = event.target.dataset.key;
+
+        try {
+            await updatePrivacyPreference({ fieldName: field, value: checked });
+            this.settings = { ...this.settings, [settingsKey]: checked };
+        } catch (error) {
+            this._showError('Could not update that privacy setting. Please try again.');
+            event.target.checked = !checked;
         }
     }
 

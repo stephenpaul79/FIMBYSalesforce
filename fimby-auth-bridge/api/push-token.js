@@ -7,6 +7,7 @@ import { getRedis } from "../lib/redis.js";
 import { apiHygiene } from "../lib/api-hygiene.js";
 import { rateLimit } from "../lib/rate-limit.js";
 import { FIMBY_APP_JWT_AUDIENCE, indexUserKey, unindexUserKey } from "../lib/sessions.js";
+import { pruneDeadToken } from "../lib/push-tokens.js";
 
 const getRequestId = (req) =>
   req.headers["x-request-id"] || crypto.randomUUID();
@@ -152,16 +153,12 @@ export default async function handler(req, res) {
       return json(res, 200, { success: true });
 
     } else if (req.method === "DELETE") {
-      // Unregister push token (e.g., on logout)
+      // Unregister push token (e.g., on logout). Shares pruneDeadToken with the
+      // receipt cron so the two never drift.
       const existingToken = await redis.get(`push_token:${userId}`);
 
       if (existingToken) {
-        // Delete both mappings
-        await redis.del(`push_token:${userId}`);
-        await redis.del(`push_token_user:${existingToken}`);
-        // Keep the per-user index in sync.
-        await unindexUserKey(userId, `push_token:${userId}`);
-        await unindexUserKey(userId, `push_token_user:${existingToken}`);
+        await pruneDeadToken(redis, userId, existingToken, "logout");
       }
 
       console.log(JSON.stringify({ event: "push_token_deleted", reqId, user_id: userId }));

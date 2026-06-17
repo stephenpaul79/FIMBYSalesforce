@@ -33,6 +33,7 @@ import {
   getLastNotificationResponse,
   clearLastNotificationResponse,
   NotificationData,
+  MARK_READ_ACTION,
 } from "../hooks/use-push-notifications";
 import { log, warn, safeUrlForLog } from "../lib/log";
 import {
@@ -155,6 +156,7 @@ const BACKEND_LOGIN_AND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/login-and-front
 const BACKEND_REFRESH_URL = `${BACKEND_BASE_URL}/api/session/refresh`;
 const BACKEND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/frontdoor`;
 const BACKEND_LOGOUT_URL = `${BACKEND_BASE_URL}/api/logout`;
+const BACKEND_PUSH_ACTION_URL = `${BACKEND_BASE_URL}/api/notifications/action`;
 
 /** WebView handoff overlay — second act after native "Unlocking the door…" */
 const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
@@ -346,12 +348,20 @@ function isJwtLike(token: string) {
 }
 
 // Server sets data.channelId ('messages' | 'activity' | 'default') in
-// FimbyPushBatchJob, plus notification_type on single sends. We map that to
-// a small hardcoded route allowlist — no free-form input ever reaches the
-// WebView. Anything unknown falls back to the generic notifications list.
+// FimbyPushBatchJob, plus notification_type on single sends. Single-notification
+// pushes also carry data.action_url — a deep link to the exact record. We prefer
+// that (validated to the FIMBY app host + a safe path via parseFimbyDeepLink, so
+// no free-form input reaches the WebView), then fall back to the channel bucket.
+// Aggregate/quiet pushes carry no action_url and land on the bucket list.
 function resolvePushRoute(data: NotificationData | null | undefined): string {
+  const actionUrl = typeof data?.action_url === "string" ? data.action_url : "";
+  if (actionUrl) {
+    const path = parseFimbyDeepLink(actionUrl);
+    if (path) return path;
+  }
   const channel = typeof data?.channelId === "string" ? data.channelId : "";
-  if (channel === "messages") return "/messages";
+  // startsWith so quiet DM refreshes (channelId 'messages_quiet') also route to /messages.
+  if (channel.startsWith("messages")) return "/messages";
   const notifType = typeof data?.notification_type === "string" ? data.notification_type : "";
   if (notifType.toUpperCase() === "MESSAGE") return "/messages";
   return "/notifications";
@@ -656,6 +666,11 @@ export default function IndexScreen() {
     accessTokenRef.current = accessToken;
   }, [accessToken]);
 
+  // refreshSession is declared further below; expose it via a ref so earlier
+  // callbacks (e.g. the push "Mark read" handler) can call it without a
+  // forward-reference TDZ error or a churning dependency.
+  const refreshSessionRef = useRef<(() => Promise<{ token?: string | null; sessionExpired?: boolean; message?: string }>) | null>(null);
+
   const captureDeepLinkIntent = useCallback((path: string, source: DeepLinkSource) => {
     const intent = createDeepLinkIntent(path, source);
     if (!intent) return;
@@ -787,6 +802,46 @@ export default function IndexScreen() {
     await clearLastNotificationResponse();
   }, []);
 
+  // Background "Mark read" quick action: the device cannot reach Salesforce
+  // directly, so we POST the notification id to the auth bridge, which mints an
+  // SF session for this user and calls the FimbyPushActionResource Apex REST
+  // endpoint (which re-checks ownership and marks the notification + DM read).
+  // Fire-and-forget: failures are non-fatal (the user can still open the app).
+  const markNotificationRead = useCallback(
+    async (data: NotificationData) => {
+      const notificationId =
+        typeof data?.notification_id === "string" ? data.notification_id : null;
+      if (!notificationId) return;
+
+      let token = accessTokenRef.current;
+      if (!token && refreshSessionRef.current) {
+        const result = await refreshSessionRef.current();
+        token = result.token ?? null;
+      }
+      if (!token) {
+        log("[PUSH] Mark read skipped: no session token");
+        return;
+      }
+
+      try {
+        const res = await fetch(BACKEND_PUSH_ACTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: MARK_READ_ACTION, notificationId }),
+        });
+        if (!res.ok) {
+          log("[PUSH] Mark read failed:", res.status);
+        }
+      } catch (e: any) {
+        log("[PUSH] Mark read error:", e?.message);
+      }
+    },
+    []
+  );
+
   // ─────────────────────────────────────────────────────────────────────────────
   // PUSH NOTIFICATIONS
   // ─────────────────────────────────────────────────────────────────────────────
@@ -807,6 +862,12 @@ export default function IndexScreen() {
       // the generic /notifications list.
       if (navigateFromPush(data)) {
         void finishPushLaunch();
+      }
+    },
+    onNotificationAction: (actionId: string, data: NotificationData) => {
+      // "Mark read" quick action: clear it server-side without opening the app.
+      if (actionId === MARK_READ_ACTION) {
+        void markNotificationRead(data);
       }
     },
   });
@@ -1050,6 +1111,12 @@ export default function IndexScreen() {
 
     return { token: data.access_token };
   }, []);
+
+  // Expose refreshSession to earlier-declared callbacks (push "Mark read") via
+  // a ref, avoiding a forward-reference TDZ in their dependency arrays.
+  React.useEffect(() => {
+    refreshSessionRef.current = refreshSession;
+  }, [refreshSession]);
 
   const shouldShowQuietHoursPanda = useCallback(async (serverPref: string | null): Promise<boolean> => {
     const pref = serverPref

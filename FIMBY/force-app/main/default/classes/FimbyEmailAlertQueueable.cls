@@ -281,12 +281,12 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Needs_Offers__c')) {
             Set<String> ids = idsByType.get('Needs_Offers__c');
             for (Needs_Offers__c p : [
-                SELECT Id, Image_1_URL__c, Contact__r.Image_URL__c, Contact__r.FirstName
+                SELECT Id, Image_1_URL__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.FirstName
                 FROM Needs_Offers__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = p.Image_1_URL__c;
-                e.actorImageUrl = p.Contact__r?.Image_URL__c;
+                e.actorImageUrl = p.Contact__r?.Display_Avatar_URL__c;
                 e.actorFirstName = p.Contact__r?.FirstName;
                 result.put(String.valueOf(p.Id), e);
             }
@@ -295,13 +295,13 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Response__c')) {
             Set<String> ids = idsByType.get('Response__c');
             for (Response__c r : [
-                SELECT Id, Contact__r.Image_URL__c, Contact__r.FirstName,
+                SELECT Id, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.FirstName,
                        Need_Offer_Responded_To__r.Image_1_URL__c
                 FROM Response__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = r.Need_Offer_Responded_To__r?.Image_1_URL__c;
-                e.actorImageUrl = r.Contact__r?.Image_URL__c;
+                e.actorImageUrl = r.Contact__r?.Display_Avatar_URL__c;
                 e.actorFirstName = r.Contact__r?.FirstName;
                 result.put(String.valueOf(r.Id), e);
             }
@@ -310,12 +310,12 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Library_Item__c')) {
             Set<String> ids = idsByType.get('Library_Item__c');
             for (Library_Item__c li : [
-                SELECT Id, Image_URL__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.FirstName
+                SELECT Id, Image_URL__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, Owner_Contact__r.FirstName
                 FROM Library_Item__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = li.Image_URL__c;
-                e.actorImageUrl = li.Owner_Contact__r?.Image_URL__c;
+                e.actorImageUrl = li.Owner_Contact__r?.Display_Avatar_URL__c;
                 e.actorFirstName = li.Owner_Contact__r?.FirstName;
                 result.put(String.valueOf(li.Id), e);
             }
@@ -325,12 +325,12 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             Set<String> ids = idsByType.get('Lending_Request__c');
             for (Lending_Request__c lr : [
                 SELECT Id, Library_Item__r.Image_URL__c,
-                       Requested_By__r.Image_URL__c, Requested_By__r.FirstName
+                       Requested_By__r.Image_URL__c, Requested_By__r.Display_Avatar_URL__c, Requested_By__r.FirstName
                 FROM Lending_Request__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = lr.Library_Item__r?.Image_URL__c;
-                e.actorImageUrl = lr.Requested_By__r?.Image_URL__c;
+                e.actorImageUrl = lr.Requested_By__r?.Display_Avatar_URL__c;
                 e.actorFirstName = lr.Requested_By__r?.FirstName;
                 result.put(String.valueOf(lr.Id), e);
             }
@@ -340,12 +340,12 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             Set<String> ids = idsByType.get('Loaned_Item__c');
             for (Loaned_Item__c lo : [
                 SELECT Id, Library_Item__r.Image_URL__c,
-                       Loaned_To__r.Image_URL__c, Loaned_To__r.FirstName
+                       Loaned_To__r.Image_URL__c, Loaned_To__r.Display_Avatar_URL__c, Loaned_To__r.FirstName
                 FROM Loaned_Item__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = lo.Library_Item__r?.Image_URL__c;
-                e.actorImageUrl = lo.Loaned_To__r?.Image_URL__c;
+                e.actorImageUrl = lo.Loaned_To__r?.Display_Avatar_URL__c;
                 e.actorFirstName = lo.Loaned_To__r?.FirstName;
                 result.put(String.valueOf(lo.Id), e);
             }
@@ -354,12 +354,12 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Story__c')) {
             Set<String> ids = idsByType.get('Story__c');
             for (Story__c s : [
-                SELECT Id, Image_URL__c, Posted_By__r.Image_URL__c, Posted_By__r.FirstName
+                SELECT Id, Image_URL__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, Posted_By__r.FirstName
                 FROM Story__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = s.Image_URL__c;
-                e.actorImageUrl = s.Posted_By__r?.Image_URL__c;
+                e.actorImageUrl = s.Posted_By__r?.Display_Avatar_URL__c;
                 e.actorFirstName = s.Posted_By__r?.FirstName;
                 result.put(String.valueOf(s.Id), e);
             }
@@ -368,11 +368,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Message__c')) {
             Set<String> ids = idsByType.get('Message__c');
             for (Message__c m : [
-                SELECT Id, Sender__r.Image_URL__c, Sender__r.FirstName
+                SELECT Id, Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c, Sender__r.FirstName
                 FROM Message__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
-                e.actorImageUrl = m.Sender__r?.Image_URL__c;
+                e.actorImageUrl = m.Sender__r?.Display_Avatar_URL__c;
                 e.actorFirstName = m.Sender__r?.FirstName;
                 result.put(String.valueOf(m.Id), e);
             }
@@ -381,11 +381,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Conversation__c')) {
             Set<String> ids = idsByType.get('Conversation__c');
             for (Conversation__c cv : [
-                SELECT Id, Last_Message_Sender__r.Image_URL__c, Last_Message_Sender__r.FirstName
+                SELECT Id, Last_Message_Sender__r.Image_URL__c, Last_Message_Sender__r.Display_Avatar_URL__c, Last_Message_Sender__r.FirstName
                 FROM Conversation__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
-                e.actorImageUrl = cv.Last_Message_Sender__r?.Image_URL__c;
+                e.actorImageUrl = cv.Last_Message_Sender__r?.Display_Avatar_URL__c;
                 e.actorFirstName = cv.Last_Message_Sender__r?.FirstName;
                 result.put(String.valueOf(cv.Id), e);
             }

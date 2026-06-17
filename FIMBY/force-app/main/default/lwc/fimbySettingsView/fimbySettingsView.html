@@ -44,6 +44,37 @@
                 </div>
 
 
+                <!-- ========== HOW NEIGHBOURS SEE YOU ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={accountIconUrl} alt="" class="section-icon">
+                        How neighbours see you
+                    </h3>
+                    <div class="settings-row">
+                        <div>
+                            <span class="settings-label">Hide last name (initial only)</span>
+                            <span class="toggle-description">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</span>
+                        </div>
+                        <input type="checkbox" class="toggle-switch"
+                               checked={settings.maskLastName}
+                               data-field="Mask_Last_Name__c"
+                               data-key="maskLastName"
+                               onchange={handlePrivacyToggle}>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <span class="settings-label">Hide profile photo (initials only)</span>
+                            <span class="toggle-description">Neighbours will see your initials instead of your photo.</span>
+                        </div>
+                        <input type="checkbox" class="toggle-switch"
+                               checked={settings.maskAvatar}
+                               data-field="Mask_Avatar__c"
+                               data-key="maskAvatar"
+                               onchange={handlePrivacyToggle}>
+                    </div>
+                </div>
+
+
                 <!-- ========== 2. NOTIFICATIONS & EMAIL ========== -->
                 <div class="info-section">
                     <h3 class="section-title">

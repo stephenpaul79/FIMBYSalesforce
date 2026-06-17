@@ -221,7 +221,8 @@ public with sharing class FimbyOrganizationProfileController {
 
         public List<Map<String, Object>> getApprovedReps(Id organizationId) {
             List<Support_Relationship__c> rels = [
-                SELECT Contact__c, Contact__r.Name, Contact__r.Image_URL__c
+                SELECT Contact__c, Contact__r.Name, Contact__r.Full_Name__c,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c
                 FROM Support_Relationship__c
                 WHERE Related_Organization__c = :organizationId
                   AND Relationship_Type__c = 'Community_Group_Rep'
@@ -235,10 +236,10 @@ public with sharing class FimbyOrganizationProfileController {
                     String contactName = 'Unknown';
                     String avatarUrl = null;
                     if (rel.Contact__r != null) {
-                        if (!String.isBlank(rel.Contact__r.Name)) {
-                            contactName = rel.Contact__r.Name;
+                        if (!String.isBlank(rel.Contact__r.Full_Name__c)) {
+                            contactName = rel.Contact__r.Full_Name__c;
                         }
-                        avatarUrl = rel.Contact__r.Image_URL__c;
+                        avatarUrl = rel.Contact__r.Display_Avatar_URL__c;
                     }
                     result.add(new Map<String, Object>{
                         'id' => rel.Contact__c,

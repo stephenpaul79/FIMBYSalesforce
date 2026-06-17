@@ -122,8 +122,6 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         Map<Id, String> lastNameByUser = new Map<Id, String>();
         loadUserNames(currentChunk, firstNameByUser, lastNameByUser);
 
-        String timeRange = buildTimeRange(frequency, windowStart, windowEnd);
-
         Boolean isSaturday = isSaturdayNow();
         String saturdayFooter = isSaturday
             ? '<p style="color:#6B6B6B;font-size:13px;font-style:italic;text-align:center;padding:12px 0;">Tomorrow\'s Sunday, so we\'ll be quiet. See you Monday.</p>'
@@ -135,14 +133,12 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
 
         for (Id userId : currentChunk) {
             try {
-                String intentLine = FimbyEmailHtmlBuilder.getRandomIntentLine();
                 String digestSubject = 'Your ' + resolveDisplayFrequency(frequency) + ' neighbourhood update';
+                String displaySubject = 'Here\'s your ' + resolveDisplayFrequency(frequency) + ' neighbourhood update';
                 String firstName = firstNameByUser.get(userId);
                 String fullContent = contentHtml + saturdayFooter;
 
-                String html = buildDigestHtml(
-                    fullContent, intentLine, digestSubject, timeRange, firstName
-                );
+                String html = buildDigestHtml(fullContent, displaySubject, firstName);
 
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTargetObjectId(userId);
@@ -355,16 +351,13 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     }
 
     private String buildDigestHtml(
-        String content, String intentLine, String subjectLine,
-        String timeRange, String recipientFirstName
+        String content, String displaySubject, String recipientFirstName
     ) {
-        String bodyContent = content;
-        if (String.isNotBlank(timeRange)) {
-            bodyContent = '<p style="margin:0 0 12px;font-family:Verdana, Geneva, sans-serif;font-size:13px;color:#6B6B6B;">'
-                + timeRange.escapeHtml4() + '</p>' + content;
-        }
+        // No in-body date range (the mail client already shows the received date) and no
+        // rotating intent line for digests. The displaySubject carries the "Here's your..."
+        // heading while the email envelope keeps the cleaner "Your ... update" subject.
         return FimbyEmailHtmlBuilder.wrapInBrandedShell(
-            bodyContent, subjectLine, neighbourhoodName, intentLine, false, false, recipientFirstName
+            content, displaySubject, neighbourhoodName, null, false, false, recipientFirstName, true
         );
     }
 
@@ -409,18 +402,6 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             return base;
         }
         return base + '_v' + String.valueOf(Math.abs(variantKey.hashCode()));
-    }
-
-    @TestVisible
-    public static String buildTimeRange(String freq, Date startDt, Date endDt) {
-        Date safeEnd = endDt != null ? endDt : startDt;
-        if (freq == FimbyDigestEmailBatch.CADENCE_WEEKLY) {
-            return startDt.format() + ' - ' + startDt.addDays(6).format();
-        }
-        if (safeEnd > startDt) {
-            return startDt.format() + ' - ' + safeEnd.format();
-        }
-        return startDt.format();
     }
 
     @TestVisible

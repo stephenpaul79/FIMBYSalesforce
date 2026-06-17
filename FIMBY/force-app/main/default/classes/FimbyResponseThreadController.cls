@@ -508,8 +508,8 @@ public with sharing class FimbyResponseThreadController {
             responderName = responder.Organization_Account__r?.Name;
             responderImageUrl = responder.Organization_Account__r?.Logo_URL__c;
         } else {
-            responderName = responder?.Name;
-            responderImageUrl = responder?.Image_URL__c;
+            responderName = responder?.Full_Name__c;
+            responderImageUrl = responder?.Display_Avatar_URL__c;
         }
 
         return new Map<String, Object>{
@@ -519,9 +519,9 @@ public with sharing class FimbyResponseThreadController {
             'responseText' => resp.Response__c,
             'amountRequested' => resp.Amount_Requested__c,
             'contactId' => resp.Contact__c,
-            'contactName' => resp.Contact__r?.Name,
+            'contactName' => resp.Contact__r?.Full_Name__c,
             'onBehalfOfId' => resp.On_Behalf_Of_Contact__c,
-            'onBehalfOfName' => resp.On_Behalf_Of_Contact__r?.Name,
+            'onBehalfOfName' => resp.On_Behalf_Of_Contact__r?.Full_Name__c,
             'responderName' => responderName,
             'responderImageUrl' => responderImageUrl,
             'responderIsOrg' => responderIsOrg,
@@ -539,10 +539,10 @@ public with sharing class FimbyResponseThreadController {
         Boolean posterIsOrg = post.Posted_By__r?.Is_Organization_Contact__c == true;
         String postedByName = posterIsOrg
             ? post.Posted_By__r.Organization_Account__r?.Name
-            : post.Posted_By__r?.Name;
+            : post.Posted_By__r?.Full_Name__c;
         String postedByImageUrl = posterIsOrg
             ? post.Posted_By__r.Organization_Account__r?.Logo_URL__c
-            : post.Posted_By__r?.Image_URL__c;
+            : post.Posted_By__r?.Display_Avatar_URL__c;
 
         return new Map<String, Object>{
             'id' => post.Id,
@@ -593,14 +593,14 @@ public with sharing class FimbyResponseThreadController {
         public Response__c queryThread(String responseId) {
             List<Response__c> results = [
                 SELECT Id, Name, Status__c, Response__c, Amount_Requested__c,
-                       Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName,
-                       Contact__r.Image_URL__c,
+                       Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.LastName,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                        Contact__r.Is_Organization_Contact__c,
                        Contact__r.Organization_Account__r.Name,
                        Contact__r.Organization_Account__r.Logo_URL__c,
-                       On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name,
+                       On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name, On_Behalf_Of_Contact__r.Full_Name__c,
                        On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
-                       On_Behalf_Of_Contact__r.Image_URL__c,
+                       On_Behalf_Of_Contact__r.Image_URL__c, On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
                        On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Name,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Logo_URL__c,
@@ -623,9 +623,11 @@ public with sharing class FimbyResponseThreadController {
                        Need_Offer_Responded_To__r.Per_Response_Limit__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Name,
+                       Need_Offer_Responded_To__r.Posted_By__r.Full_Name__c,
                        Need_Offer_Responded_To__r.Posted_By__r.FirstName,
                        Need_Offer_Responded_To__r.Posted_By__r.LastName,
                        Need_Offer_Responded_To__r.Posted_By__r.Image_URL__c,
+                       Need_Offer_Responded_To__r.Posted_By__r.Display_Avatar_URL__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Is_Organization_Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Logo_URL__c,
@@ -694,8 +696,8 @@ public with sharing class FimbyResponseThreadController {
         public List<Map<String, Object>> queryMessages(String responseId, Integer limitSize, Integer offsetVal) {
             List<Map<String, Object>> result = new List<Map<String, Object>>();
             List<Response_Message__c> msgs = [
-                SELECT Id, Body__c, Sender__c, Sender__r.Name, Sender__r.FirstName, Sender__r.LastName,
-                       Sender__r.Image_URL__c,
+                SELECT Id, Body__c, Sender__c, Sender__r.Name, Sender__r.Full_Name__c, Sender__r.FirstName, Sender__r.LastName,
+                       Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c,
                        Sender__r.Is_Organization_Contact__c,
                        Sender__r.Organization_Account__r.Name,
                        Sender__r.Organization_Account__r.Logo_URL__c,
@@ -719,8 +721,8 @@ public with sharing class FimbyResponseThreadController {
                     );
                     senderImageUrl = m.Sender__r.Organization_Account__r?.Logo_URL__c;
                 } else {
-                    senderName = m.Sender__r?.Name;
-                    senderImageUrl = m.Sender__r?.Image_URL__c;
+                    senderName = m.Sender__r?.Full_Name__c;
+                    senderImageUrl = m.Sender__r?.Display_Avatar_URL__c;
                 }
 
                 result.add(new Map<String, Object>{

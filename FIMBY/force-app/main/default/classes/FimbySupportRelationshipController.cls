@@ -14,7 +14,8 @@ public with sharing class FimbySupportRelationshipController {
 
             List<Support_Relationship__c> rels = [
                 SELECT Id, Relationship_Type__c, Neighbourhood__c, Neighbourhood__r.Name,
-                       Related_Contact__c, Related_Contact__r.Name, Related_Contact__r.Image_URL__c,
+                       Related_Contact__c, Related_Contact__r.Name, Related_Contact__r.Full_Name__c,
+                       Related_Contact__r.Image_URL__c, Related_Contact__r.Display_Avatar_URL__c,
                        Related_Organization__c, Related_Organization__r.Name,
                        Related_Organization__r.Logo_URL__c, Related_Organization__r.Organization_Contact__c
                 FROM Support_Relationship__c
@@ -32,8 +33,8 @@ public with sharing class FimbySupportRelationshipController {
                 identity.put('neighbourhoodId', rel.Neighbourhood__c);
 
                 if (rel.Relationship_Type__c == 'Support_Person') {
-                    identity.put('name', rel.Related_Contact__r.Name);
-                    identity.put('avatarUrl', rel.Related_Contact__r.Image_URL__c);
+                    identity.put('name', rel.Related_Contact__r.Full_Name__c);
+                    identity.put('avatarUrl', rel.Related_Contact__r.Display_Avatar_URL__c);
                     identity.put('targetContactId', rel.Related_Contact__c);
                 } else {
                     identity.put('name', rel.Related_Organization__r.Name);
@@ -455,7 +456,7 @@ public with sharing class FimbySupportRelationshipController {
             List<Support_Relationship__c> rels = [
                 SELECT Id, Status__c, Day0_Email_Sent_Date__c,
                        Last_Reminder_Sent_Date__c, Approved_Date__c, Ended_Date__c,
-                       Related_Contact__c, Related_Contact__r.Name,
+                       Related_Contact__c, Related_Contact__r.Name, Related_Contact__r.Full_Name__c,
                        Related_Contact__r.MailingCity,
                        Supportee_Relationship__c
                 FROM Support_Relationship__c
@@ -473,7 +474,7 @@ public with sharing class FimbySupportRelationshipController {
                 rows.add(new Map<String, Object>{
                     'id' => r.Id,
                     'status' => r.Status__c,
-                    'supporteeName' => r.Related_Contact__r != null ? r.Related_Contact__r.Name : 'Pending',
+                    'supporteeName' => r.Related_Contact__r != null ? r.Related_Contact__r.Full_Name__c : 'Pending',
                     'supporteeCity' => r.Related_Contact__r?.MailingCity,
                     'supporteeRelationship' => r.Supportee_Relationship__c,
                     'day0Sent' => r.Day0_Email_Sent_Date__c,
@@ -495,7 +496,7 @@ public with sharing class FimbySupportRelationshipController {
 
             Support_Relationship__c rel = [
                 SELECT Id, Status__c, Contact__c, Contact__r.Name,
-                       Related_Contact__c, Related_Contact__r.Name,
+                       Related_Contact__c, Related_Contact__r.Name, Related_Contact__r.Full_Name__c,
                        Contact__r.Logged_In_As_Contact__c
                 FROM Support_Relationship__c
                 WHERE Id = :relationshipId
@@ -519,7 +520,7 @@ public with sharing class FimbySupportRelationshipController {
             createRelationshipNotification(
                 rel.Contact__c,
                 'Relationship_Revoked',
-                rel.Related_Contact__r.Name + ' updated their support preferences',
+                rel.Related_Contact__r.Full_Name__c + ' updated their support preferences',
                 '',
                 rel.Id,
                 'Support_Relationship__c',
@@ -660,7 +661,7 @@ public with sharing class FimbySupportRelationshipController {
 
             Support_Relationship__c rel = [
                 SELECT Id, Status__c, Relationship_Type__c, Contact__c,
-                       Contact__r.Name,
+                       Contact__r.Name, Contact__r.Full_Name__c,
                        Related_Organization__c, Related_Organization__r.Name,
                        Neighbourhood__c
                 FROM Support_Relationship__c

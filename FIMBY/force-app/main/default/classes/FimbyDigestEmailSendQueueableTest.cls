@@ -203,24 +203,6 @@ private class FimbyDigestEmailSendQueueableTest {
     }
 
     @IsTest
-    static void buildTimeRange_multiDayDaily_formatsRange() {
-        Date sat = Date.newInstance(2026, 4, 11);
-        Date sun = Date.newInstance(2026, 4, 12);
-        String range = FimbyDigestEmailSendQueueable.buildTimeRange('Daily', sat, sun);
-        System.assert(range.contains(' - '), 'Multi-day daily digest should show a date range.');
-        System.assert(range.contains(sat.format()), 'Range should include window start.');
-        System.assert(range.contains(sun.format()), 'Range should include window end.');
-    }
-
-    @IsTest
-    static void buildTimeRange_singleDayDaily_formatsOneDate() {
-        Date day = Date.newInstance(2026, 4, 12);
-        String range = FimbyDigestEmailSendQueueable.buildTimeRange('Daily', day, day);
-        System.assertEquals(day.format(), range);
-        System.assert(!range.contains(' - '), 'Single-day digest should not show a range separator.');
-    }
-
-    @IsTest
     static void truncateHtml_underLimit_returnsUnchanged() {
         String html = '<p>short</p>';
         String result = FimbyDigestEmailSendQueueable.truncateHtml(html);
