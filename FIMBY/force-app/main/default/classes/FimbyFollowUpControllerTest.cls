@@ -20,11 +20,15 @@ public class FimbyFollowUpControllerTest {
     }
 
     private static User getOrganiserUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true AND Contact.Email LIKE 'testuser%' LIMIT 1];
+        // Tie the User to the Contact created in @TestSetup — createCommunityUser
+        // generates dynamic emails, so an @testorg.com lookup returns no rows.
+        return [SELECT Id, ContactId FROM User
+                WHERE ContactId = :getOrganiserContact().Id AND IsActive = true LIMIT 1];
     }
 
     private static User getReserverUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true AND Contact.Email = 'reserver@fimby.test.com' LIMIT 1];
+        return [SELECT Id, ContactId FROM User
+                WHERE ContactId = :getReserverContact().Id AND IsActive = true LIMIT 1];
     }
 
     private static Contact getOrganiserContact() {

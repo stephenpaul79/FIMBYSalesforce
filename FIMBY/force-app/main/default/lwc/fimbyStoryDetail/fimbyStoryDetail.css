@@ -68,11 +68,8 @@
     position: relative;
 }
 
-/* Type badge pill — top-right of story card */
+/* Type badge pill — sits in-flow in the header (header-right), beside the author name */
 .card-type-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -82,8 +79,6 @@
     font-weight: var(--fimby-badge-font-weight, 600);
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    z-index: 10;
-    backdrop-filter: blur(4px);
     color: #ffffff;
     pointer-events: none;
     user-select: none;
@@ -104,10 +99,12 @@
     object-fit: contain;
 }
 
-/* Author header - compact */
+/* Author header - compact; badge sits in-flow on the right (mirrors fimbyCard) */
 .story-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     padding: 12px 16px;
 }
 
@@ -115,6 +112,45 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Mobile: grid header (avatar | identity | badge) so a long name keeps its own
+   column and can never run under the badge. Matches fimbyCard's approach. */
+@media (max-width: 767px) {
+    .story-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: "avatar identity actions";
+        align-items: start;
+        gap: 6px 12px;
+    }
+
+    .author-info {
+        display: contents;
+    }
+
+    .author-avatar,
+    .avatar-placeholder {
+        grid-area: avatar;
+    }
+
+    .author-details {
+        grid-area: identity;
+        align-self: start;
+        min-width: 0;
+    }
+
+    .header-right {
+        grid-area: actions;
+        align-self: start;
+    }
 }
 
 .author-avatar {

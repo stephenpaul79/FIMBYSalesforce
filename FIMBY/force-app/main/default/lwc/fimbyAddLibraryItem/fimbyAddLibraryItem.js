@@ -40,7 +40,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     @track showPhotoStep = false;
     @track showSuccess = false;
     @track createdItemId = '';
-    @track createdItemUrl = '';
 
     // Error state
     @track error = '';
@@ -309,7 +308,6 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
 
             if (result.success) {
                 this.createdItemId = result.recordId;
-                this.createdItemUrl = result.itemUrl;
                 this.showPhotoStep = true;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -338,13 +336,8 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     }
 
     navigateToItem() {
-        if (this.createdItemUrl) {
-            this[NavigationMixin.Navigate]({
-                type: 'standard__webPage',
-                attributes: {
-                    url: this.createdItemUrl
-                }
-            });
+        if (this.createdItemId) {
+            navigate(this, `/library-item/${this.createdItemId}`);
         }
     }
 
@@ -364,6 +357,5 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
         this.autoShareContactInfo = false;
         this.damageWaiverConfirmed = false;
         this.createdItemId = '';
-        this.createdItemUrl = '';
     }
 }

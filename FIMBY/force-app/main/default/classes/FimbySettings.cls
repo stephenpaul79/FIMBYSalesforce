@@ -19,8 +19,8 @@ public with sharing class FimbySettings {
     // ---- Time Windows ----
     /** @description Days a story remains in the feed. */
     public static Integer storyFeedTtlDays()        { return safe(get()?.Story_Feed_TTL_Days__c, 90); }
-    /** @description Days before inactive conversations are cleaned up. */
-    public static Integer conversationCleanupDays()  { return safe(get()?.Conversation_Cleanup_Days__c, 90); }
+    /** @description Days before inactive conversations and response threads are cleaned up (consolidated window). */
+    public static Integer conversationCleanupDays()  { return safe(get()?.Conversation_Cleanup_Days__c, 180); }
     /** @description Days before response threads are cleaned up. */
     public static Integer responseThreadCleanupDays() { return safe(get()?.Response_Thread_Cleanup_Days__c, 180); }
     /** @description Days before library conversations are cleaned up. */

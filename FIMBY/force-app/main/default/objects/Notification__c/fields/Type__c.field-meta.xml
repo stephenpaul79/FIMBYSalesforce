@@ -179,6 +179,11 @@
                 <default>false</default>
                 <label>Refresh Reminder</label>
             </value>
+            <value>
+                <fullName>Response_Reply</fullName>
+                <default>false</default>
+                <label>Response Reply</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

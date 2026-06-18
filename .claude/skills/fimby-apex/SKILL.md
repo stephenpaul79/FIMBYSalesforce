@@ -47,7 +47,7 @@ Batched **two-gate doorbell** model. Gate check at creation time; batch dispatch
 - **DM gate** (`Push_Messages__c`) — 1:1 DMs, response thread replies.
 - **Activity gate** (`Push_Needs_Offers__c`) — RSVPs, event chat, bulk buy, library, stories, reminders.
 
-A gate is **open** when: never pushed, OR user logged in since last push, OR new calendar day (unless fatigue dampener active). Closes when push delivered (stamps `Last_DM_Push_At__c`/`Last_Activity_Push_At__c`). Max one push per user per batch cycle.
+A gate is **open** when: never pushed, OR user logged in since last push, OR new calendar day (unless fatigue dampener active). Closes when push delivered (stamps `Last_DM_Push_At__c`/`Last_Activity_Push_At__c`). **Max one push per gate per cycle — so up to two device pings per user (one DM, one activity); the two gates NEVER merge into a single ping** (a merged ping could carry only one deep link and would strand the other surface). Each ping routes to its own surface (`/messages` vs `/notifications`); collapsing happens only *within* a gate via the `:dm`/`:activity` `collapseId`. Gate stamping stays per-user (`BOTH` label stamps both doorbells).
 
 ### Adding a new notification type — ALL FOUR required (missing any = silent failure)
 1. `FimbyConstants.cls` — add `NOTIF_YOUR_TYPE` constant.

@@ -114,7 +114,7 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
                     List<Notification__c> directOnly = new List<Notification__c>();
                     for (Notification__c n : rows) {
                         if (FimbyEmailAlertService.isDirectActionType(n.Type__c)
-                            || n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
+                            || FimbyNotificationService.gateTypeFor(n.Type__c) == 'DM') {
                             directOnly.add(n);
                         }
                     }
@@ -180,25 +180,42 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             List<Notification__c> contentRows = unreadByContact.containsKey(contactId)
                 ? unreadByContact.get(contactId) : driverRows;
 
+            // Content routing (title/channel) splits on MESSAGE_STYLE_TYPES so
+            // hidden message-style rows (incl. Event_Chat) land in the message
+            // bucket and route to the Messages surface.
             Boolean contentHasDM = false;
             Boolean contentHasActivity = false;
             List<Notification__c> dmList = new List<Notification__c>();
             List<Notification__c> activityList = new List<Notification__c>();
+            // Gate-stamp split is INDEPENDENT of content routing: it derives each
+            // row's doorbell lane from the same map used at creation time
+            // (gateTypeFor), so Event_Chat keeps the ACTIVITY gate even though it
+            // routes on the 'messages' channel, and the delivered gate can never
+            // disagree with the gate checked at creation.
+            Boolean gateHasDM = false;
+            Boolean gateHasActivity = false;
             for (Notification__c n : contentRows) {
-                if (n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
+                if (FimbyConstants.MESSAGE_STYLE_TYPES.contains(n.Type__c)) {
                     contentHasDM = true;
                     dmList.add(n);
                 } else {
                     contentHasActivity = true;
                     activityList.add(n);
                 }
+                if (FimbyNotificationService.gateTypeFor(n.Type__c) == 'DM') {
+                    gateHasDM = true;
+                } else {
+                    gateHasActivity = true;
+                }
             }
 
-            FimbyPushNotificationService.PushPayload payload =
-                new FimbyPushNotificationService.PushPayload();
-            payload.userId = u.Id;
+            // The audible doorbell gate(s) to close this cycle, from the rows'
+            // creation lanes (not the content bucket).
+            String audibleGate = (gateHasDM && gateHasActivity)
+                ? 'BOTH' : (gateHasDM ? 'DM' : 'ACTIVITY');
+
             Integer unread = unreadCountByContact.get(contactId);
-            payload.badge = (unread == null) ? 0 : Math.min(unread, 9999);
+            Integer badge = (unread == null) ? 0 : Math.min(unread, 9999);
 
             // Single-notification AUDIBLE cycle: send the actual title/body +
             // deep link so the device can route straight to the surface.
@@ -206,8 +223,17 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
             // the whole unread set, never one drifting row.)
             if (isAudible && driverRows.size() == 1 && contentRows.size() == 1) {
                 Notification__c only = contentRows[0];
-                Boolean onlyIsDM = only.Type__c == FimbyConstants.NOTIF_MESSAGE;
-                payload.title = String.isNotBlank(only.Title__c) ? only.Title__c : 'New activity';
+                // Doorbell gate is derived from the SAME map used at creation
+                // time (FimbyNotificationService.gateTypeFor) so the delivered
+                // stamp can never disagree with the gate checked at creation.
+                // Event_Chat is the deliberate channel != gate case: ACTIVITY
+                // gate (here) but 'messages' channel (resolveChannelId below).
+                Boolean onlyIsDM = FimbyNotificationService.gateTypeFor(only.Type__c) == 'DM';
+                FimbyPushNotificationService.PushPayload payload =
+                    new FimbyPushNotificationService.PushPayload();
+                payload.userId = u.Id;
+                payload.badge = badge;
+                payload.title = composeSinglePushTitle(only);
                 payload.body = String.isNotBlank(only.Body__c) ? only.Body__c : '';
                 payload.notificationType = mapTypeToPushCategory(only.Type__c);
                 payload.data.put('channelId', resolveChannelId(only.Type__c));
@@ -219,43 +245,52 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
                     payload.data.put('notification_type', only.Type__c);
                 }
                 payload.collapseId = u.Id + ':' + (onlyIsDM ? 'dm' : 'activity');
+                payloads.add(payload);
                 userGateUpdates.put(u.Id, onlyIsDM ? 'DM' : 'ACTIVITY');
-            } else if (contentHasDM && contentHasActivity) {
-                // Lead with a DM name (more personal signal); fall back to an
-                // activity name when the DM bucket has no real names.
-                List<String> bothNames = extractRealNames(dmList);
-                if (bothNames.isEmpty()) {
-                    bothNames = extractRealNames(activityList);
-                }
-                payload.title = buildAggregateTitle(bothNames, 'BOTH');
-                payload.body = buildAggregateBody(0, 'BOTH');
-                payload.notificationType = FimbyPushNotificationService.NotificationType.GENERAL;
-                payload.data.put('channelId', 'default');
-                payload.collapseId = u.Id + ':both';
-                userGateUpdates.put(u.Id, isAudible ? 'BOTH' : 'QUIET');
-            } else if (contentHasDM) {
-                payload.title = buildAggregateTitle(extractRealNames(dmList), 'DM');
-                payload.body = buildAggregateBody(dmList.size(), 'DM');
-                payload.notificationType = FimbyPushNotificationService.NotificationType.MESSAGE;
-                // Quiet DM refresh routes to the low-importance channel so a
-                // tag-replacement does not re-alert on Android (requirement #1).
-                payload.data.put('channelId', isAudible ? 'messages' : 'messages_quiet');
-                payload.collapseId = u.Id + ':dm';
-                userGateUpdates.put(u.Id, isAudible ? 'DM' : 'QUIET');
             } else {
-                payload.title = buildAggregateTitle(extractRealNames(activityList), 'ACTIVITY');
-                payload.body = buildAggregateBody(activityList.size(), 'ACTIVITY');
-                payload.notificationType = FimbyPushNotificationService.NotificationType.GENERAL;
-                payload.data.put('channelId', 'activity');
-                payload.collapseId = u.Id + ':activity';
-                userGateUpdates.put(u.Id, isAudible ? 'ACTIVITY' : 'QUIET');
+                // Aggregate path. The DM and activity gates NEVER merge into one
+                // device ping: each gets its own card so its deep link routes to
+                // the surface where that content actually lives (/messages vs
+                // /notifications). A single merged ping could only carry one
+                // route, stranding the other half. So a mixed cycle emits up to
+                // TWO pings — one per gate — collapsing only WITHIN each gate.
+                if (contentHasDM) {
+                    FimbyPushNotificationService.PushPayload dmPayload =
+                        new FimbyPushNotificationService.PushPayload();
+                    dmPayload.userId = u.Id;
+                    dmPayload.badge = badge;
+                    dmPayload.title = buildAggregateTitle(extractRealNames(dmList), 'DM');
+                    dmPayload.body = buildAggregateBody(dmList.size(), 'DM');
+                    dmPayload.notificationType = FimbyPushNotificationService.NotificationType.MESSAGE;
+                    // Quiet DM refresh routes to the low-importance channel so a
+                    // tag-replacement does not re-alert on Android (requirement #1).
+                    dmPayload.data.put('channelId', isAudible ? 'messages' : 'messages_quiet');
+                    dmPayload.collapseId = u.Id + ':dm';
+                    if (!isAudible) {
+                        dmPayload.quiet = true;
+                    }
+                    payloads.add(dmPayload);
+                }
+                if (contentHasActivity) {
+                    FimbyPushNotificationService.PushPayload activityPayload =
+                        new FimbyPushNotificationService.PushPayload();
+                    activityPayload.userId = u.Id;
+                    activityPayload.badge = badge;
+                    activityPayload.title = buildAggregateTitle(extractRealNames(activityList), 'ACTIVITY');
+                    activityPayload.body = buildAggregateBody(activityList.size(), 'ACTIVITY');
+                    activityPayload.notificationType = FimbyPushNotificationService.NotificationType.GENERAL;
+                    activityPayload.data.put('channelId', 'activity');
+                    activityPayload.collapseId = u.Id + ':activity';
+                    if (!isAudible) {
+                        activityPayload.quiet = true;
+                    }
+                    payloads.add(activityPayload);
+                }
+                // Gate stamp is per USER (it moves the doorbell timestamps), so a
+                // mixed audible cycle still stamps BOTH lanes via audibleGate —
+                // independent of how many pings were emitted above.
+                userGateUpdates.put(u.Id, isAudible ? audibleGate : 'QUIET');
             }
-
-            if (!isAudible) {
-                payload.quiet = true;
-            }
-
-            payloads.add(payload);
         }
 
         if (payloads.isEmpty()) {
@@ -304,6 +339,29 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
         Datetime dt = Datetime.newInstance(today.year(), today.month(), today.day());
         String dayOfWeek = dt.format('u');
         return dayOfWeek == '7';
+    }
+
+    /**
+     * Builds the title for a single-notification push. Bell-visible notification
+     * titles are now stored as de-actored verb phrases ("requested to borrow your
+     * drill"), so on a lock screen we prepend the real actor name to keep the copy
+     * whole ("Maya Chen requested to borrow your drill"), mirroring the aggregate
+     * path. Message-style titles already carry the name ("Maya replied", "Maya
+     * thanked you") and are owned by the messages/split plan, so they pass through
+     * verbatim. Token/system actors (FIMBY, Neighbourhood team, care, system) and
+     * blank names also pass through. Capped at 80 chars on a word boundary.
+     */
+    @TestVisible
+    static String composeSinglePushTitle(Notification__c only) {
+        String title = String.isNotBlank(only.Title__c) ? only.Title__c : 'New activity';
+        String actor = only.Actor_Name__c;
+        if (String.isBlank(actor) || NON_PERSON_ACTORS.contains(actor)) {
+            return title;
+        }
+        if (FimbyConstants.MESSAGE_STYLE_TYPES.contains(only.Type__c)) {
+            return title;
+        }
+        return truncateAtWord(actor + ' ' + title, 80);
     }
 
     /**
@@ -422,7 +480,8 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
 
     private static FimbyPushNotificationService.NotificationType mapTypeToPushCategory(String type) {
         if (String.isBlank(type)) { return FimbyPushNotificationService.NotificationType.GENERAL; }
-        if (type == FimbyConstants.NOTIF_MESSAGE || type == FimbyConstants.NOTIF_EVENT_CHAT) {
+        if (type == FimbyConstants.NOTIF_MESSAGE || type == FimbyConstants.NOTIF_EVENT_CHAT
+            || type == FimbyConstants.NOTIF_RESPONSE_REPLY) {
             return FimbyPushNotificationService.NotificationType.MESSAGE;
         }
         if (type == FimbyConstants.NOTIF_RESPONSE || type == FimbyConstants.NOTIF_COMMENT) {
@@ -452,7 +511,7 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
     }
 
     private static String resolveChannelId(String type) {
-        if (type == FimbyConstants.NOTIF_MESSAGE || type == FimbyConstants.NOTIF_EVENT_CHAT) {
+        if (FimbyConstants.MESSAGE_STYLE_TYPES.contains(type)) {
             return 'messages';
         }
         return 'activity';

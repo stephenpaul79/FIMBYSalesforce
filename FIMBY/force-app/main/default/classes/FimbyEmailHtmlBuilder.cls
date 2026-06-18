@@ -423,10 +423,42 @@ public without sharing class FimbyEmailHtmlBuilder {
         return buildNotificationCard(n, enrich, null);
     }
 
+    /**
+     * @description True when this notification's `Title__c` is a de-actored verb phrase
+     * ("would like you to vouch for them") that only reads as a sentence with the actor
+     * name prepended. The signal is `Actor_Contact__c` (set by the caller for human-actor,
+     * verb-phrase titles; null for self-contained system/state titles), mirroring the
+     * in-app card's `hasHumanActor` rule. Message-style types keep name-carrying titles
+     * (the actor is already in the title) so they are excluded to avoid doubling.
+     */
+    public static Boolean isActorLedTitle(Notification__c n) {
+        return n.Actor_Contact__c != null
+            && String.isNotBlank(n.Actor_Name__c)
+            && !FimbyConstants.MESSAGE_STYLE_TYPES.contains(n.Type__c != null ? n.Type__c : '');
+    }
+
+    /**
+     * @description Composes the surface-ready headline/subject for an alert notification:
+     * prepends `Actor_Name__c` to a de-actored verb-phrase title so it reads as a whole
+     * sentence ("Emily D. would like you to vouch for them"). Self-contained and
+     * message-style titles pass through unchanged. Shared by the email card and the
+     * single-alert subject line so both stay in sync (mirror of
+     * FimbyPushBatchJob.composeSinglePushTitle for the email surface).
+     */
+    public static String composeActorLedTitle(Notification__c n) {
+        String title = String.isNotBlank(n.Title__c) ? n.Title__c : '';
+        if (!isActorLedTitle(n)) {
+            return title;
+        }
+        return String.isBlank(title) ? n.Actor_Name__c : n.Actor_Name__c + ' ' + title;
+    }
+
     private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName) {
         String accentColor = getAccentColorForType(n.Type__c);
         String ctaUrl = buildCtaUrl(n);
         String notifType = n.Type__c != null ? n.Type__c : '';
+        Boolean actorLed = isActorLedTitle(n);
+        String headlineTitle = composeActorLedTitle(n);
 
         // Badge pill
         String badgeLabel = ALERT_BADGE_LABELS.containsKey(notifType) ? ALERT_BADGE_LABELS.get(notifType) : 'UPDATE';
@@ -443,15 +475,18 @@ public without sharing class FimbyEmailHtmlBuilder {
         String avatarHtml = buildAvatar(avatarImageUrl, avatarFirstName, accentColor);
         String avatarPillName = isSystemActor ? '' : (avatarFirstName != null ? avatarFirstName : '');
 
-        // Actor sub-line under the title is redundant when Title__c already names the actor
-        // (e.g. "Maya wants to borrow your item" + actor "Maya Smith") or when this is a
-        // FIMBY system message. Notification-patterns rule: never name the actor twice.
+        // Actor sub-line under the title is redundant when the headline already names the
+        // actor — either an actor-led title we just prepended the name onto, a title that
+        // already contains the name (e.g. "Maya wants to borrow your item" + actor "Maya
+        // Smith"), or a FIMBY system message. Notification-patterns rule: never name the
+        // actor twice.
         Boolean showActorSubLine = String.isNotBlank(n.Actor_Name__c)
             && !isSystemActor
+            && !actorLed
             && !titleContainsActor(n.Title__c, n.Actor_Name__c, avatarFirstName);
 
         Boolean showBodyLine = String.isNotBlank(n.Body__c)
-            && !isBodyRedundantWithTitle(n.Title__c, n.Body__c);
+            && !isBodyRedundantWithTitle(headlineTitle, n.Body__c);
 
         // Item thumbnail (60x60 rounded)
         String thumbHtml = '';
@@ -490,7 +525,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         html += '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
             + '<td style="vertical-align:top;">'
             + '<p style="margin:0 0 4px;' + F + 'font-size:16px;font-weight:600;color:' + TEXT_HEADING + ';">'
-            + escapeHtml(n.Title__c) + '</p>'
+            + escapeHtml(headlineTitle) + '</p>'
             + (showActorSubLine ? '<p style="margin:0 0 4px;' + F + 'font-size:14px;color:' + TEXT_SECONDARY + ';">'
                 + escapeHtml(n.Actor_Name__c) + '</p>' : '')
             + (showBodyLine ? '<p style="margin:0;' + F + 'font-size:15px;color:' + TEXT_BODY + ';">'

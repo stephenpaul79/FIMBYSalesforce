@@ -48,12 +48,14 @@ public without sharing class FimbyFollowUpAutoFinalizeJob implements Schedulable
                 FimbyNotificationService.createNotification(
                     fu.Reporter__c,
                     FimbyConstants.NOTIF_FOLLOW_UP_RESOLVED,
-                    reserverName + ' didn\'t respond within 48 hours',
+                    'didn\'t respond within 48 hours',
                     'No response was received. This has been recorded.',
                     fu.Checkin_Conversation__c,
                     'Conversation__c',
                     FimbySettings.getUrl('Conversation', String.valueOf(fu.Checkin_Conversation__c)),
-                    'FIMBY'
+                    reserverName,
+                    false,
+                    fu.Reported_User__c
                 );
             } catch (Exception e) {
                 FimbyLogger.error('FimbyFollowUpAutoFinalizeJob', 'execute-notif', e, fu.Id);

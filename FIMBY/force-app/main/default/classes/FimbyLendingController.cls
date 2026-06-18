@@ -893,12 +893,14 @@ public with sharing class FimbyLendingController {
                 FimbyNotificationService.createNotification(
                     lendingRequest.Item_Owner__c,
                     FimbyConstants.NOTIF_LENDING_REQUEST,
-                    borrowerFirstName + ' confirmed, ready to borrow ' + itemName,
+                    'confirmed, ready to borrow ' + itemName,
                     'Review their request.',
                     lendingRequest.Id,
                     'Lending_Request__c',
                     actionUrl,
-                    borrowerFirstName
+                    borrowerFirstName,
+                    false,
+                    lendingRequest.Requested_By__c
                 );
             }
 
@@ -933,13 +935,14 @@ public with sharing class FimbyLendingController {
                 FimbyNotificationService.createNotification(
                     lendingRequest.Item_Owner__c,
                     FimbyConstants.NOTIF_LENDING_REQUEST,
-                    borrowerFirstName + ' cancelled their request for ' + lendingRequest.Library_Item__r.Name,
+                    'cancelled their request for ' + lendingRequest.Library_Item__r.Name,
                     '',
                     lendingRequest.Library_Item__c,
                     'Library_Item__c',
                     FimbySettings.getUrl('Library_Item', String.valueOf(lendingRequest.Library_Item__c)),
                     borrowerFirstName,
-                    true
+                    true,
+                    lendingRequest.Requested_By__c
                 );
             }
 
@@ -1342,12 +1345,14 @@ public with sharing class FimbyLendingController {
                     FimbyNotificationService.createNotification(
                         loanedItem.Library_Item__r.Owner_Contact__c,
                         FimbyConstants.NOTIF_EXTENSION_REQUEST,
-                        borrowerFirstName + ' requested an extension',
+                        'requested an extension',
                         'New due date: ' + String.valueOf(requestedDate) + '. Review the request.',
                         loanedItem.Id,
                         'Loaned_Item__c',
                         actionUrl,
-                        borrowerFirstName
+                        borrowerFirstName,
+                        false,
+                        loanedItem.Loaned_To__c
                     );
                 }
 
@@ -1608,7 +1613,7 @@ public with sharing class FimbyLendingController {
             Loaned_Item__c loanedItem = [
                 SELECT Id, Return_Confirmed_By_Borrower__c, Borrow_From_Again__c, Returned_Date__c,
                        Damaged_Lost__c, Library_Item__c, Library_Item__r.Name, Library_Item__r.Owner_Contact__c,
-                       Requester_s_First_Name__c
+                       Requester_s_First_Name__c, Loaned_To__c
                 FROM Loaned_Item__c
                 WHERE Id = :recordId
                 LIMIT 1
@@ -1629,12 +1634,14 @@ public with sharing class FimbyLendingController {
                 FimbyNotificationService.createNotification(
                     loanedItem.Library_Item__r.Owner_Contact__c,
                     FimbyConstants.NOTIF_ITEM_RETURNED,
-                    borrowerFirstName + ' says they\'ve returned ' + loanedItem.Library_Item__r.Name,
+                    'returned ' + loanedItem.Library_Item__r.Name,
                     'Confirm the return to close out this loan.',
                     loanedItem.Id,
                     'Loaned_Item__c',
                     actionUrl,
-                    borrowerFirstName
+                    borrowerFirstName,
+                    false,
+                    loanedItem.Loaned_To__c
                 );
             }
 

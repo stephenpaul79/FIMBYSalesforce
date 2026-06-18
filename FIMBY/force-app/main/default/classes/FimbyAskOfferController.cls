@@ -562,7 +562,7 @@ public with sharing class FimbyAskOfferController {
             }
 
             new NeedsOffersHelper().updatePost(post);
-            notifyPendingRespondersOnClose(identity.orgDisplayName, post, outcome);
+            notifyPendingRespondersOnClose(identity.orgDisplayName, identity.actingAsContactId, post, outcome);
 
             String message = outcome == 'resolved'
                 ? 'Glad to hear it — neighbours will see this as sorted.'
@@ -618,6 +618,7 @@ public with sharing class FimbyAskOfferController {
 
     private static void notifyPendingRespondersOnClose(
         String actorName,
+        Id actorContactId,
         Needs_Offers__c post,
         String outcome
     ) {
@@ -638,12 +639,14 @@ public with sharing class FimbyAskOfferController {
             FimbyNotificationService.createNotification(
                 recipientId,
                 FimbyConstants.NOTIF_RESPONSE,
-                actorName + ' updated a post you responded to',
+                'updated a post you responded to',
                 '"' + post.Name + '" — they\'ve ' + actionPhrase + '.',
                 resp.Id,
                 'Response__c',
                 FimbySettings.getUrl('Home'),
-                actorName
+                actorName,
+                false,
+                actorContactId
             );
         }
     }
@@ -671,7 +674,7 @@ public with sharing class FimbyAskOfferController {
                 throw new AuraHandledException('You can only delete posts you have created.');
             }
 
-            notifyPendingRespondersOnDelete(identity.orgDisplayName, post);
+            notifyPendingRespondersOnDelete(identity.orgDisplayName, identity.actingAsContactId, post);
 
             FimbyCounterService.onPostDeleted(
                 post.Posted_By__c,
@@ -698,7 +701,7 @@ public with sharing class FimbyAskOfferController {
         }
     }
 
-    private static void notifyPendingRespondersOnDelete(String actorName, Needs_Offers__c post) {
+    private static void notifyPendingRespondersOnDelete(String actorName, Id actorContactId, Needs_Offers__c post) {
         List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(post.Id);
         Set<Id> notifiedContacts = new Set<Id>();
         for (Response__c resp : pendingResponses) {
@@ -712,12 +715,14 @@ public with sharing class FimbyAskOfferController {
             FimbyNotificationService.createNotification(
                 recipientId,
                 FimbyConstants.NOTIF_RESPONSE,
-                actorName + ' removed a post you responded to',
+                'removed a post you responded to',
                 '"' + post.Name + '" is no longer available.',
                 resp.Id,
                 'Response__c',
                 FimbySettings.getUrl('Home'),
-                actorName
+                actorName,
+                false,
+                actorContactId
             );
         }
     }

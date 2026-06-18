@@ -16,7 +16,7 @@ global without sharing class FimbyEmailAlertBatchJob implements Schedulable {
         Integer batchCap = FimbySettings.emailAlertBatchCap();
 
         List<Notification__c> pending = [
-            SELECT Id, Type__c, Title__c, Body__c, Actor_Name__c,
+            SELECT Id, Type__c, Title__c, Body__c, Actor_Name__c, Actor_Contact__c,
                    Action_URL__c, Contact__c, Related_Record_Id__c,
                    Related_Record_Type__c
             FROM Notification__c

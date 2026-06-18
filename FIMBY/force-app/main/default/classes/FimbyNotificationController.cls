@@ -107,24 +107,35 @@ public with sharing class FimbyNotificationController {
             Boolean hasTypeFilter = (typeValues != null && !typeValues.isEmpty());
             Set<Id> blockedContactIds = FimbyBlockingHelper.getBidirectionalBlocks((Id) contactId);
 
+            Set<String> hiddenTypes = FimbyConstants.BELL_HIDDEN_NOTIF_TYPES;
             String query = 'SELECT Id, Name, Type__c, Title__c, Body__c, Read_Date__c, '
                 + 'Related_Record_Id__c, Related_Record_Type__c, '
-                + 'Action_URL__c, Actor_Name__c, CreatedDate '
+                + 'Action_URL__c, Actor_Name__c, CreatedDate, '
+                + 'Actor_Contact__c, Actor_Contact__r.Display_Avatar_URL__c, '
+                + 'Actor_Contact__r.Full_Name__c, Actor_Contact__r.FirstName, '
+                + 'Actor_Contact__r.Is_Organization_Contact__c, '
+                + 'Actor_Contact__r.Organization_Account__r.Logo_URL__c '
                 + 'FROM Notification__c '
-                + 'WHERE Contact__c = :contactId';
+                + 'WHERE Contact__c = :contactId'
+                + ' AND Type__c NOT IN :hiddenTypes';
 
             if (hasTypeFilter) {
                 query += ' AND Type__c IN :typeValues';
             }
 
+            // Order strictly newest-first; the unread-before-read grouping is
+            // applied in Apex below so that WITHIN each group rows stay in
+            // CreatedDate DESC order (sorting read rows by Read_Date__c scatters
+            // them out of chronological order, which reads as confusing).
             Integer fetchLimit = Math.min(500, limitSize + offsetVal + 100);
-            query += ' ORDER BY Read_Date__c ASC NULLS FIRST, CreatedDate DESC'
+            query += ' ORDER BY CreatedDate DESC'
                 + ' LIMIT :fetchLimit';
 
             List<Notification__c> notifications = Database.query(query);
             List<Notification__c> visibleNotifications = filterBlockedNotifications(
                 notifications, blockedContactIds
             );
+            visibleNotifications = sortUnreadFirstNewestWithin(visibleNotifications);
 
             result.totalCount = visibleNotifications.size();
 
@@ -149,6 +160,27 @@ public with sharing class FimbyNotificationController {
                 w.actionUrl = n.Action_URL__c;
                 w.actorName = n.Actor_Name__c;
                 w.createdDate = n.CreatedDate;
+
+                // Structured actor: drives the card avatar + bold actor name.
+                if (n.Actor_Contact__c != null && n.Actor_Contact__r != null) {
+                    w.actorContactId = n.Actor_Contact__c;
+                    // Prefer the org logo for organization contacts, mirroring
+                    // FimbyMessageController; otherwise the privacy-gated personal
+                    // avatar (empty when Mask_Avatar__c, falls back to initials).
+                    Boolean actorIsOrg = n.Actor_Contact__r.Is_Organization_Contact__c == true;
+                    String orgLogo = (n.Actor_Contact__r.Organization_Account__r != null)
+                        ? n.Actor_Contact__r.Organization_Account__r.Logo_URL__c : null;
+                    w.actorPhotoUrl = (actorIsOrg && String.isNotBlank(orgLogo))
+                        ? orgLogo
+                        : n.Actor_Contact__r.Display_Avatar_URL__c;
+                    // Full_Name__c already respects Mask_Last_Name__c; fall back to
+                    // the stored Actor_Name__c label when the lookup name is blank.
+                    w.actorDisplayName = String.isNotBlank(n.Actor_Contact__r.Full_Name__c)
+                        ? n.Actor_Contact__r.Full_Name__c
+                        : n.Actor_Name__c;
+                } else {
+                    w.actorDisplayName = n.Actor_Name__c;
+                }
                 result.items.add(w);
             }
 
@@ -169,6 +201,7 @@ public with sharing class FimbyNotificationController {
                 SELECT Id, Related_Record_Id__c, Related_Record_Type__c
                 FROM Notification__c
                 WHERE Contact__c = :contactId AND Read_Date__c = null
+                  AND Type__c NOT IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES
                 LIMIT 500
             ];
             return filterBlockedNotifications(unread, blockedContactIds).size();
@@ -266,6 +299,26 @@ public with sharing class FimbyNotificationController {
             if (!allNotifs.isEmpty()) {
                 delete allNotifs;
             }
+        }
+
+        /**
+         * @description Floats unread rows above read rows while keeping each group
+         * in the input's order. The caller passes a CreatedDate DESC list, so the
+         * result is unread (newest-first) then read (newest-first) — consistent
+         * chronological order within both groups.
+         */
+        private List<Notification__c> sortUnreadFirstNewestWithin(List<Notification__c> ordered) {
+            List<Notification__c> unread = new List<Notification__c>();
+            List<Notification__c> read = new List<Notification__c>();
+            for (Notification__c n : ordered) {
+                if (n.Read_Date__c == null) {
+                    unread.add(n);
+                } else {
+                    read.add(n);
+                }
+            }
+            unread.addAll(read);
+            return unread;
         }
 
         private List<Notification__c> filterBlockedNotifications(
@@ -455,5 +508,8 @@ public with sharing class FimbyNotificationController {
         @AuraEnabled public String actionUrl { get; set; }
         @AuraEnabled public String actorName { get; set; }
         @AuraEnabled public Datetime createdDate { get; set; }
+        @AuraEnabled public Id actorContactId { get; set; }
+        @AuraEnabled public String actorPhotoUrl { get; set; }
+        @AuraEnabled public String actorDisplayName { get; set; }
     }
 }

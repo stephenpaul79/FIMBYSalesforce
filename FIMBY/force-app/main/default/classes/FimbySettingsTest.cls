@@ -5,7 +5,7 @@ private class FimbySettingsTest {
     static void testAllAccessorsReturnDefaults() {
         // Without a CMT record in test context, all accessors should return their fallback defaults
         System.assertEquals(90, FimbySettings.storyFeedTtlDays());
-        System.assertEquals(90, FimbySettings.conversationCleanupDays());
+        System.assertEquals(180, FimbySettings.conversationCleanupDays());
         System.assertEquals(180, FimbySettings.responseThreadCleanupDays());
         System.assertEquals(180, FimbySettings.libraryConversationCleanupDays());
         System.assertEquals(30, FimbySettings.notificationRetentionDays());
@@ -105,6 +105,10 @@ private class FimbySettingsTest {
         FimbySettings.vouchDeclineCooldownDays();
         FimbySettings.vouchPendingModeratorAlertDays();
         FimbySettings.appHandoffEnabled();
+        FimbySettings.appPromptEnabled();
+        FimbySettings.appPromptCooldownDays();
+        FimbySettings.appStoreUrlIos();
+        FimbySettings.appStoreUrlAndroid();
         Test.stopTest();
         System.assert(true, 'All remaining accessors completed without throwing');
     }

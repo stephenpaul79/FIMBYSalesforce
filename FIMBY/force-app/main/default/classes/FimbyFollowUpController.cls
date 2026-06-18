@@ -62,7 +62,7 @@ public with sharing class FimbyFollowUpController {
 
             Bulk_Buy_Follow_Up__c fu = [
                 SELECT Id, Status__c, Reporter__c, Checkin_Conversation__c,
-                       Bulk_Buy__c, Reported_User__r.FirstName
+                       Bulk_Buy__c, Reported_User__c, Reported_User__r.FirstName
                 FROM Bulk_Buy_Follow_Up__c
                 WHERE Id = :followUpId
                 /* with sharing enforces record access */
@@ -93,13 +93,14 @@ public with sharing class FimbyFollowUpController {
             FimbyNotificationService.createNotification(
                 fu.Reporter__c,
                 FimbyConstants.NOTIF_FOLLOW_UP_RESOLVED,
-                'Check-in with ' + reserverName + ' resolved',
+                'resolved the check-in',
                 'Your check-in has been marked as resolved.',
                 fu.Checkin_Conversation__c,
                 'Conversation__c',
                 FimbySettings.getUrl('Conversation', String.valueOf(fu.Checkin_Conversation__c)),
                 reserverName,
-                true
+                true,
+                fu.Reported_User__c
             );
 
             return new Map<String, Object>{ 'success' => true };
@@ -490,12 +491,14 @@ public with sharing class FimbyFollowUpController {
             FimbyNotificationService.createNotification(
                 resp.Contact__c,
                 FimbyConstants.NOTIF_NOT_RESPONDING_FLAG,
-                reporterFirstName + ' would like to check in',
+                'would like to check in',
                 'About "' + resp.Need_Offer_Responded_To__r.Name + '".',
                 dmConv.Id,
                 'Conversation__c',
                 FimbySettings.getUrl('Conversation', String.valueOf(dmConv.Id)),
-                reporterFirstName
+                reporterFirstName,
+                false,
+                reporterContactId
             );
 
             return new Map<String, Object>{

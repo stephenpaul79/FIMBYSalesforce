@@ -1212,6 +1212,27 @@ public class FimbyCommunicationControllerTest {
     }
 
     @IsTest
+    static void testGetBadgeCountsExcludesHiddenTypes() {
+        User testUser = getTestUser();
+
+        // A bell notification (counted) and a hidden message-style one (excluded).
+        insert new List<Notification__c>{
+            new Notification__c(Contact__c = testUser.ContactId, Type__c = 'Response',
+                Title__c = 'bell', Body__c = 'b'),
+            new Notification__c(Contact__c = testUser.ContactId, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'hidden', Body__c = 'b')
+        };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Integer> counts = FimbyCommunicationController.getBadgeCounts();
+            System.assertEquals(1, counts.get('notifications'),
+                'getBadgeCounts notification count must exclude hidden message-style types');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetBadgeCountsWithUnread() {
         User testUser = getTestUser();
         List<Contact> others = getOtherContacts();

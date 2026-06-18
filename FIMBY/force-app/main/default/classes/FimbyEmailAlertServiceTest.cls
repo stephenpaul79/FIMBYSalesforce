@@ -114,6 +114,30 @@ private class FimbyEmailAlertServiceTest {
         System.assert(FimbyEmailAlertService.isDirectActionType(FimbyConstants.NOTIF_MESSAGE));
     }
 
+    /**
+     * Response_Reply email default is ALWAYS, but the toggle stays on the legacy
+     * Asks & Offers (Email_Alert_Needs_Offers__c) — matching the push override —
+     * not Messages.
+     */
+    @IsTest
+    static void shouldSendEmail_responseReply_usesAsksOffersToggle() {
+        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Email_Alerts_Global_Enabled__c = true));
+
+        // Asks & Offers OFF → suppressed, even though Messages is ON.
+        User off = new User(Id = UserInfo.getUserId(), Email_Alerts_Enabled__c = true,
+            Email_Alert_Needs_Offers__c = false, Email_Alert_Messages__c = true);
+        System.assertEquals(null,
+            FimbyEmailAlertService.shouldSendEmail(FimbyConstants.NOTIF_RESPONSE_REPLY, off),
+            'Asks & Offers email off must suppress a reply email');
+
+        // Asks & Offers ON → eligible.
+        User enabled = new User(Id = UserInfo.getUserId(), Email_Alerts_Enabled__c = true,
+            Email_Alert_Needs_Offers__c = true, Email_Alert_Messages__c = false);
+        System.assertEquals('Pending',
+            FimbyEmailAlertService.shouldSendEmail(FimbyConstants.NOTIF_RESPONSE_REPLY, enabled),
+            'Reply email default is ALWAYS and gated by Asks & Offers, not Messages');
+    }
+
     @IsTest
     static void isDirectActionType_bulkBuy_returnsFalse() {
         System.assert(!FimbyEmailAlertService.isDirectActionType(FimbyConstants.NOTIF_BULK_BUY_STATUS));

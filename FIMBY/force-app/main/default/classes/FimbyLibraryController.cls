@@ -480,12 +480,14 @@ public with sharing class FimbyLibraryController {
                     FimbyNotificationService.createNotification(
                         item.Owner_Contact__c,
                         FimbyConstants.NOTIF_LENDING_REQUEST,
-                        reqName + ' is borrowing ' + item.Name,
+                        'is borrowing ' + item.Name,
                         'Auto-approved. Pickup date: ' + requestedDateStr + '.',
                         newRequest.Id,
                         'Lending_Request__c',
                         FimbySettings.getUrl('Library_Item', itemId),
-                        reqName
+                        reqName,
+                        false,
+                        (Id) requestedById
                     );
                 }
             } else {
@@ -498,12 +500,14 @@ public with sharing class FimbyLibraryController {
                     FimbyNotificationService.createNotification(
                         item.Owner_Contact__c,
                         FimbyConstants.NOTIF_LENDING_REQUEST,
-                        reqName + ' wants to borrow your item',
+                        'wants to borrow your item',
                         String.isNotBlank(message) ? message : '',
                         newRequest.Id,
                         'Lending_Request__c',
                         actionUrl,
-                        reqName
+                        reqName,
+                        false,
+                        (Id) requestedById
                     );
                 }
             }

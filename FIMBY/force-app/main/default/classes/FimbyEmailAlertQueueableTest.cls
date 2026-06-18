@@ -345,6 +345,26 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
+    static void buildSubject_singleAlert_actorLedTitle_prependsActorName() {
+        Notification__c n = new Notification__c(
+            Type__c = FimbyConstants.NOTIF_VOUCH_REQUEST_RECEIVED,
+            Title__c = 'would like you to vouch for them',
+            Actor_Name__c = 'Emily D.',
+            Actor_Contact__c = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001'
+        );
+        FimbyEmailAlertQueueable q = new FimbyEmailAlertQueueable(
+            new Map<Id, List<Notification__c>>()
+        );
+
+        Test.startTest();
+        String subject = q.buildSubject(new List<Notification__c>{ n });
+        Test.stopTest();
+
+        System.assertEquals('Emily D. would like you to vouch for them', subject,
+            'Single-alert subject must prepend the actor name to a de-actored verb-phrase title');
+    }
+
+    @IsTest
     static void buildSubject_singleAlert_waitlistPromotion_usesTitle() {
         Notification__c n = new Notification__c(
             Type__c = FimbyConstants.NOTIF_LENDING_REQUEST,

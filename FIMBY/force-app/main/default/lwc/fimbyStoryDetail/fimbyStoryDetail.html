@@ -33,14 +33,7 @@
                 <c-fimby-inline-banner variant="success" message={moderatorSuccessMessage}></c-fimby-inline-banner>
                 <!-- Story Card -->
                 <article class="story-card">
-                    <template lwc:if={hasBadge}>
-                        <div class={badgeClass}>
-                            <img src={badgeIconUrl} alt="" class="badge-icon" />
-                            <span>{badgeLabel}</span>
-                        </div>
-                    </template>
-
-                    <!-- Author Header - Compact -->
+                    <!-- Author Header - badge sits in-flow beside the name (no overlap, no duplicate type) -->
                     <div class="story-header">
                         <div class="author-info">
                             <template lwc:if={authorAvatar}>
@@ -54,10 +47,17 @@
                             <div class="author-details">
                                 <span class="author-name">{authorName}</span>
                                 <span class="story-meta">
-                                    <template lwc:if={category}><span class="story-type">{category}</span> · </template>
                                     <span class="story-date">{formattedDate}</span>
                                 </span>
                             </div>
+                        </div>
+                        <div class="header-right">
+                            <template lwc:if={hasBadge}>
+                                <div class={badgeClass}>
+                                    <img src={badgeIconUrl} alt="" class="badge-icon" />
+                                    <span>{badgeLabel}</span>
+                                </div>
+                            </template>
                         </div>
                     </div>
 

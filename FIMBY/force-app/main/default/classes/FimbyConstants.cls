@@ -69,6 +69,7 @@ public class FimbyConstants {
     public static final String NOTIF_ITEM_RETURNED = 'Item_Returned';
     public static final String NOTIF_THANKS_RECEIVED = 'Thanks_Received';
     public static final String NOTIF_REFRESH_REMINDER = 'Refresh_Reminder';
+    public static final String NOTIF_RESPONSE_REPLY = 'Response_Reply';
 
     // Needs/Offers record types
     public static final String RT_NEED = 'Need';
@@ -181,4 +182,25 @@ public class FimbyConstants {
 
     // Visibility
     public static final String VIS_SELF = 'Self';
+
+    // Notification types kept OUT of the bell — they live in the Messages
+    // surface instead (DMs, event chat, thanks, response replies). Their
+    // push/email still fire; only the in-app bell list/count excludes them.
+    public static final Set<String> BELL_HIDDEN_NOTIF_TYPES = new Set<String>{
+        NOTIF_MESSAGE, NOTIF_EVENT_CHAT, NOTIF_THANKS_RECEIVED, NOTIF_RESPONSE_REPLY
+    };
+    // Hidden notification types associated with a Conversation__c thread.
+    public static final Set<String> CONVERSATION_HIDDEN_TYPES = new Set<String>{
+        NOTIF_MESSAGE, NOTIF_EVENT_CHAT
+    };
+    // Hidden notification types associated with a Response__c thread.
+    public static final Set<String> RESPONSE_HIDDEN_TYPES = new Set<String>{
+        NOTIF_RESPONSE_REPLY, NOTIF_THANKS_RECEIVED
+    };
+    // Types that route/aggregate to the Messages surface, not /notifications.
+    // Kept separate from BELL_HIDDEN_NOTIF_TYPES (routing vs bell visibility)
+    // so a future type can be hidden without being message-routed, or vice versa.
+    public static final Set<String> MESSAGE_STYLE_TYPES = new Set<String>{
+        NOTIF_MESSAGE, NOTIF_EVENT_CHAT, NOTIF_THANKS_RECEIVED, NOTIF_RESPONSE_REPLY
+    };
 }

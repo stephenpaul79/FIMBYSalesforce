@@ -208,6 +208,61 @@ public class FimbyResponseThreadControllerTest {
     }
 
     @isTest
+    static void testSendMessage_CreatesResponseReplyNotification() {
+        User posterUser = getPosterUser();
+        Contact posterContact = getPosterContact();
+        Contact responderContact = getResponderContact();
+        Needs_Offers__c post = createTestPost(posterUser, 5);
+        Response__c resp = createTestResponse(post, responderContact, posterContact, posterUser);
+
+        Test.startTest();
+        System.runAs(posterUser) {
+            FimbyResponseThreadController.sendMessage(resp.Id, 'Hello from poster');
+        }
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Type__c, Contact__c, Related_Record_Id__c
+            FROM Notification__c WHERE Contact__c = :responderContact.Id
+        ];
+        System.assertEquals(1, notifs.size(), 'Reply should notify the responder');
+        System.assertEquals(FimbyConstants.NOTIF_RESPONSE_REPLY, notifs[0].Type__c,
+            'A user-typed thread reply must be Response_Reply, not Response');
+        System.assertEquals(String.valueOf(resp.Id), notifs[0].Related_Record_Id__c,
+            'Notification must key on the response thread for read-sync');
+    }
+
+    @isTest
+    static void testOpeningThread_ClearsHiddenNotifications() {
+        User posterUser = getPosterUser();
+        Contact posterContact = getPosterContact();
+        Contact responderContact = getResponderContact();
+        Needs_Offers__c post = createTestPost(posterUser, 5);
+        Response__c resp = createTestResponse(post, responderContact, posterContact, posterUser);
+
+        // Simulate a reply + thanks notification addressed to the poster.
+        insert new List<Notification__c>{
+            new Notification__c(Contact__c = posterContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'reply', Related_Record_Id__c = String.valueOf(resp.Id)),
+            new Notification__c(Contact__c = posterContact.Id, Type__c = FimbyConstants.NOTIF_THANKS_RECEIVED,
+                Title__c = 'thanks', Related_Record_Id__c = String.valueOf(resp.Id))
+        };
+
+        Test.startTest();
+        System.runAs(posterUser) {
+            FimbyResponseThreadController.getThread(resp.Id);
+        }
+        Test.stopTest();
+
+        Integer unreadHidden = [
+            SELECT COUNT() FROM Notification__c
+            WHERE Related_Record_Id__c = :String.valueOf(resp.Id) AND Read_Date__c = null
+        ];
+        System.assertEquals(0, unreadHidden,
+            'Opening the thread should clear the reply + thanks notifications for the recipient');
+    }
+
+    @isTest
     static void testSendMessage_EmptyBody() {
         User posterUser = getPosterUser();
 

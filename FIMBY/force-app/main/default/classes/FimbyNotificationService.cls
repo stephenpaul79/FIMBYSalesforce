@@ -29,6 +29,7 @@ public without sharing class FimbyNotificationService {
             FimbyConstants.NOTIF_BULK_BUY_PICKUP      => FimbyPushNotificationService.NotificationType.BULK_BUY,
             FimbyConstants.NOTIF_MESSAGE            => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_THANKS_RECEIVED    => FimbyPushNotificationService.NotificationType.MESSAGE,
+            FimbyConstants.NOTIF_RESPONSE_REPLY     => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_EVENT_CHAT         => FimbyPushNotificationService.NotificationType.EVENTS,
             FimbyConstants.NOTIF_EVENT_REMINDER     => FimbyPushNotificationService.NotificationType.EVENTS,
             FimbyConstants.NOTIF_EVENT_SERIES_NEW_OCCURRENCE => FimbyPushNotificationService.NotificationType.EVENTS,
@@ -79,7 +80,7 @@ public without sharing class FimbyNotificationService {
         String actionUrl,
         String actorName
     ) {
-        createNotification(recipientContactId, type, title, body, relatedRecordId, relatedRecordType, actionUrl, actorName, false);
+        createNotification(recipientContactId, type, title, body, relatedRecordId, relatedRecordType, actionUrl, actorName, false, null);
     }
 
     /**
@@ -97,6 +98,27 @@ public without sharing class FimbyNotificationService {
         String actorName,
         Boolean skipPush
     ) {
+        createNotification(recipientContactId, type, title, body, relatedRecordId, relatedRecordType, actionUrl, actorName, skipPush, null);
+    }
+
+    /**
+     * Create a single notification with optional push suppression and a structured
+     * actor Contact reference. actorContactId is the represented (acting-as) Contact
+     * that Actor_Name__c describes — it drives the card avatar and bold actor name.
+     * Null for system/FIMBY/team messages. Backward compatible (null allowed).
+     */
+    public static void createNotification(
+        Id recipientContactId,
+        String type,
+        String title,
+        String body,
+        Id relatedRecordId,
+        String relatedRecordType,
+        String actionUrl,
+        String actorName,
+        Boolean skipPush,
+        Id actorContactId
+    ) {
         if (recipientContactId == null || String.isBlank(type) || String.isBlank(title)) {
             return;
         }
@@ -111,7 +133,8 @@ public without sharing class FimbyNotificationService {
             Related_Record_Id__c = (relatedRecordId != null) ? String.valueOf(relatedRecordId) : null,
             Related_Record_Type__c = relatedRecordType,
             Action_URL__c = actionUrl,
-            Actor_Name__c = actorName
+            Actor_Name__c = actorName,
+            Actor_Contact__c = actorContactId
         );
 
         notif.Push_Status__c = (skipPush == true) ? null : shouldQueue(type, recipientUser);
@@ -192,6 +215,7 @@ public without sharing class FimbyNotificationService {
                 Related_Record_Type__c = req.relatedRecordType,
                 Action_URL__c = req.actionUrl,
                 Actor_Name__c = req.actorName,
+                Actor_Contact__c = req.actorContactId,
                 Push_Status__c = (req.skipPush == true) ? null : shouldQueue(req.type, recipientUser),
                 Email_Status__c = FimbyEmailAlertService.shouldSendEmail(req.type, recipientUser)
             ));
@@ -217,6 +241,10 @@ public without sharing class FimbyNotificationService {
         public String actionUrl;
         public String actorName;
         public Boolean skipPush;
+        // Represented (acting-as) Contact that actorName describes; drives the
+        // card avatar and bold actor name. Set directly after construction
+        // (like skipPush) so the 8-arg constructor stays source-compatible.
+        public Id actorContactId;
 
         public NotificationRequest(
             Id recipientContactId, String type, String title, String body,
@@ -237,6 +265,17 @@ public without sharing class FimbyNotificationService {
     /* ---------------------------------------------------------------
      * Gate check logic
      * --------------------------------------------------------------- */
+
+    /**
+     * @description Returns the doorbell gate lane ('DM' or 'ACTIVITY') for a
+     * notification type, from the SAME map used at creation time. The push
+     * batch job uses this to stamp the delivered gate so creation and delivery
+     * never disagree (fixes the historic Thanks_Received gate mismatch and keeps
+     * Event_Chat on the ACTIVITY lane despite its MESSAGE push category).
+     */
+    public static String gateTypeFor(String notifType) {
+        return GATE_TYPE_MAP.containsKey(notifType) ? GATE_TYPE_MAP.get(notifType) : 'ACTIVITY';
+    }
 
     @TestVisible
     private static String shouldQueue(String notifType, User u) {
@@ -266,6 +305,13 @@ public without sharing class FimbyNotificationService {
     }
 
     private static Boolean isTypeToggleEnabled(String notifType, User u) {
+        // Response replies route/gate as MESSAGE (twin of Thanks_Received) but
+        // the user-facing on/off stays on the legacy Asks & Offers toggle, so a
+        // reply to an Ask/Offer thread is silenced by "Asks & Offers", not
+        // "Messages" — matching the user's mental model of "this is about my post."
+        if (notifType == FimbyConstants.NOTIF_RESPONSE_REPLY) {
+            return u.Push_Needs_Offers__c != false;
+        }
         FimbyPushNotificationService.NotificationType pushType = PUSH_TYPE_MAP.get(notifType);
         if (pushType == null) {
             return true;
@@ -368,6 +414,70 @@ public without sharing class FimbyNotificationService {
             result.put(u.ContactId, u);
         }
         return result;
+    }
+
+    /* ---------------------------------------------------------------
+     * Message-style read/unread sync — keeps the OS app-icon badge
+     * (count of unread Notification__c rows) honest when a message/reply
+     * is read or re-flagged from the Messages surface. Hidden types never
+     * appear in the bell, so the badge is their only surface.
+     * --------------------------------------------------------------- */
+
+    /**
+     * READ: mark ALL of a thread's hidden notifications read, clearing the
+     * thread from the app-icon badge. Scoped to the acting-as recipient.
+     */
+    public static void markRelatedNotificationsRead(Id relatedRecordId, Set<String> types) {
+        if (relatedRecordId == null || types == null || types.isEmpty()) {
+            return;
+        }
+        String contactId = FimbyIdentityRepository.getActingAsContactId();
+        if (String.isBlank(contactId)) {
+            return;
+        }
+        String relatedId = String.valueOf(relatedRecordId);
+        List<Notification__c> unread = [
+            SELECT Id FROM Notification__c
+            WHERE Contact__c = :contactId AND Read_Date__c = null
+              AND Type__c IN :types AND Related_Record_Id__c = :relatedId
+            LIMIT 200
+        ];
+        if (unread.isEmpty()) {
+            return;
+        }
+        Datetime now = Datetime.now();
+        for (Notification__c n : unread) {
+            n.Read_Date__c = now;
+        }
+        Database.update(unread, false);
+    }
+
+    /**
+     * UNREAD: restore only the MOST RECENT hidden notification for the thread,
+     * so a re-flagged thread contributes exactly one unread to the app-icon
+     * badge rather than resurrecting every per-reply row.
+     */
+    public static void markLatestRelatedNotificationUnread(Id relatedRecordId, Set<String> types) {
+        if (relatedRecordId == null || types == null || types.isEmpty()) {
+            return;
+        }
+        String contactId = FimbyIdentityRepository.getActingAsContactId();
+        if (String.isBlank(contactId)) {
+            return;
+        }
+        String relatedId = String.valueOf(relatedRecordId);
+        List<Notification__c> latest = [
+            SELECT Id, Read_Date__c FROM Notification__c
+            WHERE Contact__c = :contactId
+              AND Type__c IN :types AND Related_Record_Id__c = :relatedId
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        if (latest.isEmpty() || latest[0].Read_Date__c == null) {
+            return;
+        }
+        latest[0].Read_Date__c = null;
+        Database.update(latest[0], false);
     }
 
     /* ---------------------------------------------------------------

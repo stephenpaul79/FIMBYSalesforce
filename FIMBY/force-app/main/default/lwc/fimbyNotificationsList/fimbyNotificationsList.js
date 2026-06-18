@@ -9,12 +9,15 @@ import deleteAllNotifications from '@salesforce/apex/FimbyNotificationController
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
 import { navigate } from 'c/fimbyNavigation';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
 const SWIPE_ACTION_WIDTH = 80;
 const UNDO_TIMEOUT_MS = 5000;
 
+// Glyph avatars for system/token actors (no human actor Contact). Keyed by
+// Notification__c.Type__c. Human actors render a photo or initials instead.
 const TYPE_ICON_MAP = {
     Response: 'reply.png',
     Comment: 'comment.png',
@@ -32,6 +35,19 @@ const TYPE_ICON_MAP = {
     Voucher_Paused: 'warning.png'
 };
 
+// Actor_Name__c values that are team/icon tokens, not real neighbour names
+// (notification-contract §4). Mirrors FimbyPushBatchJob.NON_PERSON_ACTORS.
+const TOKEN_ACTORS = new Set(['FIMBY', 'Neighbourhood team', 'care', 'system']);
+
+const GENERIC_PERSON_GLYPH = 'NoProfilePhoto.png';
+const DEFAULT_GLYPH = 'BellInactive.png';
+
+function resolveAvatarUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('/resource/') || !url.startsWith('http')) return url;
+    return avatarImageUrl(url);
+}
+
 
 export default class FimbyNotificationsList extends NavigationMixin(LightningElement) {
     allNotifications = [];
@@ -43,6 +59,14 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
     showUndoToast = false;
     _undoNotification = null;
     _undoTimeout = null;
+
+    // Id of a card that just moved Unread -> Read, so it can fade its tint out
+    // gently on arrival in the Read section instead of snapping.
+    @track _justReadId = null;
+    _justReadTimeout = null;
+
+    // Last-render row positions, keyed by notification id, for the FLIP reflow.
+    _prevRowTops = null;
 
     // Mobile swipe state
     _swipeId = null;
@@ -70,6 +94,53 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
     disconnectedCallback() {
         if (this._escapeHandler) window.removeEventListener('keydown', this._escapeHandler);
+        if (this._justReadTimeout) clearTimeout(this._justReadTimeout);
+    }
+
+    renderedCallback() {
+        this._playReflowFlip();
+    }
+
+    /**
+     * FLIP reflow: when the list reorders (a card moves Unread -> Read), let the
+     * remaining cards glide from their previous position to their new one instead
+     * of snapping. We record each card's top before the re-render (in the prior
+     * pass) and, on the new render, invert the delta then release it so the
+     * browser tweens the gap closing. Honours prefers-reduced-motion.
+     */
+    _playReflowFlip() {
+        const rows = this.template.querySelectorAll('.swipe-wrapper[data-notification-id]');
+        const newTops = new Map();
+        rows.forEach(row => {
+            newTops.set(row.dataset.notificationId, row.getBoundingClientRect().top);
+        });
+
+        const prev = this._prevRowTops;
+        this._prevRowTops = newTops;
+
+        if (!prev || this._reduceMotion()) {
+            return;
+        }
+
+        rows.forEach(row => {
+            const id = row.dataset.notificationId;
+            const oldTop = prev.get(id);
+            if (oldTop === undefined) return;
+            const delta = oldTop - newTops.get(id);
+            if (!delta) return;
+
+            row.style.transition = 'none';
+            row.style.transform = `translateY(${delta}px)`;
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            requestAnimationFrame(() => {
+                row.style.transition = 'transform 0.32s ease';
+                row.style.transform = '';
+            });
+        });
+    }
+
+    _reduceMotion() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     /* ---------------------------------------------------------------
@@ -129,40 +200,25 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         return this._menuIsUnread ? this.readIconUrl : this.unreadIconUrl;
     }
 
-    get groupedNotifications() {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        const buckets = new Map([
-            ['Today', []],
-            ['Yesterday', []],
-            ['This Week', []],
-            ['Older', []]
-        ]);
-
+    // Two sections — Unread then Read — each newest-first (the controller orders
+    // CreatedDate DESC within each group). Partitioning here in a getter means a
+    // card marked read flips groups immediately on the next render, with no page
+    // refresh. A section is omitted entirely when it has no rows. The section
+    // heading is the non-colour cue for unread state (WCAG 1.4.1), so no dot.
+    get notificationSections() {
+        const unread = [];
+        const read = [];
         this.allNotifications.forEach(n => {
-            const d = new Date(n.createdDate);
-            if (d >= today) buckets.get('Today').push(n);
-            else if (d >= yesterday) buckets.get('Yesterday').push(n);
-            else if (d >= weekAgo) buckets.get('This Week').push(n);
-            else buckets.get('Older').push(n);
+            (n.isUnread ? unread : read).push(this._enrichNotification(n));
         });
-
-        const groups = [];
-        buckets.forEach((items, label) => {
-            if (items.length > 0) {
-                groups.push({
-                    label,
-                    key: label,
-                    items: items.map(n => this._enrichNotification(n))
-                });
-            }
-        });
-        return groups;
+        const sections = [];
+        if (unread.length) {
+            sections.push({ key: 'unread', label: 'Unread', items: unread });
+        }
+        if (read.length) {
+            sections.push({ key: 'read', label: 'Read', items: read });
+        }
+        return sections;
     }
 
     /* ---------------------------------------------------------------
@@ -223,26 +279,74 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
     _enrichNotification(n) {
         const isUnread = !!n.isUnread;
-        const actor = (n.actorName || '').trim();
+        const title = (n.title || '').trim();
         const body = (n.body || '').trim();
-        const hasActor = !!actor;
-        const hasBody = !!body;
+
+        // A human actor is present iff the controller stamped an Actor_Contact__c.
+        // Token/system actors (FIMBY, team, care, system) have no Contact and
+        // render a glyph avatar; their titles are self-contained sentences.
+        const hasHumanActor = !!n.actorContactId && !TOKEN_ACTORS.has((n.actorName || '').trim());
+        const actorName = (n.actorDisplayName || n.actorName || '').trim();
+
+        const photoUrl = hasHumanActor ? resolveAvatarUrl(n.actorPhotoUrl) : '';
+        const hasPhoto = !!photoUrl;
+        const initials = hasHumanActor ? this._getInitials(actorName) : '';
+        const showInitials = hasHumanActor && !hasPhoto;
+        const showGlyph = !hasHumanActor;
+        const glyphUrl = `${IMPACT_ICONS}/${TYPE_ICON_MAP[n.type] || DEFAULT_GLYPH}`;
+        const genericGlyphUrl = `${IMPACT_ICONS}/${GENERIC_PERSON_GLYPH}`;
+
+        const relativeTime = this._formatTime(n.createdDate);
+        const absoluteTime = this._formatAbsoluteTime(n.createdDate);
+        const isoTime = n.createdDate ? new Date(n.createdDate).toISOString() : '';
+
+        // Row aria-label conveys the whole card: actor, message, body, time, state.
+        const ariaParts = [];
+        if (hasHumanActor && actorName) ariaParts.push(actorName);
+        if (title) ariaParts.push(title);
+        const ariaLabel =
+            ariaParts.join(' ') +
+            (body ? `. ${body}` : '') +
+            (absoluteTime ? `. ${absoluteTime}` : '') +
+            `. ${isUnread ? 'Unread' : 'Read'}.`;
+
+        const justRead = (this._justReadId === n.id);
         return {
             ...n,
             navigationUrl: this._resolveNavigationUrl(n),
-            typeIconUrl: `${IMPACT_ICONS}/${TYPE_ICON_MAP[n.type] || 'BellInactive.png'}`,
-            formattedTime: this._formatTime(n.createdDate),
-            containerClass: 'notification-item' + (isUnread ? ' unread' : ''),
-            displayTitle: n.title || '',
-            displayActor: actor,
+            containerClass: 'notification-item'
+                + (isUnread ? ' unread' : '')
+                + (justRead ? ' just-read' : ''),
+            displayTitle: title,
+            displayActorName: hasHumanActor ? actorName : '',
             displayBody: body,
-            hasActor,
-            hasBody,
+            hasHumanActor,
+            hasBody: !!body,
+            actorPhotoSrc: photoUrl,
+            actorInitials: initials,
+            showActorPhoto: hasPhoto,
+            showActorInitials: showInitials,
+            showActorGlyph: showGlyph,
+            glyphIconUrl: glyphUrl,
+            genericGlyphUrl,
+            formattedTime: relativeTime,
+            formattedAbsoluteTime: absoluteTime,
+            isoTime,
+            ariaLabel,
             readToggleLabel: isUnread ? 'Mark as read' : 'Mark as unread',
             readStatusLabel: isUnread ? 'Read' : 'Unread',
             readStatusIconUrl: isUnread ? this.readIconUrl : this.unreadIconUrl,
             readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread')
         };
+    }
+
+    _getInitials(name) {
+        const trimmed = (name || '').trim();
+        if (!trimmed) return '';
+        const parts = trimmed.split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return '';
+        if (parts.length === 1) return parts[0][0].toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
     _formatTime(timestamp) {
@@ -259,6 +363,28 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         if (hours < 24) return `${hours}h`;
         if (days < 7) return `${days}d`;
         return time.toLocaleDateString();
+    }
+
+    // Accessible, unambiguous time used in the aria-label, the <time> tooltip,
+    // and as the truth source the relative "2h" text is a shorthand for.
+    _formatAbsoluteTime(timestamp) {
+        if (!timestamp) return '';
+        const time = new Date(timestamp);
+        if (isNaN(time.getTime())) return '';
+        return time.toLocaleString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit'
+        });
+    }
+
+    handleAvatarError(event) {
+        const img = event.target;
+        img.style.display = 'none';
+        const parent = img.parentElement;
+        if (parent) {
+            const initials = parent.querySelector('.notif-avatar-initials');
+            if (initials) initials.style.display = '';
+        }
     }
 
     /* ---------------------------------------------------------------
@@ -453,6 +579,21 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
      * Individual toggle read / unread
      * --------------------------------------------------------------- */
 
+    // Tag a card so it carries `just-read` for one beat after moving to the Read
+    // section. CSS uses that to fade the unread tint/accent out gently on arrival
+    // (calm settle) instead of the card snapping to its plain read style.
+    _flagJustRead(notificationId) {
+        if (this._justReadTimeout) {
+            clearTimeout(this._justReadTimeout);
+        }
+        this._justReadId = notificationId;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._justReadTimeout = setTimeout(() => {
+            this._justReadId = null;
+            this._justReadTimeout = null;
+        }, 600);
+    }
+
     async _toggleReadState(notificationId) {
         const notification = this.allNotifications.find(n => n.id === notificationId);
         if (!notification) return;
@@ -461,6 +602,9 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         this.allNotifications = this.allNotifications.map(n =>
             n.id === notificationId ? { ...n, isUnread: !wasUnread } : n
         );
+        if (wasUnread) {
+            this._flagJustRead(notificationId);
+        }
         this.statusMessage = wasUnread ? 'Notification marked as read' : 'Notification marked as unread';
 
         try {

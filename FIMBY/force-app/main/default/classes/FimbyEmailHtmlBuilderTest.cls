@@ -29,6 +29,63 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
+    static void composeActorLedTitle_actorContactSet_prependsName() {
+        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Notification__c n = new Notification__c(
+            Title__c = 'would like you to vouch for them',
+            Type__c = 'Vouch_Request_Received',
+            Actor_Name__c = 'Emily D.',
+            Actor_Contact__c = actorId
+        );
+        System.assertEquals('Emily D. would like you to vouch for them',
+            FimbyEmailHtmlBuilder.composeActorLedTitle(n),
+            'A de-actored verb-phrase title must read with the actor name prepended');
+    }
+
+    @IsTest
+    static void composeActorLedTitle_noActorContact_passesThrough() {
+        Notification__c n = new Notification__c(
+            Title__c = 'Your borrow request was approved',
+            Type__c = 'Loan_Approved',
+            Actor_Name__c = 'Sam Wilson'
+        );
+        System.assertEquals('Your borrow request was approved',
+            FimbyEmailHtmlBuilder.composeActorLedTitle(n),
+            'Self-contained titles (no Actor_Contact__c) must not be prefixed with a name');
+    }
+
+    @IsTest
+    static void composeActorLedTitle_messageStyleType_passesThrough() {
+        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Notification__c n = new Notification__c(
+            Title__c = 'Maya replied',
+            Type__c = 'Message',
+            Actor_Name__c = 'Maya Smith',
+            Actor_Contact__c = actorId
+        );
+        System.assertEquals('Maya replied',
+            FimbyEmailHtmlBuilder.composeActorLedTitle(n),
+            'Message-style titles already carry the name and must not double it');
+    }
+
+    @IsTest
+    static void buildAlertCards_actorLedTitle_rendersNameInHeadlineOnce() {
+        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Notification__c n = new Notification__c(
+            Title__c = 'would like you to vouch for them',
+            Body__c = 'Vouching for them opens up the lending library so they can borrow from neighbours.',
+            Type__c = 'Vouch_Request_Received',
+            Actor_Name__c = 'Emily D.',
+            Actor_Contact__c = actorId
+        );
+        String html = FimbyEmailHtmlBuilder.buildAlertCards(new List<Notification__c>{ n });
+        System.assert(html.contains('Emily D. would like you to vouch for them'),
+            'Headline should read as a whole sentence with the actor name');
+        System.assertEquals(1, html.split('Emily D.', -1).size() - 1,
+            'Actor name must appear once (headline only), not also on a redundant sub-line');
+    }
+
+    @IsTest
     static void buildAlertCards_singleCard_containsBadgePill() {
         Notification__c n = new Notification__c(
             Title__c = 'Library Alert',

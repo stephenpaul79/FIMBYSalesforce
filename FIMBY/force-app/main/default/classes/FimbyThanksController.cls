@@ -90,7 +90,8 @@ public with sharing class FimbyThanksController {
                 );
                 insert thankMsg;
 
-                createThanksNotification(recipientId, senderName, message, relatedRecordId);
+                createThanksNotification(recipientId, senderName, message, relatedRecordId,
+                    senderContact != null ? senderContact.Id : null);
             }
 
             return new Map<String, Object>{
@@ -100,7 +101,7 @@ public with sharing class FimbyThanksController {
             };
         }
 
-        private void createThanksNotification(Id recipientId, String senderName, String message, String relatedRecordId) {
+        private void createThanksNotification(Id recipientId, String senderName, String message, String relatedRecordId, Id senderContactId) {
             try {
                 String actionUrl = String.isNotBlank(relatedRecordId)
                     ? FimbySettings.getUrl('Response_Reply', null, '?recordId=' + relatedRecordId)
@@ -113,7 +114,9 @@ public with sharing class FimbyThanksController {
                     relatedRecordId != null ? (Id) relatedRecordId : null,
                     'Response__c',
                     actionUrl,
-                    senderName
+                    senderName,
+                    false,
+                    senderContactId
                 );
             } catch (Exception e) {
                 FimbyLogger.warn('FimbyThanksController', 'createThanksNotification', e.getMessage());

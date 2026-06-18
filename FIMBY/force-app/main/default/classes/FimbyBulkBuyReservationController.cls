@@ -65,6 +65,9 @@ public with sharing class FimbyBulkBuyReservationController {
             String displayFirstName = resp.On_Behalf_Of_Contact__r != null
                 ? resp.On_Behalf_Of_Contact__r.FirstName
                 : resp.Contact__r.FirstName;
+            Id reserverContactId = resp.On_Behalf_Of_Contact__c != null
+                ? resp.On_Behalf_Of_Contact__c
+                : resp.Contact__c;
 
             if (resp.Need_Offer_Responded_To__r.Group_Conversation__c != null) {
                 FimbyGroupConversationController.sendSystemMessage(
@@ -78,12 +81,14 @@ public with sharing class FimbyBulkBuyReservationController {
             FimbyNotificationService.createNotification(
                 helper.getPostedByContactId(resp.Need_Offer_Responded_To__c),
                 FimbyConstants.NOTIF_BULK_BUY_RESERVATION,
-                displayFirstName + ' cancelled their reservation',
+                'cancelled their reservation',
                 '',
                 resp.Need_Offer_Responded_To__c,
                 'Needs_Offers__c',
                 FimbySettings.getUrl('Asks_Offers', String.valueOf(resp.Need_Offer_Responded_To__c)),
-                displayFirstName
+                displayFirstName,
+                false,
+                reserverContactId
             );
 
             return new Map<String, Object>{ 'success' => true };
@@ -377,12 +382,14 @@ public with sharing class FimbyBulkBuyReservationController {
             FimbyNotificationService.createNotification(
                 post.Posted_By__c,
                 FimbyConstants.NOTIF_BULK_BUY_RESERVATION,
-                reserver.FirstName + ' reserved ' + shareLabel,
+                'reserved ' + shareLabel,
                 post.Name,
                 postId,
                 'Needs_Offers__c',
                 FimbySettings.getUrl('Asks_Offers', String.valueOf(postId)),
-                reserver.FirstName
+                reserver.FirstName,
+                false,
+                actingAsContactId
             );
 
             return new Map<String, Object>{

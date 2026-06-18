@@ -1857,6 +1857,20 @@ a.capability-card {
   max-width: 42ch;
 }
 
+.vouch-banner-mock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px;
+  padding: 10px 12px;
+  background: var(--fimby-surface-section);
+  border: 1px solid var(--fimby-border-subtle);
+  border-radius: var(--fimby-radius-md);
+}
+.vouch-banner-icon { flex: 0 0 auto; width: 28px; height: 28px; object-fit: contain; }
+.vouch-banner-text { display: flex; flex-direction: column; line-height: 1.25; }
+.vouch-banner-text strong { font-size: 0.8rem; }
+.vouch-banner-text span { font-size: 0.72rem; color: var(--fimby-text-secondary); }
 .vouch-banner-btn {
   flex: 0 0 auto;
   margin-left: auto;

@@ -222,12 +222,14 @@ public with sharing class FimbyResponseController {
                 FimbyNotificationService.createNotification(
                     needOffer.Posted_By__c,
                     FimbyConstants.NOTIF_RESPONSE,
-                    responderFullName + ' responded to your post',
+                    'responded to your post',
                     subject,
                     newResponse.Id,
                     'Response__c',
                     FimbySettings.getUrl('Response_Reply', null, '?recordId=' + newResponse.Id),
-                    responderFullName
+                    responderFullName,
+                    false,
+                    actingAsContactId
                 );
             }
 
@@ -695,12 +697,14 @@ public with sharing class FimbyResponseController {
                 FimbyNotificationService.createNotification(
                     evt.Posted_By__c,
                     FimbyConstants.NOTIF_RESPONSE,
-                    responderName + (evtType == 'Community_Event' ? ' is interested' : ' is going'),
+                    (evtType == 'Community_Event' ? 'is interested' : 'is going'),
                     notifBody,
                     newResp.Id,
                     'Response__c',
                     FimbySettings.getUrl('Response_Reply', null, '?recordId=' + newResp.Id),
-                    responderName
+                    responderName,
+                    false,
+                    actingAsContactId
                 );
             }
 
@@ -736,13 +740,14 @@ public with sharing class FimbyResponseController {
                 FimbyNotificationService.createNotification(
                     evt.Posted_By__c,
                     FimbyConstants.NOTIF_RESPONSE,
-                    responderName + (evtType == 'Community_Event' ? ' is no longer interested' : ' is no longer going'),
+                    (evtType == 'Community_Event' ? 'is no longer interested' : 'is no longer going'),
                     notifBody,
                     resp.Id,
                     'Response__c',
                     FimbySettings.getUrl('Response_Reply', null, '?recordId=' + resp.Id),
                     responderName,
-                    true
+                    true,
+                    actingAsContactId
                 );
             }
 

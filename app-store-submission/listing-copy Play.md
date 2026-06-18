@@ -245,7 +245,7 @@ Search the tag picker for terms that match FIMBY. Suggested starting set (confir
 2. **Communication**
 3. **Lifestyle**
 4. **Events** (if listed for apps)
-5. **Sharing** or **Community** (whichever appears in the picker)
+5. **Meet new people** (whichever appears in the picker)
 
 Tags can take up to 24 hours to appear on the public listing.
 
@@ -357,7 +357,7 @@ Complete before Production release. Summaries only; full answers in [`STORE_READ
 
 ## Quick paste order in Play Console
 
-1. Main store listing: title, short description, full description, graphics, contact URLs  
-2. Store settings: category + tags  
-3. App content: App access, Data safety, Content rating, Target audience, Ads  
+1. Main store listing: title, short description, full description, graphics, contact URLs
+2. Store settings: category + tags
+3. App content: App access, Data safety, Content rating, Target audience, Ads
 4. Release: upload AAB, add release notes, roll out on Internal testing first

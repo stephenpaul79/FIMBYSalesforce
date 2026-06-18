@@ -12,14 +12,37 @@ global without sharing class FimbyNotificationCleanupJob implements Schedulable 
         try {
             Integer batchSize = FimbySettings.notificationCleanupBatchSize();
 
+            // 30-day read-purge EXCLUDES bell-hidden (message-style) types: their
+            // rows must live as long as their thread so both read- and unread-sync
+            // keep working for the thread's full life. Non-hidden bell rows keep
+            // their normal 30-day cleanup.
             Datetime readCutoff = Datetime.now().addDays(-FimbySettings.notificationRetentionDays());
             List<Notification__c> staleRead = [
                 SELECT Id FROM Notification__c
                 WHERE Read_Date__c != null AND Read_Date__c < :readCutoff
+                  AND Type__c NOT IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES
                 LIMIT :batchSize
             ];
             if (!staleRead.isEmpty()) {
                 Database.delete(staleRead, false);
+            }
+
+            // Fixed-age backstop for hidden types: the primary deletion is
+            // purge-sync from conversation/response cleanup, but a desync (batch
+            // boundary, partial-success, or a thread deleted before its rows)
+            // could otherwise orphan a hidden row permanently — and if unread it
+            // would count toward the OS app-icon badge forever. Delete hidden-type
+            // rows older than the conversation retention window regardless of
+            // thread existence. Age-based, so a LIMIT-capped run self-heals daily.
+            Datetime hiddenCutoff = Datetime.now().addDays(-FimbySettings.conversationCleanupDays());
+            List<Notification__c> staleHidden = [
+                SELECT Id FROM Notification__c
+                WHERE Type__c IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES
+                  AND CreatedDate < :hiddenCutoff
+                LIMIT :batchSize
+            ];
+            if (!staleHidden.isEmpty()) {
+                Database.delete(staleHidden, false);
             }
 
             Datetime pendingCutoff = Datetime.now().addDays(-STALE_PENDING_DAYS);

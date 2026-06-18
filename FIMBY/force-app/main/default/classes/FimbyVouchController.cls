@@ -359,12 +359,14 @@ public without sharing class FimbyVouchController {
         FimbyNotificationService.createNotification(
             vr.Requester_Contact__c,
             FimbyConstants.NOTIF_VOUCH_APPROVED,
-            'You have been welcomed in',
-            contactDisplayName(vr.Reference_Contact__c) + ' vouched for you. The library is open.',
+            'vouched for you. The library is open.',
+            'Welcome. Your neighbourhood library is open to you.',
             vr.Id,
             'Vouch_Record__c',
             FimbySettings.getUrl('Library_List'),
-            contactDisplayName(vr.Reference_Contact__c)
+            contactDisplayName(vr.Reference_Contact__c),
+            false,
+            vr.Reference_Contact__c
         );
     }
 
@@ -409,12 +411,14 @@ public without sharing class FimbyVouchController {
         FimbyNotificationService.createNotification(
             vr.Requester_Contact__c,
             FimbyConstants.NOTIF_VOUCH_DECLINED,
-            contactDisplayName(vr.Reference_Contact__c) + ' was not able to vouch',
+            'was not able to vouch',
             'You can ask someone else in your neighbourhood.',
             vr.Id,
             'Vouch_Record__c',
             FimbySettings.getUrl('Profile'),
-            contactDisplayName(vr.Reference_Contact__c)
+            contactDisplayName(vr.Reference_Contact__c),
+            false,
+            vr.Reference_Contact__c
         );
     }
 
@@ -829,12 +833,14 @@ public without sharing class FimbyVouchController {
         FimbyNotificationService.createNotification(
             referenceContactId,
             FimbyConstants.NOTIF_VOUCH_REQUEST_RECEIVED,
-            contactDisplayName(requesterContactId) + ' would like you to vouch for them',
+            'would like you to vouch for them',
             'Vouching for them opens up the lending library so they can borrow from neighbours.',
             conv.Id,
             'Conversation__c',
             FimbySettings.getUrl('Conversation', String.valueOf(conv.Id)),
-            contactDisplayName(requesterContactId)
+            contactDisplayName(requesterContactId),
+            false,
+            requesterContactId
         );
 
         return vr.Id;
@@ -900,7 +906,10 @@ public without sharing class FimbyVouchController {
 
     private static String contactDisplayName(Id contactId) {
         if (contactId == null) return 'A neighbour';
-        for (Contact c : [SELECT Name FROM Contact WHERE Id = :contactId LIMIT 1]) {
+        // Full_Name__c honours Mask_Last_Name__c ("Emily D."); never use raw Name, which
+        // leaks the full last name regardless of the contact's privacy setting.
+        for (Contact c : [SELECT Full_Name__c, Name FROM Contact WHERE Id = :contactId LIMIT 1]) {
+            if (String.isNotBlank(c.Full_Name__c)) return c.Full_Name__c;
             return String.isNotBlank(c.Name) ? c.Name : 'A neighbour';
         }
         return 'A neighbour';

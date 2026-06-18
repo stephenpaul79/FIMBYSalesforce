@@ -45,6 +45,7 @@ public class ExampleQueueable implements System.Finalizer, System.Queueable {
 
 ## Testing
 - ≥75% coverage (FIMBY targets 80%+; see deployment rules in CLAUDE.md §6). Meaningful assertions, not just coverage.
+- **The deploy enforces 75% coverage PER CHANGED CLASS, not org-wide.** Every `.cls` in the `--source-dir` set must individually clear 75% from the tests you name with `--tests` — a class at 74% fails the *entire* (atomic) deploy even if all named tests pass and overall coverage is high. So: (1) for each changed class, include ITS OWN test class in `--tests` (e.g. changing `FimbySettings.cls` → add `FimbySettingsTest`), not just the tests for the behaviour you touched; (2) if you only modify one method but the class as a whole sits near the line, you may still need to broaden the named tests to lift that class over 75%. When a deploy fails with `Test coverage of selected Apex Class is NN%`, the fix is adding that class's test to `--tests`, not editing product code.
 - `Test.startTest()`/`stopTest()`; `@TestSetup` for shared data; mock callouts; test bulk; negative/edge cases.
 - No `SeeAllData=true`. `System.runAs()` for user contexts. Proper isolation — no inter-test dependencies. `Test.loadData()` for large datasets.
 - FIMBY test-data lookup: never query Users by email — tie to the `@TestSetup` Contact (see fimby-apex SKILL).

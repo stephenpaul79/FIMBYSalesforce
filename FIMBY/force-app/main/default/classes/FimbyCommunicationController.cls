@@ -40,7 +40,8 @@ public with sharing class FimbyCommunicationController {
         Integer notifCount = 0;
         if (String.isNotBlank(contactId)) {
             notifCount = [SELECT COUNT() FROM Notification__c
-                          WHERE Contact__c = :contactId AND Read_Date__c = null];
+                          WHERE Contact__c = :contactId AND Read_Date__c = null
+                            AND Type__c NOT IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES];
         }
         Integer msgCount = new CommunicationHelper().getUnifiedUnreadCountInternal();
         return new Map<String, Integer>{
@@ -773,6 +774,18 @@ public with sharing class FimbyCommunicationController {
          * @param responseId Id of the Response__c
          */
         public void markResponseViewedInternal(Id responseId) {
+            markResponseReadInternal(responseId);
+        }
+
+        /**
+         * @description Single choke point for marking a response thread read.
+         * Both the inbox mark-read path (markThreadReadInternal response branch)
+         * and the explicit markResponseViewed entry point funnel here, so the
+         * hidden-notification read-sync (response replies + thanks) runs exactly
+         * once per read regardless of which path the LWC used.
+         * @param responseId Id of the Response__c
+         */
+        private void markResponseReadInternal(Id responseId) {
             if (responseId == null) return;
 
             String myContactId = FimbyIdentityRepository.getActingAsContactId();
@@ -780,8 +793,7 @@ public with sharing class FimbyCommunicationController {
 
             Response__c resp = [
                 SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                       Need_Offer_Responded_To__r.Posted_By__c,
-                       Poster_Last_Viewed__c, Responder_Last_Viewed__c
+                       Need_Offer_Responded_To__r.Posted_By__c
                 FROM Response__c
                 WHERE Id = :responseId
                 LIMIT 1
@@ -800,6 +812,12 @@ public with sharing class FimbyCommunicationController {
             }
 
             update updateResp;
+
+            // Read-sync: clear this thread's hidden notifications (reply + thanks)
+            // so the app-icon badge no longer counts them.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                responseId, FimbyConstants.RESPONSE_HIDDEN_TYPES
+            );
         }
 
         /**
@@ -832,10 +850,21 @@ public with sharing class FimbyCommunicationController {
                     return;
                 }
                 update upd;
+                // Unread-sync: restore only the most recent hidden row so the
+                // thread counts once on the app-icon badge.
+                FimbyNotificationService.markLatestRelatedNotificationUnread(
+                    threadId, FimbyConstants.RESPONSE_HIDDEN_TYPES
+                );
             } else if (typeVal == 'group') {
                 setGroupMemberUnread(threadId, myContactId, true);
+                FimbyNotificationService.markLatestRelatedNotificationUnread(
+                    threadId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+                );
             } else {
                 markConversationUnread(threadId, myContactId);
+                FimbyNotificationService.markLatestRelatedNotificationUnread(
+                    threadId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+                );
             }
         }
 
@@ -853,22 +882,8 @@ public with sharing class FimbyCommunicationController {
             String typeVal = threadType.toLowerCase();
 
             if (typeVal == 'response') {
-                Response__c resp = [
-                    SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                           Need_Offer_Responded_To__r.Posted_By__c
-                    FROM Response__c WHERE Id = :threadId LIMIT 1
-                ];
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
-                Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
-                Response__c upd = new Response__c(Id = threadId);
-                if (isPoster) {
-                    upd.Poster_Last_Viewed__c = Datetime.now();
-                } else if (isResponder) {
-                    upd.Responder_Last_Viewed__c = Datetime.now();
-                } else {
-                    return;
-                }
-                update upd;
+                // Single response-read choke point (also wires hidden-notification sync).
+                markResponseReadInternal(threadId);
             } else if (typeVal == 'group') {
                 setGroupMemberRead(threadId, myContactId);
             } else {
@@ -983,6 +998,11 @@ public with sharing class FimbyCommunicationController {
                 return;
             }
             update upd;
+
+            // Read-sync: clear this conversation's hidden message notifications.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                conversationId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+            );
         }
 
         private void setGroupMemberRead(Id conversationId, String myContactId) {
@@ -997,6 +1017,11 @@ public with sharing class FimbyCommunicationController {
             members[0].Unread_Count__c = 0;
             members[0].Last_Read_Date__c = System.now();
             update members[0];
+
+            // Read-sync: clear this group conversation's hidden message notifications.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                conversationId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+            );
         }
 
         private void setGroupMemberUnread(Id conversationId, String myContactId, Boolean asUnread) {

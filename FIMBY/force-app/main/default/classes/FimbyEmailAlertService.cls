@@ -16,6 +16,7 @@ public without sharing class FimbyEmailAlertService {
     private static final Map<String, EmailDefault> EMAIL_TYPE_MAP = new Map<String, EmailDefault>{
         FimbyConstants.NOTIF_MESSAGE             => EmailDefault.ALWAYS,
         FimbyConstants.NOTIF_RESPONSE            => EmailDefault.ALWAYS,
+        FimbyConstants.NOTIF_RESPONSE_REPLY      => EmailDefault.ALWAYS,
         FimbyConstants.NOTIF_EVENT_CHAT          => EmailDefault.OPT_IN,
         FimbyConstants.NOTIF_COMMENT             => EmailDefault.OPT_IN,
         FimbyConstants.NOTIF_LENDING_REQUEST     => EmailDefault.ALWAYS,
@@ -51,6 +52,10 @@ public without sharing class FimbyEmailAlertService {
     private static final Map<String, String> EMAIL_TOGGLE_MAP = new Map<String, String>{
         FimbyConstants.NOTIF_MESSAGE             => 'Email_Alert_Messages__c',
         FimbyConstants.NOTIF_RESPONSE            => 'Email_Alert_Needs_Offers__c',
+        // Response replies route push as MESSAGE but the toggle stays legacy
+        // Asks & Offers (matching the push override) — a reply email is silenced
+        // by the user's Asks & Offers preference, not by Messages.
+        FimbyConstants.NOTIF_RESPONSE_REPLY      => 'Email_Alert_Needs_Offers__c',
         FimbyConstants.NOTIF_EVENT_CHAT          => 'Email_Alert_Events__c',
         FimbyConstants.NOTIF_COMMENT             => 'Email_Alert_Stories__c',
         FimbyConstants.NOTIF_LENDING_REQUEST     => 'Email_Alert_Library__c',

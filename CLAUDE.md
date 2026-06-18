@@ -143,10 +143,10 @@ FIMBY serves neighbours who may be vulnerable, low-tech, or new to digital commu
 
 **Proactive deploy (default):** when an *approved* task changes Salesforce metadata (incl. LWC bundles), run the targeted deploy before wrapping up the same turn. Never deploy exploratory/unapproved changes. Skip/defer if the user said keep it local/draft, or no CLI org is available.
 
-Run deploys only from `FIMBY/` (where `sfdx-project.json` lives). Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`. Use targeted `--source-dir` (or `--metadata`) — **never** the whole `force-app`. For LWCs, point `--source-dir` at the bundle folder; deploy each changed bundle as its own `--source-dir`.
+⚠️ **The Bash shell's cwd is the repo root `c:/Users/srathjen/FIMBY`, which is NOT the Salesforce project — `sfdx-project.json` lives one level down in `c:/Users/srathjen/FIMBY/FIMBY`.** The Bash tool has **no `working_directory` parameter**, and `cd`/`&&` are banned in deploy commands, so a *relative* `--source-dir` resolves against the wrong folder and fails with "File or folder not found." **Always pass an ABSOLUTE `--source-dir` rooted at `c:/Users/srathjen/FIMBY/FIMBY/force-app/...`** — copy-paste the example below and swap only the bundle/metadata tail. Use targeted `--source-dir` (or `--metadata`) — **never** the whole `force-app`. For LWCs, point `--source-dir` at the bundle folder; deploy each changed bundle as its own `--source-dir`.
 
 ```bash
-sf project deploy start --source-dir "<path>" --wait 10 2>&1 | tail -n 20
+sf project deploy start --source-dir "c:/Users/srathjen/FIMBY/FIMBY/force-app/main/default/lwc/<bundleName>" --wait 10 2>&1 | tail -n 20
 ```
 Do not use `cd` / `&&` inside the command; do not include `--target-org`. (Cursor's rule pipes to PowerShell `Select-Object -Last 20`; on bash use `tail -n 20`.)
 
@@ -154,6 +154,7 @@ Do not use `cd` / `&&` inside the command; do not include `--target-org`. (Curso
 1. Does `--source-dir` include **any** `.cls`/`.trigger`? **YES →** you MUST add `--tests TestClassName` for each relevant test class (omitting it runs ~600 org tests, 20+ wasted minutes). **NO** (LWC/objects/layouts/flows only) → do **not** add `--tests`/`--test-level`.
 2. Never `--test-level RunAllTestsInOrg` / `RunLocalTests` — always name specific tests.
 3. Confirm each test class still covers the change (target 80%+, 75% only in a pinch).
+4. **Coverage is enforced PER CHANGED CLASS (≥75%), not org-wide.** Every `.cls` in the `--source-dir` set must individually clear 75% from the tests you name — a single class at 74% fails the *entire* atomic deploy even when all named tests pass. So name **each changed class's own test** (changing `FimbySettings.cls` → add `FimbySettingsTest`), not just the test for the behaviour you touched. A `Test coverage of selected Apex Class is NN%` failure is fixed by adding that class's test to `--tests`, never by editing product code.
 
 If deploy output ends with `Error (MetadataTransferError): Metadata API request failed: Missing message metadata.transfer:Finalizing for locale en_US.` the **deploy succeeded** — known CLI locale bug; pass/fail counts shown are display artifacts. Don't re-run `sf project deploy report`.
 

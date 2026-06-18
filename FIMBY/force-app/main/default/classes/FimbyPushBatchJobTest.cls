@@ -231,9 +231,12 @@ public class FimbyPushBatchJobTest {
     // The queueable now POSTs a batch body { "notifications": [ {...} ] }.
     // Unwrap the first payload object so existing per-payload assertions hold.
     private static Map<String, Object> firstNotif(String capturedBody) {
+        return (Map<String, Object>) allNotifs(capturedBody)[0];
+    }
+
+    private static List<Object> allNotifs(String capturedBody) {
         Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(capturedBody);
-        List<Object> notifs = (List<Object>) parsed.get('notifications');
-        return (Map<String, Object>) notifs[0];
+        return (List<Object>) parsed.get('notifications');
     }
 
     private static String capturedCollapseId(String capturedBody) {
@@ -287,11 +290,15 @@ public class FimbyPushBatchJobTest {
     }
 
     @IsTest
-    static void testCollapseId_BothBucket_DistinctKey() {
+    static void testMixedCycle_EmitsTwoPings_PerGate_NeverMerged() {
         Contact testContact = getTestContact();
         User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
         delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
 
+        // A DM and an activity notification in the same cycle. The two gates must
+        // NOT merge into a single ping — each gets its own card so its deep link
+        // routes to the right surface (/messages vs /notifications).
         insert new List<Notification__c>{
             new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_MESSAGE,
                 Title__c = 'DM', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending'),
@@ -305,11 +312,55 @@ public class FimbyPushBatchJobTest {
         new FimbyPushBatchJob().execute(null);
         Test.stopTest();
 
-        String collapseId = capturedCollapseId(mock.capturedBody);
-        System.assertEquals(testUser.Id + ':both', collapseId,
-            'Mixed bucket gets its own ":both" key');
-        System.assertNotEquals(testUser.Id + ':dm', collapseId, 'both must not collide with dm');
-        System.assertNotEquals(testUser.Id + ':activity', collapseId, 'both must not collide with activity');
+        List<Object> notifs = allNotifs(mock.capturedBody);
+        System.assertEquals(2, notifs.size(),
+            'A mixed DM + activity cycle must emit exactly two pings, one per gate');
+
+        Map<String, Map<String, Object>> byCollapse = new Map<String, Map<String, Object>>();
+        for (Object o : notifs) {
+            Map<String, Object> n = (Map<String, Object>) o;
+            byCollapse.put((String) n.get('collapse_id'), n);
+        }
+
+        System.assert(byCollapse.containsKey(testUser.Id + ':dm'),
+            'A DM-gated ping with the :dm collapse key must be present');
+        System.assert(byCollapse.containsKey(testUser.Id + ':activity'),
+            'An activity-gated ping with the :activity collapse key must be present');
+        System.assert(!byCollapse.containsKey(testUser.Id + ':both'),
+            'The merged :both ping must no longer exist');
+
+        // Each ping routes to its own surface via channelId.
+        Map<String, Object> dmData = (Map<String, Object>) byCollapse.get(testUser.Id + ':dm').get('data');
+        Map<String, Object> actData = (Map<String, Object>) byCollapse.get(testUser.Id + ':activity').get('data');
+        System.assertEquals('messages', dmData.get('channelId'),
+            'DM ping routes to the messages surface');
+        System.assertEquals('activity', actData.get('channelId'),
+            'Activity ping routes to the notifications surface');
+    }
+
+    @IsTest
+    static void testMixedCycle_StampsBothDoorbells() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        insert new List<Notification__c>{
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_MESSAGE,
+                Title__c = 'DM', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending'),
+            new Notification__c(Contact__c = testContact.Id, Type__c = 'Response',
+                Title__c = 'Activity', Body__c = 'b', Actor_Name__c = 'Jordan', Push_Status__c = 'Pending')
+        };
+
+        Test.setMock(HttpCalloutMock.class, new CapturingEchoMock(true));
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        // Two pings, but gate stamping stays per-user: both doorbells move.
+        User u = [SELECT Last_DM_Push_At__c, Last_Activity_Push_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertNotEquals(null, u.Last_DM_Push_At__c, 'DM doorbell stamped');
+        System.assertNotEquals(null, u.Last_Activity_Push_At__c, 'Activity doorbell stamped');
     }
 
     @IsTest
@@ -335,6 +386,36 @@ public class FimbyPushBatchJobTest {
 
     private static Notification__c notifWithActor(String actorName, String type) {
         return new Notification__c(Type__c = type, Actor_Name__c = actorName);
+    }
+
+    @IsTest
+    static void testComposeSinglePush_BellVisibleType_PrependsActorName() {
+        // Bell-visible de-actored title gets the real actor name prepended so the
+        // lock-screen copy reads whole.
+        Notification__c n = notifWithActor('Maya Chen', 'Lending_Request');
+        n.Title__c = 'requested to borrow your drill';
+        String title = FimbyPushBatchJob.composeSinglePushTitle(n);
+        System.assertEquals('Maya Chen requested to borrow your drill', title,
+            'Bell-visible single push leads with the actor name');
+    }
+
+    @IsTest
+    static void testComposeSinglePush_TokenActor_PassesThrough() {
+        Notification__c n = notifWithActor('FIMBY', 'Lending_Request');
+        n.Title__c = 'The ladder is now on loan to you';
+        String title = FimbyPushBatchJob.composeSinglePushTitle(n);
+        System.assertEquals('The ladder is now on loan to you', title,
+            'Token-actor titles are self-contained and pass through unchanged');
+    }
+
+    @IsTest
+    static void testComposeSinglePush_MessageStyleType_PassesThrough() {
+        // Message-style titles already carry the name; do not double it.
+        Notification__c n = notifWithActor('Sam Rivera', FimbyConstants.NOTIF_MESSAGE);
+        n.Title__c = 'Sam Rivera';
+        String title = FimbyPushBatchJob.composeSinglePushTitle(n);
+        System.assertEquals('Sam Rivera', title,
+            'Message-style single push passes through without prepending the name again');
     }
 
     @IsTest
@@ -723,5 +804,105 @@ public class FimbyPushBatchJobTest {
             res.setBody(body);
             return res;
         }
+    }
+
+    /* ── Gate-stamp regression: Thanks/Reply single audible stamps DM gate ── */
+
+    @IsTest
+    static void testSingleAudible_ThanksReceived_StampsDmGate() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        insert new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_THANKS_RECEIVED,
+            Title__c = 'Thanks', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending');
+
+        Test.setMock(HttpCalloutMock.class, new CapturingEchoMock(true));
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        User u = [SELECT Last_DM_Push_At__c, Last_Activity_Push_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertNotEquals(null, u.Last_DM_Push_At__c,
+            'Thanks_Received is DM-gated at creation, so delivery must stamp the DM doorbell (regression)');
+        System.assertEquals(null, u.Last_Activity_Push_At__c,
+            'Thanks_Received must NOT stamp the activity doorbell');
+    }
+
+    @IsTest
+    static void testSingleAudible_ResponseReply_StampsDmGate() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        insert new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+            Title__c = 'Reply', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending');
+
+        Test.setMock(HttpCalloutMock.class, new CapturingEchoMock(true));
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        User u = [SELECT Last_DM_Push_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertNotEquals(null, u.Last_DM_Push_At__c,
+            'Response_Reply is DM-gated, so a single audible push stamps the DM doorbell');
+    }
+
+    @IsTest
+    static void testSingleAudible_EventChat_RoutesMessagesChannel_StampsActivityGate() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        insert new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_EVENT_CHAT,
+            Title__c = 'Event chat', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending');
+
+        CapturingEchoMock mock = new CapturingEchoMock(true);
+        Test.setMock(HttpCalloutMock.class, mock);
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        Map<String, Object> n = firstNotif(mock.capturedBody);
+        Map<String, Object> data = (Map<String, Object>) n.get('data');
+        System.assertEquals('messages', data.get('channelId'),
+            'Event_Chat routes to the messages channel (content surface)');
+
+        User u = [SELECT Last_DM_Push_At__c, Last_Activity_Push_At__c FROM User WHERE Id = :testUser.Id];
+        System.assertEquals(null, u.Last_DM_Push_At__c,
+            'Event_Chat is the deliberate channel != gate case: messages channel but ACTIVITY gate');
+        System.assertNotEquals(null, u.Last_Activity_Push_At__c,
+            'Event_Chat stamps the ACTIVITY doorbell');
+    }
+
+    @IsTest
+    static void testAggregatedMessageStyle_RoutesMessagesBucket() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+        disableSkipRules(testUser.Id);
+        delete [SELECT Id FROM Notification__c WHERE Contact__c = :testContact.Id];
+
+        // Two message-style rows (reply + event chat) → aggregated DM/message bucket.
+        insert new List<Notification__c>{
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'r', Body__c = 'b', Actor_Name__c = 'Maya', Push_Status__c = 'Pending'),
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_EVENT_CHAT,
+                Title__c = 'e', Body__c = 'b', Actor_Name__c = 'Jordan', Push_Status__c = 'Pending')
+        };
+
+        CapturingEchoMock mock = new CapturingEchoMock(true);
+        Test.setMock(HttpCalloutMock.class, mock);
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        Map<String, Object> n = firstNotif(mock.capturedBody);
+        Map<String, Object> data = (Map<String, Object>) n.get('data');
+        String channelId = (String) data.get('channelId');
+        System.assert(channelId != null && channelId.startsWith('messages'),
+            'Aggregated message-style pushes land in the messages bucket, not activity: ' + channelId);
     }
 }

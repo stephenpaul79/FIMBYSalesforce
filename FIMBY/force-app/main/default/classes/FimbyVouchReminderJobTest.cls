@@ -63,13 +63,17 @@ public class FimbyVouchReminderJobTest {
         Test.stopTest();
 
         List<Notification__c> notes = [
-            SELECT Id, Contact__c, Type__c, Title__c, Actor_Name__c, Action_URL__c
+            SELECT Id, Contact__c, Type__c, Title__c, Actor_Name__c, Actor_Contact__c, Action_URL__c
             FROM Notification__c
             WHERE Type__c = :FimbyConstants.NOTIF_VOUCH_REQUEST_REMINDER
         ];
         System.assertEquals(1, notes.size(), 'Reference gets one nudge');
         System.assertEquals(reference.Id, notes[0].Contact__c, 'Recipient is the reference');
-        System.assert(notes[0].Title__c.contains('Riley'), 'Requester name surfaces in the title');
+        // Title is now a de-actored verb phrase; the requester identity lives on
+        // Actor_Name__c / Actor_Contact__c (the LWC prepends the bold name).
+        System.assert(notes[0].Actor_Name__c.contains('Riley'), 'Requester name surfaces as the actor');
+        System.assertEquals(requester.Id, notes[0].Actor_Contact__c, 'Actor Contact stamped to the requester');
+        System.assert(notes[0].Title__c.contains('still waiting'), 'Title carries the verb phrase');
         System.assert(String.isNotBlank(notes[0].Action_URL__c), 'Deep link populated');
 
         Vouch_Record__c refreshed = [

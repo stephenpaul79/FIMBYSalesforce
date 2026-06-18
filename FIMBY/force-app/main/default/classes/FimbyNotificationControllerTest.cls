@@ -269,4 +269,132 @@ public class FimbyNotificationControllerTest {
         }
         Test.stopTest();
     }
+
+    @IsTest
+    static void testActorContactSurfacesPhotoAndDisplayName() {
+        User testUser = getTestUser();
+        Account nb = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :nb.Id LIMIT 1];
+
+        // A human actor with a personal avatar (unmasked → Display_Avatar_URL__c resolves).
+        Contact actor = FimbyTestDataFactory.createNeighbourhoodContact(nb.Id, false);
+        actor.FirstName = 'Maya';
+        actor.LastName = 'Chen';
+        actor.Image_URL__c = 'https://cms.example.com/img/maya?rendition=ORIGINAL_FREE';
+        insert actor;
+
+        insert new Notification__c(
+            Contact__c = viewer.Id,
+            Type__c = 'Response',
+            Title__c = 'responded to your post',
+            Body__c = 'I can help',
+            Actor_Name__c = 'Maya Chen',
+            Actor_Contact__c = actor.Id,
+            Action_URL__c = '/asks-offers/test-actor'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyNotificationController.NotificationResult result =
+                FimbyNotificationController.getNotifications(20, 0, 'Responses');
+            FimbyNotificationController.NotificationWrapper actorRow = null;
+            for (FimbyNotificationController.NotificationWrapper w : result.items) {
+                if (w.actorContactId == actor.Id) { actorRow = w; }
+            }
+            System.assertNotEquals(null, actorRow, 'Actor-stamped row should be returned');
+            System.assertEquals(actor.Id, actorRow.actorContactId, 'actorContactId surfaces');
+            System.assertEquals('Maya Chen', actorRow.actorDisplayName, 'Full name surfaces as display name');
+            System.assert(String.isNotBlank(actorRow.actorPhotoUrl), 'Personal avatar URL surfaces');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testOrgActorSurfacesLogoUrl() {
+        User testUser = getTestUser();
+        Account nb = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :nb.Id LIMIT 1];
+
+        // Organization account carrying a logo, plus its org Contact.
+        Account org = new Account(
+            Name = 'Maple Co-op',
+            Logo_URL__c = 'https://cms.example.com/logo/maple?rendition=ORIGINAL_FREE'
+        );
+        insert org;
+        Contact orgContact = FimbyTestDataFactory.createNeighbourhoodContact(nb.Id, false);
+        orgContact.FirstName = 'Maple';
+        orgContact.LastName = 'Co-op';
+        orgContact.Is_Organization_Contact__c = true;
+        orgContact.Organization_Account__c = org.Id;
+        orgContact.Image_URL__c = 'https://cms.example.com/img/maple-contact?rendition=ORIGINAL_FREE';
+        insert orgContact;
+
+        insert new Notification__c(
+            Contact__c = viewer.Id,
+            Type__c = 'Response',
+            Title__c = 'responded to your post',
+            Actor_Name__c = 'Maple Co-op',
+            Actor_Contact__c = orgContact.Id,
+            Action_URL__c = '/asks-offers/test-org'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyNotificationController.NotificationResult result =
+                FimbyNotificationController.getNotifications(20, 0, 'Responses');
+            FimbyNotificationController.NotificationWrapper orgRow = null;
+            for (FimbyNotificationController.NotificationWrapper w : result.items) {
+                if (w.actorContactId == orgContact.Id) { orgRow = w; }
+            }
+            System.assertNotEquals(null, orgRow, 'Org actor row should be returned');
+            System.assert(orgRow.actorPhotoUrl != null && orgRow.actorPhotoUrl.contains('logo/maple'),
+                'Org logo should be preferred over the personal avatar for org contacts');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testNullActorFallsBackToActorName() {
+        User testUser = getTestUser();
+        // Seed notifications all have Actor_Name__c but no Actor_Contact__c.
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyNotificationController.NotificationResult result =
+                FimbyNotificationController.getNotifications(20, 0, 'Responses');
+            System.assertEquals(1, result.items.size(), 'One seed Response row');
+            FimbyNotificationController.NotificationWrapper w = result.items[0];
+            System.assertEquals(null, w.actorContactId, 'No actor contact on seed rows');
+            System.assertEquals('Sarah Johnson', w.actorDisplayName,
+                'Display name falls back to Actor_Name__c when no contact is stamped');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testHiddenTypesExcludedFromBell() {
+        User testUser = getTestUser();
+        Account nb = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact contact = [SELECT Id FROM Contact WHERE AccountId = :nb.Id LIMIT 1];
+
+        // Add message-style hidden notifications — they must not appear in the bell.
+        insert new List<Notification__c>{
+            new Notification__c(Contact__c = contact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'Sam replied', Action_URL__c = '/response-reply'),
+            new Notification__c(Contact__c = contact.Id, Type__c = FimbyConstants.NOTIF_MESSAGE,
+                Title__c = 'A DM', Action_URL__c = '/conversation')
+        };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyNotificationController.NotificationResult result =
+                FimbyNotificationController.getNotifications(20, 0, null);
+            System.assertEquals(3, result.totalCount,
+                'Hidden message-style types must be excluded from the bell list');
+
+            Integer unread = FimbyNotificationController.getUnreadCount();
+            System.assertEquals(2, unread,
+                'Hidden types must be excluded from the bell unread count');
+        }
+        Test.stopTest();
+    }
 }

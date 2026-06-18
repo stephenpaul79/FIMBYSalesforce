@@ -113,7 +113,11 @@ public class FimbyTestDataFactory {
             TimeZoneSidKey = 'America/Los_Angeles',
             UserName = uniqueUserName,
             ContactId = contactId,
-            IsActive = true
+            IsActive = true,
+            // Disable quiet hours by default so send-path tests are time-independent
+            // (otherwise a deploy run between 10PM-6AM holds emails/push as Pending).
+            // Quiet-hours tests set this preference explicitly to override.
+            Quiet_Hours_Preference__c = 'NONE'
         );
 
         if (doInsert) {

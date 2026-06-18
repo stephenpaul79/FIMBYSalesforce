@@ -182,13 +182,15 @@ public with sharing class FimbyResponseThreadController {
                 String snippet = body.length() > 100 ? body.substring(0, 100) + '...' : body;
                 FimbyNotificationService.createNotification(
                     recipientContactId,
-                    FimbyConstants.NOTIF_RESPONSE,
+                    FimbyConstants.NOTIF_RESPONSE_REPLY,
                     myName + ' replied',
                     'On "' + postName + '": "' + snippet + '"',
                     Id.valueOf(responseId),
                     'Response__c',
                     FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId),
-                    myName
+                    myName,
+                    false,
+                    myContactId
                 );
             }
 
@@ -772,6 +774,14 @@ public with sharing class FimbyResponseThreadController {
                 }
                 update unread;
             }
+
+            // Read-sync: opening the thread is the primary response read path, so
+            // clear this thread's hidden notifications (reply + thanks) too, keeping
+            // the app-icon badge honest. Scoped to the acting-as recipient inside
+            // the service helper.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                resp.Id, FimbyConstants.RESPONSE_HIDDEN_TYPES
+            );
         }
 
         /**

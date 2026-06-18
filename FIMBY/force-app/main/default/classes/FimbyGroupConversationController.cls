@@ -552,6 +552,12 @@ public with sharing class FimbyGroupConversationController {
                 members[0].Unread_Count__c = 0;
                 update members[0];
             }
+
+            // Read-sync: single choke point for group thread-open AND inbox, so
+            // event-chat notifications clear from the app-icon badge once read.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                conversationId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+            );
         }
 
         private void updateConversationSummary(Id conversationId, String body) {

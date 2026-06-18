@@ -91,7 +91,8 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "./plugins/withAivRegistration"
     ],
     "experiments": {
       "typedRoutes": true,

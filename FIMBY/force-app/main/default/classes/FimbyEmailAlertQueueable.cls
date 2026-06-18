@@ -183,12 +183,15 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             if (n.Type__c == FimbyConstants.NOTIF_MESSAGE) {
                 return 'New message from a neighbour';
             }
-            // Single-notification alerts: use Title__c in the inbox subject only. The
-            // branded shell skips the in-body heading for single alerts so the card
-            // title is not repeated a third time. Falls back to the coarse type-based
-            // subject when Title__c is blank.
-            if (String.isNotBlank(n.Title__c)) {
-                return truncateSubject(n.Title__c);
+            // Single-notification alerts: use the actor-led headline in the inbox subject
+            // only. Bell-visible titles are stored as de-actored verb phrases, so we
+            // prepend the actor name the same way the card does ("Emily D. would like you
+            // to vouch for them") to keep the subject a whole sentence. The branded shell
+            // skips the in-body heading for single alerts so the title is not repeated a
+            // third time. Falls back to the coarse type-based subject when Title__c is blank.
+            String headline = FimbyEmailHtmlBuilder.composeActorLedTitle(n);
+            if (String.isNotBlank(headline)) {
+                return truncateSubject(headline);
             }
             return getSubjectForType(n.Type__c);
         }

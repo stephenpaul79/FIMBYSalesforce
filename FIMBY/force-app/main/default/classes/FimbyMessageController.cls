@@ -171,6 +171,13 @@ public with sharing class FimbyMessageController {
                 update conv;
             }
 
+            // Read-sync: opening the thread is the PRIMARY DM read path (it does
+            // not call markConversationRead), so clear this conversation's hidden
+            // message notifications here too, keeping the app-icon badge honest.
+            FimbyNotificationService.markRelatedNotificationsRead(
+                conversationId, FimbyConstants.CONVERSATION_HIDDEN_TYPES
+            );
+
             return result;
         }
 
@@ -332,7 +339,9 @@ public with sharing class FimbyMessageController {
                 conversationId,
                 'Conversation__c',
                 FimbySettings.getUrl('Conversation', conversationId),
-                actingAsContactName
+                actingAsContactName,
+                false,
+                actingAsContactId
             );
 
             return new Map<String, Object>{

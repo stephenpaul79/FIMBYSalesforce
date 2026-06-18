@@ -702,4 +702,115 @@ public class FimbyNotificationServiceTest {
             'Vouch push must be suppressed when the master push toggle is off'
         );
     }
+
+    /* ── Response_Reply: MESSAGE gate (DM) but Asks & Offers toggle ───────── */
+
+    @IsTest
+    static void testResponseReply_DerivesDmGate() {
+        // PUSH_TYPE_MAP => MESSAGE means the DM gate lane is used.
+        System.assertEquals('DM', FimbyNotificationService.gateTypeFor(FimbyConstants.NOTIF_RESPONSE_REPLY),
+            'Response_Reply must derive the DM gate (twin of Thanks_Received)');
+        // Thanks_Received shares the lane; Event_Chat stays ACTIVITY.
+        System.assertEquals('DM', FimbyNotificationService.gateTypeFor(FimbyConstants.NOTIF_THANKS_RECEIVED));
+        System.assertEquals('ACTIVITY', FimbyNotificationService.gateTypeFor(FimbyConstants.NOTIF_EVENT_CHAT));
+    }
+
+    @IsTest
+    static void testResponseReply_GatedByAsksOffersToggle_NotMessages() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+
+        // Turning OFF Messages push must NOT suppress a reply (toggle is legacy A&O).
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            update new User(Id = testUser.Id, Push_Messages__c = false, Push_Needs_Offers__c = true);
+        }
+        Test.startTest();
+        FimbyNotificationService.createNotification(
+            testContact.Id, FimbyConstants.NOTIF_RESPONSE_REPLY,
+            'Sam replied', 'Body', null, 'Response__c', '/response-reply', 'Sam'
+        );
+        Test.stopTest();
+
+        Notification__c notif = [
+            SELECT Push_Status__c FROM Notification__c
+            WHERE Contact__c = :testContact.Id AND Type__c = :FimbyConstants.NOTIF_RESPONSE_REPLY LIMIT 1
+        ];
+        System.assertNotEquals(null, notif.Push_Status__c,
+            'Messages toggle off must NOT suppress a reply — toggle lives on Asks & Offers');
+    }
+
+    @IsTest
+    static void testResponseReply_AsksOffersToggleOff_Suppressed() {
+        Contact testContact = getTestContact();
+        User testUser = getTestUser();
+
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            update new User(Id = testUser.Id, Push_Needs_Offers__c = false, Push_Messages__c = true);
+        }
+        Test.startTest();
+        FimbyNotificationService.createNotification(
+            testContact.Id, FimbyConstants.NOTIF_RESPONSE_REPLY,
+            'Sam replied', 'Body', null, 'Response__c', '/response-reply', 'Sam'
+        );
+        Test.stopTest();
+
+        Notification__c notif = [
+            SELECT Push_Status__c FROM Notification__c
+            WHERE Contact__c = :testContact.Id AND Type__c = :FimbyConstants.NOTIF_RESPONSE_REPLY LIMIT 1
+        ];
+        System.assertEquals(null, notif.Push_Status__c,
+            'Asks & Offers push off must suppress the reply');
+    }
+
+    /* ── Sync helpers: read clears all, unread restores only latest ───────── */
+
+    @IsTest
+    static void testMarkRelatedNotificationsRead_ClearsAll() {
+        Contact testContact = getTestContact();
+        Id relId = testContact.Id; // any 18-char Id works as the related-record key
+
+        List<Notification__c> rows = new List<Notification__c>{
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'r1', Related_Record_Id__c = String.valueOf(relId)),
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+                Title__c = 'r2', Related_Record_Id__c = String.valueOf(relId)),
+            new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_THANKS_RECEIVED,
+                Title__c = 't1', Related_Record_Id__c = String.valueOf(relId))
+        };
+        insert rows;
+
+        System.runAs(new User(Id = getTestUser().Id)) {
+            Test.startTest();
+            FimbyNotificationService.markRelatedNotificationsRead(relId, FimbyConstants.RESPONSE_HIDDEN_TYPES);
+            Test.stopTest();
+        }
+
+        Integer unread = [SELECT COUNT() FROM Notification__c
+                          WHERE Related_Record_Id__c = :String.valueOf(relId) AND Read_Date__c = null];
+        System.assertEquals(0, unread, 'All hidden rows for the thread should be marked read');
+    }
+
+    @IsTest
+    static void testMarkLatestRelatedNotificationUnread_RestoresOnlyLatest() {
+        Contact testContact = getTestContact();
+        Id relId = testContact.Id;
+
+        // Two read rows; only the most recent should flip back to unread.
+        insert new Notification__c(Contact__c = testContact.Id, Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+            Title__c = 'older', Related_Record_Id__c = String.valueOf(relId), Read_Date__c = Datetime.now());
+        Notification__c newer = new Notification__c(Contact__c = testContact.Id,
+            Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY, Title__c = 'newer',
+            Related_Record_Id__c = String.valueOf(relId), Read_Date__c = Datetime.now());
+        insert newer;
+
+        System.runAs(new User(Id = getTestUser().Id)) {
+            Test.startTest();
+            FimbyNotificationService.markLatestRelatedNotificationUnread(relId, FimbyConstants.RESPONSE_HIDDEN_TYPES);
+            Test.stopTest();
+        }
+
+        Integer unread = [SELECT COUNT() FROM Notification__c
+                          WHERE Related_Record_Id__c = :String.valueOf(relId) AND Read_Date__c = null];
+        System.assertEquals(1, unread, 'Exactly one (the most recent) hidden row should be restored to unread');
+    }
 }

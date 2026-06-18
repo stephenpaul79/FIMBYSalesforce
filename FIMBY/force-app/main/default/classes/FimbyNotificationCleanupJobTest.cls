@@ -66,6 +66,30 @@ public class FimbyNotificationCleanupJobTest {
     }
 
     @IsTest
+    static void testHiddenTypesSurvive30DayReadPurge() {
+        Account nb = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nb.Id, true);
+
+        // Read long ago, but a hidden message-style type — must NOT be deleted
+        // by the 30-day read-purge (it lives as long as its thread).
+        Notification__c hiddenRead = new Notification__c(
+            Contact__c = c.Id,
+            Type__c = FimbyConstants.NOTIF_RESPONSE_REPLY,
+            Title__c = 'Hidden read reply',
+            Read_Date__c = Datetime.now().addDays(-45),
+            Related_Record_Id__c = String.valueOf(c.Id)
+        );
+        insert hiddenRead;
+
+        Test.startTest();
+        new FimbyNotificationCleanupJob().execute(null);
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Notification__c WHERE Id = :hiddenRead.Id],
+            'Hidden type must survive the 30-day read-purge');
+    }
+
+    @IsTest
     static void testSchedulableExecution() {
         Test.startTest();
         String jobId = System.schedule(

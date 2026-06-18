@@ -395,12 +395,14 @@ public with sharing class FimbyStoryCommentController {
             FimbyNotificationService.createNotification(
                 story.Posted_By__c,
                 FimbyConstants.NOTIF_COMMENT,
-                commenterName + ' commented on your story',
+                'commented on your story',
                 truncatedComment,
                 story.Id,
                 'Story__c',
                 storyUrl,
-                commenterName
+                commenterName,
+                false,
+                commenterContactId
             );
             notified.add(story.Posted_By__c);
         }
@@ -412,12 +414,14 @@ public with sharing class FimbyStoryCommentController {
             FimbyNotificationService.createNotification(
                 mentioned,
                 FimbyConstants.NOTIF_COMMENT,
-                commenterName + ' mentioned you in a comment',
+                'mentioned you in a comment',
                 truncatedComment,
                 story.Id,
                 'Story__c',
                 storyUrl,
-                commenterName
+                commenterName,
+                false,
+                commenterContactId
             );
             notified.add(mentioned);
         }

@@ -34,8 +34,8 @@ global without sharing class FimbyVouchReminderJob implements Schedulable {
             SELECT Id, Requester_Contact__c, Reference_Contact__c, Conversation__c,
                    Neighbourhood__c, CreatedDate, Last_Reminder_Sent_Date__c,
                    Moderator_Alert_Opened__c,
-                   Requester_Contact__r.FirstName, Requester_Contact__r.LastName,
-                   Reference_Contact__r.FirstName, Reference_Contact__r.LastName
+                   Requester_Contact__r.Full_Name__c, Requester_Contact__r.FirstName,
+                   Reference_Contact__r.Full_Name__c, Reference_Contact__r.FirstName
             FROM Vouch_Record__c
             WHERE Status__c = 'Pending'
               AND CreatedDate < :reminderCutoff
@@ -54,8 +54,8 @@ global without sharing class FimbyVouchReminderJob implements Schedulable {
 
             if (dueForReminder && vr.Reference_Contact__c != null) {
                 String requesterName = displayName(
-                    vr.Requester_Contact__r?.FirstName,
-                    vr.Requester_Contact__r?.LastName
+                    vr.Requester_Contact__r?.Full_Name__c,
+                    vr.Requester_Contact__r?.FirstName
                 );
                 String url = vr.Conversation__c != null
                     ? FimbySettings.getUrl('Conversation', String.valueOf(vr.Conversation__c))
@@ -64,12 +64,14 @@ global without sharing class FimbyVouchReminderJob implements Schedulable {
                 FimbyNotificationService.createNotification(
                     vr.Reference_Contact__c,
                     FimbyConstants.NOTIF_VOUCH_REQUEST_REMINDER,
-                    'Just a nudge: ' + requesterName + ' is still waiting',
+                    'is still waiting on your reply',
                     'Whenever you have a moment, your reply opens up the library so they can borrow.',
                     vr.Id,
                     'Vouch_Record__c',
                     url,
-                    requesterName
+                    requesterName,
+                    false,
+                    vr.Requester_Contact__c
                 );
                 vr.Last_Reminder_Sent_Date__c = Datetime.now();
                 toUpdate.add(vr);
@@ -79,12 +81,12 @@ global without sharing class FimbyVouchReminderJob implements Schedulable {
                 && vr.CreatedDate < moderatorCutoff;
             if (shouldOpenModeratorTask) {
                 String requesterName = displayName(
-                    vr.Requester_Contact__r?.FirstName,
-                    vr.Requester_Contact__r?.LastName
+                    vr.Requester_Contact__r?.Full_Name__c,
+                    vr.Requester_Contact__r?.FirstName
                 );
                 String referenceName = displayName(
-                    vr.Reference_Contact__r?.FirstName,
-                    vr.Reference_Contact__r?.LastName
+                    vr.Reference_Contact__r?.Full_Name__c,
+                    vr.Reference_Contact__r?.FirstName
                 );
                 tasksToCreate.add(new Moderator_Task__c(
                     Category__c = 'Vouch_Pending',
@@ -116,10 +118,12 @@ global without sharing class FimbyVouchReminderJob implements Schedulable {
         }
     }
 
-    private static String displayName(String firstName, String lastName) {
-        if (String.isBlank(firstName) && String.isBlank(lastName)) return 'A neighbour';
-        if (String.isBlank(lastName)) return firstName;
-        if (String.isBlank(firstName)) return lastName;
-        return firstName + ' ' + lastName;
+    // Prefer Full_Name__c (honours Mask_Last_Name__c, e.g. "Emily D."); fall back to the
+    // first name, then to a neutral label. Never concatenate the raw last name — that
+    // bypasses the privacy mask.
+    private static String displayName(String fullName, String firstName) {
+        if (String.isNotBlank(fullName)) return fullName;
+        if (String.isNotBlank(firstName)) return firstName;
+        return 'A neighbour';
     }
 }
