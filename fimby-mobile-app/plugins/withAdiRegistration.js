@@ -2,17 +2,19 @@ const { withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
 const path = require("path");
 
+const FILE_NAME = "adi-registration.properties";
+
 /**
- * Copies aiv-registration.properties into the Android app's native assets
+ * Copies adi-registration.properties into the Android app's native assets
  * folder so it is bundled into the built APK/AAB. Google Play uses this file
  * to verify ownership of the app's signing key (Android developer verification).
  */
-const withAivRegistration = (config) => {
+const withAdiRegistration = (config) => {
   return withDangerousMod(config, [
     "android",
     async (config) => {
       const projectRoot = config.modRequest.projectRoot;
-      const source = path.join(projectRoot, "aiv-registration.properties");
+      const source = path.join(projectRoot, FILE_NAME);
       const assetsDir = path.join(
         config.modRequest.platformProjectRoot,
         "app",
@@ -20,11 +22,11 @@ const withAivRegistration = (config) => {
         "main",
         "assets"
       );
-      const destination = path.join(assetsDir, "aiv-registration.properties");
+      const destination = path.join(assetsDir, FILE_NAME);
 
       if (!fs.existsSync(source)) {
         throw new Error(
-          `withAivRegistration: expected source file at ${source} but it was not found.`
+          `withAdiRegistration: expected source file at ${source} but it was not found.`
         );
       }
 
@@ -36,4 +38,4 @@ const withAivRegistration = (config) => {
   ]);
 };
 
-module.exports = withAivRegistration;
+module.exports = withAdiRegistration;

@@ -8,6 +8,11 @@
     margin: 12px 0;
 }
 
+.safety-note c-fimby-inline-banner {
+    display: inline-flex;
+    max-width: calc(100% - 40px);
+}
+
 .safety-note__dismiss {
     position: absolute;
     top: 8px;

@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.fimby.app",
       "sha256_cert_fingerprints": [
-        "A9:8E:9D:F3:74:D5:C3:7E:D5:02:6A:05:E9:DF:21:99:C0:4D:1C:8E:A1:87:1C:F5:A1:99:03:F8:4B:E9:15:60"
+        "A9:8E:9D:F3:74:D5:C3:7E:D5:02:6A:05:E9:DF:21:99:C0:4D:1C:8E:A1:87:1C:F5:A1:99:03:F8:4B:E9:15:60",
+        "1B:C8:BB:04:3E:2E:2D:58:4B:BF:76:73:2C:AE:E2:7C:B6:41:04:62:29:F3:77:A6:8A:0F:37:B1:78:D7:83:9D"
       ]
     }
   }

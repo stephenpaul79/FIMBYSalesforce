@@ -274,7 +274,14 @@
     overflow-wrap: break-word;
 }
 
-.post-meta { font-size: 0.8rem; color: var(--fimby-text-secondary); }
+.post-meta {
+    font-size: 0.8rem;
+    color: var(--fimby-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
 .post-type-row {
     display: inline-flex;
     align-items: center;

@@ -92,7 +92,7 @@
         }
       ],
       "expo-font",
-      "./plugins/withAivRegistration"
+      "./plugins/withAdiRegistration"
     ],
     "experiments": {
       "typedRoutes": true,
