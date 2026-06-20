@@ -644,6 +644,14 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         const sitePrefix = basePath.replace(/\/s$/i, '');
         const logoutUrl = sitePrefix + '/secur/logout.jsp';
+        // In the native app, hand logout to the native shell so it can revoke the
+        // app session token and tear down deterministically. This makes a real
+        // logout explicit, so the native side never confuses it with a session
+        // timeout (which silently re-authenticates). Web falls back to the redirect.
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'logout' }));
+            return;
+        }
         window.location.href = logoutUrl;
     }
 

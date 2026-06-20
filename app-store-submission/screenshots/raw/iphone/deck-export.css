@@ -1,0 +1,56 @@
+/* Board-deck phone export — transparent background, clean device bezel.
+   Renders ONE app screen in an iPhone bezel on a fully transparent canvas
+   with NO drop shadow, so the resulting PNG drops onto deck slides at any
+   size and overlaps cleanly. (Add shadow per-slide in PowerPoint if wanted.)
+
+   HOW TO EXPORT A TRANSPARENT PNG (no extra tooling):
+     1. Open this file's deck-NN-*.html in Chrome or Edge.
+     2. Open DevTools (F12) → Elements.
+     3. Right-click the <div class="shot"> node → "Capture node screenshot".
+        DevTools preserves transparency and crops tight to the bezel. Save it.
+   The white you see in the browser window is just the page behind the node;
+   the captured node itself is transparent. */
+
+:root {
+  --bezel: 14px;
+  --phone-h: 2796px;           /* native screen height → ~1290x2824 export, no upscaling */
+  --phone-aspect: 1290 / 2796; /* iPhone capture aspect — no cropping */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { background: transparent; }
+
+/* Capture THIS node — crops tight to the bezel with a transparent background. */
+.shot {
+  display: inline-block;
+  padding: 0;
+  background: transparent;
+}
+
+.device-frame {
+  height: var(--phone-h);
+  aspect-ratio: var(--phone-aspect);
+  width: auto;
+  padding: var(--bezel);
+  border-radius: 70px;
+  background: linear-gradient(155deg, #2e2620 0%, #14100d 55%, #0a0806 100%);
+  display: flex;
+}
+
+.device-screen {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 52px;
+  overflow: hidden;
+  background-color: #F0EBE3;
+  display: flex;
+}
+
+.device-screen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}

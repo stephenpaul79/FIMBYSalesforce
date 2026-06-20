@@ -158,10 +158,17 @@ const BACKEND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/frontdoor`;
 const BACKEND_LOGOUT_URL = `${BACKEND_BASE_URL}/api/logout`;
 const BACKEND_PUSH_ACTION_URL = `${BACKEND_BASE_URL}/api/notifications/action`;
 
-/** WebView handoff overlay — second act after native "Unlocking the door…" */
+/** WebView handoff overlay — second act after native "Unlocking the door…".
+ *  The first handoff of a session (cold-start load) uses its own phrase so a
+ *  later re-show (silent re-auth / reload) never repeats the same line. */
+const WEBVIEW_HANDOFF_FIRST_MESSAGE = "Herding the dust bunnies…";
 const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
 const WEBVIEW_HANDOFF_MIN_MS = 1000;
 const WEBVIEW_HANDOFF_FADE_MS = 550;
+
+/** Playback time (s) at which the themed dissolve overlay starts fading in over
+ *  the splash video. Tuned to the 3s clip's built-in fade-out tail. */
+const SPLASH_FADE_AT = 2.25;
 
 const INJECT_FALLBACK_MS = 2000;
 const SF_EC_HOST_PATTERN = /^fimby\.my\.site\.com$/i;
@@ -174,6 +181,19 @@ const SF_EC_HOST_PATTERN = /^fimby\.my\.site\.com$/i;
 const LIGHT_RESUME_AFTER_MS = 30 * 1000;        // notify the WebView after this
 const AUTH_RESUME_AFTER_MS = 5 * 60 * 1000;     // refresh the native session after this
 const MIN_RESUME_REFRESH_SPACING_MS = 20 * 1000; // throttle resume work churn
+
+// Experience Cloud frontdoor session lifetime. Mirrors the org session timeout
+// (~24h), anchored on WHEN the frontdoor was established (not on last EC
+// activity). A small margin keeps us under the live edge so we re-mint just
+// before the cookie dies. Past this age on resume we silently re-mint the
+// frontdoor at the last page — no taps. The reactive /login backstop covers the
+// case where the cookie dies earlier than this clock predicts.
+const EC_SESSION_MAX_AGE_MS = 23 * 60 * 60 * 1000;
+
+// Silent re-auth loop guard: if a re-auth attempt keeps landing back on /login
+// within this window, stop re-minting and fall to the Sign In screen.
+const REAUTH_LOOP_WINDOW_MS = 60 * 1000;
+const REAUTH_MAX_ATTEMPTS = 3;
 
 function isExperienceCloudUrl(rawUrl: string): boolean {
   try {
@@ -223,6 +243,38 @@ function isFimbyErrorPage(url: string): boolean {
     return /^\/error\/?$/i.test(u.pathname);
   } catch {
     return false;
+  }
+}
+
+// Salesforce server-side logout endpoint. An explicit navigation here (the
+// header web-fallback, the VF SiteHeader link, account deletion, etc.) is an
+// unambiguous, user-initiated logout — distinct from a session-timeout bounce
+// to /login. We treat it as the deterministic "this is a real logout" signal so
+// the ensuing /login redirect is never mistaken for a timeout.
+function isFimbyLogoutEndpoint(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (!SF_EC_HOST_PATTERN.test(u.hostname)) return false;
+    return /\/secur\/logout\.jsp/i.test(u.pathname);
+  } catch {
+    return false;
+  }
+}
+
+// Turn a full Experience Cloud URL (e.g. lastEcUrlRef) into a frontdoor `ret`
+// path (`pathname + search + hash`) so silent re-auth lands the user back on the
+// exact page they were on. Returns null for non-EC or malformed URLs (frontdoor
+// then falls back to the default landing page).
+function ecUrlToRetPath(rawUrl: string | null): string | null {
+  if (!rawUrl) return null;
+  try {
+    const u = new URL(rawUrl);
+    if (!SF_EC_HOST_PATTERN.test(u.hostname)) return null;
+    const path = u.pathname + u.search + u.hash;
+    if (!path.startsWith("/") || path.startsWith("//")) return null;
+    return path;
+  } catch {
+    return null;
   }
 }
 
@@ -440,6 +492,12 @@ export default function IndexScreen() {
   // we can overlay our own recovery card (the EC error page has no navigation).
   const [stuckOnErrorPage, setStuckOnErrorPage] = React.useState(false);
   const [webViewHandoffVisible, setWebViewHandoffVisible] = React.useState(false);
+  const [webViewHandoffMessage, setWebViewHandoffMessage] = React.useState(
+    WEBVIEW_HANDOFF_FIRST_MESSAGE
+  );
+  // First handoff of the session uses the "dust bunnies" line; any later re-show
+  // (silent re-auth, reload) switches to the "kettle" line so it never repeats.
+  const handoffShownOnceRef = useRef(false);
   const webViewHandoffFade = useRef(new Animated.Value(1)).current;
   const webViewHandoffShownAtRef = useRef<number | null>(null);
   const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
@@ -536,10 +594,12 @@ export default function IndexScreen() {
     setSplashVideoComplete(true);
   });
 
-  // Sync a themed color overlay to the video's built-in fade-out (~4.15s -> ~5.0s)
-  // so the animation dissolves into the destination screen instead of hard-cutting.
+  // Sync a themed color overlay to the splash video's tail (~2.25s -> ~3.0s on the
+  // 3s clip) so the animation dissolves into the destination screen — which is now
+  // loading UNDERNEATH the video — instead of hard-cutting. Adjust SPLASH_FADE_AT
+  // if the video asset's built-in fade-out starts at a different time.
   useEventListener(splashPlayer, "timeUpdate", ({ currentTime }) => {
-    if (splashFadeStartedRef.current || currentTime < 4.15) return;
+    if (splashFadeStartedRef.current || currentTime < SPLASH_FADE_AT) return;
     splashFadeStartedRef.current = true;
     Animated.timing(splashFadeAnim, {
       toValue: 1,
@@ -659,6 +719,15 @@ export default function IndexScreen() {
   const lastCrashRecoverAtRef = useRef(0);
   const crashRecoverCountRef = useRef(0);
 
+  // Frontdoor (EC) session age anchor + silent re-auth guards. lastFrontdoorAtRef
+  // is stamped each time a frontdoor URL is applied; the resume coordinator uses
+  // it to decide when the EC session is likely past the org timeout. The reauth
+  // refs throttle and loop-guard the silent re-establish path.
+  const lastFrontdoorAtRef = useRef<number | null>(null);
+  const reauthInFlightRef = useRef(false);
+  const reauthAttemptCountRef = useRef(0);
+  const lastReauthAtRef = useRef(0);
+
   // Keep the latest access token in a ref so WebView message handlers (whose
   // useCallback deps stay []) never read a stale/null token from closure.
   const accessTokenRef = useRef<string | null>(null);
@@ -752,6 +821,12 @@ export default function IndexScreen() {
     webViewHandoffDismissedRef.current = false;
     webViewHandoffEcReadyAtRef.current = null;
     webViewHandoffShownAtRef.current = Date.now();
+    setWebViewHandoffMessage(
+      handoffShownOnceRef.current
+        ? WEBVIEW_HANDOFF_MESSAGE
+        : WEBVIEW_HANDOFF_FIRST_MESSAGE
+    );
+    handoffShownOnceRef.current = true;
     setWebViewHandoffVisible(true);
     webViewHandoffFade.setValue(1);
   }, [webViewHandoffFade]);
@@ -1154,6 +1229,10 @@ export default function IndexScreen() {
 
       authTimingMark("frontdoor_url_set");
       showWebViewHandoff();
+      // Anchor the EC session age clock and clear the re-auth loop guard: a
+      // freshly minted frontdoor is a clean, full-lifetime session.
+      lastFrontdoorAtRef.current = Date.now();
+      reauthAttemptCountRef.current = 0;
       setWebViewUrl(url);
       setStatus("You're in!");
       reconcilePushRegistration(token, payload.pushNotificationsEnabled);
@@ -1303,6 +1382,112 @@ export default function IndexScreen() {
   const openFimbyRef = useRef(openFimby);
   openFimbyRef.current = openFimby;
 
+  // Revoke the refresh family server-side and clear all local session state.
+  // Shared by every explicit-logout path (header postMessage, /secur/logout.jsp
+  // interception, account deletion). Best-effort revoke with one retry; we clear
+  // locally regardless so the device never holds a stranded token.
+  const revokeAndClearTokens = React.useCallback(async () => {
+    try {
+      if (accessTokenRef.current) {
+        unregisterTokenFromBackend(accessTokenRef.current).catch(() => {});
+      }
+      const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
+      if (refresh) {
+        const revoked = await revokeRefreshTokenOnBackend(refresh);
+        if (!revoked) {
+          warn("[LOGOUT] backend revoke not confirmed; clearing locally anyway");
+        }
+      }
+      await SecureStore.deleteItemAsync(REFRESH_KEY);
+      setAccessToken(null);
+      bootstrapRanRef.current = false;
+    } catch (e: any) {
+      log("[LOGOUT] revoke/clear error:", e?.message || e);
+    }
+  }, [unregisterTokenFromBackend]);
+
+  // Finish an explicit logout: tear down the WebView immediately (so the user
+  // sees the pre-auth screen at once) and revoke tokens in the background. Safe
+  // to call more than once — the logout endpoint and the trailing /login
+  // redirect can both fire — without double-revoking. logoutInProgressRef stays
+  // true through teardown so the /login interceptors treat it as logout, not a
+  // timeout.
+  const completeLogout = React.useCallback(
+    (reason: string) => {
+      const alreadyTearingDown = logoutInProgressRef.current;
+      logoutInProgressRef.current = true;
+      log("[LOGOUT] complete:", reason);
+      setWebViewUrl(null);
+      dismissWebViewHandoff({ immediate: true });
+      discardDeepLinkIntent(reason);
+      clearInjectFallback();
+      setStatus("Until next time!");
+      if (alreadyTearingDown) return;
+      void revokeAndClearTokens().finally(() => {
+        logoutInProgressRef.current = false;
+      });
+    },
+    [dismissWebViewHandoff, discardDeepLinkIntent, clearInjectFallback, revokeAndClearTokens]
+  );
+
+  // Silently re-establish a timed-out Experience Cloud session and land the user
+  // back on the page they were on — no taps. Refreshes the (still-valid) native
+  // token, then re-mints the frontdoor with a `ret` to lastEcPath. Never revokes
+  // the refresh token: a timeout is recoverable. Falls to Sign In only when the
+  // native session is genuinely expired (30/90-day TTL) or re-mint keeps failing.
+  const reestablishEcSession = React.useCallback(
+    async (retPath: string | null, reason: string) => {
+      if (logoutInProgressRef.current) return;
+      if (reauthInFlightRef.current) return;
+
+      const now = Date.now();
+      if (now - lastReauthAtRef.current < REAUTH_LOOP_WINDOW_MS) {
+        reauthAttemptCountRef.current += 1;
+      } else {
+        reauthAttemptCountRef.current = 1;
+      }
+      lastReauthAtRef.current = now;
+
+      const fallToSignIn = (message?: string) => {
+        dismissWebViewHandoff({ immediate: true });
+        setWebViewUrl(null);
+        setAccessToken(null);
+        Alert.alert(
+          "Please Sign In",
+          message || "Your session has expired. Please sign in again."
+        );
+      };
+
+      if (reauthAttemptCountRef.current > REAUTH_MAX_ATTEMPTS) {
+        log("[AUTH] silent re-auth loop guard tripped:", reason);
+        fallToSignIn();
+        return;
+      }
+
+      reauthInFlightRef.current = true;
+      log(
+        "[AUTH] silent re-auth:",
+        reason,
+        safeUrlForLog(retPath ? `${SF_AUTH_HOST}${retPath}` : undefined)
+      );
+      showWebViewHandoff();
+      try {
+        const result = await refreshSession();
+        if (result.sessionExpired || !result.token) {
+          fallToSignIn(result.message);
+          return;
+        }
+        await openFimby(result.token, retPath);
+      } catch (e: any) {
+        log("[AUTH] silent re-auth failed:", e?.message || e);
+        fallToSignIn();
+      } finally {
+        reauthInFlightRef.current = false;
+      }
+    },
+    [refreshSession, openFimby, showWebViewHandoff, dismissWebViewHandoff]
+  );
+
   const logout = React.useCallback(async () => {
     setBusy(true);
     // Claim the session for teardown so an in-flight/triggered refresh can't
@@ -1354,47 +1539,29 @@ export default function IndexScreen() {
       const url = request.url;
       log("[WebView] onShouldStartLoadWithRequest:", safeUrlForLog(url));
 
-      // Check if this is the login URL we want to intercept
+      // Explicit logout: a navigation to /secur/logout.jsp is always a real,
+      // user-initiated logout (header web-fallback, VF SiteHeader link, account
+      // deletion). Tear down deterministically — this is the signal that lets us
+      // treat the trailing /login redirect as logout rather than a timeout.
+      if (isFimbyLogoutEndpoint(url)) {
+        log("[WebView] Intercepted logout endpoint, tearing down");
+        completeLogout("webview-logout-endpoint");
+        return false;
+      }
+
       if (isFimbyLoginRedirect(url)) {
-        // Guard: if already handling logout, just block
+        // Our own logout teardown in progress → finish it (don't re-auth).
         if (logoutInProgressRef.current) {
-          log("[WebView] Logout already in progress, blocking");
+          log("[WebView] /login during logout teardown, finishing logout");
+          completeLogout("login-after-logout");
           return false;
         }
-        logoutInProgressRef.current = true;
-
-        log("[WebView] Intercepted login redirect, triggering logout");
-
-        // Immediately clear WebView to exit (don't wait for async logout)
-        setWebViewUrl(null);
-        dismissWebViewHandoff({ immediate: true });
-        discardDeepLinkIntent("webview-logout");
-        setStatus("Waving goodbye…");
-
-        // Fire-and-forget the rest of logout cleanup
-        (async () => {
-          try {
-            const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
-            if (refresh) {
-              const revoked = await revokeRefreshTokenOnBackend(refresh);
-              if (!revoked) {
-                warn("[WebView] backend revoke not confirmed; clearing locally anyway");
-              }
-            }
-            await SecureStore.deleteItemAsync(REFRESH_KEY);
-            setAccessToken(null);
-            // Reset bootstrap guard so next app open can auto-login
-            bootstrapRanRef.current = false;
-            setStatus("Until next time!");
-            log("[WebView] Logout cleanup complete");
-          } catch (e) {
-            log("[WebView] Logout cleanup error:", e);
-          } finally {
-            logoutInProgressRef.current = false;
-          }
-        })();
-
-        return false; // Block the WebView from rendering /login
+        // Unexpected /login = Experience Cloud session timeout. Silently
+        // re-establish the frontdoor at the last page; never revoke the
+        // still-valid native refresh token here.
+        log("[WebView] /login with no logout in progress — treating as timeout");
+        void reestablishEcSession(ecUrlToRetPath(lastEcUrlRef.current), "login-redirect-timeout");
+        return false; // block the EC login page from rendering
       }
 
       // Origin allowlist: anything outside the FIMBY/Salesforce surface is
@@ -1410,7 +1577,7 @@ export default function IndexScreen() {
 
       return true;
     },
-    [discardDeepLinkIntent, dismissWebViewHandoff]
+    [completeLogout, reestablishEcSession]
   );
 
   /**
@@ -1456,47 +1623,25 @@ export default function IndexScreen() {
         Notifications.setBadgeCountAsync(0).catch(() => {});
       }
 
-      // Fallback check if onShouldStartLoadWithRequest didn't catch it
+      // Fallback if onShouldStartLoadWithRequest didn't catch it (e.g. JS-driven
+      // redirects). Same logout-vs-timeout split as the primary interceptor.
+      if (isFimbyLogoutEndpoint(url)) {
+        log("[WebView] Fallback: logout endpoint, tearing down");
+        completeLogout("nav-logout-endpoint");
+        return;
+      }
+
       if (isFimbyLoginRedirect(url)) {
-        // Guard: if already handling logout, skip
         if (logoutInProgressRef.current) {
-          log("[WebView] Fallback: logout already in progress");
+          log("[WebView] Fallback: /login during logout teardown, finishing logout");
+          completeLogout("nav-login-after-logout");
           return;
         }
-        logoutInProgressRef.current = true;
-
-        log("[WebView] Fallback: detected login redirect, triggering logout");
-
-        // Immediately clear WebView to exit
-        setWebViewUrl(null);
-        dismissWebViewHandoff({ immediate: true });
-        discardDeepLinkIntent("webview-logout");
-        setStatus("Waving goodbye…");
-
-        // Fire-and-forget the rest of logout cleanup
-        (async () => {
-          try {
-            const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
-            if (refresh) {
-              const revoked = await revokeRefreshTokenOnBackend(refresh);
-              if (!revoked) {
-                warn("[WebView] Fallback backend revoke not confirmed; clearing locally anyway");
-              }
-            }
-            await SecureStore.deleteItemAsync(REFRESH_KEY);
-            setAccessToken(null);
-            bootstrapRanRef.current = false;
-            setStatus("Until next time!");
-            log("[WebView] Fallback logout cleanup complete");
-          } catch (e) {
-            log("[WebView] Fallback logout cleanup error:", e);
-          } finally {
-            logoutInProgressRef.current = false;
-          }
-        })();
+        log("[WebView] Fallback: /login with no logout in progress — treating as timeout");
+        void reestablishEcSession(ecUrlToRetPath(lastEcUrlRef.current), "nav-login-timeout");
       }
     },
-    [clearInjectFallback, discardDeepLinkIntent, dismissWebViewHandoff]
+    [clearInjectFallback, completeLogout, reestablishEcSession]
   );
 
   /**
@@ -1591,12 +1736,18 @@ export default function IndexScreen() {
         } else if (data.type === "pushNotifications" && typeof data.enabled === "boolean") {
           log("[WebView] Push toggle synced:", data.enabled);
           void syncPushRegistration(data.enabled);
+        } else if (data.type === "logout") {
+          // Explicit, user-initiated logout from inside the WebView (header,
+          // account deletion). Native owns teardown so a real logout is never
+          // confused with a session timeout.
+          log("[WebView] Native logout requested via postMessage");
+          completeLogout("postmessage");
         }
       } catch {
         // Not JSON or not a message we handle
       }
     },
-    [syncPushRegistration]
+    [syncPushRegistration, completeLogout]
   );
 
   /**
@@ -1878,7 +2029,17 @@ export default function IndexScreen() {
     try {
       notifyWebViewAppResumed(awayForMs);
 
-      if (awayForMs == null || awayForMs >= AUTH_RESUME_AFTER_MS) {
+      // If the frontdoor (EC) session is likely past the org timeout, silently
+      // re-mint it at the last page — no taps. Anchored on when the frontdoor was
+      // established (24h since frontdoor login, not last EC activity), per spec.
+      // If it turns out the cookie is still alive this is just an extra reload;
+      // if it died earlier than this clock, the /login backstop catches it.
+      const ecAgeMs =
+        lastFrontdoorAtRef.current != null ? now - lastFrontdoorAtRef.current : null;
+
+      if (ecAgeMs != null && ecAgeMs >= EC_SESSION_MAX_AGE_MS) {
+        await reestablishEcSession(ecUrlToRetPath(lastEcUrlRef.current), "resume-ec-age");
+      } else if (awayForMs == null || awayForMs >= AUTH_RESUME_AFTER_MS) {
         const result = await refreshSession();
 
         if (result.sessionExpired) {
@@ -1901,6 +2062,7 @@ export default function IndexScreen() {
     applyDeepLink,
     notifyWebViewAppResumed,
     refreshSession,
+    reestablishEcSession,
     dismissWebViewHandoff,
     webViewUrl,
   ]);
@@ -2059,38 +2221,40 @@ export default function IndexScreen() {
 
   const canLogin = !!request && !busy;
 
-  // Show splash video on startup (bootstrap runs in parallel)
-  // Preload images during splash so they're ready when home screen appears
-  if (!splashVideoComplete) {
-    return (
-      <View style={styles.splashContainer}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <VideoView
-          player={splashPlayer}
-          style={styles.splashVideo}
-          contentFit="cover"
-          nativeControls={false}
-        />
-        {/* Preload images hidden (1x1, opacity 0) during splash so they're
-            decoded and ready when the pre-auth screen appears. Never visible. */}
-        <View style={styles.preloadContainer}>
-          <Image source={LOGO_MORNING} style={styles.preloadImage} />
-          <Image source={LOGO_DAY} style={styles.preloadImage} />
-          <Image source={LOGO_EVENING} style={styles.preloadImage} />
-          <Image source={NO_WIFI_ICON} style={styles.preloadImage} />
-        </View>
-        {/* Themed overlay fades in during the video's built-in fade-out so the
-            animation lands on the destination screen (cream / espresso). */}
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: PREAUTH_COLORS[appTheme].bg, opacity: splashFadeAnim },
-          ]}
-        />
+  // Splash video plays as an opaque overlay ON TOP of the real app while the
+  // app bootstraps. The destination screens below — including the WebView once
+  // its frontdoor URL is ready — mount and load UNDERNEATH during these ~3s, so
+  // by the time the video lifts the destination is already warm (no remount: the
+  // WebView keeps a stable tree position across splashVideoComplete). On a slow
+  // network the "kettle" handoff / booting spinner is simply what's revealed when
+  // the video lifts. Dismissal is still video-driven (playToEnd / 10s fallback).
+  const splashOverlay = !splashVideoComplete ? (
+    <View style={[StyleSheet.absoluteFill, styles.splashContainer]}>
+      <VideoView
+        player={splashPlayer}
+        style={styles.splashVideo}
+        contentFit="cover"
+        nativeControls={false}
+      />
+      {/* Preload images hidden (1x1, opacity 0) during splash so they're
+          decoded and ready when the pre-auth screen appears. Never visible. */}
+      <View style={styles.preloadContainer}>
+        <Image source={LOGO_MORNING} style={styles.preloadImage} />
+        <Image source={LOGO_DAY} style={styles.preloadImage} />
+        <Image source={LOGO_EVENING} style={styles.preloadImage} />
+        <Image source={NO_WIFI_ICON} style={styles.preloadImage} />
       </View>
-    );
-  }
+      {/* Themed overlay fades in during the video's built-in fade-out so the
+          animation lands on the destination screen (cream / espresso). */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: PREAUTH_COLORS[appTheme].bg, opacity: splashFadeAnim },
+        ]}
+      />
+    </View>
+  ) : null;
 
   // Panda Screen: quiet hours interstitial (before auth)
   if (showPanda && !webViewUrl) {
@@ -2115,6 +2279,7 @@ export default function IndexScreen() {
     };
 
     return (
+      <>
       <View style={pandaStyles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={pandaStyles.pandaTopSpacer} />
@@ -2158,6 +2323,8 @@ export default function IndexScreen() {
         )}
         </View>
       </View>
+      {splashOverlay}
+      </>
     );
   }
 
@@ -2166,6 +2333,7 @@ export default function IndexScreen() {
     const themeColors = THEME_COLORS[appTheme];
     const handoffPalette = PREAUTH_COLORS[appTheme];
     return (
+      <>
       <SafeAreaView
         style={[styles.safeArea, { backgroundColor: themeColors.statusBar }]}
         edges={Platform.OS === "android" ? ["top", "bottom"] : ["top"]}
@@ -2233,7 +2401,7 @@ export default function IndexScreen() {
           >
             <ActivityIndicator size="large" color={handoffPalette.spinner} style={styles.spinner} />
             <Text style={[styles.webViewHandoffText, { color: handoffPalette.secondary }]}>
-              {WEBVIEW_HANDOFF_MESSAGE}
+              {webViewHandoffMessage}
             </Text>
           </Animated.View>
         )}
@@ -2294,6 +2462,8 @@ export default function IndexScreen() {
           </View>
         )}
       </SafeAreaView>
+      {splashOverlay}
+      </>
     );
   }
 
@@ -2354,6 +2524,7 @@ export default function IndexScreen() {
 
   // Main pre-auth layout: three distinct sections distributed top / middle / bottom
   return (
+    <>
     <SafeAreaView style={[styles.container, { backgroundColor: c.bg }]} edges={["top", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style={THEME_COLORS[appTheme].barStyle} backgroundColor={c.bg} />
@@ -2414,6 +2585,8 @@ export default function IndexScreen() {
         </Animated.View>
       </View>
     </SafeAreaView>
+    {splashOverlay}
+    </>
   );
 }
 

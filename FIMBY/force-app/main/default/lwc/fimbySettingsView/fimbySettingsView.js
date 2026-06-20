@@ -738,7 +738,15 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             this.showDeleteConfirm = false;
             // The user is logged out moments later, so there's no surface left to
             // confirm on \u2014 drop the message and let the logout speak for itself.
+            // In the native app, route logout through the native shell so the app
+            // session token is revoked and teardown is explicit (never mistaken
+            // for a session timeout, which would silently re-authenticate the
+            // just-deleted account). Web falls back to the redirect.
             setTimeout(() => {
+                if (window.ReactNativeWebView) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'logout' }));
+                    return;
+                }
                 window.location.href = '/secur/logout.jsp';
             }, 2500);
         } catch (error) {
