@@ -32,7 +32,7 @@ function pathFromAbsoluteUrl(raw) {
             return null;
         }
         return applyLegacyPathRewrites(parsed.pathname + parsed.search + parsed.hash);
-    } catch (e) {
+    } catch {
         return null;
     }
 }

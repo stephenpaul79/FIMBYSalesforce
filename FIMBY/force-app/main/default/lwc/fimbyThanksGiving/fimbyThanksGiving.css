@@ -127,10 +127,7 @@
 /* Modal Styles */
 .modal-backdrop {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background: var(--fimby-scrim);
     display: flex;
     align-items: center;

@@ -588,7 +588,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
         if (this.currentStep === STEP_FORM) {
             if (this.hasUnsavedChanges()) {
                 // eslint-disable-next-line no-alert
-                if (!confirm('You have unsaved changes. Are you sure you want to go back?')) {
+                if (!window.confirm('You have unsaved changes. Are you sure you want to go back?')) {
                     return;
                 }
             }
@@ -663,6 +663,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     handleBioGateOpenModal() {
         this._showBioGate = false;
         this._showIntroPostModal = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         window.requestAnimationFrame(() => {
             const modal = this.template.querySelector('c-fimby-intro-post-modal');
             if (modal && typeof modal.show === 'function') {

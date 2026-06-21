@@ -4,7 +4,7 @@ import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
 
@@ -16,6 +16,7 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     @track isBlocking = false;
     @track isProfileModerator = false;
 
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get contactIconUrl() { return `${IMPACT_ICONS}/sign.png`; }
     get aboutIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get accessibilityIconUrl() { return `${IMPACT_ICONS}/accessibility.png`; }
@@ -61,6 +62,24 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     }
 
     get hasSharedContactInfo() { return this.profile.hasSharedContactInfo === true; }
+    get iHaveSharedWithThem() { return this.profile.iHaveSharedWithThem === true; }
+    get showRedactedContactSection() { return !this.hasSharedContactInfo; }
+    get showShareCta() { return this.showRedactedContactSection && !this.iHaveSharedWithThem; }
+    get showAwaitingShareCopy() { return this.showRedactedContactSection && this.iHaveSharedWithThem; }
+    get shareCtaLabel() {
+        const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
+        return `Share my contact info with ${name}`;
+    }
+    get awaitingShareMessage() {
+        const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
+        return `You've shared your details with ${name}. You'll be connected once they share back.`;
+    }
+    get reciprocityMessage() {
+        const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
+        return `Messaging and ${name}'s contact details open up once they share their info back with you. Sharing yours first is a friendly way to invite that.`;
+    }
+
+    @track showShareModal = false;
     get sharedEmail() { return this.profile.sharedEmail; }
     get sharedPhone() { return this.profile.sharedPhone; }
     get sharedAddress() {
@@ -151,10 +170,16 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     async _loadProfile() {
         this.isLoading = true;
         try {
-            this.profile = await getNeighbourProfile({ neighbourContactId: this.neighbourContactId });
+            const result = await getNeighbourProfile({ neighbourContactId: this.neighbourContactId });
+            if (result?.isOrgContact === true && result?.orgAccountId) {
+                navigate(this, '/organization-profile?id=' + result.orgAccountId);
+                return;
+            }
+            this.profile = result;
             this._checkIfModerator();
         } catch (error) {
             console.error('Error loading neighbour profile:', error);
+            this.profile = {};
         } finally {
             this.isLoading = false;
         }
@@ -171,23 +196,32 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     }
 
     handleBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            navigate(this, '/my-stuff/my-contacts');
-        }
+        navigateBack(this, '/my-stuff/my-contacts');
     }
 
     async _checkIfModerator() {
         try {
             if (!this.profile?.contactId) return;
             this.isProfileModerator = await isModeratorContact({ contactId: this.profile.contactId });
-        } catch (e) {
+        } catch {
             this.isProfileModerator = false;
         }
     }
 
     handleTabChange(event) {
         navigateToRoute(this, event.detail.tab);
+    }
+
+    handleOpenShareModal() {
+        this.showShareModal = true;
+    }
+
+    handleShareModalClose() {
+        this.showShareModal = false;
+    }
+
+    async handleShareModalShared() {
+        this.showShareModal = false;
+        await this._loadProfile();
     }
 }

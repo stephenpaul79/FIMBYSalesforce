@@ -22,30 +22,19 @@
           "children" : [ {
             "children" : [ {
               "attributes" : {
-                "alignment" : "left",
-                "dxpStyle" : { },
-                "imageInfo" : "",
-                "imageInfoMobile" : "",
-                "logoWidth" : 250
+                "dxpStyle" : {
+                  "padding" : {
+                    "bottom" : "",
+                    "left" : "",
+                    "right" : "",
+                    "top" : "50px"
+                  }
+                },
+                "imageInfos" : "",
+                "richTextValue" : "<p style=\"text-align: center;\">Please visit our <a href=\"/sign-up\" rel=\"noopener noreferrer\" target=\"_self\">Sign Up</a> page.</p>"
               },
-              "definition" : "dxp_content_layout:siteLogo",
-              "id" : "e03facef-0583-4cd3-a5a9-ea3562b0af75",
-              "type" : "component"
-            }, {
-              "attributes" : {
-                "cancelLinkLabel" : "Already have an account?",
-                "confirmPasswordLabel" : "Confirm Password",
-                "dxpStyle" : { },
-                "emailLabel" : "Email",
-                "firstnameLabel" : "First Name",
-                "includePasswordField" : true,
-                "lastnameLabel" : "Last Name",
-                "passwordLabel" : "Create Password",
-                "regConfirmUrl" : "./CheckPasswordResetEmail",
-                "submitButtonLabel" : "Sign Up"
-              },
-              "definition" : "community_login:selfRegister",
-              "id" : "56bcae37-75ae-4319-89f7-b2e3b7f87b1c",
+              "definition" : "community_builder:richTextEditor",
+              "id" : "43ea62f3-4e97-406e-9150-48d00eafc8bd",
               "type" : "component"
             } ],
             "id" : "bcbe8d13-c046-4fac-8a61-0ffeb70027b1",
@@ -84,7 +73,7 @@
       "type" : "component"
     },
     "dataProviders" : [ ],
-    "themeLayoutType" : "Inner",
+    "themeLayoutType" : "6RRWToFKWMHjvS6Ze1xvexkT1yZNOd",
     "viewType" : "self-register"
   },
   "urlName" : "register"

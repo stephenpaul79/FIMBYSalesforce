@@ -196,7 +196,7 @@ export default class FimbyImageGrid extends LightningElement {
             const h = parseInt(parts[1], 10);
             if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return null;
             return { w, h };
-        } catch (e) {
+        } catch {
             return null;
         }
     }

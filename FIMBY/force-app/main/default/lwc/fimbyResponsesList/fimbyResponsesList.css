@@ -86,6 +86,17 @@
     border-left: 4px solid transparent;
 }
 
+.response-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--fimby-shadow-card-hover);
+}
+
+.response-card:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .response-item.unread .response-card {
     border-left-color: var(--fimby-cta-strip-accent, #3A7D8C);
     box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
@@ -97,11 +108,6 @@
 
 .response-item.declined .response-card {
     border-left-color: var(--fimby-error);
-}
-
-.response-card:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--fimby-shadow-card-hover);
 }
 
 /* Response Header */
@@ -354,17 +360,28 @@
 }
 
 .message-button {
-    width: 32px;
-    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    min-height: 32px;
+    width: auto;
+    height: auto;
     border-radius: var(--fimby-radius-lg);
     border: 1px solid var(--fimby-divider-default);
     background: var(--fimby-surface-card);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: all 0.2s ease;
     color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.message-btn-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .message-button:hover {
@@ -427,6 +444,12 @@
     transition: all 0.2s ease;
 }
 
+.fab-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .fab-button:hover {
     background: var(--fimby-btn-primary-bg-active);
     transform: translateY(-2px);
@@ -471,11 +494,6 @@ button.response-card {
         font-size: 10px;
     }
 
-    .message-button {
-        width: 28px;
-        height: 28px;
-    }
-
     .fab-container {
         bottom: 72px;
         right: 12px;
@@ -515,7 +533,6 @@ button.response-card {
 
 /* Keyboard focus visibility */
 .filter-tab:focus-visible,
-.response-card:focus-visible,
 .accept-button:focus-visible,
 .decline-button:focus-visible,
 .message-button:focus-visible,

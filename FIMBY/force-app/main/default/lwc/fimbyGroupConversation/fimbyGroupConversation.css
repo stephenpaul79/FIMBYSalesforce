@@ -298,13 +298,19 @@
     min-width: 140px;
 }
 
-.load-more-button:hover:not(:disabled) {
-    background: var(--fimby-hover-bg);
-}
-
 .load-more-button:disabled {
     cursor: not-allowed;
     opacity: 0.7;
+}
+
+.load-more-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.load-more-button:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
 }
 
 /* ── Date Separator ──────────────────────────────────── */
@@ -359,6 +365,21 @@
     background: transparent;
 }
 
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fimby-btn-primary-bg);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
 .message-card.from-me .card-avatar {
     background: var(--fimby-earth-driftwood, #8D7B6A);
 }
@@ -385,21 +406,6 @@
     align-items: flex-start;
     gap: 12px;
     margin-bottom: 4px;
-}
-
-.card-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    flex-shrink: 0;
-    overflow: hidden;
 }
 
 .avatar-img {
@@ -529,6 +535,13 @@
     color: var(--fimby-btn-primary-bg);
 }
 
+.reply-trigger-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 /* Posting As — identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
@@ -576,8 +589,10 @@
     border-radius: var(--fimby-radius-md);
     font-size: 16px;
     font-family: inherit;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     line-height: 1.4;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- prevents double-tap zoom on compose */
     touch-action: manipulation;
     background: var(--fimby-surface-card);
     box-sizing: border-box;
@@ -754,7 +769,6 @@
 .reply-trigger:focus-visible,
 .compose-cancel:focus-visible,
 .compose-send:focus-visible,
-.load-more-button:focus-visible,
 .collapsed-count-pill:focus-visible,
 .msg-collapsed:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);

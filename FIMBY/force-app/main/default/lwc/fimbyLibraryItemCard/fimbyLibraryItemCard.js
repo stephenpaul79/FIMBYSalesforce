@@ -53,9 +53,9 @@ export default class FimbyLibraryItemCard extends LightningElement {
             return 'utility:success';
         } else if (this.item.dueDate) {
             return 'utility:clock';
-        } else {
+        } 
             return 'utility:block_visitor';
-        }
+        
     }
 
     get availabilityText() {
@@ -63,9 +63,9 @@ export default class FimbyLibraryItemCard extends LightningElement {
             return 'Available';
         } else if (this.item.dueDate) {
             return `Due ${this.formatShortDate(this.item.dueDate)}`;
-        } else {
+        } 
             return 'Not Available';
-        }
+        
     }
 
     get categoryIconUrl() {
@@ -148,9 +148,10 @@ export default class FimbyLibraryItemCard extends LightningElement {
         return this.item.requiresApproval ? 'Request' : 'Borrow';
     }
 
-    get saveIcon() {
-        return this.isSaved ? 'utility:bookmark' : 'utility:bookmark_alt';
-    }
+    get borrowIconUrl() { return `${IMPACT_ICONS}/borrow.png`; }
+    get notifyIconUrl() { return `${IMPACT_ICONS}/BellActive.png`; }
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+    get saveIconUrl() { return `${IMPACT_ICONS}/save.png`; }
 
     get saveButtonClass() {
         return this.isSaved ? 'save-button saved' : 'save-button';

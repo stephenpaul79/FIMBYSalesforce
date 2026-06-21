@@ -662,7 +662,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
             } else {
                 this._closeMentionSuggestions();
             }
-        } catch (_e) {
+        } catch {
             this._closeMentionSuggestions();
         }
     }

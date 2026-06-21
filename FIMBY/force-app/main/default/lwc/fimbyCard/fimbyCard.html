@@ -181,20 +181,7 @@
 
                         <!-- Comment -->
                         <button lwc:if={showComment} type="button" class="action-button" aria-label="Comment" onclick={handleCommentClick}>
-                            <lightning-icon
-                                icon-name="utility:comments"
-                                size="small"
-                                variant="neutral">
-                            </lightning-icon>
-                        </button>
-
-                        <!-- Share -->
-                        <button lwc:if={showShare} type="button" class="action-button" aria-label="Share" onclick={handleShareClick}>
-                            <lightning-icon
-                                icon-name="utility:share_post"
-                                size="small"
-                                variant="neutral">
-                            </lightning-icon>
+                            <img src={commentIconUrl} alt="" class="action-button-icon">
                         </button>
 
                         <!-- Custom action -->

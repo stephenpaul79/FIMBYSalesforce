@@ -149,6 +149,7 @@ export default class FimbyLightbox extends LightningElement {
     }
 
     _trapFocus() {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => {
             const closeBtn = this.template.querySelector('.lightbox-close');
             if (closeBtn) closeBtn.focus();

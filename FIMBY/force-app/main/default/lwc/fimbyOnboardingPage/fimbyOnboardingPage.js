@@ -603,6 +603,7 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             return;
         }
         this._isVouchSearching = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._vouchSearchTimeout = setTimeout(() => this._doVouchSearch(), VOUCH_SEARCH_DEBOUNCE_MS);
     }
 
@@ -814,6 +815,7 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             return;
         }
         // ~16ms per tick × 20 attempts = ~320ms before giving up
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => this._showIntroModalWhenReady(attempt + 1), 16);
     }
 
@@ -885,7 +887,7 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
         if (body) body.scrollTop = 0;
         try {
             window.scrollTo({ top: 0, behavior: 'instant' });
-        } catch (_e) {
+        } catch {
             window.scrollTo(0, 0);
         }
     }
@@ -899,13 +901,13 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
 
     _addKeyboardListener() {
         this._boundKeydown = this.handleKeydown.bind(this);
-        // eslint-disable-next-line @lwc/lwc/no-document-query
+         
         document.addEventListener('keydown', this._boundKeydown);
     }
 
     _removeKeyboardListener() {
         if (this._boundKeydown) {
-            // eslint-disable-next-line @lwc/lwc/no-document-query
+             
             document.removeEventListener('keydown', this._boundKeydown);
             this._boundKeydown = null;
         }

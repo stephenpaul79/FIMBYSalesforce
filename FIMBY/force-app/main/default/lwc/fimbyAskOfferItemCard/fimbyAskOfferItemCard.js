@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { completeImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyAskOfferItemCard extends LightningElement {
@@ -81,14 +82,18 @@ export default class FimbyAskOfferItemCard extends LightningElement {
         return stars;
     }
 
-    get responseIcon() {
+    get responseIconUrl() {
         switch (this.item.type?.toLowerCase()) {
-            case 'need': return 'utility:help';
-            case 'offer': return 'utility:check';
-            case 'service': return 'utility:bookmark';
-            default: return 'utility:like';
+            case 'need': return `${IMPACT_ICONS}/needsm.png`;
+            case 'offer': return `${IMPACT_ICONS}/giftsm.png`;
+            case 'service': return `${IMPACT_ICONS}/Skills.png`;
+            default: return `${IMPACT_ICONS}/rsvp.png`;
         }
     }
+
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+
+    get saveIconUrl() { return `${IMPACT_ICONS}/save.png`; }
 
     get responseLabel() {
         switch (this.item.type?.toLowerCase()) {
@@ -97,10 +102,6 @@ export default class FimbyAskOfferItemCard extends LightningElement {
             case 'service': return 'Book';
             default: return 'Respond';
         }
-    }
-
-    get saveIcon() {
-        return this.isSaved ? 'utility:bookmark' : 'utility:bookmark_alt';
     }
 
     get saveButtonClass() {

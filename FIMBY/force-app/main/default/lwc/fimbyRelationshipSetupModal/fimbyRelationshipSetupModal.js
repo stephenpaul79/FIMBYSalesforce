@@ -226,7 +226,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
                 month: 'long',
                 day: 'numeric'
             });
-        } catch (e) {
+        } catch {
             return this.cgaEffectiveDate;
         }
     }
@@ -341,6 +341,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             return;
         }
         clearTimeout(this._searchTimeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._searchTimeout = setTimeout(() => this._doSearch(), 300);
     }
 

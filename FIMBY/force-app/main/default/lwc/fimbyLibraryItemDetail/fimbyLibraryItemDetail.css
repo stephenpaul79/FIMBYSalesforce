@@ -760,7 +760,7 @@ button.item-image-container {
     margin-bottom: 6px;
 }
 .banner-message {
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     font-size: 0.92rem;
     line-height: 1.4;
     color: var(--fimby-text-primary, #4A3526);
@@ -788,6 +788,7 @@ button.item-image-container {
     border-radius: var(--fimby-radius-sm, 8px);
     font-family: inherit;
     font-size: 0.9rem;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     margin-bottom: 12px;
 }

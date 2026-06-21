@@ -31,7 +31,7 @@ export default class FimbyReactivationLanding extends LightningElement {
             } else {
                 this.state = STATE_NOT_FOUND;
             }
-        } catch (e) {
+        } catch {
             this.state = STATE_NOT_FOUND;
         }
     }

@@ -40,7 +40,7 @@ export default class FimbyAccountReactivate extends LightningElement {
         try {
             await requestReactivationLink({ username: this.username });
             this.state = STATE_SENT;
-        } catch (e) {
+        } catch {
             this.state = STATE_SENT;
         } finally {
             this.isSubmitting = false;

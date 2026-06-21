@@ -2,7 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { invalidateModeratorContext } from 'c/fimbyModeratorContext';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, navigateBack } from 'c/fimbyNavigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 
 import getTaskPageBootstrap from '@salesforce/apex/FimbyModeratorDashboardController.getTaskPageBootstrap';
@@ -1188,16 +1188,16 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
 
     _navigateBack() {
         invalidateModeratorContext();
-        let destination = '/moderator-dashboard';
+        let fallback = '/moderator-dashboard';
         try {
             const params = new URLSearchParams(window.location.search);
             if (params.get('from') === 'archive') {
-                destination = '/moderator-task-archive';
+                fallback = '/moderator-task-archive';
             }
         } catch {
             /* use default */
         }
-        navigate(this, destination);
+        navigateBack(this, fallback);
     }
 
     async _navigateToConversation(contactId) {

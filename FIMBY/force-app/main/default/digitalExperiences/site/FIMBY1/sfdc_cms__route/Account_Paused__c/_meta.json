@@ -1,0 +1,5 @@
+{
+  "apiName" : "Account_Paused__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

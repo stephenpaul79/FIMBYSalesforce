@@ -389,7 +389,7 @@
                     </template>
                     <div class="compose-area">
                         <textarea class="compose-input" placeholder="Write a reply..."
-                                  value={messageText} oninput={handleMessageInput} rows="3"></textarea>
+                                  oninput={handleMessageInput} rows="3">{messageText}</textarea>
                         <div class="compose-actions">
                             <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
                             <button class="compose-send" onclick={handleSendMessage}
@@ -402,7 +402,7 @@
                 </template>
                 <template lwc:else>
                     <button class="reply-trigger" onclick={handleShowCompose}>
-                        <lightning-icon icon-name="utility:reply" size="x-small"></lightning-icon>
+                        <img src={replyIconUrl} alt="" class="reply-trigger-icon">
                         <span>Reply</span>
                     </button>
                 </template>
@@ -449,10 +449,9 @@
                                 <label class="block-label">Report details</label>
                                 <textarea
                                     class="report-textarea"
-                                    value={reportDetails}
                                     oninput={handleReportDetailsChange}
                                     placeholder="Please describe the issue..."
-                                    rows="3"></textarea>
+                                    rows="3">{reportDetails}</textarea>
                             </div>
                         </template>
                     </div>

@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, navigateBack } from 'c/fimbyNavigation';
 
 export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
     _pageTitle = '';
@@ -55,6 +55,8 @@ export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
 
     get hasParent() { return !!this.parentLabel; }
     get progressStyle() { return `width: ${this.progressValue}%`; }
+    get searchIconUrl() { return `${IMPACT_ICONS}/Magnify.png`; }
+    get notificationIconUrl() { return `${IMPACT_ICONS}/BellActive.png`; }
 
     /* ── Three-tier menu item resolution ─────────────── */
 
@@ -188,23 +190,7 @@ export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
         const notCancelled = this.dispatchEvent(backEvent);
         if (!notCancelled) return;
 
-        let sameOrigin = false;
-        try {
-            const ref = document.referrer;
-            sameOrigin = !!ref && new URL(ref).origin === window.location.origin;
-        } catch (e) {
-            sameOrigin = false;
-        }
-
-        if (sameOrigin && window.history.length > 1) {
-            window.history.back();
-            return;
-        }
-        if (this.parentUrl) {
-            navigate(this, this.parentUrl);
-            return;
-        }
-        navigate(this, '/');
+        navigateBack(this, this.parentUrl || null);
     }
 
     handleNavLink(event) {

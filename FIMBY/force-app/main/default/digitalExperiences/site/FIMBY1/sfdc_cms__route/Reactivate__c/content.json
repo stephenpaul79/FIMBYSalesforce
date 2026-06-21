@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Reactivate",
+  "contentBody" : {
+    "activeViewId" : "Reactivate",
+    "configurationTags" : [ ],
+    "pageAccess" : "Public",
+    "routeType" : "custom-reactivate",
+    "urlPrefix" : "reactivate"
+  },
+  "urlName" : "reactivate"
+}

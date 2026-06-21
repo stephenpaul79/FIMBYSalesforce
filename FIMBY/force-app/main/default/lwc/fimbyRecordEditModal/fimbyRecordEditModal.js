@@ -11,6 +11,21 @@ export default class FimbyRecordEditModal extends LightningElement {
     @api recordId;
     @api objectApiName;
     @api fieldSetName = 'FIMBY_Editable_Fields';
+    _recordId;
+    _objectApiName;
+    _fieldSetName;
+
+    get activeRecordId() {
+        return this._recordId || this.recordId;
+    }
+
+    get activeObjectApiName() {
+        return this._objectApiName || this.objectApiName;
+    }
+
+    get activeFieldSetName() {
+        return this._fieldSetName || this.fieldSetName;
+    }
 
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get saveIconUrl() { return `${IMPACT_ICONS}/save.png`; }
@@ -59,22 +74,22 @@ export default class FimbyRecordEditModal extends LightningElement {
     }
 
     // Get object info for the label
-    @wire(getObjectInfo, { objectApiName: '$objectApiName' })
+    @wire(getObjectInfo, { objectApiName: '$activeObjectApiName' })
     handleObjectInfo({ error, data }) {
         if (data) {
             this.objectLabel = data.label;
         } else if (error) {
             console.error('Error getting object info:', error);
-            this.objectLabel = this.objectApiName;
+            this.objectLabel = this.activeObjectApiName;
         }
     }
 
     // Public API to show the modal
     @api
     show(recordId, objectApiName, fieldSetName) {
-        if (recordId) this.recordId = recordId;
-        if (objectApiName) this.objectApiName = objectApiName;
-        if (fieldSetName) this.fieldSetName = fieldSetName;
+        if (recordId) this._recordId = recordId;
+        if (objectApiName) this._objectApiName = objectApiName;
+        if (fieldSetName) this._fieldSetName = fieldSetName;
 
         this.isVisible = true;
         this.hasError = false;
@@ -91,7 +106,7 @@ export default class FimbyRecordEditModal extends LightningElement {
 
     // Load field set fields from Apex
     async loadFieldSet() {
-        if (!this.objectApiName || !this.fieldSetName) {
+        if (!this.activeObjectApiName || !this.activeFieldSetName) {
             this.hasError = true;
             this.errorMessage = 'Object or field set not specified.';
             return;
@@ -102,8 +117,8 @@ export default class FimbyRecordEditModal extends LightningElement {
 
         try {
             const fields = await getFieldSetFields({
-                objectApiName: this.objectApiName,
-                fieldSetName: this.fieldSetName
+                objectApiName: this.activeObjectApiName,
+                fieldSetName: this.activeFieldSetName
             });
 
             this.fieldSetFields = fields.map((field) => ({
@@ -113,7 +128,7 @@ export default class FimbyRecordEditModal extends LightningElement {
 
             if (fields.length === 0) {
                 this.hasError = true;
-                this.errorMessage = `No editable fields found. Please ensure the "${this.fieldSetName}" field set exists on ${this.objectLabel}.`;
+                this.errorMessage = `No editable fields found. Please ensure the "${this.activeFieldSetName}" field set exists on ${this.objectLabel}.`;
             }
         } catch (error) {
             console.error('Error loading field set:', error);
@@ -171,7 +186,7 @@ export default class FimbyRecordEditModal extends LightningElement {
         }
     }
 
-    handleSubmit(event) {
+    handleSubmit() {
         this.isSaving = true;
         // Let the form submit naturally
     }
@@ -187,7 +202,7 @@ export default class FimbyRecordEditModal extends LightningElement {
         this.dispatchEvent(new CustomEvent('recordsaved', {
             detail: {
                 recordId: savedRecordId,
-                objectApiName: this.objectApiName
+                objectApiName: this.activeObjectApiName
             }
         }));
 

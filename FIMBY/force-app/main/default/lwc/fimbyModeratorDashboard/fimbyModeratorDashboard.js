@@ -4,7 +4,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate } from 'c/fimbyNavigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 
-import { getModeratorContext, invalidateModeratorContext } from 'c/fimbyModeratorContext';
+import { invalidateModeratorContext } from 'c/fimbyModeratorContext';
 
 import getModeratorAssignments from '@salesforce/apex/FimbyModeratorDashboardController.getModeratorAssignments';
 import getDashboardSummary from '@salesforce/apex/FimbyModeratorDashboardController.getDashboardSummary';
@@ -19,11 +19,9 @@ import getSupportConcernData from '@salesforce/apex/FimbyModeratorDashboardContr
 import getEscalationDetail from '@salesforce/apex/FimbyModeratorDashboardController.getEscalationDetail';
 import getWelcomeReviewData from '@salesforce/apex/FimbyModeratorDashboardController.getWelcomeReviewData';
 import getNeighbourhoodHealthData from '@salesforce/apex/FimbyModeratorDashboardController.getNeighbourhoodHealthData';
-import getSubjectHistory from '@salesforce/apex/FimbyModeratorDashboardController.getSubjectHistory';
 import resolveTask from '@salesforce/apex/FimbyModeratorDashboardController.resolveTask';
 import escalateTask from '@salesforce/apex/FimbyModeratorDashboardController.escalateTask';
 import reopenTask from '@salesforce/apex/FimbyModeratorDashboardController.reopenTask';
-import claimTask from '@salesforce/apex/FimbyModeratorDashboardController.claimTask';
 import republishContent from '@salesforce/apex/FimbyModeratorDashboardController.republishContent';
 import keepContentHidden from '@salesforce/apex/FimbyModeratorDashboardController.keepContentHidden';
 import issueCheckIn from '@salesforce/apex/FimbyModeratorDashboardController.issueCheckIn';
@@ -674,8 +672,6 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
     async handleTaskAction(event) {
         const { action, task } = event.detail;
         const category = task.Category__c || '';
-        const isDesktop = this._desktopQuery?.matches;
-
         if (action === 'review' && this._isComplexCategory(category)) {
             navigate(this, `/moderator-task?recordId=${task.Id}`);
             return;
@@ -784,7 +780,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
     }
 
     _showModalShell(task, panelData = {}) {
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
+         
         Promise.resolve().then(() => {
             const shell = this.template.querySelector('c-fimby-moderator-task-modal-shell');
             if (shell) {
@@ -1216,7 +1212,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
                 expandedSections: this._expandedSections,
                 activeTabs: this._activeTabs
             }));
-        } catch (_e) { /* storage unavailable */ }
+        } catch { /* storage unavailable */ }
     }
 
     _restoreState() {
@@ -1228,7 +1224,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
                 if (state.expandedSections) this._expandedSections = state.expandedSections;
                 if (state.activeTabs) this._activeTabs = state.activeTabs;
             }
-        } catch (_e) { /* storage unavailable */ }
+        } catch { /* storage unavailable */ }
     }
 
     // ================================================================

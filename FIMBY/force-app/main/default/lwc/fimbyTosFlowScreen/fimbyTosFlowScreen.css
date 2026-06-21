@@ -139,15 +139,6 @@
     transition: background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
-.fimby-tos-screen__agree:hover:not(:disabled) {
-    background: var(--fimby-btn-primary-bg-hover, #336F7D);
-}
-
-.fimby-tos-screen__agree:active:not(:disabled) {
-    background: var(--fimby-btn-primary-bg-active, #2B5F6D);
-    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0, 0, 0, 0.12));
-}
-
 .fimby-tos-screen__agree:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
@@ -157,6 +148,15 @@
     opacity: 0.55;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+.fimby-tos-screen__agree:hover:not(:disabled) {
+    background: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.fimby-tos-screen__agree:active:not(:disabled) {
+    background: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0, 0, 0, 0.12));
 }
 
 .fimby-tos-screen__error {

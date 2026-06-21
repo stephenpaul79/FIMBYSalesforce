@@ -39,7 +39,7 @@ export default class FimbyModeratorEvidenceTimeline extends LightningElement {
             const diffDays = Math.floor(diffHours / 24);
             if (diffDays < 7) return `${diffDays}d ago`;
             return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
-        } catch (e) {
+        } catch {
             return dateStr;
         }
     }

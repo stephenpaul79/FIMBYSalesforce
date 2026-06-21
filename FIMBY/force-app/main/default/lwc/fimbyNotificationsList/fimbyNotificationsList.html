@@ -100,7 +100,9 @@
                                        onkeydown={handleNotificationKeydown}>
 
                                         <!-- Single avatar slot: photo / initials (human) or glyph (system) -->
-                                        <span class="notif-avatar">
+                                        <span class={notification.notifAvatarClass}
+                                              data-profile-path={notification.actorProfilePath}
+                                              onclick={handleActorAvatarClick}>
                                             <template lwc:if={notification.showActorPhoto}>
                                                 <img src={notification.actorPhotoSrc} alt="" class="notif-avatar-img" onerror={handleAvatarError} />
                                                 <span class="notif-avatar-initials" style="display:none">{notification.actorInitials}</span>
@@ -113,7 +115,7 @@
                                             </template>
                                         </span>
 
-                                        <!-- Content: primary (actor + message) + timestamp, then body -->
+                                        <!-- Content: primary (actor + message), then body; date + kebab share .notif-meta -->
                                         <div class="notification-content">
                                             <div class="notif-header">
                                                 <div class="notif-primary">
@@ -122,23 +124,23 @@
                                                     </template>
                                                     <span>{notification.displayTitle}</span>
                                                 </div>
-                                                <time class="notif-time" datetime={notification.isoTime} title={notification.formattedAbsoluteTime}>{notification.formattedTime}</time>
+                                                <div class="notif-meta">
+                                                    <time class="notif-time" datetime={notification.isoTime} title={notification.formattedAbsoluteTime}>{notification.formattedTime}</time>
+                                                    <div class="notif-kebab-container">
+                                                        <button type="button"
+                                                                class="notif-kebab"
+                                                                data-notification-id={notification.id}
+                                                                onclick={handleKebabClick}
+                                                                aria-label="Notification options"
+                                                                aria-haspopup="true">
+                                                            <lightning-icon icon-name="utility:threedots" size="x-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <template lwc:if={notification.hasBody}>
                                                 <div class="notif-body">{notification.displayBody}</div>
                                             </template>
-                                        </div>
-
-                                        <!-- Desktop kebab trigger -->
-                                        <div class="notif-kebab-container">
-                                            <button type="button"
-                                                    class="notif-kebab"
-                                                    data-notification-id={notification.id}
-                                                    onclick={handleKebabClick}
-                                                    aria-label="Notification options"
-                                                    aria-haspopup="true">
-                                                <lightning-icon icon-name="utility:threedots" size="x-small"></lightning-icon>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

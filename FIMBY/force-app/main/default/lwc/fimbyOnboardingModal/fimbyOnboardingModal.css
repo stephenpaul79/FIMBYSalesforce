@@ -269,6 +269,7 @@
     outline: none;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     min-height: 80px;
     font-family: inherit;
@@ -627,14 +628,20 @@
     transition: all 0.2s ease;
 }
 
-.carousel-arrow:hover:not(:disabled) {
-    background: var(--fimby-hover-bg);
-    border-color: var(--fimby-border-strong);
-}
-
 .carousel-arrow:disabled {
     opacity: 0.3;
     cursor: not-allowed;
+}
+
+.carousel-arrow:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.carousel-arrow:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
 }
 
 .carousel-dots {
@@ -739,7 +746,6 @@
 
 .btn:focus-visible,
 .close-button:focus-visible,
-.carousel-arrow:focus-visible,
 .checkbox-item input:focus-visible + .checkbox-label,
 .radio-item input:focus-visible + .radio-label {
     outline: 2px solid var(--fimby-focus-ring);

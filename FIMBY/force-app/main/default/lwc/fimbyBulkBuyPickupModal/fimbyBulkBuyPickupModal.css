@@ -1,4 +1,5 @@
 :host {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- modal host layout passthrough */
     display: contents;
 }
 
@@ -168,6 +169,7 @@
     border-radius: var(--fimby-radius-sm);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     color: var(--fimby-text-primary);
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     box-sizing: border-box;
 }
@@ -217,6 +219,17 @@
     min-height: 44px;
 }
 
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .btn-secondary:hover:not(:disabled) {
     background-color: var(--fimby-hover-bg);
     border-color: var(--fimby-border-strong);
@@ -225,11 +238,6 @@
 .btn-secondary:active:not(:disabled) {
     box-shadow: var(--fimby-btn-shadow-active);
     transform: scale(0.97);
-}
-
-.btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .btn-primary {
@@ -250,6 +258,17 @@
     justify-content: center;
 }
 
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .btn-primary:hover:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
 }
@@ -258,11 +277,6 @@
     background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
     box-shadow: var(--fimby-btn-shadow-active);
     transform: scale(0.97);
-}
-
-.btn-primary:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
 }
 
 .btn-primary lightning-spinner {
@@ -322,9 +336,7 @@
 }
 
 /* Keyboard focus visibility */
-.close-button:focus-visible,
-.btn-secondary:focus-visible,
-.btn-primary:focus-visible {
+.close-button:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);

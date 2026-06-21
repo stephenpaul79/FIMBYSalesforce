@@ -1,4 +1,4 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 const CATEGORY_LABELS = {
@@ -106,7 +106,7 @@ export default class FimbyModeratorTaskList extends LightningElement {
             if (diffDays === 1) return '1 day ago';
             if (diffDays < 30) return `${diffDays} days ago`;
             return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
-        } catch (e) {
+        } catch {
             return '';
         }
     }

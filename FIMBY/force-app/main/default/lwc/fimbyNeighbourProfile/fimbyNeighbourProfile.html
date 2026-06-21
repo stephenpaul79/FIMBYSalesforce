@@ -52,7 +52,7 @@
                     <template lwc:if={hasSharedContactInfo}>
                         <div class="identity-actions">
                             <button class="btn btn-primary message-btn" onclick={handleMessage}>
-                                <lightning-icon icon-name="utility:chat" size="xx-small"></lightning-icon>
+                                <img src={chatIconUrl} alt="" class="message-btn-icon">
                                 Message
                             </button>
                         </div>
@@ -110,7 +110,15 @@
                                 Contact Information
                             </h3>
                         </div>
-                        <p class="empty-hint">This neighbour hasn't shared their contact details with you yet.</p>
+                        <template lwc:if={showShareCta}>
+                            <p class="connect-copy">{reciprocityMessage}</p>
+                            <button class="btn btn-primary share-cta-btn" onclick={handleOpenShareModal}>
+                                {shareCtaLabel}
+                            </button>
+                        </template>
+                        <template lwc:elseif={showAwaitingShareCopy}>
+                            <p class="connect-copy connect-copy-quiet">{awaitingShareMessage}</p>
+                        </template>
                     </div>
                 </template>
 
@@ -232,10 +240,18 @@
 
         <template lwc:if={showNotFound}>
             <div class="empty-state">
-                <p>Neighbour not found. The link may be invalid or you may not have access.</p>
+                <p>This neighbour isn't available right now. They may have moved neighbourhoods, or this link may no longer work.</p>
                 <button class="btn btn-neutral" onclick={handleBack}>Go Back</button>
             </div>
         </template>
+
+        <c-fimby-share-contact-modal
+            is-open={showShareModal}
+            recipient-contact-id={neighbourContactId}
+            recipient-name={profile.fullName}
+            onclose={handleShareModalClose}
+            onshared={handleShareModalShared}>
+        </c-fimby-share-contact-modal>
 
         <c-fimby-bottom-navigation
             active-tab="mine"

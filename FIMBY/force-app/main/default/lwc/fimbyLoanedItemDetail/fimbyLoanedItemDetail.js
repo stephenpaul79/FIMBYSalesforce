@@ -2,6 +2,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { navigate } from 'c/fimbyNavigation';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 const FIELDS = [
     'Loaned_Item__c.Id',
@@ -27,7 +28,7 @@ export default class FimbyLoanedItemDetail extends NavigationMixin(LightningElem
     record;
 
     @wire(getRecord, { recordId: '$recordId', fields: FIELDS })
-    wiredRecord({ error, data }) {
+    wiredRecord({ data }) {
         this.isLoading = false;
         if (data) this.record = data;
     }
@@ -105,6 +106,9 @@ export default class FimbyLoanedItemDetail extends NavigationMixin(LightningElem
     get ownerAvatar() {
         return this.record ? getFieldValue(this.record, 'Loaned_Item__c.Library_Item__r.Owner_Contact__r.SmallPhotoUrl') : '';
     }
+
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+    get returnIconUrl() { return `${IMPACT_ICONS}/transfer.png`; }
 
     get actionsCardClass() {
         if (this.statusType === 'overdue') return 'actions-card cta-strip-urgent';

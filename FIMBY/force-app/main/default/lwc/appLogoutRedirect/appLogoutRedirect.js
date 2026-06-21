@@ -10,15 +10,16 @@ export default class AppLogoutRedirect extends LightningElement {
     // Try deep link back to the mobile app
     try {
       window.location.assign('fimby://logout');
-    } catch (e) {
+    } catch {
       // ignore
     }
 
     // Fallback for browsers
+    // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
     window.setTimeout(() => {
       try {
         window.location.assign('/login');
-      } catch (e) {
+      } catch {
         window.location.href = '/login';
       }
     }, 800);
@@ -34,7 +35,7 @@ export default class AppLogoutRedirect extends LightningElement {
       if (path.includes('/webruntime/design/')) return true;
 
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }

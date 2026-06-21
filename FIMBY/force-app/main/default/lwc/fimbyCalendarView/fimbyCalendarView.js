@@ -13,7 +13,6 @@ export default class FimbyCalendarView extends LightningElement {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
         const today = new Date();
-        const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const days = [];
 

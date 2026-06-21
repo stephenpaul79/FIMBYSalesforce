@@ -15,6 +15,11 @@ const DETAILS_MAX = 500;
 
 export default class FimbyVouchDeclineModal extends LightningElement {
     @api vouchRecordId = '';
+    _vouchRecordId = '';
+
+    get activeVouchRecordId() {
+        return this._vouchRecordId || this.vouchRecordId;
+    }
 
     @track isOpen = false;
     @track selectedReason = '';
@@ -45,7 +50,7 @@ export default class FimbyVouchDeclineModal extends LightningElement {
 
     @api
     show(vouchRecordId) {
-        this.vouchRecordId = vouchRecordId;
+        this._vouchRecordId = vouchRecordId;
         this.selectedReason = '';
         this.details = '';
         this.isOpen = true;
@@ -126,7 +131,7 @@ export default class FimbyVouchDeclineModal extends LightningElement {
         this.isSubmitting = true;
         try {
             await declineVouch({
-                vouchRecordId: this.vouchRecordId,
+                vouchRecordId: this.activeVouchRecordId,
                 reason: this.selectedReason,
                 details: this.selectedReason === 'Other' ? this.details.trim() : null
             });

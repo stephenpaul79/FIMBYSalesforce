@@ -9,9 +9,6 @@ import getMyLibraryItems from '@salesforce/apex/FimbyMyStuffController.getMyLibr
 import getMySkills from '@salesforce/apex/FimbyMyStuffController.getMySkills';
 import getMyBorrowedItems from '@salesforce/apex/FimbyMyStuffController.getMyBorrowedItems';
 import getMyContacts from '@salesforce/apex/FimbyMyStuffController.getMyContacts';
-import searchNeighbourhoodContacts from '@salesforce/apex/FimbyMyStuffController.searchNeighbourhoodContacts';
-import getMyContactDetailsForSharing from '@salesforce/apex/FimbyMyStuffController.getMyContactDetailsForSharing';
-import shareContactInfoDirect from '@salesforce/apex/FimbyMyStuffController.shareContactInfoDirect';
 import revokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.revokeSharedContactInfo';
 import undoRevokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.undoRevokeSharedContactInfo';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -107,26 +104,9 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
 
     // Share Contact modal state
     @track showShareModal = false;
-    @track shareSearchTerm = '';
-    @track shareSearchResults = [];
-    @track shareSearching = false;
-    @track selectedRecipientId = null;
-    @track selectedRecipientName = '';
-    @track shareEmail = false;
-    @track sharePhone = false;
-    @track shareAddress = false;
-    @track shareEmailValue = '';
-    @track sharePhoneValue = '';
-    @track shareStreetValue = '';
-    @track shareCityValue = '';
-    @track shareStateValue = '';
-    @track sharePostalCodeValue = '';
-    @track shareCountryValue = '';
-    @track shareAdditionalInfoValue = '';
-    @track shareSubmitting = false;
     @track shareModalEditMode = false;
-
-    _shareSearchTimeout;
+    @track shareRecipientId = null;
+    @track shareRecipientName = '';
 
     // Data loaded flags
     _postsLoaded = false;
@@ -166,6 +146,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
 
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+    get profileIconUrl() { return `${IMPACT_ICONS}/ProfileActive.png`; }
     get shareIconUrl() { return `${IMPACT_ICONS}/sign.png`; }
     get archiveIconUrl() { return `${IMPACT_ICONS}/box.png`; }
 
@@ -219,11 +200,11 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
                 if (rtName === 'Need') {
                     displayTypeName = 'Ask';
                     typeBadgeClass = 'type-badge need-type';
-                    badgeIconFile = POST_ICON_MAP['Need'];
+                    badgeIconFile = POST_ICON_MAP.Need;
                 } else if (rtName === 'Bulk_Buy' || rtName === 'Bulk Buy') {
                     displayTypeName = 'Bulk Buy';
                     typeBadgeClass = 'type-badge bulkbuy-type';
-                    badgeIconFile = POST_ICON_MAP['Bulk_Buy'];
+                    badgeIconFile = POST_ICON_MAP.Bulk_Buy;
                 } else if (rtName === 'Event' || p.Type__c === 'Event') {
                     if (evtType === 'Community_Event') {
                         displayTypeName = 'Community Event';
@@ -236,7 +217,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
                 } else {
                     displayTypeName = rtName || 'Offer';
                     typeBadgeClass = 'type-badge offer-type';
-                    badgeIconFile = POST_ICON_MAP['Offer'];
+                    badgeIconFile = POST_ICON_MAP.Offer;
                 }
 
                 return {
@@ -487,6 +468,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         this.contactSearchTerm = event.target.value;
         // Debounce
         clearTimeout(this._contactSearchTimeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._contactSearchTimeout = setTimeout(async () => {
             this._contactsLoaded = false;
             await this._loadContacts(this.contactSearchTerm);
@@ -515,227 +497,57 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         const contact = this.myContacts.find(c => c.contactId === contactId);
         if (!contact) return;
 
-        this._shareModalTrigger = event.currentTarget || this.template.activeElement || document.activeElement;
         this.shareModalEditMode = true;
-        this.selectedRecipientId = contactId;
-        this.selectedRecipientName = contactName;
-        this.shareEmailValue = contact.mySharedEmail ?? '';
-        this.sharePhoneValue = contact.mySharedPhone ?? '';
-        this.shareStreetValue = contact.mySharedStreet ?? '';
-        this.shareCityValue = contact.mySharedCity ?? '';
-        this.shareStateValue = contact.mySharedProvinceState ?? '';
-        this.sharePostalCodeValue = contact.mySharedPostalCode ?? '';
-        this.shareCountryValue = contact.mySharedCountry ?? '';
-        this.shareAdditionalInfoValue = contact.mySharedAdditionalInfo ?? '';
-        this.shareEmail = !!contact.mySharedEmail;
-        this.sharePhone = !!contact.mySharedPhone;
-        this.shareAddress = !!(
-            contact.mySharedStreet || contact.mySharedCity || contact.mySharedProvinceState
-            || contact.mySharedPostalCode || contact.mySharedCountry
-        );
+        this.shareRecipientId = contactId;
+        this.shareRecipientName = contactName || '';
+        this.showShareModal = true;
+         
+        Promise.resolve().then(() => {
+            const modal = this.template.querySelector('c-fimby-share-contact-modal');
+            modal?.setInitialShareValues({
+                email: contact.mySharedEmail,
+                phone: contact.mySharedPhone,
+                street: contact.mySharedStreet,
+                city: contact.mySharedCity,
+                state: contact.mySharedProvinceState,
+                postalCode: contact.mySharedPostalCode,
+                country: contact.mySharedCountry,
+                additionalInfo: contact.mySharedAdditionalInfo
+            });
+        });
+    }
+
+    handleOpenShareModal() {
+        this.shareModalEditMode = false;
+        this.shareRecipientId = null;
+        this.shareRecipientName = '';
         this.showShareModal = true;
     }
 
-    /* ===============================================================
-     * Share Contact Modal handlers
-     * =============================================================== */
-    _shareModalTrigger = null;
-
-    async handleOpenShareModal() {
-        this._shareModalTrigger = this.template.activeElement || document.activeElement;
-        this.showShareModal = true;
-        this._resetShareModal();
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        setTimeout(() => {
-            const closeBtn = this.template.querySelector('.share-contact-modal .slds-modal__close');
-            if (closeBtn) closeBtn.focus();
-        }, 50);
-        try {
-            const details = await getMyContactDetailsForSharing();
-            this.shareEmailValue = details.email || '';
-            this.sharePhoneValue = details.phone || '';
-            this.shareStreetValue = details.street || '';
-            this.shareCityValue = details.city || '';
-            this.shareStateValue = details.state || '';
-            this.sharePostalCodeValue = details.postalCode || '';
-            this.shareCountryValue = details.country || '';
-            this.shareEmail = !!details.email;
-            this.sharePhone = !!details.phone;
-            this.shareAddress = !!(details.street || details.city || details.state || details.postalCode || details.country);
-        } catch (e) {
-            console.error('Error loading contact details:', e);
-        }
-    }
-
-    handleCloseShareModal() {
+    handleShareModalClose() {
         this.showShareModal = false;
-        this._resetShareModal();
+        this.shareModalEditMode = false;
+        this.shareRecipientId = null;
+        this.shareRecipientName = '';
         this._contactsLoaded = false;
         this._loadContacts();
-        if (this._shareModalTrigger && typeof this._shareModalTrigger.focus === 'function') {
-            this._shareModalTrigger.focus();
-        }
-        this._shareModalTrigger = null;
     }
 
-    _resetShareModal() {
+    handleShareModalShared() {
+        this.showShareModal = false;
         this.shareModalEditMode = false;
-        this.shareSearchTerm = '';
-        this.shareSearchResults = [];
-        this.shareSearching = false;
-        this.selectedRecipientId = null;
-        this.selectedRecipientName = '';
-        this.shareEmail = false;
-        this.sharePhone = false;
-        this.shareAddress = false;
-        this.shareAdditionalInfoValue = '';
-        this.shareSubmitting = false;
+        this.shareRecipientId = null;
+        this.shareRecipientName = '';
+        this._contactsLoaded = false;
+        this._loadContacts();
     }
 
-    handleShareSearch(event) {
-        this.shareSearchTerm = event.target.value;
-        clearTimeout(this._shareSearchTimeout);
-        this._shareSearchTimeout = setTimeout(() => this._doShareSearch(), 350);
-    }
-
-    async _doShareSearch() {
-        const term = (this.shareSearchTerm || '').trim();
-        if (term.length < 2) {
-            this.shareSearchResults = [];
-            return;
-        }
-        this.shareSearching = true;
-        try {
-            const results = await searchNeighbourhoodContacts({ searchTerm: term });
-            this.shareSearchResults = (results || []).map(r => ({
-                contactId: r.contactId,
-                contactName: r.contactName,
-                email: r.email,
-                resultClass: r.contactId === this.selectedRecipientId
-                    ? 'share-result-item selected' : 'share-result-item'
-            }));
-        } catch (e) {
-            console.error('Search error:', e);
-            this.shareSearchResults = [];
-        } finally {
-            this.shareSearching = false;
-        }
-    }
-
-    handleSelectRecipient(event) {
-        const contactId = event.currentTarget.dataset.contactId;
-        const contactName = event.currentTarget.dataset.contactName;
-        this.selectedRecipientId = contactId;
-        this.selectedRecipientName = contactName || '';
-        this.shareSearchResults = this.shareSearchResults.map(r => ({
-            ...r,
-            resultClass: r.contactId === contactId ? 'share-result-item selected' : 'share-result-item'
-        }));
-    }
-
-    handleDeselectRecipient() {
-        this.selectedRecipientId = null;
-        this.selectedRecipientName = '';
-        this.shareSearchResults = [];
-        this.shareSearchTerm = '';
-    }
-
-    async handleReciprocateShare(event) {
+    handleReciprocateShare(event) {
         event.stopPropagation();
-        const contactId = event.currentTarget.dataset.contactId;
-        const contactName = event.currentTarget.dataset.contactName;
-        this._shareModalTrigger = event.currentTarget || this.template.activeElement || document.activeElement;
+        this.shareModalEditMode = false;
+        this.shareRecipientId = event.currentTarget.dataset.contactId;
+        this.shareRecipientName = event.currentTarget.dataset.contactName || '';
         this.showShareModal = true;
-        this._resetShareModal();
-        this.selectedRecipientId = contactId;
-        this.selectedRecipientName = contactName || '';
-        try {
-            const details = await getMyContactDetailsForSharing();
-            this.shareEmailValue = details.email || '';
-            this.sharePhoneValue = details.phone || '';
-            this.shareStreetValue = details.street || '';
-            this.shareCityValue = details.city || '';
-            this.shareStateValue = details.state || '';
-            this.sharePostalCodeValue = details.postalCode || '';
-            this.shareCountryValue = details.country || '';
-            this.shareEmail = !!details.email;
-            this.sharePhone = !!details.phone;
-            this.shareAddress = !!(details.street || details.city || details.state || details.postalCode || details.country);
-        } catch (e) {
-            console.error('Error loading contact details:', e);
-        }
-    }
-
-    handleShareEmailChange(event) { this.shareEmail = event.target.checked; }
-    handleSharePhoneChange(event) { this.sharePhone = event.target.checked; }
-    handleShareAddressChange(event) { this.shareAddress = event.target.checked; }
-    handleShareEmailValueChange(event) { this.shareEmailValue = event.target.value; }
-    handleSharePhoneValueChange(event) { this.sharePhoneValue = event.target.value; }
-    handleShareStreetChange(event) { this.shareStreetValue = event.target.value; }
-    handleShareCityChange(event) { this.shareCityValue = event.target.value; }
-    handleShareStateChange(event) { this.shareStateValue = event.target.value; }
-    handleSharePostalCodeChange(event) { this.sharePostalCodeValue = event.target.value; }
-    handleShareCountryChange(event) { this.shareCountryValue = event.target.value; }
-
-    get shareRecipientSelected() {
-        return !!this.selectedRecipientId;
-    }
-
-    get shareRecipientNotSelected() {
-        return !this.selectedRecipientId;
-    }
-
-    get isNotShareModalEditMode() {
-        return !this.shareModalEditMode;
-    }
-
-    get isShareValid() {
-        if (!this.selectedRecipientId) return false;
-        if (!this.shareEmail && !this.sharePhone && !this.shareAddress) return false;
-        if (this.shareEmail && !this.shareEmailValue) return false;
-        if (this.sharePhone && !this.sharePhoneValue) return false;
-        return true;
-    }
-
-    get isShareSubmitDisabled() {
-        return this.shareSubmitting || !this.isShareValid;
-    }
-
-    get shareSubmitLabel() {
-        if (this.shareSubmitting) return this.shareModalEditMode ? 'Updating...' : 'Sharing...';
-        return this.shareModalEditMode ? 'Update' : 'Share';
-    }
-
-    async handleShareSubmit() {
-        if (!this.isShareValid || this.shareSubmitting) return;
-        this.shareSubmitting = true;
-        try {
-            const shareData = {
-                recipientContactId: this.selectedRecipientId,
-                shareEmail: this.shareEmail,
-                sharePhone: this.sharePhone,
-                shareAddress: this.shareAddress,
-                email: this.shareEmailValue,
-                phone: this.sharePhoneValue,
-                street: this.shareStreetValue,
-                city: this.shareCityValue,
-                state: this.shareStateValue,
-                postalCode: this.sharePostalCodeValue,
-                country: this.shareCountryValue,
-                additionalInfo: this.shareAdditionalInfoValue || null
-            };
-            const result = await shareContactInfoDirect({ shareDataJson: JSON.stringify(shareData) });
-            if (result && result.success) {
-                // Modal closes and the contacts list reloads to reflect the share —
-                // that's the confirmation, so no banner.
-                this.handleCloseShareModal();
-            }
-        } catch (error) {
-            const msg = error.body?.message || error.message || 'We couldn’t share your info just now. Please try again.';
-            fireToast({ message: msg, variant: 'error' });
-        } finally {
-            this.shareSubmitting = false;
-        }
     }
 
     /* ===============================================================
@@ -745,7 +557,8 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         event.stopPropagation();
         const sharedInfoId = event.currentTarget.dataset.sharedInfoId;
         const contactName = event.currentTarget.dataset.contactName;
-        if (!confirm(`Are you sure you want to revoke sharing with ${contactName}? They will no longer see your contact info.`)) {
+        // eslint-disable-next-line no-alert -- revoke sharing confirmation until modal refactor
+        if (!window.confirm(`Are you sure you want to revoke sharing with ${contactName}? They will no longer see your contact info.`)) {
             return;
         }
         try {
@@ -780,7 +593,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         try {
             const d = new Date(dateValue);
             return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (e) {
+        } catch {
             return '';
         }
     }

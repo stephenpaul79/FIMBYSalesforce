@@ -76,6 +76,12 @@ const STORY_TYPE_OPTIONS = [
 
 export default class FimbyPostEditModal extends LightningElement {
     @api recordId;
+    _recordId = '';
+
+    get activeRecordId() {
+        return this._recordId || this.recordId;
+    }
+
     @track postKind = '';
     @track isVisible = false;
     @track isSaving = false;
@@ -175,7 +181,7 @@ export default class FimbyPostEditModal extends LightningElement {
     }
 
     get wiredRecordId() {
-        return this.isVisible && this.recordId ? this.recordId : undefined;
+        return this.isVisible && this.activeRecordId ? this.activeRecordId : undefined;
     }
 
     get wiredFields() {
@@ -399,7 +405,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     @api
     show(recordId, postKind) {
-        if (recordId) this.recordId = recordId;
+        if (recordId) this._recordId = recordId;
         if (postKind) this.postKind = postKind;
         this._resetFormState();
         this._formPopulated = false;
@@ -585,11 +591,11 @@ export default class FimbyPostEditModal extends LightningElement {
         this._formPopulated = false;
         this.isLoading = true;
         this.errorMessage = '';
-        const rid = this.recordId;
-        this.recordId = undefined;
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        const rid = this.activeRecordId;
+        this._recordId = '';
+         
         Promise.resolve().then(() => {
-            this.recordId = rid;
+            this._recordId = rid;
         });
     }
 
@@ -694,9 +700,9 @@ export default class FimbyPostEditModal extends LightningElement {
                 await this._saveNeedsOffers();
             }
 
-            getRecordNotifyChange([{ recordId: this.recordId }]);
+            getRecordNotifyChange([{ recordId: this.activeRecordId }]);
             this.dispatchEvent(new CustomEvent('recordsaved', {
-                detail: { recordId: this.recordId, postKind: this.postKind }
+                detail: { recordId: this.activeRecordId, postKind: this.postKind }
             }));
             this.hide();
         } catch (error) {
@@ -708,7 +714,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     async _saveNeedsOffers() {
         const payload = {
-            recordId: this.recordId,
+            recordId: this.activeRecordId,
             title: this.title.trim(),
             description: this.description,
             endDate: this.endDate || null,
@@ -761,7 +767,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     async _saveBulkBuy() {
         const payload = {
-            recordId: this.recordId,
+            recordId: this.activeRecordId,
             title: this.title.trim(),
             description: this.description,
             totalQuantity: parseInt(this.totalQuantity, 10),
@@ -778,7 +784,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     async _saveStory() {
         const payload = {
-            recordId: this.recordId,
+            recordId: this.activeRecordId,
             title: this.title.trim(),
             content: this.storyMessage,
             category: this.storyType,
@@ -789,7 +795,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     async _saveLibrary() {
         const payload = {
-            recordId: this.recordId,
+            recordId: this.activeRecordId,
             title: this.title.trim(),
             description: this.description,
             category: this.libraryCategory,

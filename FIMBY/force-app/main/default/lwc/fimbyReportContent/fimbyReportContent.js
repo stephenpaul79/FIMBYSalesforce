@@ -16,6 +16,17 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 export default class FimbyReportContent extends NavigationMixin(LightningElement) {
     @api contentId = '';
     @api contentType = ''; // 'Story', 'Need_Offer', 'Library_Item', 'Response', etc.
+    _contentId = '';
+    _contentType = '';
+
+    get activeContentId() {
+        return this._contentId || this.contentId;
+    }
+
+    get activeContentType() {
+        return this._contentType || this.contentType;
+    }
+
     @track showModal = false;
     @track selectedReason = '';
     @track additionalInfo = '';
@@ -87,8 +98,8 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
 
     @api
     async show(contentId, contentType) {
-        if (contentId) this.contentId = contentId;
-        if (contentType) this.contentType = contentType;
+        if (contentId) this._contentId = contentId;
+        if (contentType) this._contentType = contentType;
         this.showModal = true;
         this.resetForm();
         await this.loadExistingReportState();
@@ -111,14 +122,14 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
     }
 
     async loadExistingReportState() {
-        if (!this.contentId || !this.contentType) {
+        if (!this.activeContentId || !this.activeContentType) {
             return;
         }
         this.isCheckingExisting = true;
         try {
             const result = await checkExistingReport({
-                contentId: this.contentId,
-                contentType: this.contentType
+                contentId: this.activeContentId,
+                contentType: this.activeContentType
             });
             if (result?.alreadyReported) {
                 this.showAlreadyReported = true;
@@ -165,8 +176,8 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
         this.errorMessage = '';
 
         const reportData = {
-            contentId: this.contentId,
-            contentType: this.contentType,
+            contentId: this.activeContentId,
+            contentType: this.activeContentType,
             reason: this.selectedReason,
             additionalInfo: this.additionalInfo
         };
@@ -180,7 +191,7 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
                 this.showConfirmation = true;
                 this.dispatchEvent(new CustomEvent('reportsubmitted', {
                     detail: {
-                        contentId: this.contentId,
+                        contentId: this.activeContentId,
                         reason: this.selectedReason
                     }
                 }));

@@ -3,9 +3,14 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 export default class FimbyLocationPicker extends LightningElement {
     @api label = 'Your Neighborhood';
-    @api selectedLocation = '';
-    @api showPopular = false;
     @api required = false;
+    @track _selectedLocation = '';
+
+    @api
+    get selectedLocation() { return this._selectedLocation; }
+    set selectedLocation(value) { this._selectedLocation = value; }
+
+    @api showPopular = false;
 
     @track searchTerm = '';
     @track isGettingLocation = false;
@@ -59,19 +64,19 @@ export default class FimbyLocationPicker extends LightningElement {
             )
             .map(location => ({
                 ...location,
-                isSelected: location.value === this.selectedLocation,
+                isSelected: location.value === this._selectedLocation,
                 distance: this.calculateDistance(location)
             }))
             .sort((a, b) => (a.distance || 999) - (b.distance || 999));
     }
 
     get selectedLocationLabel() {
-        const location = this.neighborhoods.find(loc => loc.value === this.selectedLocation);
+        const location = this.neighborhoods.find(loc => loc.value === this._selectedLocation);
         return location?.label || '';
     }
 
     get selectedLocationDetails() {
-        const location = this.neighborhoods.find(loc => loc.value === this.selectedLocation);
+        const location = this.neighborhoods.find(loc => loc.value === this._selectedLocation);
         return location?.details || '';
     }
 
@@ -114,12 +119,12 @@ export default class FimbyLocationPicker extends LightningElement {
     }
 
     handleChangeLocation() {
-        this.selectedLocation = '';
+        this._selectedLocation = '';
         this.searchTerm = '';
     }
 
     selectLocation(locationValue) {
-        this.selectedLocation = locationValue;
+        this._selectedLocation = locationValue;
         this.searchTerm = '';
 
         // Fire selection event
@@ -199,17 +204,17 @@ export default class FimbyLocationPicker extends LightningElement {
 
     @api
     getSelectedLocation() {
-        return this.neighborhoods.find(loc => loc.value === this.selectedLocation);
+        return this.neighborhoods.find(loc => loc.value === this._selectedLocation);
     }
 
     @api
     setLocation(locationValue) {
-        this.selectedLocation = locationValue;
+        this._selectedLocation = locationValue;
     }
 
     @api
     clearSelection() {
-        this.selectedLocation = '';
+        this._selectedLocation = '';
         this.searchTerm = '';
     }
 }

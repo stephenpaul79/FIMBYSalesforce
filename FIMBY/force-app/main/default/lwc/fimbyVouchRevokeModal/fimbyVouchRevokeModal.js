@@ -25,6 +25,11 @@ const DETAILS_MAX = 1000;
 
 export default class FimbyVouchRevokeModal extends LightningElement {
     @api vouchRecordId = '';
+    _vouchRecordId = '';
+
+    get activeVouchRecordId() {
+        return this._vouchRecordId || this.vouchRecordId;
+    }
 
     @track isOpen = false;
     @track selectedCategory = '';
@@ -55,7 +60,7 @@ export default class FimbyVouchRevokeModal extends LightningElement {
 
     @api
     show(vouchRecordId) {
-        this.vouchRecordId = vouchRecordId;
+        this._vouchRecordId = vouchRecordId;
         this.selectedCategory = '';
         this.details = '';
         this.isOpen = true;
@@ -140,7 +145,7 @@ export default class FimbyVouchRevokeModal extends LightningElement {
         this.isSubmitting = true;
         try {
             await revokeVouch({
-                vouchRecordId: this.vouchRecordId,
+                vouchRecordId: this.activeVouchRecordId,
                 revocationCategory: this.selectedCategory,
                 details: this.details?.trim() || null
             });

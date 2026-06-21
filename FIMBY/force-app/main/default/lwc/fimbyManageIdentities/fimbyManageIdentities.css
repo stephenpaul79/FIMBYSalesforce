@@ -242,10 +242,7 @@
 
 .modal-overlay {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;

@@ -9,6 +9,22 @@ export default class FimbyThanksGiving extends LightningElement {
     @api recordId = ''; // Response__c or other record ID
     @api recipientId = ''; // Contact ID to thank
     @api recipientName = '';
+    _recipientId = '';
+    _recipientName = '';
+    _recordId = '';
+
+    get activeRecipientId() {
+        return this._recipientId || this.recipientId;
+    }
+
+    get activeRecipientName() {
+        return this._recipientName || this.recipientName;
+    }
+
+    get activeRecordId() {
+        return this._recordId || this.recordId;
+    }
+
     @api isModalMode = false;
 
     @track thankYouMessage = '';
@@ -57,9 +73,9 @@ export default class FimbyThanksGiving extends LightningElement {
     @api
     show(recipientId, recipientName, relatedRecordId) {
         this.isModalVisible = true;
-        if (recipientId) this.recipientId = recipientId;
-        if (recipientName) this.recipientName = recipientName;
-        if (relatedRecordId) this.recordId = relatedRecordId;
+        if (recipientId) this._recipientId = recipientId;
+        if (recipientName) this._recipientName = recipientName;
+        if (relatedRecordId) this._recordId = relatedRecordId;
         this.resetForm();
     }
 
@@ -89,7 +105,7 @@ export default class FimbyThanksGiving extends LightningElement {
     }
 
     get displayRecipientName() {
-        return this.recipientName || 'your neighbor';
+        return this.activeRecipientName || 'your neighbor';
     }
 
     get thanksIconUrl() {
@@ -108,9 +124,9 @@ export default class FimbyThanksGiving extends LightningElement {
         try {
             const result = await sendThanks({
                 thanksData: JSON.stringify({
-                    recipientId: this.recipientId,
+                    recipientId: this.activeRecipientId,
                     message: this.thankYouMessage.trim(),
-                    relatedRecordId: this.recordId
+                    relatedRecordId: this.activeRecordId
                 })
             });
 
@@ -120,13 +136,14 @@ export default class FimbyThanksGiving extends LightningElement {
                 // Dispatch success event
                 this.dispatchEvent(new CustomEvent('thankssent', {
                     detail: {
-                        recipientId: this.recipientId,
+                        recipientId: this.activeRecipientId,
                         message: this.thankYouMessage
                     }
                 }));
 
                 // Auto-close modal after brief success display
                 if (this.isModalMode) {
+                    // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                     setTimeout(() => {
                         this.hide();
                     }, 1500);

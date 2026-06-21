@@ -934,6 +934,7 @@ public with sharing class FimbyMyStuffController {
             Contact c = [
                 SELECT Id, FirstName, LastName, Full_Name__c, Mask_Last_Name__c, Pronouns__c,
                        Image_URL__c, Display_Avatar_URL__c, Image_Ratio__c, AccountId, Account.Name, CreatedDate,
+                       Is_Organization_Contact__c, Organization_Account__c,
                        Languages_Spoken__c, Accessibility_Notes__c, General_Availability__c,
                        About_Neighbourhood_Tenure__c, About_What_Brought_You__c,
                        About_Local_Place__c, About_Enjoys_Doing__c, About_Fun_Fact__c,
@@ -957,14 +958,28 @@ public with sharing class FimbyMyStuffController {
                 && c.Care_Standing_Visible__c == true;
 
             List<Shared_Contact_Info__c> sharedRecords = [
-                SELECT Id, Email__c, Phone__c, Street__c, City__c,
+                SELECT Id, Contact__c, Shared_To__c, Email__c, Phone__c, Street__c, City__c,
                        Province_State__c, Postal_Code__c, Country__c, Status__c
                 FROM Shared_Contact_Info__c
-                WHERE Contact__c = :neighbourContactId
-                  AND Shared_To__c = :myContactId
-                  AND Status__c != 'Revoked'
-                LIMIT 1
+                WHERE Status__c != 'Revoked'
+                  AND (
+                      (Contact__c = :neighbourContactId AND Shared_To__c = :myContactId)
+                      OR (Contact__c = :myContactId AND Shared_To__c = :neighbourContactId)
+                  )
             ];
+
+            Boolean hasSharedContactInfo = false;
+            Boolean iHaveSharedWithThem = false;
+            Shared_Contact_Info__c themToMeShare;
+
+            for (Shared_Contact_Info__c sci : sharedRecords) {
+                if (sci.Contact__c == neighbourContactId && sci.Shared_To__c == myContactId) {
+                    hasSharedContactInfo = true;
+                    themToMeShare = sci;
+                } else if (sci.Contact__c == myContactId && sci.Shared_To__c == neighbourContactId) {
+                    iHaveSharedWithThem = true;
+                }
+            }
 
             Map<String, Object> result = new Map<String, Object>{
                 'contactId' => c.Id,
@@ -976,6 +991,8 @@ public with sharing class FimbyMyStuffController {
                 'imageRatio' => c.Image_Ratio__c,
                 'neighbourhood' => c.Account?.Name,
                 'memberSince' => c.CreatedDate,
+                'isOrgContact' => c.Is_Organization_Contact__c == true,
+                'orgAccountId' => c.Organization_Account__c,
                 'languagesSpoken' => c.Languages_Spoken__c,
                 'accessibilityNotes' => c.Accessibility_Notes__c,
                 'generalAvailability' => c.General_Availability__c,
@@ -989,21 +1006,19 @@ public with sharing class FimbyMyStuffController {
                 'careWelcomeSupport' => showCareStanding ? c.Care_Welcome_Support__c : null,
                 'careUnhelpfulThings' => showCareStanding ? c.Care_Unhelpful_Things__c : null,
                 'careHowToAsk' => showCareStanding ? c.Care_How_To_Ask__c : null,
-                'careHardNos' => showCareStanding ? c.Care_Hard_Nos__c : null
+                'careHardNos' => showCareStanding ? c.Care_Hard_Nos__c : null,
+                'hasSharedContactInfo' => hasSharedContactInfo,
+                'iHaveSharedWithThem' => iHaveSharedWithThem
             };
 
-            if (!sharedRecords.isEmpty()) {
-                Shared_Contact_Info__c sci = sharedRecords[0];
-                result.put('hasSharedContactInfo', true);
-                result.put('sharedEmail', sci.Email__c);
-                result.put('sharedPhone', sci.Phone__c);
-                result.put('sharedStreet', sci.Street__c);
-                result.put('sharedCity', sci.City__c);
-                result.put('sharedProvinceState', sci.Province_State__c);
-                result.put('sharedPostalCode', sci.Postal_Code__c);
-                result.put('sharedCountry', sci.Country__c);
-            } else {
-                result.put('hasSharedContactInfo', false);
+            if (themToMeShare != null) {
+                result.put('sharedEmail', themToMeShare.Email__c);
+                result.put('sharedPhone', themToMeShare.Phone__c);
+                result.put('sharedStreet', themToMeShare.Street__c);
+                result.put('sharedCity', themToMeShare.City__c);
+                result.put('sharedProvinceState', themToMeShare.Province_State__c);
+                result.put('sharedPostalCode', themToMeShare.Postal_Code__c);
+                result.put('sharedCountry', themToMeShare.Country__c);
             }
 
             return result;

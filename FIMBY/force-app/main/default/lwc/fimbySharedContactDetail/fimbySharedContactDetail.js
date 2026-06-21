@@ -1,6 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 const FIELDS = [
     'Shared_Contact_Info__c.Id',
@@ -23,7 +24,7 @@ export default class FimbySharedContactDetail extends NavigationMixin(LightningE
     record;
 
     @wire(getRecord, { recordId: '$recordId', fields: FIELDS })
-    wiredRecord({ error, data }) {
+    wiredRecord({ data }) {
         this.isLoading = false;
         if (data) this.record = data;
     }
@@ -57,6 +58,9 @@ export default class FimbySharedContactDetail extends NavigationMixin(LightningE
         const date = getFieldValue(this.record, 'Shared_Contact_Info__c.CreatedDate');
         return date ? new Date(date).toLocaleDateString() : '';
     }
+
+    get emailIconUrl() { return `${IMPACT_ICONS}/email.png`; }
+    get phoneIconUrl() { return `${IMPACT_ICONS}/telephone.png`; }
 
     get emailLink() {
         return this.email ? 'mailto:' + this.email : '';

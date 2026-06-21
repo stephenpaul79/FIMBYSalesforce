@@ -24,6 +24,7 @@
 .library-scroll-container {
     flex: 1;
     overflow: hidden;
+
     --fimby-end-message-inset-x: 0;
     /* Fade the feed in after a cache-resume scroll restore (see is-resume-hidden). */
     transition: opacity 220ms ease;
@@ -325,6 +326,7 @@
     background-color: var(--fimby-btn-primary-bg);
     border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
+
     --slds-c-icon-color-foreground-default: #ffffff;
 }
 

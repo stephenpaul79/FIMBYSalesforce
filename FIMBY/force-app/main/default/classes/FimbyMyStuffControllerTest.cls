@@ -624,4 +624,60 @@ public class FimbyMyStuffControllerTest {
 
         System.assertEquals(true, threw, 'Cross-neighbourhood profile should be denied');
     }
+
+    @IsTest
+    static void testGetNeighbourProfile_shareDirectionFlags() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        List<Contact> contacts = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate];
+        Contact viewer = contacts[0];
+        Contact neighbour = contacts[1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        insert new Shared_Contact_Info__c(
+            Contact__c = viewer.Id,
+            Shared_To__c = neighbour.Id,
+            Email__c = 'viewer@test.com',
+            Phone__c = '0400000001'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> profile = FimbyMyStuffController.getNeighbourProfile(neighbour.Id);
+            System.assertEquals(false, profile.get('hasSharedContactInfo'), 'Neighbour has not shared with viewer');
+            System.assertEquals(true, profile.get('iHaveSharedWithThem'), 'Viewer shared with neighbour');
+            System.assertEquals(false, profile.get('isOrgContact'), 'Neighbour is not an org contact');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetNeighbourProfile_orgContactFields() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Account orgAccount = FimbyTestDataFactory.createNeighbourhood(true);
+        orgAccount.Name = 'Test Org Account';
+        update orgAccount;
+
+        Contact orgContact = FimbyTestDataFactory.createNeighbourhoodContact(testNeighbourhood.Id, true);
+        orgContact.Is_Organization_Contact__c = true;
+        orgContact.Organization_Account__c = orgAccount.Id;
+        update orgContact;
+
+        insert new Community_Group_Neighbourhood__c(
+            Organization__c = orgAccount.Id,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Status__c = 'Active'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> profile = FimbyMyStuffController.getNeighbourProfile(orgContact.Id);
+            System.assertEquals(orgContact.Id, profile.get('contactId'));
+            System.assertEquals(true, profile.get('isOrgContact'));
+            System.assertEquals(orgAccount.Id, profile.get('orgAccountId'));
+        }
+        Test.stopTest();
+    }
 }

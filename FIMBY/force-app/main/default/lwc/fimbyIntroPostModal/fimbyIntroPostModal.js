@@ -263,6 +263,7 @@ export default class FimbyIntroPostModal extends LightningElement {
     _goToCelebration() {
         this._showPhotoStep = false;
         this._showCelebration = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         window.setTimeout(() => {
             this._finishPost();
         }, 3500);

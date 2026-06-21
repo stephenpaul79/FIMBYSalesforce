@@ -32,8 +32,7 @@
 
 .modal-backdrop {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0; right: 0; bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
     display: flex; align-items: center; justify-content: center;
     z-index: 9999; padding: 16px;
@@ -167,7 +166,10 @@
     border-color: var(--fimby-earth-teal, #3B9EA0);
     box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(59,158,160,0.15));
 }
-.form-textarea { resize: vertical; min-height: 80px; }
+.form-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
+    resize: vertical; min-height: 80px;
+}
 
 .modal-footer {
     display: flex; justify-content: flex-end; align-items: center; gap: 12px;

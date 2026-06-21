@@ -321,7 +321,7 @@
                 <div class="delete-modal" onclick={stopPropagation}>
                     <h3 class="delete-title">Remove {removeTargetName} from the waitlist?</h3>
                     <p class="delete-message">Let them know why you're removing their request.</p>
-                    <textarea class="remove-reason-input" placeholder="Reason (required)" value={removeReason} onchange={handleRemoveReasonChange}></textarea>
+                    <textarea class="remove-reason-input" placeholder="Reason (required)" oninput={handleRemoveReasonChange}>{removeReason}</textarea>
                     <div class="delete-actions">
                         <button class="btn btn-neutral" onclick={handleRemoveCancel} disabled={isRemoving}>Cancel</button>
                         <button class="btn btn-warning" onclick={handleRemoveConfirm} disabled={removeConfirmDisabled}>

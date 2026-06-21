@@ -834,6 +834,13 @@
     --lwc-colorTextIconDefault: var(--fimby-text-primary);
 }
 
+.reply-trigger-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .reply-trigger:hover {
     border-color: var(--fimby-btn-primary-bg);
     color: var(--fimby-btn-primary-bg);

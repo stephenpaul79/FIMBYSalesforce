@@ -8,6 +8,7 @@ export default class FimbyCard extends LightningElement {
     @api cardType = 'default'; // default, story, askOffer, library
     @api layout = 'default'; // 'default', 'compact', or 'list'
     @api cardAccentColor = '';  // optional override for left border colour
+    @api suppressMediaPlaceholder = false;
     @api elevation = 'medium'; // low, medium, high
     @api borderRadius = 'medium'; // small, medium, large
     @api isClickable = false;
@@ -22,7 +23,6 @@ export default class FimbyCard extends LightningElement {
     @api showAvatar = false;
     @api avatarUrl = '';
     @api userName = '';
-    @api timestamp = '';
     @api showMenu = false;
 
     @track menuOpen = false;
@@ -78,7 +78,8 @@ export default class FimbyCard extends LightningElement {
     }
 
     get showCategoryMediaPlaceholder() {
-        return this.cardType === 'library'
+        return !this.suppressMediaPlaceholder
+            && this.cardType === 'library'
             && this.isCondensedLayout
             && !this.hasAnyImages
             && !!this.badgeIconUrl;
@@ -156,11 +157,29 @@ export default class FimbyCard extends LightningElement {
     // Actions properties
     @api showActions = false;
     @api showLike = false;
-    @api isLiked = false;
-    @api likeCount = 0;
+    @track _isLiked = false;
+    @track _likeCount = 0;
+    @track _commentCount = 0;
+    @track _timestamp = '';
+
+    @api
+    get isLiked() { return this._isLiked; }
+    set isLiked(value) { this._isLiked = value; }
+
+    @api
+    get likeCount() { return this._likeCount; }
+    set likeCount(value) { this._likeCount = value; }
+
     @api showComment = false;
-    @api commentCount = 0;
-    @api showShare = false;
+
+    @api
+    get commentCount() { return this._commentCount; }
+    set commentCount(value) { this._commentCount = value; }
+
+    @api
+    get timestamp() { return this._timestamp; }
+    set timestamp(value) { this._timestamp = value; }
+
     @api showCustomAction = false;
     @api customActionIcon = 'utility:add';
     @api customActionIconUrl = '';
@@ -308,10 +327,10 @@ export default class FimbyCard extends LightningElement {
     }
 
     get formattedTimestamp() {
-        if (!this.timestamp) return '';
+        if (!this._timestamp) return '';
 
         const now = new Date();
-        const time = new Date(this.timestamp);
+        const time = new Date(this._timestamp);
         const diff = now - time;
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
@@ -376,11 +395,11 @@ export default class FimbyCard extends LightningElement {
     }
 
     get likeIcon() {
-        return this.isLiked ? 'utility:favorite' : 'utility:favorite_alt';
+        return this._isLiked ? 'utility:favorite' : 'utility:favorite_alt';
     }
 
     get likeVariant() {
-        return this.isLiked ? 'error' : 'neutral';
+        return this._isLiked ? 'error' : 'neutral';
     }
 
     // Event handlers
@@ -432,6 +451,10 @@ export default class FimbyCard extends LightningElement {
         return `${IMPACT_ICONS}/warning.png`;
     }
 
+    get commentIconUrl() {
+        return `${IMPACT_ICONS}/comment.png`;
+    }
+
     get showMenuDropdown() {
         return this.showMenu && this.menuOpen;
     }
@@ -463,13 +486,13 @@ export default class FimbyCard extends LightningElement {
         event.stopPropagation();
 
         // Toggle like state
-        this.isLiked = !this.isLiked;
-        this.likeCount = this.isLiked ? this.likeCount + 1 : this.likeCount - 1;
+        this._isLiked = !this._isLiked;
+        this._likeCount = this._isLiked ? this._likeCount + 1 : this._likeCount - 1;
 
         const likeEvent = new CustomEvent('cardlike', {
             detail: {
-                isLiked: this.isLiked,
-                likeCount: this.likeCount,
+                isLiked: this._isLiked,
+                likeCount: this._likeCount,
                 cardType: this.cardType
             }
         });
@@ -485,18 +508,6 @@ export default class FimbyCard extends LightningElement {
             }
         });
         this.dispatchEvent(commentEvent);
-    }
-
-    handleShareClick(event) {
-        event.stopPropagation();
-        const shareEvent = new CustomEvent('cardshare', {
-            detail: {
-                cardType: this.cardType,
-                title: this.title,
-                description: this.description
-            }
-        });
-        this.dispatchEvent(shareEvent);
     }
 
     handleCustomAction(event) {
@@ -543,17 +554,17 @@ export default class FimbyCard extends LightningElement {
     // Public methods
     @api
     updateLikeCount(count, isLiked = false) {
-        this.likeCount = count;
-        this.isLiked = isLiked;
+        this._likeCount = count;
+        this._isLiked = isLiked;
     }
 
     @api
     updateCommentCount(count) {
-        this.commentCount = count;
+        this._commentCount = count;
     }
 
     @api
     setTimestamp(timestamp) {
-        this.timestamp = timestamp;
+        this._timestamp = timestamp;
     }
 }

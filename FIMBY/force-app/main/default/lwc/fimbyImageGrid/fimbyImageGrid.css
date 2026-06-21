@@ -35,58 +35,6 @@
     opacity: 1;
 }
 
-.grid-cell:hover .grid-image {
-    transform: scale(1.03);
-    filter: brightness(0.92);
-}
-
-.grid-cell:active .grid-image {
-    transform: scale(1.0);
-}
-
-/* ----------------------------------------------------------
- * Thumbnail — list-row slot: fill column, crop to cover
- * ---------------------------------------------------------- */
-:host(.layout-thumbnail) {
-    display: block;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
-    overflow: hidden;
-}
-
-:host(.layout-thumbnail) .image-grid {
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
-    overflow: hidden;
-}
-
-:host(.layout-thumbnail) .image-grid.grid-single {
-    display: block;
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
-}
-
-:host(.layout-thumbnail) .single-cell {
-    height: 100%;
-    width: 100%;
-    display: block;
-    overflow: hidden;
-}
-
-:host(.layout-thumbnail) .single-image,
-:host(.layout-thumbnail) .grid-image {
-    object-fit: cover;
-    object-position: center;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    background-color: var(--fimby-surface-page);
-}
-
 /* ----------------------------------------------------------
  * 1 Image — full width, contain (no cropping), like current
  * ---------------------------------------------------------- */
@@ -162,6 +110,58 @@
 
 .grid-4 .grid-image {
     object-fit: cover;
+}
+
+.grid-cell:hover .grid-image {
+    transform: scale(1.03);
+    filter: brightness(0.92);
+}
+
+.grid-cell:active .grid-image {
+    transform: scale(1.0);
+}
+
+/* ----------------------------------------------------------
+ * Thumbnail — list-row slot: fill column, crop to cover
+ * ---------------------------------------------------------- */
+:host(.layout-thumbnail) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+:host(.layout-thumbnail) .image-grid {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+:host(.layout-thumbnail) .image-grid.grid-single {
+    display: block;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+}
+
+:host(.layout-thumbnail) .single-cell {
+    height: 100%;
+    width: 100%;
+    display: block;
+    overflow: hidden;
+}
+
+:host(.layout-thumbnail) .single-image,
+:host(.layout-thumbnail) .grid-image {
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background-color: var(--fimby-surface-page);
 }
 
 /* ----------------------------------------------------------

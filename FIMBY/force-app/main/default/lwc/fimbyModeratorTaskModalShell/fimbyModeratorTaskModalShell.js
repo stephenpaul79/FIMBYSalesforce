@@ -45,7 +45,7 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
         this.dispatchEvent(new CustomEvent('close'));
 
         if (this._previousActiveElement) {
-            try { this._previousActiveElement.focus(); } catch (_) { /* element may be gone */ }
+            try { this._previousActiveElement.focus(); } catch { /* element may be gone */ }
             this._previousActiveElement = null;
         }
     }

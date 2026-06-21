@@ -13,13 +13,21 @@
             "layoutDirectionDesktop" : "row",
             "layoutDirectionMobile" : "column",
             "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
+            "maxContentWidth" : "600px",
             "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"fb01a2b3-1111-4c5d-8e9f-aaaaaaaaaaaa\",\"columns\":[{\"UUID\":\"fb02b3c4-2222-4d6e-9f0a-bbbbbbbbbbbb\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[{\"componentType\":\"c:fimbySubmitFeedback\",\"definition\":\"c:fimbySubmitFeedback\",\"id\":\"submit-feedback-component\"}]}]}",
+            "sectionConfig" : "{\"UUID\":\"fb01a2b3-1111-4c5d-8e9f-aaaaaaaaaaaa\",\"columns\":[{\"UUID\":\"fb02b3c4-2222-4d6e-9f0a-bbbbbbbbbbbb\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[{\"fqn\":null,\"attributes\":null}]}]}",
             "sectionMinHeight" : "",
             "sectionVerticalAlign" : "flex-start"
           },
           "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { }
+              },
+              "definition" : "c:fimbySubmitFeedback",
+              "id" : "f1836e03-4793-4bc6-8fcc-81d9e305b04e",
+              "type" : "component"
+            } ],
             "id" : "fb02b3c4-2222-4d6e-9f0a-bbbbbbbbbbbb",
             "name" : "col1",
             "title" : "Column 1",

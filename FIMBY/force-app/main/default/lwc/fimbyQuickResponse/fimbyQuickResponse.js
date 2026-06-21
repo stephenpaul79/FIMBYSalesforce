@@ -22,6 +22,11 @@ import { navigate } from 'c/fimbyNavigation';
  */
 export default class FimbyQuickResponse extends NavigationMixin(LightningElement) {
     @api recordId = '';
+    _recordIdFromUrl = '';
+
+    get activeRecordId() {
+        return this.recordId || this._recordIdFromUrl;
+    }
 
     @track isLoading = true;
     @track isSubmitting = false;
@@ -47,10 +52,10 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     // ============================================
 
     connectedCallback() {
-        if (!this.recordId) {
-            this.recordId = this.extractRecordIdFromUrl();
+        if (!this.activeRecordId) {
+            this._recordIdFromUrl = this.extractRecordIdFromUrl();
         }
-        if (this.recordId) {
+        if (this.activeRecordId) {
             this.loadData();
         } else {
             this.viewState = 'noRecordId';
@@ -90,7 +95,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
                 throw new Error('Could not get acting as contact');
             }
 
-            const needOfferResult = await getNeedsOffersForResponse({ recordId: this.recordId });
+            const needOfferResult = await getNeedsOffersForResponse({ recordId: this.activeRecordId });
 
             if (!needOfferResult.success) {
                 this.viewState = needOfferResult.error || 'loadError';
@@ -101,7 +106,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
 
             this.needOffer = needOfferResult.needOffer;
 
-            const existingResult = await checkExistingResponse({ needOfferId: this.recordId });
+            const existingResult = await checkExistingResponse({ needOfferId: this.activeRecordId });
 
             if (existingResult.hasExistingResponse) {
                 this.viewState = 'existingResponse';
@@ -201,7 +206,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     // ============================================
 
     @api show() {
-        if (this.recordId && !this.needOffer) this.loadData();
+        if (this.activeRecordId && !this.needOffer) this.loadData();
     }
 
     @api hide() {
@@ -230,7 +235,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     }
 
     handleBackToNeedOffer() {
-        navigate(this, '/asks-offers/' + this.recordId);
+        navigate(this, '/asks-offers/' + this.activeRecordId);
     }
 
     handleViewNewResponse() {
@@ -238,7 +243,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
     }
 
     handleDone() {
-        navigate(this, '/asks-offers/' + this.recordId);
+        navigate(this, '/asks-offers/' + this.activeRecordId);
     }
 
     async handleSubmit() {
@@ -248,7 +253,7 @@ export default class FimbyQuickResponse extends NavigationMixin(LightningElement
 
         try {
             const responseData = {
-                needOfferId: this.recordId,
+                needOfferId: this.activeRecordId,
                 subject: this.subject,
                 responseDetails: this.responseDetails,
                 amountRequested: this.showAmountField ? this.amountRequested : 1,

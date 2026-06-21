@@ -527,6 +527,10 @@ public with sharing class FimbyResponseThreadController {
             'responderName' => responderName,
             'responderImageUrl' => responderImageUrl,
             'responderIsOrg' => responderIsOrg,
+            'responderOrgAccountId' => responder?.Organization_Account__c,
+            'responderContactId' => resp.On_Behalf_Of_Contact__c != null
+                ? resp.On_Behalf_Of_Contact__c
+                : resp.Contact__c,
             'createdDate' => resp.CreatedDate,
             'lastReplyDate' => resp.Last_Reply_Date__c,
             'completedDate' => resp.Completed_Date__c,
@@ -604,6 +608,7 @@ public with sharing class FimbyResponseThreadController {
                        On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
                        On_Behalf_Of_Contact__r.Image_URL__c, On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
                        On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
+                       On_Behalf_Of_Contact__r.Organization_Account__c,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Name,
                        On_Behalf_Of_Contact__r.Organization_Account__r.Logo_URL__c,
                        OwnerId, CreatedDate, Last_Reply_Date__c, Completed_Date__c,
@@ -700,7 +705,7 @@ public with sharing class FimbyResponseThreadController {
             List<Response_Message__c> msgs = [
                 SELECT Id, Body__c, Sender__c, Sender__r.Name, Sender__r.Full_Name__c, Sender__r.FirstName, Sender__r.LastName,
                        Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c,
-                       Sender__r.Is_Organization_Contact__c,
+                       Sender__r.Is_Organization_Contact__c, Sender__r.Organization_Account__c,
                        Sender__r.Organization_Account__r.Name,
                        Sender__r.Organization_Account__r.Logo_URL__c,
                        Sent_By__c, Sent_By__r.FirstName,
@@ -734,6 +739,7 @@ public with sharing class FimbyResponseThreadController {
                     'senderName' => senderName,
                     'senderImageUrl' => senderImageUrl,
                     'senderIsOrg' => senderIsOrg,
+                    'senderOrgAccountId' => m.Sender__r?.Organization_Account__c,
                     'sentDate' => m.Sent_Date__c,
                     'readDate' => m.Read_Date__c,
                     'isSystemMessage' => m.Is_System_Message__c,

@@ -4,10 +4,7 @@
 
 .crop-backdrop {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -55,12 +52,15 @@
     overflow: hidden;
     border-radius: var(--fimby-radius-md, 12px);
     background-color: var(--fimby-surface-section);
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- pinch/pan crop gestures */
     touch-action: none;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- desktop crop drag affordance */
     cursor: grab;
     user-select: none;
 }
 
 .crop-viewport:active {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- desktop crop drag affordance */
     cursor: grabbing;
 }
 
@@ -134,10 +134,6 @@
     box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
 }
 
-.btn-confirm:hover:not(:disabled) {
-    background-color: var(--fimby-btn-primary-bg-hover);
-}
-
 .btn-confirm:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -149,6 +145,10 @@
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-confirm:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {

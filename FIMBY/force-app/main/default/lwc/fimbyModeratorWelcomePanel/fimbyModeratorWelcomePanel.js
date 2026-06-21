@@ -73,7 +73,7 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
             try {
                 dateStr = new Date(ctx.pendingRequestedDate).toLocaleDateString('en-US',
                     { month: 'short', day: 'numeric' });
-            } catch (e) { /* ignore */ }
+            } catch { /* ignore */ }
         }
         const datePart = dateStr ? ` on ${dateStr}` : '';
         return `Requested${datePart} from ${name}${org}`;
@@ -131,7 +131,8 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
         if (this._vouchingActionInFlight) return;
         const contactId = this._panelData?.contactId;
         if (!contactId) return;
-        if (!confirm('Mark this neighbour as Vouched directly? They will be able to borrow from the lending library immediately.')) {
+        // eslint-disable-next-line no-alert -- moderator override confirmation until modal refactor
+        if (!window.confirm('Mark this neighbour as Vouched directly? They will be able to borrow from the lending library immediately.')) {
             return;
         }
         this._vouchingActionInFlight = true;

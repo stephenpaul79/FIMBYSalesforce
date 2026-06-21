@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Account Paused",
+  "contentBody" : {
+    "activeViewId" : "Account_Paused",
+    "configurationTags" : [ ],
+    "pageAccess" : "Public",
+    "routeType" : "custom-account-paused",
+    "urlPrefix" : "account-paused"
+  },
+  "urlName" : "account-paused"
+}

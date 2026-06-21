@@ -112,10 +112,10 @@ export default class FimbyPostArchive extends NavigationMixin(LightningElement) 
         const evtType = item.Event_Type__c;
 
         if (rtName.toLowerCase().includes('need')) {
-            return { label: 'Ask', cssClass: 'type-badge need-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP['Need']}` };
+            return { label: 'Ask', cssClass: 'type-badge need-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP.Need}` };
         }
         if (rtName === 'Bulk_Buy' || rtName === 'Bulk Buy') {
-            return { label: 'Bulk Buy', cssClass: 'type-badge bulkbuy-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP['Bulk_Buy']}` };
+            return { label: 'Bulk Buy', cssClass: 'type-badge bulkbuy-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP.Bulk_Buy}` };
         }
         if (rtName === 'Event' || item.Type__c === 'Event') {
             if (evtType === 'Community_Event') {
@@ -123,7 +123,7 @@ export default class FimbyPostArchive extends NavigationMixin(LightningElement) 
             }
             return { label: 'Event', cssClass: 'type-badge event-type', iconUrl: `${IMPACT_ICONS}/${EVENT_ICON_MAP[evtType] || 'dining-table.png'}` };
         }
-        return { label: rtName || 'Offer', cssClass: 'type-badge offer-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP['Offer']}` };
+        return { label: rtName || 'Offer', cssClass: 'type-badge offer-type', iconUrl: `${IMPACT_ICONS}/${POST_ICON_MAP.Offer}` };
     }
 
     formatDate(dateStr) {

@@ -95,6 +95,16 @@
     transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
+.reactivate-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.reactivate-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .reactivate-button:hover:not(:disabled),
 .reactivate-button:focus:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-hover);
@@ -105,16 +115,6 @@
     background-color: var(--fimby-btn-primary-bg-active);
     box-shadow: var(--fimby-btn-shadow-active);
     transform: scale(0.97);
-}
-
-.reactivate-button:focus-visible {
-    outline: 2px solid var(--fimby-focus-ring);
-    outline-offset: 2px;
-}
-
-.reactivate-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
 }
 
 .reactivate-help {

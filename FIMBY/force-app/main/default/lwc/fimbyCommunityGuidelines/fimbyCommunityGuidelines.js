@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 
 export default class FimbyCommunityGuidelines extends NavigationMixin(LightningElement) {
     get careIconUrl()      { return `${IMPACT_ICONS}/care.png`; }
@@ -10,7 +10,7 @@ export default class FimbyCommunityGuidelines extends NavigationMixin(LightningE
     get emailIconUrl()     { return `${IMPACT_ICONS}/email.png`; }
 
     handleBack() {
-        navigate(this, '/help-and-support');
+        navigateBack(this, '/help-and-support');
     }
 
     handleTabChange(event) {

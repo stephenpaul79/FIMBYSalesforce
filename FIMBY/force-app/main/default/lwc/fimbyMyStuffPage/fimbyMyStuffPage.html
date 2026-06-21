@@ -296,7 +296,7 @@
                                             <button class="view-profile-btn"
                                                     onclick={handleViewNeighbourProfile}
                                                     data-contact-id={contact.contactId}>
-                                                <lightning-icon icon-name="utility:user" size="xx-small"></lightning-icon>
+                                                <img src={profileIconUrl} alt="" class="pill-btn-icon">
                                                 View Profile
                                             </button>
                                             <template lwc:if={contact.showRevokeBtn}>
@@ -348,117 +348,13 @@
         </template>
 
         <!-- Share Contact Info Modal -->
-        <template lwc:if={showShareModal}>
-            <section class="slds-modal slds-fade-in-open share-contact-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-                <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <h2 id="share-modal-title" class="slds-modal__title slds-hyphenate">{shareModalTitle}</h2>
-                        <button class="slds-button slds-button_icon slds-modal__close" onclick={handleCloseShareModal} title="Close">
-                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
-                        </button>
-                    </header>
-
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <!-- Step 1: Search for neighbour (hidden in edit mode and when recipient selected) -->
-                        <template lwc:if={isNotShareModalEditMode}>
-                        <template lwc:if={shareRecipientNotSelected}>
-                        <div class="share-step">
-                            <label class="slds-form-element__label">Find a neighbour to share with</label>
-                            <div class="slds-form-element slds-m-bottom_small">
-                                <input type="text"
-                                       class="slds-input share-search-input"
-                                       placeholder="Search by name or email (min 2 characters)..."
-                                       value={shareSearchTerm}
-                                       oninput={handleShareSearch} />
-                            </div>
-                            <template lwc:if={shareSearchResults.length}>
-                                <div class="share-results-list">
-                                    <template for:each={shareSearchResults} for:item="person">
-                                        <button type="button" key={person.contactId}
-                                             class={person.resultClass}
-                                             onclick={handleSelectRecipient}
-                                             data-contact-id={person.contactId}
-                                             data-contact-name={person.contactName}>
-                                            <span class="result-name">{person.contactName}</span>
-                                            <template lwc:if={person.email}>
-                                                <span class="result-email">{person.email}</span>
-                                            </template>
-                                        </button>
-                                    </template>
-                                </div>
-                            </template>
-                            <template lwc:if={shareSearching}>
-                                <div class="share-loading">Searching...</div>
-                            </template>
-                        </div>
-                        </template>
-                        </template>
-
-                        <!-- Selected recipient pill + fields -->
-                        <template lwc:if={shareRecipientSelected}>
-                            <div class="share-step">
-                                <div class="share-recipient-row">
-                                    <span class="share-recipient-pill">
-                                        {selectedRecipientName}
-                                        <template lwc:if={isNotShareModalEditMode}>
-                                            <button class="share-recipient-remove" onclick={handleDeselectRecipient} title="Change recipient">
-                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
-                                            </button>
-                                        </template>
-                                    </span>
-                                </div>
-                                <p class="slds-text-body_small slds-m-bottom_small slds-m-top_small">Select what to share:</p>
-
-                                <!-- Email -->
-                                <div class="share-field-row">
-                                    <lightning-input type="checkbox" label="Email" checked={shareEmail} onchange={handleShareEmailChange}></lightning-input>
-                                    <template lwc:if={shareEmail}>
-                                        <div class="share-field-input">
-                                            <lightning-input type="email" variant="label-hidden" label="Email" value={shareEmailValue} onchange={handleShareEmailValueChange} required placeholder="Enter email"></lightning-input>
-                                        </div>
-                                    </template>
-                                </div>
-
-                                <!-- Phone -->
-                                <div class="share-field-row">
-                                    <lightning-input type="checkbox" label="Phone" checked={sharePhone} onchange={handleSharePhoneChange}></lightning-input>
-                                    <template lwc:if={sharePhone}>
-                                        <div class="share-field-input">
-                                            <lightning-input type="tel" variant="label-hidden" label="Phone" value={sharePhoneValue} onchange={handleSharePhoneValueChange} required placeholder="Enter phone"></lightning-input>
-                                        </div>
-                                    </template>
-                                </div>
-
-                                <!-- Address -->
-                                <div class="share-field-row share-field-row--address">
-                                    <lightning-input type="checkbox" label="Address" checked={shareAddress} onchange={handleShareAddressChange}></lightning-input>
-                                </div>
-                                <template lwc:if={shareAddress}>
-                                    <div class="share-address-grid">
-                                        <lightning-input variant="label-hidden" label="Street" value={shareStreetValue} onchange={handleShareStreetChange} placeholder="Street"></lightning-input>
-                                        <div class="share-address-pair">
-                                            <lightning-input variant="label-hidden" label="City" value={shareCityValue} onchange={handleShareCityChange} placeholder="City"></lightning-input>
-                                            <lightning-input variant="label-hidden" label="State/Province" value={shareStateValue} onchange={handleShareStateChange} placeholder="State/Province"></lightning-input>
-                                        </div>
-                                        <div class="share-address-pair">
-                                            <lightning-input variant="label-hidden" label="Postal Code" value={sharePostalCodeValue} onchange={handleSharePostalCodeChange} placeholder="Postal Code"></lightning-input>
-                                            <lightning-input variant="label-hidden" label="Country" value={shareCountryValue} onchange={handleShareCountryChange} placeholder="Country"></lightning-input>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-
-                    <footer class="slds-modal__footer">
-                        <button class="slds-button slds-button_neutral" onclick={handleCloseShareModal}>Cancel</button>
-                        <button class="slds-button slds-button_brand" onclick={handleShareSubmit} disabled={isShareSubmitDisabled}>
-                            {shareSubmitLabel}
-                        </button>
-                    </footer>
-                </div>
-            </section>
-            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseShareModal}></div>
-        </template>
+        <c-fimby-share-contact-modal
+            is-open={showShareModal}
+            edit-mode={shareModalEditMode}
+            recipient-contact-id={shareRecipientId}
+            recipient-name={shareRecipientName}
+            onclose={handleShareModalClose}
+            onshared={handleShareModalShared}>
+        </c-fimby-share-contact-modal>
     </div>
 </template>

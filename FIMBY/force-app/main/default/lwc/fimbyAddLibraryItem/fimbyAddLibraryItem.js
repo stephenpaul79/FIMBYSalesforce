@@ -178,9 +178,9 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
             }
             if (editId) {
                 navigate(this, `/skill-offer/${editId}?action=edit`);
-                return;
+                
             }
-        } catch (e) {
+        } catch {
             /* ignore */
         }
     }
@@ -264,7 +264,8 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
 
     handleBack() {
         if (this.hasUnsavedChanges()) {
-            if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
+            // eslint-disable-next-line no-alert -- unsaved-changes guard until modal refactor
+            if (window.confirm('You have unsaved changes. Are you sure you want to go back?')) {
                 this.navigateToLibrary();
             }
         } else {

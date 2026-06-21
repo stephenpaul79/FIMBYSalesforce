@@ -71,7 +71,11 @@ export default class FimbyInfiniteScroll extends LightningElement {
     @api emptyActionLabel = 'Add Content';
 
     // Error state
-    @api errorMessage = 'Unable to load content. Please check your connection.';
+    @track _errorMessage = 'Unable to load content. Please check your connection.';
+
+    @api
+    get errorMessage() { return this._errorMessage; }
+    set errorMessage(value) { this._errorMessage = value; }
 
     // Internal state
     @track showPullRefresh = false;
@@ -152,6 +156,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         if (!this.hasInitialLoadChecked && !this._isLoading && !this.isLoadingMore) {
             this.hasInitialLoadChecked = true;
             // Small delay to let initial content render
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
             setTimeout(() => {
                 this.checkInitialLoad();
             }, 200);
@@ -291,6 +296,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         if (container) {
             container.style.transform = '';
             container.style.transition = 'transform 0.3s ease';
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
             setTimeout(() => {
                 container.style.transition = '';
             }, 300);
@@ -342,6 +348,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
 
         this.dispatchEvent(new CustomEvent('refresh'));
 
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             this.showPullRefresh = false;
             this.isPullingToRefresh = false;
@@ -408,6 +415,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
     _scheduleReveal() {
         const elapsed = Date.now() - this._curtainShownAt;
         const delay = Math.max(0, MIN_CURTAIN_MS - elapsed);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._revealTimer = setTimeout(() => {
             this._revealTimer = null;
             this._curtainActive = false;   // drops the overlay + fades content in
@@ -439,7 +447,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         this._curtainActive = false;
         this._hasRevealedOnce = true;
         if (message) {
-            this.errorMessage = message;
+            this._errorMessage = message;
         }
     }
 
@@ -472,7 +480,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
     }
 
     handleRetry() {
-        this.showError = false;
+        this._showError = false;
         this.loadMore();
     }
 
@@ -507,7 +515,8 @@ export default class FimbyInfiniteScroll extends LightningElement {
             if (!inThrottle) {
                 func.apply(context, args);
                 inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
+                setTimeout(() => { inThrottle = false; }, limit);
             }
         }
     }

@@ -5,8 +5,18 @@ import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
-import { navigate } from 'c/fimbyNavigation';
-import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
+import { navigate, profilePathForContact } from 'c/fimbyNavigation';
+import {
+    getCategoryIconUrl as getSkillCategoryIconUrl,
+    getCategoryStyle as getSkillCategoryStyle,
+    getCategoryColor as getSkillCategoryColor
+} from 'c/fimbySkillCategoryConfig';
+import {
+    getCategoryIconUrl as getLibraryCategoryIconUrl,
+    getCategoryStyle as getLibraryCategoryStyle,
+    getCategoryColor as getLibraryCategoryColor
+} from 'c/fimbyLibraryCategoryConfig';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 const SORT_OPTIONS = [
     { value: 'relevance', label: 'Relevance' },
@@ -41,13 +51,13 @@ const STORY_TYPE_ICONS = {
     'Neighbourhood Moment': 'tulips.png'
 };
 
-const STORY_BADGE_CLASS_MAP = {
-    'God Story': 'type-badge godstory-badge',
-    'Thank You': 'type-badge thankyou-badge',
-    'Lament':    'type-badge lament-badge',
-    'Prayer':    'type-badge prayer-badge',
-    'Bio':       'type-badge bio-badge',
-    'Neighbourhood Moment': 'type-badge neighbourhood-badge'
+const STORY_BADGE_STYLES = {
+    'God Story': 'background-color: var(--fimby-badge-god-story); color: #ffffff;',
+    'Thank You': 'background-color: var(--fimby-badge-thank-you); color: #ffffff;',
+    'Lament': 'background-color: var(--fimby-badge-lament); color: #ffffff;',
+    'Prayer': 'background-color: var(--fimby-badge-prayer); color: #ffffff;',
+    'Bio': 'background-color: var(--fimby-badge-bio); color: #ffffff;',
+    'Neighbourhood Moment': 'background-color: var(--fimby-badge-neighbourhood); color: #ffffff;'
 };
 
 const STORY_LABEL_MAP = {
@@ -74,12 +84,12 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     currentOffset = 0;
     pageSize = 20;
     _searchTimeout;
+    currentContactId = null;
 
     get searchHintIconUrl()    { return `${IMPACT_ICONS}/Magnify.png`; }
     get noResultsIconUrl()     { return `${IMPACT_ICONS}/Magnify.png`; }
     get noProfilePhotoUrl()    { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get greenCircleUrl()       { return `${IMPACT_ICONS}/GreenCircle.png`; }
-    get redCircleUrl()         { return `${IMPACT_ICONS}/RedCircle.png`; }
 
     get searchFilters() {
         return BASE_FILTERS.map(filter => {
@@ -124,9 +134,15 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
 
     _hasSearched = false;
 
-    connectedCallback() {
+    async connectedCallback() {
         this.loadRecentSearches();
         this._applyUrlState();
+        try {
+            const identity = await getActingAsContact();
+            this.currentContactId = identity?.contactId || identity?.actingAsContactId || null;
+        } catch {
+            this.currentContactId = null;
+        }
     }
 
     // ========================================================
@@ -151,20 +167,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             if (this.searchTerm.length > 2) {
                 this.performSearch();
             }
-        } catch (e) {
-            // fail silently
-        }
-    }
-
-    _pushUrlState() {
-        try {
-            const params = new URLSearchParams();
-            if (this.searchTerm) params.set('q', this.searchTerm);
-            if (this.selectedFilter !== 'all') params.set('filter', this.selectedFilter);
-            if (this.sortBy !== 'relevance') params.set('sort', this.sortBy);
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            window.history.replaceState(null, '', newUrl);
-        } catch (e) {
+        } catch {
             // fail silently
         }
     }
@@ -263,6 +266,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
 
     debounceSearch() {
         clearTimeout(this._searchTimeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         this._searchTimeout = setTimeout(() => {
             this.currentOffset = 0;
             this.searchResults = [];
@@ -292,7 +296,6 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 } else {
                     this.searchResults = processed;
                     this.addToRecentSearches(this.searchTerm, this.selectedFilter);
-                    this._pushUrlState();
                 }
 
                 this.resultsCount = result.totalCount || 0;
@@ -323,39 +326,58 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     processResults(items) {
         return items.map(item => {
             const badge = this._buildBadge(item);
+            const cardMeta = this._buildCardMeta(item);
+            const imageUrl = completeImageUrl(item.imageUrl);
+            const hasImage = !!imageUrl && imageUrl.trim() !== '';
+            const isPeople = item.resultType === 'people';
+
             return {
                 ...item,
-                isStory: item.resultType === 'story',
-                isAskOffer: item.resultType === 'askOffer',
-                isLibrary: item.resultType === 'library',
-                isSkill: item.resultType === 'skill',
-                isPeople: item.resultType === 'people',
-                processedImageUrl: completeImageUrl(item.imageUrl),
+                isPeople,
+                processedImageUrl: imageUrl,
                 processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),
                 shortDescription: this.truncate(item.description, 120),
                 formattedDate: this.formatRelativeDate(item.createdDate),
                 badgeLabel: badge.label,
                 badgeIconUrl: badge.iconUrl,
-                badgeCssClass: badge.cssClass,
                 badgeStyle: badge.badgeStyle || '',
-                useBadgeStyle: !!badge.badgeStyle,
-                peopleCssClass: item.resultType === 'people'
-                    ? (item.hasSharedContact ? 'people-result' : 'people-result people-locked')
-                    : ''
+                cardType: cardMeta.cardType,
+                accentColor: cardMeta.accentColor,
+                images: hasImage
+                    ? [{ url: imageUrl, ratio: item.imageRatio || '', alt: item.name || '' }]
+                    : [],
+                peopleAriaLabel: isPeople ? `View profile for ${item.name}` : 'View result'
             };
         });
+    }
+
+    _buildCardMeta(item) {
+        if (item.resultType === 'story') {
+            return { cardType: 'story', accentColor: '' };
+        }
+        if (item.resultType === 'askOffer') {
+            return { cardType: 'askOffer', accentColor: '' };
+        }
+        if (item.resultType === 'library') {
+            const category = item.subType || 'Other';
+            return { cardType: 'library', accentColor: getLibraryCategoryColor(category) };
+        }
+        if (item.resultType === 'skill') {
+            const category = item.subType || 'Other / General Help';
+            return { cardType: 'library', accentColor: getSkillCategoryColor(category) };
+        }
+        return { cardType: 'default', accentColor: '' };
     }
 
     _buildBadge(item) {
         if (item.resultType === 'story') {
             const storyType = item.subType || 'Shared Life';
             const iconFile = STORY_TYPE_ICONS[storyType] || 'StoriesActive.png';
-            const cssClass = STORY_BADGE_CLASS_MAP[storyType] || 'type-badge story-badge';
             const label = STORY_LABEL_MAP[storyType] || storyType;
             return {
                 label,
                 iconUrl: `${IMPACT_ICONS}/${iconFile}`,
-                cssClass
+                badgeStyle: STORY_BADGE_STYLES[storyType] || 'background-color: var(--fimby-badge-story); color: #ffffff;'
             };
         }
 
@@ -365,37 +387,36 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 return {
                     label: aoType,
                     iconUrl: `${IMPACT_ICONS}/plannersm.png`,
-                    cssClass: 'type-badge event-badge'
+                    badgeStyle: 'background-color: var(--fimby-badge-event); color: #ffffff;'
                 };
             }
             const iconFile = ASK_OFFER_TYPE_ICONS[aoType] || 'BulletinBoardActive.png';
             return {
                 label: aoType,
                 iconUrl: `${IMPACT_ICONS}/${iconFile}`,
-                cssClass: 'type-badge ask-offer-badge'
+                badgeStyle: 'background-color: var(--fimby-badge-ask-offer); color: #ffffff;'
             };
         }
 
         if (item.resultType === 'library') {
-            const category = item.subType || 'Library';
+            const category = item.subType || 'Other';
             return {
                 label: category,
-                iconUrl: `${IMPACT_ICONS}/ToolboxActive.png`,
-                cssClass: 'type-badge library-badge'
+                iconUrl: getLibraryCategoryIconUrl(IMPACT_ICONS, category),
+                badgeStyle: getLibraryCategoryStyle(category)
             };
         }
 
         if (item.resultType === 'skill') {
-            const category = item.subType || 'Skill';
+            const category = item.subType || 'Other / General Help';
             return {
                 label: category,
                 iconUrl: getSkillCategoryIconUrl(IMPACT_ICONS, category),
-                cssClass: 'type-badge skill-badge',
                 badgeStyle: getSkillCategoryStyle(category)
             };
         }
 
-        return { label: '', iconUrl: '', cssClass: 'type-badge' };
+        return { label: '', iconUrl: '', badgeStyle: '' };
     }
 
     // ========================================================
@@ -403,28 +424,40 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     // ========================================================
 
     handleResultClick(event) {
-        const recordId = event.currentTarget.dataset.id;
-        const resultType = event.currentTarget.dataset.type;
-        const hasShared = event.currentTarget.dataset.shared;
-
-        if (resultType === 'people' && hasShared !== 'true') {
-            fireToast({
-                message: 'You can only view profiles of neighbours who have shared their contact info with you.',
-                variant: 'info'
-            });
-            return;
-        }
-
+        const host = event.currentTarget.closest('[data-record-id]');
+        if (!host) return;
+        const recordId = host.dataset.recordId;
+        const resultType = host.dataset.resultType;
         this.navigateToResult(recordId, resultType);
     }
 
+    handleResultKeydown(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleResultClick(event);
+        }
+    }
+
     navigateToResult(recordId, resultType) {
+        if (resultType === 'people') {
+            const item = this.searchResults.find(r => r.recordId === recordId);
+            const path = profilePathForContact({
+                contactId: recordId,
+                isOrgContact: item?.isOrgContact === true,
+                orgAccountId: item?.orgAccountId,
+                currentContactId: this.currentContactId
+            });
+            if (path) {
+                navigate(this, path);
+            }
+            return;
+        }
+
         const routes = {
             'story': `/sharedlife/${recordId}`,
             'askOffer': `/asks-offers/${recordId}`,
             'library': `/library-item/${recordId}`,
-            'skill': `/skill-offer/${recordId}`,
-            'people': `/neighbour?id=${recordId}`
+            'skill': `/skill-offer/${recordId}`
         };
 
         const route = routes[resultType];
@@ -497,7 +530,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             if (saved) {
                 this.recentSearches = JSON.parse(saved);
             }
-        } catch (e) {
+        } catch {
             this.recentSearches = [];
         }
     }
@@ -505,7 +538,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     saveRecentSearches() {
         try {
             localStorage.setItem('fimby_recent_searches', JSON.stringify(this.recentSearches));
-        } catch (e) {
+        } catch {
             // storage full or unavailable
         }
     }

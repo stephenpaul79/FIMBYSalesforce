@@ -27,18 +27,16 @@
     localStorage.removeItem('fimby-theme');
   }
 
-  function resolveEffectiveTheme(pref) {
-    if (pref === 'dark' || pref === 'light') return pref;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark' : 'light';
-  }
-
   function notifyNativeShell(pref) {
     try {
       if (window.ReactNativeWebView) {
+        // Send the raw preference, not a resolved colour, so the native shell
+        // can keep 'auto' and follow the device scheme live. Resolving here
+        // would pin native to a stale light/dark on every page load.
+        var normalized = (pref === 'dark' || pref === 'light' || pref === 'auto') ? pref : 'auto';
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'themeChange',
-          theme: resolveEffectiveTheme(pref)
+          theme: normalized
         }));
       }
     } catch (e) { /* native bridge unavailable */ }

@@ -41,15 +41,15 @@
                     <!-- Quick Actions -->
                     <div class="quick-actions">
                         <button lwc:if={email} class="action-btn" onclick={handleEmail}>
-                            <lightning-icon icon-name="utility:email" size="small"></lightning-icon>
+                            <img src={emailIconUrl} alt="" class="action-btn-icon">
                             <span>Email</span>
                         </button>
                         <button lwc:if={phone} class="action-btn" onclick={handleCall}>
-                            <lightning-icon icon-name="utility:call" size="small"></lightning-icon>
+                            <img src={phoneIconUrl} alt="" class="action-btn-icon">
                             <span>Call</span>
                         </button>
                         <button class="action-btn" onclick={handleMessage}>
-                            <lightning-icon icon-name="utility:chat" size="small"></lightning-icon>
+                            <img src={chatIconUrl} alt="" class="action-btn-icon">
                             <span>Message</span>
                         </button>
                     </div>

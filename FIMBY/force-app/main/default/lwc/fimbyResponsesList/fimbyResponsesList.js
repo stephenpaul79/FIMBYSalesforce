@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 export default class FimbyResponsesList extends NavigationMixin(LightningElement) {
     @track responses = [];
@@ -14,6 +15,9 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
     get totalResponses() {
         return this.responses.length;
     }
+
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+    get addIconUrl() { return `${IMPACT_ICONS}/add.png`; }
 
     get unreadResponses() {
         return this.responses.filter(r => r.isUnread).length;
@@ -217,7 +221,7 @@ export default class FimbyResponsesList extends NavigationMixin(LightningElement
 
     // Event handlers
     handleBack() {
-        navigate(this, '/');
+        navigateBack(this, '/my-stuff');
     }
 
     handleShowFilters() {

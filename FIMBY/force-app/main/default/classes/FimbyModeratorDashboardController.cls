@@ -277,7 +277,7 @@ public with sharing class FimbyModeratorDashboardController {
     private without sharing class ModeratorReader {
         Map<String, Object> getPrimaryModerator(Id neighbourhoodId) {
             List<Moderator_Assignment__c> mods = [
-                SELECT Contact__c, Contact__r.Name, Contact__r.Pronouns__c, Contact__r.PhotoUrl
+                SELECT Contact__c, Contact__r.Name, Contact__r.Pronouns__c, Contact__r.Display_Avatar_URL__c
                 FROM Moderator_Assignment__c
                 WHERE Neighbourhood__c = :neighbourhoodId AND Status__c = 'Active' AND Role__c = 'Primary'
                 LIMIT 1
@@ -288,7 +288,7 @@ public with sharing class FimbyModeratorDashboardController {
                 'contactId' => mods[0].Contact__c,
                 'name'      => mods[0].Contact__r.Name,
                 'pronouns'  => mods[0].Contact__r.Pronouns__c,
-                'photoUrl'  => mods[0].Contact__r.PhotoUrl
+                'photoUrl'  => mods[0].Contact__r.Display_Avatar_URL__c
             };
         }
     }

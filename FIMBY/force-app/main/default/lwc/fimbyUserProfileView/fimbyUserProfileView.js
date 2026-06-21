@@ -7,7 +7,7 @@ import updateProfileSection from '@salesforce/apex/FimbyProfileController.update
 import removeImage from '@salesforce/apex/FimbyLibraryController.removeImage';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 
 const CARE_WELCOME_OPTIONS = [
     'A check-in message', 'A meal drop-off', 'Help with errands',
@@ -79,6 +79,7 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
 
     // Section icons
     get identityIconUrl() { return `${IMPACT_ICONS}/ProfileActive.png`; }
+    get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
     get contactIconUrl() { return `${IMPACT_ICONS}/sign.png`; }
     get aboutIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get accessibilityIconUrl() { return `${IMPACT_ICONS}/accessibility.png`; }
@@ -315,7 +316,7 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
         try {
             this.profile = await getProfileData();
             this._checkIfModerator();
-        } catch (error) {
+        } catch {
             fireToast({ message: 'We couldn’t load your profile just now. Please try again.', variant: 'error' });
         } finally {
             this.isLoading = false;
@@ -511,18 +512,14 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
     }
 
     handleBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            navigate(this, '/my-stuff');
-        }
+        navigateBack(this, '/my-stuff');
     }
 
     async _checkIfModerator() {
         try {
             const ctx = await getModeratorContext();
             this.isProfileModerator = ctx.isModerator;
-        } catch (e) {
+        } catch {
             this.isProfileModerator = false;
         }
     }

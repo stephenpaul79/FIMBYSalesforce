@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, navigateBack } from 'c/fimbyNavigation';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getResponseForReply from '@salesforce/apex/FimbyResponseController.getResponseForReply';
@@ -20,6 +20,11 @@ import blockContactApex from '@salesforce/apex/FimbyConversationController.block
  */
 export default class FimbyResponseReply extends NavigationMixin(LightningElement) {
     @api recordId = ''; // Response__c ID
+    _recordIdFromUrl = '';
+
+    get activeRecordId() {
+        return this.recordId || this._recordIdFromUrl;
+    }
 
     // State
     @track isLoading = true;
@@ -78,14 +83,14 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     // ============================================
 
     connectedCallback() {
-        if (!this.recordId) {
-            this.recordId = this.extractRecordIdFromUrl();
-            if (this.recordId) {
+        if (!this.activeRecordId) {
+            this._recordIdFromUrl = this.extractRecordIdFromUrl();
+            if (this.activeRecordId) {
                 this._isStandalonePage = true;
                 this.showModal = true;
             }
         }
-        if (this.recordId) {
+        if (this.activeRecordId) {
             this.loadData();
         }
     }
@@ -129,7 +134,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
             this.actingAsContact = contactResult;
 
             // Get response and need/offer details
-            const responseResult = await getResponseForReply({ recordId: this.recordId });
+            const responseResult = await getResponseForReply({ recordId: this.activeRecordId });
 
             if (!responseResult.success) {
                 this.errorState = responseResult.error || 'loadError';
@@ -147,7 +152,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
             this.selectedStatus = this.response.status;
 
             // Mark as viewed for unified unread tracking
-            markResponseViewed({ responseId: this.recordId }).catch(() => {});
+            markResponseViewed({ responseId: this.activeRecordId }).catch(() => {});
 
         } catch (error) {
             console.error('Error loading data:', error);
@@ -250,7 +255,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     }
 
     get responseUrl() {
-        return '/response-reply?recordId=' + this.recordId;
+        return '/response-reply?recordId=' + this.activeRecordId;
     }
 
     get needOfferUrl() {
@@ -264,7 +269,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     @api
     show() {
         this.showModal = true;
-        if (this.recordId && !this.response) {
+        if (this.activeRecordId && !this.response) {
             this.loadData();
         }
     }
@@ -309,11 +314,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     }
 
     _navigateBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            navigate(this, '/messages');
-        }
+        navigateBack(this, '/messages');
     }
 
     handleSubjectChange(event) {
@@ -441,7 +442,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
 
         try {
             const replyData = {
-                responseId: this.recordId,
+                responseId: this.activeRecordId,
                 subject: this.subject,
                 message: this.message,
                 newStatus: this.isPoster ? this.selectedStatus : null,
@@ -465,7 +466,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
                 // Dispatch success event
                 this.dispatchEvent(new CustomEvent('replysent', {
                     detail: {
-                        responseId: this.recordId,
+                        responseId: this.activeRecordId,
                         newStatus: result.newStatus
                     }
                 }));

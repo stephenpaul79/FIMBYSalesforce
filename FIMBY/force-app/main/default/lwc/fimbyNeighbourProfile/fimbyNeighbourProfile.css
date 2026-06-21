@@ -111,6 +111,13 @@
     gap: 6px;
 }
 
+.message-btn-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 /* ========== INFO SECTIONS ========== */
 .info-section {
     background: var(--fimby-surface-card);
@@ -193,6 +200,23 @@
     color: var(--fimby-text-muted);
     margin: 0;
     font-style: italic;
+}
+
+.connect-copy {
+    font-size: 0.95rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.connect-copy-quiet {
+    margin-bottom: 0;
+}
+
+.share-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
 }
 
 /* ========== DISCLAIMER ========== */

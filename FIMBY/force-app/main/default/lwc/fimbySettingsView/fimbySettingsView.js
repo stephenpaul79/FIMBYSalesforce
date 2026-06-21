@@ -3,7 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 import getSettingsData from '@salesforce/apex/FimbyProfileController.getSettingsData';
 import updateSettingsField from '@salesforce/apex/FimbyProfileController.updateSettingsField';
@@ -276,7 +276,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         };
         try {
             window.__fimbyPushResult = this._pushResultHandler;
-        } catch (e) { /* native bridge / LWS unavailable */ }
+        } catch { /* native bridge / LWS unavailable */ }
     }
 
     handleClosePushPermissionModal() {
@@ -288,7 +288,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             this.settings = await getSettingsData();
             this._syncThemeFromServer();
-        } catch (error) {
+        } catch {
             this._showError('Could not load your settings. Please try again.');
         } finally {
             this.isLoading = false;
@@ -318,7 +318,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             await updateSettingsField({ fieldName: 'FIMBY_Summary_Emails__c', value });
             this.settings = { ...this.settings, summaryEmailFrequency: value };
-        } catch (error) {
+        } catch {
             this._showError('Could not update your email preference. Please try again.');
         }
     }
@@ -328,7 +328,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             await updateSettingsField({ fieldName: 'Quiet_Hours_Preference__c', value });
             this.settings = { ...this.settings, quietHoursPreference: value };
-        } catch (error) {
+        } catch {
             this._showError('Could not update your quiet hours. Please try again.');
         }
     }
@@ -355,7 +355,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             if (checked && field === 'Celebration_Confetti_Enabled__c') {
                 this._firePreviewConfetti(['🎉', '🥳', '✨', '💛']);
             }
-        } catch (error) {
+        } catch {
             this._showError('Could not update that setting. Please try again.');
             event.target.checked = !checked;
         }
@@ -366,7 +366,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             const styles = ['Cannon', 'Fall', 'Rise', 'Drift', 'Approach'];
             const style = styles[Math.floor(Math.random() * styles.length)];
             fireEmojiConfetti({ emojis, style, intensity: 'normal' });
-        } catch (e) {
+        } catch {
             // Non-critical -- confetti is progressive enhancement
         }
     }
@@ -382,7 +382,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             await updatePrivacyPreference({ fieldName: field, value: checked });
             this.settings = { ...this.settings, [settingsKey]: checked };
-        } catch (error) {
+        } catch {
             this._showError('Could not update that privacy setting. Please try again.');
             event.target.checked = !checked;
         }
@@ -407,7 +407,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             if (field === 'Push_Notifications_Enabled__c') {
                 this._notifyNativePushToggle(checked);
             }
-        } catch (error) {
+        } catch {
             this._showError('Could not update that notification setting. Please try again.');
             event.target.checked = !checked;
         }
@@ -421,7 +421,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
                     enabled: enabled
                 }));
             }
-        } catch (e) { /* native bridge unavailable (desktop web) */ }
+        } catch { /* native bridge unavailable (desktop web) */ }
     }
 
     // View-mode display labels
@@ -526,24 +526,25 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             if (typeof window.__fimbySetTheme === 'function') {
                 window.__fimbySetTheme(pref);
             }
-        } catch (e) { /* bridge unavailable */ }
-        try { localStorage.setItem('fimby-theme-pref', pref); } catch (e) { /* LWS may namespace */ }
-        try { document.cookie = 'fimby-theme-pref=' + encodeURIComponent(pref) + ';path=/;max-age=31536000;SameSite=Lax'; } catch (e) { /* */ }
+        } catch { /* bridge unavailable */ }
+        try { localStorage.setItem('fimby-theme-pref', pref); } catch { /* LWS may namespace */ }
+        try { document.cookie = 'fimby-theme-pref=' + encodeURIComponent(pref) + ';path=/;max-age=31536000;SameSite=Lax'; } catch { /* */ }
         this._notifyNativeShell(pref);
     }
 
     _notifyNativeShell(pref) {
         try {
             if (window.ReactNativeWebView) {
-                const effective = (pref === 'dark' || pref === 'light')
-                    ? pref
-                    : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                // Send the raw preference, not a resolved colour. The native shell
+                // stores 'auto' and resolves it against the device scheme live, so
+                // an OS light/dark flip tracks without re-loading the WebView.
+                const normalized = (pref === 'dark' || pref === 'light') ? pref : 'auto';
                 window.ReactNativeWebView.postMessage(JSON.stringify({
                     type: 'themeChange',
-                    theme: effective
+                    theme: normalized
                 }));
             }
-        } catch (e) { /* native bridge unavailable */ }
+        } catch { /* native bridge unavailable */ }
     }
 
     async handleThemeChange(event) {
@@ -561,7 +562,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         const sfValue = pref.charAt(0).toUpperCase() + pref.slice(1);
         try {
             await updateSettingsField({ fieldName: 'Theme_Preference__c', value: sfValue });
-        } catch (error) {
+        } catch {
             this._showError('Could not save your theme preference. Please try again.');
         }
     }
@@ -599,7 +600,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             // The neighbour drops off the blocked list — the surface change is the
             // confirmation, so no banner.
             this.blockedContacts = this.blockedContacts.filter(bc => bc.contactId !== contactId);
-        } catch (error) {
+        } catch {
             this._showError('Could not unblock that contact. Please try again.');
         }
     }
@@ -631,6 +632,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     handleBlockSearch(event) {
         this.blockSearchTerm = event.target.value;
         clearTimeout(this._blockSearchTimeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         this._blockSearchTimeout = setTimeout(() => this._doBlockSearch(), 350);
     }
 
@@ -742,6 +744,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             // session token is revoked and teardown is explicit (never mistaken
             // for a session timeout, which would silently re-authenticate the
             // just-deleted account). Web falls back to the redirect.
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
             setTimeout(() => {
                 if (window.ReactNativeWebView) {
                     window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'logout' }));
@@ -771,7 +774,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             const d = new Date(dateValue);
             return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (e) {
+        } catch {
             return '';
         }
     }
@@ -800,11 +803,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     }
 
     handleBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            navigate(this, '/my-stuff');
-        }
+        navigateBack(this, '/my-stuff');
     }
 
     // ============================================

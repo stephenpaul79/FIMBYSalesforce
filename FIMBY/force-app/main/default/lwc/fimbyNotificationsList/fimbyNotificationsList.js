@@ -8,8 +8,9 @@ import deleteNotification from '@salesforce/apex/FimbyNotificationController.del
 import deleteAllNotifications from '@salesforce/apex/FimbyNotificationController.deleteAllNotifications';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
@@ -38,6 +39,7 @@ const TYPE_ICON_MAP = {
 // Actor_Name__c values that are team/icon tokens, not real neighbour names
 // (notification-contract §4). Mirrors FimbyPushBatchJob.NON_PERSON_ACTORS.
 const TOKEN_ACTORS = new Set(['FIMBY', 'Neighbourhood team', 'care', 'system']);
+const SYSTEM_PROFILE_ACTORS = new Set(['FIMBY', 'Neighbourhood team']);
 
 const GENERIC_PERSON_GLYPH = 'NoProfilePhoto.png';
 const DEFAULT_GLYPH = 'BellInactive.png';
@@ -83,9 +85,16 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
     @track _menuRight = 0;
 
     _escapeHandler = null;
+    currentContactId = null;
 
-    connectedCallback() {
+    async connectedCallback() {
         this.loadInitial();
+        try {
+            const identity = await getActingAsContact();
+            this.currentContactId = identity?.contactId || identity?.realContactId || null;
+        } catch {
+            this.currentContactId = null;
+        }
         this._escapeHandler = (e) => {
             if (e.key === 'Escape') this._closeKebabMenu();
         };
@@ -311,6 +320,19 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             `. ${isUnread ? 'Unread' : 'Read'}.`;
 
         const justRead = (this._justReadId === n.id);
+        const actorToken = (n.actorName || '').trim();
+        const isSystemProfileActor = !hasHumanActor && SYSTEM_PROFILE_ACTORS.has(actorToken);
+        let actorProfilePath = '';
+        if (hasHumanActor && n.actorContactId) {
+            actorProfilePath = profilePathForContact({
+                contactId: n.actorContactId,
+                isOrgContact: n.actorIsOrg === true,
+                orgAccountId: n.actorOrgAccountId,
+                currentContactId: this.currentContactId
+            });
+        } else if (isSystemProfileActor) {
+            actorProfilePath = '/system-profile';
+        }
         return {
             ...n,
             navigationUrl: this._resolveNavigationUrl(n),
@@ -336,7 +358,10 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             readToggleLabel: isUnread ? 'Mark as read' : 'Mark as unread',
             readStatusLabel: isUnread ? 'Read' : 'Unread',
             readStatusIconUrl: isUnread ? this.readIconUrl : this.unreadIconUrl,
-            readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread')
+            readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread'),
+            actorProfilePath,
+            actorAvatarClickable: !!actorProfilePath,
+            notifAvatarClass: 'notif-avatar' + (actorProfilePath ? ' notif-avatar-clickable' : '')
         };
     }
 
@@ -469,6 +494,8 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
      * --------------------------------------------------------------- */
 
     async handleNotificationClick(event) {
+        if (event.target.closest('.notif-avatar-clickable')) return;
+
         const notificationId = event.currentTarget.dataset.notificationId;
 
         if (this._openSwipeId === notificationId) {
@@ -481,7 +508,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
         if (notification.isUnread) {
             this.allNotifications = this.allNotifications.map(n =>
-                n.id === notificationId ? { ...n, isUnread: false } : n
+                (n.id === notificationId ? { ...n, isUnread: false } : n)
             );
             try {
                 await markAsRead({ notificationId });
@@ -494,6 +521,14 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         const target = this._resolveSafeUrl(notification);
         if (target) {
             navigate(this, target);
+        }
+    }
+
+    handleActorAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) {
+            navigate(this, path);
         }
     }
 
@@ -531,7 +566,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
                     return toExperiencePath(relative);
                 }
                 console.warn('FimbyNotificationsList: blocked off-host actionUrl', parsed.host);
-            } catch (err) {
+            } catch {
                 console.warn('FimbyNotificationsList: unparseable actionUrl', raw);
             }
         }
@@ -600,7 +635,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
         const wasUnread = notification.isUnread;
         this.allNotifications = this.allNotifications.map(n =>
-            n.id === notificationId ? { ...n, isUnread: !wasUnread } : n
+            (n.id === notificationId ? { ...n, isUnread: !wasUnread } : n)
         );
         if (wasUnread) {
             this._flagJustRead(notificationId);
@@ -617,7 +652,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         } catch (error) {
             console.error('Error toggling read state:', error);
             this.allNotifications = this.allNotifications.map(n =>
-                n.id === notificationId ? { ...n, isUnread: wasUnread } : n
+                (n.id === notificationId ? { ...n, isUnread: wasUnread } : n)
             );
             this.statusMessage = 'Failed to update notification';
         }
@@ -649,6 +684,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             }
         }
 
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._undoTimeout = setTimeout(() => {
             this._commitDelete();
         }, UNDO_TIMEOUT_MS);

@@ -35,7 +35,7 @@
                 <article class="story-card">
                     <!-- Author Header - badge sits in-flow beside the name (no overlap, no duplicate type) -->
                     <div class="story-header">
-                        <div class="author-info">
+                        <div class={authorInfoClass} onclick={handleAuthorAvatarClick}>
                             <template lwc:if={authorAvatar}>
                                 <img src={authorAvatar} alt={authorName} class="author-avatar">
                             </template>
@@ -116,7 +116,9 @@
                         <div class="comments-list">
                             <template for:each={comments} for:item="comment">
                                 <div key={comment.id} class="comment-item">
-                                    <div class="comment-avatar">
+                                    <div class={comment.authorAvatarClass}
+                                         data-profile-path={comment.profilePath}
+                                         onclick={handleCommentAvatarClick}>
                                         <template lwc:if={comment.authorPhotoUrl}>
                                             <img src={comment.authorPhotoUrl} alt={comment.authorName}>
                                         </template>
@@ -169,7 +171,7 @@
                                                         role="menuitem"
                                                         data-comment-id={comment.id}
                                                         onclick={handleCommentReport}>
-                                                        Flag for follow-up
+                                                        Report
                                                     </button>
                                                 </template>
                                             </div>

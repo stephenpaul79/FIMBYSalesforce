@@ -1,0 +1,106 @@
+<template>
+    <div class="fimby-system-profile">
+        <c-fimby-page-header
+            page-title="System Profile"
+            show-back="true"
+            onback={handleBack}>
+        </c-fimby-page-header>
+
+        <div class="detail-content">
+            <div class="identity-card">
+                <div class="hero-frame">
+                    <img src={pandaImageUrl} alt="FIMBY panda knitting rainbow wires in a circuit-board treehouse" class="hero-image">
+                </div>
+
+                <div class="identity-info">
+                    <h1 class="identity-name">FIMBY</h1>
+                    <p class="identity-meta">
+                        <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                        The Cloud
+                    </p>
+                    <p class="identity-meta">Member since before the first hello finished loading</p>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <img src={contactIconUrl} alt="" class="section-icon">
+                        Contact Information
+                    </h3>
+                </div>
+                <div class="field-grid">
+                    <div class="field-item full-width">
+                        <span class="field-label">Email</span>
+                        <span class="field-value">notes@fimby, or just knock</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">Phone</span>
+                        <span class="field-value">rustle a bamboo pole, i'll hear it</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">Address</span>
+                        <span class="field-value">the motherboard treehouse</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <img src={aboutIconUrl} alt="" class="section-icon">
+                        About
+                    </h3>
+                </div>
+                <div class="field-grid">
+                    <div class="field-item full-width">
+                        <span class="field-label">How long in the neighbourhood</span>
+                        <span class="field-value">Since the first knock</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">What brought them here</span>
+                        <span class="field-value">A note needed carrying, and my paws were free.</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">One local place they love</span>
+                        <span class="field-value">The windowsill, next to the server rack that hums in C major</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">Something they enjoy doing</span>
+                        <span class="field-value">Knitting rainbow scarves from spare wires while your messages route home</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">One small thing about them</span>
+                        <span class="field-value">i eat bugs for breakfast. The ones in the code.</span>
+                    </div>
+                    <div class="field-item full-width">
+                        <span class="field-label">Languages Spoken</span>
+                        <span class="field-value">Bamboo rustle, neighbour notes, binary.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <img src={accessibilityIconUrl} alt="" class="section-icon">
+                        Accessibility &amp; Availability
+                    </h3>
+                </div>
+                <div class="field-grid">
+                    <div class="field-item full-width">
+                        <span class="field-label">Accessibility Notes</span>
+                        <span class="field-value">Mostly circuits and good intentions. Plain words work best.</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="footer-nod">looked after by Stephen and the Strathcona Vineyard neighbours, down in Vancouver's Downtown Eastside.</p>
+        </div>
+
+        <c-fimby-bottom-navigation
+            active-tab="home"
+            ontabchange={handleTabChange}>
+        </c-fimby-bottom-navigation>
+    </div>
+</template>

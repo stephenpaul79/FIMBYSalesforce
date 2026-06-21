@@ -485,16 +485,6 @@
     transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
-.reserve-btn:hover:not(:disabled) {
-    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
-}
-
-.reserve-btn:active:not(:disabled) {
-    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
-    box-shadow: var(--fimby-btn-shadow-active);
-    transform: scale(0.97);
-}
-
 .reserve-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -504,6 +494,16 @@
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.reserve-btn:hover:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.reserve-btn:active:not(:disabled) {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
 }
 
 .reserve-btn-icon {
@@ -612,18 +612,26 @@
     color: #ffffff;
 }
 
+.btn-secondary {
+    background: var(--fimby-surface-card);
+    color: var(--fimby-text-primary);
+    border: 1px solid var(--fimby-divider-default);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.amount-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .btn-primary:hover:not(:disabled) {
     background: var(--fimby-btn-primary-bg-hover);
 }
 
 .btn-primary:active:not(:disabled) {
     background: var(--fimby-btn-primary-bg-active);
-}
-
-.btn-secondary {
-    background: var(--fimby-surface-card);
-    color: var(--fimby-text-primary);
-    border: 1px solid var(--fimby-divider-default);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -679,15 +687,6 @@
     .fimby-bulk-buy-reservation {
         max-width: 600px;
     }
-}
-
-/* Focus Styles */
-.btn-primary:focus-visible,
-.btn-secondary:focus-visible,
-.amount-btn:focus-visible {
-    outline: 2px solid var(--fimby-focus-ring);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
 /* Reduced Motion */

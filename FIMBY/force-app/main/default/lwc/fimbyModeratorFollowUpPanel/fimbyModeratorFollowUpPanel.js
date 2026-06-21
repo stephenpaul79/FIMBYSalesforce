@@ -46,7 +46,7 @@ export default class FimbyModeratorFollowUpPanel extends LightningElement {
         try {
             const d = new Date(dateStr);
             return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (_) {
+        } catch {
             return dateStr;
         }
     }

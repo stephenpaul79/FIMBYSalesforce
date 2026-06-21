@@ -105,6 +105,12 @@
     background-color: var(--fimby-pressed-bg);
 }
 
+.header-action-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .notification-dot {
     position: absolute;
     top: 6px;
@@ -220,7 +226,8 @@
 .menu-dropdown {
     position: fixed;
     z-index: 1000;
-    min-width: 200px;
+    width: max-content;
+    min-width: 0;
     background-color: var(--fimby-surface-card);
     border-radius: var(--fimby-radius-md);
     box-shadow: var(--fimby-shadow-modal);
@@ -242,11 +249,12 @@
     background-color: transparent;
     border: none;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--fimby-text-primary);
     font-family: inherit;
     text-align: left;
+    white-space: nowrap;
     transition: background-color 0.15s ease;
     min-height: 44px;
 }

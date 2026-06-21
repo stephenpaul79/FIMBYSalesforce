@@ -55,8 +55,8 @@
                 <label for="welcome-msg" class="field-label">Welcome Message</label>
                 <span class={messageCountClass}>{messageLength}/1000</span>
             </div>
-            <textarea id="welcome-msg" class="welcome-textarea" value={welcomeMessage}
-                      oninput={handleMessageChange} maxlength="1000" rows="6"></textarea>
+            <textarea id="welcome-msg" class="welcome-textarea"
+                      oninput={handleMessageChange} maxlength="1000" rows="6">{welcomeMessage}</textarea>
         </div>
     </div>
 

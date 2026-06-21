@@ -515,6 +515,19 @@
     cursor: not-allowed;
 }
 
+.btn-action:focus-visible {
+    outline: 2px solid var(--fimby-earth-teal);
+    outline-offset: 2px;
+}
+
+.decision-actions--org .btn-action {
+    width: 100%;
+    max-width: none;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+}
+
 .btn-action:active:not(:disabled) {
     transform: scale(0.97);
 }
@@ -708,6 +721,7 @@
     font-size: 0.85rem;
     font-family: inherit;
     line-height: 1.5;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     box-sizing: border-box;
 }
@@ -1253,7 +1267,6 @@
    ================================================================ */
 .back-chevron:focus-visible,
 .back-btn-inline:focus-visible,
-.btn-action:focus-visible,
 .btn-contact:focus-visible,
 .btn-link:focus-visible,
 .document-image-btn:focus-visible {
@@ -1407,14 +1420,6 @@
 
 .decision-actions--org {
     gap: 10px;
-}
-
-.decision-actions--org .btn-action {
-    width: 100%;
-    max-width: none;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.25;
 }
 
 .btn-contact-grid {

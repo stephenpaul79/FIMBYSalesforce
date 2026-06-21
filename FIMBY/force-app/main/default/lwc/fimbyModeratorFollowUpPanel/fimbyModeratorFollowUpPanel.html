@@ -64,9 +64,9 @@
                     <label for="form-note" class="field-label">Note</label>
                     <span class={noteCountClass}>{noteLength}/500</span>
                 </div>
-                <textarea id="form-note" class="inline-form-textarea" value={formNote}
+                <textarea id="form-note" class="inline-form-textarea"
                           oninput={handleFormNoteChange} maxlength="500" rows="4"
-                          placeholder={formPlaceholder}></textarea>
+                          placeholder={formPlaceholder}>{formNote}</textarea>
                 <div class="inline-form-actions">
                     <button class={formConfirmClass} type="button" onclick={handleFormConfirm}>
                         {formConfirmLabel}

@@ -225,7 +225,7 @@ export default class FimbyLoanExtensionApprovalModal extends LightningElement {
             } else {
                 this._errorMessage = result.message || 'Unable to load this extension request.';
                 this.hide();
-                return;
+                
             }
         } catch (err) {
             this._errorMessage = err.body?.message || 'Something went wrong loading the extension request.';

@@ -215,10 +215,10 @@ public with sharing class FimbyCommunicationController {
             String query = 'SELECT Id, Participant_1__c, Participant_2__c,'
                 + ' Participant_1__r.Name, Participant_1__r.Full_Name__c, Participant_1__r.FirstName, Participant_1__r.LastName,'
                 + ' Participant_1__r.Image_URL__c, Participant_1__r.Display_Avatar_URL__c, Participant_1__r.Is_Organization_Contact__c,'
-                + ' Participant_1__r.Organization_Account__r.Name, Participant_1__r.Organization_Account__r.Logo_URL__c,'
+                + ' Participant_1__r.Organization_Account__c, Participant_1__r.Organization_Account__r.Name, Participant_1__r.Organization_Account__r.Logo_URL__c,'
                 + ' Participant_2__r.Name, Participant_2__r.Full_Name__c, Participant_2__r.FirstName, Participant_2__r.LastName,'
                 + ' Participant_2__r.Image_URL__c, Participant_2__r.Display_Avatar_URL__c, Participant_2__r.Is_Organization_Contact__c,'
-                + ' Participant_2__r.Organization_Account__r.Name, Participant_2__r.Organization_Account__r.Logo_URL__c,'
+                + ' Participant_2__r.Organization_Account__c, Participant_2__r.Organization_Account__r.Name, Participant_2__r.Organization_Account__r.Logo_URL__c,'
                 + ' Last_Message_Preview__c, Last_Message_Date__c, Last_Message_Sender__c,'
                 + ' Participant_1_Unread_Count__c, Participant_2_Unread_Count__c,'
                 + ' Participant_1_Archived__c, Participant_2_Archived__c,'
@@ -342,6 +342,8 @@ public with sharing class FimbyCommunicationController {
                 t.participantName = otherName;
                 t.participantInitials = otherInitials;
                 t.participantImageUrl = otherImageUrl;
+                t.participantContactId = otherContactId;
+                t.participantOrgAccountId = other?.Organization_Account__c;
                 t.isOrgContact = otherIsOrg;
                 t.contextLabel = contextLabel;
                 t.lastMessagePreview = conv.Last_Message_Preview__c;
@@ -1116,6 +1118,8 @@ public with sharing class FimbyCommunicationController {
         @AuraEnabled public String participantName { get; set; }
         @AuraEnabled public String participantInitials { get; set; }
         @AuraEnabled public String participantImageUrl { get; set; }
+        @AuraEnabled public Id participantContactId { get; set; }
+        @AuraEnabled public Id participantOrgAccountId { get; set; }
         @AuraEnabled public Boolean isOrgContact { get; set; }
         @AuraEnabled public String contextLabel { get; set; }
         @AuraEnabled public String lastMessagePreview { get; set; }

@@ -64,7 +64,7 @@
                                                 <span class="post-type">Bulk Buy</span> &middot; <span class="post-date">{formattedDate}</span>
                                             </span>
                                         </div>
-                                        <div class="poster-info-compact">
+                                        <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
                                             <template lwc:if={posterAvatar}>
                                                 <img src={posterAvatar} alt={posterName} class="poster-avatar">
                                             </template>
@@ -222,7 +222,7 @@
                                                    aria-label="Open event details on external site">Event Details &#8599;</a>
                                             </template>
                                         </div>
-                                        <div class="poster-info-compact">
+                                        <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
                                             <template lwc:if={posterAvatar}>
                                                 <img src={posterAvatar} alt={posterName} class="poster-avatar">
                                             </template>
@@ -510,7 +510,9 @@
                             <template for:each={attendeeList} for:item="attendee">
                                 <div key={attendee.id} class="attendee-row">
                                     <div class="attendee-info">
-                                        <img src={attendee.avatarUrl} alt="" class="attendee-avatar">
+                                        <img src={attendee.avatarUrl} alt="" class={attendee.avatarClass}
+                                             data-profile-path={attendee.profilePath}
+                                             onclick={handleAttendeeAvatarClick}>
                                         <span class="attendee-name">{attendee.name}</span>
                                         <template lwc:if={attendee.guestCount}>
                                             <span class="attendee-guests" lwc:if={isOpenEvent}>+{attendee.guestCount}</span>

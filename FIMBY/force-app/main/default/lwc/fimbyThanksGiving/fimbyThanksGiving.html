@@ -35,10 +35,8 @@
                         <textarea
                             class="message-input modal-textarea"
                             placeholder="Write a thank you message..."
-                            value={thankYouMessage}
-                            onchange={handleMessageChange}
-                            maxlength="500">
-                        </textarea>
+                            oninput={handleMessageChange}
+                            maxlength="500">{thankYouMessage}</textarea>
                     </div>
                     <div class="modal-footer">
                         <button class="cancel-btn" onclick={handleClose}>Cancel</button>
@@ -73,7 +71,7 @@
                             <span class="posting-as-value">{postingAsDisplayName}</span>
                         </div>
                     </template>
-                    <textarea class="message-input" placeholder="Write a thank you message..." value={thankYouMessage} onchange={handleMessageChange}></textarea>
+                    <textarea class="message-input" placeholder="Write a thank you message..." oninput={handleMessageChange}>{thankYouMessage}</textarea>
                     <button class="send-thanks-button" onclick={handleSendThanks}>Send Thanks</button>
                 </div>
             </div>

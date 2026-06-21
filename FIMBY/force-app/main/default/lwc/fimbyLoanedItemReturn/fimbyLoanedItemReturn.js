@@ -7,6 +7,11 @@ import getConditionPicklistValues from '@salesforce/apex/FimbyLendingController.
 
 export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElement) {
     @api recordId;
+    _recordIdFromUrl = '';
+
+    get activeRecordId() {
+        return this.recordId || this._recordIdFromUrl;
+    }
 
     isLoading = true;
     hasError = false;
@@ -45,7 +50,7 @@ export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElem
     @wire(CurrentPageReference)
     getStateParameters(currentPageReference) {
         if (currentPageReference) {
-            this.recordId = this.recordId || currentPageReference.state?.recordId;
+            this._recordIdFromUrl = this._recordIdFromUrl || currentPageReference.state?.recordId;
         }
     }
 
@@ -69,7 +74,7 @@ export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElem
             }
 
             // Load loaned item data
-            const result = await getLoanedItemForReturn({ recordId: this.recordId });
+            const result = await getLoanedItemForReturn({ recordId: this.activeRecordId });
 
             if (result.success) {
                 this.loanedItem = result.loanedItem;
@@ -161,7 +166,7 @@ export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElem
             if (this.isBorrower && !this.isOwner) {
                 // Borrower submitting return
                 result = await submitBorrowerReturn({
-                    recordId: this.recordId,
+                    recordId: this.activeRecordId,
                     dateReturned: this.dateReturned,
                     isDamaged: isDamaged,
                     wouldBorrowAgain: this.wouldBorrowAgain
@@ -169,7 +174,7 @@ export default class FimbyLoanedItemReturn extends NavigationMixin(LightningElem
             } else {
                 // Owner confirming return
                 result = await submitOwnerReturn({
-                    recordId: this.recordId,
+                    recordId: this.activeRecordId,
                     dateReturned: this.dateReturned,
                     isDamaged: isDamaged,
                     conditionUponReturn: this.conditionUponReturn,

@@ -260,7 +260,7 @@ export default class FimbyLoanExtensionModal extends LightningElement {
                 }
                 this._errorMessage = result.message || 'Unable to load loan details.';
                 this.hide();
-                return;
+                
             }
         } catch (err) {
             this._errorMessage = err.body?.message || 'Something went wrong loading loan details.';

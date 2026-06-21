@@ -49,12 +49,12 @@
 
                 <!-- Search (preserved) -->
                 <button lwc:if={showSearch} type="button" class="header-action" aria-label="Search" onclick={handleSearchClick}>
-                    <lightning-icon icon-name="utility:search" size="medium" variant="neutral"></lightning-icon>
+                    <img src={searchIconUrl} alt="" class="header-action-icon">
                 </button>
 
                 <!-- Notifications (preserved) -->
                 <button lwc:if={showNotifications} type="button" class="header-action" aria-label="Notifications" onclick={handleNotificationClick}>
-                    <lightning-icon icon-name="utility:notification" size="medium" variant="neutral"></lightning-icon>
+                    <img src={notificationIconUrl} alt="" class="header-action-icon">
                     <div lwc:if={hasNotifications} class="notification-dot"></div>
                 </button>
 

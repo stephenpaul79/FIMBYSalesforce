@@ -1,4 +1,7 @@
-:host { display: contents; }
+:host {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- modal host layout passthrough */
+    display: contents;
+}
 
 .acting-as-block {
     display: flex;
@@ -20,10 +23,7 @@
 
 .modal-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-color: var(--fimby-scrim);
     display: flex;
     align-items: flex-end;

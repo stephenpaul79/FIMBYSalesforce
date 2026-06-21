@@ -234,6 +234,17 @@
     min-height: 44px;
 }
 
+.cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cancel-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .cancel-button:hover:not(:disabled) {
     background-color: var(--fimby-hover-bg);
     border-color: var(--fimby-border-strong);
@@ -242,11 +253,6 @@
     background-color: var(--fimby-pressed-bg);
     box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
     transform: scale(0.97);
-}
-
-.cancel-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .save-button {
@@ -269,6 +275,18 @@
     justify-content: center;
 }
 
+.save-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.save-button:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .save-button:hover:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
 }
@@ -276,12 +294,6 @@
     background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
     box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
     transform: scale(0.97);
-}
-
-.save-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
 }
 
 .save-btn-icon {
@@ -356,8 +368,6 @@
 
 /* Keyboard focus visibility */
 .close-button:focus-visible,
-.cancel-button:focus-visible,
-.save-button:focus-visible,
 .retry-button:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;

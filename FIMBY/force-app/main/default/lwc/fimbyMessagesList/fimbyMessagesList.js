@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateToRoute, profilePathForContact } from 'c/fimbyNavigation';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import getThreads from '@salesforce/apex/FimbyCommunicationController.getThreads';
 import getUnifiedUnreadCount from '@salesforce/apex/FimbyCommunicationController.getUnifiedUnreadCount';
@@ -60,6 +60,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
     @track actingAsAvatarUrl = '';
     @track isActingAsOrg = false;
     @track hasMultipleIdentities = false;
+    @track currentContactId = null;
 
     @track showNewMessageModal = false;
     @track messageableContacts = [];
@@ -197,6 +198,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         this._windowScrollHandler = () => {
             if (!this._scrollTicking) {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
                 requestAnimationFrame(() => {
                     this._handleScrollDirection();
                     this._scrollTicking = false;
@@ -211,6 +213,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         };
         window.addEventListener('keydown', this._escapeHandler);
 
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => this._measureHeaderHeight());
     }
 
@@ -299,6 +302,15 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             ? `${badge.label} group: ${thread.participantName || 'conversation'}`
             : `Open conversation with ${thread.participantName || 'neighbour'}`;
 
+        const profilePath = !isGroup && thread.participantContactId
+            ? profilePathForContact({
+                contactId: thread.participantContactId,
+                isOrgContact: !!thread.isOrgContact,
+                orgAccountId: thread.participantOrgAccountId,
+                currentContactId: this.currentContactId
+            })
+            : '';
+
         return {
             ...thread,
             actionUrl: thread.actionUrl,
@@ -324,9 +336,11 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
                 ? `thread-avatar group-avatar group-avatar-${groupVariant}`
                 : 'thread-avatar',
             participantInitials: this.getInitials(thread.participantName),
+            profilePath,
+            avatarClickable: !!profilePath,
             avatarClass: isGroup
                 ? (hasPostImage ? 'thread-avatar thread-avatar-group' : `thread-avatar group-avatar group-avatar-${groupVariant}`)
-                : ('thread-avatar' + (thread.isOrgContact ? ' thread-avatar-org' : '')),
+                : ('thread-avatar' + (thread.isOrgContact ? ' thread-avatar-org' : '') + (profilePath ? ' thread-avatar-clickable' : '')),
             archiveAction,
             archiveLabel,
             subjectLine,
@@ -394,6 +408,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     handleThreadClick(event) {
         if (event.target.closest('.thread-kebab-container')) return;
+        if (event.target.closest('.thread-avatar-clickable')) return;
 
         const threadId = event.currentTarget.dataset.threadId;
 
@@ -406,6 +421,14 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         const actionUrl = event.currentTarget.dataset.actionUrl;
         if (actionUrl) {
             navigate(this, toExperiencePath(actionUrl));
+        }
+    }
+
+    handleParticipantAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) {
+            navigate(this, path);
         }
     }
 
@@ -626,9 +649,9 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         try {
             await markThreadUnread({ threadType, threadId });
             this.threads = this.threads.map(t =>
-                t.threadId === threadId
+                (t.threadId === threadId
                     ? this.processThread({ ...t, isUnread: true })
-                    : t
+                    : t)
             );
             this.hasUnreadMessages = true;
             window.dispatchEvent(new CustomEvent('fimbyrequestbadgerefresh'));
@@ -641,9 +664,9 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         try {
             await markThreadRead({ threadType, threadId });
             this.threads = this.threads.map(t =>
-                t.threadId === threadId
+                (t.threadId === threadId
                     ? this.processThread({ ...t, isUnread: false })
-                    : t
+                    : t)
             );
             window.dispatchEvent(new CustomEvent('fimbyrequestbadgerefresh'));
         } catch (err) {
@@ -743,7 +766,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         try {
             const count = await getUnifiedUnreadCount();
             this.hasUnreadMessages = (count || 0) > 0;
-        } catch (error) {
+        } catch {
             // Silently ignore
         }
     }
@@ -760,18 +783,19 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         try {
             const result = await getActingAsContact();
             if (result?.success) {
+                this.currentContactId = result.contactId || result.realContactId || null;
                 this.isActingAsSelf = !!result.isActingAsSelf;
                 this.actingAsContactName = result.postingAsDisplayName || result.actingAsContactName || '';
                 this.actingAsAvatarUrl = resolveAvatarUrl(result.actingAsAvatarUrl);
                 this.isActingAsOrg = !!result.isActingAsOrg;
             }
-        } catch (error) {
+        } catch {
             // Non-critical — banner just won't show
         }
         try {
             const identities = await getAvailableIdentities();
             this.hasMultipleIdentities = Array.isArray(identities) && identities.length > 0;
-        } catch (error) {
+        } catch {
             this.hasMultipleIdentities = false;
         }
     }
@@ -787,7 +811,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             } else {
                 this.retentionDisclaimerText = `We remove conversations that haven't been used in ${dm} days (direct messages), ${response} days (Ask/Offer), or ${library} days (Lending).`;
             }
-        } catch (error) {
+        } catch {
             this.retentionDisclaimerText = 'We remove conversations that haven\'t been used in 90 days (direct messages) or 180 days (Ask/Offer and Lending).';
         }
     }

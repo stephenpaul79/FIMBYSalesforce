@@ -118,19 +118,22 @@
                 </div>
             </div>
 
-                <!-- Results Grid -->
-                <div class="search-results-grid">
+                <!-- Results List (library list-view pattern) -->
+                <div class="search-results-list">
                     <template for:each={searchResults} for:item="result">
-                        <button type="button" key={result.recordId} class="result-item"
-                             data-id={result.recordId}
-                             data-type={result.resultType}
-                             data-shared={result.hasSharedContact}
-                             aria-label="View result"
-                             onclick={handleResultClick}>
-
-                            <!-- People Results -->
-                            <template lwc:if={result.isPeople}>
-                                <div class={result.peopleCssClass}>
+                        <!-- People -->
+                        <template lwc:if={result.isPeople}>
+                            <div
+                                key={result.recordId}
+                                class="feed-card-wrapper"
+                                role="button"
+                                tabindex="0"
+                                data-record-id={result.recordId}
+                                data-result-type={result.resultType}
+                                aria-label={result.peopleAriaLabel}
+                                onclick={handleResultClick}
+                                onkeydown={handleResultKeydown}>
+                                <div class="search-people-card">
                                     <template lwc:if={result.processedImageUrl}>
                                         <img src={result.processedImageUrl} alt={result.name} class="person-avatar" />
                                     </template>
@@ -153,53 +156,50 @@
                                         </span>
                                     </template>
                                     <template lwc:else>
-                                        <span class="locked-badge">
-                                            <img src={redCircleUrl} alt="" class="badge-status-icon" />
+                                        <span class="contact-not-shared-badge">
                                             <span>No Contact Info Shared</span>
                                         </span>
                                     </template>
                                 </div>
-                            </template>
+                            </div>
+                        </template>
 
-                            <!-- Story / Ask & Offer / Library Results — shared card layout -->
-                            <template lwc:else>
-                                <div class="result-card">
-                                    <div class="result-card-header">
-                                        <template lwc:if={result.processedAvatarUrl}>
-                                            <img src={result.processedAvatarUrl} alt="" class="result-avatar" />
-                                        </template>
-                                        <template lwc:else>
-                                            <img src={noProfilePhotoUrl} alt="" class="result-avatar" />
-                                        </template>
-                                        <div class="result-header-text">
-                                            <span class="result-posted-by">{result.postedByName}</span>
-                                            <span class="result-meta">{result.formattedDate}</span>
-                                        </div>
-                                        <template lwc:if={result.useBadgeStyle}>
-                                            <span class={result.badgeCssClass} style={result.badgeStyle}>
-                                                <img src={result.badgeIconUrl} alt="" class="badge-icon" />
-                                                <span>{result.badgeLabel}</span>
-                                            </span>
-                                        </template>
-                                        <template lwc:else>
-                                            <span class={result.badgeCssClass}>
-                                                <img src={result.badgeIconUrl} alt="" class="badge-icon" />
-                                                <span>{result.badgeLabel}</span>
-                                            </span>
-                                        </template>
-                                    </div>
-                                    <template lwc:if={result.processedImageUrl}>
-                                        <div class="result-image-wrapper">
-                                            <img src={result.processedImageUrl} alt={result.name} class="result-image" loading="lazy" />
-                                        </div>
-                                    </template>
-                                    <div class="result-card-body">
-                                        <h4 class="result-title">{result.name}</h4>
-                                        <p class="result-description">{result.shortDescription}</p>
-                                    </div>
-                                </div>
-                            </template>
-                        </button>
+                        <!-- Story / Ask & Offer / Library / Skill -->
+                        <template lwc:else>
+                            <div
+                                key={result.recordId}
+                                class="feed-card-wrapper"
+                                role="button"
+                                tabindex="0"
+                                data-record-id={result.recordId}
+                                data-result-type={result.resultType}
+                                aria-label="View result"
+                                onclick={handleResultClick}
+                                onkeydown={handleResultKeydown}>
+                                <c-fimby-card
+                                    layout="list"
+                                    card-type={result.cardType}
+                                    card-accent-color={result.accentColor}
+                                    suppress-media-placeholder="true"
+                                    title={result.name}
+                                    description={result.shortDescription}
+                                    show-header="false"
+                                    show-avatar="true"
+                                    show-menu="false"
+                                    user-name={result.postedByName}
+                                    avatar-url={result.processedAvatarUrl}
+                                    timestamp={result.createdDate}
+                                    images={result.images}
+                                    badge-label={result.badgeLabel}
+                                    badge-icon-url={result.badgeIconUrl}
+                                    badge-style={result.badgeStyle}
+                                    elevation="low"
+                                    is-clickable="true"
+                                    oncardclick={handleResultClick}
+                                    onimageclick={handleResultClick}>
+                                </c-fimby-card>
+                            </div>
+                        </template>
                     </template>
                 </div>
 

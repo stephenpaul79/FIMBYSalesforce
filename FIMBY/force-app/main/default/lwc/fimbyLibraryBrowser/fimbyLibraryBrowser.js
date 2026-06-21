@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
+import { getRecordPageReference, startNavTiming, navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -14,6 +14,7 @@ import getSkillCategoryPicklistValues from '@salesforce/apex/FimbySkillsControll
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCelebrationContext';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 const INITIAL_FETCH_SIZE = 100;
 const SCROLL_BATCH_SIZE = 50;
@@ -59,6 +60,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // Vouching gate
     @track _isVouchedForBorrowing = null;
     @track isSettlingIn = false;
+    currentContactId = null;
 
     // State persistence for back-navigation restore
     _pendingScrollY = null;
@@ -78,10 +80,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     async connectedCallback() {
         try {
-            const [celebCtx, vouched] = await Promise.all([
+            const [celebCtx, vouched, identity] = await Promise.all([
                 getCelebrationContext(),
-                isVouchedForBorrowing()
+                isVouchedForBorrowing(),
+                getActingAsContact()
             ]);
+            this.currentContactId = identity?.contactId || identity?.realContactId || null;
             this._memesEnabled = celebCtx?.memesEnabled !== false;
             this._isVouchedForBorrowing = vouched === true;
             this.isSettlingIn = vouched === false;
@@ -102,6 +106,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
         this._windowScrollHandler = () => {
             if (!this._scrollTicking) {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
                 requestAnimationFrame(() => {
                     this._handleScrollDirection();
                     this._throttledSaveLibraryState();
@@ -329,6 +334,16 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
             const ownerAvatarRaw = item.ownerAvatar;
 
+            const ownerContactId = item.ownerContactId || item.Owner_Contact__c;
+            const isOrgContact = item.isOrgContact === true;
+            const orgAccountId = item.orgAccountId;
+            const posterProfileUrl = profilePathForContact({
+                contactId: ownerContactId,
+                isOrgContact,
+                orgAccountId,
+                currentContactId: this.currentContactId
+            });
+
             return {
                 id: item.Id,
                 name: item.Name,
@@ -357,7 +372,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 responseIconUrl: (item.primaryAction === 'borrow' || item.primaryAction === 'joinWaitlist')
                     ? `${IMPACT_ICONS}/borrow.png`
                     : `${IMPACT_ICONS}/Magnify.png`,
-                showCardMenu: item.viewerState !== 'owner'
+                showCardMenu: item.viewerState !== 'owner',
+                isOrgPoster: isOrgContact,
+                posterProfileUrl
             };
         });
     }
@@ -387,6 +404,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 if (this.filteredItems.length < this.minFilteredItems &&
                     this.hasMoreContent &&
                     this.filterAutoLoadCount < this.maxFilterAutoLoadBatches) {
+                    // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                     setTimeout(() => this.checkAndLoadMoreForFilter(), 100);
                 }
             } catch (e) {
@@ -635,7 +653,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     }
 
     _saveViewPreference() {
-        try { localStorage.setItem('fimby-library-view', this.viewMode); } catch (e) { /* ignore */ }
+        try { localStorage.setItem('fimby-library-view', this.viewMode); } catch { /* ignore */ }
     }
 
     _restoreViewPreference() {
@@ -646,12 +664,18 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             }
             const saved = localStorage.getItem('fimby-library-view');
             if (saved === 'grid' || saved === 'list') this.viewMode = saved;
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     // =============================================
     // HANDLERS – feed interactions
     // =============================================
+
+    handleAvatarNavigation(event) {
+        event.stopPropagation();
+        const url = event.detail?.url;
+        if (url) navigate(this, url);
+    }
 
     handleCardClick(event) {
         const wrapper = event.currentTarget.closest('[data-record-id]');
@@ -804,6 +828,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this.lightboxStartIndex = detail.index || 0;
             this.showLightbox = true;
 
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
             requestAnimationFrame(() => {
                 const lb = this.template.querySelector('c-fimby-lightbox');
                 if (lb) lb.open(this.lightboxStartIndex);
@@ -837,11 +862,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 timestamp: Date.now()
             };
             sessionStorage.setItem(LIB_CACHE_KEY, JSON.stringify(state));
-        } catch (e) { /* storage unavailable or full */ }
+        } catch { /* storage unavailable or full */ }
     }
 
     _throttledSaveLibraryState() {
         if (this._saveThrottleTimer) return;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._saveThrottleTimer = setTimeout(() => {
             this._saveThrottleTimer = null;
             this._saveLibraryState();
@@ -873,13 +899,13 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             this._pendingScrollY = state.scrollY || 0;
             this._restoredFromCache = true;
             return true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }
 
     _clearLibraryCache() {
-        try { sessionStorage.removeItem(LIB_CACHE_KEY); } catch (e) { /* ignore */ }
+        try { sessionStorage.removeItem(LIB_CACHE_KEY); } catch { /* ignore */ }
     }
 
     renderedCallback() {
@@ -892,9 +918,11 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             const savedY = this._pendingScrollY;
             this._pendingScrollY = null;
             this._restoredFromCache = false;
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
             requestAnimationFrame(() => {
                 window.scrollTo(0, savedY);
                 // Reveal only after scroll is positioned, so the jump is unseen.
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
                 requestAnimationFrame(() => {
                     this._resumeHidden = false;
                 });

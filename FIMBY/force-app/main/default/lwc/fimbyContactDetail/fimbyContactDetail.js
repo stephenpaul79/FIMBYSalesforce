@@ -48,6 +48,9 @@ export default class FimbyContactDetail extends NavigationMixin(LightningElement
     }
 
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
+    get emailIconUrl() { return `${IMPACT_ICONS}/email.png`; }
+    get phoneIconUrl() { return `${IMPACT_ICONS}/telephone.png`; }
 
     get headerMenuItems() {
         if (!this.canEdit) return [];

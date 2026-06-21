@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigateBack } from 'c/fimbyNavigation';
 import getGroupMessages from '@salesforce/apex/FimbyGroupConversationController.getGroupMessages';
 import sendGroupMessage from '@salesforce/apex/FimbyGroupConversationController.sendGroupMessage';
 import getGroupMembers from '@salesforce/apex/FimbyGroupConversationController.getGroupMembers';
@@ -124,6 +124,8 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
     get muteIconUrl() {
         return `${IMPACT_ICONS}/mute.png`;
     }
+
+    get replyIconUrl() { return `${IMPACT_ICONS}/reply.png`; }
 
     get muteButtonLabel() {
         return this.isMuted ? 'Unmute' : 'Mute';
@@ -407,6 +409,7 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
     }
 
     scrollToBottom() {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             const container = this.template.querySelector('.messages-container');
             if (container) {
@@ -449,7 +452,7 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
     }
 
     handleBack() {
-        navigate(this, '/messages');
+        navigateBack(this, '/messages');
     }
 
     handleRevealMiddle() {
@@ -483,6 +486,7 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
 
     handleShowCompose() {
         this.showCompose = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             const textarea = this.template.querySelector('.compose-input');
             if (textarea) {

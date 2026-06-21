@@ -224,7 +224,7 @@ button.list-row {
 .category-badge {
     grid-column: 1;
     grid-row: 1 / span 2;
-    align-self: start;
+    place-self: start start;
     max-width: 100%;
     box-sizing: border-box;
     display: inline-flex;
@@ -240,7 +240,6 @@ button.list-row {
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
-    justify-self: start;
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     color: #ffffff;
@@ -355,13 +354,19 @@ button.list-row {
     transition: background-color 0.2s;
 }
 
-.pagination-btn:hover:not([disabled]) {
-    background-color: var(--fimby-surface-page);
-}
-
 .pagination-btn[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.pagination-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.pagination-btn:hover:not([disabled]) {
+    background-color: var(--fimby-surface-page);
 }
 
 .page-info {
@@ -398,7 +403,6 @@ button.list-row {
 
 .filter-button:focus-visible,
 .list-row:focus-visible,
-.pagination-btn:focus-visible,
 .nbh-toggle-btn:focus-visible,
 .archive-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);

@@ -344,7 +344,7 @@ export default class FimbyLendingApprovalModal extends LightningElement {
                 // Idempotency: server state has moved on. Close + refresh parent banner
                 // rather than show a dead-end "already took action" wall.
                 this.hide();
-                return;
+                
             }
         } catch (err) {
             this._errorMessage = err.body?.message || 'Something went wrong loading the request.';

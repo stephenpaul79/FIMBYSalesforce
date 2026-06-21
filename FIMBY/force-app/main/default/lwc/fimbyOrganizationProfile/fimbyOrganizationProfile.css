@@ -69,9 +69,7 @@
 .logo-wrapper:hover .logo-overlay {
     opacity: 1;
 }
-.logo-wrapper:hover .logo-edit-badge {
-    opacity: 0;
-}
+
 .logo-edit-badge {
     position: absolute;
     bottom: 2px;
@@ -87,6 +85,10 @@
     border: 2px solid var(--fimby-surface-card);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: opacity 0.2s ease;
+}
+
+.logo-wrapper:hover .logo-edit-badge {
+    opacity: 0;
 }
 .remove-logo-btn {
     background: none;
@@ -130,6 +132,7 @@
 }
 .edit-fields .field-textarea {
     min-height: 80px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
 }
 .edit-actions {
@@ -358,6 +361,20 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.message-btn-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.logo-overlay-icon,
+.logo-edit-badge-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 /* Contact info section */

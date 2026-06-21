@@ -125,6 +125,13 @@
     background: var(--fimby-border-subtle);
 }
 
+.action-btn-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 /* Details Card */
 .details-card,
 .activity-card {

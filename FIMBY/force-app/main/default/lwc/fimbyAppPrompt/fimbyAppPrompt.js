@@ -23,7 +23,7 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
             const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
             if (ua.indexOf('FIMBY-WebView') !== -1) return true;
             if (typeof window !== 'undefined' && window.__FIMBY_NATIVE_APP__ === true) return true;
-        } catch (e) {
+        } catch {
             // assume not in app on any UA read failure
         }
         return false;
@@ -100,7 +100,7 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
             if (!raw) return {};
             const parsed = JSON.parse(raw);
             return parsed && typeof parsed === 'object' ? parsed : {};
-        } catch (e) {
+        } catch {
             return {};
         }
     }
@@ -109,7 +109,7 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
         try {
             const merged = Object.assign({}, this.readState(), next);
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-        } catch (e) {
+        } catch {
             // localStorage unavailable (private mode, quota, etc.) — fail soft;
             // the modal will simply re-appear on the next mount.
         }
@@ -150,7 +150,7 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
     captureFocus() {
         try {
             this._previouslyFocused = (typeof document !== 'undefined') ? document.activeElement : null;
-        } catch (e) {
+        } catch {
             this._previouslyFocused = null;
         }
         // Defer until the dialog is in the DOM, then move focus into the primary CTA.
@@ -166,7 +166,7 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
         const target = this._previouslyFocused;
         this._previouslyFocused = null;
         if (target && typeof target.focus === 'function') {
-            try { target.focus(); } catch (e) { /* element may have been removed */ }
+            try { target.focus(); } catch { /* element may have been removed */ }
         }
     }
 

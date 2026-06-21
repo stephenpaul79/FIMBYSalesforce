@@ -135,6 +135,7 @@
     flex: 1;
     overflow: hidden;
     background: var(--fimby-surface-page);
+
     --fimby-infinite-scroll-surface: var(--fimby-surface-page);
 }
 
@@ -294,6 +295,10 @@
     justify-content: center;
     flex-shrink: 0;
     overflow: hidden;
+}
+
+.thread-avatar-clickable {
+    cursor: pointer;
 }
 
 .thread-avatar-org {
@@ -565,19 +570,30 @@
 
 /* ── New-Message modal ──────────────────────────── */
 .new-message-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding-top: var(--fimby-modal-inset-top, 86px);
 }
 
-.new-message-modal .slds-modal__container {
+.compose-modal-container {
     max-width: 400px;
+    width: 90%;
     margin: 16px;
-    border-radius: var(--fimby-radius-lg);
+    border-radius: var(--fimby-radius-lg, 16px);
     overflow: hidden;
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    box-shadow: var(--fimby-shadow-modal);
     max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
+    height: fit-content;
     padding: 0;
     min-height: 0;
+    min-width: 0;
+    align-self: center;
 }
 
 .modal-header {
@@ -717,8 +733,16 @@ button.contact-item {
 }
 
 @media (min-width: 480px) {
-    .new-message-modal .slds-modal__container {
+    .compose-modal-container {
         margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .compose-modal-container {
+        width: 100%;
+        margin: 0;
+        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
     }
 }
 

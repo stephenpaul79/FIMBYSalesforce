@@ -15,7 +15,8 @@
     padding: 0;
     margin: -1px;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- sr-only clip pattern */
+    clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
 }

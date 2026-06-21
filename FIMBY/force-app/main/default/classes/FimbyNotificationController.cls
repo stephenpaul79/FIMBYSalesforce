@@ -114,6 +114,7 @@ public with sharing class FimbyNotificationController {
                 + 'Actor_Contact__c, Actor_Contact__r.Display_Avatar_URL__c, '
                 + 'Actor_Contact__r.Full_Name__c, Actor_Contact__r.FirstName, '
                 + 'Actor_Contact__r.Is_Organization_Contact__c, '
+                + 'Actor_Contact__r.Organization_Account__c, '
                 + 'Actor_Contact__r.Organization_Account__r.Logo_URL__c '
                 + 'FROM Notification__c '
                 + 'WHERE Contact__c = :contactId'
@@ -178,6 +179,8 @@ public with sharing class FimbyNotificationController {
                     w.actorDisplayName = String.isNotBlank(n.Actor_Contact__r.Full_Name__c)
                         ? n.Actor_Contact__r.Full_Name__c
                         : n.Actor_Name__c;
+                    w.actorIsOrg = actorIsOrg;
+                    w.actorOrgAccountId = n.Actor_Contact__r.Organization_Account__c;
                 } else {
                     w.actorDisplayName = n.Actor_Name__c;
                 }
@@ -511,5 +514,7 @@ public with sharing class FimbyNotificationController {
         @AuraEnabled public Id actorContactId { get; set; }
         @AuraEnabled public String actorPhotoUrl { get; set; }
         @AuraEnabled public String actorDisplayName { get; set; }
+        @AuraEnabled public Boolean actorIsOrg { get; set; }
+        @AuraEnabled public Id actorOrgAccountId { get; set; }
     }
 }

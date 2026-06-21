@@ -28,7 +28,7 @@
             "children" : [ {
               "attributes" : {
                 "dxpStyle" : { },
-                "flowName" : "{\"flowName\":\"FIMBY_Public_Signup_Page\",\"flowLabel\":\"FIMBY Sign Up\"}"
+                "flowName" : "{\"flowName\":\"FIMBY_Sign_Up\",\"flowLabel\":\"FIMBY Sign Up\"}"
               },
               "definition" : "dxp_flow:flow",
               "id" : "ccbe21dd-ecaf-46a5-963c-23ab44951a00",

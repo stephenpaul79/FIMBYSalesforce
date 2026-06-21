@@ -98,11 +98,6 @@
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.refresh-action-btn:hover:not(:disabled) {
-    background-color: var(--fimby-hover-bg);
-    border-color: var(--fimby-border-strong);
-}
-
 .refresh-action-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
@@ -112,6 +107,11 @@
 .refresh-action-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+}
+
+.refresh-action-btn:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
 }
 
 .refresh-action-primary {

@@ -25,7 +25,7 @@
                                 <div class="avatar-initials">{initials}</div>
                             </template>
                             <div class="avatar-overlay">
-                                <lightning-icon icon-name="utility:photo" size="x-small"></lightning-icon>
+                                <img src={photoIconUrl} alt="" class="avatar-overlay-icon">
                             </div>
                         </button>
                         <template lwc:if={hasAvatar}>
@@ -338,10 +338,10 @@
                                     <label class="field-label">Accessibility Notes</label>
                                     <span class={accessibilityCountClass}>{accessibilityCharCount}</span>
                                 </div>
-                                <textarea class="field-textarea" value={editAccessibility}
+                                <textarea class="field-textarea"
                                           data-field="editAccessibility" maxlength="200"
                                           placeholder="e.g. I use a wheelchair"
-                                          onchange={handleInputChange}></textarea>
+                                          onchange={handleInputChange}>{editAccessibility}</textarea>
                             </div>
                             <div class="field-row">
                                 <label class="field-label">General Availability</label>
@@ -440,10 +440,10 @@
                                     <label class="field-label" for="edit-care-hardnos">Anything else? (optional)</label>
                                     <span class={hardNosCountClass}>{hardNosCharCount}</span>
                                 </div>
-                                <textarea id="edit-care-hardnos" class="field-textarea" value={editCareHardNos}
+                                <textarea id="edit-care-hardnos" class="field-textarea"
                                           data-field="editCareHardNos" maxlength="256"
                                           placeholder='Example: "Please don&apos;t drop by unannounced."'
-                                          onchange={handleInputChange}></textarea>
+                                          onchange={handleInputChange}>{editCareHardNos}</textarea>
                             </div>
                             <div class="care-question care-standing-toggle">
                                 <label class="checkbox-item standing-toggle">

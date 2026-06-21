@@ -20,7 +20,7 @@
 
 .inline-banner-text {
     min-width: 0;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .inline-banner--success {

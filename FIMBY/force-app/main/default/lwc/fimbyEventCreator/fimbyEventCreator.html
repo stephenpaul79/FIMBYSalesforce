@@ -8,7 +8,7 @@
             </div>
             <div class="form-section">
                 <label class="form-label">Description</label>
-                <textarea class="form-textarea" placeholder="Tell neighbors about your event..." value={eventDescription} onchange={handleDescriptionChange} rows="4"></textarea>
+                <textarea class="form-textarea" placeholder="Tell neighbors about your event..." oninput={handleDescriptionChange} rows="4">{eventDescription}</textarea>
             </div>
             <div class="form-section">
                 <label class="form-label">Date & Time *</label>

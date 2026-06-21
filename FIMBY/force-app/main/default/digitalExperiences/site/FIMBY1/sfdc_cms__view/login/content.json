@@ -42,6 +42,29 @@
               "definition" : "community_login:loginForm",
               "id" : "211cd584-1ca1-48ff-9b42-cae9404ba5e8",
               "type" : "component"
+            }, {
+              "attributes" : {
+                "dxpStyle" : {
+                  "isVisible" : true,
+                  "margin" : {
+                    "bottom" : "",
+                    "left" : "",
+                    "right" : "",
+                    "top" : ""
+                  },
+                  "padding" : {
+                    "bottom" : "",
+                    "left" : "20px",
+                    "right" : "20px",
+                    "top" : ""
+                  }
+                },
+                "imageInfos" : "",
+                "richTextValue" : "<p style=\"text-align: center;\"><a href=\"/sign-up\" rel=\"noopener noreferrer\" target=\"_self\">~ Sign Up ~</a></p>"
+              },
+              "definition" : "community_builder:richTextEditor",
+              "id" : "2cc2b017-53f1-4c34-9b11-42af09b26d9b",
+              "type" : "component"
             } ],
             "id" : "0cf0cb1b-3725-4c9a-8c34-8a62d68af5e0",
             "name" : "col1",

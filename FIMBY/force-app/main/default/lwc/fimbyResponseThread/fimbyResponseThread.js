@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, navigateBack, profilePathForContact } from 'c/fimbyNavigation';
 import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getThread from '@salesforce/apex/FimbyResponseThreadController.getThread';
@@ -31,6 +31,7 @@ const SNIPPET_LENGTH = 80;
 
 export default class FimbyResponseThread extends NavigationMixin(LightningElement) {
     @api responseId = '';
+    _responseIdFromUrl = '';
 
     @track isLoading = true;
     @track error = null;
@@ -272,6 +273,22 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
+    _profilePathForSender({ senderId, senderIsOrg, senderOrgAccountId }) {
+        if (!senderId) return '';
+        return profilePathForContact({
+            contactId: senderId,
+            isOrgContact: !!senderIsOrg,
+            orgAccountId: senderOrgAccountId,
+            currentContactId: this.myContactId
+        });
+    }
+
+    handleSenderAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) navigate(this, path);
+    }
+
     _getInitials(name) {
         if (!name) return '?';
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -291,6 +308,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     get thanksIconUrl() {
         return `${IMPACT_ICONS}/ThankYouActive.png`;
     }
+
+    get replyIconUrl() { return `${IMPACT_ICONS}/reply.png`; }
 
     get postImageUrl() {
         return completeImageUrl(this.post.imageUrl);
@@ -324,6 +343,10 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         return this.hasMultipleIdentities && !!this.myContactName;
     }
 
+    get activeResponseId() {
+        return this.responseId || this._responseIdFromUrl || '';
+    }
+
     get posterIconUrl() {
         return `${IMPACT_ICONS}/ProfileActive.png`;
     }
@@ -331,10 +354,10 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     async connectedCallback() {
         if (!this.responseId) {
             const params = new URLSearchParams(window.location.search);
-            this.responseId = params.get('recordId') || '';
+            this._responseIdFromUrl = params.get('recordId') || '';
             this._allowEventMessaging = params.get('mode') === 'message';
         }
-        if (this.responseId) {
+        if (this.activeResponseId) {
             this.loadThread();
         } else {
             this.error = 'No response ID provided.';
@@ -343,6 +366,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
         this._windowScrollHandler = () => {
             if (!this._scrollTicking) {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation
                 requestAnimationFrame(() => {
                     this._handleScrollDirection();
                     this._scrollTicking = false;
@@ -351,6 +375,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             }
         };
         window.addEventListener('scroll', this._windowScrollHandler, { passive: true });
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         requestAnimationFrame(() => this._measureHeaderHeight());
     }
 
@@ -389,7 +414,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.error = null;
         this.middleRevealed = false;
         this.expandedIds = [];
-        getThread({ responseId: this.responseId })
+        getThread({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.response = result.response || {};
@@ -420,7 +445,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     handleLoadMore() {
         if (this.isLoadingMore) return;
         this.isLoadingMore = true;
-        getMessages({ responseId: this.responseId, pageSize: PAGE_SIZE, offset: this.currentOffset })
+        getMessages({ responseId: this.activeResponseId, pageSize: PAGE_SIZE, offset: this.currentOffset })
             .then(result => {
                 if (result.success) {
                     const older = result.messages || [];
@@ -474,6 +499,11 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             });
         }
 
+        const origProfilePath = this._profilePathForSender({
+            senderId: this.response?.responderContactId,
+            senderIsOrg: this.response?.responderIsOrg,
+            senderOrgAccountId: this.response?.responderOrgAccountId
+        });
         const origCard = {
             id: 'original-response',
             isOriginalResponse: true,
@@ -492,6 +522,9 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             senderAvatarUrl: origAvatarUrl,
             hasAvatarImage: !!origAvatarUrl,
             responderIsOrg: !!this.response.responderIsOrg,
+            profilePath: origProfilePath,
+            avatarClickable: !!origProfilePath,
+            avatarClass: 'card-avatar' + (origProfilePath ? ' clickable-avatar' : ''),
             cardClass: 'message-card' + (origIsFromMe ? ' from-me' : ''),
             snippetText: this._getSnippet(this.response.responseText)
         };
@@ -516,6 +549,14 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
             const isThanksMsg = msg.isSystemMessage && msg.systemMessageType === 'Thanks_Sent';
 
+            const msgProfilePath = !isMe && !msg.isSystemMessage
+                ? this._profilePathForSender({
+                    senderId: msg.senderId,
+                    senderIsOrg: msg.senderIsOrg,
+                    senderOrgAccountId: msg.senderOrgAccountId
+                })
+                : '';
+
             items.push({
                 id: msg.id,
                 isDateSeparator: false,
@@ -537,6 +578,9 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
                 senderInitials: this._getInitials(msgDisplayName),
                 senderAvatarUrl: msgAvatarUrl,
                 hasAvatarImage: !!msgAvatarUrl,
+                profilePath: msgProfilePath,
+                avatarClickable: !!msgProfilePath,
+                avatarClass: 'card-avatar' + (msgProfilePath ? ' clickable-avatar' : ''),
                 cardClass: msg.isSystemMessage
                     ? 'message-item system-message'
                     : 'message-card' + (isMe ? ' from-me' : ''),
@@ -636,6 +680,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
     handleShowCompose() {
         this.showCompose = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
             const textarea = this.template.querySelector('.compose-input');
             if (textarea) {
@@ -661,7 +706,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             textarea.style.height = 'auto';
         }
 
-        sendMessageApex({ responseId: this.responseId, body })
+        sendMessageApex({ responseId: this.activeResponseId, body })
             .then(result => {
                 if (result.success) {
                     this.messages.push({
@@ -744,7 +789,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     executeAccept() {
-        acceptResponseApex({ responseId: this.responseId })
+        acceptResponseApex({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.response = { ...this.response, status: result.newStatus };
@@ -755,7 +800,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     executeDecline() {
-        declineResponseApex({ responseId: this.responseId })
+        declineResponseApex({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.response = { ...this.response, status: result.newStatus };
@@ -766,7 +811,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     executeCancel() {
-        cancelResponseApex({ responseId: this.responseId })
+        cancelResponseApex({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.response = { ...this.response, status: result.newStatus };
@@ -777,7 +822,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     executeComplete() {
-        completeResponseApex({ responseId: this.responseId })
+        completeResponseApex({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.response = { ...this.response, status: result.newStatus };
@@ -824,7 +869,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             return;
         }
 
-        updateResponseAmount({ responseId: this.responseId, newAmount: this.editAmountValue })
+        updateResponseAmount({ responseId: this.activeResponseId, newAmount: this.editAmountValue })
             .then(result => {
                 if (result.success) {
                     this.response = { ...this.response, amountRequested: result.newAmount };
@@ -845,7 +890,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
     handleShareContact() {
         this.shareContactError = '';
-        getShareContactInfoData({ responseId: this.responseId })
+        getShareContactInfoData({ responseId: this.activeResponseId })
             .then(result => {
                 if (result.success) {
                     this.shareContactData = result;
@@ -886,7 +931,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.shareContactError = '';
 
         const data = {
-            responseId: this.responseId,
+            responseId: this.activeResponseId,
             sharingContactId: this.shareContactData.sharingContact.id,
             recipientContactId: this.shareContactData.recipient.id,
             shareEmail: this.shareEmail,
@@ -1013,11 +1058,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     // --- Navigation ---
 
     handleBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            navigate(this, '/messages');
-        }
+        navigateBack(this, '/messages');
     }
 
     handlePostClick() {

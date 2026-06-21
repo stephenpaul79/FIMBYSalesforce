@@ -1,6 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
@@ -66,6 +66,8 @@ const FIELDS = [
     'Needs_Offers__c.Contact__r.Name',
     'Needs_Offers__c.Contact__r.Full_Name__c',
     'Needs_Offers__c.Contact__r.Image_URL__c',
+    'Needs_Offers__c.Contact__r.Is_Organization_Contact__c',
+    'Needs_Offers__c.Contact__r.Organization_Account__c',
     // Quantity
     'Needs_Offers__c.Total_Quantity__c',
     'Needs_Offers__c.Total_Available__c',
@@ -266,7 +268,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         try {
             const ctx = await getModeratorContext();
             this._isModeratorForNeighbourhood = ctx.isModerator;
-        } catch (e) {
+        } catch {
             // Non-moderators won't see extra menu items
         }
     }
@@ -365,7 +367,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 }
             }
             return null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -375,7 +377,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // ============================================
 
     @wire(getActingAsContact)
-    wiredActingAs({ data, error }) {
+    wiredActingAs({ data }) {
         if (data?.success) {
             this.actingAsContactId = data.actingAsContactId || data.contactId;
             this.realContactId = data.realContactId;
@@ -868,7 +870,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const h = parseInt(parts[1], 10);
             if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return '16 / 9';
             return `${w} / ${h}`;
-        } catch (e) { return '16 / 9'; }
+        } catch { return '16 / 9'; }
     }
 
     get imageContainerStyle() {
@@ -905,6 +907,37 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
         const baseUrl = contactImg || getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Image_URL__c') || '';
         return avatarImageUrl(baseUrl);
+    }
+
+    get posterContactId() {
+        if (!this.record) return null;
+        return getFieldValue(this.record, 'Needs_Offers__c.Contact__c');
+    }
+
+    get posterProfilePath() {
+        if (!this.record) return '';
+        return profilePathForContact({
+            contactId: this.posterContactId,
+            isOrgContact: getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Organization_Contact__c') === true,
+            orgAccountId: getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__c'),
+            currentContactId: this.realContactId
+        });
+    }
+
+    get posterInfoClass() {
+        return 'poster-info-compact' + (this.posterProfilePath ? ' clickable-avatar' : '');
+    }
+
+    handlePosterAvatarClick() {
+        if (this.posterProfilePath) {
+            navigate(this, this.posterProfilePath);
+        }
+    }
+
+    handleAttendeeAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) navigate(this, path);
     }
 
     get postedByName() {
@@ -1073,8 +1106,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get userBulkBuyReservationAmount() {
         if (!this.actingAsContactId || !this.bulkBuyReservations.length) return 0;
-        const r = this.bulkBuyReservations.find(r => r.contactId === this.actingAsContactId);
-        return r?.amount || 0;
+        const reservation = this.bulkBuyReservations.find(entry => entry.contactId === this.actingAsContactId);
+        return reservation?.amount || 0;
     }
 
     get bulkBuyStatusBadgeText() {
@@ -1240,7 +1273,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             if (changed) {
                 window.history.replaceState({}, '', url.toString());
             }
-        } catch (_e) { /* ignore in non-browser contexts */ }
+        } catch { /* ignore in non-browser contexts */ }
     }
 
     handleCheckInSubmitted(event) {
@@ -1418,7 +1451,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         ];
     }
 
-    // eslint-disable-next-line no-unused-vars
+     
     stopPropagation(event) { event.stopPropagation(); }
 
     // ============================================
@@ -1562,9 +1595,17 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             .filter(r => r.status === 'New' || r.status === 'Accepted')
             .map(r => {
                 const resolved = this.resolveContactAvatarUrl(r.avatarUrl);
+                const profilePath = profilePathForContact({
+                    contactId: r.contactId,
+                    isOrgContact: r.isOrgContact === true,
+                    orgAccountId: r.orgAccountId,
+                    currentContactId: this.realContactId
+                });
                 return {
                     id: r.id,
                     contactId: r.contactId || null,
+                    profilePath,
+                    avatarClass: 'attendee-avatar' + (profilePath ? ' clickable-avatar' : ''),
                     name: r.responderName || 'Neighbour',
                     avatarUrl: resolved || this.noProfilePhotoUrl,
                     guestCount: r.amountRequested || 1,
@@ -1827,7 +1868,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const isResponder = this.responses.some(r => r.contactId === recipientId);
             if (isResponder) {
                 this.responses = this.responses.map(r =>
-                    r.contactId === recipientId ? { ...r, posterThanked: true } : r
+                    (r.contactId === recipientId ? { ...r, posterThanked: true } : r)
                 );
             } else {
                 this.responses = this.responses.map(r => ({ ...r, responderThanked: true }));
@@ -1916,6 +1957,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 this.quickResponseStatus = result.status;
                 this.quickGuestCount = result.guestCount || 1;
                 this.quickResponseCelebration = true;
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                 setTimeout(() => { this.quickResponseCelebration = false; }, 2000);
                 await this.loadResponses();
             }
@@ -2168,6 +2210,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this.lightboxImages = [{ url: this.imageUrl, alt: this.postTitle }];
         this.lightboxStartIndex = 0;
         this.showLightbox = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => {
             const lb = this.template.querySelector('c-fimby-lightbox');
             if (lb) lb.open(0);
@@ -2180,6 +2223,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         this.lightboxImages = detail.images;
         this.lightboxStartIndex = detail.index || 0;
         this.showLightbox = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => {
             const lb = this.template.querySelector('c-fimby-lightbox');
             if (lb) lb.open(this.lightboxStartIndex);

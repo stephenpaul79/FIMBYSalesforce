@@ -1,9 +1,6 @@
 .modal-overlay {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
@@ -224,6 +221,7 @@
     background-color: var(--fimby-surface-input);
     font-size: 0.9rem;
     color: var(--fimby-text-strong);
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     box-sizing: border-box;
     font-family: inherit;
@@ -364,6 +362,7 @@
 }
 .form-field textarea {
     min-height: 80px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
 }
 .form-row {

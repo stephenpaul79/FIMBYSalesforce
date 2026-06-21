@@ -130,7 +130,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         try {
             const ctx = await getModeratorContext();
             this._isModeratorForNeighbourhood = ctx.isModerator;
-        } catch (e) { /* noop */ }
+        } catch { /* noop */ }
     }
 
     renderedCallback() {
@@ -225,7 +225,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
                 }
             }
             return null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -454,7 +454,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             const h = parseInt(parts[1], 10);
             if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return '16 / 9';
             return `${w} / ${h}`;
-        } catch (e) { return '16 / 9'; }
+        } catch { return '16 / 9'; }
     }
 
     get imageContainerStyle() {
@@ -552,7 +552,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     get isNotOwner() { return !this.isOwner; }
     get deleteButtonLabel() { return this.isDeleting ? 'Deleting...' : 'Delete'; }
 
-    // eslint-disable-next-line no-unused-vars
+     
     stopPropagation(event) { event.stopPropagation(); }
 
     // ============================================
@@ -1016,7 +1016,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
             if (changed) {
                 window.history.replaceState({}, '', url.toString());
             }
-        } catch (_e) { /* ignore in non-browser contexts */ }
+        } catch { /* ignore in non-browser contexts */ }
     }
 
     // ============================================

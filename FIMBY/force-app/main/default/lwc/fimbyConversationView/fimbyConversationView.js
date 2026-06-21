@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, navigateBack } from 'c/fimbyNavigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -33,6 +33,16 @@ const SNIPPET_LENGTH = 80;
 export default class FimbyConversationView extends NavigationMixin(LightningElement) {
     @api conversationId = '';
     @api targetContactId = '';
+    _conversationId = '';
+    _targetContactId = '';
+
+    get activeConversationId() {
+        return this._conversationId || this.conversationId;
+    }
+
+    get activeTargetContactId() {
+        return this._targetContactId || this.targetContactId;
+    }
     @track isDraft = false;
     @track messages = [];
     @track processedMessages = [];
@@ -75,6 +85,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     get posterIconUrl() {
         return `${IMPACT_ICONS}/ProfileActive.png`;
     }
+
+    get replyIconUrl() { return `${IMPACT_ICONS}/reply.png`; }
 
     @track showBlockModal = false;
     @track blockReason = '';
@@ -226,7 +238,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         try {
             const d = new Date(dtString);
             return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        } catch (e) {
+        } catch {
             return '';
         }
     }
@@ -295,9 +307,9 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     }
 
     connectedCallback() {
-        if (this.conversationId) {
+        if (this.activeConversationId) {
             this.loadMessages();
-        } else if (this.targetContactId) {
+        } else if (this.activeTargetContactId) {
             this.loadDraft();
         }
 
@@ -318,11 +330,11 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         this.middleRevealed = false;
         this.expandedIds = [];
         try {
-            const result = await prepareDirectConversation({ targetContactId: this.targetContactId });
+            const result = await prepareDirectConversation({ targetContactId: this.activeTargetContactId });
 
             if (result.isExisting && result.conversationId) {
-                this.conversationId = result.conversationId;
-                this.targetContactId = '';
+                this._conversationId = result.conversationId;
+                this._targetContactId = '';
                 this.isDraft = false;
                 this._replaceConversationUrl(result.conversationId);
                 await this.loadMessages();
@@ -357,7 +369,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         this.expandedIds = [];
         try {
             const result = await getMessages({
-                conversationId: this.conversationId,
+                conversationId: this.activeConversationId,
                 pageSize: PAGE_SIZE,
                 offset: this.currentOffset
             });
@@ -382,7 +394,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             this.processMessages();
 
             try {
-                this.isConversationRevoked = await checkConversationRevoked({ conversationId: this.conversationId });
+                this.isConversationRevoked = await checkConversationRevoked({ conversationId: this.activeConversationId });
             } catch (e) {
                 console.error('Error checking revoke status:', e);
             }
@@ -411,13 +423,13 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     async _checkForFollowUp() {
         try {
-            const result = await getFollowUpByConversation({ conversationId: this.conversationId });
+            const result = await getFollowUpByConversation({ conversationId: this.activeConversationId });
             if (result && result.followUpId) {
                 this.followUpId = result.followUpId;
                 this.followUpStatus = result.status;
                 this.isFollowUpConversation = true;
             }
-        } catch (e) {
+        } catch {
             // Not a follow-up conversation, ignore
         }
     }
@@ -425,7 +437,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     async _checkForLendingContext(contextType) {
         if (contextType !== 'Library_Lending') return;
         try {
-            const ctx = await getLendingConversationContext({ conversationId: this.conversationId });
+            const ctx = await getLendingConversationContext({ conversationId: this.activeConversationId });
             if (ctx && ctx.phase) {
                 this.lendingContext = ctx;
                 this.isLendingConversation = true;
@@ -438,7 +450,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     async _checkForVouchContext(contextType) {
         if (contextType !== 'Vouch_Request') return;
         try {
-            const ctx = await getVouchContextForConversation({ conversationId: this.conversationId });
+            const ctx = await getVouchContextForConversation({ conversationId: this.activeConversationId });
             if (ctx) {
                 this.vouchContext = ctx;
             }
@@ -478,7 +490,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     async handleVouchWithdraw() {
         if (this.isVouchActionProcessing || !this.vouchContext?.vouchRecordId) return;
-        if (!confirm('Withdraw this vouch request?')) return;
+        // eslint-disable-next-line no-alert -- vouch withdraw confirmation until modal refactor
+        if (!window.confirm('Withdraw this vouch request?')) return;
         this.isVouchActionProcessing = true;
         this.vouchActionError = '';
         try {
@@ -657,7 +670,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
         try {
             const result = await getMessages({
-                conversationId: this.conversationId,
+                conversationId: this.activeConversationId,
                 pageSize: PAGE_SIZE,
                 offset: newOffset
             });
@@ -834,6 +847,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     }
 
     scrollToBottom() {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             const container = this.template.querySelector('.messages-container');
             if (container) {
@@ -875,6 +889,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     // Compose handlers
     handleShowCompose() {
         this.showCompose = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             this.scrollToBottom();
             const textarea = this.template.querySelector('.compose-input');
@@ -902,18 +917,18 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             let result;
             if (this.isDraft) {
                 result = await sendDirectMessage({
-                    targetContactId: this.targetContactId,
+                    targetContactId: this.activeTargetContactId,
                     body: body
                 });
                 if (result.success) {
-                    this.conversationId = result.conversationId;
-                    this.targetContactId = '';
+                    this._conversationId = result.conversationId;
+                    this._targetContactId = '';
                     this.isDraft = false;
                     this._replaceConversationUrl(result.conversationId);
                 }
             } else {
                 result = await sendMessage({
-                    conversationId: this.conversationId,
+                    conversationId: this.activeConversationId,
                     body: body
                 });
             }
@@ -938,7 +953,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     // Navigation
     handleBack() {
-        navigate(this, '/messages');
+        navigateBack(this, '/messages');
     }
 
     // Block/Report

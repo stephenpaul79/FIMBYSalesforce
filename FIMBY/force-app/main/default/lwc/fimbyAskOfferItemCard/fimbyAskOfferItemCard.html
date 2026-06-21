@@ -101,17 +101,17 @@
             <div class="action-buttons">
                 <template lwc:if={item.canRespond}>
                     <button class="respond-button primary" onclick={handleRespond}>
-                        <lightning-icon icon-name={responseIcon} size="x-small"></lightning-icon>
+                        <img src={responseIconUrl} alt="" class="card-btn-icon">
                         {responseLabel}
                     </button>
                 </template>
 
                 <button class="message-button" onclick={handleMessage}>
-                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                    <img src={chatIconUrl} alt="" class="card-btn-icon">
                 </button>
 
                 <button class={saveButtonClass} onclick={handleSave}>
-                    <lightning-icon icon-name={saveIcon} size="x-small"></lightning-icon>
+                    <img src={saveIconUrl} alt="" class="card-btn-icon">
                 </button>
             </div>
         </div>

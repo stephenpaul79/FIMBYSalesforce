@@ -75,7 +75,7 @@ function readCache(key, opts = {}) {
             return null;
         }
         return entry.v;
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -103,7 +103,7 @@ function writeCache(key, value, opts = {}) {
             v: value
         };
         sessionStorage.setItem(key, JSON.stringify(entry));
-    } catch (e) {
+    } catch {
         /* storage unavailable or full — non-fatal */
     }
 }
@@ -112,7 +112,7 @@ function writeCache(key, value, opts = {}) {
 function clearCache(key) {
     try {
         sessionStorage.removeItem(key);
-    } catch (e) {
+    } catch {
         /* ignore */
     }
 }

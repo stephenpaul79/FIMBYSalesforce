@@ -1,0 +1,5 @@
+{
+  "apiName" : "Community_Guidelines__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

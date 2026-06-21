@@ -43,6 +43,7 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
     get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
+    get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get emailIconUrl() { return `${IMPACT_ICONS}/email.png`; }
 
     get orgLogoUrl() {

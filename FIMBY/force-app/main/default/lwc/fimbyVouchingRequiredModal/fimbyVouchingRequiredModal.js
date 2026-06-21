@@ -190,6 +190,7 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
         }
 
         this.isSearching = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._searchTimeout = setTimeout(() => this._doSearch(), SEARCH_DEBOUNCE_MS);
     }
 
@@ -241,6 +242,7 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
             });
             this.submitMessage = result?.message || '';
             if (result?.delivered === true || result?.alreadyHasPending === true) {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                 setTimeout(() => this.close(), 1500);
             }
         } catch (error) {

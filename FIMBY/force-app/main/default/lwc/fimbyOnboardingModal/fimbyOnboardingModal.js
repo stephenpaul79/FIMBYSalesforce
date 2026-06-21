@@ -291,6 +291,7 @@ export default class FimbyOnboardingModal extends LightningElement {
             return;
         }
         this.isVouchSearching = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._vouchSearchTimeout = setTimeout(() => this._doVouchSearch(), VOUCH_SEARCH_DEBOUNCE_MS);
     }
 
@@ -373,16 +374,16 @@ export default class FimbyOnboardingModal extends LightningElement {
                 'LastName': this.lastName?.trim() || ''
             };
 
-            if (this.pronouns?.trim()) fieldValues['Pronouns__c'] = this.pronouns.trim();
-            if (this.aboutTenure?.trim()) fieldValues['About_Neighbourhood_Tenure__c'] = this.aboutTenure.trim();
-            if (this.aboutBroughtYou?.trim()) fieldValues['About_What_Brought_You__c'] = this.aboutBroughtYou.trim();
-            if (this.aboutLocalPlace?.trim()) fieldValues['About_Local_Place__c'] = this.aboutLocalPlace.trim();
-            if (this.aboutEnjoys?.trim()) fieldValues['About_Enjoys_Doing__c'] = this.aboutEnjoys.trim();
-            if (this.aboutFunFact?.trim()) fieldValues['About_Fun_Fact__c'] = this.aboutFunFact.trim();
-            if (this.careWelcome.length > 0) fieldValues['Care_Welcome_Support__c'] = this.careWelcome.join(';');
-            if (this.careUnhelpful.length > 0) fieldValues['Care_Unhelpful_Things__c'] = this.careUnhelpful.join(';');
-            if (this.careHowToAsk) fieldValues['Care_How_To_Ask__c'] = this.careHowToAsk;
-            if (this.careHardNos?.trim()) fieldValues['Care_Hard_Nos__c'] = this.careHardNos.trim();
+            if (this.pronouns?.trim()) fieldValues.Pronouns__c = this.pronouns.trim();
+            if (this.aboutTenure?.trim()) fieldValues.About_Neighbourhood_Tenure__c = this.aboutTenure.trim();
+            if (this.aboutBroughtYou?.trim()) fieldValues.About_What_Brought_You__c = this.aboutBroughtYou.trim();
+            if (this.aboutLocalPlace?.trim()) fieldValues.About_Local_Place__c = this.aboutLocalPlace.trim();
+            if (this.aboutEnjoys?.trim()) fieldValues.About_Enjoys_Doing__c = this.aboutEnjoys.trim();
+            if (this.aboutFunFact?.trim()) fieldValues.About_Fun_Fact__c = this.aboutFunFact.trim();
+            if (this.careWelcome.length > 0) fieldValues.Care_Welcome_Support__c = this.careWelcome.join(';');
+            if (this.careUnhelpful.length > 0) fieldValues.Care_Unhelpful_Things__c = this.careUnhelpful.join(';');
+            if (this.careHowToAsk) fieldValues.Care_How_To_Ask__c = this.careHowToAsk;
+            if (this.careHardNos?.trim()) fieldValues.Care_Hard_Nos__c = this.careHardNos.trim();
 
             await completeProfileSetup({ fieldValues });
             if (this.quietHoursPreference) {
@@ -733,13 +734,13 @@ export default class FimbyOnboardingModal extends LightningElement {
 
     _addKeyboardListener() {
         this._boundKeydown = this.handleKeydown.bind(this);
-        // eslint-disable-next-line @lwc/lwc/no-document-query
+         
         document.addEventListener('keydown', this._boundKeydown);
     }
 
     _removeKeyboardListener() {
         if (this._boundKeydown) {
-            // eslint-disable-next-line @lwc/lwc/no-document-query
+             
             document.removeEventListener('keydown', this._boundKeydown);
             this._boundKeydown = null;
         }

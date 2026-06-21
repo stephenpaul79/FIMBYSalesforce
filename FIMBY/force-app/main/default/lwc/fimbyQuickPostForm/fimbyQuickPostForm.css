@@ -9,10 +9,7 @@
    =========================================== */
 .modal-overlay {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background: var(--fimby-scrim);
     z-index: 9999;
     display: flex;
@@ -72,65 +69,6 @@
     padding: clamp(12px, 3vw, 20px);
     overflow-y: auto;
     max-height: calc(90vh - 70px);
-}
-
-/* Modal Grid — 2×3 fluid card grid (compound selector beats shared .type-selection-grid) */
-.type-selection-grid.modal-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(8px, 2vw, 14px);
-}
-
-.type-selection-grid.modal-grid .type-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: clamp(10px, 2.5vw, 20px) clamp(8px, 1.5vw, 14px);
-    gap: clamp(4px, 1vw, 8px);
-}
-
-.type-selection-grid.modal-grid .type-icon {
-    width: clamp(36px, 9vw, 56px);
-    height: clamp(36px, 9vw, 56px);
-    margin: 0;
-    flex-shrink: 0;
-}
-
-.type-selection-grid.modal-grid .type-icon-img {
-    width: clamp(22px, 5.5vw, 32px);
-    height: clamp(22px, 5.5vw, 32px);
-}
-
-.type-selection-grid.modal-grid .type-text {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.type-selection-grid.modal-grid .type-label {
-    font-size: clamp(0.85rem, 2.2vw, 1rem);
-    margin-bottom: 2px;
-}
-
-.type-selection-grid.modal-grid .type-description {
-    font-size: clamp(0.72rem, 1.6vw, 0.8rem);
-}
-
-/* Desktop: minimal padding/gap reduction to fit without scrollbar — keep icons/text full size */
-@media (min-width: 768px) {
-    .modal-content {
-        padding: 16px 18px;
-    }
-
-    .type-selection-grid.modal-grid {
-        gap: 12px;
-    }
-
-    .type-selection-grid.modal-grid .type-option {
-        padding: 16px 12px;
-        gap: 6px;
-    }
 }
 
 /* ===========================================
@@ -299,6 +237,56 @@
     line-height: 1.4;
 }
 
+.close-button:focus-visible,
+.type-option:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Modal Grid — 2×3 fluid card grid (compound selector beats shared .type-selection-grid) */
+.type-selection-grid.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(8px, 2vw, 14px);
+}
+
+.type-selection-grid.modal-grid .type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: clamp(10px, 2.5vw, 20px) clamp(8px, 1.5vw, 14px);
+    gap: clamp(4px, 1vw, 8px);
+}
+
+.type-selection-grid.modal-grid .type-icon {
+    width: clamp(36px, 9vw, 56px);
+    height: clamp(36px, 9vw, 56px);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.type-selection-grid.modal-grid .type-icon-img {
+    width: clamp(22px, 5.5vw, 32px);
+    height: clamp(22px, 5.5vw, 32px);
+}
+
+.type-selection-grid.modal-grid .type-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.type-selection-grid.modal-grid .type-label {
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
+    margin-bottom: 2px;
+}
+
+.type-selection-grid.modal-grid .type-description {
+    font-size: clamp(0.72rem, 1.6vw, 0.8rem);
+}
+
 /* ===========================================
    RESPONSIVE DESIGN
    =========================================== */
@@ -355,14 +343,19 @@
         grid-template-columns: repeat(3, 1fr);
         max-width: 640px;
     }
-}
 
-/* Keyboard focus visibility */
-.close-button:focus-visible,
-.type-option:focus-visible {
-    outline: 2px solid var(--fimby-focus-ring);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+    .modal-content {
+        padding: 16px 18px;
+    }
+
+    .type-selection-grid.modal-grid {
+        gap: 12px;
+    }
+
+    .type-selection-grid.modal-grid .type-option {
+        padding: 16px 12px;
+        gap: 6px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

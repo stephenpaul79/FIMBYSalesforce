@@ -20,6 +20,7 @@ const CREATE_ICON = 'add.png';
 
 export default class FimbyBottomNavigation extends NavigationMixin(LightningElement) {
     @api activeTab = 'home';
+    @track _activeTab = 'home';
     @track hasUnread = false;
     @track messageCount = 0;
 
@@ -33,12 +34,12 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
     // longer remounts per navigation, so the tab must recompute on page change).
     @wire(CurrentPageReference)
     wiredPageRef() {
-        this.activeTab = this._detectActiveTab();
+        this._activeTab = this._detectActiveTab();
         endNavTiming();
     }
 
     connectedCallback() {
-        this.activeTab = this._detectActiveTab();
+        this._activeTab = this._detectActiveTab();
         this._applyBodyPadding();
         this._resizeHandler = () => this._applyBodyPadding();
         window.addEventListener('resize', this._resizeHandler);
@@ -57,7 +58,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             if (this._badgeCountHandler) {
                 window.removeEventListener('fimbybadgecounts', this._badgeCountHandler);
             }
-        } catch (e) {
+        } catch {
             // Fail silently
         }
     }
@@ -75,7 +76,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             } else {
                 document.body.style.paddingBottom = '';
             }
-        } catch (e) {
+        } catch {
             // Fail silently
         }
     }
@@ -100,7 +101,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             }
 
             return resolveTabFromPath(pagePath);
-        } catch (e) {
+        } catch {
             return 'home';
         }
     }
@@ -110,7 +111,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
      * --------------------------------------------------------------- */
     _iconUrl(tab) {
         const icons = TAB_ICONS[tab];
-        const file = this.activeTab === tab ? icons.active : icons.inactive;
+        const file = this._activeTab === tab ? icons.active : icons.inactive;
         return `${IMPACT_ICONS}/${file}`;
     }
 
@@ -122,17 +123,17 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
 
     /* --- Active indicator classes ----------------------------------- */
 
-    get homeIndicator()     { return this.activeTab === 'home'     ? 'nav-indicator active' : 'nav-indicator'; }
-    get libraryIndicator()  { return this.activeTab === 'library'  ? 'nav-indicator active' : 'nav-indicator'; }
-    get messagesIndicator() { return this.activeTab === 'messages' ? 'nav-indicator active' : 'nav-indicator'; }
-    get mineIndicator()     { return this.activeTab === 'mine'     ? 'nav-indicator active' : 'nav-indicator'; }
+    get homeIndicator()     { return this._activeTab === 'home'     ? 'nav-indicator active' : 'nav-indicator'; }
+    get libraryIndicator()  { return this._activeTab === 'library'  ? 'nav-indicator active' : 'nav-indicator'; }
+    get messagesIndicator() { return this._activeTab === 'messages' ? 'nav-indicator active' : 'nav-indicator'; }
+    get mineIndicator()     { return this._activeTab === 'mine'     ? 'nav-indicator active' : 'nav-indicator'; }
 
     /* --- Active CSS class on each nav item container ---------------- */
 
-    get homeItemClass()     { return this.activeTab === 'home'     ? 'nav-item active' : 'nav-item'; }
-    get libraryItemClass()  { return this.activeTab === 'library'  ? 'nav-item active' : 'nav-item'; }
-    get messagesItemClass() { return this.activeTab === 'messages' ? 'nav-item active' : 'nav-item'; }
-    get mineItemClass()     { return this.activeTab === 'mine'     ? 'nav-item active' : 'nav-item'; }
+    get homeItemClass()     { return this._activeTab === 'home'     ? 'nav-item active' : 'nav-item'; }
+    get libraryItemClass()  { return this._activeTab === 'library'  ? 'nav-item active' : 'nav-item'; }
+    get messagesItemClass() { return this._activeTab === 'messages' ? 'nav-item active' : 'nav-item'; }
+    get mineItemClass()     { return this._activeTab === 'mine'     ? 'nav-item active' : 'nav-item'; }
 
     get hasUnreadMessages() {
         return this.messageCount > 0;
@@ -154,7 +155,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
     handleNavClick(event) {
         const selectedTab = event.currentTarget.dataset.tab;
         this.dispatchEvent(new CustomEvent('tabchange', { detail: { tab: selectedTab } }));
-        this.activeTab = selectedTab;
+        this._activeTab = selectedTab;
         this.navigateToPage(selectedTab);
     }
 
@@ -177,7 +178,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
         if (pageRef) {
             this[NavigationMixin.Navigate](pageRef);
         } else {
-            location.href = getUrl(tab);
+            window.location.href = getUrl(tab);
         }
     }
 
@@ -191,6 +192,6 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
 
     @api
     setActiveTab(tab) {
-        this.activeTab = tab;
+        this._activeTab = tab;
     }
 }

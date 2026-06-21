@@ -46,17 +46,17 @@
     letter-spacing: 0.02em;
 }
 
-.modal-story-context .story-title {
-    font-size: 14px;
-    margin: 0;
-}
-
 .story-title {
     font-size: 18px;
     font-weight: 600;
     color: var(--fimby-text-primary);
     margin: 0 0 12px;
     line-height: 1.3;
+}
+
+.modal-story-context .story-title {
+    font-size: 14px;
+    margin: 0;
 }
 
 .story-image-container {
@@ -380,10 +380,7 @@
 /* ======================= */
 .modal-backdrop {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
     background: var(--fimby-scrim);
     display: flex;
     align-items: center;

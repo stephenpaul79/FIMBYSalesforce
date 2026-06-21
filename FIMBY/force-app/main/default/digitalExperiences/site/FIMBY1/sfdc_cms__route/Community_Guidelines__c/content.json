@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Community Guidelines",
+  "contentBody" : {
+    "activeViewId" : "Community_Guidelines",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-community-guidelines",
+    "urlPrefix" : "community-guidelines"
+  },
+  "urlName" : "community-guidelines"
+}

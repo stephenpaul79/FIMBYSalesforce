@@ -1,7 +1,8 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { navigate, navigateToRoute } from 'c/fimbyNavigation';
+import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getFaqItems from '@salesforce/apex/FimbyFaqController.getFaqItems';
 import getNeighbourhoodModerator from '@salesforce/apex/FimbyModeratorDashboardController.getNeighbourhoodModerator';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
@@ -101,7 +102,7 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
 
     /* --- Navigation handlers --------------------------------------- */
 
-    handleBack() { navigate(this, '/my-stuff'); }
+    handleBack() { navigateBack(this, '/my-stuff'); }
 
     handleNavLink(event) {
         event.preventDefault();
@@ -171,7 +172,8 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
     get moderatorName() { return this._moderatorData?.name || ''; }
     get moderatorPronouns() { return this._moderatorData?.pronouns || ''; }
     get moderatorPhotoUrl() {
-        return this._moderatorData?.photoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        const url = avatarImageUrl(this._moderatorData?.photoUrl || '');
+        return url || `${IMPACT_ICONS}/NoProfilePhoto.png`;
     }
 
     connectedCallback() {
@@ -181,7 +183,7 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
     async _loadModerator() {
         try {
             this._moderatorData = await getNeighbourhoodModerator();
-        } catch (e) {
+        } catch {
             // No moderator — section won't show
         }
     }
@@ -193,7 +195,7 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
                 targetContactId: this._moderatorData.contactId
             });
             navigate(this, `/conversation?id=${conversationId}`);
-        } catch (e) {
+        } catch {
             // Silently fail
         }
     }

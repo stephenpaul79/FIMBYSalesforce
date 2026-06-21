@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "System Profile",
+  "contentBody" : {
+    "activeViewId" : "System_Profile",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-system-profile",
+    "urlPrefix" : "system-profile"
+  },
+  "urlName" : "system-profile"
+}

@@ -21,6 +21,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 import type { AppStateStatus } from "react-native";
@@ -158,10 +159,14 @@ const BACKEND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/frontdoor`;
 const BACKEND_LOGOUT_URL = `${BACKEND_BASE_URL}/api/logout`;
 const BACKEND_PUSH_ACTION_URL = `${BACKEND_BASE_URL}/api/notifications/action`;
 
-/** WebView handoff overlay — second act after native "Unlocking the door…".
- *  The first handoff of a session (cold-start load) uses its own phrase so a
- *  later re-show (silent re-auth / reload) never repeats the same line. */
-const WEBVIEW_HANDOFF_FIRST_MESSAGE = "Herding the dust bunnies…";
+/** Pre-kettle loading line. The bootstrap spinner runs UNDER the splash video
+ *  from app start; if the video lifts before the frontdoor URL is ready (the
+ *  kettle moment), this is the message shown in that gap. */
+const BOOTSTRAP_LOADING_MESSAGE = "Herding the dust bunnies…";
+
+/** WebView handoff overlay — the FINAL loading state before the app, triggered
+ *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
+ *  everyone right before they land in the app. */
 const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
 const WEBVIEW_HANDOFF_MIN_MS = 1000;
 const WEBVIEW_HANDOFF_FADE_MS = 550;
@@ -450,14 +455,26 @@ async function revokeRefreshTokenOnBackend(refresh: string): Promise<boolean> {
 }
 
 export default function IndexScreen() {
-  // Theme state — synced from WebView via postMessage, persisted in AsyncStorage
-  const [appTheme, setAppTheme] = React.useState<'light' | 'dark'>('light');
+  // Theme preference — synced from WebView via postMessage, persisted in
+  // AsyncStorage. We store the user's *preference* ('auto' | 'light' | 'dark'),
+  // not a resolved colour, so 'auto' can track the OS live.
+  const deviceScheme = useColorScheme();
+  const [themePref, setThemePref] = React.useState<'light' | 'dark' | 'auto'>('auto');
 
   React.useEffect(() => {
     AsyncStorage.getItem(THEME_STORAGE_KEY).then(stored => {
-      if (stored === 'dark' || stored === 'light') setAppTheme(stored);
+      if (stored === 'dark' || stored === 'light' || stored === 'auto') {
+        setThemePref(stored);
+      }
     }).catch(() => {});
   }, []);
+
+  // Resolve the active theme. On 'auto' we follow the device scheme, which
+  // useColorScheme() updates live — so an OS flip mid-session re-renders the
+  // native shell with no stale-memory lag. Default 'auto' also seeds the very
+  // first paint from the OS, avoiding a cold-start flash of the wrong theme.
+  const appTheme: 'light' | 'dark' =
+    themePref === 'auto' ? (deviceScheme === 'dark' ? 'dark' : 'light') : themePref;
 
   React.useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled()
@@ -473,6 +490,10 @@ export default function IndexScreen() {
 
   // Splash video state - track separately so bootstrap can run in parallel
   const [splashVideoComplete, setSplashVideoComplete] = React.useState(false);
+  // Ref mirror so showWebViewHandoff can tell, without re-binding, whether the
+  // video is still covering the screen. The kettle must NOT start (or burn its
+  // minimum-view clock) while the video plays — it's deferred until the lift.
+  const splashVideoCompleteRef = useRef(false);
 
   const [booting, setBooting] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
@@ -492,17 +513,19 @@ export default function IndexScreen() {
   // we can overlay our own recovery card (the EC error page has no navigation).
   const [stuckOnErrorPage, setStuckOnErrorPage] = React.useState(false);
   const [webViewHandoffVisible, setWebViewHandoffVisible] = React.useState(false);
-  const [webViewHandoffMessage, setWebViewHandoffMessage] = React.useState(
-    WEBVIEW_HANDOFF_FIRST_MESSAGE
-  );
-  // First handoff of the session uses the "dust bunnies" line; any later re-show
-  // (silent re-auth, reload) switches to the "kettle" line so it never repeats.
-  const handoffShownOnceRef = useRef(false);
+  // Caption for the single deferred loading overlay; swaps in place from the
+  // "bunny" (pre-frontdoor) line to the "kettle" (WebView loading) line.
+  const [loadingCaption, setLoadingCaption] = React.useState(WEBVIEW_HANDOFF_MESSAGE);
   const webViewHandoffFade = useRef(new Animated.Value(1)).current;
   const webViewHandoffShownAtRef = useRef<number | null>(null);
   const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
   const webViewHandoffDismissedRef = useRef(false);
   const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // A frontdoor handoff requested while the splash video was still playing. The
+  // kettle decision (skip vs show) is deferred to the video-lift effect below.
+  const handoffPendingRef = useRef(false);
+  // Ensures the video-lift loading decision runs exactly once.
+  const videoLiftHandledRef = useRef(false);
   const reduceMotionRef = useRef(false);
 
   // Panda Screen state
@@ -813,23 +836,85 @@ export default function IndexScreen() {
     }, delay);
   }, [dismissWebViewHandoff]);
 
+  // Single deferred loading overlay used for BOTH phases. The caption swaps in
+  // place (bunny → kettle); the minimum-view clock is anchored once, when the
+  // overlay first appears, so the two phases never stack and never flash.
+  const presentLoadingOverlay = useCallback(
+    (caption: string) => {
+      setLoadingCaption(caption);
+      // Already up (e.g. the bunny phase): keep the clock running and just swap
+      // the caption — one continuous minimum, no reset, no flash.
+      if (
+        webViewHandoffShownAtRef.current != null &&
+        !webViewHandoffDismissedRef.current
+      ) {
+        return;
+      }
+      if (webViewHandoffDismissTimeoutRef.current) {
+        clearTimeout(webViewHandoffDismissTimeoutRef.current);
+        webViewHandoffDismissTimeoutRef.current = null;
+      }
+      webViewHandoffDismissedRef.current = false;
+      webViewHandoffEcReadyAtRef.current = null;
+      webViewHandoffShownAtRef.current = Date.now();
+      setWebViewHandoffVisible(true);
+      webViewHandoffFade.setValue(1);
+    },
+    [webViewHandoffFade]
+  );
+
   const showWebViewHandoff = useCallback(() => {
-    if (webViewHandoffDismissTimeoutRef.current) {
-      clearTimeout(webViewHandoffDismissTimeoutRef.current);
-      webViewHandoffDismissTimeoutRef.current = null;
+    // While the splash video still covers the screen, don't start the overlay or
+    // its minimum-view clock — just record that a handoff is wanted. The
+    // video-lift effect below then either skips the kettle (EC already loaded
+    // behind the video) or shows it anchored to the lift moment. This is why the
+    // minimum view time is never partly consumed behind the video.
+    if (!splashVideoCompleteRef.current) {
+      handoffPendingRef.current = true;
+      return;
     }
-    webViewHandoffDismissedRef.current = false;
-    webViewHandoffEcReadyAtRef.current = null;
-    webViewHandoffShownAtRef.current = Date.now();
-    setWebViewHandoffMessage(
-      handoffShownOnceRef.current
-        ? WEBVIEW_HANDOFF_MESSAGE
-        : WEBVIEW_HANDOFF_FIRST_MESSAGE
-    );
-    handoffShownOnceRef.current = true;
-    setWebViewHandoffVisible(true);
-    webViewHandoffFade.setValue(1);
-  }, [webViewHandoffFade]);
+    presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE);
+  }, [presentLoadingOverlay]);
+
+  // When the splash video lifts, decide the loading overlay (runs once):
+  //  - EC already loaded behind the video  → skip, straight to app
+  //  - frontdoor ready, page still loading → kettle
+  //  - auth still in flight                → bunny (swaps to kettle when ready)
+  React.useEffect(() => {
+    if (!splashVideoComplete) return;
+    splashVideoCompleteRef.current = true;
+    if (videoLiftHandledRef.current) return;
+    videoLiftHandledRef.current = true;
+
+    if (handoffPendingRef.current) {
+      handoffPendingRef.current = false;
+      if (webViewHandoffEcReadyAtRef.current != null) return; // EC ready → skip
+      presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE);
+      return;
+    }
+    if (!webViewUrl && !showPanda && booting) {
+      presentLoadingOverlay(BOOTSTRAP_LOADING_MESSAGE);
+    }
+  }, [splashVideoComplete, webViewUrl, showPanda, booting, presentLoadingOverlay]);
+
+  // Safety net: if the overlay is in the pre-frontdoor (bunny) phase but auth
+  // resolves to something other than the WebView (error, quiet-hours panda, or
+  // no session), drop it so the right screen shows. The kettle phase dismisses
+  // itself on WebView load.
+  React.useEffect(() => {
+    if (!webViewHandoffVisible || webViewUrl) return;
+    const stillWaitingOnAuth = booting && !bootstrapError && !showPanda;
+    if (!stillWaitingOnAuth) {
+      dismissWebViewHandoff({ immediate: true });
+    }
+  }, [
+    webViewHandoffVisible,
+    webViewUrl,
+    booting,
+    bootstrapError,
+    showPanda,
+    dismissWebViewHandoff,
+  ]);
 
   const handleWebViewLoadEnd = useCallback(
     (url?: string, loading?: boolean) => {
@@ -1729,10 +1814,10 @@ export default function IndexScreen() {
         if (data.type === "quietHours" && data.window) {
           AsyncStorage.setItem("fimby_quiet_hours", data.window).catch(() => {});
           log("[WebView] Quiet hours synced:", data.window);
-        } else if (data.type === "themeChange" && (data.theme === "light" || data.theme === "dark")) {
-          setAppTheme(data.theme);
+        } else if (data.type === "themeChange" && (data.theme === "light" || data.theme === "dark" || data.theme === "auto")) {
+          setThemePref(data.theme);
           AsyncStorage.setItem(THEME_STORAGE_KEY, data.theme).catch(() => {});
-          log("[WebView] Theme synced:", data.theme);
+          log("[WebView] Theme pref synced:", data.theme);
         } else if (data.type === "pushNotifications" && typeof data.enabled === "boolean") {
           log("[WebView] Push toggle synced:", data.enabled);
           void syncPushRegistration(data.enabled);
@@ -2256,6 +2341,31 @@ export default function IndexScreen() {
     </View>
   ) : null;
 
+  // Single deferred loading overlay (bunny → kettle). Rendered above the body so
+  // it covers both the pre-frontdoor pre-auth screen and the loading WebView,
+  // and below the splash overlay so the video stays on top while it plays.
+  const loadingOverlay = webViewHandoffVisible ? (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.webViewHandoff,
+        {
+          backgroundColor: PREAUTH_COLORS[appTheme].bg,
+          opacity: webViewHandoffFade,
+        },
+      ]}
+    >
+      <ActivityIndicator
+        size="large"
+        color={PREAUTH_COLORS[appTheme].spinner}
+        style={styles.spinner}
+      />
+      <Text style={[styles.webViewHandoffText, { color: PREAUTH_COLORS[appTheme].secondary }]}>
+        {loadingCaption}
+      </Text>
+    </Animated.View>
+  ) : null;
+
   // Panda Screen: quiet hours interstitial (before auth)
   if (showPanda && !webViewUrl) {
     const dismissPanda = async () => {
@@ -2391,20 +2501,6 @@ export default function IndexScreen() {
             void maybeRunDeferredPushPrompt();
           }}
         />
-        {webViewHandoffVisible && (
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.webViewHandoff,
-              { backgroundColor: handoffPalette.bg, opacity: webViewHandoffFade },
-            ]}
-          >
-            <ActivityIndicator size="large" color={handoffPalette.spinner} style={styles.spinner} />
-            <Text style={[styles.webViewHandoffText, { color: handoffPalette.secondary }]}>
-              {webViewHandoffMessage}
-            </Text>
-          </Animated.View>
-        )}
         {webViewError && (
           <View style={styles.errorOverlay}>
             <Text style={styles.errorOverlayText}>{webViewError}</Text>
@@ -2462,6 +2558,7 @@ export default function IndexScreen() {
           </View>
         )}
       </SafeAreaView>
+      {loadingOverlay}
       {splashOverlay}
       </>
     );
@@ -2472,12 +2569,15 @@ export default function IndexScreen() {
 
   // Determine what content to show
   const renderContent = () => {
-    // Loading screen while booting (session restoring)
+    // Pre-kettle loading screen (session restoring). Runs UNDER the splash
+    // video; revealed if the video lifts before the frontdoor URL is ready.
     if (booting) {
       return (
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
-          <Text style={[styles.status, { color: c.secondary }]}>{status}</Text>
+          <Text style={[styles.status, { color: c.secondary }]}>
+            {BOOTSTRAP_LOADING_MESSAGE}
+          </Text>
         </View>
       );
     }
@@ -2585,6 +2685,7 @@ export default function IndexScreen() {
         </Animated.View>
       </View>
     </SafeAreaView>
+    {loadingOverlay}
     {splashOverlay}
     </>
   );

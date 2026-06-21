@@ -134,6 +134,22 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.overlay-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-area:focus-visible,
+.overlay-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.overlay-btn:focus-visible {
+    opacity: 1;
+}
+
 .image-preview:hover .overlay-btn {
     opacity: 1;
 }
@@ -154,11 +170,6 @@
     width: 20px;
     height: 20px;
     object-fit: contain;
-}
-
-.overlay-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* File Input - Hidden */
@@ -245,18 +256,6 @@
     .image-overlay {
         background: rgba(0, 0, 0, 0.2);
     }
-}
-
-/* Keyboard focus visibility */
-.upload-area:focus-visible,
-.overlay-btn:focus-visible {
-    outline: 2px solid var(--fimby-focus-ring);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
-}
-
-.overlay-btn:focus-visible {
-    opacity: 1;
 }
 
 .document-preview-container {

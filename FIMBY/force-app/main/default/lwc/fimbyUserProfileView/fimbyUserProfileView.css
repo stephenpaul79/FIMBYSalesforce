@@ -36,8 +36,7 @@
     text-align: left;
     display: grid;
     grid-template-columns: 72px 1fr;
-    column-gap: 20px;
-    row-gap: 2px;
+    gap: 2px 20px;
     align-items: start;
 }
 
@@ -75,6 +74,19 @@
     min-width: 0;
 }
 
+.edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.uploader-inline {
+    margin: 12px 0;
+    padding: 16px;
+    background: var(--fimby-surface-page);
+    border-radius: var(--fimby-radius-md);
+}
+
 /* Edit form and inline uploader span every column when shown */
 .identity-card > .edit-fields {
     grid-column: 2 / -1;
@@ -95,8 +107,7 @@
 @media (min-width: 600px) {
     .identity-card {
         grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr);
-        column-gap: 24px;
-        row-gap: 0;
+        gap: 0 24px;
         padding: 20px 24px;
         align-items: center;
     }
@@ -175,6 +186,12 @@
     opacity: 1;
 }
 
+.avatar-overlay-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
 .remove-avatar-btn {
     background: none;
     border: none;
@@ -182,13 +199,6 @@
     font-size: 0.75rem;
     cursor: pointer;
     padding: 4px 8px;
-}
-
-.uploader-inline {
-    margin: 12px 0;
-    padding: 16px;
-    background: var(--fimby-surface-page);
-    border-radius: var(--fimby-radius-md);
 }
 
 .identity-name-row {
@@ -354,12 +364,6 @@
 }
 
 /* ========== EDIT MODE FIELDS ========== */
-.edit-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
 .field-row {
     display: flex;
     flex-direction: column;

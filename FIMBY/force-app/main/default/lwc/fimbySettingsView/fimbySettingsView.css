@@ -618,6 +618,7 @@
 }
 
 .report-textarea {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     min-height: 72px;
 }
@@ -743,14 +744,14 @@ button.block-result-item:focus-visible {
     cursor: pointer;
 }
 
-.cancel-btn:hover:not(:disabled) {
-    background-color: var(--fimby-hover-bg);
-}
-
 .cancel-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.cancel-btn:hover:not(:disabled) {
+    background-color: var(--fimby-hover-bg);
 }
 
 .block-btn {
@@ -766,10 +767,6 @@ button.block-result-item:focus-visible {
     cursor: pointer;
 }
 
-.block-btn:hover:not(:disabled) {
-    background-color: var(--fimby-btn-danger-bg-hover);
-}
-
 .block-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -779,6 +776,10 @@ button.block-result-item:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.block-btn:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover);
 }
 
 /* ========== WALKTHROUGH SECTION ========== */
@@ -885,18 +886,18 @@ button.block-result-item:focus-visible {
     max-width: 100%;
 }
 
-.btn.btn-block-outline:hover:not(:disabled) {
-    background-color: var(--fimby-error-tint);
-    border-color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
-    color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
-}
-
 .btn.btn-block-outline:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow:
         0 0 0 4px var(--fimby-focus-glow),
         0 0 0 1px var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+}
+
+.btn.btn-block-outline:hover:not(:disabled) {
+    background-color: var(--fimby-error-tint);
+    border-color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
+    color: var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
 }
 
 .btn-danger {
@@ -907,15 +908,15 @@ button.block-result-item:focus-visible {
     border-radius: var(--fimby-btn-radius);
 }
 
-.btn-danger:hover:not(:disabled) {
-    background-color: var(--fimby-btn-danger-bg-hover);
-    opacity: 1;
-}
-
 .btn-danger:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--fimby-btn-danger-bg-hover);
+    opacity: 1;
 }
 
 /* ========== FUN STUFF ========== */
@@ -1016,6 +1017,25 @@ button.block-result-item:focus-visible {
     box-shadow: var(--fimby-shadow-modal);
 }
 
+.modal-message {
+    font-size: 0.9375rem;
+    color: var(--fimby-text-primary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.skip-grace-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    margin: 0 0 20px;
+    background: var(--fimby-surface-section);
+    border-radius: var(--fimby-radius-sm);
+    cursor: pointer;
+}
+
 .modal-content .modal-message,
 .modal-content .skip-grace-row {
     text-align: left;
@@ -1028,29 +1048,10 @@ button.block-result-item:focus-visible {
     margin: 0 0 8px;
 }
 
-.modal-message {
-    font-size: 0.9375rem;
-    color: var(--fimby-text-primary);
-    margin: 0 0 24px;
-    line-height: 1.5;
-    text-align: left;
-}
-
 .modal-actions {
     display: flex;
     gap: 12px;
     justify-content: center;
-}
-
-.skip-grace-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
-    margin: 0 0 20px;
-    background: var(--fimby-surface-section);
-    border-radius: var(--fimby-radius-sm);
-    cursor: pointer;
 }
 
 .skip-grace-row input[type="checkbox"] {
@@ -1117,11 +1118,8 @@ button.section-header-clickable {
 .section-header-clickable:focus-visible,
 .edit-pencil:focus-visible,
 .btn-unblock:focus-visible,
-.btn.btn-block-outline:focus-visible,
 .modal-close-btn:focus-visible,
 button.block-result-item:focus-visible,
-.cancel-btn:focus-visible,
-.block-btn:focus-visible,
 .theme-option:focus-visible,
 .toggle-switch:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);

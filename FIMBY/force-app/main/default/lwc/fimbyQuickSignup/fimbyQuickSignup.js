@@ -11,7 +11,7 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
     @track agreeToTerms = false;
     @track isSigningUp = false;
 
-    popularNeighborhoods = [
+    _neighborhoodOptions = [
         { value: 'downtown-vancouver', label: 'Downtown', selected: false },
         { value: 'kitsilano', label: 'Kitsilano', selected: false },
         { value: 'west-end', label: 'West End', selected: false },
@@ -21,7 +21,7 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
     ];
 
     get popularNeighborhoods() {
-        return this.popularNeighborhoods.map(neighborhood => ({
+        return this._neighborhoodOptions.map(neighborhood => ({
             ...neighborhood,
             cssClass: neighborhood.selected ? 'neighborhood-chip selected' : 'neighborhood-chip'
         }));
@@ -58,7 +58,7 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
         const locationValue = event.currentTarget.dataset.location;
 
         // Update selection
-        this.popularNeighborhoods = this.popularNeighborhoods.map(neighborhood => ({
+        this._neighborhoodOptions = this._neighborhoodOptions.map(neighborhood => ({
             ...neighborhood,
             selected: neighborhood.value === locationValue
         }));
@@ -89,16 +89,8 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
         this.isSigningUp = true;
 
         try {
-            const signupData = {
-                firstName: this.firstName,
-                lastName: this.lastName,
-                email: this.email,
-                phone: this.phone,
-                location: this.selectedLocation,
-                isQuickSignup: true
-            };
-
             // Call Apex method for quick signup
+            // const signupData = { firstName, lastName, email, phone, location, isQuickSignup: true };
             // const result = await quickCreateFimbyAccount({ signupData: JSON.stringify(signupData) });
 
             // Simulate signup
@@ -162,6 +154,7 @@ export default class FimbyQuickSignup extends NavigationMixin(LightningElement) 
     }
 
     delay(ms) {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 

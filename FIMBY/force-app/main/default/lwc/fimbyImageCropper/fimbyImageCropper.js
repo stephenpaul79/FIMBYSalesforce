@@ -97,6 +97,7 @@ export default class FimbyImageCropper extends LightningElement {
     _scheduleRender() {
         if (this._renderScheduled) return;
         this._renderScheduled = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => {
             this._renderScheduled = false;
             this._render();

@@ -1,6 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getPageReference, navigate } from 'c/fimbyNavigation';
+import { getPageReference, navigate, navigateBack, profilePathForContact } from 'c/fimbyNavigation';
 import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
@@ -114,7 +114,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             ];
         }
         const items = [
-            { key: 'flag', label: 'Flag for follow-up', icon: 'warning.png', display: 'kebab' }
+            { key: 'flag', label: 'Report', icon: 'warning.png', display: 'kebab' }
         ];
         if (this._isModeratorForNeighbourhood) {
             items.push(
@@ -156,7 +156,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
                 this.realContactId = ident.contactId || null;
                 this.actingAsContactId = ident.actingAsContactId || ident.contactId || null;
             }
-        } catch (e) {
+        } catch {
             // Quiet: feed/detail still works without identity (no edit/delete affordance)
         }
     }
@@ -165,7 +165,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         try {
             const ctx = await getModeratorContext();
             this._isModeratorForNeighbourhood = ctx.isModerator;
-        } catch (e) { /* noop */ }
+        } catch { /* noop */ }
     }
 
     get effectiveRecordId() {
@@ -247,7 +247,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             }
 
             return null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -296,7 +296,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             } else {
                 this.comments = [];
             }
-        } catch (error) {
+        } catch {
             // Quiet: empty-state copy explains the missing data path
         } finally {
             this.isLoadingComments = false;
@@ -308,9 +308,17 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     decorateComment(comment) {
         const editCount = Number(comment.editCount || 0);
         const canManage = !!comment.isAuthor;
+        const profilePath = profilePathForContact({
+            contactId: comment.authorId,
+            isOrgContact: comment.authorIsOrg === true,
+            orgAccountId: comment.authorOrgAccountId,
+            currentContactId: this.realContactId
+        });
         return {
             ...comment,
             authorPhotoUrl: avatarImageUrl(comment.authorPhotoUrl),
+            profilePath,
+            authorAvatarClass: 'comment-avatar' + (profilePath ? ' clickable-avatar' : ''),
             formattedDate: this.formatCommentDate(comment.createdDate),
             isEdited: editCount > 0,
             editedSuffix: editCount > 0 ? ' · edited' : '',
@@ -427,7 +435,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
                 return '16 / 9';
             }
             return `${width} / ${height}`;
-        } catch (e) {
+        } catch {
             return '16 / 9';
         }
     }
@@ -478,6 +486,36 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         return avatarImageUrl(baseUrl);
     }
 
+    get authorContactId() {
+        return this.record?.Posted_By__c || null;
+    }
+
+    get authorProfilePath() {
+        if (!this.record?.Posted_By__r) return '';
+        return profilePathForContact({
+            contactId: this.authorContactId,
+            isOrgContact: this.record.Posted_By__r.Is_Organization_Contact__c === true,
+            orgAccountId: this.record.Posted_By__r.Organization_Account__c,
+            currentContactId: this.realContactId
+        });
+    }
+
+    get authorInfoClass() {
+        return 'author-info' + (this.authorProfilePath ? ' clickable-avatar' : '');
+    }
+
+    handleAuthorAvatarClick() {
+        if (this.authorProfilePath) {
+            navigate(this, this.authorProfilePath);
+        }
+    }
+
+    handleCommentAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) navigate(this, path);
+    }
+
     get formattedDate() {
         if (!this.record) return '';
         const date = this.record.CreatedDate;
@@ -517,12 +555,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     handleBack() {
-        // Go back in history or navigate to stories page
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            this[NavigationMixin.Navigate]({ type: 'standard__namedPage', attributes: { pageName: 'home' }});
-        }
+        navigateBack(this, '/');
     }
 
     handleEdit() {

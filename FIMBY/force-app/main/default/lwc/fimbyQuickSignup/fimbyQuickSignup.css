@@ -134,6 +134,20 @@
     margin-top: 2px;
 }
 
+.login-link {
+    text-align: center;
+    color: var(--fimby-text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.login-link a {
+    color: var(--fimby-btn-primary-bg);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--fimby-btn-primary-bg);
+}
+
 .terms-text {
     font-size: 11px;
     color: var(--fimby-text-primary);
@@ -144,6 +158,11 @@
     color: var(--fimby-btn-primary-bg);
     text-decoration: none;
     font-weight: 600;
+}
+
+.login-link a:hover {
+    color: var(--fimby-btn-primary-bg-hover);
+    border-bottom-color: var(--fimby-btn-primary-bg-hover);
 }
 
 .terms-text a:hover {
@@ -261,26 +280,6 @@
     justify-content: center;
     font-weight: 700;
     border-radius: 2px;
-}
-
-/* Login Link */
-.login-link {
-    text-align: center;
-    color: var(--fimby-text-secondary);
-    font-size: 14px;
-    margin-bottom: 24px;
-}
-
-.login-link a {
-    color: var(--fimby-btn-primary-bg);
-    text-decoration: none;
-    font-weight: 600;
-    border-bottom: 1px solid var(--fimby-btn-primary-bg);
-}
-
-.login-link a:hover {
-    color: var(--fimby-btn-primary-bg-hover);
-    border-bottom-color: var(--fimby-btn-primary-bg-hover);
 }
 
 /* Why FIMBY Section */

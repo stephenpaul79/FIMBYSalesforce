@@ -71,7 +71,7 @@
                 <!-- Actions -->
                 <div class={actionsCardClass}>
                     <button lwc:if={canReturn} class="action-btn primary" onclick={handleReturn}>
-                        <lightning-icon icon-name="utility:undo" size="small"></lightning-icon>
+                        <img src={returnIconUrl} alt="" class="action-btn-icon">
                         <span>Return Item</span>
                     </button>
                     <button lwc:if={canExtend} class="action-btn secondary" onclick={handleExtend}>
@@ -79,7 +79,7 @@
                         <span>Request Extension</span>
                     </button>
                     <button class="action-btn" onclick={handleMessage}>
-                        <lightning-icon icon-name="utility:chat" size="small"></lightning-icon>
+                        <img src={chatIconUrl} alt="" class="action-btn-icon">
                         <span>Message Owner</span>
                     </button>
                 </div>

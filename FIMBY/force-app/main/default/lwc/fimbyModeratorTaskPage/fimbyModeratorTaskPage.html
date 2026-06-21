@@ -278,7 +278,7 @@
                                         <label class="field-label" for="form-note">Notes</label>
                                         <span class={formCountClass}>{formNoteLength}/1000</span>
                                     </div>
-                                    <textarea id="form-note" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <textarea id="form-note" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} oninput={handleFormNoteChange}>{_formNote}</textarea>
                                     <div class="inline-form-actions">
                                         <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
                                         <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>
@@ -472,7 +472,7 @@
                                         <label class="field-label" for="form-note-block">Notes</label>
                                         <span class={formCountClass}>{formNoteLength}/1000</span>
                                     </div>
-                                    <textarea id="form-note-block" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <textarea id="form-note-block" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} oninput={handleFormNoteChange}>{_formNote}</textarea>
                                     <div class="inline-form-actions">
                                         <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
                                         <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>
@@ -1155,7 +1155,7 @@
                                         <label class="field-label" for="form-note-bulk">Notes</label>
                                         <span class={formCountClass}>{formNoteLength}/1000</span>
                                     </div>
-                                    <textarea id="form-note-bulk" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} value={_formNote} onchange={handleFormNoteChange}></textarea>
+                                    <textarea id="form-note-bulk" class="inline-form-textarea" maxlength="1000" placeholder={formPlaceholder} oninput={handleFormNoteChange}>{_formNote}</textarea>
                                     <div class="inline-form-actions">
                                         <button type="button" class="btn-action btn-secondary" onclick={handleFormCancel}>Cancel</button>
                                         <button type="button" class="btn-action btn-primary" onclick={handleFormConfirm} disabled={isFormSubmitDisabled}>{formConfirmLabel}</button>

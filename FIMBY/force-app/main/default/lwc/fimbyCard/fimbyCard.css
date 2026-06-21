@@ -157,6 +157,7 @@
     }
 
     .header-left {
+        /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- grid layout passthrough */
         display: contents;
     }
 
@@ -507,6 +508,13 @@
 .custom-action-icon {
     width: 24px;
     height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.action-button-icon {
+    width: 20px;
+    height: 20px;
     object-fit: contain;
     flex-shrink: 0;
 }
@@ -880,6 +888,12 @@ button.action-button:focus-visible {
     flex: 0 0 auto;
 }
 
+.card-media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .card-compact .card-media,
 .card-compact .card-media-placeholder {
     order: 2;
@@ -889,12 +903,6 @@ button.action-button:focus-visible {
     min-height: 160px;
     overflow: hidden;
     flex-shrink: 0;
-}
-
-.card-media-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .media-placeholder-icon {
@@ -923,7 +931,6 @@ button.action-button:focus-visible {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    -webkit-box-orient: unset;
     -webkit-line-clamp: unset;
     overflow: hidden;
 }
@@ -979,6 +986,7 @@ button.action-button:focus-visible {
  * ---------------------------------------------------------- */
 .card-list {
     margin-bottom: 0;
+
     --fimby-card-list-row-height: 115px;
 }
 
@@ -999,7 +1007,7 @@ button.action-button:focus-visible {
     grid-template-columns: minmax(0, 1fr) var(--fimby-card-list-actions-width, 168px);
 }
 
-.card-list:not(:has(.list-owner-row)):not(:has(.card-media)) .card-body {
+.card-list:not(:has(.list-owner-row), :has(.card-media)) .card-body {
     grid-template-columns: minmax(0, 1fr);
 }
 
@@ -1116,7 +1124,6 @@ button.action-button:focus-visible {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    -webkit-box-orient: unset;
     -webkit-line-clamp: unset;
     overflow: hidden;
 }

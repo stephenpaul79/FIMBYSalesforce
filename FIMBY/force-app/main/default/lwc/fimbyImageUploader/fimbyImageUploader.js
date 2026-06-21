@@ -248,6 +248,7 @@ export default class FimbyImageUploader extends LightningElement {
             if (result.success) {
                 this._clearLocalUpload();
                 this.successMessage = 'Image removed';
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                 setTimeout(() => { this.successMessage = ''; }, 2000);
                 this.dispatchImageEvent('imageremoved', {});
             }
@@ -368,6 +369,7 @@ export default class FimbyImageUploader extends LightningElement {
                     this.uploadedFileName = '';
                 }
                 this.successMessage = isPdf ? 'Document uploaded successfully!' : 'Image uploaded successfully!';
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                 setTimeout(() => { this.successMessage = ''; }, 3000);
 
                 this.dispatchImageEvent('imageuploaded', {

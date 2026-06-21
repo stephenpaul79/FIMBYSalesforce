@@ -1,4 +1,4 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getStoryForComment from '@salesforce/apex/FimbyStoryCommentController.getStoryForComment';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
@@ -9,6 +9,16 @@ import updateStoryComment from '@salesforce/apex/FimbyStoryCommentController.upd
 export default class FimbyCommentComposer extends NavigationMixin(LightningElement) {
     @api recordId; // Story__c Id
     @api commentId; // Story_Comment__c Id (edit mode only)
+    _recordId = '';
+    _commentId = null;
+
+    get activeRecordId() {
+        return this._recordId || this.recordId;
+    }
+
+    get activeCommentId() {
+        return this._commentId ?? this.commentId ?? null;
+    }
 
     // Story display data
     @track storyTitle = '';
@@ -49,7 +59,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     }
 
     get isEditMode() {
-        return !!this.commentId;
+        return !!this.activeCommentId;
     }
 
     get modalTitle() {
@@ -70,9 +80,9 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
         this.isModalMode = true;
         this._isModalVisible = true;
         if (storyId) {
-            this.recordId = storyId;
+            this._recordId = storyId;
         }
-        this.commentId = commentId || null;
+        this._commentId = commentId || null;
         this.commentText = existingText || '';
         this.mentionContactIds = [];
         this.loadInitialData();
@@ -104,7 +114,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
         this.commentText = '';
         this.errorMessage = '';
         this.isLoading = false;
-        this.commentId = null;
+        this._commentId = null;
         this.mentionContactIds = [];
     }
 
@@ -114,7 +124,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
         try {
             // Load story data first
-            const storyResult = await getStoryForComment({ recordId: this.recordId });
+            const storyResult = await getStoryForComment({ recordId: this.activeRecordId });
 
             if (storyResult.success) {
                 this.storyTitle = storyResult.story.name || '';
@@ -138,7 +148,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
                 } else {
                     this.actingAsContactName = 'you';
                 }
-            } catch (contactError) {
+            } catch {
                 this.actingAsContactName = 'you';
             }
         } catch (error) {
@@ -201,6 +211,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     }
 
     handleInputBlur() {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             if (!this.showMentionSuggestions) {
                 this.isFocused = false;
@@ -226,7 +237,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
         try {
             const payload = {
-                storyId: this.recordId,
+                storyId: this.activeRecordId,
                 commentText: this.commentText.trim(),
                 commentContactId: this.actingAsContactId || null,
                 mentionContactIds: this.mentionContactIds
@@ -234,7 +245,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
             let result;
             if (this.isEditMode) {
-                payload.commentId = this.commentId;
+                payload.commentId = this.activeCommentId;
                 result = await updateStoryComment({
                     commentData: JSON.stringify(payload)
                 });
@@ -250,7 +261,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
                 this.dispatchEvent(new CustomEvent('commentposted', {
                     detail: {
-                        storyId: this.recordId,
+                        storyId: this.activeRecordId,
                         commentId: result.commentId,
                         isEdit: this.isEditMode,
                         editCount: result.editCount,
@@ -281,7 +292,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
             attributes: {
-                recordId: this.recordId,
+                recordId: this.activeRecordId,
                 objectApiName: 'Story__c',
                 actionName: 'view'
             }
@@ -326,7 +337,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
             } else {
                 this.closeMentionSuggestions();
             }
-        } catch (error) {
+        } catch {
             this.closeMentionSuggestions();
         }
     }
@@ -335,12 +346,12 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
         const personId = event.currentTarget.dataset.personId;
         const personName = event.currentTarget.dataset.personName;
 
-        this.insertMention(personName, personId);
+        this.insertMention(personName);
         this.recordMentionId(personId);
         this.closeMentionSuggestions();
     }
 
-    insertMention(name, personId) {
+    insertMention(name) {
         const text = this.commentText;
         const atIndex = this._mentionAtIndex;
         const searchText = this._mentionSearchText || '';

@@ -25,7 +25,7 @@ export default class FimbyLibraryItemAdmin extends NavigationMixin(LightningElem
     get checkIconUrl() { return `${IMPACT_ICONS}/complete.png`; }
     get reviewIconUrl() { return `${IMPACT_ICONS}/Magnify.png`; }
     get removeIconUrl() { return `${IMPACT_ICONS}/trash.png`; }
-    get returnIconUrl() { return `${IMPACT_ICONS}/ToolboxActive.png`; }
+    get returnIconUrl() { return `${IMPACT_ICONS}/transfer.png`; }
     get extensionIconUrl() { return `${IMPACT_ICONS}/plannersm.png`; }
 
     // ── Current Loan ──────────────────────────────────────────────

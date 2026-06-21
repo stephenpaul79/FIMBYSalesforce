@@ -585,6 +585,13 @@
     color: var(--fimby-btn-primary-bg);
 }
 
+.reply-trigger-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .compose-area {
     display: flex;
     flex-direction: column;

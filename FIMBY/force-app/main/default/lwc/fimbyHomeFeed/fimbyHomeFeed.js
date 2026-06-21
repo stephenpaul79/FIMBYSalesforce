@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { getRecordPageReference, startNavTiming, navigate } from 'c/fimbyNavigation';
+import { getRecordPageReference, startNavTiming, navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -195,6 +195,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     handleOpenBioModal() {
         this._showIntroPostModal = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         window.requestAnimationFrame(() => {
             const modal = this.template.querySelector('c-fimby-intro-post-modal');
             if (modal && typeof modal.show === 'function') {
@@ -230,7 +231,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get borrowIconUrl()        { return `${IMPACT_ICONS}/borrow.png`; }
     get viewPostIconUrl()      { return `${IMPACT_ICONS}/Magnify.png`; }
     get reportIconUrl()        { return `${IMPACT_ICONS}/warning.png`; }
-    get libraryBadgeStyle()    { return `background: ${BADGE_BG_COLORS['library']};`; }
+    get libraryBadgeStyle()    { return `background: ${BADGE_BG_COLORS.library};`; }
 
     /* ===============================================================
      * L2 Sub-filter logic
@@ -351,6 +352,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
         this._windowScrollHandler = () => {
             if (!this._scrollTicking) {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
                 requestAnimationFrame(() => {
                     this._handleScrollDirection();
                     this._throttledSaveFeedState();
@@ -364,6 +366,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         this._pagehideHandler = () => this._saveFeedState();
         window.addEventListener('pagehide', this._pagehideHandler);
 
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => this._measureHeaderHeight());
     }
 
@@ -422,7 +425,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             if (filterParam === 'story' || filterParam === 'askOffer') {
                 this.activeFilter = filterParam;
             }
-        } catch (e) {
+        } catch {
             // Fail silently
         }
     }
@@ -528,7 +531,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             if (result?.actingAsContactId) {
                 this.actingAsContactId = result.actingAsContactId;
             }
-        } catch (e) {
+        } catch {
             // Non-fatal; next loadNextBatch will hydrate.
         }
         if (this.feedItems?.length) {
@@ -572,7 +575,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 badgeClass = BADGE_CLASS_MAP[item.itemType] || 'card-type-badge story-badge';
                 badgeIconUrl = this._storyBadgeIconUrl(item.itemType);
                 badgeLabel = STORY_BADGE_LABELS[item.itemType] || item.itemType || 'Shared Life';
-                badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS['Story'];
+                badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS.Story;
             } else if (isBulkBuy) {
                 badgeClass = 'card-type-badge bulk-buy-badge';
                 badgeIconUrl = `${IMPACT_ICONS}/bulkbuy.png`;
@@ -584,22 +587,22 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     badgeClass = 'card-type-badge community-event-badge';
                     badgeIconUrl = `${IMPACT_ICONS}/cityscape.png`;
                     badgeLabel = 'COMMUNITY EVENT';
-                    badgeBg = BADGE_BG_COLORS['Community_Event'] || BADGE_BG_COLORS['Event'];
+                    badgeBg = BADGE_BG_COLORS.Community_Event || BADGE_BG_COLORS.Event;
                 } else if (evtType === 'Open_Event') {
                     badgeClass = 'card-type-badge event-badge';
                     badgeIconUrl = `${IMPACT_ICONS}/people.png`;
                     badgeLabel = 'EVENT';
-                    badgeBg = BADGE_BG_COLORS['Event'];
+                    badgeBg = BADGE_BG_COLORS.Event;
                 } else if (evtType === 'Gathering') {
                     badgeClass = 'card-type-badge event-badge';
                     badgeIconUrl = `${IMPACT_ICONS}/dining-table.png`;
                     badgeLabel = 'GATHERING';
-                    badgeBg = BADGE_BG_COLORS['Event'];
+                    badgeBg = BADGE_BG_COLORS.Event;
                 } else {
                     badgeClass = 'card-type-badge event-badge';
                     badgeIconUrl = `${IMPACT_ICONS}/dining-table.png`;
                     badgeLabel = 'EVENT';
-                    badgeBg = BADGE_BG_COLORS['Event'];
+                    badgeBg = BADGE_BG_COLORS.Event;
                 }
                 if (item.isRecurring) {
                     badgeLabel = `${badgeLabel} · RECURRING`;
@@ -608,9 +611,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 badgeClass = 'card-type-badge ask-offer-badge';
                 badgeIconUrl = this.askOfferBadgeIconUrl;
                 badgeLabel = item.itemType === 'Need' ? 'Ask' : (item.itemType || 'Ask & Offer');
-                badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS['askOffer'];
+                badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS.askOffer;
             } else if (item.feedType === 'library') {
-                badgeBg = BADGE_BG_COLORS['library'];
+                badgeBg = BADGE_BG_COLORS.library;
             }
 
             // Response pill (footer action)
@@ -666,9 +669,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             const hasVisibleImage = item.hasImage === true && !!processedImageUrl && processedImageUrl.trim() !== '';
             const libraryWrapperClass = 'feed-card-wrapper library-announcement'
                 + (hasVisibleImage ? ' library-has-image' : ' library-no-image');
-            const libraryAvatarClass = isOrg
-                ? 'library-listed-avatar-wrap clickable-avatar'
-                : 'library-listed-avatar-wrap';
 
             let responsePillClass = '';
             const userHasResponded = isAskOffer && item.activeReserverIds &&
@@ -694,8 +694,15 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             const avatarUrl = item.postedByImageUrl
                 ? avatarImageUrl(item.postedByImageUrl)
                 : (isOrg ? orgAvatarFallback : this.defaultAvatarUrl);
-            const orgProfileUrl = isOrg && item.orgAccountId
-                ? `/organization/${item.orgAccountId}` : '';
+            const posterProfileUrl = profilePathForContact({
+                contactId: item.ownerContactId,
+                isOrgContact: isOrg,
+                orgAccountId: item.orgAccountId,
+                currentContactId: this.currentContactId
+            });
+            const libraryAvatarClass = posterProfileUrl
+                ? 'library-listed-avatar-wrap clickable-avatar'
+                : 'library-listed-avatar-wrap';
 
             let eventDateTime = '';
             let eventLocation = '';
@@ -731,7 +738,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 showCardMenu: !isPoster,
                 isLibrary: item.feedType === 'library',
                 isOrgPoster: isOrg,
-                orgProfileUrl,
+                posterProfileUrl,
                 showImage: hasVisibleImage,
                 libraryWrapperClass,
                 libraryAvatarClass,
@@ -819,7 +826,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             if (ratio > 1.91) { cw = Math.round(h * 1.91); }
             else if (ratio < 0.8) { ch = Math.round(w / 0.8); }
             return `${cw} / ${ch}`;
-        } catch (e) {
+        } catch {
             return '16 / 9';
         }
     }
@@ -1178,6 +1185,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this.showLightbox = true;
 
             // Open the lightbox component after render
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
             requestAnimationFrame(() => {
                 const lb = this.template.querySelector('c-fimby-lightbox');
                 if (lb) lb.open(this.lightboxStartIndex);
@@ -1247,11 +1255,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 timestamp: Date.now()
             };
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(state));
-        } catch (e) { /* storage unavailable or full */ }
+        } catch { /* storage unavailable or full */ }
     }
 
     _throttledSaveFeedState() {
         if (this._saveThrottleTimer) return;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         this._saveThrottleTimer = setTimeout(() => {
             this._saveThrottleTimer = null;
             this._saveFeedState();
@@ -1281,13 +1290,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this._pendingScrollY = state.scrollY || 0;
             this._restoredFromCache = true;
             return true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }
 
     _clearFeedCache() {
-        try { sessionStorage.removeItem(CACHE_KEY); } catch (e) { /* ignore */ }
+        try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
     }
 
     renderedCallback() {
@@ -1300,9 +1309,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             const savedY = this._pendingScrollY;
             this._pendingScrollY = null;
             this._restoredFromCache = false;
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
             requestAnimationFrame(() => {
                 window.scrollTo(0, savedY);
                 // Reveal only after scroll is positioned, so the jump is unseen.
+                // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
                 requestAnimationFrame(() => {
                     this._resumeHidden = false;
                 });
@@ -1385,13 +1396,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 }
             }
 
-            try { localStorage.setItem('fimby-last-visit', new Date().toISOString()); } catch (_) { /* storage unavailable */ }
+            try { localStorage.setItem('fimby-last-visit', new Date().toISOString()); } catch { /* storage unavailable */ }
             this._throttledUpdateLastAppVisit();
 
             if (seasonalTheme?.fireOnLogin && celebCtx?.confettiEnabled !== false) {
                 this._fireSeasonalConfetti(seasonalTheme);
             }
-        } catch (e) {
+        } catch {
             // Non-critical
         }
     }
@@ -1405,7 +1416,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 return;
             }
             sessionStorage.setItem(THROTTLE_KEY, String(Date.now()));
-        } catch (_) { /* storage unavailable -- proceed with the call */ }
+        } catch { /* storage unavailable -- proceed with the call */ }
         updateLastAppVisit().catch(() => {});
     }
 
@@ -1413,7 +1424,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const sessionKey = `fimby-seasonal-confetti-${theme.name}`;
         try {
             if (sessionStorage.getItem(sessionKey)) return;
-        } catch (_) { /* storage unavailable */ }
+        } catch { /* storage unavailable */ }
 
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -1430,7 +1441,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 intensity: 'normal'
             });
 
-            try { sessionStorage.setItem(sessionKey, '1'); } catch (_) { /* storage unavailable */ }
+            try { sessionStorage.setItem(sessionKey, '1'); } catch { /* storage unavailable */ }
         } catch (e) {
             console.error('Seasonal confetti error', e);
         }

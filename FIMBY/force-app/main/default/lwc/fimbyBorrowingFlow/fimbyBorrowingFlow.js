@@ -2,7 +2,7 @@
  * @deprecated Replaced by fimbyQuickResponseModal (library variant).
  * This full-page form and its /borrow-item route should be unpublished in Experience Builder and then deleted.
  */
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
 

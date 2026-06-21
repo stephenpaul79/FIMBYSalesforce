@@ -165,7 +165,8 @@ const NAMED_ROUTES_BY_PATH = {
     'my-stuff/my-skills': 'My_Skills__c',
     'my-stuff/my-library-items': 'My_Library_Items__c',
     'my-stuff/my-borrowing': 'My_Borrowing__c',
-    'my-stuff/my-bulk-buys': 'My_Bulk_Buys__c'
+    'my-stuff/my-bulk-buys': 'My_Bulk_Buys__c',
+    'system-profile': 'System_Profile__c'
 };
 
 /** Schemes / paths that must always perform a full (hard) load. */
@@ -182,7 +183,7 @@ function parseQueryToState(rawQuery) {
         if (!key) continue;
         try {
             state[decodeURIComponent(key)] = decodeURIComponent(val.replace(/\+/g, ' '));
-        } catch (e) {
+        } catch {
             state[key] = val;
         }
     }
@@ -230,7 +231,7 @@ function resolvePageReference(url) {
             return ref;
         }
         return null;
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -249,6 +250,21 @@ function resolvePageReference(url) {
  * @param {object} cmp  the component instance (`this`)
  * @param {string} url  an internal app path or absolute/external URL
  */
+/**
+ * Page-level back affordance (< chevron): prefer browser history.
+ * Soft-nav SPA moves do not update document.referrer, so never gate on referrer.
+ * Optional fallback only when history.length <= 1 (direct link / new tab).
+ */
+function navigateBack(cmp, fallbackUrl) {
+    if (window.history.length > 1) {
+        window.history.back();
+        return;
+    }
+    if (fallbackUrl) {
+        navigate(cmp, fallbackUrl);
+    }
+}
+
 function navigate(cmp, url) {
     if (!url || typeof url !== 'string') return;
     const target = url.trim();
@@ -355,7 +371,7 @@ function resolveTabFromPath(path) {
             }
         }
         return DEFAULT_TAB;
-    } catch (e) {
+    } catch {
         return DEFAULT_TAB;
     }
 }
@@ -381,7 +397,7 @@ function startNavTiming(key) {
         if (typeof performance !== 'undefined' && performance.mark) {
             performance.mark(`fimby-nav-start:${key}`);
         }
-    } catch (e) {
+    } catch {
         /* instrumentation must never break navigation */
     }
 }
@@ -396,12 +412,30 @@ function endNavTiming() {
         if (typeof performance !== 'undefined' && performance.mark) {
             performance.mark(`fimby-nav-end:${key}`);
         }
-        // eslint-disable-next-line no-console
+         
         console.log(`[fimby-nav] ${key} time-to-mount: ${delta}ms`);
         return { key, delta };
-    } catch (e) {
+    } catch {
         return null;
     }
+}
+
+/**
+ * Resolve a profile URL for a contact avatar tap.
+ * Mirrors fimbyUniversalHeader.handleProfileClick for self-routing.
+ */
+function profilePathForContact({ contactId, isOrgContact, orgAccountId, currentContactId }) {
+    if (!contactId) return '';
+    const isSelf = currentContactId && contactId === currentContactId;
+    if (isSelf || isOrgContact) {
+        if (orgAccountId) {
+            return `/organization-profile?id=${orgAccountId}`;
+        }
+        if (isSelf) {
+            return '/profile';
+        }
+    }
+    return `/neighbour?id=${contactId}`;
 }
 
 export {
@@ -412,9 +446,11 @@ export {
     getRecordPageReference,
     resolvePageReference,
     navigate,
+    navigateBack,
     navigateToRoute,
     resolveTabFromPath,
     tabForKey,
     startNavTiming,
-    endNavTiming
+    endNavTiming,
+    profilePathForContact
 };

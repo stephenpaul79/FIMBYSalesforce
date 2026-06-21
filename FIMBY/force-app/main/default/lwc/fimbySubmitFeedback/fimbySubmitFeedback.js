@@ -9,6 +9,11 @@ import submitFeedback from '@salesforce/apex/FimbyFeedbackController.submitFeedb
 export default class FimbySubmitFeedback extends NavigationMixin(LightningElement) {
     @api recordId;
     @api isModalMode = false;
+    _recordIdFromState = '';
+
+    get activeRecordId() {
+        return this.recordId || this._recordIdFromState;
+    }
 
     @track isModalVisible = false;
     isLoading = true;
@@ -27,7 +32,7 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
     @wire(CurrentPageReference)
     getStateParameters(currentPageReference) {
         if (currentPageReference) {
-            this.recordId = this.recordId || currentPageReference.state?.recordId;
+            this._recordIdFromState = this._recordIdFromState || currentPageReference.state?.recordId;
         }
     }
 
@@ -54,7 +59,7 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
         this._modalTrigger = document.activeElement;
         this.isModalVisible = true;
         if (relatedRecordId) {
-            this.recordId = relatedRecordId;
+            this._recordIdFromState = relatedRecordId;
         }
         this.loadData();
         // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -198,7 +203,7 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
                 feedbackType: this.feedbackType,
                 title: this.feedbackTitle,
                 details: this.feedbackDetails,
-                relatedRecordId: this.recordId || null
+                relatedRecordId: this.activeRecordId || null
             };
 
             const result = await submitFeedback({ feedbackData: JSON.stringify(feedbackData) });
@@ -244,11 +249,11 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
             return;
         }
 
-        if (this.recordId) {
+        if (this.activeRecordId) {
             this[NavigationMixin.Navigate]({
                 type: 'standard__webPage',
                 attributes: {
-                    url: `/${this.recordId}`
+                    url: `/${this.activeRecordId}`
                 }
             });
         } else {

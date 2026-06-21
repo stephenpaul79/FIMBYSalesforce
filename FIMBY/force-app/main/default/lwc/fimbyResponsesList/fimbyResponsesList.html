@@ -135,7 +135,7 @@
                                 <button class="message-button"
                                         onclick={handleMessageResponder}
                                         data-response-id={response.id}>
-                                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                                    <img src={chatIconUrl} alt="" class="message-btn-icon">
                                     Message
                                 </button>
 
@@ -160,7 +160,7 @@
         <!-- Floating Action Button -->
         <div class="fab-container">
             <button class="fab-button" onclick={handleNewPost} title="Create new post" aria-label="Create new post">
-                <lightning-icon icon-name="utility:add" size="medium" variant="inverse"></lightning-icon>
+                <img src={addIconUrl} alt="" class="fab-icon">
             </button>
         </div>
 

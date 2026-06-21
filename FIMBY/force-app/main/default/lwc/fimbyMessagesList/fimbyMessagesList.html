@@ -99,7 +99,9 @@
                                  data-thread-id={thread.threadId}
                                  data-thread-type={thread.threadType}
                                  data-action-url={thread.actionUrl}>
-                                <div class={thread.avatarClass}>
+                                <div class={thread.avatarClass}
+                                     data-profile-path={thread.profilePath}
+                                     onclick={handleParticipantAvatarClick}>
                                     <template lwc:if={thread.hasPostImage}>
                                         <img src={thread.participantImageUrl} alt="" class="thread-avatar-img" onerror={handleGroupPostImageError} />
                                         <img src={thread.groupAvatarIconUrl} alt="" class="group-avatar-icon group-avatar-fallback" />
@@ -189,7 +191,7 @@
         <!-- New Message Contact Picker Modal -->
         <template lwc:if={showNewMessageModal}>
             <section class="slds-modal slds-fade-in-open new-message-modal" role="dialog" aria-modal="true">
-                <div class="slds-modal__container">
+                <div class="slds-modal__container compose-modal-container">
                     <div class="modal-header">
                         <h2 class="modal-title">Compose</h2>
                         <button class="modal-close" onclick={handleCloseNewMessage} aria-label="Close">

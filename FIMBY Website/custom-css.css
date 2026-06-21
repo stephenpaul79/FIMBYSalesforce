@@ -990,6 +990,183 @@ footer .territory-line {
 .language-before { background: var(--fimby-surface-section); color: var(--fimby-text-muted); text-decoration: line-through; border: 1px solid var(--fimby-border-subtle); }
 .language-after { background: var(--fimby-selected-bg); color: var(--fimby-earth-teal); font-weight: 600; border: 1px solid rgba(103, 187, 210, 0.2); }
 
+/* ═══ FACEBOOK CONTRAST TABLE ═══ */
+.approach-contrast {
+  padding: 32px 0 28px;
+  background: var(--fimby-surface-section);
+  border-top: 1px solid var(--fimby-divider-default);
+  border-bottom: 1px solid var(--fimby-divider-default);
+  line-height: 1.35;
+}
+.approach-contrast .contrast-inner {
+  max-width: 100%;
+  --contrast-cols: 5rem minmax(0, 1.1fr) minmax(0, 1.05fr);
+  --contrast-gap: 12px;
+}
+.approach-contrast h2 {
+  color: var(--fimby-text-primary);
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 10px;
+  text-align: center;
+}
+.contrast-lede {
+  color: var(--fimby-text-secondary);
+  font-size: 0.95rem; line-height: 1.6; max-width: 60ch; margin: 0 auto 18px;
+  text-align: center;
+}
+
+/* shared column template — narrow topic, wide equal data columns */
+.contrast-head,
+.contrast-row {
+  display: grid;
+  grid-template-columns: var(--contrast-cols);
+  column-gap: var(--contrast-gap);
+  align-items: stretch;
+}
+
+/* column headers */
+.contrast-head {
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--fimby-border-subtle);
+  margin-bottom: 4px;
+}
+.contrast-head span {
+  font-size: 0.78rem; letter-spacing: 0.04em;
+  text-transform: uppercase; font-weight: 700;
+}
+.contrast-head .h-fb { color: var(--fimby-text-muted); }
+.contrast-head .h-fimby { color: var(--fimby-earth-sage); }
+
+/* rows */
+.contrast-row { margin-bottom: 4px; }
+.contrast-row:last-of-type { margin-bottom: 0; }
+.contrast-topic {
+  display: flex; align-items: center;
+  font-weight: 700; font-size: 1rem;
+  color: var(--fimby-text-primary);
+  padding-right: 4px;
+  line-height: 1.2;
+}
+.contrast-cell {
+  border-radius: var(--fimby-radius-sm);
+  padding: 8px 12px; border: 1px solid transparent;
+  min-width: 0;
+  line-height: 1.35;
+}
+.contrast-cell .word {
+  font-weight: 700;
+  font-size: 1rem; line-height: 1.2;
+  display: block;
+  margin: 0 0 4px;
+}
+.contrast-cell .phrase {
+  font-size: 0.95rem; line-height: 1.5;
+  display: block;
+  margin: 0;
+}
+.contrast-cell.cell-fb { background: var(--fimby-surface-card); border-color: var(--fimby-border-subtle); }
+.contrast-cell.cell-fb .word { color: var(--fimby-text-secondary); }
+.contrast-cell.cell-fb .phrase { color: var(--fimby-text-secondary); }
+.contrast-cell.cell-fimby { background: var(--fimby-selected-bg); border-color: rgba(91, 135, 96, 0.22); }
+.contrast-cell.cell-fimby .word { color: var(--fimby-earth-sage); }
+.contrast-cell.cell-fimby .phrase { color: var(--fimby-text-primary); }
+
+/* citation superscripts */
+.contrast-cite {
+  font-size: 0.62rem; font-weight: 700;
+  vertical-align: super; line-height: 0; margin-left: 2px;
+  color: var(--fimby-earth-teal); text-decoration: none;
+  white-space: nowrap;
+}
+.contrast-cite:hover { text-decoration: underline; }
+
+/* closing bar — centered over Facebook + FIMBY columns only */
+.contrast-close-wrap {
+  display: grid;
+  grid-template-columns: var(--contrast-cols);
+  column-gap: var(--contrast-gap);
+  margin-top: 14px;
+}
+.contrast-close {
+  grid-column: 2 / 4;
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 22px;
+  background: var(--fimby-btn-primary-bg); color: var(--fimby-surface-card);
+  border-radius: var(--fimby-radius-md);
+  font-size: 1rem; font-weight: 600;
+  line-height: 1.5; text-align: center;
+}
+.contrast-close b { font-weight: 700; }
+
+/* sources — page footer block */
+.approach-sources {
+  padding: 28px 0 36px;
+  border-top: 1px solid var(--fimby-divider-default);
+}
+.contrast-sources { font-size: 0.82rem; color: var(--fimby-text-muted); line-height: 1.5; }
+.contrast-sources .sources-label {
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 0.78rem; color: var(--fimby-text-secondary);
+  display: block; margin-bottom: 8px;
+}
+.contrast-sources ol { margin: 0; padding-left: 1.35rem; }
+.contrast-sources li { margin-bottom: 6px; padding: 2px 0; scroll-margin-top: 24px; }
+.contrast-sources a { color: var(--fimby-earth-teal); text-decoration: underline; text-underline-offset: 2px; }
+.contrast-sources a:hover { color: var(--fimby-btn-primary-bg); }
+.contrast-disclaimer { margin-top: 12px; font-style: italic; font-size: 0.82rem; line-height: 1.5; }
+
+@media (max-width: 680px) {
+  .approach-contrast .contrast-inner {
+    --contrast-cols: 1fr 1fr;
+    --contrast-gap: 8px;
+  }
+  .contrast-head { display: none; }
+  .contrast-row {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 8px;
+    row-gap: 6px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--fimby-border-subtle);
+  }
+  .contrast-row:last-of-type { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .contrast-topic {
+    grid-column: 1 / -1;
+    font-size: 1rem; font-weight: 700;
+    letter-spacing: normal; text-transform: none;
+    color: var(--fimby-text-primary);
+    padding: 0 0 4px;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .contrast-cell {
+    padding: 8px 10px;
+    line-height: 1.3;
+  }
+  .contrast-cell .word {
+    font-size: 0.95rem;
+    line-height: 1.2;
+    margin: 0 0 5px;
+  }
+  .contrast-cell .phrase {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .contrast-cell .word::before {
+    font-size: 0.62rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    font-weight: 700; display: block; margin-bottom: 4px;
+    line-height: 1;
+  }
+  .contrast-cell.cell-fb .word::before { content: "Facebook"; color: var(--fimby-text-muted); }
+  .contrast-cell.cell-fimby .word::before { content: "FIMBY"; color: var(--fimby-earth-sage); }
+  .contrast-close {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ═══════════════════════════════════════════════════
    FAQ
    ═══════════════════════════════════════════════════ */

@@ -176,7 +176,8 @@
                                 <template lwc:if={isFirstExpanded}>
                                     <div class={firstMessage.cardClass}>
                                         <div class="message-card-header">
-                                            <div class="card-avatar">
+                                            <div class={firstMessage.avatarClass}
+                                                 data-profile-path={firstMessage.profilePath} onclick={handleSenderAvatarClick}>
                                                 <template lwc:if={firstMessage.hasAvatarImage}>
                                                     <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                                 </template>
@@ -251,7 +252,8 @@
                                                 <template lwc:if={mid.isExpanded}>
                                                     <div class={mid.cardClass}>
                                                         <div class="message-card-header">
-                                                            <div class="card-avatar">
+                                                            <div class={mid.avatarClass}
+                                                                 data-profile-path={mid.profilePath} onclick={handleSenderAvatarClick}>
                                                                 <template lwc:if={mid.hasAvatarImage}>
                                                                     <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                                 </template>
@@ -363,7 +365,8 @@
                                     <template lwc:else>
                                         <div class={last.cardClass}>
                                             <div class="message-card-header">
-                                                <div class="card-avatar">
+                                                <div class={last.avatarClass}
+                                                     data-profile-path={last.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={last.hasAvatarImage}>
                                                         <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
                                                     </template>
@@ -393,7 +396,8 @@
                                     <template lwc:elseif={item.isOriginalResponse}>
                                         <div class={item.cardClass}>
                                             <div class="message-card-header">
-                                                <div class="card-avatar">
+                                                <div class={item.avatarClass}
+                                                     data-profile-path={item.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={item.hasAvatarImage}>
                                                         <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
                                                     </template>
@@ -441,7 +445,8 @@
                                     <template lwc:else>
                                         <div class={item.cardClass}>
                                             <div class="message-card-header">
-                                                <div class="card-avatar">
+                                                <div class={item.avatarClass}
+                                                     data-profile-path={item.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={item.hasAvatarImage}>
                                                         <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
                                                     </template>
@@ -476,7 +481,7 @@
                                 </template>
                                 <div class="compose-area">
                                     <textarea class="compose-input" placeholder="Write a reply..."
-                                              value={messageText} oninput={handleMessageInput} rows="3"></textarea>
+                                              oninput={handleMessageInput} rows="3">{messageText}</textarea>
                                     <div class="compose-actions">
                                         <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
                                         <button class="compose-send" onclick={handleSendMessage}
@@ -489,7 +494,7 @@
                             </template>
                             <template lwc:else>
                                 <button class="reply-trigger" onclick={handleShowCompose}>
-                                    <lightning-icon icon-name="utility:reply" size="x-small"></lightning-icon>
+                                    <img src={replyIconUrl} alt="" class="reply-trigger-icon">
                                     <span>Reply</span>
                                 </button>
                             </template>
@@ -650,10 +655,9 @@
                                 <label class="block-label" for="block-report-details">Report details</label>
                                 <textarea id="block-report-details"
                                           class="report-textarea"
-                                          value={reportDetails}
                                           oninput={handleReportDetailsChange}
                                           placeholder="What happened? Moderators review every report within 24 hours."
-                                          rows="3"></textarea>
+                                          rows="3">{reportDetails}</textarea>
                             </div>
                         </template>
 

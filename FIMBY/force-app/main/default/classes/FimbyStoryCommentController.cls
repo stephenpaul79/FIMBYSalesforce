@@ -451,7 +451,8 @@ public with sharing class FimbyStoryCommentController {
                            Contact__c, Contact__r.Name, Contact__r.Full_Name__c,
                            Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                            Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c,
-                           Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c
+                           Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
+                           Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c
                     FROM Story_Comment__c
                     WHERE Story__c = :storyId
                       AND Status__c = 'Active'
@@ -493,6 +494,8 @@ public with sharing class FimbyStoryCommentController {
                 'authorId' => row.Posted_By__c,
                 'authorName' => authorName,
                 'authorPhotoUrl' => authorPhoto,
+                'authorIsOrg' => row.Posted_By__r?.Is_Organization_Contact__c == true,
+                'authorOrgAccountId' => row.Posted_By__r?.Organization_Account__c,
                 'submittedById' => row.Contact__c,
                 'editCount' => row.Edit_Count__c == null ? 0 : Integer.valueOf(row.Edit_Count__c),
                 'editedDate' => row.Edited_Date__c,

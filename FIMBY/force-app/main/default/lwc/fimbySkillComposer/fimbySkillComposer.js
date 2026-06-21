@@ -2,7 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
-import { getCategoryIconUrl, getCategoryColor, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
+import { getCategoryIconUrl, getCategoryColor } from 'c/fimbySkillCategoryConfig';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import { navigate } from 'c/fimbyNavigation';
 
@@ -263,9 +263,9 @@ export default class FimbySkillComposer extends NavigationMixin(LightningElement
     }
 
     _updateCard(category, updates) {
-        this.skillCards = this.skillCards.map(card =>
+        this.skillCards = this.skillCards.map(card => (
             card.category === category ? { ...card, ...updates } : card
-        );
+        ));
     }
 
     _buildCardRow(row) {

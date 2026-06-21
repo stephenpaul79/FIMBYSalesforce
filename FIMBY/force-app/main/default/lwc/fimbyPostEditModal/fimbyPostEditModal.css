@@ -1,4 +1,5 @@
 :host {
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- modal host layout passthrough */
     display: contents;
 }
 
@@ -269,17 +270,9 @@
     transition: border-color 0.2s;
 }
 
-.text-input:focus,
-.body-textarea:focus,
-.date-input:focus,
-.datetime-input:focus {
-    outline: none;
-    border-color: var(--dxp-s-form-element-color-border-focus, var(--fimby-brand-teal));
-    box-shadow: var(--dxp-s-form-element-shadow-focus, 0 0 3px var(--fimby-focus-glow));
-}
-
 .body-textarea {
     min-height: 9rem;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     line-height: 1.5;
     padding: 10px 12px;
@@ -291,6 +284,15 @@
     min-height: 1.75rem;
     line-height: 1.5;
     text-align: left;
+}
+
+.text-input:focus,
+.body-textarea:focus,
+.date-input:focus,
+.datetime-input:focus {
+    outline: none;
+    border-color: var(--dxp-s-form-element-color-border-focus, var(--fimby-brand-teal));
+    box-shadow: var(--dxp-s-form-element-shadow-focus, 0 0 3px var(--fimby-focus-glow));
 }
 
 .date-input::-webkit-date-and-time-value,

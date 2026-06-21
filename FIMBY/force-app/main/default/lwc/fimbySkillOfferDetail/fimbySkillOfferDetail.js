@@ -172,7 +172,7 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
     _urlRequestsEdit() {
         try {
             return new URL(window.location.href).searchParams.get('action') === 'edit';
-        } catch (e) {
+        } catch {
             return false;
         }
     }
@@ -183,7 +183,7 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
             if (!url.searchParams.has('action')) return;
             url.searchParams.delete('action');
             window.history.replaceState({}, '', url.pathname + url.search + url.hash);
-        } catch (e) {
+        } catch {
             /* ignore */
         }
     }
@@ -203,7 +203,7 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
                 }
             }
             return null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -258,7 +258,7 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
         if (ref) {
             this[NavigationMixin.Navigate](ref);
         } else {
-            location.href = fallbackUrl;
+            window.location.href = fallbackUrl;
         }
     }
 

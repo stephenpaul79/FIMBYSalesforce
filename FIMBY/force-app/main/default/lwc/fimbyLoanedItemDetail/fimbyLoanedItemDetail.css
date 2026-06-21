@@ -239,6 +239,13 @@
     color: var(--fimby-info);
 }
 
+.action-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 /* Keyboard focus visibility */
 .item-row:focus-visible,
 .action-btn:focus-visible {

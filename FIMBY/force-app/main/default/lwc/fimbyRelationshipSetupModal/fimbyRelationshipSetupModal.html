@@ -140,7 +140,7 @@
                         <label class="form-field">
                             <span>Anything we should know?</span>
                             <textarea data-field="notes" maxlength="500"
-                                      value={notes} oninput={handleNotesInput}></textarea>
+                                      oninput={handleNotesInput}>{notes}</textarea>
                         </label>
                     </div>
                 </template>
@@ -234,7 +234,7 @@
                         </label>
                         <label class="form-field">
                             <span>Public description (optional)</span>
-                            <textarea data-field="orgDescription" value={orgDescription} oninput={handleOrgFieldChange}></textarea>
+                            <textarea data-field="orgDescription" oninput={handleOrgFieldChange}>{orgDescription}</textarea>
                         </label>
 
                         <label class="paper-toggle">
@@ -327,7 +327,7 @@
                 <template lwc:if={isNotesStep}>
                     <div class="step-content">
                         <p class="step-label">Anything you'd like us to know?</p>
-                        <textarea class="notes-input" maxlength="500" placeholder="Optional context about your connection..." value={notes} oninput={handleNotesInput}></textarea>
+                        <textarea class="notes-input" maxlength="500" placeholder="Optional context about your connection..." oninput={handleNotesInput}>{notes}</textarea>
                     </div>
                 </template>
 

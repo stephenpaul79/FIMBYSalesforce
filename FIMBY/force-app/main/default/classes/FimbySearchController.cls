@@ -1,5 +1,7 @@
 /**
- * @description Full-text search across Story__c, Needs_Offers__c, Library_Item__c, and Contact using SOSL. Results scoped to neighbourhood; people results include hasSharedContact for privacy gating.
+ * @description Full-text search across Story__c, Needs_Offers__c, Library_Item__c, Skill_Offer__c, and Contact.
+ *              Content uses SOSL; people use a two-stage SOQL search (name-only vs expanded when contact info is shared).
+ *              Bidirectional blocks suppress matching contacts and their content.
  */
 public with sharing class FimbySearchController {
 
@@ -44,15 +46,20 @@ public with sharing class FimbySearchController {
         // Build the set of contact IDs with shared contact info for privacy gating
         // Uses inner class without sharing to ensure visibility of Shared_Contact_Info__c
         Set<Id> sharedContactIds = new SharedContactLookup().getSharedContactIds(currentContactId);
+        Set<Id> blockedContactIds = String.isNotBlank(currentContactId)
+            ? FimbyBlockingHelper.getBidirectionalBlocks((Id) currentContactId)
+            : new Set<Id>();
 
         String sanitized = String.escapeSingleQuotes(searchTerm.trim());
 
-        // Build RETURNING clauses based on filter
+        // Build RETURNING clauses based on filter (people handled separately via SOQL)
         String returningClause = buildReturningClause(filter, neighbourhoodAccountId);
 
-        String soslQuery = 'FIND \'' + sanitized + '*\' IN ALL FIELDS RETURNING ' + returningClause;
-
-        List<List<SObject>> soslResults = Search.query(soslQuery);
+        List<List<SObject>> soslResults = new List<List<SObject>>();
+        if (String.isNotBlank(returningClause)) {
+            String soslQuery = 'FIND \'' + sanitized + '*\' IN ALL FIELDS RETURNING ' + returningClause;
+            soslResults = Search.query(soslQuery);
+        }
 
         // Parse results into unified items and count by type
         List<SearchResultItem> allItems = new List<SearchResultItem>();
@@ -68,52 +75,68 @@ public with sharing class FimbySearchController {
 
         if (filter == 'all' || filter == 'stories') {
             List<Story__c> stories = (List<Story__c>) soslResults[resultSetIndex];
-            countsByType.put('stories', stories.size());
-            for (Story__c s : stories) {
-                allItems.add(buildStoryItem(s));
+            List<SObject> visibleStories = FimbyBlockingHelper.filterVisible(
+                stories, blockedContactIds, new List<String>{ 'Posted_By__c', 'Contact__c' }
+            );
+            countsByType.put('stories', visibleStories.size());
+            for (SObject sObj : visibleStories) {
+                allItems.add(buildStoryItem((Story__c) sObj));
             }
             resultSetIndex++;
         }
 
         if (filter == 'all' || filter == 'askOffer') {
             List<Needs_Offers__c> needsOffers = (List<Needs_Offers__c>) soslResults[resultSetIndex];
-            countsByType.put('askOffer', needsOffers.size());
-            for (Needs_Offers__c no : needsOffers) {
-                allItems.add(buildAskOfferItem(no));
+            List<SObject> visibleAskOffers = FimbyBlockingHelper.filterVisible(
+                needsOffers, blockedContactIds, new List<String>{ 'Contact__c', 'Posted_By__c' }
+            );
+            countsByType.put('askOffer', visibleAskOffers.size());
+            for (SObject no : visibleAskOffers) {
+                allItems.add(buildAskOfferItem((Needs_Offers__c) no));
             }
             resultSetIndex++;
         }
 
         if (filter == 'all' || filter == 'library') {
             List<Library_Item__c> libraryItems = (List<Library_Item__c>) soslResults[resultSetIndex];
-            countsByType.put('library', libraryItems.size());
-            for (Library_Item__c li : libraryItems) {
-                allItems.add(buildLibraryItem(li));
+            List<SObject> visibleLibraryItems = FimbyBlockingHelper.filterVisible(
+                libraryItems, blockedContactIds, new List<String>{ 'Owner_Contact__c', 'Listed_By__c' }
+            );
+            countsByType.put('library', visibleLibraryItems.size());
+            for (SObject li : visibleLibraryItems) {
+                allItems.add(buildLibraryItem((Library_Item__c) li));
             }
             resultSetIndex++;
         }
 
         if (filter == 'all' || filter == 'skills') {
             List<Skill_Offer__c> skillOffers = (List<Skill_Offer__c>) soslResults[resultSetIndex];
-            Set<Id> blockedIds = currentContactId != null
-                ? FimbyBlockingHelper.getBidirectionalBlocks((Id) currentContactId)
-                : new Set<Id>();
             List<SObject> visibleSkills = FimbyBlockingHelper.filterVisible(
-                skillOffers, blockedIds, new List<String>{ 'Owner_Contact__c', 'Listed_By__c' }
+                skillOffers, blockedContactIds, new List<String>{ 'Owner_Contact__c', 'Listed_By__c' }
             );
+            countsByType.put('skills', visibleSkills.size());
             for (SObject sk : visibleSkills) {
                 allItems.add(buildSkillItem((Skill_Offer__c) sk));
             }
-            countsByType.put('skills', visibleSkills.size());
             resultSetIndex++;
         }
 
         if (filter == 'all' || filter == 'people') {
-            List<Contact> contacts = (List<Contact>) soslResults[resultSetIndex];
+            List<Contact> contacts = searchPeopleContacts(
+                searchTerm.trim(),
+                neighbourhoodAccountId,
+                currentContactId,
+                sharedContactIds,
+                blockedContactIds
+            );
             countsByType.put('people', contacts.size());
             for (Contact c : contacts) {
                 SearchResultItem item = buildPeopleItem(c);
-                item.hasSharedContact = sharedContactIds.contains(c.Id);
+                Boolean isShared = sharedContactIds.contains(c.Id);
+                item.hasSharedContact = isShared;
+                if (!isShared) {
+                    item.description = null;
+                }
                 allItems.add(item);
             }
         }
@@ -170,6 +193,7 @@ public with sharing class FimbySearchController {
 
         if (filter == 'all' || filter == 'stories') {
             String storyClause = 'Story__c(Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c, ' +
+                'Contact__c, Posted_By__c, ' +
                 'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 storyClause += ' WHERE ' + buildContentFilter(neighbourhoodAccountId, adjList, sharedList, 'Posted_By__c');
@@ -180,6 +204,7 @@ public with sharing class FimbySearchController {
 
         if (filter == 'all' || filter == 'askOffer') {
             String aoClause = 'Needs_Offers__c(Id, Name, Details__c, Type__c, Status__c, RecordType.Name, ' +
+                'Contact__c, Posted_By__c, ' +
                 'Image_1_URL__c, Image_1_Ratio__c, Category__c, ' +
                 'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
@@ -191,6 +216,7 @@ public with sharing class FimbySearchController {
 
         if (filter == 'all' || filter == 'library') {
             String libClause = 'Library_Item__c(Id, Name, Description__c, Category__c, Status__c, ' +
+                'Owner_Contact__c, Listed_By__c, ' +
                 'Image_URL__c, Image_Ratio__c, ' +
                 'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
@@ -214,19 +240,112 @@ public with sharing class FimbySearchController {
             clauses.add(skillClause);
         }
 
-        if (filter == 'all' || filter == 'people') {
-            String contactClause = 'Contact(Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c, ' +
-                'About_Enjoys_Doing__c, Account.Name';
-            if (String.isNotBlank(neighbourhoodAccountId)) {
-                contactClause += ' WHERE ' + buildContactFilter(neighbourhoodAccountId, adjList, sharedList);
-            } else {
-                contactClause += ' WHERE Is_Organization_Contact__c = false';
-            }
-            contactClause += ' ORDER BY Name ASC LIMIT ' + FimbySettings.searchContactsLimit() + ')';
-            clauses.add(contactClause);
+        if (clauses.isEmpty()) {
+            return '';
         }
 
         return String.join(clauses, ', ');
+    }
+
+    // ============================================
+    // People search — two-stage SOQL (not SOSL)
+    // ============================================
+
+    /**
+     * @description Stage 1: neighbourhood contacts without shared info — Full_Name__c only.
+     *              Stage 2: contacts with shared info — name + profile bio fields.
+     *              Bidirectional blocks excluded in both stages.
+     */
+    private static List<Contact> searchPeopleContacts(
+        String searchTerm,
+        String neighbourhoodAccountId,
+        String currentContactId,
+        Set<Id> sharedContactIds,
+        Set<Id> blockedContactIds
+    ) {
+        if (String.isBlank(neighbourhoodAccountId) || String.isBlank(searchTerm)) {
+            return new List<Contact>();
+        }
+
+        String pattern = '%' + String.escapeSingleQuotes(searchTerm.trim()) + '%';
+        Integer limitVal = FimbySettings.searchContactsLimit();
+        Id neighbourhoodId = (Id) neighbourhoodAccountId;
+
+        Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
+        Set<Id> adjacentSharedIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
+
+        Set<Id> sharedIds = sharedContactIds != null ? sharedContactIds : new Set<Id>();
+        Set<Id> blockedIds = blockedContactIds != null ? blockedContactIds : new Set<Id>();
+
+        // Contacts whose shared-to-me contact-info snapshot matches the term
+        // (email/phone/address etc.) — only info actually given to the searcher.
+        Set<Id> snapshotMatchedIds = new SharedContactLookup()
+            .getSnapshotMatchedContactIds(currentContactId, pattern);
+
+        Map<Id, Contact> matchesById = new Map<Id, Contact>();
+
+        // Stage 1 — name-only for contacts without shared info
+        List<Contact> restrictedMatches = [
+            SELECT Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c, About_Enjoys_Doing__c,
+                   About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Organization_Account__c
+            FROM Contact
+            WHERE Is_Organization_Contact__c = false
+              AND Id NOT IN :sharedIds
+              AND Id NOT IN :blockedIds
+              AND Full_Name__c LIKE :pattern
+              AND (AccountId = :neighbourhoodId
+                   OR (AccountId IN :adjacentIds AND Id IN :adjacentSharedIds))
+            ORDER BY Name ASC
+            LIMIT :limitVal
+        ];
+        matchesById.putAll(restrictedMatches);
+
+        // Stage 2 — expanded profile fields when contact info is shared
+        if (!sharedIds.isEmpty()) {
+            List<Contact> expandedMatches = [
+                SELECT Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c, About_Enjoys_Doing__c,
+                       About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Organization_Account__c
+                FROM Contact
+                WHERE Is_Organization_Contact__c = false
+                  AND Id IN :sharedIds
+                  AND Id NOT IN :blockedIds
+                  AND (Full_Name__c LIKE :pattern
+                       OR Name LIKE :pattern
+                       OR FirstName LIKE :pattern
+                       OR LastName LIKE :pattern
+                       OR About_Enjoys_Doing__c LIKE :pattern
+                       OR About_Fun_Fact__c LIKE :pattern
+                       OR About_Local_Place__c LIKE :pattern
+                       OR Id IN :snapshotMatchedIds)
+                  AND (AccountId = :neighbourhoodId
+                       OR (AccountId IN :adjacentIds AND Id IN :adjacentSharedIds))
+                ORDER BY Name ASC
+                LIMIT :limitVal
+            ];
+            matchesById.putAll(expandedMatches);
+        }
+
+        List<Contact> ordered = new List<Contact>(matchesById.values());
+        ordered.sort(new ContactNameComparator());
+        if (ordered.size() > limitVal) {
+            List<Contact> trimmed = new List<Contact>();
+            for (Integer i = 0; i < limitVal; i++) {
+                trimmed.add(ordered[i]);
+            }
+            return trimmed;
+        }
+        return ordered;
+    }
+
+    private class ContactNameComparator implements Comparator<Contact> {
+        public Integer compare(Contact a, Contact b) {
+            String nameA = a.Full_Name__c != null ? a.Full_Name__c : a.Name;
+            String nameB = b.Full_Name__c != null ? b.Full_Name__c : b.Name;
+            if (nameA == null && nameB == null) return 0;
+            if (nameA == null) return 1;
+            if (nameB == null) return -1;
+            return nameA.compareTo(nameB);
+        }
     }
 
     // ============================================
@@ -263,16 +382,6 @@ public with sharing class FimbySearchController {
             }
         }
         f += ') AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
-        return f;
-    }
-
-    private static String buildContactFilter(String neighbourhoodId, String adjList, String sharedList) {
-        String nId = String.escapeSingleQuotes(neighbourhoodId);
-        String f = '(AccountId = \'' + nId + '\'';
-        if (String.isNotBlank(adjList) && String.isNotBlank(sharedList)) {
-            f += ' OR (AccountId IN (' + adjList + ') AND Id IN (' + sharedList + '))';
-        }
-        f += ') AND Is_Organization_Contact__c = false';
         return f;
     }
 
@@ -362,6 +471,8 @@ public with sharing class FimbySearchController {
         item.createdDate = null;
         item.status = null;
         item.hasSharedContact = false;
+        item.isOrgContact = c.Is_Organization_Contact__c == true;
+        item.orgAccountId = c.Organization_Account__c;
         return item;
     }
 
@@ -411,6 +522,38 @@ public with sharing class FimbySearchController {
             }
             return ids;
         }
+
+        /**
+         * @description Returns Contact Ids whose contact-info snapshot SHARED TO the
+         *              given contact matches the search pattern. Only the to-me direction
+         *              is searched, so a contact who merely received the searcher's info
+         *              (without sharing their own) cannot be found by their details.
+         * @param contactId The searcher's Contact Id.
+         * @param pattern SOQL LIKE pattern (already wrapped in %% and escaped).
+         * @return Set of Contact Ids with a matching shared snapshot.
+         */
+        public Set<Id> getSnapshotMatchedContactIds(String contactId, String pattern) {
+            Set<Id> ids = new Set<Id>();
+            if (String.isBlank(contactId) || String.isBlank(pattern)) return ids;
+
+            for (Shared_Contact_Info__c sci : [
+                SELECT Contact__c
+                FROM Shared_Contact_Info__c
+                WHERE Shared_To__c = :contactId
+                AND Contact__c != null
+                AND (Email__c LIKE :pattern
+                     OR Phone__c LIKE :pattern
+                     OR First_Name__c LIKE :pattern
+                     OR Last_Name__c LIKE :pattern
+                     OR Street__c LIKE :pattern
+                     OR City__c LIKE :pattern
+                     OR Postal_Code__c LIKE :pattern
+                     OR Additional_Info__c LIKE :pattern)
+            ]) {
+                ids.add(sci.Contact__c);
+            }
+            return ids;
+        }
     }
 
     // ============================================
@@ -437,6 +580,8 @@ public with sharing class FimbySearchController {
         @AuraEnabled public Datetime createdDate { get; set; }
         @AuraEnabled public String status { get; set; }
         @AuraEnabled public Boolean hasSharedContact { get; set; }
+        @AuraEnabled public Boolean isOrgContact { get; set; }
+        @AuraEnabled public Id orgAccountId { get; set; }
 
         public Integer compareTo(Object compareTo) {
             SearchResultItem other = (SearchResultItem) compareTo;

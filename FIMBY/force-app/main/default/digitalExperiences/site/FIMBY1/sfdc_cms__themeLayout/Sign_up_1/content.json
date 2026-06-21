@@ -53,6 +53,7 @@
           } ],
           "definition" : "community_layout:section",
           "id" : "d27a4a43-095b-46db-a0b9-a1eb14111f1a",
+          "scopedBrandingSetId" : "Login_Palette",
           "type" : "component"
         } ],
         "id" : "557f897e-7235-4b15-a60b-7a2ae698a44c",

@@ -46,7 +46,7 @@ community_layout-section .background-image-overlay {
         --dxp-g-root-contrast-3: #D6CFC7;
 
         /* Brand */
-        --dxp-g-brand:           #3A7D8C;
+        --dxp-g-brand:           #67BBD2;
         --dxp-g-brand-contrast:  #261A11;
 
         /* Borders & neutrals */
@@ -59,7 +59,7 @@ community_layout-section .background-image-overlay {
         --dxp-s-form-element-color-border:     #3E312B;
 
         /* Links */
-        --dxp-s-link-text-color-1: #3A7D8C;
+        --dxp-s-link-text-color-1: #67BBD2;
 
         /* Status */
         --dxp-g-success:   #27AE60;
@@ -96,20 +96,6 @@ community_layout-section .background-image-overlay {
     html:not([data-theme="light"]) [class*="siteforceContentArea"] {
         background-color: #14100D !important;
     }
-
-    /* Flow runtime card surface (sign-up / any screen flow).
-       Flow runtime paints .flowruntimeBody / .slds-card white from its own
-       stylesheet; force it onto the FIMBY dark card surface so the
-       already-dark-mode (light) labels stay readable. */
-    html:not([data-theme="light"]) flowruntime-lwc-body,
-    html:not([data-theme="light"]) .flowruntimeBody,
-    html:not([data-theme="light"]) .slds-card,
-    html:not([data-theme="light"]) .slds-card_body {
-        background-color: var(--fimby-surface-card, #1B1512) !important;
-        --lwc-cardColorBackground: var(--fimby-surface-card, #1B1512);
-        --slds-g-color-surface-1: var(--fimby-surface-card, #1B1512);
-        --slds-g-color-surface-container-1: var(--fimby-surface-card, #1B1512);
-    }
 }
 
 /* ── Manual toggle ───────────────────────────────────────────────── */
@@ -122,7 +108,7 @@ community_layout-section .background-image-overlay {
     --dxp-g-root-contrast-3: #D6CFC7;
 
     /* Brand */
-    --dxp-g-brand:           #3A7D8C;
+    --dxp-g-brand:           #67BBD2;
     --dxp-g-brand-contrast:  #261A11;
 
     /* Borders & neutrals */
@@ -135,7 +121,7 @@ community_layout-section .background-image-overlay {
     --dxp-s-form-element-color-border:     #3E312B;
 
     /* Links */
-    --dxp-s-link-text-color-1: #3A7D8C;
+    --dxp-s-link-text-color-1: #67BBD2;
 
     /* Status */
     --dxp-g-success:   #27AE60;
@@ -168,15 +154,4 @@ html[data-theme="dark"] [data-region-name="content"],
 html[data-theme="dark"] [class*="cCenterPanel"],
 html[data-theme="dark"] [class*="siteforceContentArea"] {
     background-color: #14100D !important;
-}
-
-/* Flow runtime card surface (sign-up / any screen flow) — manual toggle */
-html[data-theme="dark"] flowruntime-lwc-body,
-html[data-theme="dark"] .flowruntimeBody,
-html[data-theme="dark"] .slds-card,
-html[data-theme="dark"] .slds-card_body {
-    background-color: var(--fimby-surface-card, #1B1512) !important;
-    --lwc-cardColorBackground: var(--fimby-surface-card, #1B1512);
-    --slds-g-color-surface-1: var(--fimby-surface-card, #1B1512);
-    --slds-g-color-surface-container-1: var(--fimby-surface-card, #1B1512);
 }

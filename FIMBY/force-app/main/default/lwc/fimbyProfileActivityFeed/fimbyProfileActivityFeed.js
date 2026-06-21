@@ -127,7 +127,7 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
                 badgeLabel = item.itemType === 'Neighbourhood Moment' ? 'Neighbourhood' : (item.itemType || 'Shared Life');
                 const iconFile = STORY_BADGE_ICONS[item.itemType] || 'StoriesActive.png';
                 badgeIconUrl = `${IMPACT_ICONS}/${iconFile}`;
-                const bg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS['Bio'];
+                const bg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS.Bio;
                 badgeStyle = `background-color: ${bg}; color: #ffffff;`;
                 cardAccentColor = bg;
             } else if (isBulkBuy) {

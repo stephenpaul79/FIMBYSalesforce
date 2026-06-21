@@ -57,6 +57,7 @@ const TAB_ICONS = {
 
 export default class FimbyUniversalHeader extends NavigationMixin(LightningElement) {
     @api activeTab = 'home';
+    @track _activeTab = 'home';
     @track hasUnread = false;
     @track messageCount = 0;
     @track hasNotifications = false;
@@ -90,12 +91,12 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     // fires on every (soft or hard) navigation. Also closes out nav-timing.
     @wire(CurrentPageReference)
     wiredPageRef() {
-        this.activeTab = this._detectActiveTab();
+        this._activeTab = this._detectActiveTab();
         endNavTiming();
     }
 
     connectedCallback() {
-        this.activeTab = this._detectActiveTab();
+        this._activeTab = this._detectActiveTab();
         this._hydrateBadgeCountsFromCache();
         this._pollBadgeCounts();
         this._recordAppOpenAndSyncQuietHours();
@@ -160,7 +161,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             this.hasNotifications = this.notificationCount > 0;
             this.messageCount = counts.messages || 0;
             this.hasUnread = this.messageCount > 0;
-        } catch (e) { /* ignore corrupt/unavailable cache */ }
+        } catch { /* ignore corrupt/unavailable cache */ }
     }
 
     _writeBadgeCountsToCache() {
@@ -169,7 +170,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
                 notifications: this.notificationCount,
                 messages: this.messageCount
             }));
-        } catch (e) { /* ignore unavailable storage */ }
+        } catch { /* ignore unavailable storage */ }
     }
 
     _pollBadgeCounts() {
@@ -445,7 +446,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         try {
             sessionStorage.removeItem('fimby-home-feed-state');
             sessionStorage.removeItem('fimby-library-state');
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     /* ---------------------------------------------------------------
@@ -468,7 +469,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             }
 
             return resolveTabFromPath(pagePath);
-        } catch (e) {
+        } catch {
             return 'home';
         }
     }
@@ -478,7 +479,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
      * --------------------------------------------------------------- */
     _iconUrl(tab) {
         const icons = TAB_ICONS[tab];
-        const file = this.activeTab === tab ? icons.active : icons.inactive;
+        const file = this._activeTab === tab ? icons.active : icons.inactive;
         return `${IMPACT_ICONS}/${file}`;
     }
 
@@ -489,17 +490,17 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     /* --- Active-state indicator classes ----------------------------- */
 
-    get homeIndicator()     { return this.activeTab === 'home'     ? 'desktop-indicator active' : 'desktop-indicator'; }
-    get libraryIndicator()  { return this.activeTab === 'library'  ? 'desktop-indicator active' : 'desktop-indicator'; }
-    get messagesIndicator() { return this.activeTab === 'messages' ? 'desktop-indicator active' : 'desktop-indicator'; }
-    get mineIndicator()     { return this.activeTab === 'mine'     ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get homeIndicator()     { return this._activeTab === 'home'     ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get libraryIndicator()  { return this._activeTab === 'library'  ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get messagesIndicator() { return this._activeTab === 'messages' ? 'desktop-indicator active' : 'desktop-indicator'; }
+    get mineIndicator()     { return this._activeTab === 'mine'     ? 'desktop-indicator active' : 'desktop-indicator'; }
 
     /* --- Active CSS class on desktop nav items ---------------------- */
 
-    get homeDesktopClass()     { return this.activeTab === 'home'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
-    get libraryDesktopClass()  { return this.activeTab === 'library'  ? 'desktop-nav-item active' : 'desktop-nav-item'; }
-    get messagesDesktopClass() { return this.activeTab === 'messages' ? 'desktop-nav-item active' : 'desktop-nav-item'; }
-    get mineDesktopClass()     { return this.activeTab === 'mine'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get homeDesktopClass()     { return this._activeTab === 'home'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get libraryDesktopClass()  { return this._activeTab === 'library'  ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get messagesDesktopClass() { return this._activeTab === 'messages' ? 'desktop-nav-item active' : 'desktop-nav-item'; }
+    get mineDesktopClass()     { return this._activeTab === 'mine'     ? 'desktop-nav-item active' : 'desktop-nav-item'; }
 
     get hasUnreadMessages() { return this.messageCount > 0; }
 
@@ -507,7 +508,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     handleNavClick(event) {
         const selectedTab = event.currentTarget.dataset.tab;
-        this.activeTab = selectedTab;
+        this._activeTab = selectedTab;
         this.dispatchEvent(new CustomEvent('tabchange', { detail: { tab: selectedTab } }));
         this.navigateToPage(selectedTab);
     }
@@ -639,7 +640,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         // block the logout redirect on it.
         try {
             await endAllSessions();
-        } catch (e) {
+        } catch {
             // Swallow: the redirect below still tears down the WebView session.
         }
         const sitePrefix = basePath.replace(/\/s$/i, '');
@@ -666,7 +667,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         if (pageRef) {
             this[NavigationMixin.Navigate](pageRef);
         } else {
-            location.href = getUrl(tab);
+            window.location.href = getUrl(tab);
         }
     }
 
@@ -688,7 +689,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     @api
     setActiveTab(tab) {
-        this.activeTab = tab;
+        this._activeTab = tab;
     }
 
     /* --- App-open tracking + quiet hours sync ----------------------- */

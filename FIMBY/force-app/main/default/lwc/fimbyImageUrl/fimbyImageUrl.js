@@ -26,7 +26,7 @@ function parseRatio(ratioString) {
             return { w: 16, h: 9 };
         }
         return { w, h };
-    } catch (e) {
+    } catch {
         return { w: 16, h: 9 };
     }
 }

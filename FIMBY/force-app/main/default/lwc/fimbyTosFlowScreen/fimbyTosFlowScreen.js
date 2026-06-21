@@ -1,4 +1,4 @@
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { FlowAttributeChangeEvent } from 'lightning/flowSupport';
 import getCurrentTosVersion from '@salesforce/apex/FimbyTosController.getCurrentTosVersion';
 import getCurrentTosEffectiveDate from '@salesforce/apex/FimbyTosController.getCurrentTosEffectiveDate';
@@ -9,7 +9,12 @@ const PRIVACY_URL = 'https://fimby.com/privacy-policy';
 const GUIDELINES_URL = '/community-guidelines';
 
 export default class FimbyTosFlowScreen extends LightningElement {
-    @api acceptanceCompleted = false;
+    @track _acceptanceCompleted = false;
+
+    @api
+    get acceptanceCompleted() { return this._acceptanceCompleted; }
+    set acceptanceCompleted(value) { this._acceptanceCompleted = value; }
+
     @api source = 'Login Flow';
 
     checkboxChecked = false;
@@ -48,7 +53,7 @@ export default class FimbyTosFlowScreen extends LightningElement {
                 month: 'long',
                 day: 'numeric'
             });
-        } catch (e) {
+        } catch {
             return this.effectiveDate;
         }
     }
@@ -70,7 +75,7 @@ export default class FimbyTosFlowScreen extends LightningElement {
                 version: this.tosVersion,
                 source: this.source
             });
-            this.acceptanceCompleted = true;
+            this._acceptanceCompleted = true;
             this.dispatchEvent(
                 new FlowAttributeChangeEvent('acceptanceCompleted', true)
             );

@@ -122,6 +122,8 @@
                             show-menu={item.showCardMenu}
                             user-name={item.ownerName}
                             avatar-url={item.ownerAvatar}
+                            is-org-poster={item.isOrgPoster}
+                            poster-profile-url={item.posterProfileUrl}
                             timestamp={item.createdDate}
                             images={item.images}
                             badge-label={item.category}
@@ -133,6 +135,7 @@
                             allocation-pills={item.allocationPills}
                             is-clickable="true"
                             oncardclick={handleCardClick}
+                            onavatarclick={handleAvatarNavigation}
                             oncardrespond={handleCardRespond}
                             oncardreport={handleCardReport}
                             onimageclick={handleImageClick}>

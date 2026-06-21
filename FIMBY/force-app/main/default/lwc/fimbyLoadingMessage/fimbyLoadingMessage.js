@@ -51,6 +51,7 @@ export default class FimbyLoadingMessage extends LightningElement {
         this._pickRandom();
 
         if (!this._reducedMotion) {
+            // eslint-disable-next-line @lwc/lwc/no-async-operation -- loading message rotation
             this._intervalId = setInterval(() => this._rotate(), ROTATE_INTERVAL_MS);
         }
     }

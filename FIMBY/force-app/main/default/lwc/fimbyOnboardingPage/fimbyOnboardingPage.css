@@ -117,7 +117,7 @@
 
 @media (min-width: 768px) {
     .page-body {
-        padding: 32px 32px;
+        padding: 32px;
     }
 }
 
@@ -234,6 +234,7 @@
 
 .field-textarea {
     min-height: 96px;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
 }
 
@@ -603,6 +604,11 @@
     box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
 }
 
+.btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .btn-primary:hover:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-hover);
 }
@@ -612,16 +618,16 @@
     transform: scale(0.97);
 }
 
-.btn-primary:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
 .btn-neutral {
     background-color: var(--fimby-surface-card);
     color: var(--fimby-text-primary);
     border: 1px solid var(--fimby-border-default);
     box-shadow: var(--fimby-btn-shadow);
+}
+
+.btn-neutral:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-neutral:hover:not(:disabled) {
@@ -631,11 +637,6 @@
 .btn-neutral:active:not(:disabled) {
     background-color: var(--fimby-pressed-bg);
     transform: scale(0.97);
-}
-
-.btn-neutral:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .btn-text {
@@ -963,22 +964,6 @@
     gap: 6px;
 }
 
-.phone-feed-card-sharedlife {
-    border-left-color: var(--fimby-earth-ochre, #7D6234);
-    padding-bottom: 6px;
-}
-
-.phone-feed-card-sharedlife .phone-feed-card-header { padding: 6px 8px 4px; }
-.phone-feed-card-sharedlife .phone-feed-body { margin: 0 8px 4px; }
-.phone-feed-card-sharedlife .phone-feed-title { margin: 0 8px 2px; }
-
-/* Badge override for sharedlife cards: gap between emoji and label */
-.phone-feed-card-sharedlife .phone-feed-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-}
-
 .phone-feed-card {
     background-color: var(--fimby-surface-card);
     border: 1px solid var(--fimby-divider-default);
@@ -994,23 +979,6 @@
     gap: 6px;
     padding: 8px;
 }
-
-.phone-feed-avatar {
-    width: 22px;
-    height: 22px;
-    border-radius: var(--fimby-radius-full, 9999px);
-    background-color: var(--fimby-earth-sage, #5B8760);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.55rem;
-}
-
-.phone-feed-meta { flex: 1 1 auto; min-width: 0; }
-.phone-feed-name { font-weight: 700; font-size: 0.7rem; color: var(--fimby-text-strong); }
-.phone-feed-time { font-size: 0.6rem; color: var(--fimby-text-muted); }
 
 .phone-feed-badge {
     background-color: var(--fimby-earth-sage, #5B8760);
@@ -1035,6 +1003,39 @@
     line-height: 1.35;
     margin: 0 8px 6px;
 }
+
+.phone-feed-card-sharedlife {
+    border-left-color: var(--fimby-earth-ochre, #7D6234);
+    padding-bottom: 6px;
+}
+
+.phone-feed-card-sharedlife .phone-feed-card-header { padding: 6px 8px 4px; }
+.phone-feed-card-sharedlife .phone-feed-body { margin: 0 8px 4px; }
+.phone-feed-card-sharedlife .phone-feed-title { margin: 0 8px 2px; }
+
+/* Badge override for sharedlife cards: gap between emoji and label */
+.phone-feed-card-sharedlife .phone-feed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.phone-feed-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--fimby-radius-full, 9999px);
+    background-color: var(--fimby-earth-sage, #5B8760);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.55rem;
+}
+
+.phone-feed-meta { flex: 1 1 auto; min-width: 0; }
+.phone-feed-name { font-weight: 700; font-size: 0.7rem; color: var(--fimby-text-strong); }
+.phone-feed-time { font-size: 0.6rem; color: var(--fimby-text-muted); }
 
 .phone-feed-photo {
     width: 100%;
@@ -1208,6 +1209,14 @@
     transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
+.carousel-arrow:disabled {
+    background-color: var(--fimby-border-default);
+    color: var(--fimby-text-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
 .carousel-arrow:hover:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-hover);
 }
@@ -1215,14 +1224,6 @@
 .carousel-arrow:active:not(:disabled) {
     background-color: var(--fimby-btn-primary-bg-active);
     transform: scale(0.95);
-}
-
-.carousel-arrow:disabled {
-    background-color: var(--fimby-border-default);
-    color: var(--fimby-text-secondary);
-    cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
 }
 
 .carousel-arrow lightning-icon {

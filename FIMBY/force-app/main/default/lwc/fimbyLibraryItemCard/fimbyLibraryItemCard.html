@@ -138,25 +138,25 @@
                 <template lwc:if={showActions}>
                     <template lwc:if={item.isAvailable}>
                         <button class="borrow-button primary" onclick={handleBorrow}>
-                            <lightning-icon icon-name="utility:bookmark" size="x-small"></lightning-icon>
+                            <img src={borrowIconUrl} alt="" class="card-btn-icon">
                             {borrowButtonText}
                         </button>
                     </template>
 
                     <template lwc:else>
                         <button class="notify-button" onclick={handleNotifyAvailable}>
-                            <lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon>
+                            <img src={notifyIconUrl} alt="" class="card-btn-icon">
                             Notify Me
                         </button>
                     </template>
                 </template>
 
                 <button class="message-button" onclick={handleMessage}>
-                    <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+                    <img src={chatIconUrl} alt="" class="card-btn-icon">
                 </button>
 
                 <button class={saveButtonClass} onclick={handleSave}>
-                    <lightning-icon icon-name={saveIcon} size="x-small"></lightning-icon>
+                    <img src={saveIconUrl} alt="" class="card-btn-icon">
                 </button>
             </div>
         </div>

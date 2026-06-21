@@ -385,6 +385,13 @@
     transform: translateY(-1px);
 }
 
+.card-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .message-button,
 .save-button {
     width: 32px;

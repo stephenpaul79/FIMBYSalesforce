@@ -9,32 +9,35 @@
             "backgroundImageConfig" : "",
             "backgroundImageOverlay" : "rgba(0,0,0,0)",
             "componentSpacerSize" : "",
+            "dxpStyle" : { },
             "layoutDirectionDesktop" : "row",
             "layoutDirectionMobile" : "column",
             "layoutDirectionTablet" : "column",
             "maxContentWidth" : "",
             "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"5f4470fe-fbbf-574b-9bbf-55d4c21b609e\",\"columns\":[{\"UUID\":\"4a274209-7ee9-562b-9f48-34e51343f9bf\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionConfig" : "{\"UUID\":\"5cda6124-79ad-4e26-a8ba-1444f109ca22\",\"columns\":[{\"UUID\":\"09481d7a-6cfd-4b92-9cb4-d454e62d4dbd\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
             "sectionMinHeight" : "",
             "sectionVerticalAlign" : "flex-start"
           },
           "children" : [ {
             "children" : [ {
-              "attributes" : { },
+              "attributes" : {
+                "dxpStyle" : { }
+              },
               "definition" : "c:fimbyModeratorTaskArchive",
-              "id" : "417a6c93-b6f6-5f41-bd45-8dcb34dc69e8",
+              "id" : "460c8a5f-593e-4b62-844e-2257079ce958",
               "type" : "component"
             } ],
-            "id" : "4a274209-7ee9-562b-9f48-34e51343f9bf",
+            "id" : "09481d7a-6cfd-4b92-9cb4-d454e62d4dbd",
             "name" : "col1",
             "title" : "Column 1",
             "type" : "region"
           } ],
           "definition" : "community_layout:section",
-          "id" : "5f4470fe-fbbf-574b-9bbf-55d4c21b609e",
+          "id" : "5cda6124-79ad-4e26-a8ba-1444f109ca22",
           "type" : "component"
         } ],
-        "id" : "485d4cce-7a7b-5c3b-b039-433edc1bf241",
+        "id" : "c3c340ea-a295-4e84-88fc-76a65fd8e9b4",
         "name" : "content",
         "title" : "Content",
         "type" : "region"
@@ -43,20 +46,21 @@
           "attributes" : {
             "customHeadTags" : "",
             "description" : "",
-            "pageTitle" : "Closed Tasks",
+            "dxpStyle" : { },
+            "pageTitle" : "Moderator Task Archive",
             "recordId" : "{!recordId}"
           },
           "definition" : "community_builder:seoAssistant",
-          "id" : "fd586f44-7d26-6cbf-ccb0-919686bb0f3b",
+          "id" : "934c6c13-fbec-4a1a-9b9b-837ca91c4191",
           "type" : "component"
         } ],
-        "id" : "3579d0fc-cdb8-59f1-9362-c0fa756bc481",
+        "id" : "70ac63b0-ed5f-43a4-962c-ec2e85a525b5",
         "name" : "sfdcHiddenRegion",
         "title" : "sfdcHiddenRegion",
         "type" : "region"
       } ],
       "definition" : "community_layout:sldsFlexibleLayout",
-      "id" : "39e85fc1-de8e-5e08-af5e-0f56f7a0a05f",
+      "id" : "48eeddb5-cf84-42ef-b942-a17fac25e34e",
       "type" : "component"
     },
     "dataProviders" : [ ],

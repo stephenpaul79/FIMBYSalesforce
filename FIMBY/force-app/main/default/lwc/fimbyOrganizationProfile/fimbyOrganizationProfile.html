@@ -16,10 +16,10 @@
                         <button type="button" class="logo-wrapper" aria-label="Change organization logo" onclick={handleLogoClick}>
                             <img src={orgLogoUrl} alt="" class="org-logo" />
                             <div class="logo-overlay">
-                                <lightning-icon icon-name="utility:photo" size="x-small"></lightning-icon>
+                                <img src={photoIconUrl} alt="" class="logo-overlay-icon">
                             </div>
                             <span class="logo-edit-badge" aria-hidden="true">
-                                <lightning-icon icon-name="utility:photo" size="xx-small"></lightning-icon>
+                                <img src={photoIconUrl} alt="" class="logo-edit-badge-icon">
                             </span>
                         </button>
                         <template lwc:if={hasLogo}>
@@ -51,10 +51,10 @@
                         </div>
                         <div class="field-row">
                             <label class="field-label">Description</label>
-                            <textarea class="field-textarea" value={editDescription}
+                            <textarea class="field-textarea"
                                       data-field="editDescription" maxlength="32000"
                                       placeholder="What does this group do?"
-                                      onchange={handleInputChange}></textarea>
+                                      onchange={handleInputChange}>{editDescription}</textarea>
                         </div>
                         <div class="field-row">
                             <label class="field-label">Website</label>
@@ -137,7 +137,7 @@
                         </template>
                         <template lwc:if={showMessageButton}>
                             <button class="btn btn-primary message-btn" onclick={handleMessage} disabled={isMessaging}>
-                                <lightning-icon icon-name="utility:chat" size="xx-small"></lightning-icon>
+                                <img src={chatIconUrl} alt="" class="message-btn-icon">
                                 Message
                             </button>
                         </template>

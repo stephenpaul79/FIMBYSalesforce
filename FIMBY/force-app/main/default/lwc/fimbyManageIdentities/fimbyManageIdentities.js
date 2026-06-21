@@ -101,7 +101,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
                     modal.openForUpload(srId);
                 }
             });
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     loadRelationships() {
@@ -178,7 +178,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
     handlePaperResume(event) {
         const srId = event.currentTarget.dataset.id;
         if (srId) {
-            location.href = `/manage-identities?continueSr=${encodeURIComponent(srId)}`;
+            window.location.href = `/manage-identities?continueSr=${encodeURIComponent(srId)}`;
         }
     }
 
@@ -271,7 +271,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
     _formatDate(dt) {
         if (!dt) return '';
         try { return new Date(dt).toLocaleDateString(); }
-        catch (e) { return ''; }
+        catch { return ''; }
     }
 
     handleAccess(event) {
@@ -281,8 +281,8 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
                 try {
                     sessionStorage.removeItem('fimby-home-feed-state');
                     sessionStorage.removeItem('fimby-library-state');
-                } catch (e) { /* ignore */ }
-                location.href = '/';
+                } catch { /* ignore */ }
+                window.location.href = '/';
             })
             .catch(err => {
                 fireErrorToast(err, 'We couldn’t switch right now. Give it another try?');
