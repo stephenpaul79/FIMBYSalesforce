@@ -5,6 +5,9 @@ import { LightningElement, api, track } from 'lwc';
 // killing). Content paints underneath at opacity 0 and reveals together.
 const MIN_CURTAIN_MS = 350;
 
+// Finger travel before pull-to-refresh hijacks the gesture (preventDefault + indicator).
+const PULL_ARM_THRESHOLD = 40;
+
 const END_MESSAGE_BASE = "You're all caught up!";
 const END_MESSAGE_VARIANTS = [
     "You're all caught up. Nice work!",
@@ -81,6 +84,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
     @track showPullRefresh = false;
     @track isPullingToRefresh = false;
     touchStartY = 0;
+    _touchStartAtTop = false;
     currentPullDistance = 0;
     scrollPosition = 0;
     isLoadingMore = false;
@@ -255,54 +259,87 @@ export default class FimbyInfiniteScroll extends LightningElement {
         }
     }
 
+    _getScrollContainer() {
+        return this.template.querySelector('.scroll-container');
+    }
+
+    // Document scroll is the real scroller on mobile feeds; container scrollTop stays 0.
+    _getEffectiveScrollTop() {
+        const container = this._getScrollContainer();
+        const containerTop = container ? container.scrollTop : 0;
+        const windowTop = window.pageYOffset
+            || document.documentElement.scrollTop
+            || 0;
+        return Math.max(containerTop, windowTop);
+    }
+
+    _isAtScrollTop() {
+        return this._getEffectiveScrollTop() <= 1;
+    }
+
+    _clearPullTransform(container) {
+        if (!container) {
+            return;
+        }
+        container.style.transform = '';
+        container.style.transition = 'transform 0.3s ease';
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
+        setTimeout(() => {
+            container.style.transition = '';
+        }, 300);
+    }
+
     // Touch handling for pull-to-refresh
     handleTouchStart(event) {
         if (!this.enablePullToRefresh) return;
 
-        const container = this.template.querySelector('.scroll-container');
-        if (container && container.scrollTop > 0) return;
+        this._touchStartAtTop = false;
+        if (!this._isAtScrollTop()) {
+            return;
+        }
 
         this.touchStartY = event.touches[0].clientY;
+        this._touchStartAtTop = true;
     }
 
     handleTouchMove(event) {
         if (!this.enablePullToRefresh) return;
+        if (!this._touchStartAtTop || !this._isAtScrollTop()) {
+            return;
+        }
 
-        const container = this.template.querySelector('.scroll-container');
-        if (!container || container.scrollTop > 0) return;
+        const container = this._getScrollContainer();
+        if (!container) {
+            return;
+        }
 
         const currentY = event.touches[0].clientY;
         const pullDistance = currentY - this.touchStartY;
 
-        if (pullDistance > 0) {
-            // Only prevent default if we're actually pulling down
-            if (pullDistance > 10) {
-                event.preventDefault();
-            }
-
-            this.currentPullDistance = Math.min(pullDistance, this.refreshThreshold * 1.5);
-            this.showPullRefresh = true;
-
-            // Update container transform for visual feedback
-            const translateY = Math.min(pullDistance * 0.5, this.refreshThreshold);
-            container.style.transform = `translateY(${translateY}px)`;
+        if (pullDistance <= PULL_ARM_THRESHOLD) {
+            return;
         }
+
+        event.preventDefault();
+
+        // Raw finger travel — refresh fires at refreshThreshold of total pull.
+        this.currentPullDistance = Math.min(pullDistance, this.refreshThreshold * 1.5);
+        this.showPullRefresh = true;
+
+        const visualPull = pullDistance - PULL_ARM_THRESHOLD;
+        const translateY = Math.min(visualPull * 0.5, this.refreshThreshold);
+        container.style.transform = `translateY(${translateY}px)`;
     }
 
     handleTouchEnd() {
         if (!this.enablePullToRefresh) return;
 
-        const container = this.template.querySelector('.scroll-container');
+        const container = this._getScrollContainer();
         if (container) {
-            container.style.transform = '';
-            container.style.transition = 'transform 0.3s ease';
-            // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
-            setTimeout(() => {
-                container.style.transition = '';
-            }, 300);
+            this._clearPullTransform(container);
         }
 
-        if (this.currentPullDistance >= this.refreshThreshold) {
+        if (this._touchStartAtTop && this.currentPullDistance >= this.refreshThreshold) {
             this.isPullingToRefresh = true;
             this.refresh();
         } else {
@@ -311,6 +348,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
         }
 
         this.currentPullDistance = 0;
+        this._touchStartAtTop = false;
     }
 
     // Public methods
