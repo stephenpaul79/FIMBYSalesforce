@@ -17,10 +17,9 @@ export const TOUR_STEPS = [
         hideProgressLabel: true,
         title: 'Welcome to your neighbourhood',
         body:
-            'What if your street felt a little more like family — people who know your name, ' +
-            'notice when you are carrying too much, make room at the table? ' +
-            'This is the few streets around you, small on purpose. ' +
-            'FIMBY is just the trellis; you and your neighbours are what grows.',
+            'What if your street felt a little more like family: people who know your name, ' +
+            'notice when life is heavy, and make room at the table? FIMBY is small on purpose: ' +
+            'just the few streets around you. It is the trellis; you and your neighbours are what grows.',
         heroImage: 'trellisbefore.png',
         heroAlt: 'A garden trellis with a young vine just starting to climb.',
         iconFile: null
@@ -34,12 +33,12 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         title: 'Your home feed',
         body:
-            'Need and gift sit side by side here. Shared Life holds gratitude, stories, prayer — ' +
-            'offered, never required. Ask & Offer holds the practical. ' +
-            'Quiet here for now? You could be the first to post something your neighbours see.',
+            'Need and gift sit side by side here. Shared Life is for stories, thanks, prayer, ' +
+            'and small updates. Ask & Offer is for practical neighbour help. ' +
+            'Quiet for now? Someone gets to be first.',
         mobileBody:
-            'Need and gift sit side by side here. Shared Life holds gratitude, stories, and prayer. ' +
-            'Ask & Offer holds the practical.',
+            'Need and gift sit side by side here. Shared Life is for stories, thanks, prayer, ' +
+            'and small updates. Ask & Offer is for practical neighbour help.',
         actionLabel: 'Try a filter',
         iconFile: 'StoriesInactive.png',
         clickAdvanceOn: ['story', 'askOffer']
@@ -54,7 +53,7 @@ export const TOUR_STEPS = [
         title: 'One button to share',
         body:
             'One button to ask, offer, lend, gather, or share. ' +
-            'Asking is not failure here — it is where trust starts.',
+            'Asking is not failure here; it is where trust starts.',
         actionLabel: 'Open Create',
         modalAnchor: 'quick-post-modal',
         modalActionLabel: 'Browse sharing options',
@@ -64,11 +63,11 @@ export const TOUR_STEPS = [
         modalCalloutFixedTop: true,
         revealTitle: 'You found the sharing menu',
         revealBody:
-            'Those six options are always here when you tap Create. ' +
-            'Tap Next when you are ready to keep touring.',
+            'These six options are always here when you tap Create. ' +
+            'Tap Next when you are ready to keep going.',
         revealNavigateTitle: 'Off to a good start',
         revealNavigateBody:
-            'You opened a sharing path — finish when you like, then tap Next here to continue the tour.',
+            'You opened a sharing path. Finish when you like, then tap Next here to continue.',
         iconFile: 'add.png',
         modalEvent: 'fimbyopenquickpost'
     },
@@ -83,10 +82,11 @@ export const TOUR_STEPS = [
         placement: 'top',
         title: 'Borrow the drill',
         body:
-            'Abundance circulates — the drill down the block instead of the store. ' +
-            'Remember the vouch you asked for in setup? That is what opens the library.',
+            'The library helps abundance circulate: the drill down the block before another trip to the store. ' +
+            'Borrowing works because this is a trusted local circle. ' +
+            'That is what your setup vouch helps protect.',
         mobileBody:
-            'Abundance circulates — the drill down the block instead of the store.',
+            'The library helps abundance circulate: the drill down the block before another trip to the store.',
         actionLabel: 'Open Library',
         iconFile: 'ToolboxActive.png'
     },
@@ -101,7 +101,7 @@ export const TOUR_STEPS = [
         title: 'Care close enough to walk over',
         body:
             'This is where a borrowed ladder becomes a conversation. ' +
-            'Quiet inbox? That is normal in a new neighbourhood — your first hello may start here.',
+            'Quiet inbox? Normal at first. Your first hello may start here.',
         mobileBody: 'This is where a borrowed ladder becomes a conversation.',
         actionLabel: 'Open Messages',
         iconFile: 'SpeechBubbleActive.png'
@@ -114,9 +114,8 @@ export const TOUR_STEPS = [
         placement: 'center',
         title: 'Different by design',
         body:
-            'No ads, no likes, no followers. Here you are never the product — your data is never sold. ' +
-            'No public broadcast, no city-wide reach. A brief check-in, not a slot machine. ' +
-            'A doorbell, not an endless feed.',
+            'No ads, no likes, no followers. You are never the product, and your data is never sold. ' +
+            'FIMBY is local by design: a doorbell, not an endless feed.',
         iconFile: 'NeighborhoodActive.png'
     },
     {
@@ -126,7 +125,7 @@ export const TOUR_STEPS = [
         placement: 'center',
         hideVine: true,
         title: 'You are ready to explore',
-        body: 'You know the daily loop. Want a quick look at notifications, search, and your account?',
+        body: 'You know the daily loop now. Want a quick look at notifications, search, and your account?',
         iconFile: null
     },
     {
@@ -138,7 +137,7 @@ export const TOUR_STEPS = [
         route: '/notifications',
         placement: 'bottom',
         title: 'Gentle nudges',
-        body: 'A gentle nudge when a neighbour reaches out — not a feed to scroll.',
+        body: 'A gentle nudge when a neighbour reaches out. Not a feed begging to be scrolled.',
         actionLabel: 'Open Notifications',
         iconFile: 'BellActive.png'
     },
@@ -159,10 +158,11 @@ export const TOUR_STEPS = [
         modalCalloutOnly: true,
         revealTitle: 'Search is right there',
         revealBody:
-            'Find neighbours, offers, or skills anytime. Tap Next when you are ready to continue.',
+            'Search is always nearby when you need it. Find neighbours, offers, or skills anytime. ' +
+            'Tap Next when you are ready to continue.',
         revealNavigateTitle: 'Nice — you searched',
         revealNavigateBody:
-            'Results open on their own page. Come back here and tap Next when you are ready.',
+            'Search results open on their own page. Come back here and tap Next when you are ready.',
         iconFile: 'Magnify.png',
         opensSearch: true
     },
@@ -174,7 +174,8 @@ export const TOUR_STEPS = [
         anchor: 'nav-menu',
         placement: 'bottom',
         title: 'Everything else',
-        body: 'Everything else lives here.',
+        body:
+            'The less-daily stuff lives here: profile, settings, your posts, and a few useful corners.',
         actionLabel: 'Open Menu',
         iconFile: 'Kebab.png'
     },
@@ -187,7 +188,7 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         menuGuided: true,
         title: 'Be a little more known',
-        body: 'Be a little less anonymous, a little more known.',
+        body: 'Add enough of yourself that neighbours know who they are talking to. No performance needed.',
         actionLabel: 'Profile',
         iconFile: 'ProfileActive.png',
         mobileBubbleTop: true,
@@ -202,7 +203,7 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         menuGuided: true,
         title: 'You are in control',
-        body: 'You control how close people get — quiet hours, what you share, who can reach you.',
+        body: 'You control how close people get: quiet hours, what you share, and who can reach you.',
         actionLabel: 'Settings',
         iconFile: 'gear.png',
         mobileBubbleTop: true,
@@ -219,9 +220,8 @@ export const TOUR_STEPS = [
         skipWhenSingleIdentity: true,
         title: 'No one left out',
         body:
-            'No one is left out. A neighbour who cannot tap a screen — an elder, a kid — ' +
-            'can have someone act for them here. The person you would normally pass on the street ' +
-            'can become the one who checks in after surgery.',
+            'Some neighbours need help using an app: kids, elders, or anyone who needs support. ' +
+            'Manage Identities lets a trusted person act with them or for them, so the circle stays open.',
         actionLabel: 'Manage Identities',
         iconFile: 'people.png',
         menuCalloutAbove: true,
@@ -236,7 +236,7 @@ export const TOUR_STEPS = [
         route: '/my-stuff',
         placement: 'top',
         title: 'Your corner of FIMBY',
-        body: 'Your posts, items, and history, all in one place.',
+        body: 'Your posts, items, offers, and history, all in one place.',
         actionLabel: 'Open My Stuff',
         iconFile: 'ProfileActive.png',
         navigateHomeOnNext: true
@@ -251,9 +251,9 @@ export const TOUR_STEPS = [
         showFinishOnly: true,
         title: 'The backyard is yours',
         body:
-            'You have the lay of the land now — feed, library, messages, settings, the lot. ' +
+            'You have the lay of the land now: feed, library, messages, settings, the lot. ' +
             'What grows next is ordinary neighbour stuff: show up, lend a hand, ask when you are stuck. ' +
-            'No audience. Just the people on your few streets.',
+            'No audience. Just your few streets.',
         heroImage: 'trellisafter.png',
         heroAlt: 'The same trellis now covered in a thriving, fruiting vine.',
         iconFile: null
@@ -268,9 +268,9 @@ export const TOUR_STEPS = [
         hideProgressLabel: true,
         title: 'Say hi to your street',
         body:
-            'Here is the first small thing: say hi to your street. ' +
-            'You do not have to arrive with something to give — asking for help is where trust starts too. ' +
-            'Trust is not installed; it grows, one ordinary act at a time.',
+            'Start small: say hi to your street. You do not have to arrive with something impressive. ' +
+            'Ask for help, offer something simple, or just introduce yourself. ' +
+            'Trust grows one ordinary act at a time.',
         iconFile: 'BioActive.png'
     }
 ];
