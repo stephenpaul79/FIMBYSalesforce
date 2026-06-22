@@ -11,7 +11,7 @@
 
 .scrim {
     position: fixed;
-    background: rgba(28, 26, 24, 0.55);
+    background-color: var(--fimby-scrim, rgba(38, 26, 17, 0.50));
     pointer-events: auto;
 }
 
@@ -21,10 +21,10 @@
 
 .spotlight-ring {
     position: fixed;
-    border-radius: 12px;
+    border-radius: var(--fimby-radius-md, 12px);
     box-shadow:
-        0 0 0 3px rgba(122, 155, 118, 0.85),
-        0 0 24px 4px rgba(176, 114, 72, 0.35);
+        0 0 0 3px var(--fimby-focus-ring, #3A7D8C),
+        0 0 24px 4px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
     pointer-events: none;
     z-index: 10051;
 }
@@ -37,10 +37,10 @@
     z-index: 10052;
     width: min(28rem, calc(100vw - 2rem));
     padding: 0.85rem 1rem 1rem;
-    background: var(--fimby-surface, #fff);
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(28, 26, 24, 0.22);
-    border: 1px solid var(--fimby-border-subtle, rgba(28, 26, 24, 0.08));
+    background-color: var(--fimby-surface-raised, #FAF7F2);
+    border-radius: var(--fimby-radius-lg, 16px);
+    box-shadow: var(--fimby-shadow-modal, 0 8px 24px rgba(0, 0, 0, 0.20));
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
     pointer-events: auto;
     outline: none;
 }
@@ -49,7 +49,7 @@
     margin: 0 0 0.65rem;
     font-size: 0.9375rem;
     line-height: 1.45;
-    color: var(--fimby-text-primary, #1c1a18);
+    color: var(--fimby-text-strong, #261A11);
     font-weight: 600;
 }
 
@@ -92,9 +92,9 @@
 
 .callout-label-block {
     padding: 0.65rem 1rem;
-    background: var(--fimby-teal, #2a7a72);
-    border-radius: 12px;
-    box-shadow: 0 6px 24px rgba(28, 26, 24, 0.28);
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    border-radius: var(--fimby-radius-md, 12px);
+    box-shadow: var(--fimby-shadow-modal, 0 8px 24px rgba(0, 0, 0, 0.20));
     width: auto;
     max-width: 100%;
     box-sizing: border-box;
@@ -105,7 +105,7 @@
     font-size: 1.25rem;
     font-weight: 700;
     line-height: 1.25;
-    color: #fff;
+    color: #ffffff;
     white-space: nowrap;
 }
 
@@ -126,14 +126,14 @@
 .callout-arrow-up {
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-bottom: 12px solid var(--fimby-teal, #2a7a72);
+    border-bottom: 12px solid var(--fimby-btn-primary-bg, #3A7D8C);
     margin-bottom: -1px;
 }
 
 .callout-arrow-down {
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-top: 12px solid var(--fimby-teal, #2a7a72);
+    border-top: 12px solid var(--fimby-btn-primary-bg, #3A7D8C);
     margin-top: -1px;
 }
 
@@ -158,10 +158,10 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
-    border: 1px solid var(--fimby-border-subtle, rgba(28, 26, 24, 0.15));
-    border-radius: 8px;
-    background: var(--fimby-surface, #fff);
-    color: var(--fimby-text-primary, #1c1a18);
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    border-radius: var(--fimby-radius-sm, 8px);
+    background-color: var(--fimby-surface-card, #FAF7F2);
+    color: var(--fimby-text-primary, #4A3526);
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -172,11 +172,11 @@
     z-index: 10052;
     max-width: min(28rem, calc(100vw - 2rem));
     width: calc(100% - 2rem);
-    background: var(--fimby-surface, #fff);
-    color: var(--fimby-text-primary, #1c1a18);
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(28, 26, 24, 0.22);
-    border: 1px solid var(--fimby-border-subtle, rgba(28, 26, 24, 0.08));
+    background-color: var(--fimby-surface-raised, #FAF7F2);
+    color: var(--fimby-text-primary, #4A3526);
+    border-radius: var(--fimby-radius-lg, 16px);
+    box-shadow: var(--fimby-shadow-modal, 0 8px 24px rgba(0, 0, 0, 0.20));
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
     pointer-events: auto;
     outline: none;
 }
@@ -244,7 +244,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--fimby-text-secondary, #5c5650);
+    color: var(--fimby-text-muted, #B5A088);
     white-space: nowrap;
 }
 
@@ -253,12 +253,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    opacity: 0.55;
 }
 
 .vine-chip {
     background: transparent;
-    border-radius: 8px;
+    border-radius: var(--fimby-radius-sm, 8px);
     padding: 0;
 }
 
@@ -273,7 +272,7 @@
 .progress-label {
     margin: 0;
     font-size: 0.75rem;
-    color: var(--fimby-text-secondary, #5c5650);
+    color: var(--fimby-text-muted, #B5A088);
 }
 
 .step-icon {
@@ -295,17 +294,19 @@
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.35;
+    color: var(--fimby-text-strong, #261A11);
 }
 
 .bubble-text {
     margin: 0;
     font-size: 0.9375rem;
     line-height: 1.55;
-    color: var(--fimby-text-secondary, #5c5650);
+    color: var(--fimby-text-secondary, #8B7355);
 }
 
 .bubble-footer {
     padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--fimby-border-subtle, rgba(28, 26, 24, 0.08));
 }
 
 .footer-actions-row {
@@ -330,33 +331,69 @@
 }
 
 .btn {
-    border-radius: 10px;
+    border-radius: var(--fimby-btn-radius, 12px);
     padding: 0.55rem 1rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
     cursor: pointer;
     border: none;
+    min-height: 44px;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease, color 0.15s ease;
 }
 
 .btn-primary {
-    background: var(--fimby-teal, #2a7a72);
-    color: #fff;
+    background-color: var(--fimby-btn-primary-bg, #3A7D8C);
+    color: #ffffff;
+    box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0, 0, 0, 0.15)),
+        var(--fimby-btn-border-bottom, inset 0 -1px 0 0 rgba(0, 0, 0, 0.15));
+}
+
+.btn-primary:hover {
+    background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
+}
+
+.btn-primary:active {
+    background-color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0, 0, 0, 0.12));
+    transform: scale(0.97);
 }
 
 .btn-primary:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+    transform: none;
 }
 
 .btn-outline {
-    background: transparent;
-    border: 1px solid var(--fimby-border-subtle, rgba(28, 26, 24, 0.15));
-    color: var(--fimby-text-primary, #1c1a18);
+    background-color: var(--fimby-btn-secondary-bg, var(--fimby-surface-card, #FAF7F2));
+    border: 1px solid var(--fimby-border-default, #D6CFC5);
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.btn-outline:hover {
+    background-color: var(--fimby-hover-bg, rgba(58, 125, 140, 0.08));
+}
+
+.btn-outline:active {
+    background-color: var(--fimby-pressed-bg, rgba(58, 125, 140, 0.12));
+}
+
+.btn-primary:focus-visible,
+.btn-outline:focus-visible,
+.callout-sr-action:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring, #3A7D8C);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
 }
 
 @media (prefers-reduced-motion: reduce) {
     .spotlight-ring {
-        box-shadow: 0 0 0 2px rgba(122, 155, 118, 0.85);
+        box-shadow: 0 0 0 2px var(--fimby-focus-ring, #3A7D8C);
+    }
+
+    .btn-primary:active {
+        transform: none;
     }
 }
 

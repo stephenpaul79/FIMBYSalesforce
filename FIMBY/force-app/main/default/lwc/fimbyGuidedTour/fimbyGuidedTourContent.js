@@ -253,7 +253,7 @@ export const TOUR_STEPS = [
         body:
             'You have the lay of the land now: feed, library, messages, settings, the lot. ' +
             'What grows next is ordinary neighbour stuff: show up, lend a hand, ask when you are stuck. ' +
-            'No audience. Just your few streets.',
+            'Small things, close to home, building a neighbourhood with room to hold us all.',
         heroImage: 'trellisafter.png',
         heroAlt: 'The same trellis now covered in a thriving, fruiting vine.',
         iconFile: null
