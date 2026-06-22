@@ -33,11 +33,10 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         title: 'Your home feed',
         body:
-            'Need and gift sit side by side here. Shared Life is for stories, thanks, prayer, ' +
-            'and small updates. Ask & Offer is for practical neighbour help. ' +
-            'Quiet for now? Someone gets to be first.',
+            'Our lives sit side by side here. Shared Life is for thanks, prayer, ' +
+            'and small updates. Ask & Offer is for practical neighbour help.',
         mobileBody:
-            'Need and gift sit side by side here. Shared Life is for stories, thanks, prayer, ' +
+            'Our lives sit side by side here. Shared Life is for thanks, prayer, ' +
             'and small updates. Ask & Offer is for practical neighbour help.',
         actionLabel: 'Try a filter',
         iconFile: 'StoriesInactive.png',
@@ -84,7 +83,7 @@ export const TOUR_STEPS = [
         body:
             'The library helps abundance circulate: the drill down the block before another trip to the store. ' +
             'Borrowing works because this is a trusted local circle. ' +
-            'That is what your setup vouch helps protect.',
+            'Everyone here has been vouched for by someone else.',
         mobileBody:
             'The library helps abundance circulate: the drill down the block before another trip to the store.',
         actionLabel: 'Open Library',
@@ -137,7 +136,7 @@ export const TOUR_STEPS = [
         route: '/notifications',
         placement: 'bottom',
         title: 'Gentle nudges',
-        body: 'A gentle nudge when a neighbour reaches out. Not a feed begging to be scrolled.',
+        body: 'A simple notification when a neighbour reaches out. Not a needy feed begging to be scrolled.',
         actionLabel: 'Open Notifications',
         iconFile: 'BellActive.png'
     },
@@ -188,7 +187,7 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         menuGuided: true,
         title: 'Be a little more known',
-        body: 'Add enough of yourself that neighbours know who they are talking to. No performance needed.',
+        body: 'Add enough of yourself that neighbours know who they are talking to.',
         actionLabel: 'Profile',
         iconFile: 'ProfileActive.png',
         mobileBubbleTop: true,
@@ -217,11 +216,10 @@ export const TOUR_STEPS = [
         anchor: 'menu-manage-identities',
         placement: 'bottom',
         menuGuided: true,
-        skipWhenSingleIdentity: true,
         title: 'No one left out',
         body:
             'Some neighbours need help using an app: kids, elders, or anyone who needs support. ' +
-            'Manage Identities lets a trusted person act with them or for them, so the circle stays open.',
+            'Manage Identities lets a trusted person act with them or for them, so no one is left out.',
         actionLabel: 'Manage Identities',
         iconFile: 'people.png',
         menuCalloutAbove: true,
