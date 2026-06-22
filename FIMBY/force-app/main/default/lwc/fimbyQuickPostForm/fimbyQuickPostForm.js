@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
+import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 export default class FimbyQuickPostForm extends NavigationMixin(LightningElement) {
@@ -25,7 +26,20 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
         lending: '/library-item-post'
     };
 
+    _unregisterTourAnchors;
+    _forceHideHandler;
+
     connectedCallback() {
+        if (this.isModal) {
+            this._unregisterTourAnchors = registerTourAnchorProvider(this);
+            this._forceHideHandler = () => {
+                if (this.isVisible) {
+                    this.isVisible = false;
+                }
+            };
+            window.addEventListener('fimbyquickpostforcehide', this._forceHideHandler);
+        }
+
         // Only check URL params in full-page mode
         if (!this.isModal) {
             // Check if type was passed from URL parameter
@@ -44,19 +58,62 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
         }
     }
 
+    disconnectedCallback() {
+        if (this._forceHideHandler) {
+            window.removeEventListener('fimbyquickpostforcehide', this._forceHideHandler);
+        }
+        if (this._unregisterTourAnchors) {
+            this._unregisterTourAnchors();
+        }
+    }
+
+    @api
+    getTourAnchorRect(name) {
+        if (!this.isModal || !this.isVisible || name !== 'quick-post-modal') {
+            return null;
+        }
+        const el = this.template.querySelector('[data-tour="quick-post-modal"]');
+        if (!el) {
+            return null;
+        }
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 ? rect : null;
+    }
+
     // Public API methods for modal mode
     @api
     show() {
         if (document.activeElement) {
             document.activeElement.blur();
         }
+        window.dispatchEvent(new CustomEvent('fimbyquickpostforcehide'));
         this.isVisible = true;
+        if (this.isModal) {
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            requestAnimationFrame(() => {
+                window.dispatchEvent(new CustomEvent('fimbyquickpostopened'));
+            });
+        }
     }
 
     @api
-    hide() {
+    hide(options = {}) {
+        const wasVisible = this.isVisible;
         this.isVisible = false;
-        this.dispatchEvent(new CustomEvent('close'));
+        if (!wasVisible) {
+            return;
+        }
+        this.dispatchEvent(
+            new CustomEvent('close', { bubbles: true, composed: true })
+        );
+        if (this.isModal) {
+            window.dispatchEvent(new CustomEvent('fimbyquickpostforcehide'));
+            window.dispatchEvent(
+                new CustomEvent('fimbyquickpostclosed', {
+                    detail: { selected: !!options.selected }
+                })
+            );
+        }
     }
 
     // Event handlers
@@ -64,7 +121,18 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
         const contentType = event.currentTarget.dataset.type;
 
         if (this.isModal) {
-            this.hide();
+            this.navigateTo(contentType);
+            this.hide({ selected: true });
+            // Let navigation + modal teardown finish before the tour reacts.
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            queueMicrotask(() => {
+                window.dispatchEvent(
+                    new CustomEvent('fimbyquickpostoptionselected', {
+                        detail: { type: contentType }
+                    })
+                );
+            });
+            return;
         }
 
         this.navigateTo(contentType);

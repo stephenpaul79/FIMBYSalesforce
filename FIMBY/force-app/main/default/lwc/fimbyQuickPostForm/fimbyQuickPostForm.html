@@ -2,7 +2,7 @@
     <!-- Modal Mode -->
     <template lwc:if={isModal}>
         <div lwc:if={isVisible} class="modal-overlay" onclick={handleOverlayClick}>
-            <div class="modal-container" onclick={handleModalContentClick}>
+            <div class="modal-container" data-tour="quick-post-modal" onclick={handleModalContentClick}>
                 <div class="modal-header">
                     <h2 class="modal-title">What would you like to share?</h2>
                     <button type="button" class="close-button" onclick={handleClose} aria-label="Close">

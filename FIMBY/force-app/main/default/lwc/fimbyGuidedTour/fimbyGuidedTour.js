@@ -693,6 +693,8 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
 
         if (step.advance === 'modalDismiss') {
             this._openModalForStep(step);
+            event.preventDefault();
+            event.stopPropagation();
             return;
         }
 
