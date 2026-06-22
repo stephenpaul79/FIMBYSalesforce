@@ -247,12 +247,15 @@ export const TOUR_STEPS = [
         advance: 'next',
         placement: 'center',
         hideVine: true,
+        hideProgressLabel: true,
         title: 'The backyard is yours',
         body:
             'You have the lay of the land now — feed, library, messages, settings, the lot. ' +
             'What grows next is ordinary neighbour stuff: show up, lend a hand, ask when you are stuck. ' +
             'No audience. Just the people on your few streets.',
-        iconFile: 'NeighborhoodActive.png'
+        heroImage: 'trellisafter.png',
+        heroAlt: 'The same trellis now covered in a thriving, fruiting vine.',
+        iconFile: null
     },
     {
         id: 'say-hi',
@@ -261,13 +264,12 @@ export const TOUR_STEPS = [
         advance: 'introPost',
         placement: 'center',
         hideVine: true,
+        hideProgressLabel: true,
         title: 'Say hi to your street',
         body:
             'Here is the first small thing: say hi to your street. ' +
             'You do not have to arrive with something to give — asking for help is where trust starts too. ' +
             'Trust is not installed; it grows, one ordinary act at a time.',
-        heroImage: 'trellisafter.png',
-        heroAlt: 'The same trellis now covered in a thriving, fruiting vine.',
         iconFile: 'BioActive.png'
     }
 ];
