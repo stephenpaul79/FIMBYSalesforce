@@ -1041,7 +1041,7 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         event.stopPropagation();
     }
 
-    async handleNext() {
+    handleNext() {
         if (this.isNextDisabled) {
             return;
         }
@@ -1051,11 +1051,13 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
             if (!isHomePath()) {
                 navigate(this, '/');
             }
-            await ensureHomeFeedReadyForTour();
-        } else if (step?.route && step.advance === 'next' && !step.menuGuided) {
+            void ensureHomeFeedReadyForTour().then(() => this._advanceStep());
+            return;
+        }
+        if (step?.route && step.advance === 'next' && !step.menuGuided) {
             navigate(this, step.route);
         }
-        await this._advanceStep();
+        this._advanceStep();
     }
 
     handleCalloutAction() {
@@ -1135,15 +1137,18 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         requestAnimationFrame(() => this._measureAndPosition());
     }
 
-    async _advanceStep() {
+    _advanceStep() {
         if (this._stepIndex >= this._steps.length - 1) {
-            await this._completeTour(false);
+            this._completeTour(false);
             return;
         }
         this._stepIndex += 1;
-        await this._prepareCurrentStep();
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         requestAnimationFrame(() => this._measureAndPosition());
+        void this._prepareCurrentStep().then(() => {
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            requestAnimationFrame(() => this._measureAndPosition());
+        });
     }
 
     handleOffRampKeep() {
@@ -1162,20 +1167,23 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         });
     }
 
-    async handleOffRampDone() {
+    handleOffRampDone() {
         if (this._bioPostCompleted || this._replay) {
-            await this._completeTour(false);
+            this._completeTour(false);
             return;
         }
         const finaleIdx = this._steps.findIndex((s) => s.id === 'say-hi');
         if (finaleIdx >= 0) {
             this._stepIndex = finaleIdx;
-            await this._prepareCurrentStep();
             // eslint-disable-next-line @lwc/lwc/no-async-operation
             requestAnimationFrame(() => this._measureAndPosition());
+            void this._prepareCurrentStep().then(() => {
+                // eslint-disable-next-line @lwc/lwc/no-async-operation
+                requestAnimationFrame(() => this._measureAndPosition());
+            });
             return;
         }
-        await this._completeTour(false);
+        this._completeTour(false);
     }
 
     handleIntroPostOpen() {
@@ -1186,39 +1194,37 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         }
     }
 
-    async handleIntroPostSkip() {
-        await this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
+    handleIntroPostSkip() {
         this.endTour();
+        this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
     }
 
-    async handleBioPosted() {
-        await this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
+    handleBioPosted() {
         this.endTour();
+        this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
     }
 
-    async handleBioSkipped() {
-        await this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
+    handleBioSkipped() {
         this.endTour();
+        this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
     }
 
-    async handleSkip() {
-        await this._persistStatus(STATUS_DISMISSED, false);
+    handleSkip() {
         this.endTour();
+        this._persistStatus(STATUS_DISMISSED, false);
     }
 
-    async _completeTour(fromFinale) {
+    _completeTour(fromFinale) {
         if (fromFinale || this.currentStep?.advance === 'introPost') {
             return;
         }
-        await this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
         this.endTour();
+        this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
     }
 
-    async _persistStatus(status, extendedCompleted) {
-        try {
-            await setLiveTourStatus({ status, extendedCompleted: !!extendedCompleted });
-        } catch (err) {
+    _persistStatus(status, extendedCompleted) {
+        setLiveTourStatus({ status, extendedCompleted: !!extendedCompleted }).catch((err) => {
             console.error('fimbyGuidedTour persist status', err);
-        }
+        });
     }
 }
