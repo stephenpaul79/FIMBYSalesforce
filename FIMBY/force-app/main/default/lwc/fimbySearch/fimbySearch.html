@@ -149,16 +149,18 @@
                                             <div class="person-bio">{result.shortDescription}</div>
                                         </template>
                                     </div>
-                                    <template lwc:if={result.hasSharedContact}>
-                                        <span class="shared-badge">
-                                            <img src={greenCircleUrl} alt="" class="badge-status-icon" />
-                                            <span>Contact Info Shared</span>
-                                        </span>
-                                    </template>
-                                    <template lwc:else>
-                                        <span class="contact-not-shared-badge">
-                                            <span>No Contact Info Shared</span>
-                                        </span>
+                                    <template lwc:if={result.showContactBadge}>
+                                        <template lwc:if={result.hasSharedContact}>
+                                            <span class="shared-badge">
+                                                <img src={greenCircleUrl} alt="" class="badge-status-icon" />
+                                                <span>Contact Info Shared</span>
+                                            </span>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="contact-not-shared-badge">
+                                                <span>No Contact Info Shared</span>
+                                            </span>
+                                        </template>
                                     </template>
                                 </div>
                             </div>

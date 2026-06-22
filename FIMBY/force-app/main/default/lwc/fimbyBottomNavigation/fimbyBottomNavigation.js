@@ -3,6 +3,7 @@ import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming } from 'c/fimbyNavigation';
+import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 
 const FOOTER_HEIGHT_PX = 72;
 
@@ -29,6 +30,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
      * --------------------------------------------------------------- */
     _resizeHandler;
     _badgeCountHandler;
+    _unregisterTourAnchors;
 
     // Reactive active-tab highlight under the persistent shell (the footer no
     // longer remounts per navigation, so the tab must recompute on page change).
@@ -49,6 +51,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             this.hasUnread = this.messageCount > 0 || !!detail.hasUnread;
         };
         window.addEventListener('fimbybadgecounts', this._badgeCountHandler);
+        this._unregisterTourAnchors = registerTourAnchorProvider(this);
     }
 
     disconnectedCallback() {
@@ -58,9 +61,35 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             if (this._badgeCountHandler) {
                 window.removeEventListener('fimbybadgecounts', this._badgeCountHandler);
             }
+            if (this._unregisterTourAnchors) {
+                this._unregisterTourAnchors();
+            }
         } catch {
             // Fail silently
         }
+    }
+
+    @api
+    getTourAnchorRect(name) {
+        const el = this.template.querySelector(`[data-tour="${name}"]`);
+        if (!el) {
+            return null;
+        }
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 ? rect : null;
+    }
+
+    @api
+    getTourChromeInsets() {
+        if (window.innerWidth >= 892) {
+            return null;
+        }
+        const bar = this.template.querySelector('.fimby-bottom-nav');
+        if (!bar) {
+            return { bottom: FOOTER_HEIGHT_PX };
+        }
+        const rect = bar.getBoundingClientRect();
+        return { bottom: Math.ceil(window.innerHeight - rect.top) };
     }
 
     /* ---------------------------------------------------------------

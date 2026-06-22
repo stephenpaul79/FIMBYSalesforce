@@ -103,6 +103,10 @@
         <value xsi:type="xsd:double">15.0</value>
     </values>
     <values>
+        <field>Live_Tour_Enabled__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
         <field>Lurker_Ratio_Threshold__c</field>
         <value xsi:nil="true"/>
     </values>

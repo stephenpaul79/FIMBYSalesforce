@@ -15,6 +15,7 @@ import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCe
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
+import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 
 import Id from '@salesforce/user/Id';
@@ -142,7 +143,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     @track feedItems = [];
     @track filteredFeedItems = [];
-    @track isLoading = false;
+    @track isLoading = true;
     @track hasMoreContent = true;
     @track feedOffset = 0;
     @track totalCount = 0;
@@ -340,6 +341,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         if (!this._restoreFeedState()) {
             this.loadInitialData();
         } else {
+            this.isLoading = false;
             // Cache resume: hide the feed from the first paint so the upcoming
             // scroll-position restore happens while invisible (no top→saved
             // jump). Revealed in renderedCallback once scroll is set.
@@ -366,8 +368,36 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         this._pagehideHandler = () => this._saveFeedState();
         window.addEventListener('pagehide', this._pagehideHandler);
 
+        this._tourResetFeedScrollHandler = () => this._resetScrollForTour();
+        window.addEventListener('fimbytourresetfeedscroll', this._tourResetFeedScrollHandler);
+
         // eslint-disable-next-line @lwc/lwc/no-async-operation -- scroll/focus after render
         requestAnimationFrame(() => this._measureHeaderHeight());
+        this._unregisterTourAnchors = registerTourAnchorProvider(this);
+    }
+
+    @api
+    getTourAnchorRect(name) {
+        const el = this.template.querySelector(`[data-tour="${name}"]`);
+        if (!el) {
+            return null;
+        }
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 ? rect : null;
+    }
+
+    _resetScrollForTour() {
+        this.filterHidden = false;
+        this._lastScrollY = 0;
+        try {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        } catch {
+            window.scrollTo(0, 0);
+        }
+        const scrollContainer = this.template.querySelector('c-fimby-infinite-scroll');
+        if (scrollContainer?.scrollToTop) {
+            scrollContainer.scrollToTop(false);
+        }
     }
 
     _measureHeaderHeight() {
@@ -380,6 +410,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         }
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
+        }
+        if (this._tourResetFeedScrollHandler) {
+            window.removeEventListener('fimbytourresetfeedscroll', this._tourResetFeedScrollHandler);
+        }
+        if (this._unregisterTourAnchors) {
+            this._unregisterTourAnchors();
         }
         // Under the persistent shell this view remounts on every soft nav, so a
         // pending throttle timer would otherwise fire against a torn-down

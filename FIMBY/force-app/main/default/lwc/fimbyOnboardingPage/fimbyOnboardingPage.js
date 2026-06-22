@@ -122,7 +122,11 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
             // as the bio hasn't been posted yet. Skip/Post both flip the flag,
             // so this naturally stops asking once the user has dealt with it.
             this._showPhase3AtEnd = !bioPostCompleted;
-            this._currentPhase = profileCompleted ? 2 : 1;
+            if (profileCompleted) {
+                window.location.replace('/');
+                return;
+            }
+            this._currentPhase = 1;
 
             if (this._currentPhase === 1) {
                 await this._loadExistingProfile();
@@ -738,10 +742,7 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
 
     handleStartTour() {
         this._showCelebration = false;
-        this._currentPhase = 2;
-        this._walkthroughIndex = 0;
-        this._carouselSlideIndex = 0;
-        this._scrollToTop();
+        this._exitToHome();
     }
 
     handleSkipTour() {

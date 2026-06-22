@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Live_Tour_Status__c</fullName>
+    <description>Tracks completion of the live shell-mounted guided tour (Phase 2 onboarding). Not Started until the neighbour finishes or dismisses the tour; Completed or Dismissed thereafter.</description>
+    <externalId>false</externalId>
+    <label>Live Tour Status</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Not Started</fullName>
+                <default>true</default>
+                <label>Not Started</label>
+            </value>
+            <value>
+                <fullName>Completed</fullName>
+                <default>false</default>
+                <label>Completed</label>
+            </value>
+            <value>
+                <fullName>Dismissed</fullName>
+                <default>false</default>
+                <label>Dismissed</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

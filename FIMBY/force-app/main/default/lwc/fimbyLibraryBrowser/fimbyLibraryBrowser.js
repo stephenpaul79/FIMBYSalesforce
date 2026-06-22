@@ -1,6 +1,7 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getRecordPageReference, startNavTiming, navigate, profilePathForContact } from 'c/fimbyNavigation';
+import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
@@ -27,7 +28,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // ======= Data =======
     @track allItems = [];
     @track filteredItems = [];
-    @track isLoading = false;
+    @track isLoading = true;
     @track hasMoreContent = true;
     @track offset = 0;
     loadedIds = new Set();
@@ -96,6 +97,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         this.loadCategories();
 
         if (this._restoreLibraryState()) {
+            this.isLoading = false;
             // Cache resume: hide the feed from the first paint so the upcoming
             // scroll-position restore happens while invisible (no top→saved
             // jump). Revealed in renderedCallback once scroll is set.
@@ -119,6 +121,17 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
         this._pagehideHandler = () => this._saveLibraryState();
         window.addEventListener('pagehide', this._pagehideHandler);
+        this._unregisterTourAnchors = registerTourAnchorProvider(this);
+    }
+
+    @api
+    getTourAnchorRect(name) {
+        const el = this.template.querySelector(`[data-tour="${name}"]`);
+        if (!el) {
+            return null;
+        }
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 ? rect : null;
     }
 
     disconnectedCallback() {
@@ -127,6 +140,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         }
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
+        }
+        if (this._unregisterTourAnchors) {
+            this._unregisterTourAnchors();
         }
         // Under the persistent shell this view remounts on every soft nav and
         // pagehide never fires, so flush any pending scroll-state save now;

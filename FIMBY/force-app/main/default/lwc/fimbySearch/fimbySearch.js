@@ -69,6 +69,10 @@ const ASK_OFFER_TYPE_ICONS = {
     'Offer': 'giftsm.png'
 };
 
+const SYSTEM_PROFILE_EGG_TERMS = new Set(['knock', 'knock knock', 'fimby']);
+const SYSTEM_PROFILE_EGG_ID = '__fimby_system_profile__';
+const SYSTEM_PROFILE_PATH = '/system-profile';
+
 export default class FimbySearch extends NavigationMixin(LightningElement) {
     @track searchTerm = '';
     @track selectedFilter = 'all';
@@ -294,7 +298,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
                 if (loadMore) {
                     this.searchResults = [...this.searchResults, ...processed];
                 } else {
-                    this.searchResults = processed;
+                    this.searchResults = this._prependSystemProfileEgg(processed);
                     this.addToRecentSearches(this.searchTerm, this.selectedFilter);
                 }
 
@@ -334,6 +338,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             return {
                 ...item,
                 isPeople,
+                showContactBadge: isPeople,
                 processedImageUrl: imageUrl,
                 processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),
                 shortDescription: this.truncate(item.description, 120),
@@ -419,6 +424,46 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
         return { label: '', iconUrl: '', badgeStyle: '' };
     }
 
+    _shouldShowSystemProfileEgg() {
+        const term = (this.searchTerm || '').trim().toLowerCase();
+        if (!SYSTEM_PROFILE_EGG_TERMS.has(term)) {
+            return false;
+        }
+        return this.selectedFilter === 'all' || this.selectedFilter === 'people';
+    }
+
+    _buildSystemProfileEggRow() {
+        const description = 'Up in the bamboo, passing notes between neighbours.';
+        return {
+            recordId: SYSTEM_PROFILE_EGG_ID,
+            resultType: 'systemProfile',
+            name: 'FIMBY',
+            subType: 'The Cloud',
+            description,
+            isPeople: true,
+            isSystemProfileEgg: true,
+            showContactBadge: false,
+            processedImageUrl: `${IMPACT_ICONS}/systempanda.png`,
+            processedAvatarUrl: '',
+            shortDescription: description,
+            formattedDate: '',
+            badgeLabel: '',
+            badgeIconUrl: '',
+            badgeStyle: '',
+            cardType: 'default',
+            accentColor: '',
+            images: [],
+            peopleAriaLabel: 'View FIMBY profile'
+        };
+    }
+
+    _prependSystemProfileEgg(items) {
+        if (!this._shouldShowSystemProfileEgg()) {
+            return items;
+        }
+        return [this._buildSystemProfileEggRow(), ...items];
+    }
+
     // ========================================================
     // Navigation
     // ========================================================
@@ -439,6 +484,11 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     }
 
     navigateToResult(recordId, resultType) {
+        if (resultType === 'systemProfile') {
+            navigate(this, SYSTEM_PROFILE_PATH);
+            return;
+        }
+
         if (resultType === 'people') {
             const item = this.searchResults.find(r => r.recordId === recordId);
             const path = profilePathForContact({

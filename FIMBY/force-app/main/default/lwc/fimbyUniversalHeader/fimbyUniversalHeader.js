@@ -2,6 +2,9 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming, navigate } from 'c/fimbyNavigation';
+import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
+import { GUIDED_TOUR_REQUEST_EVENT } from 'c/fimbyGuidedTourLauncher';
+import getLiveTourState from '@salesforce/apex/FimbyGuidedTourController.getLiveTourState';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
@@ -16,6 +19,10 @@ import { getModeratorContext } from 'c/fimbyModeratorContext';
 
 const LOGO_FILE = 'FIMBYwGrass.png';
 const LOGO_SQUARE = 'FwithGrass.png';
+const LOGO_EGG_TAP_COUNT = 3;
+const LOGO_EGG_WINDOW_MS = 1000;
+const LOGO_HOME_DELAY_MS = 400;
+const SYSTEM_PROFILE_PATH = '/system-profile';
 const CREATE_ICON = 'add.png';
 const BELL_ACTIVE = 'BellActive.png';
 const BELL_INACTIVE = 'BellInactive.png';
@@ -81,9 +88,18 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track _moderatorTaskCount = 0;
     @track showTosModal = false;
 
+    _guidedTourRequestHandler;
+    _tourOpenMenuHandler;
+    _tourOpenSearchHandler;
+    _unregisterTourAnchors;
+    _autostartChecked = false;
+
     /* --- Lifecycle ------------------------------------------------- */
 
     _lastAppOpenTs = 0;
+    _logoTapCount = 0;
+    _lastLogoTap = 0;
+    _logoHomeTimer = null;
 
     // Reactive active-tab highlight. Because soft navigation keeps this header
     // mounted, the highlight can no longer be set once in connectedCallback —
@@ -127,6 +143,21 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             this._recordAppOpenOnResume();
         };
         window.addEventListener('fimby-app-resumed', this._appResumedHandler);
+
+        this._guidedTourRequestHandler = (event) => {
+            this._startGuidedTour({ replay: !!event?.detail?.replay });
+        };
+        window.addEventListener(GUIDED_TOUR_REQUEST_EVENT, this._guidedTourRequestHandler);
+
+        this._tourOpenMenuHandler = () => this.openMenuOverlay();
+        this._tourCloseMenuHandler = () => this.handleMenuClose();
+        this._tourOpenSearchHandler = () => this.handleSearchClick();
+        window.addEventListener('fimbytouropenmenu', this._tourOpenMenuHandler);
+        window.addEventListener('fimbytourclosemenu', this._tourCloseMenuHandler);
+        window.addEventListener('fimbytouropensearch', this._tourOpenSearchHandler);
+
+        this._unregisterTourAnchors = registerTourAnchorProvider(this);
+        this._maybeAutostartLiveTour();
     }
 
     disconnectedCallback() {
@@ -141,6 +172,69 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         if (this._appResumedHandler) {
             window.removeEventListener('fimby-app-resumed', this._appResumedHandler);
+        }
+        if (this._guidedTourRequestHandler) {
+            window.removeEventListener(GUIDED_TOUR_REQUEST_EVENT, this._guidedTourRequestHandler);
+        }
+        if (this._tourOpenMenuHandler) {
+            window.removeEventListener('fimbytouropenmenu', this._tourOpenMenuHandler);
+        }
+        if (this._tourCloseMenuHandler) {
+            window.removeEventListener('fimbytourclosemenu', this._tourCloseMenuHandler);
+        }
+        if (this._tourOpenSearchHandler) {
+            window.removeEventListener('fimbytouropensearch', this._tourOpenSearchHandler);
+        }
+        if (this._unregisterTourAnchors) {
+            this._unregisterTourAnchors();
+        }
+        if (this._logoHomeTimer) {
+            clearTimeout(this._logoHomeTimer);
+            this._logoHomeTimer = null;
+        }
+    }
+
+    @api
+    getTourAnchorRect(name) {
+        if (name === 'search-modal' && !this.showSearchModal) {
+            return null;
+        }
+        const el = this.template.querySelector(`[data-tour="${name}"]`);
+        if (!el) {
+            return null;
+        }
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 ? rect : null;
+    }
+
+    @api
+    openMenuOverlay() {
+        this.showMenuOverlay = true;
+        this._loadAvailableIdentitiesIfNeeded();
+    }
+
+    async _maybeAutostartLiveTour() {
+        if (this._autostartChecked) {
+            return;
+        }
+        this._autostartChecked = true;
+        if (this._activeTab !== 'home') {
+            return;
+        }
+        try {
+            const state = await getLiveTourState();
+            if (state?.autostartEligible) {
+                this._startGuidedTour({ replay: false });
+            }
+        } catch (err) {
+            console.error('fimbyUniversalHeader autostart live tour', err);
+        }
+    }
+
+    _startGuidedTour(options) {
+        const tour = this.template.querySelector('c-fimby-guided-tour');
+        if (tour?.startTour) {
+            tour.startTour(options);
         }
     }
 
@@ -516,7 +610,33 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     /* --- Header action handlers ------------------------------------ */
 
     handleLogoClick() {
-        this.navigateToPage('home');
+        const now = Date.now();
+        if (now - this._lastLogoTap > LOGO_EGG_WINDOW_MS) {
+            this._logoTapCount = 0;
+        }
+        this._lastLogoTap = now;
+        this._logoTapCount += 1;
+
+        if (this._logoHomeTimer) {
+            clearTimeout(this._logoHomeTimer);
+            this._logoHomeTimer = null;
+        }
+
+        if (this._logoTapCount >= LOGO_EGG_TAP_COUNT) {
+            this._logoTapCount = 0;
+            navigate(this, SYSTEM_PROFILE_PATH);
+            return;
+        }
+
+        // Defer single-tap home so a quick triple-tap can finish first.
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._logoHomeTimer = setTimeout(() => {
+            if (this._logoTapCount === 1) {
+                this.navigateToPage('home');
+            }
+            this._logoTapCount = 0;
+            this._logoHomeTimer = null;
+        }, LOGO_HOME_DELAY_MS);
     }
 
     handleNewClick() {
@@ -527,7 +647,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     handleQuickPostClose() {
-        // Modal closed
+        // fimbyquickpostclosed is dispatched from fimbyQuickPostForm.hide()
     }
 
     get searchOverlayClass() {
@@ -539,8 +659,14 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     handleSearchClick() {
         this.searchModalTerm = '';
         this.showSearchModal = true;
-        const input = this.template.querySelector('[data-id="search-modal-input"]');
-        if (input) input.focus();
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        requestAnimationFrame(() => {
+            const input = this.template.querySelector('[data-id="search-modal-input"]');
+            if (input) {
+                input.focus();
+            }
+            window.dispatchEvent(new CustomEvent('fimbysearchopened'));
+        });
     }
 
     handleSearchModalInput(event) {
@@ -553,6 +679,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         if (event.key === 'Escape') {
             this.showSearchModal = false;
+            window.dispatchEvent(
+                new CustomEvent('fimbysearchclosed', { detail: { navigatedAway: false } })
+            );
         }
     }
 
@@ -570,6 +699,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     handleSearchOverlayClick() {
         this.showSearchModal = false;
+        window.dispatchEvent(
+            new CustomEvent('fimbysearchclosed', { detail: { navigatedAway: false } })
+        );
     }
 
     handleSearchModalClick(event) {
@@ -579,6 +711,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     _navigateToSearchResults() {
         const term = encodeURIComponent(this.searchModalTerm.trim());
         this.showSearchModal = false;
+        window.dispatchEvent(
+            new CustomEvent('fimbysearchclosed', { detail: { navigatedAway: true } })
+        );
         navigate(this, '/search?q=' + term);
     }
 
@@ -736,9 +871,6 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     @api
     launchWalkthrough() {
-        // Replay tour entry point. Onboarding lives on a dedicated page; flag-driven
-        // routing inside fimbyOnboardingPage decides whether to land on Phase 1 or
-        // Phase 2 based on the user's existing onboarding state.
-        navigate(this, '/onboarding');
+        this._startGuidedTour({ replay: true });
     }
 }

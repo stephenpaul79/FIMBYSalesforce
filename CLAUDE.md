@@ -168,6 +168,8 @@ sf community publish --name "FIMBY" 2>&1 | tail -n 20
 ```
 Skip only if the user says not to publish.
 
+**Post-deploy commit (mandatory — no prompt):** after **each successful** org deploy (and after publish when LWC was included), commit immediately. Do not ask whether to commit. One commit per deploy call; stage only paths from that deploy plus related session wiring; brief why-focused message (`Deploy: …`); never push unless asked; never secrets. Skip only on deploy failure or explicit user opt-out (keep local / deploy only / no commit). Empty commit → skip.
+
 **Experience Cloud Setup Required:** CLI deploys LWC bundles but not pages/routes. If you created new page-level LWCs needing routes (e.g. `fimbyManageIdentities` → `/manage-identities`), changed route paths, or components needing page config, add an **Experience Cloud Setup Required** section to the session summary listing them for manual Builder setup.
 
 ---

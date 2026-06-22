@@ -16,23 +16,23 @@
 
             <!-- Desktop Navigation — 5 tabs matching bottom nav, hidden on mobile -->
             <div class="desktop-nav">
-                <button type="button" class={homeDesktopClass} onclick={handleNavClick} data-tab="home" aria-label="Home">
+                <button type="button" class={homeDesktopClass} onclick={handleNavClick} data-tab="home" data-tour="nav-home" aria-label="Home">
                     <img src={homeIconUrl} alt="Home" class="desktop-nav-icon" />
                     <div class={homeIndicator}></div>
                 </button>
 
-                <button type="button" class={libraryDesktopClass} onclick={handleNavClick} data-tab="library" aria-label="Library">
+                <button type="button" class={libraryDesktopClass} onclick={handleNavClick} data-tab="library" data-tour="nav-library" aria-label="Library">
                     <img src={libraryIconUrl} alt="Library" class="desktop-nav-icon" />
                     <div class={libraryIndicator}></div>
                 </button>
 
-                <button type="button" class="desktop-nav-item desktop-create-item" onclick={handleNewClick} aria-label="Create">
+                <button type="button" class="desktop-nav-item desktop-create-item" onclick={handleNewClick} data-tour="nav-create" aria-label="Create">
                     <div class="desktop-create-button">
                         <img src={createIconUrl} alt="Create" class="desktop-create-icon" />
                     </div>
                 </button>
 
-                <button type="button" class={messagesDesktopClass} onclick={handleNavClick} data-tab="messages" aria-label={messagesAriaLabel}>
+                <button type="button" class={messagesDesktopClass} onclick={handleNavClick} data-tab="messages" data-tour="nav-messages" aria-label={messagesAriaLabel}>
                     <span class="desktop-nav-icon-wrap">
                         <img src={messagesIconUrl} alt="" class="desktop-nav-icon" />
                         <template lwc:if={hasUnreadMessages}>
@@ -42,7 +42,7 @@
                     <div class={messagesIndicator}></div>
                 </button>
 
-                <button type="button" class={mineDesktopClass} onclick={handleNavClick} data-tab="mine" aria-label="My Stuff">
+                <button type="button" class={mineDesktopClass} onclick={handleNavClick} data-tab="mine" data-tour="nav-mine" aria-label="My Stuff">
                     <img src={mineIconUrl} alt="My Stuff" class="desktop-nav-icon" />
                     <div class={mineIndicator}></div>
                 </button>
@@ -50,7 +50,7 @@
 
             <div class="action-section">
                 <!-- Bell icon for notifications -->
-                <button type="button" class="bell-button" aria-label={notificationAriaLabel} onclick={handleNotificationsClick}>
+                <button type="button" class="bell-button" data-tour="nav-notifications" aria-label={notificationAriaLabel} onclick={handleNotificationsClick}>
                     <img src={bellIconUrl} alt="" class="bell-icon-img" />
                     <template lwc:if={hasNotifications}>
                         <span class="bell-badge" aria-hidden="true">{notificationBadgeLabel}</span>
@@ -65,10 +65,10 @@
                         </template>
                     </button>
                 </template>
-                <button type="button" class="search-button" aria-label="Search" onclick={handleSearchClick}>
+                <button type="button" class="search-button" data-tour="nav-search" aria-label="Search" onclick={handleSearchClick}>
                     <img src={searchIconUrl} alt="" class="action-icon-img" />
                 </button>
-                <button type="button" class="menu-button" aria-label="Menu" onclick={handleMenuClick}>
+                <button type="button" class="menu-button" data-tour="nav-menu" aria-label="Menu" onclick={handleMenuClick}>
                     <img src={menuIconUrl} alt="" class="action-icon-img" />
                 </button>
             </div>
@@ -124,18 +124,18 @@
                             </button>
                         </template>
                     </template>
-                    <button type="button" class="menu-item" onclick={handleManageIdentitiesClick}>
+                    <button type="button" class="menu-item" data-tour="menu-manage-identities" onclick={handleManageIdentitiesClick}>
                         <img src={peopleIconUrl} alt="" class="menu-icon" />
                         <span>Manage identities</span>
                     </button>
                 </div>
                 <div class="menu-divider"></div>
                 <div class="menu-items">
-                    <button type="button" class="menu-item" aria-label="Profile" onclick={handleProfileClick}>
+                    <button type="button" class="menu-item" data-tour="menu-profile" aria-label="Profile" onclick={handleProfileClick}>
                         <img src={profileMenuIconUrl} alt="" class="menu-icon" />
                         <span>Profile</span>
                     </button>
-                    <button type="button" class="menu-item" aria-label="Settings" onclick={handleSettingsClick}>
+                    <button type="button" class="menu-item" data-tour="menu-settings" aria-label="Settings" onclick={handleSettingsClick}>
                         <img src={settingsMenuIconUrl} alt="" class="menu-icon" />
                         <span>Settings</span>
                     </button>
@@ -158,7 +158,7 @@
 
         <!-- Search Modal Overlay — always in DOM so focus() triggers mobile keyboard -->
         <div class={searchOverlayClass} onclick={handleSearchOverlayClick}>
-            <div class="search-modal" onclick={handleSearchModalClick}>
+            <div class="search-modal" data-tour="search-modal" onclick={handleSearchModalClick}>
                 <div class="search-modal-input-row">
                     <input
                         id="search-modal-input"
@@ -188,6 +188,9 @@
             is-modal="true"
             onclose={handleQuickPostClose}>
         </c-fimby-quick-post-form>
+
+        <!-- Live guided tour (persistent shell) -->
+        <c-fimby-guided-tour></c-fimby-guided-tour>
 
         <!-- App Install Prompt (mobile-web only; self-gates on UA + cooldown) -->
         <c-fimby-app-prompt></c-fimby-app-prompt>

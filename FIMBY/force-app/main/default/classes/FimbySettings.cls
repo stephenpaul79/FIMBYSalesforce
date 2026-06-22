@@ -203,6 +203,11 @@ public with sharing class FimbySettings {
     /** @description Date the current CGA version took effect. */
     public static Date   cgaEffectiveDate()              { return get()?.Cga_Effective_Date__c; }
 
+    /** @description When true, live guided tour may autostart on Home after profile setup. */
+    public static Boolean liveTourEnabled() {
+        return get()?.Live_Tour_Enabled__c == true;
+    }
+
     @TestVisible
     private static void setMock(FIMBY_App_Settings__mdt mock) {
         cached = mock;

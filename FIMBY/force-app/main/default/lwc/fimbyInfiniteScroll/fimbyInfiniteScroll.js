@@ -129,7 +129,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
     }
 
     get showEmptyResolved() {
-        return this._showEmptyState && !this._curtainActive;
+        return this._showEmptyState && !this._curtainActive && this._hasRevealedOnce;
     }
 
     get scrollContentClass() {

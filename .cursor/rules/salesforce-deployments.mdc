@@ -41,6 +41,26 @@ After a **successful** LWC deploy, immediately publish the Experience Cloud site
 
 Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`. This applies to any deploy that includes one or more LWC bundles. Skip only if the user explicitly says not to publish.
 
+### Post-deploy: Git commit (mandatory — no prompt)
+
+After **each successful** org deploy — and after community publish when the deploy included LWC — **commit immediately**. Do not ask “should I commit?” Deploy success is the trigger.
+
+**Skip commit only when:**
+- The deploy failed (including real test failures — not the locale `Finalizing` artifact)
+- The user said keep local / deploy only / no commit / don’t commit in that message or thread
+- `git commit` would be empty (nothing staged)
+
+**Per deploy call (not end-of-session batch):**
+1. Stage only paths that were part of **that** deploy (`--source-dir` / `--metadata` set), plus any net-new untracked files under those paths (whole LWC bundle folders, not single files).
+2. If the same session changed related files not in the deploy path but required for the deployed feature (e.g. wiring in `fimbyUniversalHeader`), include those too — still scoped to the task, never the whole `force-app`.
+3. Commit with a short **why** message, e.g. `Deploy: guided tour mobile bottom-nav lift fix` — not a file list.
+4. **Never push** unless the user explicitly asks.
+5. **Never** stage secrets (`.env`, credentials).
+
+Use a HEREDOC for the commit message. If a pre-commit hook fails, fix and create a **new** commit (do not amend unless amend rules apply).
+
+This keeps git history aligned with what is live in the org and makes rollback a revert/checkout, not archaeology in untracked files.
+
 CLI deploys LWC bundles, but not Experience Cloud pages or routes. If a deploy created or changed any of these, add an `Experience Cloud Setup Required` section at the end of the session summary:
 - new page-level LWCs needing routes, like `fimbyManageIdentities` → `/manage-identities`
 - new or changed route paths referenced by deployed navigation

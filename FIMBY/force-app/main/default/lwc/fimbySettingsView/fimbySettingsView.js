@@ -4,6 +4,7 @@ import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
+import { launchGuidedTourReplay } from 'c/fimbyGuidedTourLauncher';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 import getSettingsData from '@salesforce/apex/FimbyProfileController.getSettingsData';
 import updateSettingsField from '@salesforce/apex/FimbyProfileController.updateSettingsField';
@@ -810,11 +811,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     // WALKTHROUGH
     // ============================================
     handleLaunchWalkthrough() {
-        // Onboarding lives on a dedicated page now. Phase routing inside
-        // fimbyOnboardingPage is flag-driven, so a returning member who taps
-        // Run Walkthrough lands directly on Phase 2 (the 5-screen tour) and
-        // skips the Phase 3 intro-post modal.
-        navigate(this, '/onboarding');
+        launchGuidedTourReplay(this);
     }
 
     handleTabChange(event) {

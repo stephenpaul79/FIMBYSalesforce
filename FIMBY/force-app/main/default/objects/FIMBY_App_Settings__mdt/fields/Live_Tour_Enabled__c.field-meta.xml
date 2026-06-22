@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Live_Tour_Enabled__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When true, the live guided tour may autostart on Home after profile setup (R3 cutover). Manual replay from Settings/Help is always available regardless of this flag.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Live Tour Enabled</label>
+    <type>Checkbox</type>
+</CustomField>

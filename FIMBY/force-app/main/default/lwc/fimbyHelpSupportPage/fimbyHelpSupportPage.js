@@ -2,6 +2,7 @@ import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
+import { launchGuidedTourReplay } from 'c/fimbyGuidedTourLauncher';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getFaqItems from '@salesforce/apex/FimbyFaqController.getFaqItems';
 import getNeighbourhoodModerator from '@salesforce/apex/FimbyModeratorDashboardController.getNeighbourhoodModerator';
@@ -125,11 +126,7 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
     /* --- Tour re-launch -------------------------------------------- */
 
     handleTakeTour() {
-        // Onboarding lives on a dedicated page; flag-driven routing inside
-        // fimbyOnboardingPage handles Phase 1 vs Phase 2 (replay viewers skip
-        // straight to the walkthrough, returning members don't see the
-        // intro-post modal again).
-        navigate(this, '/onboarding');
+        launchGuidedTourReplay(this);
     }
 
     /* --- FAQ accordion --------------------------------------------- */
