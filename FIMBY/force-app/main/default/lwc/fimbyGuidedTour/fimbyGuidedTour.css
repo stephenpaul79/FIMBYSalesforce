@@ -320,6 +320,15 @@
     margin-left: auto;
 }
 
+.footer-actions-row-center {
+    justify-content: center;
+}
+
+.footer-actions-row-center .btn-primary {
+    margin-left: 0;
+    min-width: 8.5rem;
+}
+
 .btn {
     border-radius: 10px;
     padding: 0.55rem 1rem;

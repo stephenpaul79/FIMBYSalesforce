@@ -248,6 +248,7 @@ export const TOUR_STEPS = [
         placement: 'center',
         hideVine: true,
         hideProgressLabel: true,
+        showFinishOnly: true,
         title: 'The backyard is yours',
         body:
             'You have the lay of the land now — feed, library, messages, settings, the lot. ' +

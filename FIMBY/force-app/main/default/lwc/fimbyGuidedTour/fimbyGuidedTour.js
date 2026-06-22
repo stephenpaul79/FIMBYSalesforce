@@ -410,6 +410,10 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         return this.currentStep.advance === 'introPost';
     }
 
+    get isExtendedFinish() {
+        return !!this.currentStep.showFinishOnly;
+    }
+
     get isNextDisabled() {
         const mode = this.currentStep.advance;
         if (mode === 'clickTarget' || mode === 'modalDismiss') {

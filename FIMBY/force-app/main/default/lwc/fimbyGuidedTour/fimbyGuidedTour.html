@@ -116,6 +116,11 @@
                                 <button type="button" class="btn btn-primary" onclick={handleIntroPostOpen}>Say hi</button>
                             </div>
                         </template>
+                        <template lwc:elseif={isExtendedFinish}>
+                            <div class="footer-actions-row footer-actions-row-center">
+                                <button type="button" class="btn btn-primary" onclick={handleNext}>Finish</button>
+                            </div>
+                        </template>
                         <template lwc:else>
                             <div class="footer-actions-row">
                                 <button type="button" class="btn btn-outline" onclick={handleSkip}>Skip Walkthrough</button>
