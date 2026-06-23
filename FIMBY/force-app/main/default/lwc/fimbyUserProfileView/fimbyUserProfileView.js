@@ -267,6 +267,9 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
         return this._multiSelectToDisplay(this.profile.careWelcomeSupport);
     }
     get hasCareWelcome() { return !!this.profile.careWelcomeSupport; }
+    get showCareExpanderHint() {
+        return !this.isEditingCare && this.hasCareWelcome && !this.profile.careHowToAsk;
+    }
     get careUnhelpfulDisplay() {
         return this._multiSelectToDisplay(this.profile.careUnhelpfulThings);
     }

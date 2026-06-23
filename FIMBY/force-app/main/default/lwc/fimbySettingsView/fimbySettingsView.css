@@ -1140,3 +1140,26 @@ button.block-result-item:focus-visible,
         animation: none;
     }
 }
+
+.settings-inline-hint {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: var(--fimby-info-tint);
+    border-left: 4px solid var(--fimby-info);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.settings-inline-hint-dismiss {
+    display: inline;
+    margin-left: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--fimby-link);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}

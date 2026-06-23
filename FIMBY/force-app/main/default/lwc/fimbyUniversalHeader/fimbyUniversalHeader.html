@@ -131,14 +131,16 @@
                 </div>
                 <div class="menu-divider"></div>
                 <div class="menu-items">
-                    <button type="button" class="menu-item" data-tour="menu-profile" aria-label="Profile" onclick={handleProfileClick}>
-                        <img src={profileMenuIconUrl} alt="" class="menu-icon" />
-                        <span>Profile</span>
-                    </button>
-                    <button type="button" class="menu-item" data-tour="menu-settings" aria-label="Settings" onclick={handleSettingsClick}>
-                        <img src={settingsMenuIconUrl} alt="" class="menu-icon" />
-                        <span>Settings</span>
-                    </button>
+                    <div class="menu-items-account" data-tour="menu-account">
+                        <button type="button" class="menu-item" data-tour="menu-profile" aria-label="Profile" onclick={handleProfileClick}>
+                            <img src={profileMenuIconUrl} alt="" class="menu-icon" />
+                            <span>Profile</span>
+                        </button>
+                        <button type="button" class="menu-item" data-tour="menu-settings" aria-label="Settings" onclick={handleSettingsClick}>
+                            <img src={settingsMenuIconUrl} alt="" class="menu-icon" />
+                            <span>Settings</span>
+                        </button>
+                    </div>
                     <button type="button" class="menu-item" aria-label="Help and Support" onclick={handleHelpClick}>
                         <img src={helpMenuIconUrl} alt="" class="menu-icon" />
                         <span>Help &amp; Support</span>

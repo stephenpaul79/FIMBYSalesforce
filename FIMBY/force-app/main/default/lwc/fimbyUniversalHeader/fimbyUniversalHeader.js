@@ -5,6 +5,8 @@ import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTim
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import { GUIDED_TOUR_REQUEST_EVENT } from 'c/fimbyGuidedTourLauncher';
 import getLiveTourState from '@salesforce/apex/FimbyGuidedTourController.getLiveTourState';
+
+const TOUR_PENDING_SESSION_KEY = 'fimby_tour_pending';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
@@ -145,7 +147,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         window.addEventListener('fimby-app-resumed', this._appResumedHandler);
 
         this._guidedTourRequestHandler = (event) => {
-            this._startGuidedTour({ replay: !!event?.detail?.replay });
+            this._startGuidedTour({
+                replay: !!event?.detail?.replay,
+                fromOnboarding: !!event?.detail?.fromOnboarding
+            });
         };
         window.addEventListener(GUIDED_TOUR_REQUEST_EVENT, this._guidedTourRequestHandler);
 
@@ -223,11 +228,20 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         try {
             const state = await getLiveTourState();
-            if (state?.autostartEligible) {
-                this._startGuidedTour({ replay: false });
+            const tourPending = this._hasTourPendingFlag();
+            if (state?.autostartEligible && tourPending) {
+                this._startGuidedTour({ replay: false, fromOnboarding: true });
             }
         } catch (err) {
             console.error('fimbyUniversalHeader autostart live tour', err);
+        }
+    }
+
+    _hasTourPendingFlag() {
+        try {
+            return sessionStorage.getItem(TOUR_PENDING_SESSION_KEY) === '1';
+        } catch {
+            return false;
         }
     }
 
@@ -831,6 +845,12 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     _recordAppOpenAndSyncQuietHours() {
         this._lastAppOpenTs = Date.now();
+        try {
+            const count = parseInt(sessionStorage.getItem('fimby_app_visit_count') || '0', 10) + 1;
+            sessionStorage.setItem('fimby_app_visit_count', String(count));
+        } catch {
+            // ignore
+        }
         recordAppOpen()
             .then(result => {
                 if (result?.quietHoursPreference && window.ReactNativeWebView) {

@@ -106,14 +106,8 @@
                     <div class="bubble-footer">
                         <template lwc:if={isOffRamp}>
                             <div class="footer-actions-row">
-                                <button type="button" class="btn btn-outline" onclick={handleOffRampDone}>Skip for now</button>
-                                <button type="button" class="btn btn-primary" onclick={handleOffRampKeep}>Keep exploring</button>
-                            </div>
-                        </template>
-                        <template lwc:elseif={isIntroPost}>
-                            <div class="footer-actions-row">
-                                <button type="button" class="btn btn-outline" onclick={handleIntroPostSkip}>Skip for now</button>
-                                <button type="button" class="btn btn-primary" onclick={handleIntroPostOpen}>Say hi</button>
+                                <button type="button" class="btn btn-outline" onclick={handleOffRampDone}>Take me Home</button>
+                                <button type="button" class="btn btn-primary" onclick={handleOffRampKeep}>Show me a bit more</button>
                             </div>
                         </template>
                         <template lwc:elseif={isExtendedFinish}>

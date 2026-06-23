@@ -62,6 +62,25 @@
             </div>
         </template>
 
+        <!-- Tour retry banner: shown when user skipped the walkthrough -->
+        <template lwc:if={showTourBanner}>
+            <div class="tour-banner" role="status">
+                <img src={tourBannerIconUrl} alt="" class="tour-banner-icon">
+                <div class="tour-banner-content">
+                    <p class="tour-banner-title">Quick tour of your neighbourhood?</p>
+                    <p class="tour-banner-text">Two minutes — feed, sharing, library, messages.</p>
+                </div>
+                <div class="tour-banner-actions">
+                    <button type="button" class="tour-banner-secondary" onclick={handleTourExploreOnOwn}>
+                        I'll explore on my own
+                    </button>
+                    <button type="button" class="tour-banner-cta btn-primary" onclick={handleTakeTour}>
+                        Take the tour
+                    </button>
+                </div>
+            </div>
+        </template>
+
         <!-- Intro post modal (lazy-mounted when banner CTA is tapped) -->
         <template lwc:if={showIntroPostModal}>
             <c-fimby-intro-post-modal

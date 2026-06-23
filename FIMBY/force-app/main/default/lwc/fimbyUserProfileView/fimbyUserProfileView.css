@@ -518,6 +518,28 @@
     margin: 8px 0 0;
 }
 
+.care-expander-hint {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    background: var(--fimby-info-tint);
+    border-left: 4px solid var(--fimby-info);
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.care-expander-hint-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 4px;
+    color: var(--fimby-link);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 /* ========== EDIT ACTION BUTTONS ========== */
 .edit-actions {
     display: flex;

@@ -9,9 +9,7 @@ import {
 import {
     getFilteredSteps,
     getProgressLabel,
-    getVineStage,
-    TRACK_EXTENDED,
-    TRACK_FINALE
+    getVineStage
 } from './fimbyGuidedTourContent';
 import TOUR_ICONS from '@salesforce/resourceUrl/Icons';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -40,6 +38,7 @@ const BOTTOM_NAV_ANCHORS = new Set([
 ]);
 const STATUS_COMPLETED = 'Completed';
 const STATUS_DISMISSED = 'Dismissed';
+const TOUR_PENDING_SESSION_KEY = 'fimby_tour_pending';
 
 export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
     @track isActive = false;
@@ -60,6 +59,8 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
     @track _modalPassThrough = false;
     @track _stepActionComplete = false;
     @track _actionRevealed = false;
+    @track _fromOnboarding = false;
+    @track _firstName = '';
 
     _revealNavigatedAway = false;
     _resizeHandler;
@@ -141,7 +142,7 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
             this._beginModalPassThrough(this.currentStep);
         };
         this._menuOpenedHandler = () => {
-            if (this.isActive && this.currentStep?.id === 'menu') {
+            if (this.isActive && this.currentStep?.id === 'open-menu') {
                 this._markStepActionComplete();
             }
             if (this.isActive && this.currentStep?.menuGuided) {
@@ -348,11 +349,19 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
     }
 
     get showBubbleHeaderRow() {
+        const step = this.currentStep;
+        if (step?.hideVine && !step?.iconFile && !this.progressLabel) {
+            return false;
+        }
         return !!(this.stepIconUrl || this.progressLabel || this.vineUrl);
     }
 
     get vineUrl() {
-        const stage = getVineStage(this.currentStep, this._trackPhase);
+        const step = this.currentStep;
+        if (step?.hideVine || step?.id === 'welcome') {
+            return null;
+        }
+        const stage = getVineStage(step);
         if (!stage) {
             return null;
         }
@@ -375,10 +384,11 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
 
     get displayTitle() {
         const step = this.currentStep;
+        if (step.id === 'welcome' && this._fromOnboarding) {
+            const name = this._firstName?.trim();
+            return name ? `Welcome in, ${name}` : 'Welcome in';
+        }
         if (this._actionRevealed && step.advance === 'modalDismiss') {
-            if (this._revealNavigatedAway && step.revealNavigateTitle) {
-                return step.revealNavigateTitle;
-            }
             if (step.revealTitle) {
                 return step.revealTitle;
             }
@@ -388,10 +398,11 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
 
     get displayBody() {
         const step = this.currentStep;
+        if (step.id === 'welcome' && this._fromOnboarding && step.fromOnboardingBodyPrefix) {
+            const vision = step.body || '';
+            return `${step.fromOnboardingBodyPrefix}${vision}`;
+        }
         if (this._actionRevealed && step.advance === 'modalDismiss') {
-            if (this._revealNavigatedAway && step.revealNavigateBody) {
-                return step.revealNavigateBody;
-            }
             if (step.revealBody) {
                 return step.revealBody;
             }
@@ -430,12 +441,12 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         return `left:${Math.max(0, left)}px;top:${Math.max(0, top)}px;width:${Math.max(0, width)}px;height:${Math.max(0, height)}px;`;
     }
 
-    /** @param {Object} options @param {boolean} [options.replay] */
+    /** @param {Object} options @param {boolean} [options.replay] @param {boolean} [options.fromOnboarding] */
     @api
     async startTour(options = {}) {
         this._replay = !!options.replay;
+        this._fromOnboarding = !!options.fromOnboarding;
         let hasMultipleIdentities = false;
-        let bioPostCompleted = true;
 
         try {
             const [identities, state] = await Promise.all([
@@ -443,17 +454,15 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
                 getLiveTourState()
             ]);
             hasMultipleIdentities = (identities || []).length > 0;
-            bioPostCompleted = !!state?.bioPostCompleted;
-            this._bioPostCompleted = bioPostCompleted;
+            this._firstName = state?.firstName || '';
             this._hasMultipleIdentities = hasMultipleIdentities;
         } catch (err) {
             console.error('fimbyGuidedTour startTour', err);
         }
 
-        const includeFinale = !this._replay && !bioPostCompleted;
+        this._clearTourPendingFlag();
         this._steps = getFilteredSteps({
             includeExtended: false,
-            includeFinale,
             hasMultipleIdentities
         });
         this._stepIndex = 0;
@@ -1139,7 +1148,7 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
 
     _advanceStep() {
         if (this._stepIndex >= this._steps.length - 1) {
-            this._completeTour(false);
+            this._completeTour();
             return;
         }
         this._stepIndex += 1;
@@ -1153,37 +1162,35 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
 
     handleOffRampKeep() {
         this._extendedTaken = true;
-        const includeFinale = !this._replay && !this._bioPostCompleted;
         this._steps = getFilteredSteps({
             includeExtended: true,
-            includeFinale,
             hasMultipleIdentities: this._hasMultipleIdentities
         });
-        const offRampIdx = this._steps.findIndex((s) => s.id === 'off-ramp');
-        this._stepIndex = offRampIdx >= 0 ? offRampIdx + 1 : 0;
-        this._prepareCurrentStep().then(() => {
-            // eslint-disable-next-line @lwc/lwc/no-async-operation
-            requestAnimationFrame(() => this._measureAndPosition());
-        });
-    }
-
-    handleOffRampDone() {
-        if (this._bioPostCompleted || this._replay) {
-            this._completeTour(false);
-            return;
-        }
-        const finaleIdx = this._steps.findIndex((s) => s.id === 'say-hi');
-        if (finaleIdx >= 0) {
-            this._stepIndex = finaleIdx;
-            // eslint-disable-next-line @lwc/lwc/no-async-operation
-            requestAnimationFrame(() => this._measureAndPosition());
-            void this._prepareCurrentStep().then(() => {
+        const extendedStartIdx = this._steps.findIndex((s) => s.id === 'open-menu');
+        this._stepIndex = extendedStartIdx >= 0 ? extendedStartIdx : 0;
+        const beginExtended = () => {
+            this._prepareCurrentStep().then(() => {
                 // eslint-disable-next-line @lwc/lwc/no-async-operation
                 requestAnimationFrame(() => this._measureAndPosition());
             });
+        };
+        window.dispatchEvent(new CustomEvent('fimbytourclosemenu'));
+        if (!isHomePath()) {
+            navigate(this, '/');
+            void ensureHomeFeedReadyForTour().then(beginExtended);
             return;
         }
-        this._completeTour(false);
+        beginExtended();
+    }
+
+    handleOffRampDone() {
+        window.dispatchEvent(new CustomEvent('fimbytourclosemenu'));
+        if (!isHomePath()) {
+            navigate(this, '/');
+            void ensureHomeFeedReadyForTour().then(() => this._completeTour());
+            return;
+        }
+        this._completeTour();
     }
 
     handleIntroPostOpen() {
@@ -1210,14 +1217,20 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
     }
 
     handleSkip() {
+        this._clearTourPendingFlag();
         this.endTour();
         this._persistStatus(STATUS_DISMISSED, false);
     }
 
-    _completeTour(fromFinale) {
-        if (fromFinale || this.currentStep?.advance === 'introPost') {
-            return;
+    _clearTourPendingFlag() {
+        try {
+            sessionStorage.removeItem(TOUR_PENDING_SESSION_KEY);
+        } catch {
+            // ignore
         }
+    }
+
+    _completeTour() {
         this.endTour();
         this._persistStatus(STATUS_COMPLETED, this._extendedTaken);
     }

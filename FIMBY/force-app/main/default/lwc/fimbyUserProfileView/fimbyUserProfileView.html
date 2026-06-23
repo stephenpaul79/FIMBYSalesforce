@@ -461,6 +461,12 @@
                         </div>
                     </template>
                     <template lwc:else>
+                        <template lwc:if={showCareExpanderHint}>
+                            <p class="care-expander-hint" role="status">
+                                Want to add how people should reach out?
+                                <button type="button" class="care-expander-hint-link" onclick={handleEditCare}>Add care details</button>
+                            </p>
+                        </template>
                         <div class="field-grid">
                             <div class="field-item full-width">
                                 <span class="field-label">Welcome support</span>

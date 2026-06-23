@@ -17,6 +17,9 @@ import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVou
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
+import getLiveTourState from '@salesforce/apex/FimbyGuidedTourController.getLiveTourState';
+import setLiveTourStatus from '@salesforce/apex/FimbyGuidedTourController.setLiveTourStatus';
+import { requestGuidedTour } from 'c/fimbyGuidedTourLauncher';
 
 import Id from '@salesforce/user/Id';
 
@@ -135,6 +138,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @track _userFirstName = '';
     @track _showWelcomeBack = false;
     @track _showBioBanner = false;
+    @track _showTourBanner = false;
     @track _showIntroPostModal = false;
     @track _welcomeBackText = '';
     @track _seasonalTitle = '';
@@ -192,6 +196,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get refreshIconUrl()      { return `${IMPACT_ICONS}/refresh.png`; }
     get bioBannerIconUrl()    { return `${IMPACT_ICONS}/Wave.png`; }
     get showBioBanner()       { return this._showBioBanner; }
+    get tourBannerIconUrl()   { return `${IMPACT_ICONS}/NeighborhoodActive.png`; }
+    get showTourBanner()      { return this._showTourBanner; }
     get showIntroPostModal()  { return this._showIntroPostModal; }
 
     handleOpenBioModal() {
@@ -214,6 +220,19 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         this._showIntroPostModal = false;
         this._showBioBanner = false;
     }
+
+    handleTakeTour() {
+        this._showTourBanner = false;
+        requestGuidedTour({ replay: false });
+    }
+
+    handleTourExploreOnOwn() {
+        this._showTourBanner = false;
+        setLiveTourStatus({ status: 'Completed', extendedCompleted: false }).catch((err) => {
+            console.error('fimbyHomeFeed: tour banner dismiss', err);
+        });
+    }
+
     get refreshButtonClass()  { return this.isLoading ? 'refresh-button refreshing' : 'refresh-button'; }
 
     get allFilterClass()      { return this.activeFilter === 'all'      ? 'filter-button active' : 'filter-button'; }
@@ -333,6 +352,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             // Non-fatal: if onboarding status fails, render the home feed normally rather
             // than blocking on the redirect check. The banner just won't appear.
             console.error('fimbyHomeFeed: onboarding status check failed', err);
+        }
+
+        try {
+            const tourState = await getLiveTourState();
+            this._showTourBanner = !!tourState?.bannerEligible;
+        } catch (err) {
+            console.error('fimbyHomeFeed: live tour state check failed', err);
         }
 
         this._applyUrlFilterParam();

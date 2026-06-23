@@ -14,7 +14,9 @@ public with sharing class FimbyGuidedTourController {
             'bioPostCompleted' => false,
             'autostartEligible' => false,
             'liveTourEnabled' => FimbySettings.liveTourEnabled(),
-            'extendedCompleted' => false
+            'extendedCompleted' => false,
+            'bannerEligible' => false,
+            'firstName' => ''
         };
 
         Id contactId = FimbyIdentityRepository.getActingAsContactId();
@@ -42,9 +44,14 @@ public with sharing class FimbyGuidedTourController {
         result.put('liveTourStatus', status);
         result.put('bioPostCompleted', bioDone);
         result.put('extendedCompleted', c.Live_Tour_Extended_Completed__c == true);
+        result.put('firstName', String.isNotBlank(c.FirstName) ? c.FirstName : '');
         result.put(
             'autostartEligible',
             flagOn && status == FimbyConstants.ONBOARDING_NOT_STARTED
+        );
+        result.put(
+            'bannerEligible',
+            flagOn && status == FimbyConstants.ONBOARDING_DISMISSED
         );
         return result;
     }
@@ -88,7 +95,7 @@ public with sharing class FimbyGuidedTourController {
     private without sharing class ContactReader {
         public Contact read(Id contactId) {
             List<Contact> contacts = [
-                SELECT Id, Live_Tour_Status__c, Bio_Post_Completed__c,
+                SELECT Id, FirstName, Live_Tour_Status__c, Bio_Post_Completed__c,
                        Live_Tour_Extended_Completed__c, Is_Organization_Contact__c
                 FROM Contact
                 WHERE Id = :contactId

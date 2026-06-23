@@ -115,6 +115,12 @@
                             </template>
                         </select>
                     </div>
+                    <template lwc:if={showQuietHoursHint}>
+                        <p class="settings-inline-hint" role="status">
+                            We set quiet hours to 10 PM – 6 AM while you got settled in. Change them here anytime.
+                            <button type="button" class="settings-inline-hint-dismiss" onclick={handleDismissQuietHoursHint}>Got it</button>
+                        </p>
+                    </template>
 
                     <!-- Category grid -->
                     <div class="category-grid">

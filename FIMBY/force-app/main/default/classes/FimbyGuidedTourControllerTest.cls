@@ -38,6 +38,23 @@ private class FimbyGuidedTourControllerTest {
         System.runAs(testUser) {
             Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
             System.assertEquals(true, state.get('autostartEligible'));
+            System.assertEquals(false, state.get('bannerEligible'));
+            System.assertNotEquals(null, state.get('firstName'));
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testBannerEligibleWhenDismissed() {
+        User testUser = getTestUser();
+        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Live_Tour_Enabled__c = true));
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyGuidedTourController.setLiveTourStatus(FimbyConstants.ONBOARDING_DISMISSED, false);
+            Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
+            System.assertEquals(false, state.get('autostartEligible'));
+            System.assertEquals(true, state.get('bannerEligible'));
         }
         Test.stopTest();
     }

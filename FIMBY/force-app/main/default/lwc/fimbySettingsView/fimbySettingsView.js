@@ -62,6 +62,7 @@ const NOTIFICATION_CATEGORIES = [
 export default class FimbySettingsView extends NavigationMixin(LightningElement) {
     @track isLoading = true;
     @track settings = {};
+    @track showQuietHoursHint = false;
     @track themePreference = 'auto'; // 'light', 'dark', 'auto'
 
     // Inline success banner — shown when a save keeps the user on this page
@@ -289,6 +290,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             this.settings = await getSettingsData();
             this._syncThemeFromServer();
+            this._evaluateQuietHoursHint();
         } catch {
             this._showError('Could not load your settings. Please try again.');
         } finally {
@@ -311,6 +313,46 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         }
     }
 
+    handleDismissQuietHoursHint() {
+        this._dismissQuietHoursHint();
+    }
+
+    _evaluateQuietHoursHint() {
+        try {
+            if (localStorage.getItem('fimby_quiet_hours_hint_dismissed') === '1') {
+                this.showQuietHoursHint = false;
+                return;
+            }
+        } catch {
+            // ignore
+        }
+        const pref = this.settings?.quietHoursPreference;
+        const isDefault = !pref || pref === '10PM_6AM';
+        if (!isDefault) {
+            this.showQuietHoursHint = false;
+            return;
+        }
+        let appVisits = 0;
+        let notifications = 0;
+        try {
+            appVisits = parseInt(sessionStorage.getItem('fimby_app_visit_count') || '0', 10);
+            const cached = JSON.parse(sessionStorage.getItem('fimby-badge-counts') || '{}');
+            notifications = cached.notifications || 0;
+        } catch {
+            // ignore
+        }
+        this.showQuietHoursHint = appVisits >= 2 || notifications >= 1;
+    }
+
+    _dismissQuietHoursHint() {
+        this.showQuietHoursHint = false;
+        try {
+            localStorage.setItem('fimby_quiet_hours_hint_dismissed', '1');
+        } catch {
+            // ignore
+        }
+    }
+
     // ============================================
     // EMAIL PREFERENCES
     // ============================================
@@ -326,6 +368,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
 
     async handleQuietHoursChange(event) {
         const value = event.target.value;
+        this._dismissQuietHoursHint();
         try {
             await updateSettingsField({ fieldName: 'Quiet_Hours_Preference__c', value });
             this.settings = { ...this.settings, quietHoursPreference: value };
