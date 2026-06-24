@@ -66,6 +66,7 @@ public with sharing class FimbyContactController {
             }
 
             Boolean tosReacceptanceRequired = realContact.Tos_Reacceptance_Required__c == true;
+            Boolean hasPriorTosAcceptance = realContact.Tos_Accepted_Date__c != null;
 
             return new Map<String, Object>{
                 'success' => true,
@@ -85,6 +86,7 @@ public with sharing class FimbyContactController {
                 'isOrganizationContact' => isOrgContact,
                 'organizationAccountId' => actingAsContact.Organization_Account__c,
                 'tosReacceptanceRequired' => tosReacceptanceRequired,
+                'hasPriorTosAcceptance' => hasPriorTosAcceptance,
                 // Legacy aliases
                 'contactId' => actingAsContact.Id,
                 'contactName' => actingAsContact.Name

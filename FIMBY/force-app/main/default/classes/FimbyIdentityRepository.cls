@@ -45,7 +45,8 @@ public with sharing class FimbyIdentityRepository {
                    Contact.Organization_Account__c,
                    Contact.Organization_Account__r.Name,
                    Contact.Organization_Account__r.Logo_URL__c,
-                   Contact.Tos_Reacceptance_Required__c
+                   Contact.Tos_Reacceptance_Required__c,
+                   Contact.Tos_Accepted_Date__c
             FROM User
             WHERE Id = :UserInfo.getUserId()
             LIMIT 1

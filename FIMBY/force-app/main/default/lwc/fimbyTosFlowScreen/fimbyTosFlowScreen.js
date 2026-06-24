@@ -7,6 +7,7 @@ import acceptTos from '@salesforce/apex/FimbyTosController.acceptTos';
 const TOS_URL = 'https://fimby.com/terms-of-service';
 const PRIVACY_URL = 'https://fimby.com/privacy-policy';
 const GUIDELINES_URL = '/community-guidelines';
+const HELP_EMAIL = 'help@fimby.com';
 
 export default class FimbyTosFlowScreen extends LightningElement {
     @track _acceptanceCompleted = false;
@@ -45,6 +46,14 @@ export default class FimbyTosFlowScreen extends LightningElement {
         return GUIDELINES_URL;
     }
 
+    get helpEmailUrl() {
+        return `mailto:${HELP_EMAIL}`;
+    }
+
+    get helpEmailLabel() {
+        return HELP_EMAIL;
+    }
+
     get effectiveDateLabel() {
         if (!this.effectiveDate) return '';
         try {
@@ -64,6 +73,15 @@ export default class FimbyTosFlowScreen extends LightningElement {
 
     handleCheckboxChange(event) {
         this.checkboxChecked = event.target.checked;
+    }
+
+    handleDeclineLogout() {
+        this.dispatchEvent(
+            new CustomEvent('declinelogout', {
+                bubbles: true,
+                composed: true
+            })
+        );
     }
 
     async handleAgree() {

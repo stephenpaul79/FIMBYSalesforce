@@ -89,6 +89,8 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track _isModerator = false;
     @track _moderatorTaskCount = 0;
     @track showTosModal = false;
+    @track hasPriorTosAcceptance = false;
+    _savedBodyOverflow = null;
 
     _guidedTourRequestHandler;
     _tourOpenMenuHandler;
@@ -196,6 +198,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         if (this._logoHomeTimer) {
             clearTimeout(this._logoHomeTimer);
             this._logoHomeTimer = null;
+        }
+        if (this._savedBodyOverflow !== null) {
+            document.body.style.overflow = this._savedBodyOverflow;
+            this._savedBodyOverflow = null;
         }
     }
 
@@ -397,8 +403,11 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             isActive: actingResult.isActingAsSelf
         };
         this.isActingAsSelf = actingResult.isActingAsSelf;
-        this.showTosModal = actingResult.tosReacceptanceRequired === true
-            && actingResult.isActingAsSelf === true;
+        this._setTosModalVisibility(
+            actingResult.tosReacceptanceRequired === true
+            && actingResult.isActingAsSelf === true
+        );
+        this.hasPriorTosAcceptance = actingResult.hasPriorTosAcceptance === true;
         if (!actingResult.isActingAsSelf) {
             this.actingAsDisplayName = actingResult.actingAsContactName;
             this.actingAsAvatarUrl = avatarImageUrl(actingResult.actingAsAvatarUrl)
@@ -466,7 +475,36 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     handleTosComplete() {
-        this.showTosModal = false;
+        this._setTosModalVisibility(false);
+    }
+
+    // The TOS gate must fully take over the screen: a first-time user must not be
+    // able to see or scroll the feed (which renders in the content region behind
+    // the shell) before agreeing. The opaque backdrop hides it; this locks
+    // background scroll so the wheel/touch can't move the page underneath.
+    _setTosModalVisibility(show) {
+        this.showTosModal = show;
+        if (show) {
+            if (this._savedBodyOverflow === null) {
+                this._savedBodyOverflow = document.body.style.overflow;
+            }
+            document.body.style.overflow = 'hidden';
+        } else if (this._savedBodyOverflow !== null) {
+            document.body.style.overflow = this._savedBodyOverflow;
+            this._savedBodyOverflow = null;
+        }
+    }
+
+    get tosModalTitle() {
+        return this.hasPriorTosAcceptance
+            ? 'A quick check-in before you continue'
+            : 'Welcome — one step before you join in';
+    }
+
+    get tosModalIntro() {
+        return this.hasPriorTosAcceptance
+            ? 'Our Terms of Service have changed since you last agreed. Please read the current version and confirm you\'re 19 or older to continue.'
+            : 'To be part of your neighbourhood on FIMBY, please read our Terms of Service and confirm you\'re 19 or older.';
     }
 
     handleIdentitySwitch(event) {

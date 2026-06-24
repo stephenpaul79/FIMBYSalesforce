@@ -118,7 +118,9 @@
 .fimby-tos-screen__actions {
     margin-top: 0.25rem;
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
 }
 
 .fimby-tos-screen__agree {
@@ -157,6 +159,53 @@
 .fimby-tos-screen__agree:active:not(:disabled) {
     background: var(--fimby-btn-primary-bg-active, #2B5F6D);
     box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0, 0, 0, 0.12));
+}
+
+.fimby-tos-screen__decline {
+    background: none;
+    border: none;
+    padding: 0.625rem 0.75rem;
+    min-height: 44px;
+    color: var(--fimby-text-secondary, #736B5C);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.fimby-tos-screen__decline:hover {
+    color: var(--fimby-text-primary, #4A3526);
+}
+
+.fimby-tos-screen__decline:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring, #3A7D8C);
+    outline-offset: 2px;
+    border-radius: var(--fimby-radius-sm, 8px);
+}
+
+.fimby-tos-screen__help {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--fimby-text-secondary, #736B5C);
+    text-align: center;
+    line-height: 1.45;
+}
+
+.fimby-tos-screen__help a,
+.fimby-tos-screen__help a:visited {
+    color: var(--fimby-btn-info-bg, #0166BA);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.fimby-tos-screen__help a:hover,
+.fimby-tos-screen__help a:focus-visible {
+    color: var(--fimby-btn-primary-bg-active, #2B5F6D);
+    text-decoration: underline;
 }
 
 .fimby-tos-screen__error {

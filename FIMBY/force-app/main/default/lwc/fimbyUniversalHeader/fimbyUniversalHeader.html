@@ -204,13 +204,12 @@
         <template lwc:if={showTosModal}>
             <div class="fimby-tos-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
                 <div class="fimby-tos-modal">
-                    <h2 id="tos-modal-title" class="fimby-tos-modal-title">A quick check-in before you continue</h2>
-                    <p class="fimby-tos-modal-intro">
-                        Our Terms of Service have been updated. Please take a minute to read them and let us know you agree.
-                    </p>
+                    <h2 id="tos-modal-title" class="fimby-tos-modal-title">{tosModalTitle}</h2>
+                    <p class="fimby-tos-modal-intro">{tosModalIntro}</p>
                     <c-fimby-tos-flow-screen
                         source="Login Flow"
-                        oncomplete={handleTosComplete}>
+                        oncomplete={handleTosComplete}
+                        ondeclinelogout={handleLogoutClick}>
                     </c-fimby-tos-flow-screen>
                 </div>
             </div>

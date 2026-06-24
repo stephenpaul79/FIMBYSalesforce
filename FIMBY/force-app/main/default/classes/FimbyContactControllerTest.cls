@@ -62,6 +62,27 @@ public class FimbyContactControllerTest {
         System.assert(result.containsKey('organizationAccountId'), 'Should contain organizationAccountId');
         System.assert(result.containsKey('tosReacceptanceRequired'), 'Should expose tosReacceptanceRequired flag for header modal');
         System.assertEquals(false, result.get('tosReacceptanceRequired'), 'Default contact should not require TOS reacceptance');
+        System.assert(result.containsKey('hasPriorTosAcceptance'), 'Should expose hasPriorTosAcceptance for TOS modal copy');
+        System.assertEquals(false, result.get('hasPriorTosAcceptance'), 'Default contact should not have prior TOS acceptance');
+    }
+
+    @isTest
+    static void testGetActingAsContact_HasPriorTosAcceptance() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        testContact.Tos_Accepted_Date__c = System.now();
+        update testContact;
+        FimbyIdentityRepository.clearCache();
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyContactController.getActingAsContact();
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('hasPriorTosAcceptance'),
+            'Contact with Tos_Accepted_Date__c should report prior acceptance');
     }
 
     @isTest

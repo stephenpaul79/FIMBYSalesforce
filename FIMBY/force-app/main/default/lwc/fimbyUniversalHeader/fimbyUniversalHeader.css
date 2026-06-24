@@ -920,12 +920,14 @@ button.identity-row:focus-visible {
         animation: none !important;
     }
 }
-/* TOS reacceptance modal */
+/* TOS reacceptance modal.
+   Opaque (not a translucent scrim): a first-time user must not be able to see
+   the feed rendered in the content region behind the shell before agreeing. */
 .fimby-tos-modal-backdrop {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
-    background: var(--fimby-scrim, rgba(38, 26, 17, 0.50));
-    z-index: 9000;
+    inset: 0;
+    background-color: var(--fimby-surface-page, #F0EBE3);
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -988,7 +990,6 @@ button.identity-row:focus-visible {
 
 @media (max-width: 480px) {
     .fimby-tos-modal-backdrop {
-        top: 0;
         padding: 0.75rem;
         align-items: flex-end;
     }
