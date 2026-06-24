@@ -1570,6 +1570,16 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
+                <componentName>c:fimbyContactLinkedUserPanel</componentName>
+                <identifier>c_fimbyContactLinkedUserPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-linked-user-panel</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
                 <componentInstanceProperties>
                     <name>active</name>
                     <value>true</value>
@@ -1584,6 +1594,20 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:tab</componentName>
                 <identifier>flexipage_tab3</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-linked-user-panel</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Linked User</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab4</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>

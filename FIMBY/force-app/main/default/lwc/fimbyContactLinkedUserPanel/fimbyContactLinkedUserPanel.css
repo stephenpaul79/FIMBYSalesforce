@@ -1,0 +1,30 @@
+.linked-user-panel {
+    background: var(--lwc-colorBackgroundAlt, #ffffff);
+}
+
+.linked-user-panel .slds-section__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 0.5rem;
+}
+
+.linked-user-panel .section-edit-btn {
+    flex-shrink: 0;
+}
+
+.linked-user-panel .user-summary {
+    border-bottom: 1px solid var(--lwc-colorBorder, #dddbda);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+}
+
+.linked-user-panel .empty-state {
+    color: var(--lwc-colorTextWeak, #706e6b);
+}
+
+.linked-user-panel lightning-output-field,
+.linked-user-panel lightning-input-field {
+    display: block;
+    margin-bottom: 0.25rem;
+}
