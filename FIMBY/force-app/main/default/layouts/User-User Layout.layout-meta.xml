@@ -146,19 +146,11 @@
                 <behavior>Edit</behavior>
                 <field>FIMBY_Summary_Emails__c</field>
             </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>FIMBY_Operating_Updates_Enabled__c</field>
-            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>FIMBY_Daily_Summary_Count__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>FIMBY_Story_Summary_Count__c</field>
+                <behavior>Edit</behavior>
+                <field>FIMBY_Operating_Updates_Enabled__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>
