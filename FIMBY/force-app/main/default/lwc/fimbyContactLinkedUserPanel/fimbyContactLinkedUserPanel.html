@@ -22,7 +22,7 @@
                 </p>
             </div>
 
-            <!-- Account & Summary -->
+            <!-- Account & Summary: User.FIMBY_Summary_Emails__c is source of truth (Contact.Summary_Email_Frequency__c is legacy flows only) -->
             <section class={accountSectionClass}>
                 <h3 class="slds-section__title">
                     <button
@@ -30,62 +30,21 @@
                         class="slds-button slds-section__title-action"
                         data-section="account"
                         onclick={handleToggleSection}>
-                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon"></lightning-icon>
+                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon slds-m-right_x-small"></lightning-icon>
                         <span class="slds-truncate" title="Account &amp; Summary">Account &amp; Summary</span>
                     </button>
-                    <template lwc:if={isEditingAccount}>
-                    </template>
-                    <template lwc:else>
-                        <button
-                            type="button"
-                            class="slds-button slds-button_icon section-edit-btn"
-                            title="Edit Account &amp; Summary"
-                            data-section="account"
-                            onclick={handleEditSection}>
-                            <lightning-icon icon-name="utility:edit" size="x-small" alternative-text="Edit"></lightning-icon>
-                        </button>
-                    </template>
                 </h3>
                 <div class="slds-section__content">
-                    <template lwc:if={isEditingAccount}>
-                        <lightning-record-edit-form
-                            record-id={userId}
-                            object-api-name="User"
-                            onsuccess={handleSaveSuccess}
-                            onerror={handleSaveError}
-                            onsubmit={handleSubmit}>
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Neighbourhood__c"></lightning-input-field>
-                                    <lightning-input-field field-name="FIMBY_Summary_Emails__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Mailbox_Contact_ID__c"></lightning-input-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="HouseholdID__c"></lightning-output-field>
-                                    <lightning-output-field field-name="FIMBY_Daily_Summary_Count__c"></lightning-output-field>
-                                </div>
+                    <lightning-record-view-form record-id={userId} object-api-name="User">
+                        <div class="slds-grid slds-wrap slds-gutters_direct">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="FIMBY_Summary_Emails__c"></lightning-output-field>
                             </div>
-                            <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                                <lightning-button variant="neutral" label="Cancel" onclick={handleCancelEdit}></lightning-button>
-                                <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="LastLoginDate"></lightning-output-field>
                             </div>
-                        </lightning-record-edit-form>
-                    </template>
-                    <template lwc:else>
-                        <lightning-record-view-form key={viewFormKeyAttr} record-id={userId} object-api-name="User">
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Neighbourhood__c"></lightning-output-field>
-                                    <lightning-output-field field-name="FIMBY_Summary_Emails__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Mailbox_Contact_ID__c"></lightning-output-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="HouseholdID__c"></lightning-output-field>
-                                    <lightning-output-field field-name="FIMBY_Daily_Summary_Count__c"></lightning-output-field>
-                                </div>
-                            </div>
-                        </lightning-record-view-form>
-                    </template>
+                        </div>
+                    </lightning-record-view-form>
                 </div>
             </section>
 
@@ -97,56 +56,21 @@
                         class="slds-button slds-section__title-action"
                         data-section="walkthrough"
                         onclick={handleToggleSection}>
-                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon"></lightning-icon>
+                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon slds-m-right_x-small"></lightning-icon>
                         <span class="slds-truncate" title="Onboarding Walkthrough">Onboarding Walkthrough</span>
                     </button>
-                    <template lwc:if={isEditingWalkthrough}>
-                    </template>
-                    <template lwc:else>
-                        <button
-                            type="button"
-                            class="slds-button slds-button_icon section-edit-btn"
-                            title="Edit Onboarding Walkthrough"
-                            data-section="walkthrough"
-                            onclick={handleEditSection}>
-                            <lightning-icon icon-name="utility:edit" size="x-small" alternative-text="Edit"></lightning-icon>
-                        </button>
-                    </template>
                 </h3>
                 <div class="slds-section__content">
-                    <template lwc:if={isEditingWalkthrough}>
-                        <lightning-record-edit-form
-                            record-id={userId}
-                            object-api-name="User"
-                            onsuccess={handleSaveSuccess}
-                            onerror={handleSaveError}
-                            onsubmit={handleSubmit}>
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Onboarding_Walkthrough_Status__c"></lightning-input-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Onboarding_Walkthrough_Dismissed_At__c"></lightning-output-field>
-                                </div>
+                    <lightning-record-view-form record-id={userId} object-api-name="User">
+                        <div class="slds-grid slds-wrap slds-gutters_direct">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Onboarding_Walkthrough_Status__c"></lightning-output-field>
                             </div>
-                            <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                                <lightning-button variant="neutral" label="Cancel" onclick={handleCancelEdit}></lightning-button>
-                                <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Onboarding_Walkthrough_Dismissed_At__c"></lightning-output-field>
                             </div>
-                        </lightning-record-edit-form>
-                    </template>
-                    <template lwc:else>
-                        <lightning-record-view-form key={viewFormKeyAttr} record-id={userId} object-api-name="User">
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Onboarding_Walkthrough_Status__c"></lightning-output-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Onboarding_Walkthrough_Dismissed_At__c"></lightning-output-field>
-                                </div>
-                            </div>
-                        </lightning-record-view-form>
-                    </template>
+                        </div>
+                    </lightning-record-view-form>
                 </div>
             </section>
 
@@ -158,68 +82,27 @@
                         class="slds-button slds-section__title-action"
                         data-section="email"
                         onclick={handleToggleSection}>
-                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon"></lightning-icon>
+                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon slds-m-right_x-small"></lightning-icon>
                         <span class="slds-truncate" title="Email Alerts">Email Alerts</span>
                     </button>
-                    <template lwc:if={isEditingEmail}>
-                    </template>
-                    <template lwc:else>
-                        <button
-                            type="button"
-                            class="slds-button slds-button_icon section-edit-btn"
-                            title="Edit Email Alerts"
-                            data-section="email"
-                            onclick={handleEditSection}>
-                            <lightning-icon icon-name="utility:edit" size="x-small" alternative-text="Edit"></lightning-icon>
-                        </button>
-                    </template>
                 </h3>
                 <div class="slds-section__content">
-                    <template lwc:if={isEditingEmail}>
-                        <lightning-record-edit-form
-                            record-id={userId}
-                            object-api-name="User"
-                            onsuccess={handleSaveSuccess}
-                            onerror={handleSaveError}
-                            onsubmit={handleSubmit}>
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Email_Alerts_Enabled__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Messages__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Needs_Offers__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Library__c"></lightning-input-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Email_Alert_Stories__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Reminders__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Bulk_Buy__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Email_Alert_Events__c"></lightning-input-field>
-                                </div>
+                    <lightning-record-view-form record-id={userId} object-api-name="User">
+                        <div class="slds-grid slds-wrap slds-gutters_direct">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Email_Alerts_Enabled__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Messages__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Needs_Offers__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Library__c"></lightning-output-field>
                             </div>
-                            <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                                <lightning-button variant="neutral" label="Cancel" onclick={handleCancelEdit}></lightning-button>
-                                <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Email_Alert_Stories__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Reminders__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Bulk_Buy__c"></lightning-output-field>
+                                <lightning-output-field field-name="Email_Alert_Events__c"></lightning-output-field>
                             </div>
-                        </lightning-record-edit-form>
-                    </template>
-                    <template lwc:else>
-                        <lightning-record-view-form key={viewFormKeyAttr} record-id={userId} object-api-name="User">
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Email_Alerts_Enabled__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Messages__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Needs_Offers__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Library__c"></lightning-output-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Email_Alert_Stories__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Reminders__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Bulk_Buy__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Email_Alert_Events__c"></lightning-output-field>
-                                </div>
-                            </div>
-                        </lightning-record-view-form>
-                    </template>
+                        </div>
+                    </lightning-record-view-form>
                 </div>
             </section>
 
@@ -231,74 +114,30 @@
                         class="slds-button slds-section__title-action"
                         data-section="push"
                         onclick={handleToggleSection}>
-                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon"></lightning-icon>
+                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon slds-m-right_x-small"></lightning-icon>
                         <span class="slds-truncate" title="Push &amp; Scheduling">Push &amp; Scheduling</span>
                     </button>
-                    <template lwc:if={isEditingPush}>
-                    </template>
-                    <template lwc:else>
-                        <button
-                            type="button"
-                            class="slds-button slds-button_icon section-edit-btn"
-                            title="Edit Push &amp; Scheduling"
-                            data-section="push"
-                            onclick={handleEditSection}>
-                            <lightning-icon icon-name="utility:edit" size="x-small" alternative-text="Edit"></lightning-icon>
-                        </button>
-                    </template>
                 </h3>
                 <div class="slds-section__content">
-                    <template lwc:if={isEditingPush}>
-                        <lightning-record-edit-form
-                            record-id={userId}
-                            object-api-name="User"
-                            onsuccess={handleSaveSuccess}
-                            onerror={handleSaveError}
-                            onsubmit={handleSubmit}>
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Push_Notifications_Enabled__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Messages__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Needs_Offers__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Library__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Stories__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Bulk_Buy__c"></lightning-input-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-input-field field-name="Push_Reminders__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Push_Events__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Quiet_Hours_Preference__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Include_Sundays__c"></lightning-input-field>
-                                    <lightning-input-field field-name="Theme_Preference__c"></lightning-input-field>
-                                </div>
+                    <lightning-record-view-form record-id={userId} object-api-name="User">
+                        <div class="slds-grid slds-wrap slds-gutters_direct">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Push_Notifications_Enabled__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Messages__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Needs_Offers__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Library__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Stories__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Bulk_Buy__c"></lightning-output-field>
                             </div>
-                            <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                                <lightning-button variant="neutral" label="Cancel" onclick={handleCancelEdit}></lightning-button>
-                                <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-output-field field-name="Push_Reminders__c"></lightning-output-field>
+                                <lightning-output-field field-name="Push_Events__c"></lightning-output-field>
+                                <lightning-output-field field-name="Quiet_Hours_Preference__c"></lightning-output-field>
+                                <lightning-output-field field-name="Include_Sundays__c"></lightning-output-field>
+                                <lightning-output-field field-name="Theme_Preference__c"></lightning-output-field>
                             </div>
-                        </lightning-record-edit-form>
-                    </template>
-                    <template lwc:else>
-                        <lightning-record-view-form key={viewFormKeyAttr} record-id={userId} object-api-name="User">
-                            <div class="slds-grid slds-wrap slds-gutters_direct">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Push_Notifications_Enabled__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Messages__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Needs_Offers__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Library__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Stories__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Bulk_Buy__c"></lightning-output-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <lightning-output-field field-name="Push_Reminders__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Push_Events__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Quiet_Hours_Preference__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Include_Sundays__c"></lightning-output-field>
-                                    <lightning-output-field field-name="Theme_Preference__c"></lightning-output-field>
-                                </div>
-                            </div>
-                        </lightning-record-view-form>
-                    </template>
+                        </div>
+                    </lightning-record-view-form>
                 </div>
             </section>
 
@@ -310,12 +149,12 @@
                         class="slds-button slds-section__title-action"
                         data-section="activity"
                         onclick={handleToggleSection}>
-                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon"></lightning-icon>
+                        <lightning-icon icon-name="utility:switch" size="x-small" class="slds-section__title-action-icon slds-m-right_x-small"></lightning-icon>
                         <span class="slds-truncate" title="App Activity">App Activity</span>
                     </button>
                 </h3>
                 <div class="slds-section__content">
-                    <lightning-record-view-form key={viewFormKeyAttr} record-id={userId} object-api-name="User">
+                    <lightning-record-view-form record-id={userId} object-api-name="User">
                         <div class="slds-grid slds-wrap slds-gutters_direct">
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                                 <lightning-output-field field-name="Last_App_Visit__c"></lightning-output-field>

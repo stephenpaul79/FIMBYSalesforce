@@ -2,15 +2,8 @@
     background: var(--lwc-colorBackgroundAlt, #ffffff);
 }
 
-.linked-user-panel .slds-section__title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-right: 0.5rem;
-}
-
-.linked-user-panel .section-edit-btn {
-    flex-shrink: 0;
+.linked-user-panel .slds-section__title-action {
+    gap: 0.5rem;
 }
 
 .linked-user-panel .user-summary {
@@ -23,8 +16,7 @@
     color: var(--lwc-colorTextWeak, #706e6b);
 }
 
-.linked-user-panel lightning-output-field,
-.linked-user-panel lightning-input-field {
+.linked-user-panel lightning-output-field {
     display: block;
     margin-bottom: 0.25rem;
 }

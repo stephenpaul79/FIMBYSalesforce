@@ -1,32 +1,18 @@
 import { LightningElement, api, wire } from 'lwc';
-import { refreshApex } from '@salesforce/apex';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getLinkedUser from '@salesforce/apex/FimbyContactUserAdminController.getLinkedUser';
-
-const SECTION_ACCOUNT = 'account';
-const SECTION_WALKTHROUGH = 'walkthrough';
-const SECTION_EMAIL = 'email';
-const SECTION_PUSH = 'push';
-const SECTION_ACTIVITY = 'activity';
 
 export default class FimbyContactLinkedUserPanel extends LightningElement {
     @api recordId;
 
     linkedUser;
-    wiredLinkedUserResult;
     isLoading = true;
     loadError;
-
-    editingSection = null;
-    viewFormKey = 0;
 
     collapsedSections = {};
 
     @wire(getLinkedUser, { contactId: '$recordId' })
-    wiredLinkedUser(result) {
-        this.wiredLinkedUserResult = result;
+    wiredLinkedUser({ data, error }) {
         this.isLoading = false;
-        const { data, error } = result;
         if (data) {
             this.linkedUser = data;
             this.loadError = undefined;
@@ -61,14 +47,6 @@ export default class FimbyContactLinkedUserPanel extends LightningElement {
             : 'slds-badge';
     }
 
-    get viewFormKeyAttr() {
-        return String(this.viewFormKey);
-    }
-
-    isSectionEditing(sectionId) {
-        return this.editingSection === sectionId;
-    }
-
     isSectionCollapsed(sectionId) {
         return this.collapsedSections[sectionId] === true;
     }
@@ -77,26 +55,20 @@ export default class FimbyContactLinkedUserPanel extends LightningElement {
         return this.isSectionCollapsed(sectionId) ? 'slds-section' : 'slds-section slds-is-open';
     }
 
-    isEditingAccount = false;
-    isEditingWalkthrough = false;
-    isEditingEmail = false;
-    isEditingPush = false;
-    isEditingActivity = false;
-
     get accountSectionClass() {
-        return this.sectionOpenClass(SECTION_ACCOUNT);
+        return this.sectionOpenClass('account');
     }
     get walkthroughSectionClass() {
-        return this.sectionOpenClass(SECTION_WALKTHROUGH);
+        return this.sectionOpenClass('walkthrough');
     }
     get emailSectionClass() {
-        return this.sectionOpenClass(SECTION_EMAIL);
+        return this.sectionOpenClass('email');
     }
     get pushSectionClass() {
-        return this.sectionOpenClass(SECTION_PUSH);
+        return this.sectionOpenClass('push');
     }
     get activitySectionClass() {
-        return this.sectionOpenClass(SECTION_ACTIVITY);
+        return this.sectionOpenClass('activity');
     }
 
     handleToggleSection(event) {
@@ -105,60 +77,5 @@ export default class FimbyContactLinkedUserPanel extends LightningElement {
             ...this.collapsedSections,
             [sectionId]: !this.isSectionCollapsed(sectionId)
         };
-    }
-
-    handleEditSection(event) {
-        const sectionId = event.currentTarget.dataset.section;
-        this.editingSection = sectionId;
-        this.isEditingAccount = sectionId === SECTION_ACCOUNT;
-        this.isEditingWalkthrough = sectionId === SECTION_WALKTHROUGH;
-        this.isEditingEmail = sectionId === SECTION_EMAIL;
-        this.isEditingPush = sectionId === SECTION_PUSH;
-        this.isEditingActivity = sectionId === SECTION_ACTIVITY;
-    }
-
-    handleCancelEdit() {
-        this.editingSection = null;
-        this.isEditingAccount = false;
-        this.isEditingWalkthrough = false;
-        this.isEditingEmail = false;
-        this.isEditingPush = false;
-        this.isEditingActivity = false;
-    }
-
-    async handleSaveSuccess() {
-        this.handleCancelEdit();
-        this.viewFormKey += 1;
-        if (this.wiredLinkedUserResult) {
-            await refreshApex(this.wiredLinkedUserResult);
-        }
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'User updated',
-                message: 'Linked user settings were saved.',
-                variant: 'success'
-            })
-        );
-    }
-
-    handleSaveError(event) {
-        const message =
-            event?.detail?.message ||
-            event?.detail?.detail ||
-            'We could not save those changes. Please try again.';
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Save failed',
-                message,
-                variant: 'error',
-                mode: 'sticky'
-            })
-        );
-    }
-
-    handleSubmit(event) {
-        event.preventDefault();
-        const fields = event.detail.fields;
-        event.target.submit(fields);
     }
 }
