@@ -181,6 +181,13 @@
                             </template>
                         </select>
                     </div>
+                    <template lwc:if={showDigestHint}>
+                        <p class="settings-inline-hint" role="status">
+                            <strong class="settings-inline-hint-title">Staying in the loop</strong>
+                            We send a daily roundup of what&rsquo;s happening on your street so you don&rsquo;t have to keep checking back. Pick a different rhythm here anytime.
+                            <button type="button" class="settings-inline-hint-dismiss" onclick={handleDismissDigestHint}>Got it</button>
+                        </p>
+                    </template>
 
                     <!-- Divider -->
                     <div class="settings-divider"></div>

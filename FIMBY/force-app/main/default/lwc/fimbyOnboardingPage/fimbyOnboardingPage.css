@@ -163,6 +163,14 @@
     line-height: 1.5;
 }
 
+.step-fineprint {
+    text-align: center;
+    margin: 16px 0 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--fimby-text-secondary);
+}
+
 .about-counter {
     text-align: center;
     margin: -8px auto 16px;

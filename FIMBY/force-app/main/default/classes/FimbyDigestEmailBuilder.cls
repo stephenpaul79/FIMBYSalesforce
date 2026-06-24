@@ -104,6 +104,8 @@ public without sharing class FimbyDigestEmailBuilder {
         public String html = '';
         public Integer itemCount = 0;
         public Boolean isEmpty = true;
+        @TestVisible
+        public List<String> selectedItemSummaries = new List<String>();
     }
 
     /* ---------------------------------------------------------------
@@ -816,5 +818,255 @@ public without sharing class FimbyDigestEmailBuilder {
     private static Integer countItems(String html) {
         if (String.isBlank(html)) { return 0; }
         return html.countMatches('margin-bottom:12px;border-radius:8px');
+    }
+
+    /**
+     * @description Capped mixed-type preview for the post-onboarding welcome email.
+     * Round-robins across content types (asks/offers, events, bulk buys, stories, library)
+     * so type diversity is prioritized when more than maxItems candidates exist.
+     */
+    public static DigestResult buildCappedMixedPreview(
+        Id neighbourhoodId,
+        Date windowStart,
+        Date windowEnd,
+        Integer maxItems,
+        Set<Id> excludedAuthorContactIds
+    ) {
+        DigestResult result = new DigestResult();
+        if (neighbourhoodId == null || maxItems == null || maxItems <= 0) {
+            return result;
+        }
+        Set<Id> excluded = excludedAuthorContactIds != null ? excludedAuthorContactIds : new Set<Id>();
+        Datetime startDt = Datetime.newInstance(windowStart, Time.newInstance(0, 0, 0, 0));
+        Datetime endDt = Datetime.newInstance(windowEnd, Time.newInstance(23, 59, 59, 0));
+
+        List<MixedPreviewItem> selected = selectMixedPreviewItems(
+            neighbourhoodId, startDt, endDt, excluded, maxItems
+        );
+        if (selected.isEmpty()) {
+            return result;
+        }
+
+        String html = buildSectionHeader('A peek at the last week on your street', EARTH_SAGE);
+        for (MixedPreviewItem item : selected) {
+            html += renderMixedPreviewItem(item);
+            result.selectedItemSummaries.add(item.summaryLine);
+        }
+        result.html = html;
+        result.itemCount = selected.size();
+        result.isEmpty = false;
+        return result;
+    }
+
+    private class MixedPreviewItem {
+        String typeKey;
+        String summaryLine;
+        Needs_Offers__c needsOffer;
+        Story__c story;
+        Library_Item__c libraryItem;
+    }
+
+    private static List<MixedPreviewItem> selectMixedPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded, Integer maxItems
+    ) {
+        Map<String, List<MixedPreviewItem>> buckets = new Map<String, List<MixedPreviewItem>>{
+            'askOffer' => loadAskOfferPreviewItems(nhId, startDt, endDt, excluded),
+            'event' => loadEventPreviewItems(nhId, startDt, endDt, excluded),
+            'bulkBuy' => loadBulkBuyPreviewItems(nhId, startDt, endDt, excluded),
+            'story' => loadStoryPreviewItems(nhId, startDt, endDt, excluded),
+            'library' => loadLibraryPreviewItems(nhId, startDt, endDt, excluded)
+        };
+        List<String> typeOrder = new List<String>{
+            'askOffer', 'event', 'bulkBuy', 'story', 'library'
+        };
+        Map<String, Integer> indices = new Map<String, Integer>{
+            'askOffer' => 0, 'event' => 0, 'bulkBuy' => 0, 'story' => 0, 'library' => 0
+        };
+
+        List<MixedPreviewItem> selected = new List<MixedPreviewItem>();
+        Boolean addedInPass = true;
+        while (selected.size() < maxItems && addedInPass) {
+            addedInPass = false;
+            for (String typeKey : typeOrder) {
+                List<MixedPreviewItem> bucket = buckets.get(typeKey);
+                Integer idx = indices.get(typeKey);
+                if (bucket == null || idx >= bucket.size()) {
+                    continue;
+                }
+                selected.add(bucket[idx]);
+                indices.put(typeKey, idx + 1);
+                addedInPass = true;
+                if (selected.size() >= maxItems) {
+                    break;
+                }
+            }
+        }
+        return selected;
+    }
+
+    private static List<MixedPreviewItem> loadAskOfferPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Needs_Offers__c post : [
+            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   RecordType.DeveloperName, Posted_Date__c, CreatedDate
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName IN ('Need', 'Offer')
+              AND Type__c != 'Event'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received')
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            ORDER BY Posted_Date__c DESC
+            LIMIT 10
+        ]) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'askOffer';
+            item.needsOffer = post;
+            item.summaryLine = 'Ask/Offer: ' + post.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static List<MixedPreviewItem> loadEventPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        Date today = Date.today();
+        Set<Id> liveRecurringOccurrenceIds = resolveLiveRecurringOccurrenceIds(nhId);
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Needs_Offers__c evt : [
+            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
+                   Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND Type__c = 'Event'
+              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Status__c IN ('Posted', 'Available')
+              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            ORDER BY CreatedDate DESC
+            LIMIT 10
+        ]) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'event';
+            item.needsOffer = evt;
+            item.summaryLine = 'Event: ' + evt.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static List<MixedPreviewItem> loadBulkBuyPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Needs_Offers__c bb : [
+            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
+                   Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
+                   Posted_Date__c, CreatedDate
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName = 'Bulk_Buy'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received')
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            ORDER BY Posted_Date__c DESC
+            LIMIT 10
+        ]) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'bulkBuy';
+            item.needsOffer = bb;
+            item.summaryLine = 'Bulk Buy: ' + bb.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static List<MixedPreviewItem> loadStoryPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Story__c story : [
+            SELECT Id, Name, Type__c, Message__c, Message_Preview__c, Image_URL__c,
+                   Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
+                   Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
+                   CreatedDate
+            FROM Story__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Posted_By__c NOT IN :excluded
+              AND Contact__c NOT IN :excluded
+            ORDER BY CreatedDate DESC
+            LIMIT 10
+        ]) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'story';
+            item.story = story;
+            item.summaryLine = 'Shared Life: ' + story.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static List<MixedPreviewItem> loadLibraryPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Library_Item__c lib : [
+            SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
+                   Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c, Owner_Contact__r.FirstName,
+                   Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
+                   CreatedDate
+            FROM Library_Item__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Owner_Contact__c NOT IN :excluded
+              AND Listed_By__c NOT IN :excluded
+            ORDER BY CreatedDate DESC
+            LIMIT 10
+        ]) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'library';
+            item.libraryItem = lib;
+            item.summaryLine = 'Library: ' + lib.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static String renderMixedPreviewItem(MixedPreviewItem item) {
+        if (item == null) {
+            return '';
+        }
+        if (item.typeKey == 'story' && item.story != null) {
+            return buildStoryCard(item.story);
+        }
+        if (item.typeKey == 'library' && item.libraryItem != null) {
+            return buildLibraryCard(item.libraryItem);
+        }
+        if (item.needsOffer == null) {
+            return '';
+        }
+        if (item.typeKey == 'askOffer') {
+            return buildAskOfferCard(item.needsOffer);
+        }
+        if (item.typeKey == 'event') {
+            return buildEventCard(item.needsOffer);
+        }
+        if (item.typeKey == 'bulkBuy') {
+            return buildBulkBuyCard(item.needsOffer);
+        }
+        return '';
     }
 }

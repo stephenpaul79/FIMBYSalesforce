@@ -22,6 +22,8 @@ export const TOUR_STEPS = [
         fromOnboardingTitle: 'Welcome in',
         fromOnboardingBodyPrefix:
             'Your profile is ready — neighbours can get to know you now. ',
+        fromOnboardingBodySuffix:
+            'PS: check your inbox — we sent a few details to help you settle in.',
         heroImage: 'trellisbefore.png',
         heroAlt: 'A garden trellis with a young vine just starting to climb.',
         iconFile: null

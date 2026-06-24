@@ -53,6 +53,29 @@ private class FimbyOnboardingControllerTest {
     }
 
     @IsTest
+    static void completeProfileSetup_enqueuesWelcomeEmail() {
+        User testUser = getTestUser();
+        FimbyTransactionalEmailService.testSendInvocationCount = 0;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyOnboardingController.completeProfileSetup(new Map<String, String>{
+                'FirstName' => 'Sarah',
+                'LastName' => 'TestResident'
+            });
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, FimbyTransactionalEmailService.testSendInvocationCount,
+            'Profile completion should enqueue the welcome email.');
+        Contact updated = [
+            SELECT Welcome_Email_Sent_Date__c
+            FROM Contact WHERE Id = :testUser.ContactId
+        ];
+        System.assertNotEquals(null, updated.Welcome_Email_Sent_Date__c);
+    }
+
+    @IsTest
     static void testCompleteProfileBlockedField() {
         User testUser = getTestUser();
         Boolean caughtError = false;

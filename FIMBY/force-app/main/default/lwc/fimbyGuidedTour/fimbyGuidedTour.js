@@ -400,7 +400,8 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
         const step = this.currentStep;
         if (step.id === 'welcome' && this._fromOnboarding && step.fromOnboardingBodyPrefix) {
             const vision = step.body || '';
-            return `${step.fromOnboardingBodyPrefix}${vision}`;
+            const suffix = step.fromOnboardingBodySuffix || '';
+            return `${step.fromOnboardingBodyPrefix}${vision}${suffix ? ' ' + suffix : ''}`;
         }
         if (this._actionRevealed && step.advance === 'modalDismiss') {
             if (step.revealBody) {

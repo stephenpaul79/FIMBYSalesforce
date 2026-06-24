@@ -209,6 +209,13 @@ public with sharing class FimbyOnboardingController {
 
             new ContactUpdater().doUpdate(c);
 
+            Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
+            if (neighbourhoodId != null) {
+                System.enqueueJob(new FimbyOnboardingWelcomeEmailQueueable(
+                    contactId, UserInfo.getUserId(), neighbourhoodId
+                ));
+            }
+
             return new Map<String, Object>{ 'success' => true };
         } catch (Exception e) {
             throw new AuraHandledException('Error completing profile setup: ' + e.getMessage());

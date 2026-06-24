@@ -589,4 +589,21 @@ private class FimbyDigestEmailBuilderTest {
             FimbyDigestEmailBuilder.formatRecurrenceFrequencyBadge('Week', 2)
         );
     }
+
+    @IsTest
+    static void buildCappedMixedPreview_capsAtFiveAndMixesTypes() {
+        Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildCappedMixedPreview(
+            nh.Id, Date.today().addDays(-7), Date.today(), 5, new Set<Id>()
+        );
+        Test.stopTest();
+
+        System.assert(result.itemCount > 0, 'Setup data should yield preview items.');
+        System.assert(result.itemCount <= 5, 'Preview must cap at five items.');
+        System.assert(!result.isEmpty);
+        System.assert(result.selectedItemSummaries.size() == result.itemCount);
+        System.assert(result.html.contains('A peek at the last week on your street'));
+    }
 }

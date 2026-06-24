@@ -63,6 +63,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track isLoading = true;
     @track settings = {};
     @track showQuietHoursHint = false;
+    @track showDigestHint = false;
     @track themePreference = 'auto'; // 'light', 'dark', 'auto'
 
     // Inline success banner — shown when a save keeps the user on this page
@@ -291,6 +292,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             this.settings = await getSettingsData();
             this._syncThemeFromServer();
             this._evaluateQuietHoursHint();
+            this._evaluateDigestHint();
         } catch {
             this._showError('Could not load your settings. Please try again.');
         } finally {
@@ -315,6 +317,10 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
 
     handleDismissQuietHoursHint() {
         this._dismissQuietHoursHint();
+    }
+
+    handleDismissDigestHint() {
+        this._dismissDigestHint();
     }
 
     _evaluateQuietHoursHint() {
@@ -353,11 +359,34 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         }
     }
 
+    _evaluateDigestHint() {
+        try {
+            if (localStorage.getItem('fimby_digest_hint_dismissed') === '1') {
+                this.showDigestHint = false;
+                return;
+            }
+        } catch {
+            // ignore
+        }
+        const freq = normalizeSummaryEmailFrequency(this.settings?.summaryEmailFrequency);
+        this.showDigestHint = freq === 'Daily';
+    }
+
+    _dismissDigestHint() {
+        this.showDigestHint = false;
+        try {
+            localStorage.setItem('fimby_digest_hint_dismissed', '1');
+        } catch {
+            // ignore
+        }
+    }
+
     // ============================================
     // EMAIL PREFERENCES
     // ============================================
     async handleEmailFrequencyChange(event) {
         const value = event.target.value;
+        this._dismissDigestHint();
         try {
             await updateSettingsField({ fieldName: 'FIMBY_Summary_Emails__c', value });
             this.settings = { ...this.settings, summaryEmailFrequency: value };

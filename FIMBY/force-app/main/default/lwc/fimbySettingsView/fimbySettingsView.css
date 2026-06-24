@@ -1152,6 +1152,14 @@ button.block-result-item:focus-visible,
     line-height: 1.4;
 }
 
+.settings-inline-hint-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+}
+
 .settings-inline-hint-dismiss {
     display: inline;
     margin-left: 8px;

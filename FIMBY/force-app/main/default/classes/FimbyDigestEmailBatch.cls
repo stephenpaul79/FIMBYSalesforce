@@ -14,6 +14,9 @@
  */
 global without sharing class FimbyDigestEmailBatch implements Database.Batchable<SObject>, Database.Stateful {
 
+    @TestVisible
+    private static Boolean enforceLastLoginDate = true;
+
     private String frequency;
     private Date windowStart;
     private Date windowEnd;
@@ -232,6 +235,9 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
             + 'FROM User WHERE Contact.AccountId = :neighbourhoodId '
             + 'AND IsActive = true AND Email != null AND Contact.HasOptedOutOfEmail = false '
             + 'AND FIMBY_Summary_Emails__c = :summaryCadence';
+        if (enforceLastLoginDate) {
+            soql += ' AND LastLoginDate != null';
+        }
         if (filterIncludeSundaysOnly) {
             soql += ' AND Include_Sundays__c = true';
         } else if (filterExcludeSundays) {

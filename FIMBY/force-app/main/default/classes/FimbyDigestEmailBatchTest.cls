@@ -215,10 +215,14 @@ private class FimbyDigestEmailBatchTest {
         Test.setCreatedDate(stories[0].Id, yesterdayDt);
 
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Daily');
+        Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
+        FimbyDigestEmailBatch.enforceLastLoginDate = false;
 
         Test.startTest();
         batch.execute(null, new List<Account>{ nh });
         Test.stopTest();
+
+        FimbyDigestEmailBatch.enforceLastLoginDate = priorLoginFilter;
 
         List<Digest_Email_Log__c> skipped = [
             SELECT Id FROM Digest_Email_Log__c
@@ -292,10 +296,14 @@ private class FimbyDigestEmailBatchTest {
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
         Date ws = batch.getWindowStartForTest();
         Date we = batch.getWindowEndForTest();
+        Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
+        FimbyDigestEmailBatch.enforceLastLoginDate = false;
 
         Test.startTest();
         batch.execute(null, new List<Account>{ nh });
         Test.stopTest();
+
+        FimbyDigestEmailBatch.enforceLastLoginDate = priorLoginFilter;
 
         String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(nh.Id, 'Weekly', ws, we);
         String variantKeyA = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
@@ -362,10 +370,14 @@ private class FimbyDigestEmailBatchTest {
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
         Date ws = batch.getWindowStartForTest();
         Date we = batch.getWindowEndForTest();
+        Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
+        FimbyDigestEmailBatch.enforceLastLoginDate = false;
 
         Test.startTest();
         batch.execute(null, new List<Account>{ nh });
         Test.stopTest();
+
+        FimbyDigestEmailBatch.enforceLastLoginDate = priorLoginFilter;
 
         String baseKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(nh.Id, 'Weekly', ws, we);
         String dVariantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
@@ -415,5 +427,26 @@ private class FimbyDigestEmailBatchTest {
         Test.startTest();
         Database.executeBatch(new FimbyDigestEmailBatch('Daily'), 5);
         Test.stopTest();
+    }
+
+    @IsTest
+    static void queryEligibleRecipients_excludesNeverLoggedInUser() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            User u = FimbyTestDataFactory.createCommunityUser(c.Id, 'Customer Community User', false);
+            u.FIMBY_Summary_Emails__c = 'Daily';
+            insert u;
+        }
+
+        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Daily');
+        FimbyDigestEmailBatch.enforceLastLoginDate = true;
+
+        Test.startTest();
+        List<User> recipients = batch.queryEligibleRecipients(nh.Id);
+        Test.stopTest();
+
+        System.assertEquals(0, recipients.size(),
+            'Users who have never logged in must not receive digest emails.');
     }
 }
