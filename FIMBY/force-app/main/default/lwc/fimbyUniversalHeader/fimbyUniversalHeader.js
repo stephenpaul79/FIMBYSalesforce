@@ -90,6 +90,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track _moderatorTaskCount = 0;
     @track showTosModal = false;
     @track hasPriorTosAcceptance = false;
+    // Start true so the opaque cover is up from the shell's first paint, before
+    // the async TOS check resolves — otherwise the feed flashes for a beat on a
+    // cold load. Cleared (fail-open) once getActingAsContact returns or errors.
+    @track _tosGatePending = true;
     _savedBodyOverflow = null;
 
     _guidedTourRequestHandler;
@@ -122,6 +126,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this._recordAppOpenAndSyncQuietHours();
         this._checkOnboarding();
         this._loadIdentityContext();
+        // Lock scroll immediately: _tosGatePending is true until the check above
+        // resolves, so the opaque cover is already holding the screen.
+        this._applyScrollLock();
         this._loadModeratorContext();
 
         this._openQuickPostHandler = () => this.handleNewClick();
@@ -391,7 +398,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     _loadIdentityContext() {
         getActingAsContact()
             .then((actingResult) => this._applyActingAsContext(actingResult))
-            .catch(() => { /* silent */ });
+            .catch(() => {
+                // Fail open: never strand the user behind the pre-decision veil
+                // if the identity check fails. Option C (server-side) is the
+                // real data gate; this cover is only visual.
+                this._tosGatePending = false;
+                this._applyScrollLock();
+            });
     }
 
     _applyActingAsContext(actingResult) {
@@ -403,6 +416,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             isActive: actingResult.isActingAsSelf
         };
         this.isActingAsSelf = actingResult.isActingAsSelf;
+        this._tosGatePending = false;
         this._setTosModalVisibility(
             actingResult.tosReacceptanceRequired === true
             && actingResult.isActingAsSelf === true
@@ -478,13 +492,25 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this._setTosModalVisibility(false);
     }
 
-    // The TOS gate must fully take over the screen: a first-time user must not be
+    // The gate must fully take over the screen: a first-time user must not be
     // able to see or scroll the feed (which renders in the content region behind
-    // the shell) before agreeing. The opaque backdrop hides it; this locks
-    // background scroll so the wheel/touch can't move the page underneath.
+    // the shell). showTosCover is true both during the pre-decision hold and
+    // while the live modal is shown; the opaque backdrop hides the feed either way.
+    get showTosCover() {
+        return this._tosGatePending || this.showTosModal;
+    }
+
     _setTosModalVisibility(show) {
         this.showTosModal = show;
-        if (show) {
+        this._applyScrollLock();
+    }
+
+    // Lock background scroll whenever the gate covers the screen so the
+    // wheel/touch can't move the page underneath. Save/restore the prior value
+    // rather than blindly clearing, matching the other FIMBY modals.
+    _applyScrollLock() {
+        const shouldLock = this._tosGatePending || this.showTosModal;
+        if (shouldLock) {
             if (this._savedBodyOverflow === null) {
                 this._savedBodyOverflow = document.body.style.overflow;
             }

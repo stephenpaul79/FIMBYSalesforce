@@ -200,18 +200,22 @@
         <!-- Shell-mounted toast host for operation-failure feedback (FIMBY feedback standard) -->
         <c-fimby-toast></c-fimby-toast>
 
-        <!-- TOS Reacceptance Modal -->
-        <template lwc:if={showTosModal}>
-            <div class="fimby-tos-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
-                <div class="fimby-tos-modal">
-                    <h2 id="tos-modal-title" class="fimby-tos-modal-title">{tosModalTitle}</h2>
-                    <p class="fimby-tos-modal-intro">{tosModalIntro}</p>
-                    <c-fimby-tos-flow-screen
-                        source="Login Flow"
-                        oncomplete={handleTosComplete}
-                        ondeclinelogout={handleLogoutClick}>
-                    </c-fimby-tos-flow-screen>
-                </div>
+        <!-- TOS gate. The opaque cover (showTosCover) is up from first paint and
+             during the pre-decision hold so the feed never flashes; the dialog
+             itself renders only once we know reacceptance is required. -->
+        <template lwc:if={showTosCover}>
+            <div class="fimby-tos-modal-backdrop">
+                <template lwc:if={showTosModal}>
+                    <div class="fimby-tos-modal" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
+                        <h2 id="tos-modal-title" class="fimby-tos-modal-title">{tosModalTitle}</h2>
+                        <p class="fimby-tos-modal-intro">{tosModalIntro}</p>
+                        <c-fimby-tos-flow-screen
+                            source="Login Flow"
+                            oncomplete={handleTosComplete}
+                            ondeclinelogout={handleLogoutClick}>
+                        </c-fimby-tos-flow-screen>
+                    </div>
+                </template>
             </div>
         </template>
     </div>
