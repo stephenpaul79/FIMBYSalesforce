@@ -1,6 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import ICONS from '@salesforce/resourceUrl/Icons';
 import { navigate } from 'c/fimbyNavigation';
 import getAppPromptConfig from '@salesforce/apex/FimbyAppPromptController.getAppPromptConfig';
 
@@ -14,8 +14,20 @@ export default class FimbyAppPrompt extends NavigationMixin(LightningElement) {
     _previouslyFocused = null;
     _keydownHandler = null;
 
-    get smartphoneIconUrl() {
-        return `${IMPACT_ICONS}/smartphone.png`;
+    get appIconUrl() {
+        return `${ICONS}/FIMBYIcon.png`;
+    }
+
+    get platformBadgeUrl() {
+        if (this.isIOS) return `${ICONS}/app-store-badge.png`;
+        if (this.isAndroid) return `${ICONS}/google-play-badge.png`;
+        return null;
+    }
+
+    get platformBadgeAlt() {
+        if (this.isIOS) return 'Download FIMBY on the App Store';
+        if (this.isAndroid) return 'Get FIMBY on Google Play';
+        return 'Get the FIMBY app';
     }
 
     get isInFimbyApp() {

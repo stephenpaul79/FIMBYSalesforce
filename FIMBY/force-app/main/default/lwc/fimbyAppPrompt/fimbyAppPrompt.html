@@ -11,8 +11,8 @@
             >
                 <div class="app-prompt-illustration">
                     <img
-                        src={smartphoneIconUrl}
-                        alt="Open FIMBY on your phone"
+                        src={appIconUrl}
+                        alt=""
                         class="app-prompt-icon"
                     />
                 </div>
@@ -27,7 +27,11 @@
                         class="app-prompt-cta-primary"
                         onclick={handleGetTheApp}
                     >
-                        Get the app
+                        <img
+                            src={platformBadgeUrl}
+                            alt={platformBadgeAlt}
+                            class="app-prompt-badge-img"
+                        />
                     </button>
                     <button
                         type="button"

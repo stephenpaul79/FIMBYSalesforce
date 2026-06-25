@@ -1,8 +1,10 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import ICONS from '@salesforce/resourceUrl/Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
+import getAppPromptConfig from '@salesforce/apex/FimbyAppPromptController.getAppPromptConfig';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import { launchGuidedTourReplay } from 'c/fimbyGuidedTourLauncher';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
@@ -114,6 +116,14 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track funToggleGifUrl = null;
     _confettiLoaded = false;
 
+    // App store links (config from CMDT via FimbyAppPromptController — single source of truth)
+    @track _appConfig = null;
+
+    @wire(getAppPromptConfig)
+    wiredAppConfig({ data }) {
+        if (data) this._appConfig = data;
+    }
+
     // Icons
     get accountIconUrl() { return `${IMPACT_ICONS}/key.png`; }
     get emailIconUrl() { return `${IMPACT_ICONS}/email.png`; }
@@ -127,6 +137,28 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     get confettiIconUrl() { return `${IMPACT_ICONS}/confetti.png`; }
     get walkthroughIconUrl() { return `${IMPACT_ICONS}/lightbulb.png`; }
     get neighbourhoodIconUrl() { return `${IMPACT_ICONS}/NeighborhoodActive.png`; }
+
+    // App store badges — shown only on the web (desktop or mobile browser), not
+    // inside the native app, where "Download on the App Store" makes no sense.
+    get appStoreBadgeUrl() { return `${ICONS}/app-store-badge.png`; }
+    get googlePlayBadgeUrl() { return `${ICONS}/google-play-badge.png`; }
+    get iosStoreUrl() { return this._appConfig?.iosStoreUrl; }
+    get androidStoreUrl() { return this._appConfig?.androidStoreUrl; }
+
+    get isInFimbyApp() {
+        try {
+            const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+            if (ua.indexOf('FIMBY-WebView') !== -1) return true;
+            if (typeof window !== 'undefined' && window.__FIMBY_NATIVE_APP__ === true) return true;
+        } catch {
+            // assume not in app on any UA read failure
+        }
+        return false;
+    }
+
+    get showStoreBadges() {
+        return !this.isInFimbyApp && !!this.iosStoreUrl && !!this.androidStoreUrl;
+    }
     get themeLightIconUrl() { return `${IMPACT_ICONS}/lightbulb.png`; }
     get themeDarkIconUrl() { return `${IMPACT_ICONS}/moon.png`; }
     get themeAutoIconUrl() { return `${IMPACT_ICONS}/gear.png`; }

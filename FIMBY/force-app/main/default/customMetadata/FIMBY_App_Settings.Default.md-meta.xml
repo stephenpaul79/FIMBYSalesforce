@@ -16,11 +16,11 @@
     </values>
     <values>
         <field>App_Store_URL_Android__c</field>
-        <value xsi:type="xsd:string">https://fimby.com/app-coming-soon</value>
+        <value xsi:type="xsd:string">https://play.google.com/store/apps/details?id=com.fimby.app</value>
     </values>
     <values>
         <field>App_Store_URL_iOS__c</field>
-        <value xsi:type="xsd:string">https://fimby.com/app-coming-soon</value>
+        <value xsi:type="xsd:string">https://apps.apple.com/app/fimby/id6776707632</value>
     </values>
     <values>
         <field>Archive_Page_Size__c</field>

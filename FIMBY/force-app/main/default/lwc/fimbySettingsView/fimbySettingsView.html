@@ -421,17 +421,29 @@
                     </template>
                 </div>
 
-                <!-- ========== 7. WALKTHROUGH ========== -->
+                <!-- ========== 7. GET THE MOST OUT OF FIMBY ========== -->
                 <div class="info-section">
                     <h3 class="section-title">
                         <img src={walkthroughIconUrl} alt="" class="section-icon">
-                        App Walkthrough
+                        Get the most out of FIMBY
                     </h3>
                     <p class="walkthrough-description">Take a quick tour of what FIMBY has to offer.</p>
                     <button class="btn btn-outline" onclick={handleLaunchWalkthrough}>
                         <img src={neighbourhoodIconUrl} alt="" class="btn-icon-sm">
                         Launch Walkthrough
                     </button>
+
+                    <template lwc:if={showStoreBadges}>
+                        <p class="store-badges-label">FIMBY is on your phone, too. Free, no ads, no tracking.</p>
+                        <div class="store-badges-row">
+                            <a href={iosStoreUrl} target="_blank" rel="noopener noreferrer" class="store-badge-link">
+                                <img src={appStoreBadgeUrl} alt="Download FIMBY on the App Store" class="store-badge-img">
+                            </a>
+                            <a href={androidStoreUrl} target="_blank" rel="noopener noreferrer" class="store-badge-link">
+                                <img src={googlePlayBadgeUrl} alt="Get FIMBY on Google Play" class="store-badge-img">
+                            </a>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- ========== 8. DELETE ACCOUNT ========== -->

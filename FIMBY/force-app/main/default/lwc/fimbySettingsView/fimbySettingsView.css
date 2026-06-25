@@ -790,6 +790,45 @@ button.block-result-item:focus-visible {
     line-height: 1.5;
 }
 
+.store-badges-label {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    margin: 20px 0 10px;
+    line-height: 1.5;
+}
+
+.store-badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.store-badge-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    border-radius: var(--fimby-radius-sm);
+}
+
+.store-badge-link:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Google's badge has built-in transparent padding, so nudge it taller to read
+   the same visual weight as the Apple badge sitting beside it. */
+.store-badge-img {
+    height: 44px;
+    width: auto;
+    display: block;
+}
+
+.store-badge-link:last-child .store-badge-img {
+    height: 50px;
+}
+
 .btn-icon-sm {
     width: 18px;
     height: 18px;
