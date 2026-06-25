@@ -1917,7 +1917,6 @@ a.capability-card {
 }
 .footer-app-label { font-weight: 600; color: var(--fimby-text-primary); }
 .footer-store-badges { margin: 0; }
-.footer-store-badges .store-badge img { height: 40px; }
 
 /* ═══ VISION FUNNEL BANNER ═══ */
 .vision-funnel-banner {
@@ -2132,9 +2131,10 @@ a.capability-card {
 
 /* ═══════════════════════════════════════════════════
    APP STORE BADGES (App Store + Google Play)
-   Official store badges, used unmodified. Google's badge
-   carries built-in transparent padding, so it is sized a
-   touch taller than Apple's to read at equal visual weight.
+   Official store badges, used unmodified per Apple & Google
+   brand rules (paired badges must both be the dark variant).
+   Two treatments: --band where the app is the message, --mini
+   for subtle quick-recognition spots.
    ═══════════════════════════════════════════════════ */
 .store-badges {
   display: flex;
@@ -2169,6 +2169,28 @@ a.capability-card {
   height: 48px;
 }
 
+/* Treatment 1 — tinted sage band: the app IS the message.
+   Wraps the note + badge row in a soft, deliberate "Get the app" panel
+   so the dark official badges read as intentional, not heavy-on-white. */
+.store-app-band {
+  margin-top: 20px;
+  padding: 22px 24px;
+  background: color-mix(in srgb, var(--fimby-earth-sage) 13%, var(--fimby-surface-card));
+  border: 1px solid color-mix(in srgb, var(--fimby-earth-sage) 26%, var(--fimby-surface-card));
+  border-radius: var(--fimby-radius-md);
+  text-align: center;
+}
+.store-app-band .store-note { margin: 0 0 12px; }
+.store-app-band .store-badges { margin: 0; justify-content: center; }
+
+/* Treatment 2 — mini: smallest legible badges for quick recognition.
+   Artwork drops to 32px (Google's official floor is 28px) while each link
+   keeps a 44px tap target via the base .store-badge min-height. */
+.store-badges--mini { gap: 10px; margin-top: 10px; }
+.store-badges--mini .store-badge { padding: 0 2px; }
+.store-badges--mini .store-badge img { height: 32px; }
+
 @media (max-width: 760px) {
   .store-badge img { height: 44px; }
+  .store-badges--mini .store-badge img { height: 30px; }
 }

@@ -808,6 +808,7 @@ button.block-result-item:focus-visible {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+    padding: 0 2px;
     border-radius: var(--fimby-radius-sm);
 }
 
@@ -817,10 +818,11 @@ button.block-result-item:focus-visible {
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
-/* Both official badges ship on the same 80px-tall canvas, so an equal height
-   renders them at matched visual weight. */
+/* Mini treatment: secondary to the walkthrough button, so the official badges
+   sit small (32px artwork) while the link keeps a 44px tap target. Both badges
+   ship on the same 80px canvas, so equal height = matched visual weight. */
 .store-badge-img {
-    height: 44px;
+    height: 32px;
     width: auto;
     display: block;
 }
