@@ -166,6 +166,31 @@
             <label>Wants to help launch</label>
         </rules>
     </decisions>
+    <decisions>
+        <name>Org_Signup_Branch</name>
+        <label>Org Signup Branch</label>
+        <locationX>1040</locationX>
+        <locationY>620</locationY>
+        <defaultConnector>
+            <targetReference>Thank_You</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Individual</defaultConnectorLabel>
+        <rules>
+            <name>Is_Community_Group</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Is_Community_Group_Signup</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Org_Details_Screen</targetReference>
+            </connector>
+            <label>Is Community Group</label>
+        </rules>
+    </decisions>
     <recordCreates>
         <name>Create_Waitlist_Contact</name>
         <label>Create Waitlist Contact</label>
@@ -350,7 +375,7 @@
         <locationX>776</locationX>
         <locationY>620</locationY>
         <connector>
-            <targetReference>Thank_You</targetReference>
+            <targetReference>Org_Signup_Branch</targetReference>
         </connector>
         <inputAssignments>
             <field>AccountId</field>
@@ -439,6 +464,128 @@
         <object>Contact</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
+    <recordCreates>
+        <name>Create_Org_Account</name>
+        <label>Create Org Account</label>
+        <locationX>1040</locationX>
+        <locationY>950</locationY>
+        <connector>
+            <targetReference>Update_Contact_Org_Link</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Description</field>
+            <value>
+                <elementReference>Org_Description</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Is_Approved_Community_Group__c</field>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Name</field>
+            <value>
+                <elementReference>Org_Name</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>ParentId</field>
+            <value>
+                <elementReference>Resolve_Postal_Code.neighbourhoodAccountId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>RecordTypeId</field>
+            <value>
+                <elementReference>Get_Org_RecordType.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Submitted_By__c</field>
+            <value>
+                <elementReference>Create_Contact</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Submitted_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type</field>
+            <value>
+                <stringValue>Community_Group</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Verification_Status__c</field>
+            <value>
+                <stringValue>Pending</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Website</field>
+            <value>
+                <elementReference>Org_Website</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Account</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordLookups>
+        <name>Get_Org_RecordType</name>
+        <label>Get Org RecordType</label>
+        <locationX>1040</locationX>
+        <locationY>840</locationY>
+        <connector>
+            <targetReference>Create_Org_Account</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>SobjectType</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Account</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Organization</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>RecordType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Contact_Org_Link</name>
+        <label>Update Contact Org Link</label>
+        <locationX>1040</locationX>
+        <locationY>1060</locationY>
+        <connector>
+            <targetReference>Thank_You</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Create_Contact</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Organization_Account__c</field>
+            <value>
+                <elementReference>Create_Org_Account</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Contact</object>
+    </recordUpdates>
     <runInMode>SystemModeWithoutSharing</runInMode>
     <screens>
         <name>DisclaimerScreen</name>
@@ -958,6 +1105,21 @@
             </styleProperties>
         </fields>
         <fields>
+            <name>Is_Community_Group_Signup</name>
+            <dataType>Boolean</dataType>
+            <fieldText>I&apos;m signing up on behalf of a community group or organization.</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
             <name>FinishButton</name>
             <extensionName>c:fsc_flowButtonBar</extensionName>
             <fieldType>ComponentInstance</fieldType>
@@ -1300,6 +1462,113 @@
             <name>ThankyouConfirmation</name>
             <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;You’re all set.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;We’ve received your sign-up, and you’ll hear from us shortly with what comes next.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Org_Details_Screen</name>
+        <label>Organization Details</label>
+        <locationX>1040</locationX>
+        <locationY>730</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Get_Org_RecordType</targetReference>
+        </connector>
+        <fields>
+            <name>Org_Details_Intro</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Tell us about your group&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Just the basics for now. We&apos;ll follow up to set up your group&apos;s presence and confirm a few details.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Name</name>
+            <dataType>String</dataType>
+            <fieldText>Organization or group name</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Website</name>
+            <dataType>String</dataType>
+            <fieldText>Website (optional)</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Description</name>
+            <dataType>String</dataType>
+            <fieldText>What does your group do? (optional)</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+        </fields>
+        <fields>
+            <name>Org_Submit_Button</name>
+            <extensionName>c:fsc_flowButtonBar</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>alignment</name>
+                <value>
+                    <stringValue>right</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>orientation</name>
+                <value>
+                    <stringValue>horizontal</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>actionMode</name>
+                <value>
+                    <stringValue>navigation</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>buttons</name>
+                <value>
+                    <stringValue>[{&quot;label&quot;:&quot;Submit&quot;,&quot;value&quot;:&quot;Submit&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
+                </value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
