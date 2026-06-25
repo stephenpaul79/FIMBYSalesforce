@@ -932,6 +932,7 @@ public without sharing class FimbyDigestEmailBuilder {
         return items;
     }
 
+    /** Welcome-email mini-digest only — upcoming events by Start_Date, not digest CreatedDate window. */
     private static List<MixedPreviewItem> loadEventPreviewItems(
         Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
     ) {
@@ -947,12 +948,11 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND Type__c = 'Event'
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
               AND Status__c IN ('Posted', 'Available')
-              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND Start_Date__c >= :today
               AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
-            ORDER BY CreatedDate DESC
+            ORDER BY Start_Date__c ASC
             LIMIT 10
         ]) {
             MixedPreviewItem item = new MixedPreviewItem();

@@ -591,6 +591,42 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildCappedMixedPreview_includesUpcomingEventRegardlessOfPostedDate() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c upcoming = new Needs_Offers__c(
+            Name = 'Preview Picnic',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(10),
+            End_Date__c = Date.today().addDays(10),
+            Location__c = 'Park'
+        );
+        insert upcoming;
+        Test.setCreatedDate(upcoming.Id, Datetime.now().addDays(-30));
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildCappedMixedPreview(
+            nh.Id, Date.today().addDays(-7), Date.today(), 5, new Set<Id>()
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.itemCount, 'Single upcoming event should be the only preview item.');
+        System.assert(
+            result.selectedItemSummaries[0].contains('Preview Picnic'),
+            'Mixed preview should include upcoming events by Start_Date, not CreatedDate window.'
+        );
+    }
+
+    @IsTest
     static void buildCappedMixedPreview_capsAtFiveAndMixesTypes() {
         Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
 

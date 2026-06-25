@@ -458,7 +458,15 @@ public with sharing class FimbyAskOfferController {
         Boolean isAuthor = post.Posted_By__c == realContactId || post.Contact__c == actingAsContactId;
         Boolean isAskOrOffer = post.RecordType.DeveloperName == FimbyConstants.RT_NEED
             || post.RecordType.DeveloperName == FimbyConstants.RT_OFFER;
+        Boolean isRefreshableType = isAskOrOffer && post.Type__c != 'Event';
         Boolean isOpen = REFRESHABLE_OPEN_STATUSES.contains(post.Status__c);
+        Boolean reminderDue = post.End_Date__c != null
+            && FimbyRefreshReminderJob.isReminderDue(
+                post,
+                Date.today(),
+                FimbySettings.refreshReminderMinAgeDays(),
+                FimbySettings.refreshReminderLeadDays()
+            );
 
         Integer refreshCount = post.Refresh_Count__c != null ? post.Refresh_Count__c.intValue() : 0;
         Integer maxCount = FimbySettings.refreshMaxCount();
@@ -479,12 +487,14 @@ public with sharing class FimbyAskOfferController {
             ? 'Were you able to sort this out?'
             : 'Is this still available?';
 
+        Boolean showPanel = isAuthor && isRefreshableType && isOpen && reminderDue;
+
         return new Map<String, Object>{
             'isAuthor' => isAuthor,
-            'showPanel' => isAuthor && isAskOrOffer && isOpen,
+            'showPanel' => showPanel,
             'isNeed' => isNeed,
             'prompt' => prompt,
-            'canRefresh' => isAuthor && isAskOrOffer && isOpen && !atCap && !onCooldown,
+            'canRefresh' => showPanel && !atCap && !onCooldown,
             'refreshCount' => refreshCount,
             'maxRefreshCount' => maxCount,
             'cooldownDaysRemaining' => cooldownRemaining,
@@ -953,7 +963,7 @@ public with sharing class FimbyAskOfferController {
 
         public Needs_Offers__c queryPostForRefresh(Id recordId) {
             List<Needs_Offers__c> posts = [
-                SELECT Id, Name, Status__c, Posted_By__c, Contact__c,
+                SELECT Id, Name, Status__c, Posted_By__c, Contact__c, CreatedDate,
                        RecordType.DeveloperName, Type__c, End_Date__c,
                        Refresh_Count__c, Last_Refreshed_Date__c, Last_Refresh_Reminder_Date__c
                 FROM Needs_Offers__c

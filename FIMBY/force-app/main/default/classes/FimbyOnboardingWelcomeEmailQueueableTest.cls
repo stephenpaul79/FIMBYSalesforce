@@ -43,6 +43,15 @@ private class FimbyOnboardingWelcomeEmailQueueableTest {
             FimbyTransactionalEmailService.testLastCardHtml.contains('Staying in the loop'),
             'Educational digest card should be present.'
         );
+        System.assert(
+            FimbyTransactionalEmailService.testLastSubject.startsWith('Welcome to FIMBY,'),
+            'Envelope subject should greet by name.'
+        );
+        System.assertEquals(
+            FimbyOnboardingWelcomeEmailBuilder.HEADER_TITLE,
+            FimbyTransactionalEmailService.testLastHeaderTitle,
+            'Header title should differ from envelope subject.'
+        );
     }
 
     @IsTest
@@ -78,7 +87,10 @@ private class FimbyOnboardingWelcomeEmailQueueableTest {
         );
 
         System.assert(html.contains('Staying in the loop'), 'Digest education card expected.');
-        System.assert(html.contains('Notifications'), 'Notifications card expected.');
+        System.assert(html.contains('You&rsquo;re onboarded and ready to go'), 'Intro paragraph expected.');
+        System.assert(html.contains('A doorbell, not a slot machine'), 'Quiet-hours card expected.');
+        System.assert(html.contains('Adjustments welcome'), 'Quiet-hours settings hint expected.');
+        System.assert(html.contains('panda-sleeping.png'), 'Sleeping panda image expected.');
         if (!preview.isEmpty) {
             System.assert(html.contains('A peek at the last week on your street'),
                 'Mini-digest section should append when items exist.');

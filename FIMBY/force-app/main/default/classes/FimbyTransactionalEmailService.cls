@@ -11,11 +11,16 @@ public without sharing class FimbyTransactionalEmailService {
     @TestVisible
     private static String testLastIntroText;
     @TestVisible
+    private static String testLastHeaderTitle;
+    @TestVisible
     private static String testLastCardHtml;
 
     public class TransactionalEmailRequest {
         public Id recipientUserId;
         public String subject;
+        /** In-email H1; falls back to subject when blank. */
+        public String headerTitle;
+        public String neighbourhoodName;
         public String introText;
         public String cardHtml;
         public String replyToEmail;
@@ -33,6 +38,7 @@ public without sharing class FimbyTransactionalEmailService {
         if (Test.isRunningTest()) {
             testSendInvocationCount++;
             testLastSubject = request.subject;
+            testLastHeaderTitle = request.headerTitle;
             testLastIntroText = request.introText;
             testLastCardHtml = request.cardHtml;
         }
@@ -43,7 +49,17 @@ public without sharing class FimbyTransactionalEmailService {
             Boolean skip = request.skipSubjectBlock == true;
             String innerHtml = String.isNotBlank(request.cardHtml) ? request.cardHtml : '';
 
-            String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(innerHtml, request.subject, null, null, skip);
+            String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
+                innerHtml,
+                request.subject,
+                request.neighbourhoodName,
+                null,
+                skip,
+                false,
+                null,
+                false,
+                request.headerTitle
+            );
 
             Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
             email.setTargetObjectId(request.recipientUserId);

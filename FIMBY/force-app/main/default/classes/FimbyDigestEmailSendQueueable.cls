@@ -133,12 +133,14 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
 
         for (Id userId : currentChunk) {
             try {
-                String digestSubject = 'Your ' + resolveDisplayFrequency(frequency) + ' neighbourhood update';
-                String displaySubject = 'Here\'s your ' + resolveDisplayFrequency(frequency) + ' neighbourhood update';
+                String digestSubject = 'From the neighbourhood';
+                String headerTitle = (resolveDisplayFrequency(frequency) == 'weekly')
+                    ? 'A few things your neighbours shared this week'
+                    : 'A few things your neighbours shared yesterday';
                 String firstName = firstNameByUser.get(userId);
                 String fullContent = contentHtml + saturdayFooter;
 
-                String html = buildDigestHtml(fullContent, displaySubject, firstName);
+                String html = buildDigestHtml(fullContent, digestSubject, headerTitle, firstName);
 
                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                 email.setTargetObjectId(userId);
@@ -351,13 +353,13 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     }
 
     private String buildDigestHtml(
-        String content, String displaySubject, String recipientFirstName
+        String content, String subject, String headerTitle, String recipientFirstName
     ) {
         // No in-body date range (the mail client already shows the received date) and no
-        // rotating intent line for digests. The displaySubject carries the "Here's your..."
-        // heading while the email envelope keeps the cleaner "Your ... update" subject.
+        // rotating intent line for digests. The envelope subject and HTML <title> use the
+        // short "From the neighbourhood" line; headerTitle drives the warmer in-body H1.
         return FimbyEmailHtmlBuilder.wrapInBrandedShell(
-            content, displaySubject, neighbourhoodName, null, false, false, recipientFirstName, true
+            content, subject, neighbourhoodName, null, false, false, recipientFirstName, true, headerTitle
         );
     }
 

@@ -942,10 +942,11 @@ public class FimbyAskOfferControllerTest {
             Contact__c = contact.Id,
             Posted_By__c = contact.Id,
             Neighbourhood__c = nh.Id,
-            End_Date__c = Date.today().addDays(10),
-            Posted_Date__c = Datetime.now()
+            End_Date__c = Date.today().addDays(1),
+            Posted_Date__c = Datetime.now().addDays(-8)
         );
         insert post;
+        Test.setCreatedDate(post.Id, Datetime.now().addDays(-8));
 
         Test.startTest();
         Map<String, Object> state;
@@ -958,6 +959,69 @@ public class FimbyAskOfferControllerTest {
         System.assertEquals(true, state.get('canRefresh'));
         System.assertEquals('Is this still available?', state.get('prompt'));
         System.assertEquals('Still available', state.get('refreshLabel'));
+    }
+
+    @isTest
+    static void testGetRefreshPostState_hidesForNewPost() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Brand New Offer',
+            Details__c = 'Just posted',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = offerRt,
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(14),
+            Posted_Date__c = Datetime.now()
+        );
+        insert post;
+
+        Test.startTest();
+        Map<String, Object> state;
+        System.runAs(testUser) {
+            state = FimbyAskOfferController.getRefreshPostState(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, state.get('showPanel'), 'New posts should not show the refresh panel');
+    }
+
+    @isTest
+    static void testGetRefreshPostState_hidesForEvent() {
+        User testUser = getTestUser();
+        Contact contact = getTestContact();
+        Account nh = [SELECT Id FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Festival Event',
+            Details__c = 'Community gathering',
+            Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = offerRt,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Contact__c = contact.Id,
+            Posted_By__c = contact.Id,
+            Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(1),
+            Posted_Date__c = Datetime.now().addDays(-8)
+        );
+        insert post;
+        Test.setCreatedDate(post.Id, Datetime.now().addDays(-8));
+
+        Test.startTest();
+        Map<String, Object> state;
+        System.runAs(testUser) {
+            state = FimbyAskOfferController.getRefreshPostState(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, state.get('showPanel'), 'Events should not show the refresh panel');
     }
 
     @isTest

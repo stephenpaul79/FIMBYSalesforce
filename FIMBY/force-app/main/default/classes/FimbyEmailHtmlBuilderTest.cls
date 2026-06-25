@@ -726,4 +726,27 @@ private class FimbyEmailHtmlBuilderTest {
             );
         }
     }
+
+    @IsTest
+    static void resolveHeaderTitle_fallsBackToSubject() {
+        System.assertEquals(
+            'Inbox line',
+            FimbyEmailHtmlBuilder.resolveHeaderTitle('Inbox line', null)
+        );
+        System.assertEquals(
+            'Custom headline',
+            FimbyEmailHtmlBuilder.resolveHeaderTitle('Inbox line', 'Custom headline')
+        );
+    }
+
+    @IsTest
+    static void brandedShell_headerTitleDiffersFromDocumentTitle() {
+        String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
+            '<p>Body</p>', 'Welcome to FIMBY, Stephen', 'Test NH',
+            null, false, false, null, false, 'A few things to help you settle in'
+        );
+        System.assert(html.contains('<title>Welcome to FIMBY, Stephen</title>'), 'Title tag uses envelope subject.');
+        System.assert(html.contains('A few things to help you settle in</p>'), 'H1 uses header title.');
+        System.assert(!html.contains('Welcome to FIMBY, Stephen</p>'), 'H1 should not repeat envelope subject.');
+    }
 }

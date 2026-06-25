@@ -87,8 +87,7 @@ global without sharing class FimbyRefreshReminderJob implements Schedulable {
         }
     }
 
-    @TestVisible
-    private static Boolean isReminderDue(
+    public static Boolean isReminderDue(
         Needs_Offers__c post,
         Date today,
         Integer minAgeDays,

@@ -5,7 +5,12 @@
  */
 public without sharing class FimbyOnboardingWelcomeEmailBuilder {
 
-    public static final String SUBJECT = 'Welcome to FIMBY — a few things to help you settle in';
+    public static final String HEADER_TITLE = 'A few things to help you settle in';
+
+    public static String buildSubject(String firstName) {
+        String name = String.isNotBlank(firstName) ? firstName : 'there';
+        return 'Welcome to FIMBY, ' + name;
+    }
 
     public static String buildFullBodyHtml(
         String firstName,
@@ -13,37 +18,35 @@ public without sharing class FimbyOnboardingWelcomeEmailBuilder {
         FimbyDigestEmailBuilder.DigestResult miniDigest
     ) {
         String settingsUrl = resolveSettingsUrl();
-        String homeUrl = resolveHomeUrl();
-        String greeting = String.isNotBlank(firstName) ? esc(firstName) : 'there';
+        Boolean hasPreview = miniDigest != null && !miniDigest.isEmpty && String.isNotBlank(miniDigest.html);
 
-        String html = buildIntroParagraph(greeting, neighbourhoodName)
-            + buildStayingInLoopCard(settingsUrl)
-            + buildNotificationsCard(settingsUrl)
-            + FimbyEmailHtmlBuilder.buildCenteredCtaButton('Open FIMBY', homeUrl, 'enter.png');
+        String html = buildIntroParagraph()
+            + buildStayingInLoopCard(settingsUrl, hasPreview)
+            + buildNotificationsCard(settingsUrl);
 
-        if (miniDigest != null && !miniDigest.isEmpty && String.isNotBlank(miniDigest.html)) {
+        if (hasPreview) {
             html += miniDigest.html;
         }
         return html;
     }
 
     @TestVisible
-    private static String buildIntroParagraph(String firstName, String neighbourhoodName) {
-        String nhPhrase = String.isNotBlank(neighbourhoodName)
-            ? ' on <strong>' + esc(neighbourhoodName) + '</strong>'
-            : '';
+    private static String buildIntroParagraph() {
         return '<p style="margin:0 0 16px;' + FimbyEmailHtmlBuilder.F + 'font-size:15px;line-height:1.5;color:#4A4A4A;">'
-            + 'Hi ' + firstName + ', welcome in' + nhPhrase + '. '
-            + 'Here are a few things that help neighbours stay connected without living in the app.</p>';
+            + 'You&rsquo;re onboarded and ready to go. Here&rsquo;s how to keep up with your neighbours on your terms.</p>';
     }
 
     @TestVisible
-    private static String buildStayingInLoopCard(String settingsUrl) {
+    private static String buildStayingInLoopCard(String settingsUrl, Boolean hasPreview) {
+        String body = 'We send a daily roundup of what&rsquo;s happening on your street so you don&rsquo;t have to keep checking back. '
+            + 'You can switch to weekly or turn it off anytime.';
+        if (hasPreview) {
+            body += ' There&rsquo;s a preview of this week&rsquo;s roundup at the bottom of this email.';
+        }
         return buildInfoCard(
             'Staying in the loop',
-            'We send a daily roundup of what&rsquo;s happening on your street so you don&rsquo;t have to keep checking back. '
-                + 'You can switch to weekly or turn it off anytime.',
-            'Neighbourhood digest settings',
+            body,
+            'Email digest settings',
             settingsUrl,
             'email.png'
         );
@@ -51,14 +54,43 @@ public without sharing class FimbyOnboardingWelcomeEmailBuilder {
 
     @TestVisible
     private static String buildNotificationsCard(String settingsUrl) {
-        return buildInfoCard(
-            'Notifications &amp; quiet hours',
-            'Push and email alerts are on by default for messages, asks &amp; offers, library, and more. '
-                + 'Quiet hours are set to 10&nbsp;PM &ndash; 6&nbsp;AM so your street can rest overnight.',
-            'Notification settings',
-            settingsUrl,
-            'BellActive.png'
-        );
+        String title = 'A doorbell, not a slot machine';
+        String body = 'FIMBY taps you on the shoulder when a neighbour needs you, then gets out of the way. '
+            + 'Alerts are on by default, and from 10&nbsp;PM to 6&nbsp;AM we go quiet so the whole street can sleep. '
+            + 'Whatever comes in overnight will be waiting in the morning. '
+            + 'Keep different hours? No problem! Adjustments welcome.';
+
+        String pandaCell = '<td width="25%" valign="top" style="width:25%;padding:0 14px 0 0;">'
+            + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
+            + '<td style="background-color:#000000;border-radius:10px;padding:6px;font-size:0;line-height:0;">'
+            + '<img src="' + esc(resolvePandaUrl()) + '" width="100%" alt="A sleeping panda" '
+            + 'style="display:block;width:100%;height:auto;border:0;border-radius:6px;" />'
+            + '</td></tr></table></td>';
+        String textCell = '<td valign="top" style="padding:0;">'
+            + '<p style="margin:0;' + FimbyEmailHtmlBuilder.F + 'font-size:14px;line-height:1.5;color:#4A4A4A;">'
+            + body + '</p></td>';
+
+        return '<table cellpadding="0" cellspacing="0" border="0" width="600" '
+            + 'style="max-width:600px;width:100%;margin-bottom:12px;border-radius:8px;overflow:hidden;'
+            + 'border:1px solid #E8E0D6;background-color:#FFFFFF;">'
+            + '<tr><td style="padding:16px 18px 10px;">'
+            + '<p style="margin:0;' + FimbyEmailHtmlBuilder.F + 'font-size:16px;font-weight:700;color:#2D2D2D;">'
+            + title + '</p></td></tr>'
+            + '<tr><td style="padding:0 18px 10px;">'
+            + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
+            + pandaCell + textCell
+            + '</tr></table></td></tr>'
+            + '<tr><td style="padding:4px 18px 16px;">'
+            + FimbyEmailHtmlBuilder.buildCenteredCtaButton('Notification settings', settingsUrl, 'BellActive.png')
+            + '</td></tr></table>';
+    }
+
+    private static String resolvePandaUrl() {
+        String host = stripTrailingSlash(FimbySettings.getUrl('Experience_Site'));
+        if (String.isBlank(host)) {
+            host = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
+        }
+        return host + '/sfsites/c/resource/Icons/panda-sleeping.png';
     }
 
     private static String buildInfoCard(
@@ -81,11 +113,6 @@ public without sharing class FimbyOnboardingWelcomeEmailBuilder {
     private static String resolveSettingsUrl() {
         String url = FimbySettings.getUrl('Settings');
         return String.isNotBlank(url) ? url : stripTrailingSlash(FimbySettings.getUrl('Site_Base')) + '/settings';
-    }
-
-    private static String resolveHomeUrl() {
-        String url = FimbySettings.getUrl('Site_Base');
-        return String.isNotBlank(url) ? url : '/';
     }
 
     private static String stripTrailingSlash(String url) {

@@ -68,10 +68,10 @@ public without sharing class FimbyOnboardingWelcomeEmailQueueable implements Sys
         FimbyTransactionalEmailService.TransactionalEmailRequest request =
             new FimbyTransactionalEmailService.TransactionalEmailRequest();
         request.recipientUserId = userId;
-        request.subject = FimbyOnboardingWelcomeEmailBuilder.SUBJECT;
+        request.subject = FimbyOnboardingWelcomeEmailBuilder.buildSubject(firstName);
+        request.headerTitle = FimbyOnboardingWelcomeEmailBuilder.HEADER_TITLE;
+        request.neighbourhoodName = neighbourhoodName;
         request.cardHtml = cardHtml;
-        request.ctaUrl = FimbySettings.getUrl('Site_Base');
-        request.ctaLabel = 'Open FIMBY';
         FimbyTransactionalEmailService.send(request);
 
         update new Contact(

@@ -58,6 +58,7 @@
     box-shadow: var(--fimby-shadow-card);
     padding: 16px 20px;
     margin-top: 16px;
+    text-align: center;
 }
 
 .refresh-panel-prompt {
@@ -79,6 +80,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
 }
 
 .refresh-action-btn {

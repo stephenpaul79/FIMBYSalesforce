@@ -205,12 +205,21 @@ public without sharing class FimbyEmailHtmlBuilder {
      * subject heading below still wraps cleanly on narrow phones.
      */
     public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName, Boolean neighbourhoodAsBadge) {
+        return wrapInBrandedShell(innerHtml, subject, neighbourhoodName, intentLine, skipSubjectBlock, minimalChrome, recipientFirstName, neighbourhoodAsBadge, null);
+    }
+
+    /**
+     * @description headerTitle drives the in-email H1; subject drives the envelope and HTML &lt;title&gt;.
+     * When headerTitle is blank, H1 falls back to subject (existing email behaviour).
+     */
+    public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName, Boolean neighbourhoodAsBadge, String headerTitle) {
         String nhDisplay = String.isNotBlank(neighbourhoodName) ? escapeHtml(neighbourhoodName) : 'your neighbourhood';
         String nhBadgeHtml = buildBadgePill(
             String.isNotBlank(neighbourhoodName) ? neighbourhoodName : 'your neighbourhood',
             EARTH_SAGE, null
         );
-        String safeSubject = String.isNotBlank(subject) ? escapeHtml(subject) : 'Update from FIMBY';
+        String safeDocumentTitle = String.isNotBlank(subject) ? escapeHtml(subject) : 'Update from FIMBY';
+        String safeHeaderTitle = resolveHeaderTitle(subject, headerTitle);
         Boolean minimal = minimalChrome == true;
         // skipSubjectBlock + minimalChrome: drop the whole intro block (transactional).
         // skipSubjectBlock alone: neighbourhood tag only — card carries the headline.
@@ -259,7 +268,7 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<html lang="en" xmlns="http://www.w3.org/1999/xhtml">'
             + '<head><meta charset="UTF-8"/>'
             + '<meta name="viewport" content="width=device-width,initial-scale=1.0"/>'
-            + '<title>' + safeSubject + '</title>'
+            + '<title>' + safeDocumentTitle + '</title>'
             + '</head>'
             + '<body style="margin:0;padding:0;background-color:' + BG_PAGE + ';font-family:' + FONT_STACK + ';">'
             + '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:' + BG_PAGE + ';">'
@@ -280,7 +289,7 @@ public without sharing class FimbyEmailHtmlBuilder {
 
             + buildSubjectBlock(
                 fullSkipSubjectArea, neighbourhoodOnlyHeader, neighbourhoodAsBadge,
-                nhDisplay, nhBadgeHtml, greetingHtml, safeSubject, intentHtml
+                nhDisplay, nhBadgeHtml, greetingHtml, safeHeaderTitle, intentHtml
             )
 
             // Content area — full container width (no side indent) so section cards align
@@ -313,7 +322,7 @@ public without sharing class FimbyEmailHtmlBuilder {
      */
     private static String buildSubjectBlock(
         Boolean fullSkipSubjectArea, Boolean neighbourhoodOnlyHeader, Boolean neighbourhoodAsBadge,
-        String nhDisplay, String nhBadgeHtml, String greetingHtml, String safeSubject, String intentHtml
+        String nhDisplay, String nhBadgeHtml, String greetingHtml, String safeHeaderTitle, String intentHtml
     ) {
         if (fullSkipSubjectArea) {
             return '';
@@ -322,7 +331,7 @@ public without sharing class FimbyEmailHtmlBuilder {
             return buildNeighbourhoodOnlyBlockHtml(nhDisplay);
         }
         String subjectHeading = '<p style="margin:0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">'
-            + safeSubject + '</p>';
+            + safeHeaderTitle + '</p>';
         if (neighbourhoodAsBadge) {
             return '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
                 + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
@@ -330,7 +339,7 @@ public without sharing class FimbyEmailHtmlBuilder {
                 + '<td align="right" style="vertical-align:middle;">' + nhBadgeHtml + '</td>'
                 + '</tr></table>'
                 + '<p style="margin:12px 0 0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">'
-                + safeSubject + '</p>'
+                + safeHeaderTitle + '</p>'
                 + intentHtml
                 + '</td></tr>';
         }
@@ -340,6 +349,12 @@ public without sharing class FimbyEmailHtmlBuilder {
             + subjectHeading
             + intentHtml
             + '</td></tr>';
+    }
+
+    @TestVisible
+    static String resolveHeaderTitle(String subject, String headerTitle) {
+        String resolved = String.isNotBlank(headerTitle) ? headerTitle : subject;
+        return String.isNotBlank(resolved) ? escapeHtml(resolved) : 'Update from FIMBY';
     }
 
     /**
