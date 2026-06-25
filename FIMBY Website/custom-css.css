@@ -1799,6 +1799,8 @@ a.capability-card {
   display: grid;
   gap: 24px;
 }
+/* Widen the final-CTA box so the two columns get more room and land closer in height. */
+.final-cta .container-inset { width: min(900px, calc(100% - 32px)); }
 @media (min-width: 768px) {
   .dual-cta-grid { grid-template-columns: 1fr 1fr; gap: 32px; text-align: left; }
 }
@@ -1828,9 +1830,8 @@ a.capability-card {
 .dual-cta-col li { margin-bottom: 6px; }
 .dual-cta-col li:last-child { margin-bottom: 0; }
 .dual-cta-col .button-row { justify-content: flex-start; margin: 0; }
-/* Footer (CTA button + fine print) pins to the bottom so both columns' buttons align */
+/* CTA button + fine print follow the column content naturally (no bottom pin). */
 .dual-cta-foot {
-  margin-top: auto;
   padding-top: 18px;
 }
 .dual-cta-foot .button-row + .quiet-note,
@@ -1840,6 +1841,13 @@ a.capability-card {
 }
 .dual-cta-foot .quiet-note { max-width: none; }
 .dual-cta-col .bridge-steps { margin: 4px 0 0; }
+/* Secondary "Bring FIMBY here" column — quieter chrome so Join clearly leads. */
+.dual-cta-col--secondary {
+  background-color: transparent;
+  border-color: var(--fimby-border-subtle);
+  box-shadow: none;
+}
+.dual-cta-col--secondary h3 { font-size: 1.05rem; color: var(--fimby-text-secondary); }
 .final-kicker {
   justify-content: center;
   margin-left: auto;
@@ -1893,29 +1901,23 @@ a.capability-card {
 .contact-hub-section .contact-why-now { font-size: 1rem; }
 .contact-hub-section p a { font-weight: 600; color: var(--fimby-earth-teal); text-decoration: underline; }
 
-/* ═══ FOOTER SOCIAL ═══ */
+/* ═══ FOOTER ═══ */
 .site-footer { padding: 32px 0; background-color: var(--fimby-surface-section); border-top: 1px solid var(--fimby-border-subtle); }
-.footer-social {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 18px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
-}
-.footer-social-label { font-weight: 600; color: var(--fimby-text-primary); }
-.footer-social-link { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; }
 
-/* Footer "Get the app" row — quieter, smaller badges than on-page CTAs */
+/* Attribution sits on its own quiet line, separate from the nav links. */
+.footer-credit {
+  font-size: 0.8em;
+  opacity: 0.6;
+  margin-bottom: 1rem;
+}
+.footer-credit a { color: inherit; }
+
+/* App badges pinned to the very bottom, centered, no label. */
 .footer-app {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
+  justify-content: center;
+  margin-top: 4px;
 }
-.footer-app-label { font-weight: 600; color: var(--fimby-text-primary); }
 .footer-store-badges { margin: 0; }
 
 /* ═══ VISION FUNNEL BANNER ═══ */
