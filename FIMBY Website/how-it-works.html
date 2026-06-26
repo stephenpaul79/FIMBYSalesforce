@@ -26,7 +26,9 @@
             <a href="/contact-us/" class="btn btn-secondary">Bring FIMBY here</a>
           </div>
         </div>
-        <div class="preview-shell preview-shell-compact">
+        <div class="device-frame">
+          <div class="device-screen">
+            <div class="preview-shell preview-shell-compact">
           <div class="app-header">
             <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
             <div class="app-header-actions">
@@ -178,6 +180,8 @@
               </div>
             </div>
           </nav>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -260,7 +264,9 @@
           <div class="onb-pages">
 
             <!-- ─── PHONE 1: Asks & Offers filter active ─── -->
-            <div class="preview-shell">
+            <div class="device-frame">
+              <div class="device-screen">
+                <div class="preview-shell">
               <div class="app-header">
                 <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
                 <div class="app-header-actions">
@@ -406,10 +412,14 @@
                   </div>
                 </div>
               </nav>
+                </div>
+              </div>
             </div>
 
             <!-- ─── PHONE 2: Shared Life filter active ─── -->
-            <div class="preview-shell">
+            <div class="device-frame">
+              <div class="device-screen">
+                <div class="preview-shell">
               <div class="app-header">
                 <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
                 <div class="app-header-actions">
@@ -553,6 +563,8 @@
                   </div>
                 </div>
               </nav>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -650,7 +662,9 @@
     <div class="container">
       <div class="journey-grid reverse">
         <div class="journey-visual">
-          <div class="preview-shell">
+          <div class="device-frame">
+            <div class="device-screen">
+              <div class="preview-shell">
             <div class="app-header">
               <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
               <div class="app-header-actions">
@@ -795,6 +809,8 @@
                 </div>
               </div>
             </nav>
+              </div>
+            </div>
           </div>
         </div>
         <div class="journey-text">
@@ -834,7 +850,9 @@
           <p class="hiw-muted-note">Gatherings help strangers become familiar. Even a small alley cleanup can change the feel of a block.</p>
         </div>
         <div class="journey-visual">
-          <div class="preview-shell" style="aspect-ratio:auto;">
+          <div class="device-frame device-frame--auto">
+            <div class="device-screen">
+              <div class="preview-shell">
             <div class="app-header">
               <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
               <div class="app-header-actions">
@@ -911,6 +929,8 @@
                 </div>
               </div>
             </nav>
+              </div>
+            </div>
           </div>
         </div>
         <div class="tier-stack">
@@ -1106,83 +1126,240 @@
         </div>
         <div class="journey-visual">
           <div class="onb-pages">
-            <div class="onboarding-wireframe" style="padding:0;overflow:hidden;">
-              <div class="onb-page-label" style="padding:10px 14px 0;">Inbox</div>
-              <div class="inbox-header-bar">
-                <span class="inbox-title">Inbox</span>
-                <span class="compose-btn">
-                  <img src="https://fimby.com/wp-content/uploads/2026/03/SpeechBubbleActive.png" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" />Compose
-                </span>
+
+            <!-- ─── PHONE 1: Inbox (fimbyMessagesList) ─── -->
+            <div class="device-frame device-frame--short">
+              <div class="device-screen">
+                <div class="preview-shell preview-shell-inbox">
+              <div class="app-header">
+                <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
+                <div class="app-header-actions">
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/BellInactive.png" alt="" />
+                  </div>
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/Magnify.png" alt="" />
+                  </div>
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/Kebab.png" alt="" />
+                  </div>
+                </div>
               </div>
-              <div class="thread-row unread">
-                <span class="thread-who">James T. <span class="thread-badge" style="background:var(--fimby-badge-ask-offer);">ASK</span></span>
-                <span class="thread-date">3h ago</span>
-                <span class="thread-preview">Thanks! Saturday at 10 works great. I'll have the...</span>
+
+              <div class="messages-page-mock">
+                <nav class="breadcrumb-nav-mock" aria-label="Breadcrumb">
+                  <span class="breadcrumb-link-mock">Home</span>
+                  <span class="breadcrumb-separator-mock">&rsaquo;</span>
+                  <span class="breadcrumb-current-mock">Inbox</span>
+                </nav>
+
+                <div class="message-filters">
+                  <div class="filter-chips">
+                    <button type="button" class="filter-chip active">All</button>
+                    <button type="button" class="filter-chip">Unread</button>
+                    <button type="button" class="filter-chip">Archived</button>
+                    <button type="button" class="filter-new-btn">
+                      <img src="https://fimby.com/wp-content/uploads/2026/03/SpeechBubbleActive.png" alt="" class="filter-new-icon" />
+                      New
+                    </button>
+                  </div>
+                </div>
+
+                <div class="inbox-list">
+                  <div class="inbox-row unread">
+                    <div class="thread-avatar"><span class="thread-avatar-initials">JT</span></div>
+                    <div class="thread-content">
+                      <div class="thread-row-top">
+                        <span class="inbox-who">James T.</span>
+                        <span class="inbox-badge badge-response">Ask</span>
+                        <span class="inbox-date">3h ago</span>
+                      </div>
+                      <div class="thread-row-bottom">
+                        <span class="inbox-preview">Thanks! Saturday at 10 works great. I'll have the...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="inbox-row">
+                    <div class="thread-avatar"><span class="thread-avatar-initials">HN</span></div>
+                    <div class="thread-content">
+                      <div class="thread-row-top">
+                        <span class="inbox-who">Huy N.</span>
+                        <span class="inbox-badge badge-library">Library</span>
+                        <span class="inbox-date">Yesterday</span>
+                      </div>
+                      <div class="thread-row-bottom">
+                        <span class="inbox-preview">The pressure washer is ready whenever you want...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="inbox-row">
+                    <div class="thread-avatar"><span class="thread-avatar-initials">AM</span></div>
+                    <div class="thread-content">
+                      <div class="thread-row-top">
+                        <span class="inbox-who">Anna M.</span>
+                        <span class="inbox-badge badge-bulkbuy">Bulk Buy</span>
+                        <span class="inbox-date">2 days ago</span>
+                      </div>
+                      <div class="thread-row-bottom">
+                        <span class="inbox-preview">Pickup is Saturday 2–4pm at my place. See you...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="inbox-row">
+                    <div class="thread-avatar thread-avatar-group">
+                      <img src="https://fimby.com/wp-content/uploads/2026/03/NeighborhoodInactive.png" alt="" class="group-avatar-icon-mock" />
+                    </div>
+                    <div class="thread-content">
+                      <div class="thread-row-top">
+                        <span class="inbox-who">Block Party <span class="inbox-count">(4)</span></span>
+                        <span class="inbox-badge badge-gathering">Event</span>
+                        <span class="inbox-date">3 days ago</span>
+                      </div>
+                      <div class="thread-row-bottom">
+                        <span class="inbox-preview">I can bring a folding table and chairs...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="thread-row">
-                <span class="thread-who">Huy N.</span>
-                <span class="thread-date">Yesterday</span>
-                <span class="thread-preview">The pressure washer is ready whenever you want...</span>
-              </div>
-              <div class="thread-row">
-                <span class="thread-who">Anna M. <span class="thread-badge" style="background:rgba(168,132,78,0.90);">BULK BUY</span></span>
-                <span class="thread-date">2 days ago</span>
-                <span class="thread-preview">Pickup is Saturday 2-4pm at my place. See you...</span>
-              </div>
-              <div class="thread-row">
-                <span class="thread-who">Block Party <span class="thread-badge" style="background:var(--fimby-badge-event);">EVENT</span></span>
-                <span class="thread-date">3 days ago</span>
-                <span class="thread-preview">I can bring a folding table and chairs...</span>
+
+              <nav class="app-bottom-nav" aria-label="App navigation">
+                <div class="app-nav-container">
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/NeighborhoodInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Home</span>
+                  </div>
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/ToolboxInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Library</span>
+                  </div>
+                  <div class="app-nav-item app-create-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/add.png" alt="" class="app-create-icon" />
+                  </div>
+                  <div class="app-nav-item active">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/SpeechBubbleActive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Messages</span>
+                  </div>
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/ProfileInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">My Stuff</span>
+                  </div>
+                </div>
+              </nav>
+                </div>
               </div>
             </div>
 
-            <div class="onboarding-wireframe" style="padding:0;overflow:hidden;">
-              <div class="onb-page-label" style="padding:10px 14px 0;">Conversation</div>
-              <div class="convo-header">
-                <span class="convo-back">&lsaquo;</span>
-                <div class="convo-avatar">JT</div>
-                <div class="convo-participant">
-                  <span class="convo-name">James T.</span>
-                  <span class="convo-context-badge" style="background:var(--fimby-badge-ask-offer);">ASK</span>
-                </div>
-                <span class="convo-menu">&vellip;</span>
-              </div>
-              <div class="convo-messages">
-                <div class="msg-collapsed-row">
-                  <span class="msg-c-avatar" style="background:var(--fimby-brand-teal);">JT</span>
-                  <span class="msg-c-sender">James T.</span>
-                  <span class="msg-c-snippet">Need help moving a couch...</span>
-                  <span class="msg-c-time">3h</span>
-                </div>
-                <div class="msg-pill-line">
-                  <span class="msg-count-pill">3</span>
-                  <span class="msg-pill-rule"></span>
-                </div>
-                <div class="msg-expanded">
-                  <div class="msg-card-header">
-                    <div class="msg-avatar" style="background:var(--fimby-brand-teal);">JT</div>
-                    <span class="msg-sender">James T.</span>
-                    <span class="msg-time">2h ago</span>
+            <!-- ─── PHONE 2: Conversation (fimbyConversationView) ─── -->
+            <div class="device-frame device-frame--short">
+              <div class="device-screen">
+                <div class="preview-shell preview-shell-conversation">
+              <div class="app-header">
+                <img src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" class="app-logo" />
+                <div class="app-header-actions">
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/BellInactive.png" alt="" />
                   </div>
-                  <div class="msg-body">Saturday at 10 works? I'm at 412 Hawks Ave. There's street parking out front.</div>
-                </div>
-                <div class="msg-expanded">
-                  <div class="msg-card-header">
-                    <div class="msg-avatar" style="background:var(--fimby-earth-driftwood);">LN</div>
-                    <span class="msg-sender">Linh N.</span>
-                    <span class="msg-time">1h ago</span>
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/Magnify.png" alt="" />
                   </div>
-                  <div class="msg-body">Thanks! Saturday at 10 works great.</div>
+                  <div class="app-header-btn">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/Kebab.png" alt="" />
+                  </div>
                 </div>
               </div>
-              <div class="convo-compose">
-                <textarea class="compose-input" readonly rows="2">Perfect, see you then!</textarea>
-                <div class="compose-actions">
-                  <span class="compose-cancel">Cancel</span>
-                  <span class="compose-send">Send</span>
+
+              <div class="fimby-conversation-view">
+                <div class="conversation-header">
+                  <button type="button" class="back-button" aria-hidden="true"><span class="back-chevron">&lsaquo;</span></button>
+                  <div class="participant-info">
+                    <div class="participant-avatar-circle">JT</div>
+                    <div class="participant-details">
+                      <h2 class="participant-name">James T.</h2>
+                      <div class="related-record-row">
+                        <span class="header-badge badge-response">Ask</span>
+                        <span class="related-record-link">Need help moving a couch<span class="link-chevron"> &#8250;</span></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="header-actions">
+                    <button type="button" class="menu-button" aria-hidden="true"><span class="menu-dots">&vellip;</span></button>
+                  </div>
+                </div>
+
+                <div class="thread-body">
+                  <div class="messages-container">
+                    <div class="messages-list">
+                      <div class="msg-collapsed zone-first">
+                        <span class="msg-collapsed-avatar">JT</span>
+                        <span class="msg-collapsed-sender">James T.</span>
+                        <span class="msg-collapsed-snippet">Need help moving a couch...</span>
+                        <span class="msg-collapsed-time">3h</span>
+                      </div>
+                      <div class="collapsed-pill-line">
+                        <div class="collapsed-count-pill">3</div>
+                      </div>
+                      <div class="message-card">
+                        <div class="message-card-header">
+                          <div class="card-avatar">JT</div>
+                          <span class="card-sender">James T.</span>
+                          <span class="card-timestamp">2h ago</span>
+                        </div>
+                        <div class="message-card-body">
+                          <p class="message-text">Saturday at 10 works? I'm at 412 Hawks Ave. There's street parking out front.</p>
+                        </div>
+                      </div>
+                      <div class="message-card from-me">
+                        <div class="message-card-header">
+                          <div class="card-avatar">LN</div>
+                          <span class="card-sender">Linh N.</span>
+                          <span class="card-timestamp">1h ago</span>
+                        </div>
+                        <div class="message-card-body">
+                          <p class="message-text">Thanks! Saturday at 10 works great.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="reply-container">
+                    <div class="compose-area">
+                      <textarea class="compose-input" readonly rows="2">Perfect, see you then!</textarea>
+                      <div class="compose-actions">
+                        <button type="button" class="compose-cancel">Cancel</button>
+                        <button type="button" class="compose-send">Send</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <nav class="app-bottom-nav" aria-label="App navigation">
+                <div class="app-nav-container">
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/NeighborhoodInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Home</span>
+                  </div>
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/ToolboxInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Library</span>
+                  </div>
+                  <div class="app-nav-item app-create-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/add.png" alt="" class="app-create-icon" />
+                  </div>
+                  <div class="app-nav-item active">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/SpeechBubbleActive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">Messages</span>
+                  </div>
+                  <div class="app-nav-item">
+                    <img src="https://fimby.com/wp-content/uploads/2026/03/ProfileInactive.png" alt="" class="app-nav-icon" />
+                    <span class="app-nav-label">My Stuff</span>
+                  </div>
+                </div>
+              </nav>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -1283,25 +1460,3 @@
   </section>
 
 </main>
-
-<div class="sticky-cta-bar" id="hiw-sticky-cta" aria-hidden="true">
-  <div class="sticky-cta-inner">
-    <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Check your neighbourhood</a>
-    <a href="/contact-us/" class="btn btn-secondary">Bring FIMBY here</a>
-  </div>
-</div>
-
-<script>
-(function() {
-  var bar = document.getElementById('hiw-sticky-cta');
-  if (!bar) return;
-  var hero = document.querySelector('.page-hero');
-  function onScroll() {
-    var pastHero = hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 400;
-    bar.classList.toggle('visible', pastHero);
-    bar.setAttribute('aria-hidden', pastHero ? 'false' : 'true');
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-})();
-</script>
