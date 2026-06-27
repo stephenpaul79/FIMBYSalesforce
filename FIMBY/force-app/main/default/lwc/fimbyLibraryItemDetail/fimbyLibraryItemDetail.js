@@ -70,7 +70,8 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // then reveal in one fade instead of sections popping in.
     @track _detailReady = false;
     _recordDone = false;
-    @track showImageModal = false;
+    @track showLightbox = false;
+    @track lightboxImages = [];
     @track showPhotoUploader = false;
     @track showDeleteConfirm = false;
     @track isDeleting = false;
@@ -845,20 +846,21 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // IMAGE MODAL
     // ============================================
 
+    // Photo viewing goes through the universal c-fimby-lightbox.
     handleImageClick() {
-        if (this.hasImage) {
-            this.showImageModal = true;
-            document.body.style.overflow = 'hidden';
-        }
+        if (!this.hasImage) return;
+        this.lightboxImages = [{ url: this.imageUrl, alt: this.itemName }];
+        this.showLightbox = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- open after render
+        requestAnimationFrame(() => {
+            const lb = this.template.querySelector('c-fimby-lightbox');
+            if (lb) lb.open(0);
+        });
     }
 
-    handleCloseImageModal() {
-        this.showImageModal = false;
-        document.body.style.overflow = '';
-    }
-
-    handleModalKeydown(event) {
-        if (event.key === 'Escape') this.handleCloseImageModal();
+    handleLightboxClose() {
+        this.showLightbox = false;
+        this.lightboxImages = [];
     }
 
     // ============================================

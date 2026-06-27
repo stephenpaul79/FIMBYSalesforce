@@ -527,53 +527,8 @@
     color: var(--fimby-error);
 }
 
-/* Image Modal - Full screen overlay */
-.image-modal {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.95);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.modal-close-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.15);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10001;
-    transition: background-color 0.2s ease;
-}
-
-.modal-close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.modal-image-container {
-    max-width: 95vw;
-    max-height: 90vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-image {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-    cursor: default;
-}
+/* Photo viewing now goes through the universal c-fimby-lightbox — the bespoke
+   image modal styles were removed during the photo-viewer consolidation. */
 
 /* Button reset for semantic story-image-container button */
 button.story-image-container {
@@ -599,13 +554,6 @@ button.story-image-container {
         flex: 1;
         justify-content: center;
         min-width: 80px;
-    }
-
-    .modal-close-btn {
-        top: 12px;
-        right: 12px;
-        width: 40px;
-        height: 40px;
     }
 
     .card-type-badge {
@@ -641,8 +589,7 @@ button.story-image-container {
 .story-image-container:focus-visible,
 .read-more-btn:focus-visible,
 .action-btn:focus-visible,
-.comment-btn:focus-visible,
-.modal-close-btn:focus-visible {
+.comment-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
@@ -773,7 +720,6 @@ button.story-image-container {
     .image-overlay,
     .read-more-btn,
     .action-btn,
-    .modal-close-btn,
     .detail-content {
         transition: none !important;
         animation: none !important;

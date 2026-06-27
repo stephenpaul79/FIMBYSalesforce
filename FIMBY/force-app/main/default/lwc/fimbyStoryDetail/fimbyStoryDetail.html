@@ -188,22 +188,12 @@
             </div>
         </template>
 
-        <!-- Image Modal -->
-        <template lwc:if={showImageModal}>
-            <div class="image-modal" onclick={handleCloseImageModal} onkeydown={handleModalKeydown}>
-                <button class="modal-close-btn" onclick={handleCloseImageModal} aria-label="Close image">
-                    <lightning-icon icon-name="utility:close" size="medium" variant="inverse"></lightning-icon>
-                </button>
-                <div class="modal-image-container">
-                    <img
-                        src={imageDisplayUrl}
-                        srcset={imageSrcset}
-                        sizes={detailImageSizes}
-                        alt={storyName}
-                        class="modal-image"
-                        data-original={imageUrl}>
-                </div>
-            </div>
+        <!-- Photo viewer (universal) -->
+        <template lwc:if={showLightbox}>
+            <c-fimby-lightbox
+                images={lightboxImages}
+                onclose={handleLightboxClose}>
+            </c-fimby-lightbox>
         </template>
 
         <c-fimby-bottom-navigation active-tab="stories" ontabchange={handleTabChange}></c-fimby-bottom-navigation>

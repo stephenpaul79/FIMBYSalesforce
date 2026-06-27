@@ -16,6 +16,11 @@
     opacity: 0;
     transition: opacity 0.25s ease;
     pointer-events: none;
+    /* The whole overlay is the pinch/pan surface; JS owns all gestures here so
+       zoom uses the full screen, not just the fit-size image box. */
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    touch-action: none;
+    overflow: hidden;
 }
 
 .lightbox-backdrop.visible {
@@ -141,7 +146,8 @@
        via touch-action intersection. */
     /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
     touch-action: none;
-    overflow: hidden;
+    /* No overflow clip — a zoomed image must spill across the whole backdrop,
+       not stay trapped inside the fit-size box. */
 }
 
 .lightbox-image {

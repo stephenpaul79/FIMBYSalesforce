@@ -68,7 +68,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     _recordDone = false;
     _commentsDone = false;
     @track _extractedRecordId = null;
-    @track showImageModal = false;
+    @track showLightbox = false;
+    @track lightboxImages = [];
     @track isContentExpanded = false;
     @track comments = [];
     @track isLoadingComments = false;
@@ -702,26 +703,21 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         this.isContentExpanded = !this.isContentExpanded;
     }
 
-    // Image modal handlers
+    // Photo viewing goes through the universal c-fimby-lightbox.
     handleImageClick() {
-        if (this.hasImage) {
-            this.showImageModal = true;
-            // Prevent body scroll when modal is open
-            document.body.style.overflow = 'hidden';
-        }
+        if (!this.hasImage) return;
+        this.lightboxImages = [{ url: this.imageUrl, alt: this.storyName }];
+        this.showLightbox = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation -- open after render
+        requestAnimationFrame(() => {
+            const lb = this.template.querySelector('c-fimby-lightbox');
+            if (lb) lb.open(0);
+        });
     }
 
-    handleCloseImageModal() {
-        this.showImageModal = false;
-        // Restore body scroll
-        document.body.style.overflow = '';
-    }
-
-    // Close modal on escape key
-    handleModalKeydown(event) {
-        if (event.key === 'Escape') {
-            this.handleCloseImageModal();
-        }
+    handleLightboxClose() {
+        this.showLightbox = false;
+        this.lightboxImages = [];
     }
 
     handleTabChange(event) {
