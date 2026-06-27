@@ -61,6 +61,19 @@ When asked to brand or fix a Visualforce page / email / CMS view / CSS, change *
 
 Auth: Mobile → OAuth PKCE → auth bridge exchanges for app JWTs (15min access / 30-day refresh) → JWT Bearer + `/singleaccess` → frontdoor URL → WebView. Salesforce tokens never reach the device.
 
+### Change cost: simple publish vs. full app rebuild
+
+The app is **live and approved on both stores** ([App Store](https://apps.apple.com/us/app/fimby/id6776707632), [Google Play](https://play.google.com/store/apps/details?id=com.fimby.app)). Because the app is a **WebView shell**, the two layers have very different change costs — weigh this on every design choice.
+
+| Change location | Path | Cost to ship |
+|--------|--------|--------|
+| **Experience Cloud** (Apex, LWC, objects, CMS) | `FIMBY/force-app/` | Targeted deploy + `sf community publish` — **live in minutes** |
+| **Mobile app shell** | `fimby-mobile-app/` | **Full store re-submission** to App Store **and** Google Play — review cycle, approval wait, users must update |
+
+**The vast majority of UX/feature work lives in Experience Cloud and ships instantly.** Only changes to the native shell trigger a store re-publish: `app.json` / Expo config, native dependencies, the WebView / auth-bridge wiring, push-notification registration, deep-link / universal-link handling, splash screen, app icons, OS permissions, and expo-router *native* routes.
+
+**Be thoughtful before proposing app-rebuild work.** Prefer an Experience Cloud solution that ships the same day. When a request genuinely needs a native shell change, **say so explicitly and flag the re-publish cost** (two store reviews, approval wait, user update) so the tradeoff is a conscious decision — not a surprise.
+
 ### Core data model
 
 | Object | Purpose | Record Types |

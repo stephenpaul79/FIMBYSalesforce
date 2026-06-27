@@ -7,6 +7,8 @@ alwaysApply: true
 
 FIMBY is built for neighbours who may be vulnerable, low-tech, or new to digital community. Every decision should serve **belonging over performance**, **dignity over efficiency**, **clarity over cleverness**.
 
+When weighing design choices, prefer the instant-publish **Experience Cloud** path; explicitly flag any solution that needs a **mobile app rebuild** (native shell change = two store re-reviews + user update). See the `fimby-architecture` rule → *Change cost: simple publish vs. full app rebuild*.
+
 ## Always Show Identity (Multi-Identity Users Only)
 
 Forms that create or modify records must call `getActingAsContact()` and display who the user is acting as: "Posting as:", "Responding as:", "Messaging as:", "Requesting as:". Never silently assume identity.

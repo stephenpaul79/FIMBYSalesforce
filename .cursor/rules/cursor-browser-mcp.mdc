@@ -1,0 +1,180 @@
+---
+description: How to drive Cursor's built-in browser MCP (cursor-ide-browser) reliably — lock protocol, stale refs, shadow DOM, coordinate clicks, CDP, waits, and stop rules. Load when using Agent browser tools, QA, or live app verification.
+alwaysApply: false
+---
+
+# Cursor Built-in Browser MCP (`cursor-ide-browser`)
+
+This rule teaches the workflow Composer internalizes by training. **Other models do not get that automatically** — follow it literally when using Agent browser tools.
+
+Browser Automation must be **enabled** in Cursor Settings → Tools & MCP. The server is built-in; you do not add it to `mcp.json`.
+
+## Mental model
+
+The browser is a **real tab you drive step by step**, not a REST API you batch-call.
+
+- **`browser_snapshot` refs are disposable.** Every navigation, click that changes the DOM, modal open/close, or route change can invalidate refs. **Re-snapshot before the next action** that depends on structure.
+- **Accessibility tree ≠ visible pixels.** Snapshot YAML tells you *what exists*; screenshots tell you *where it is* and *what it looks like*. Use both.
+- **Silent failure is normal.** A ref-click can hit a shadow-DOM host, fill can write nowhere, and the page looks unchanged. Absence of error ≠ success. Verify with snapshot diff, screenshot, or URL/state change.
+- **One hypothesis per retry.** Do not repeat the same failing click/fill without new evidence (fresh snapshot, scroll, coordinate click, or CDP).
+
+## Startup sequence (every session)
+
+1. **`browser_tabs`** (`action: "list"`) — see open tabs and URLs.
+2. **`browser_navigate`** — open or go to the target URL. Omit `position` for background automation.
+3. **`browser_lock`** (`action: "lock"`) — before a multi-step interaction block (tab must exist first).
+4. Work in **observe → act → verify** loops (below).
+5. **`browser_lock`** (`action: "unlock"`) — when **all** browser work for this turn is done.
+
+**Lock order is strict:**
+
+| Situation | Order |
+|-----------|--------|
+| New tab | `navigate` → `lock` → interact → `unlock` |
+| Tab already open | `lock` → interact → `unlock` |
+| Never | `lock` before `navigate` |
+
+## The core loop: observe → act → verify
+
+```
+snapshot (and/or screenshot) → ONE action → verify change → repeat
+```
+
+**Verify** means at least one of:
+
+- URL or title changed
+- Snapshot diff / new element appeared or old one gone
+- Screenshot shows expected visual state
+- Console/network (via CDP) shows expected request
+- Toast, modal, or enabled/disabled state changed
+
+If verify fails, **do not** chain three more actions hoping something sticks. Diagnose, then change tactic.
+
+## Snapshot vs screenshot
+
+| Tool | Use for |
+|------|---------|
+| **`browser_snapshot`** | Finding elements, refs, roles, labels, structure. Primary source of truth for *what to click*. Use `interactive: true` to reduce noise. Use `selector` to scope large pages. |
+| **`browser_take_screenshot`** | Layout, color, overlap, fixed footers, visual regression, **choosing (x,y) for coordinate clicks**. |
+
+**Vision models:** screenshots attach as images you can inspect. Prefer **`browser_take_screenshot`** over CDP `Page.captureScreenshot` for verification.
+
+**Optional:** `browser_snapshot` with `take_screenshot_afterwards: true` when you need structure + pixels in one step.
+
+## Click strategy (escalation ladder)
+
+Try in order; escalate when verify fails or control is inside shadow DOM:
+
+1. **`browser_click` + ref** — fast for plain HTML buttons/links outside shadow roots.
+2. **`browser_get_bounding_box` + ref** → **`browser_mouse_click_xy`** at center — when ref exists but click seems to miss.
+3. **`browser_take_screenshot`** → **`browser_mouse_click_xy`** at visible control — **required** for Lightning/LWC shadow hosts (`lightning-button`, `lightning-input`, etc.) where ref-click hits the host shell.
+4. **`browser_cdp` → `Runtime.evaluate`** → `.click()` on the inner element found through open shadow roots — when coordinate click still fails.
+
+**Coordinate click rules:**
+
+- Aim at the **visible** control center; nudge x/y after a miss.
+- **Do not call any other browser tool between `browser_take_screenshot` and `browser_mouse_click_xy`** on the same tab — coordinates are tied to the immediately prior capture.
+- No visible mouse cursor in the pane is normal.
+
+## Shadow DOM and web components (Salesforce LWC, Experience Cloud, etc.)
+
+Ref-based **`browser_fill` / `browser_type` / `browser_click` often fail silently** on nested shadow DOM. **Try CDP set-value before declaring blocked:**
+
+1. **`browser_snapshot`** — locate the host (e.g. `lightning-input`, `community_login-login-form`).
+2. **`browser_cdp` → `Runtime.evaluate`** — walk **open** shadow roots from `document` or a known host selector; find inner `input` / `textarea`; set `.value`; dispatch **`input`** and **`change`** so reactive bindings update.
+3. Repeat per field.
+4. Submit via **`browser_mouse_click_xy`** after screenshot, or CDP `.click()` on the inner `button`.
+5. Wait for navigation or success signal before concluding failure.
+
+**Still hand off to the human** (do not loop forever) for: date pickers, file uploads, passkeys, captchas, MFA — after CDP + click fails once with a clear blocker.
+
+## Forms
+
+- Some UIs enable **Submit only after blur** — after fill, click the last field or press Tab before expecting Submit to activate.
+- After fill, **snapshot** to confirm the value appears in the tree or verify via CDP `input.value`.
+- **`browser_select_option`** for native `<select>`; custom dropdowns often need click + snapshot loop.
+
+## Scrolling
+
+If click is intercepted, target is under a **fixed footer/header**, or the page has a scrollbar:
+
+- **`browser_scroll`** first — bring the control into a clear hit area, **re-snapshot**, then click.
+- "Click intercepted" is usually **not** a dead end when scroll would fix it.
+
+## Navigation and waits
+
+- After navigation or SPA route changes, **URL updates slowly**. Poll with **`browser_snapshot`**, CDP `Runtime.evaluate` on `location.href`, or short waits — do not conclude failure after one instant check.
+- Prefer **short polling loops** over one long blind wait.
+- **`browser_cdp` Input.* is denied** — use `browser_click`, `browser_type`, `browser_fill`, `browser_mouse_click_xy`, or `Runtime.evaluate` for DOM clicks.
+
+## CDP (`browser_cdp`)
+
+**Good uses:** `Runtime.evaluate`, `DOM.getDocument`, `DOM.querySelector`, computed styles, `Log.enable`, `Network.enable`, reading console/network for debugging.
+
+**Denied / risky:** CDP `Input.*`, cookie/storage manipulation, navigation/history via CDP, file-input filesystem commands — use dedicated browser tools instead.
+
+**Large responses** may write to a file path — read focused sections, do not dump entire payloads into chat.
+
+## Tabs and iframes
+
+- Pass **`viewId`** when multiple tabs are open and you are not on the last-interacted tab.
+- **Iframe content is not accessible** through snapshot/refs — only the outer page. If the app lives in an iframe, report that blocker; do not pretend you interacted inside it.
+
+## Responsive / viewport checks
+
+There is no guaranteed `browser_resize` tool in all builds. For mobile layout checks: use CDP device metrics if available, or ask the human to resize the browser pane — then **reload** so breakpoints re-evaluate, snapshot, and screenshot.
+
+## Stop rules (mandatory)
+
+1. **Do not repeat the same failing action** without new evidence.
+2. After **~4 failed attempts** or clear stall, **stop acting** and report:
+   - current page / URL
+   - target you were trying to reach
+   - what you tried
+   - what blocked you
+   - best next step (including human handoff if needed)
+3. Blockers to **report, not improvise around:** login you cannot complete, passkeys, captchas, permission dialogs, destructive confirmations, unexpected empty state, iframe-only UI.
+4. No **wait → same action → wait** loops without a new hypothesis.
+
+## Human handoff
+
+When automation cannot reliably finish (date pickers, segmented dates, passkeys, blur-gated Submit after CDP attempt):
+
+1. Pause and ask the user to complete the step in the live UI — give field names, suggested values, and what success looks like (toast, URL, modal close).
+2. When they reply **done**, take a **fresh `browser_snapshot`** and continue from the new state.
+
+## Tool quick reference
+
+| Tool | Role |
+|------|------|
+| `browser_tabs` | List / manage tabs |
+| `browser_navigate` | Go to URL |
+| `browser_lock` / `unlock` | Exclusive automation window |
+| `browser_snapshot` | Structure + refs |
+| `browser_take_screenshot` | Pixels + coordinate targeting |
+| `browser_click` | Ref click (plain DOM) |
+| `browser_mouse_click_xy` | Viewport coordinate click |
+| `browser_get_bounding_box` | Ref → coordinates |
+| `browser_fill` / `browser_type` | Text entry (plain DOM) |
+| `browser_scroll` | Reveal obscured controls |
+| `browser_select_option` | Native selects |
+| `browser_press_key` | Enter, Tab, Escape |
+| `browser_highlight` | Debug targeting |
+| `browser_cdp` | Shadow DOM, evaluate, network/console |
+
+## Common mistakes (avoid)
+
+| Mistake | Fix |
+|---------|-----|
+| Reusing refs after navigation | Fresh `browser_snapshot` |
+| Ref-click on `lightning-*` / shadow components | Screenshot → `mouse_click_xy` or CDP |
+| Fill/type with no verify | Snapshot or CDP readback |
+| Tool between screenshot and xy click | Screenshot immediately before xy |
+| `lock` before `navigate` | Navigate first |
+| Declaring "broken UI" after one miss | Scroll, escalate click ladder, CDP |
+| Batching many actions without verify | One action per loop |
+| Ignoring fixed footer overlap | Scroll, then click |
+
+## FIMBY QA
+
+For **personas, login URLs, navigation discipline, and app-specific flows**, also follow **`qa-testing-login`** and load the **`fimby-qa-testing`** skill when running FIMBY QA runbooks. This rule covers **generic browser MCP mechanics**; those cover **what to test and where to go**.
