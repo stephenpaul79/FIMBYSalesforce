@@ -137,6 +137,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* JS fully owns pinch/pan here; none wins over the global pan-x pan-y lock
+       via touch-action intersection. */
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+    touch-action: none;
+    overflow: hidden;
 }
 
 .lightbox-image {
@@ -146,6 +151,9 @@
     border-radius: 4px;
     user-select: none;
     -webkit-user-drag: none;
+    transform-origin: center center;
+    will-change: transform;
+    transition: transform 0.2s ease;
 }
 
 /* ----------------------------------------------------------
@@ -190,6 +198,10 @@
     }
 
     .lightbox-nav {
+        transition: none;
+    }
+
+    .lightbox-image {
         transition: none;
     }
 }

@@ -396,6 +396,16 @@ body {
   background: var(--fimby-surface-page, #F0EBE3) !important;
 }
 
+/* Global zoom lock. fimbyUniversalHeader adds .fimby-zoom-locked to <html> on
+   mount; pan-x pan-y keeps all scrolling + swipe-to-reveal/delete gestures and
+   removes only pinch-zoom and double-tap-zoom (the accidental WebView zoom
+   states). The photo lightbox owns its own contained zoom via touch-action: none. */
+html.fimby-zoom-locked,
+html.fimby-zoom-locked body {
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+  touch-action: pan-x pan-y;
+}
+
 /* Global type baseline. Nearly all FIMBY sizing is rem/em off the root, so this
    one value is the app-wide "make everything slightly bigger" knob. 17px (vs the
    browser-default 16) lifts text + rem-based spacing ~6% for better readability.

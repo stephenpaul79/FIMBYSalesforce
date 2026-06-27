@@ -6,6 +6,7 @@
              aria-label="Image viewer"
              onclick={handleBackdropClick}
              ontouchstart={handleTouchStart}
+             ontouchmove={handleTouchMove}
              ontouchend={handleTouchEnd}>
 
             <!-- Close button -->
@@ -41,7 +42,8 @@
                     <div class="lightbox-image-wrapper" onclick={handleImageClick}>
                         <img src={currentImage.url}
                              alt={currentImage.alt}
-                             class="lightbox-image">
+                             class="lightbox-image"
+                             style={imageStyle}>
                     </div>
                 </template>
 

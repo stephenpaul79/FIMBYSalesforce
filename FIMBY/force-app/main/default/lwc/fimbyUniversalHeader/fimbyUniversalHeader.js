@@ -131,6 +131,18 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this._applyScrollLock();
         this._loadModeratorContext();
 
+        // Global zoom lock. The header is mounted once in the persistent shell,
+        // so this single attach covers every surface. The class drives the
+        // touch-action rule (Android + double-tap); the gesture* listeners are
+        // iOS WKWebView-only and stay idle on Android. The photo lightbox owns
+        // its own contained zoom (touch-action: none + JS transform), unaffected
+        // because it reads raw touch points rather than these browser gestures.
+        document.documentElement.classList.add('fimby-zoom-locked');
+        this._blockPinch = (event) => event.preventDefault();
+        document.addEventListener('gesturestart', this._blockPinch, { passive: false });
+        document.addEventListener('gesturechange', this._blockPinch, { passive: false });
+        document.addEventListener('gestureend', this._blockPinch, { passive: false });
+
         this._openQuickPostHandler = () => this.handleNewClick();
         window.addEventListener('fimbyopenquickpost', this._openQuickPostHandler);
 
@@ -175,6 +187,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     disconnectedCallback() {
+        if (this._blockPinch) {
+            document.removeEventListener('gesturestart', this._blockPinch, { passive: false });
+            document.removeEventListener('gesturechange', this._blockPinch, { passive: false });
+            document.removeEventListener('gestureend', this._blockPinch, { passive: false });
+            document.documentElement.classList.remove('fimby-zoom-locked');
+            this._blockPinch = null;
+        }
         if (this._openQuickPostHandler) {
             window.removeEventListener('fimbyopenquickpost', this._openQuickPostHandler);
         }
