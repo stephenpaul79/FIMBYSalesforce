@@ -2426,7 +2426,9 @@ a.capability-card {
 /* Widen the final-CTA box so the two columns get more room and land closer in height. */
 .final-cta .container-inset { width: min(900px, calc(100% - 32px)); }
 @media (min-width: 768px) {
-  .dual-cta-grid { grid-template-columns: 1fr 1fr; gap: 32px; text-align: left; }
+  /* Let each column hug its own content instead of stretching to equal height —
+     the lighter secondary box reads as intentional hierarchy, no dead space. */
+  .dual-cta-grid { grid-template-columns: 1fr 1fr; gap: 32px; text-align: left; align-items: start; }
 }
 .dual-cta-col {
   display: flex;

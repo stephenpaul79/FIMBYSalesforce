@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" data-doc="thinking">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Why FIMBY Was Built This Way — The Thinking</title>
+<style>
+  :root {
+    --page:#F0EBE3; --section:#EBE6DD; --card:#FAF7F2; --input:#F7F3EB;
+    --border:#E0D9CF; --border-2:#D6CFC5;
+    --strong:#261A11; --primary:#4A3526; --secondary:#8B7355; --muted:#B5A088;
+    --teal:#3A7D8C; --teal-deep:#2B5F6D;
+    --c1:#357280; --c2:#476B4C; --c3:#6B5E50; --c4:#7D6234; --c5:#4E6878;
+    --c6:#448E9E; --c7:#8A5936; --c8:#625A76; --c9:#925930; --c10:#566744;
+    --radius:18px; --radius-sm:12px;
+    --shadow:0 2px 8px rgba(38,26,17,0.08); --shadow-lg:0 8px 24px rgba(38,26,17,0.14);
+    --serif: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:#14100D; --section:#17120F; --card:#1B1512; --input:#2F241F;
+      --border:#342924; --border-2:#3E312B;
+      --strong:#FFFBF7; --primary:#F5F1ED; --secondary:#D6CFC7; --muted:#B3A79E;
+      --teal:#4F9DB0; --teal-deep:#6CBCD1;
+      --shadow:0 2px 8px rgba(0,0,0,0.4); --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+    }
+  }
+  * { box-sizing:border-box; }
+  html { font-size:17px; scroll-behavior:smooth; }
+  body { margin:0; background:var(--page); color:var(--primary); font-family:var(--sans); line-height:1.65; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:780px; margin:0 auto; padding:0 24px; }
+
+  header.hero { text-align:center; padding:78px 24px 30px;
+    background: radial-gradient(120% 90% at 50% -10%, rgba(58,125,140,0.12), transparent 60%), var(--page); }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--teal);
+    background:rgba(58,125,140,0.10); border:1px solid rgba(58,125,140,0.22); padding:6px 14px; border-radius:9999px; }
+  .eyebrow .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); }
+  header.hero h1 { font-family:var(--serif); color:var(--strong); font-size:clamp(2rem,6vw,3.2rem);
+    line-height:1.1; margin:22px 0 12px; letter-spacing:-0.01em; }
+  header.hero p.lead { font-size:1.12rem; color:var(--secondary); max-width:620px; margin:0 auto; }
+  .switcher { margin:26px auto 0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; font-size:0.85rem; }
+  .switcher a { color:var(--teal); text-decoration:none; border:1px solid var(--border); background:var(--card);
+    padding:7px 14px; border-radius:9999px; }
+  .switcher a:hover { border-color:var(--teal); }
+  .switcher a[aria-current="true"] { background:var(--teal); color:#fff; border-color:var(--teal); }
+
+  main { padding:30px 0 30px; }
+
+  /* principle blocks */
+  .principle { margin:0 0 14px; }
+  .principle .idx {
+    font-family:var(--serif); font-size:0.95rem; color:var(--accent,var(--teal)); font-weight:700;
+    letter-spacing:0.04em;
+  }
+  .principle blockquote {
+    margin:6px 0 16px; padding:0 0 0 20px; border-left:4px solid var(--accent,var(--teal));
+    font-family:var(--serif); font-size:clamp(1.5rem,4.4vw,2rem); line-height:1.2; color:var(--strong);
+    font-style:italic;
+  }
+  .principle .body { color:var(--primary); font-size:1.04rem; }
+  .principle .body p { margin:0 0 14px; }
+  .principle .body em { color:var(--teal-deep); font-style:normal; font-weight:600; }
+
+  .decisions {
+    background:var(--card); border:1px solid var(--border); border-left:5px solid var(--accent,var(--teal));
+    border-radius:var(--radius-sm); padding:16px 18px; margin:8px 0 0; box-shadow:var(--shadow);
+  }
+  .decisions h3 {
+    margin:0 0 10px; font-size:0.74rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--accent,var(--teal)); font-weight:700;
+  }
+  .decisions ul { margin:0; padding:0; list-style:none; }
+  .decisions li { position:relative; padding:5px 0 5px 20px; font-size:0.94rem; border-top:1px solid var(--border); }
+  .decisions li:first-child { border-top:none; }
+  .decisions li::before { content:""; position:absolute; left:2px; top:13px; width:6px; height:6px;
+    border-radius:50%; background:var(--accent,var(--teal)); opacity:0.65; }
+  .decisions li b { color:var(--strong); font-weight:600; }
+
+  .rule { height:1px; background:var(--border); margin:40px 0; border:none; }
+
+  /* closing card */
+  .closing {
+    background: linear-gradient(135deg, rgba(58,125,140,0.10), var(--card) 60%);
+    border:1px solid var(--border); border-radius:var(--radius); padding:28px 26px; margin-top:10px;
+    box-shadow:var(--shadow-lg);
+  }
+  .closing h2 { font-family:var(--serif); color:var(--strong); margin:0 0 10px; font-size:1.5rem; }
+  .closing p { margin:0 0 10px; color:var(--primary); }
+  .closing .credo { font-family:var(--serif); font-style:italic; color:var(--teal-deep); font-size:1.1rem; }
+
+  footer { text-align:center; padding:44px 22px 60px; color:var(--secondary); font-size:0.85rem;
+    border-top:1px solid var(--border); margin-top:30px; }
+  footer .mark { font-family:var(--serif); color:var(--strong); font-size:1.05rem; }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span>The reasoning behind the build</div>
+    <h1>Why FIMBY Was Built This Way</h1>
+    <p class="lead">The same evolution, told without dates. Not <i>what</i> shipped and when, but the handful of convictions that decided every trade-off along the way.</p>
+    <div class="switcher">
+      <a href="fimby-app-evolution-timeline.html">Timeline (dates)</a>
+      <a href="fimby-app-evolution-thinking.html" aria-current="true">The thinking (no dates)</a>
+      <a href="fimby-website-copy-evolution.html">Website copy evolution</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- 1 -->
+    <section class="principle" style="--accent: var(--c3)">
+      <div class="idx">Principle 01</div>
+      <blockquote>"A doorbell, not a slot machine."</blockquote>
+      <div class="body">
+        <p>Most apps are built to be sticky. FIMBY was built to be <em>put down</em>. Early on the build chased the usual signals — live counters, typing indicators, polling for updates, push for everything. Then came a deliberate reversal: a whole "scale-back" pass that <em>removed</em> capability on purpose, because attention-farming is the opposite of neighbourliness.</p>
+        <p>The question stopped being "how do we bring people back?" and became "how do we let people get on with their lives, and be here when they actually need each other?"</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>Killed timer polling; replaced count badges with quiet <b>dot indicators</b></li>
+          <li>Notification <b>batching</b> and removal of broadcast push for every new post</li>
+          <li>Chat-style messaging redesigned to calmer <b>email-style</b> threads</li>
+          <li>A <b>90-day feed TTL</b> so the neighbourhood forgets, like real life does</li>
+          <li>No likes, no followers, no trending — by design, not omission</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 2 -->
+    <section class="principle" style="--accent: var(--c4)">
+      <div class="idx">Principle 02</div>
+      <blockquote>"Warmth is a design decision, not decoration."</blockquote>
+      <div class="body">
+        <p>FIMBY serves neighbours who may be older, lower-tech, or wary of new platforms. The look had to disarm before it could invite. So the palette went to warm parchment and cream instead of clinical white, avatars became friendly initials instead of surveillance-style photos, and a token system carried that warmth — with dark mode — into every corner of the app.</p>
+        <p>Even delight was rationed with care: celebrations scale to the occasion and always yield to <em>reduced-motion</em>. Whimsy with a purpose, never noise.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>The <b>earthy colour overhaul</b> and the <b>--fimby-* token framework</b></li>
+          <li>An accessibility sweep: 44px tap targets, focus order, aria labels, real buttons</li>
+          <li>The <b>celebration component</b> — confetti that respects a person's settings</li>
+          <li>Persona-first detail pages built around the human, not the database record</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 3 -->
+    <section class="principle" style="--accent: var(--c8)">
+      <div class="idx">Principle 03</div>
+      <blockquote>"Identity is sacred — and sometimes borrowed."</blockquote>
+      <div class="body">
+        <p>A neighbourhood includes people who can't, or shouldn't have to, drive an app alone: an elder, someone with a disability, someone who simply trusts a friend to help. So FIMBY learned to let one person act <em>on behalf of</em> another — without ever hiding who actually did what.</p>
+        <p>This turned out to be one of the deepest pieces of the build. Every action records both the represented identity and the real hand at the keyboard, so the system stays dignified and auditable at the same time.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>The <b>"Logged in as" / acting-as framework</b> and Support People</li>
+          <li><b>Dual-stamping</b> on every record (post owner + who submitted it)</li>
+          <li>The green <b>"Posting as…" banner</b> so identity is never a silent assumption</li>
+          <li>Vouching kept strictly <b>personal</b> — you can't vouch while acting as someone else</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 4 -->
+    <section class="principle" style="--accent: var(--c1)">
+      <div class="idx">Principle 04</div>
+      <blockquote>"A notification should respect a life."</blockquote>
+      <div class="body">
+        <p>The fastest way to make a community app feel like a job is to let it nag. FIMBY treated the notification as something that should know when to stay quiet — at night, on a Sunday, when ten things happened that could be said once instead of ten times.</p>
+        <p>The voice mattered as much as the timing. Alerts read like <em>a neighbour over a fence</em>, not a platform issuing instructions.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>The <b>humane push system</b>: quiet hours, per-category preferences</li>
+          <li>Batch-until-read notifications; <b>Sunday-rest</b> digest batches</li>
+          <li>Rich <b>digest emails</b> — the inbox that comes to you, not the badge that chases you</li>
+          <li>A full notification usability audit and coverage matrix before launch</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 5 -->
+    <section class="principle" style="--accent: var(--c10)">
+      <div class="idx">Principle 05</div>
+      <blockquote>"The neighbourhood is the boundary, and the point."</blockquote>
+      <div class="body">
+        <p>Trust does not scale by reach. It scales by smallness — by being among people close enough to actually show up. So FIMBY scopes everything to one neighbourhood, and its growth model is cell-division, not a feed that swells until no one knows anyone.</p>
+        <p>The aspiration was never "more users." It was <em>more places where the people on a street know each other by name.</em></p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>Every query scoped, every record stamped, to a single <b>neighbourhood</b></li>
+          <li>The <b>neighbourhood growth framework</b> — scale like yeast, not a social network</li>
+          <li>Community Groups as a bridge between neighbours and local organizations</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 6 -->
+    <section class="principle" style="--accent: var(--c6)">
+      <div class="idx">Principle 06</div>
+      <blockquote>"Gathering should never punish."</blockquote>
+      <div class="body">
+        <p>When the app learned to host events, the temptation was to treat them all like ticketed seats with hard caps and "SOLD OUT" walls. That's efficient, and cold. Instead FIMBY split events into kinds — a capped Gathering, a one-tap Open Event, a come-as-you-are Community Event — so that <em>most</em> ways of getting together carry no scarcity at all.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>The <b>Event types model</b>: Gathering / Open Event / Community Event</li>
+          <li>Capacity logic gated to Gatherings only — no "Event Full" for the open kinds</li>
+          <li>Event reminders, native event icons, and gap remediation for each type</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 7 -->
+    <section class="principle" style="--accent: var(--c7)">
+      <div class="idx">Principle 07</div>
+      <blockquote>"Asking is brave; receiving is grace."</blockquote>
+      <div class="body">
+        <p>The hardest interface problem in mutual aid isn't lending a drill — it's making it feel safe to <em>need</em> one. A lot of the build went into the borrowing lifecycle and the language around it, so that asking for help reads as ordinary and thanking someone feels like a small celebration rather than a transaction closing.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>The full <b>lending lifecycle</b>: request &rarr; approve &rarr; pickup &rarr; return &rarr; extend</li>
+          <li>Bulk Buys so a street can pool a Costco run without anyone fronting it alone</li>
+          <li>"<b>Say thanks</b>" as a warm moment inside the thread, not a Chatter post</li>
+          <li>Restorative wording throughout: <b>check-in</b>, not "report"; "no response was received," not "no-show"</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 8 -->
+    <section class="principle" style="--accent: var(--c9)">
+      <div class="idx">Principle 08</div>
+      <blockquote>"Safety without cruelty."</blockquote>
+      <div class="body">
+        <p>A platform for vulnerable people has to be safe, but safety built on punishment recreates the very systems people are fleeing. FIMBY's answer was consent and reversibility first: blocking that's mutual and never forces re-contact, moderation that reads as care, the right to pause or be forgotten.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>Bidirectional blocking; granular, revocable contact sharing</li>
+          <li>The <b>vouching / trust-vetting system</b> for who belongs</li>
+          <li>The <b>moderator dashboard</b> and a triage-first revamp; content reports framed as check-ins</li>
+          <li><b>Redacted profiles</b>, pause-vs-delete, and a clean deletion flow</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- 9 -->
+    <section class="principle" style="--accent: var(--c5)">
+      <div class="idx">Principle 09</div>
+      <blockquote>"Ship it — then make it durable."</blockquote>
+      <div class="body">
+        <p>An app held together by one builder can't afford fragility. Before submitting to the stores came the unglamorous work — security audits, legal alignment, end-to-end tests, making the product's behaviour match every promise on the public pages. Alongside it, a resilience roadmap was drawn up for the road ahead, because going live is the start of the maintenance, not the end of the build.</p>
+      </div>
+      <div class="decisions">
+        <h3>What flowed from it</h3>
+        <ul>
+          <li>Web + mobile security audits; auth-bridge hardening; a Playwright e2e suite</li>
+          <li><b>Prelaunch product alignment</b> — app behaviour reconciled with the legal/help pages</li>
+          <li>An operations playbook and dozens of QA runbooks</li>
+          <li>The <b>resilience roadmap</b> for the road ahead: skills/Help Nearby, pantry, repost recurrence, multi-device push</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="closing">
+      <h2>The throughline</h2>
+      <p>Read together, the decisions point one direction. Wherever a faster, colder, more addictive option existed, FIMBY chose the slower, warmer, more human one — and accepted the engineering cost of doing so.</p>
+      <p class="credo">Belonging over performance. Dignity over efficiency. Clarity over cleverness.</p>
+    </div>
+
+  </main>
+
+  <footer>
+    <p class="mark">FIMBY — Family In My Backyard</p>
+    <p>Turn the place you live into a place you belong.</p>
+  </footer>
+</body>
+</html>

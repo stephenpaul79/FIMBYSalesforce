@@ -1,14 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FIMBY — revised home (preview)</title>
-  <!-- Local preview only: links the theme stylesheet so this renders faithfully when opened in a browser.
-       For live injection, lift only the <main>…</main> below (it carries its own <style> for the new sections). -->
-  <link rel="stylesheet" href="custom-css.css" />
-</head>
-<body>
   <main>
 
     <!-- ═══ INLINE STYLE for new sections (travels with <main> on inject) ═══ -->
@@ -18,37 +7,61 @@
       .reframe-band h2 { color: var(--fimby-text-primary); font-size: clamp(1.6rem,3.2vw,2.4rem); line-height: 1.1; letter-spacing: -0.025em; max-width: 24ch; margin: 0 auto 10px; }
       .reframe-band p { color: var(--fimby-text-secondary); font-size: 1.02rem; line-height: 1.6; max-width: 56ch; margin: 0 auto; }
 
-      /* Stakes crescendo — full-bleed image with overlay */
-      .stakes { padding: 0; }
-      .stakes-media {
-        position: relative; min-height: 560px; display: flex; align-items: center; justify-content: center;
-        /* LIVE SWAP: replace with the uploaded fimby.com media URL before injecting */
-        background-image: url('preview-assets/stakes-table.png');
-        background-size: cover; background-position: center 32%;
+      /* Stakes — "the feed is not the point": digital prompt → meaning → real life.
+         Contained, warm, editorial. No full-bleed background, no dark overlay. */
+      .stakes { padding: 56px 0; background: var(--fimby-surface-card); border-top: 1px solid var(--fimby-divider-default); border-bottom: 1px solid var(--fimby-divider-default); }
+      .stakes-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; display: grid; gap: 28px; align-items: center; }
+      @media (min-width: 880px) {
+        .stakes-shell { grid-template-columns: 28fr 34fr 38fr; gap: 56px; }
       }
-      .stakes-media::before {
-        content: ""; position: absolute; inset: 0;
-        background: linear-gradient(180deg, rgba(38,26,17,0.58) 0%, rgba(38,26,17,0.32) 38%, rgba(38,26,17,0.80) 100%);
+
+      /* LEFT — simplified example post cards, leaning toward the middle */
+      .stakes-posts { display: flex; flex-direction: column; gap: 14px; }
+      .stakes-post-card {
+        background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+        border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card); padding: 15px;
       }
-      .stakes-inner { position: relative; z-index: 1; width: min(820px, calc(100% - 40px)); margin: 0 auto; text-align: center; padding: 64px 0; color: #FAF7F2; }
-      .stakes-kicker {
-        display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px;
-        background: rgba(250,247,242,0.16); border: 1px solid rgba(250,247,242,0.38); color: #FAF7F2;
-        font-size: 0.82rem; font-weight: 600; margin-bottom: 16px;
+      /* Block-level flex (not inline-flex): keeps the badge off the text baseline,
+         so the only space above it is the card's 15px padding — no phantom leading. */
+      .stakes-post-badge {
+        display: flex; width: fit-content; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--fimby-radius-md);
+        color: #fff; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; margin-bottom: 8px;
       }
-      .stakes-kicker .eyebrow-dot { background: #FAF7F2; }
-      .stakes-inner h2 { font-size: clamp(2rem,4.5vw,3rem); line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; color: #FFFDF9; text-shadow: 0 0 3px rgba(0,0,0,0.92), 0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.6); }
-      .stakes-inner p { font-size: 1.08rem; line-height: 1.62; margin: 0 auto 14px; max-width: 70ch; text-wrap: pretty; color: #F3ECE2; text-shadow: 0 0 3px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.55); }
-      .stakes-inner .button-row { justify-content: center; margin-top: 24px; flex-wrap: wrap; }
-      .stakes .btn-secondary { background: rgba(250,247,242,0.14); color: #FFFDF9; border: 1px solid rgba(250,247,242,0.5); box-shadow: none; }
-      .stakes .btn-secondary:hover { background: rgba(250,247,242,0.24); }
-      /* Peak action: a quiet text thread (not a button) that glides down to #join */
-      .stakes-jump { display: inline-block; margin-top: 26px; color: #FFFDF9; font-size: 1.05rem; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); transition: text-decoration-color 0.18s ease; }
-      .stakes-jump:hover { color: #fff; text-decoration-color: rgba(255,253,249,0.55); }
+      .stakes-post-badge img { width: 13px; height: 13px; object-fit: contain; flex: 0 0 auto; }
+      .stakes-post-title { font-size: 0.95rem; font-weight: 600; color: var(--fimby-text-strong); line-height: 1.35; margin-bottom: 3px; }
+      .stakes-post-body { font-size: 0.84rem; color: var(--fimby-text-primary); line-height: 1.5; }
+      /* gentle angling for movement — kept at every width */
+      .stakes-post-card:nth-child(1) { transform: rotate(-1.4deg); }
+      .stakes-post-card:nth-child(2) { transform: rotate(0.8deg); }
+      .stakes-post-card:nth-child(3) { transform: rotate(-0.5deg); }
+      @media (min-width: 880px) {
+        /* desktop also leans the stack toward the copy/photo — a touch, so it doesn't crowd */
+        .stakes-post-card:nth-child(2) { transform: rotate(0.8deg) translateX(5px); }
+        .stakes-post-card:nth-child(3) { transform: rotate(-0.5deg) translateX(2px); }
+      }
+
+      /* MIDDLE — stakes copy + scroll CTA */
+      /* Band is now surface-card, so swap the kicker pill to surface-page (like the cards) or it vanishes into the band. */
+      .stakes .section-kicker { background: var(--fimby-surface-page); }
+      .stakes-copy h2 { font-size: clamp(1.8rem,3.6vw,2.5rem); line-height: 1.06; letter-spacing: -0.03em; color: var(--fimby-text-primary); margin: 10px 0 14px; }
+      .stakes-copy p { font-size: 1.02rem; line-height: 1.6; color: var(--fimby-text-primary); margin: 0 0 12px; }
+      /* Peak action: a quiet text thread (not a button) that glides down to #join.
+         On the new light background, the teal token (deepened for AA) replaces the on-photo white. */
+      .stakes-jump { display: inline-block; margin-top: 8px; color: var(--fimby-earth-teal); font-size: 1.05rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; transition: color 0.18s ease; }
+      .stakes-jump:hover { color: var(--fimby-btn-primary-bg-active); }
+
+      /* RIGHT — the embodied "after": a real photo, not a background */
+      .stakes-photo-wrap { margin: 0; }
+      .stakes-photo {
+        display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 55%;
+        border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card-hover); border: 1px solid var(--fimby-border-subtle);
+      }
+
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-      @media (max-width: 700px) {
-        .stakes-media { min-height: 480px; background-position: center 28%; }
-        .stakes-inner { padding: 48px 0; }
+
+      /* Tablet/mobile — stack as text → posts → photo; straighten the cards */
+      @media (max-width: 879px) {
+        .stakes-copy { order: -1; }
       }
 
       /* Desktop: stop last-word orphans by giving these headings more width */
@@ -77,10 +90,12 @@
         font-size: 1.25rem; line-height: 1.45; font-weight: 600;
         box-shadow: var(--fimby-shadow-card); letter-spacing: -0.01em;
       }
-      #rooted .rooted-art { display: block; width: auto; max-width: 100%; height: auto; max-height: 400px; margin: 0 auto; }
+      #rooted .rooted-art { display: block; width: auto; max-width: 100%; height: auto; max-height: 250px; margin: 0 auto; }
 
       /* ── WCAG AA: deepen the brand tokens for THIS page only (same hues, contrast ≥4.5:1) ── */
       main {
+        /* Prevent orphan last-word lines in body copy (headings keep text-wrap: balance). */
+        text-wrap: pretty;
         --fimby-text-secondary: #6F5B43;  /* was #8B7355 (3.6–4.2:1) → ~5.2–6:1 on cream/card */
         --fimby-text-muted: #6F5B43;      /* was #B5A088 (2.1:1) — too light for real text */
         --fimby-earth-teal: #2F6B78;      /* was #448E9E (3.0–3.5:1) → ~4.8–5.6:1 for links */
@@ -149,7 +164,6 @@
 
             <div class="greeting-section">
               <h2 class="greeting-text">Good morning, neighbour</h2>
-              <p class="greeting-subtext">The neighbourhood is waking up</p>
             </div>
 
             <div class="feed-section">
@@ -405,9 +419,8 @@
     <section class="trust-section" id="rooted">
       <div class="container-inset">
         <div class="rooted-grid">
-          <!-- LIVE SWAP: replace src with the uploaded fimby.com media URL before injecting -->
           <div class="rooted-art-frame">
-            <img src="preview-assets/rooted-trellis.png" alt="A young vine climbing a wooden trellis — a simple structure giving new growth something to hold onto" class="rooted-art" />
+            <img src="https://fimby.com/wp-content/uploads/2026/06/trellisbefore.png" alt="A young vine climbing a wooden trellis — a simple structure giving new growth something to hold onto" class="rooted-art" />
           </div>
           <div>
             <div class="section-copy trust-prose">
@@ -424,17 +437,50 @@
       </div>
     </section>
 
-    <!-- ═══ 7. THE DREAM — stakes ta-da ═══ -->
+    <!-- ═══ 7. THE DREAM — stakes: prompt → meaning → real life ═══ -->
     <section class="stakes" id="stakes">
-      <div class="stakes-media">
-        <div class="stakes-inner">
-          <div class="stakes-kicker"><span class="eyebrow-dot"></span>More than an app</div>
-          <h2>This is a different way of living</h2>
-          <p>FIMBY isn't really about software. It's about undoing something we've quietly accepted: that you can live a few doors apart for years and never learn a name.</p>
-          <p>When neighbours share meals, tools, prayers, and time, the lines we usually sort each other by (age, politics, class) start to matter less. The person you'd have walked past becomes the one who checks in after surgery.</p>
-          <p>That's the dream: not a bigger network, but a neighbourhood that feels a little more like family. You can be part of it.</p>
-          <a href="#join" class="stakes-jump">Find your neighbourhood now →</a>
+      <div class="stakes-shell">
+
+        <!-- LEFT: simplified example posts — read as examples, not full screenshots -->
+        <div class="stakes-posts">
+          <article class="stakes-post-card">
+            <span class="stakes-post-badge" style="background:var(--fimby-badge-ask-offer);">
+              <img src="https://fimby.com/wp-content/uploads/2026/03/needsm.png" alt="" />Ask &amp; Offer
+            </span>
+            <div class="stakes-post-title">Extra soup pot?</div>
+            <div class="stakes-post-body">Anyone have a big soup pot we could borrow for hot pot on Friday?</div>
+          </article>
+          <article class="stakes-post-card">
+            <span class="stakes-post-badge" style="background:var(--fimby-badge-event);">
+              <img src="https://fimby.com/wp-content/uploads/2026/03/plannersm.png" alt="" />Gathering
+            </span>
+            <div class="stakes-post-title">Hot pot Friday</div>
+            <div class="stakes-post-body">Room for a few more around the table. Bring chopped veg, noodles, or whatever you've got.</div>
+          </article>
+          <article class="stakes-post-card">
+            <span class="stakes-post-badge" style="background:var(--fimby-badge-thank-you);">
+              <img src="https://fimby.com/wp-content/uploads/2026/03/ThankYouActive.png" alt="" />Thank You
+            </span>
+            <div class="stakes-post-title">Hotpot extravaganza</div>
+            <div class="stakes-post-body">Thank you Sam for hosting all of us, and Phoenix for organizing. Wilson made all our soup from scratch!!! 🙏</div>
+          </article>
         </div>
+
+        <!-- MIDDLE: stakes copy + scroll CTA -->
+        <div class="stakes-copy">
+          <div class="section-kicker"><span class="eyebrow-dot"></span>More than an app</div>
+          <h2>The feed is not the point.</h2>
+          <p>FIMBY isn't really about software. It's about refusing something we've quietly accepted: that people can live a few doors apart for years and still remain strangers.</p>
+          <p>A borrowed pot becomes a conversation. A shared meal becomes a check-in. A thank-you becomes a story the neighbourhood remembers.</p>
+          <p>We know this works, because it already has. Not a bigger network, but a neighbourhood that feels a little more like family.</p>
+          <a href="#join" class="stakes-jump">See if FIMBY's in your neighbourhood →</a>
+        </div>
+
+        <!-- RIGHT: the embodied "after" moment -->
+        <figure class="stakes-photo-wrap">
+          <img class="stakes-photo" src="https://fimby.com/wp-content/uploads/2026/06/hotpot-table.png" alt="Neighbours gathered around a home table for a hot pot dinner, with shared food and bowls in the centre." />
+        </figure>
+
       </div>
     </section>
 
@@ -446,12 +492,12 @@
             <img src="https://fimby.com/wp-content/uploads/2026/02/JacksonAve.png" alt="A familiar street in Vancouver's Downtown Eastside neighbourhood" class="credibility-photo" />
           </div>
           <div class="section-copy trust-prose credibility-text">
-            <div class="section-kicker"><span class="eyebrow-dot"></span>We know how this sounds</div>
-            <h2>But we've been doing it for twenty years</h2>
-            <p>If a neighbourhood that feels like family sounds like wishful thinking, we understand. But it isn't a thought experiment. FIMBY was forged on some of the hardest blocks in Canada — Vancouver's Downtown Eastside — through twenty-plus years of neighbouring before it was ever an app: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much.</p>
+            <div class="section-kicker"><span class="eyebrow-dot"></span>Not a thought experiment</div>
+            <h2>We've been doing this for twenty years</h2>
+            <p>This isn't a thought experiment. FIMBY was forged on some of the hardest blocks in Canada — Vancouver's Downtown Eastside — through twenty-plus years of neighbouring before it was ever an app: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much.</p>
             <p>The software is newer than that story. What stayed the same is the radius — a block, a building, a few streets — where you see the same faces again and small acts of care can turn into real trust.</p>
-            <p class="faith-block">It began as Christian neighbouring here — and it's open to everyone. Prayer and faith stories are welcome; they're never required.</p>
-            <p class="crisis-line">FIMBY isn't a crisis line or a replacement for shelters, detox, or health care — it's everyday neighbouring that sits alongside formal supports.</p>
+            <p class="faith-block">That kind of neighbouring started here as a Christian practice, and it stays open to everyone — prayer and faith stories are welcome, never required.</p>
+            <p class="crisis-line">It's also not a crisis line, or a substitute for shelters, detox, or health care. It's the everyday kind of neighbouring that sits alongside those supports, never in their place.</p>
           </div>
         </div>
       </div>
@@ -628,5 +674,3 @@
     </script>
 
   </main>
-</body>
-</html>

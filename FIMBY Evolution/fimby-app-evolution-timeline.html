@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" data-doc="timeline">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How FIMBY Was Built — A Dated Timeline</title>
+<style>
+  /* ── FIMBY brand tokens (light + dark) ───────────────────────────── */
+  :root {
+    --page:      #F0EBE3;  /* warm grey  */
+    --section:   #EBE6DD;  /* oat        */
+    --card:      #FAF7F2;  /* cream      */
+    --input:     #F7F3EB;  /* linen      */
+    --border:    #E0D9CF;
+    --border-2:  #D6CFC5;
+    --strong:    #261A11;  /* espresso   */
+    --primary:   #4A3526;  /* umber      */
+    --secondary: #8B7355;  /* bronze     */
+    --muted:     #B5A088;  /* sandstone  */
+    --teal:      #3A7D8C;
+    --teal-deep: #2B5F6D;
+
+    /* earth-tone chapter accents */
+    --c1: #357280;  /* teal water    */
+    --c2: #476B4C;  /* sage forest   */
+    --c3: #6B5E50;  /* driftwood     */
+    --c4: #7D6234;  /* ochre wheat   */
+    --c5: #4E6878;  /* slate sky     */
+    --c6: #448E9E;  /* event teal    */
+    --c7: #8A5936;  /* terracotta    */
+    --c8: #625A76;  /* dusty violet  */
+    --c9: #925930;  /* vouch copper  */
+    --c10:#566744;  /* moss          */
+
+    --radius:   16px;
+    --radius-sm:12px;
+    --shadow:   0 2px 8px rgba(38,26,17,0.08);
+    --shadow-lg:0 8px 24px rgba(38,26,17,0.14);
+    --serif: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:#14100D; --section:#17120F; --card:#1B1512; --input:#2F241F;
+      --border:#342924; --border-2:#3E312B;
+      --strong:#FFFBF7; --primary:#F5F1ED; --secondary:#D6CFC7; --muted:#B3A79E;
+      --teal:#4F9DB0; --teal-deep:#6CBCD1;
+      --shadow:0 2px 8px rgba(0,0,0,0.4); --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { font-size: 17px; scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--page); color: var(--primary);
+    font-family: var(--sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 22px; }
+
+  /* ── top hero ─────────────────────────────────────────────────────── */
+  header.hero {
+    text-align: center; padding: 72px 22px 40px;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(58,125,140,0.12), transparent 60%),
+      var(--page);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--teal);
+    background: rgba(58,125,140,0.10); border: 1px solid rgba(58,125,140,0.22);
+    padding: 6px 14px; border-radius: 9999px;
+  }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+  header.hero h1 {
+    font-family: var(--serif); color: var(--strong);
+    font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.1; margin: 22px 0 10px;
+    letter-spacing: -0.01em;
+  }
+  header.hero p.lead {
+    font-size: 1.12rem; color: var(--secondary); max-width: 640px; margin: 0 auto;
+  }
+  .stat-row {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 32px 0 6px;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px 20px; min-width: 132px; box-shadow: var(--shadow);
+  }
+  .stat .num { font-family: var(--serif); font-size: 1.7rem; color: var(--strong); font-weight: 700; line-height: 1; }
+  .stat .lbl { font-size: 0.78rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+
+  .note {
+    max-width: 720px; margin: 28px auto 0; font-size: 0.9rem; color: var(--secondary);
+    background: var(--section); border: 1px dashed var(--border-2); border-radius: var(--radius-sm);
+    padding: 14px 18px; text-align: left;
+  }
+  .switcher { margin: 22px auto 0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; font-size:0.85rem; }
+  .switcher a {
+    color: var(--teal); text-decoration: none; border:1px solid var(--border);
+    background: var(--card); padding: 7px 14px; border-radius: 9999px;
+  }
+  .switcher a:hover { border-color: var(--teal); }
+  .switcher a[aria-current="true"] { background: var(--teal); color:#fff; border-color: var(--teal); }
+
+  /* ── timeline ─────────────────────────────────────────────────────── */
+  main { padding: 28px 0 40px; }
+  .timeline { position: relative; margin-top: 18px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 26px; top: 8px; bottom: 8px;
+    width: 3px; border-radius: 3px;
+    background: linear-gradient(var(--c1), var(--c4), var(--c7), var(--c10));
+    opacity: 0.45;
+  }
+  .chapter { position: relative; padding: 0 0 26px 64px; }
+  .node {
+    position: absolute; left: 14px; top: 6px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--card); border: 3px solid var(--accent, var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 700; color: var(--accent, var(--teal));
+    box-shadow: var(--shadow); z-index: 1;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 5px solid var(--accent, var(--teal));
+    border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow);
+  }
+  .card .date {
+    font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent, var(--teal));
+  }
+  .card h2 {
+    font-family: var(--serif); color: var(--strong);
+    font-size: 1.42rem; margin: 4px 0 6px; line-height: 1.2;
+  }
+  .card .theme { color: var(--secondary); font-style: italic; margin: 0 0 14px; font-size: 0.98rem; }
+  .card ul { margin: 0; padding: 0; list-style: none; }
+  .card li {
+    position: relative; padding: 5px 0 5px 22px; font-size: 0.95rem; color: var(--primary);
+    border-top: 1px solid var(--border);
+  }
+  .card li:first-child { border-top: none; }
+  .card li::before {
+    content: ""; position: absolute; left: 2px; top: 13px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent, var(--teal)); opacity: 0.6;
+  }
+  .card li b { color: var(--strong); font-weight: 600; }
+
+  /* launch highlight */
+  .chapter.launch .card {
+    background: linear-gradient(135deg, rgba(58,125,140,0.12), var(--card) 55%);
+    border: 1px solid var(--accent, var(--teal)); border-left: 5px solid var(--accent, var(--teal));
+    box-shadow: var(--shadow-lg);
+  }
+  .launch-badge {
+    display: inline-flex; align-items: center; gap: 8px; margin: 12px 0 4px;
+    background: var(--accent, var(--teal)); color: #fff; font-weight: 700; font-size: 0.95rem;
+    padding: 10px 16px; border-radius: 9999px;
+  }
+  .launch-badge .star { font-size: 1.1rem; }
+
+  footer {
+    text-align: center; padding: 40px 22px 60px; color: var(--secondary); font-size: 0.85rem;
+    border-top: 1px solid var(--border); margin-top: 20px;
+  }
+  footer .mark { font-family: var(--serif); color: var(--strong); font-size: 1.05rem; }
+  a.inline { color: var(--teal); }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span>The making of a neighbourhood app</div>
+    <h1>How FIMBY Was Built</h1>
+    <p class="lead">A dated timeline of the app's evolution — drawn from the planning documents written along the way, from the first feed screens to the week it was approved on both app stores.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="num">~4.5</div><div class="lbl">Months Feb&nbsp;&rarr;&nbsp;Jun</div></div>
+      <div class="stat"><div class="num">10</div><div class="lbl">Chapters</div></div>
+      <div class="stat"><div class="num">200+</div><div class="lbl">Planning docs</div></div>
+      <div class="stat"><div class="num">2</div><div class="lbl">App stores</div></div>
+    </div>
+
+    <div class="switcher">
+      <a href="fimby-app-evolution-timeline.html" aria-current="true">Timeline (dates)</a>
+      <a href="fimby-app-evolution-thinking.html">The thinking (no dates)</a>
+      <a href="fimby-website-copy-evolution.html">Website copy evolution</a>
+    </div>
+
+    <p class="note"><b>How to read this:</b> each chapter groups the planning work into a phase of the build. Dates are the creation dates of the underlying plans, so they show <i>when the thinking happened</i>, not when every line shipped. The app was <b>submitted to both stores in mid-June</b> and <b>approved in the last week of June&nbsp;2026</b> (Chapter&nbsp;10).</p>
+  </header>
+
+  <main class="wrap">
+    <div class="timeline">
+
+      <!-- 1 -->
+      <section class="chapter" style="--accent: var(--c1)">
+        <div class="node">1</div>
+        <div class="card">
+          <div class="date">Feb 14 – 17, 2026</div>
+          <h2>Foundations &amp; the warm aesthetic</h2>
+          <p class="theme">Before features, a feel: a feed that looks handmade, not Silicon Valley.</p>
+          <ul>
+            <li>Aligned <b>every post composer</b> to one shared pattern</li>
+            <li>Renamed the "marketplace" into neighbourly <b>Asks &amp; Offers</b></li>
+            <li>Built out detail screens and the first <b>My Stuff</b> hub</li>
+            <li>The <b>earthy colour overhaul</b> — warm parchment, no harsh whites</li>
+            <li>Stood up the <b>--fimby-* CSS token framework</b> (light &amp; dark from day one)</li>
+            <li>First pass at <b>Contacts &amp; private messaging</b> and a card image grid</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 2 -->
+      <section class="chapter" style="--accent: var(--c2)">
+        <div class="node">2</div>
+        <div class="card">
+          <div class="date">Feb 18 – 22, 2026</div>
+          <h2>Identity, accessibility &amp; one inbox</h2>
+          <p class="theme">Make it usable for everyone, and put all the talking in one place.</p>
+          <ul>
+            <li><b>Profile &amp; Settings</b> pages; reworked account deactivation</li>
+            <li>Neighbourhood <b>search</b>; an LWC <b>token + accessibility sweep</b></li>
+            <li>Earth-tone feed colours and full-width row cards</li>
+            <li>A <b>unified communications hub</b> for messages</li>
+            <li>The <b>onboarding modal</b> and a clearer step flow</li>
+            <li>Response-thread redesign; the <b>celebration component</b> is born</li>
+            <li>Notifications overhaul + a two-column desktop layout</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 3 -->
+      <section class="chapter" style="--accent: var(--c3)">
+        <div class="node">3</div>
+        <div class="card">
+          <div class="date">Feb 22 – 25, 2026</div>
+          <h2>The Scale-Back</h2>
+          <p class="theme">A deliberate turn away from engagement mechanics. A doorbell, not a slot machine.</p>
+          <ul>
+            <li>Killed timer polling; swapped count badges for quiet <b>dot indicators</b></li>
+            <li>Notification <b>batching</b>, a 90-day story TTL, no more broadcast push</li>
+            <li>Auto-cleanup of old conversations</li>
+            <li>Redesigned messaging from chat-style to calmer <b>email-style</b></li>
+            <li>Gmail-style inbox; mobile date formatting</li>
+            <li>Renamed Stories to <b>"Shared Life"</b>; standardized widths &amp; breakpoints</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section class="chapter" style="--accent: var(--c4)">
+        <div class="node">4</div>
+        <div class="card">
+          <div class="date">Feb 28 – Mar 7, 2026</div>
+          <h2>Apex hardening, Bulk Buys &amp; humane push</h2>
+          <p class="theme">Strengthen the engine, then add the features that pool a street's resources.</p>
+          <ul>
+            <li>An <b>Apex best-practices audit</b> across the codebase</li>
+            <li>The <b>Bulk Buy</b> feature — split a Costco run with your neighbours (many iterations)</li>
+            <li>Reservation-aware detail &amp; feed</li>
+            <li>Push integration &rarr; the <b>humane push system</b> (quiet hours, the sleeping panda)</li>
+            <li>Governor-limit optimization for scale</li>
+            <li>The <b>neighbourhood growth framework</b> — scale like yeast, not a network</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 5 -->
+      <section class="chapter" style="--accent: var(--c5)">
+        <div class="node">5</div>
+        <div class="card">
+          <div class="date">Mar 9 – 13, 2026</div>
+          <h2>A QA wave &amp; the acting-as identity framework</h2>
+          <p class="theme">Test everything — and let a trusted neighbour act on someone's behalf.</p>
+          <ul>
+            <li>Home-feed state preservation; homepage QA and discrepancy hunt</li>
+            <li>A battery of <b>QA runbooks</b> (asks/offers, lending, stories, messages, my stuff, notifications, profile)</li>
+            <li>Composer split + <b>multi-image</b> posts</li>
+            <li><b>Community Group</b> integration</li>
+            <li>The <b>"Logged in as" framework</b> — support people acting for elders &amp; neighbours</li>
+            <li>Inactive-post CTA guards; character counters</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 6 -->
+      <section class="chapter" style="--accent: var(--c6)">
+        <div class="node">6</div>
+        <div class="card">
+          <div class="date">Mar 14 – 22, 2026</div>
+          <h2>Events &amp; persona-first detail pages</h2>
+          <p class="theme">Three kinds of gathering — and detail pages built around the person, not the record.</p>
+          <ul>
+            <li>Frontdoor quiet-hours sync; kebab identity-menu redesign</li>
+            <li>Simplified "posting as" down to one clear line</li>
+            <li><b>Persona-first detail pages</b>; desktop header actions; DOM confetti</li>
+            <li>The <b>Event types analysis</b> &rarr; Gathering / Open Event / Community Event</li>
+            <li>Event icons &amp; info; event gap and notification remediation; reminders</li>
+            <li>Feed CTA modal system; universal button styling</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 7 -->
+      <section class="chapter" style="--accent: var(--c7)">
+        <div class="node">7</div>
+        <div class="card">
+          <div class="date">Mar 27 – Apr 14, 2026</div>
+          <h2>Lending, email digests &amp; the moderator dashboard</h2>
+          <p class="theme">Round out the borrowing lifecycle, the inbox-that-comes-to-you, and the tools to keep it safe.</p>
+          <ul>
+            <li>Org-contact messaging parity; segmented thermometer; an economization plan</li>
+            <li>Library lending state-awareness, item-return modal, notification audit</li>
+            <li>Lending-request UX overhaul; messages-list overhaul; unified swipe gestures</li>
+            <li>The <b>My Stuff redesign</b> (many passes); library category icons &amp; colours</li>
+            <li>The <b>email alert system</b> &rarr; rich digest cards; "Say thanks" on detail pages</li>
+            <li>The <b>neighbourhood moderator dashboard</b> + triage-first revamp</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 8 -->
+      <section class="chapter" style="--accent: var(--c8)">
+        <div class="node">8</div>
+        <div class="card">
+          <div class="date">Apr 20 – 30, 2026</div>
+          <h2>Security, legal &amp; launch prep</h2>
+          <p class="theme">Make the app match its promises before the stores ever see it.</p>
+          <ul>
+            <li>Security audits (web + mobile); a universal back button</li>
+            <li>Salesforce deletion flow + deletion-parity audit</li>
+            <li><b>Terms-of-service acceptance</b>; a Playwright e2e suite</li>
+            <li>Content-moderation MVP; UGC publish-readiness</li>
+            <li><b>Prelaunch product alignment</b> — app behaviour to match the legal/help pages</li>
+            <li>The operations playbook</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 9 LAUNCH -->
+      <section class="chapter" style="--accent: var(--c9)">
+        <div class="node">9</div>
+        <div class="card">
+          <div class="date">May 17 – 30, 2026</div>
+          <h2>Trust, vouching &amp; launch readiness</h2>
+          <p class="theme">Decide who belongs, and how — then get the app ready to face store review.</p>
+          <ul>
+            <li>The <b>trust-vetting / vouching system</b> (vouching is personal)</li>
+            <li>Onboarding &amp; walkthrough overhaul; LWC conditional-directives migration</li>
+            <li>Pause-vs-delete account; universal links &amp; URL masking</li>
+            <li>Acting-as banner gap analysis; replaced Chatter with native <b>Story Comments</b></li>
+            <li>Notification usability audit + coverage matrix; digest tweaks</li>
+            <li>A launch-grade QA sweep; native signup form; <b>warm rebrand of the pre-auth screen</b></li>
+            <li>Push-subscribe fix; auth-bridge &amp; mobile security hardening</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="chapter launch" style="--accent: var(--c10)">
+        <div class="node">10</div>
+        <div class="card">
+          <div class="date">June 2026</div>
+          <h2>The final mile — submission &amp; approval</h2>
+          <p class="theme">One last sweep of hardening and richness, then out the door for review.</p>
+          <div class="launch-badge"><span class="star">★</span> Submitted to both stores mid-June · approved the last week of June 2026</div>
+          <ul>
+            <li>App-install prompt; mobile deep-link &amp; OAuth UX; sharing-gap remediation</li>
+            <li>Inbox badge sync; avatar crop; post-edit parity; home load timing; foreground resume</li>
+            <li>The <b>resilience roadmap</b> + phases (Help Nearby / skills, pantry, repost recurrence, profile activity)</li>
+            <li>Minor-profiles strategy; smooth page transitions; multi-device push</li>
+            <li>Help &amp; FAQ refresh; durable blocking; quiet smart-push; split notifications</li>
+            <li>Safety features; session-timeout recovery; redacted profiles; the <b>live guided tour</b></li>
+            <li><b>App Store &amp; Google Play submission, review, and approval</b></li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <p class="mark">FIMBY — Family In My Backyard</p>
+    <p>Turn the place you live into a place you belong.</p>
+  </footer>
+</body>
+</html>

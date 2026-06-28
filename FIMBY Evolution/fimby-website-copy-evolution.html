@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-doc="website">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How FIMBY's Words Changed — The Website Copy Evolution</title>
+<style>
+  :root {
+    --page:#F0EBE3; --section:#EBE6DD; --card:#FAF7F2; --input:#F7F3EB;
+    --border:#E0D9CF; --border-2:#D6CFC5;
+    --strong:#261A11; --primary:#4A3526; --secondary:#8B7355; --muted:#B5A088;
+    --teal:#3A7D8C; --teal-deep:#2B5F6D;
+    --c1:#357280; --c2:#476B4C; --c3:#7D6234; --c4:#8A5936; --c5:#566744;
+    --success:#1A7B40; --danger:#C0392B;
+    --radius:18px; --radius-sm:12px;
+    --shadow:0 2px 8px rgba(38,26,17,0.08); --shadow-lg:0 8px 24px rgba(38,26,17,0.14);
+    --serif: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:#14100D; --section:#17120F; --card:#1B1512; --input:#2F241F;
+      --border:#342924; --border-2:#3E312B;
+      --strong:#FFFBF7; --primary:#F5F1ED; --secondary:#D6CFC7; --muted:#B3A79E;
+      --teal:#4F9DB0; --teal-deep:#6CBCD1; --success:#3FbF73; --danger:#E57368;
+      --shadow:0 2px 8px rgba(0,0,0,0.4); --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+    }
+  }
+  * { box-sizing:border-box; }
+  html { font-size:17px; scroll-behavior:smooth; }
+  body { margin:0; background:var(--page); color:var(--primary); font-family:var(--sans); line-height:1.65; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:840px; margin:0 auto; padding:0 24px; }
+
+  header.hero { text-align:center; padding:78px 24px 30px;
+    background: radial-gradient(120% 90% at 50% -10%, rgba(58,125,140,0.12), transparent 60%), var(--page); }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--teal);
+    background:rgba(58,125,140,0.10); border:1px solid rgba(58,125,140,0.22); padding:6px 14px; border-radius:9999px; }
+  .eyebrow .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); }
+  header.hero h1 { font-family:var(--serif); color:var(--strong); font-size:clamp(2rem,6vw,3.1rem);
+    line-height:1.12; margin:22px 0 12px; letter-spacing:-0.01em; }
+  header.hero p.lead { font-size:1.1rem; color:var(--secondary); max-width:640px; margin:0 auto; }
+  .switcher { margin:26px auto 0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; font-size:0.85rem; }
+  .switcher a { color:var(--teal); text-decoration:none; border:1px solid var(--border); background:var(--card);
+    padding:7px 14px; border-radius:9999px; }
+  .switcher a:hover { border-color:var(--teal); }
+  .switcher a[aria-current="true"] { background:var(--teal); color:#fff; border-color:var(--teal); }
+  .note { max-width:740px; margin:26px auto 0; font-size:0.9rem; color:var(--secondary);
+    background:var(--section); border:1px dashed var(--border-2); border-radius:var(--radius-sm); padding:14px 18px; text-align:left; }
+
+  main { padding:34px 0 30px; }
+
+  .act { margin:0 0 46px; position:relative; padding-left:18px; border-left:4px solid var(--accent,var(--teal)); }
+  .act .kicker { font-size:0.76rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--accent,var(--teal)); }
+  .act h2 { font-family:var(--serif); color:var(--strong); font-size:1.6rem; margin:6px 0 4px; line-height:1.2; }
+  .act .when { font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .act > p { font-size:1.02rem; margin:0 0 14px; }
+  .act .voice { font-family:var(--serif); font-style:italic; color:var(--teal-deep); }
+
+  /* insight callout */
+  .insight { background:var(--card); border:1px solid var(--border); border-left:5px solid var(--accent,var(--teal));
+    border-radius:var(--radius-sm); padding:16px 18px; margin:14px 0; box-shadow:var(--shadow); }
+  .insight h3 { margin:0 0 8px; font-size:0.74rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent,var(--teal)); }
+  .insight p { margin:0 0 8px; font-size:0.96rem; }
+  .insight p:last-child { margin-bottom:0; }
+  .insight b { color:var(--strong); }
+
+  .risks { list-style:none; margin:8px 0 0; padding:0; }
+  .risks li { position:relative; padding:5px 0 5px 22px; font-size:0.95rem; border-top:1px solid var(--border); }
+  .risks li:first-child { border-top:none; }
+  .risks li::before { content:"!"; position:absolute; left:3px; top:5px; width:15px; height:15px; line-height:15px; text-align:center;
+    font-size:0.7rem; font-weight:700; color:#fff; background:var(--accent,var(--teal)); border-radius:50%; }
+
+  /* before / after diff */
+  .diff { margin:16px 0; }
+  .diff .diff-label { font-size:0.82rem; color:var(--secondary); margin-bottom:8px; }
+  .diff .diff-label b { color:var(--strong); }
+  .diff-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:620px){ .diff-grid { grid-template-columns:1fr; } }
+  .pane { border-radius:var(--radius-sm); padding:14px 16px; font-size:0.93rem; line-height:1.5; }
+  .pane .tag { display:inline-block; font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    padding:2px 9px; border-radius:9999px; margin-bottom:8px; }
+  .pane.before { background:rgba(192,57,43,0.06); border:1px solid rgba(192,57,43,0.25); }
+  .pane.before .tag { background:rgba(192,57,43,0.16); color:var(--danger); }
+  .pane.after { background:rgba(26,123,64,0.06); border:1px solid rgba(26,123,64,0.28); }
+  .pane.after .tag { background:rgba(26,123,64,0.16); color:var(--success); }
+  .pane .q { font-style:italic; color:var(--primary); }
+
+  .newcopy { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:14px 16px; margin:12px 0; box-shadow:var(--shadow); }
+  .newcopy .tag { display:inline-block; font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    padding:2px 9px; border-radius:9999px; margin-bottom:8px; background:rgba(58,125,140,0.14); color:var(--teal); }
+  .newcopy .q { font-style:italic; color:var(--primary); }
+
+  .twopath { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+  @media (max-width:620px){ .twopath { grid-template-columns:1fr; } }
+  .path { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; box-shadow:var(--shadow); }
+  .path h4 { margin:0 0 6px; font-size:1.02rem; color:var(--strong); }
+  .path p { margin:0; font-size:0.9rem; color:var(--secondary); }
+  .path .pill { display:inline-block; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    color:#fff; background:var(--accent,var(--teal)); padding:3px 10px; border-radius:9999px; margin-top:10px; }
+
+  .closing { background: linear-gradient(135deg, rgba(58,125,140,0.10), var(--card) 60%);
+    border:1px solid var(--border); border-radius:var(--radius); padding:26px; margin-top:6px; box-shadow:var(--shadow-lg); }
+  .closing h2 { font-family:var(--serif); color:var(--strong); margin:0 0 10px; font-size:1.4rem; }
+  .closing p { margin:0 0 10px; }
+  .closing .credo { font-family:var(--serif); font-style:italic; color:var(--teal-deep); font-size:1.08rem; }
+
+  footer { text-align:center; padding:44px 22px 60px; color:var(--secondary); font-size:0.85rem;
+    border-top:1px solid var(--border); margin-top:24px; }
+  footer .mark { font-family:var(--serif); color:var(--strong); font-size:1.05rem; }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span>The public website, fimby.com</div>
+    <h1>How FIMBY's Words Changed</h1>
+    <p class="lead">The app and the website are two different products. This is the story of the <i>website's</i> copy — how the way FIMBY introduces itself to a stranger evolved from a beautiful essay into an honest, welcoming front door.</p>
+    <div class="switcher">
+      <a href="fimby-app-evolution-timeline.html">App timeline (dates)</a>
+      <a href="fimby-app-evolution-thinking.html">App thinking (no dates)</a>
+      <a href="fimby-website-copy-evolution.html" aria-current="true">Website copy evolution</a>
+    </div>
+    <p class="note"><b>Scope:</b> this tracks only the FIMBY marketing site (fimby.com). The before/after lines below are taken from the actual website edit plans. Unrelated client work that happened to share the same plans folder is not included.</p>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ACT I -->
+    <section class="act" style="--accent: var(--c1)">
+      <div class="kicker">Act I — The first voice</div>
+      <h2>A beautiful, theology-forward essay</h2>
+      <div class="when">Late March 2026 · building out the marketing site</div>
+      <p>The first site was genuinely lovely: warm parchment, a climbing-trellis metaphor, a Vision page written like lay theology, and a closing litany — <span class="voice">"Learn a name. Share a loaf. Offer a ride."</span> It led with worldview and trusted the reader to stay for the product.</p>
+      <p>It worked beautifully for one kind of visitor. The question was whether it worked for everyone walking past.</p>
+    </section>
+
+    <!-- ACT II -->
+    <section class="act" style="--accent: var(--c4)">
+      <div class="kicker">Act II — The reckoning</div>
+      <h2>A market-research read through many eyes</h2>
+      <div class="when">March 29, 2026 · multi-demographic perception audit</div>
+      <p>Before changing a word, the site was read the way a dozen different strangers would read it — by age, faith, culture, income, sexuality, and more. The diagnosis had a name:</p>
+      <div class="insight">
+        <h3>The core insight: a funnel mismatch</h3>
+        <p>The <b>product</b> (lending, bulk buys, events, consent-first design, no metrics) has broad, cross-demographic appeal. The <b>framing</b> (church affiliation, literary prose, English-only) quietly narrowed it.</p>
+        <p>The site was strongest when it <b>showed the app</b> and weakest when it <b>explained the worldview</b> — and the worldview was front-loaded on the inner pages.</p>
+      </div>
+      <p>The audit named the specific places trust leaked out:</p>
+      <ul class="risks">
+        <li>The church connection surfaced too late, so some visitors felt it as a reveal rather than an introduction</li>
+        <li>The Vision page was written for educated, reflective readers and lost almost everyone else</li>
+        <li>An unaddressed <b>LGBTQ+ trust gap</b> sat next to a denomination with a mixed record</li>
+        <li>No acknowledgement of the real Downtown Eastside context the project grew in</li>
+        <li>English-only, in a neighbourhood with large Cantonese, Mandarin, and Vietnamese populations</li>
+        <li>No social proof — "is anyone actually on this?"</li>
+      </ul>
+    </section>
+
+    <!-- ACT III -->
+    <section class="act" style="--accent: var(--c4)">
+      <div class="kicker">Act III — Building trust, line by line</div>
+      <h2>The trust-friction edits</h2>
+      <div class="when">March 29, 2026 · concrete, file-by-file copy changes</div>
+      <p>The fix wasn't to hide the soul of the project — that would be dishonest, and the honesty was a strength. It was to let <em>every</em> visitor meet the practical value, and the founder's real story, <em>before</em> the theology. The clearest example is the footer:</p>
+
+      <div class="diff">
+        <div class="diff-label"><b>Footer attribution</b> — from sponsor logo to origin story</div>
+        <div class="diff-grid">
+          <div class="pane before"><span class="tag">Before</span><div class="q">"An initiative of Strathcona Vineyard"</div></div>
+          <div class="pane after"><span class="tag">After</span><div class="q">"Made by neighbours in Vancouver's Downtown Eastside, supported by Strathcona Vineyard"</div></div>
+        </div>
+      </div>
+
+      <p>The most sensitive trust questions — church, LGBTQ+, neighbourhood authenticity — all had the same answer hiding in plain sight: <em>the founder's own life</em>. So the copy stopped explaining the church away and started telling the truth plainly.</p>
+
+      <div class="newcopy">
+        <span class="tag">New FAQ added</span>
+        <div><b>Is FIMBY safe for LGBTQ+ people?</b></div>
+        <div class="q" style="margin-top:6px;">"Yes. FIMBY's founder is a gay man who has been part of Strathcona Vineyard for years, and FIMBY is built for all neighbours. That means all neighbours. You are welcome here exactly as you are. No one is asked to hide who they are in order to belong."</div>
+      </div>
+
+      <div class="diff">
+        <div class="diff-label"><b>"Who built this?"</b> — from institution-first to neighbour-first</div>
+        <div class="diff-grid">
+          <div class="pane before"><span class="tag">Before</span><div class="q">"FIMBY was created by Stephen Rathjen and the community of Strathcona Vineyard, a church in Vancouver's Downtown Eastside…"</div></div>
+          <div class="pane after"><span class="tag">After</span><div class="q">"FIMBY was created by Stephen Rathjen, a neighbour who has lived in Vancouver's Downtown Eastside for more than 20 years. It grew out of real neighbouring before it became an app: shared meals, lending tools, prayer, and showing up for one another…"</div></div>
+        </div>
+      </div>
+
+      <div class="newcopy">
+        <span class="tag">New section — Our Approach</span>
+        <div><b>"Forged in a real neighbourhood"</b></div>
+        <div class="q" style="margin-top:6px;">"FIMBY was shaped in Vancouver's Downtown Eastside, a neighbourhood marked by beauty, resilience, addiction, overdose, displacement, and deep community. We do not pretend an app can fix those things. But we have seen what changes when people know one another by name."</div>
+      </div>
+
+      <p>Three more moves rounded out the pass: a <b>crisis boundary</b> FAQ ("FIMBY is not a replacement for shelters, detox, health care, or crisis lines"), a <b>Community Groups</b> story so local organizations could be a bridge to formal supports, and new mock cards showing elders and diverse neighbours <em>offering</em>, not only being helped — like Arthur T.'s "tomato starts, free to a good garden."</p>
+    </section>
+
+    <!-- ACT IV -->
+    <section class="act" style="--accent: var(--c5)">
+      <div class="kicker">Act IV — Saying it for real</div>
+      <h2>Legal pages &amp; a pre-launch edit pass</h2>
+      <div class="when">Late April 2026 · making the words match the app</div>
+      <p>With the app nearly ready for the stores, the website had to become accountable. Terms of service, privacy, community standards, and a delete-account page were drafted and published — and a full edit pass swept the marketing copy so that every claim matched a feature that actually existed in the live product.</p>
+    </section>
+
+    <!-- ACT V -->
+    <section class="act" style="--accent: var(--c2)">
+      <div class="kicker">Act V — From "lovely" to "what do I do?"</div>
+      <h2>The engagement &amp; conversion audit</h2>
+      <div class="when">June 2026 · conversion-focused, as launch approached</div>
+      <p>As visitors began arriving at the site, a new question replaced "is it beautiful?": <em>does a stranger know what to do in ten seconds?</em> An internal north star was set — and a guardrail to keep the warmth.</p>
+
+      <div class="insight">
+        <h3>Internal north star (never shown to visitors)</h3>
+        <p>FIMBY is <b>local social resilience infrastructure</b> — a "build trust before you need it" platform. Resilience through relationship; measure trust, not engagement; make receiving as normal as giving; scale like yeast.</p>
+        <p><b>Anti-fear guardrail:</b> no collapse, disruption, or prepper framing in public copy. <span class="voice">Fear builds bunkers; love builds arks; the door stays open.</span></p>
+      </div>
+
+      <p>The biggest structural change: stop making every visitor feel the site was only for one neighbourhood. The first screen forked into two equal welcomes.</p>
+
+      <div class="twopath">
+        <div class="path" style="--accent: var(--c1)">
+          <h4>"I live in an active neighbourhood"</h4>
+          <p>Check your postal code and join.</p>
+          <span class="pill">Join</span>
+        </div>
+        <div class="path" style="--accent: var(--c4)">
+          <h4>"I want FIMBY where I live"</h4>
+          <p>Bring FIMBY — launch a hub, with a waitlist that captures intent.</p>
+          <span class="pill">Bring FIMBY</span>
+        </div>
+      </div>
+
+      <p>Alongside the fork: a scannable capability strip for readers who don't study app mockups, <b>Support People</b> lifted out of the FAQ into a homepage trust block, success reframed around trust indicators instead of vanity metrics, the mock UI refreshed to match the now-live app, and repeated signature phrases ("fimbyisms") de-duplicated so each one keeps its punch.</p>
+    </section>
+
+    <div class="closing">
+      <h2>What the words learned</h2>
+      <p>The website's copy didn't get less honest over time — it got more honest, earlier. The theology stayed; it just stopped being the bouncer at the door. The founder's real life moved to the front. And the practical value of being known by your neighbours led, on every page, before the worldview that inspired it.</p>
+      <p class="credo">Show the app. Tell the truth. Lead with the welcome.</p>
+    </div>
+
+  </main>
+
+  <footer>
+    <p class="mark">FIMBY — Family In My Backyard</p>
+    <p>Turn the place you live into a place you belong.</p>
+  </footer>
+</body>
+</html>
