@@ -204,6 +204,26 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void shouldShowCrossFimby_suppressesWhenNotMoreThanEmail() {
+        // Equal or fewer cross-FIMBY items than feed cards = redundant re-count, suppress.
+        System.assertEquals(false, FimbyDigestEmailBuilder.shouldShowCrossFimby(1, 1),
+            'Cross count equal to feed cards re-counts the email and must be hidden.');
+        System.assertEquals(false, FimbyDigestEmailBuilder.shouldShowCrossFimby(1, 3),
+            'Cross count below feed cards must be hidden.');
+        System.assertEquals(false, FimbyDigestEmailBuilder.shouldShowCrossFimby(0, 0),
+            'Zero cross count must be hidden.');
+        System.assertEquals(false, FimbyDigestEmailBuilder.shouldShowCrossFimby(null, 2),
+            'Null cross count must be hidden.');
+    }
+
+    @IsTest
+    static void shouldShowCrossFimby_showsWhenMoreThanEmail() {
+        // Genuinely more activity across FIMBY than this email lists = additive zoom-out, show.
+        System.assertEquals(true, FimbyDigestEmailBuilder.shouldShowCrossFimby(2, 1));
+        System.assertEquals(true, FimbyDigestEmailBuilder.shouldShowCrossFimby(10, 0));
+    }
+
+    @IsTest
     static void getCrossFimbyStat_emptyWindow_returnsBlank() {
         Datetime startDt = Datetime.newInstance(Date.today().addYears(-50), Time.newInstance(0, 0, 0, 0));
         Datetime endDt = Datetime.newInstance(Date.today().addYears(-50), Time.newInstance(23, 59, 59, 0));

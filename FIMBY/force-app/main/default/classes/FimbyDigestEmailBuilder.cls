@@ -75,7 +75,8 @@ public without sharing class FimbyDigestEmailBuilder {
         Datetime windowStartDt = Datetime.newInstance(windowStart, Time.newInstance(0, 0, 0, 0));
         Datetime windowEndDt = Datetime.newInstance(windowEnd, Time.newInstance(23, 59, 59, 0));
 
-        String resolutionHtml = buildResolutionSection(neighbourhoodId, frequency, windowStartDt, windowEndDt);
+        // Feed cards build first so feedCardCount is known before the resolution section —
+        // the "Good things happening" rollup is gated against what this email already shows.
         String storiesHtml = buildStoriesSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
         String asksOffersHtml = buildAsksOffersSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
         String eventsHtml = buildEventsSection(neighbourhoodId, windowStartDt, windowEndDt, excluded);
@@ -93,6 +94,7 @@ public without sharing class FimbyDigestEmailBuilder {
             return result;
         }
 
+        String resolutionHtml = buildResolutionSection(neighbourhoodId, frequency, windowStartDt, windowEndDt, feedCardCount);
         String anchorHtml = buildAnchorCard();
 
         result.html = resolutionHtml + storiesHtml + asksOffersHtml + eventsHtml
@@ -112,7 +114,7 @@ public without sharing class FimbyDigestEmailBuilder {
      * By the numbers — local resolution + cross-FIMBY encouragement
      * --------------------------------------------------------------- */
 
-    private static String buildResolutionSection(Id nhId, String frequency, Datetime startDt, Datetime endDt) {
+    private static String buildResolutionSection(Id nhId, String frequency, Datetime startDt, Datetime endDt, Integer feedCardCount) {
         Integer fulfilledAsks = [
             SELECT COUNT() FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
@@ -128,11 +130,7 @@ public without sharing class FimbyDigestEmailBuilder {
         ];
 
         CrossFimbyStat cross = getCrossFimbyStat(frequency, startDt, endDt);
-
-        // Surface the platform-wide line only when it outshines the local tally, so the
-        // zoom-out always feels additive rather than smaller than what happened at home.
-        Integer localAggregate = fulfilledAsks + completedLoans;
-        Boolean showCross = cross.count > localAggregate;
+        Boolean showCross = shouldShowCrossFimby(cross.count, feedCardCount);
 
         List<String> lines = new List<String>();
         if (fulfilledAsks > 0) {
@@ -177,6 +175,17 @@ public without sharing class FimbyDigestEmailBuilder {
             + '<tr><td style="padding:14px 18px;">'
             + body
             + '</td></tr></table>';
+    }
+
+    /**
+     * @description The platform-wide zoom-out line is only additive when it reflects MORE
+     * activity than this email already shows as feed cards. When it doesn't, the line just
+     * re-counts content already visible below it (e.g. "across FIMBY, 1 neighbour shared a
+     * piece of their life" sitting next to that same single story), so it is suppressed.
+     */
+    @TestVisible
+    private static Boolean shouldShowCrossFimby(Integer crossCount, Integer feedCardCount) {
+        return crossCount != null && crossCount > feedCardCount;
     }
 
     /**
