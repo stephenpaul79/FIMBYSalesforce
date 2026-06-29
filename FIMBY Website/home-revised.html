@@ -82,6 +82,19 @@
       #what-you-can-do .capability-lead { max-width: none; }
       #support-people .trust-prose p { max-width: none; }
 
+      /* ── Two-tone band rhythm on this page: page (#F0EBE3) ↔ card (#FAF7F2).
+         Drop surface-section (#EBE6DD) so zoomed-out bands alternate cleanly. ── */
+      #what-you-can-do.capability-strip { background-color: var(--fimby-surface-page); }
+
+      #support-people,
+      #faq-highlights {
+        background-color: var(--fimby-surface-card);
+        border-top: 1px solid var(--fimby-divider-default);
+        border-bottom: 1px solid var(--fimby-divider-default);
+      }
+      #support-people .section-kicker { background: var(--fimby-surface-page); }
+      #faq-highlights .faq-callout { background-color: var(--fimby-surface-page); }
+
       /* ── Teal bridge block on a light band (white on #3A7D8C = 4.68:1) ── */
       .bridge-teal { padding: 32px 0; background: var(--fimby-surface-card); border-top: 1px solid var(--fimby-divider-default); border-bottom: 1px solid var(--fimby-divider-default); }
       .bridge-teal p {
@@ -91,6 +104,13 @@
         box-shadow: var(--fimby-shadow-card); letter-spacing: -0.01em;
       }
       #rooted .rooted-art { display: block; width: auto; max-width: 100%; height: auto; max-height: 250px; margin: 0 auto; }
+
+      /* ── Full-bleed bands on the live site: WP's is-layout-constrained caps <main> at
+         --wp--style--global--content-size (1920px) and centres it, so bands inset once the
+         viewport exceeds 1920px (e.g. zoomed out). Releasing main's max-width restores
+         edge-to-edge bands; inner .container/.container-inset still centre the content.
+         Only matches on the live page (where .entry-content wraps <main>); local preview is unaffected. ── */
+      .entry-content > main { max-width: none; }
 
       /* ── WCAG AA: deepen the brand tokens for THIS page only (same hues, contrast ≥4.5:1) ── */
       main {
@@ -494,7 +514,7 @@
           <div class="section-copy trust-prose credibility-text">
             <div class="section-kicker"><span class="eyebrow-dot"></span>Not a thought experiment</div>
             <h2>We've been doing this for twenty years</h2>
-            <p>This isn't a thought experiment. FIMBY was forged on some of the hardest blocks in Canada — Vancouver's Downtown Eastside — through twenty-plus years of neighbouring before it was ever an app: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much.</p>
+            <p>FIMBY was forged on some of the hardest blocks in Canada — Vancouver's Downtown Eastside — through twenty-plus years of neighbouring before it was ever an app: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much.</p>
             <p>The software is newer than that story. What stayed the same is the radius — a block, a building, a few streets — where you see the same faces again and small acts of care can turn into real trust.</p>
             <p class="faith-block">That kind of neighbouring started here as a Christian practice, and it stays open to everyone — prayer and faith stories are welcome, never required.</p>
             <p class="crisis-line">It's also not a crisis line, or a substitute for shelters, detox, or health care. It's the everyday kind of neighbouring that sits alongside those supports, never in their place.</p>
@@ -504,7 +524,7 @@
     </section>
 
     <!-- ═══ 9. NO ONE LEFT OUT — supported participation + consent (objection zone) ═══ -->
-    <section class="trust-section alt-bg" id="support-people">
+    <section class="trust-section" id="support-people">
       <div class="container-inset">
         <div class="section-copy trust-prose">
           <div class="section-kicker"><span class="eyebrow-dot"></span>Made for real life</div>
@@ -570,7 +590,7 @@
     </section>
 
     <!-- ═══ 11. EPILOGUE — common questions ═══ -->
-    <section class="trust-section alt-bg" id="faq-highlights">
+    <section class="trust-section" id="faq-highlights">
       <div class="container-inset">
         <div class="section-copy trust-prose trust-prose--center">
           <h2>A few practical things, before you go</h2>

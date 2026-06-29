@@ -1377,10 +1377,21 @@
         </div>
 
         <div class="feature-block">
-          <img src="https://fimby.com/wp-content/uploads/2026/03/StoriesActive.png" alt="" class="feature-block-icon" />
+          <img src="https://fimby.com/wp-content/uploads/2026/03/ThankYouActive.png" alt="" class="feature-block-icon" />
           <div>
-            <h4>Care preferences</h4>
-            <p>During onboarding, share what kind of support is usually welcome &mdash; a check-in message, a meal drop-off, prayer, company &mdash; and what isn't. It helps neighbours know how to show up for you on your terms. Editable any time.</p>
+            <h4>Warmth by design</h4>
+            <p>Most apps celebrate the metrics that benefit them &mdash; streaks, time on screen, follower counts. FIMBY celebrates the act of showing up for a neighbour, and tries to know what kind of moment it is.</p>
+            <p>Post an ask and hands and hearts fall as confetti. Offer something and it's gifts. Return a borrowed thing undamaged, stars. First posts and milestones get a bigger fanfare, and the loading screens know where you are &mdash; &ldquo;Checking the toolshed&hellip;&rdquo; in the library, &ldquo;The carrier pigeon is en route&hellip;&rdquo; in messages.</p>
+            <p style="font-size:0.9rem;color:var(--fimby-text-secondary);">None of this is decoration. It's how an app says <em>I noticed</em> instead of <em>keep scrolling</em>. Too much whimsy? Tone it down in Settings.</p>
+            <div class="celebration-demo" style="margin-top:14px;">
+              <div class="celebration-wrapper" style="padding:12px 16px;text-align:center;">
+                <p class="celebration-message" style="margin-bottom:4px;font-size:0.95rem;">You did it!</p>
+                <img src="https://fimby.com/wp-content/uploads/2026/03/ohyeahdance.gif" alt="Celebration dance" style="width:140px;height:auto;margin:0 auto;border-radius:var(--fimby-radius-md);" />
+                <p class="milestone-label" style="margin-top:4px;font-size:0.85rem;">Your 5th ask!</p>
+                <button class="confetti-btn" id="confetti-trigger" style="margin-top:12px;">Try it</button>
+              </div>
+              <p class="celebration-note">First posts, milestones, and seasonal themes all trigger celebrations.</p>
+            </div>
           </div>
         </div>
 
@@ -1460,3 +1471,60 @@
   </section>
 
 </main>
+
+<script>
+  (function(){
+    var EMOJIS=['🎉', '🥳', '✨', '💛'];
+    var COUNT=30;
+    function randomBetween(min,max){return Math.random()*(max-min)+min;}
+    function simulateTrajectory(angle,velocity,decay,gravity,drift,frames){
+      var points=[],x=0,y=0;
+      var vx=Math.cos(angle)*velocity,vy=Math.sin(angle)*velocity;
+      for(var i=0;i<frames;i++){x+=vx;y+=vy;vx*=decay;vy=vy*decay+gravity;x+=drift;points.push({x:x,y:y});}
+      return points;
+    }
+    function samplePosition(positions,progress){
+      var idx=Math.max(0,Math.min(positions.length-1,Math.floor(progress*(positions.length-1))));
+      return positions[idx];
+    }
+    function fireConfetti(){
+      if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+      var container=document.createElement('div');
+      Object.assign(container.style,{position:'fixed',top:'0',left:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:'10001',overflow:'hidden'});
+      document.body.appendChild(container);
+      var w=window.innerWidth,h=window.innerHeight;
+      var animations=[],maxDur=0;
+      for(var i=0;i<COUNT;i++){
+        var emoji=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+        var spread=randomBetween(-1.05,1.05);
+        var launchAngle=-Math.PI/2+spread;
+        var startVelocity=randomBetween(28,38);
+        var drift=randomBetween(-0.3,0.3);
+        var endOpacity=randomBetween(0.08,0.2);
+        var positions=simulateTrajectory(launchAngle,startVelocity,0.97,0.35,drift,180);
+        var STEPS=48,keyframes=[];
+        for(var s=0;s<=STEPS;s++){
+          var t=s/STEPS,p=samplePosition(positions,t);
+          var scale=t<0.18?0.55+0.4*(t/0.18):0.95-0.19*((t-0.18)/0.82);
+          var opacity=t<0.3?1:1-(1-endOpacity)*((t-0.3)/0.7);
+          keyframes.push({transform:'translate('+p.x+'px,'+p.y+'px) scale('+scale.toFixed(3)+')',opacity:parseFloat(opacity.toFixed(3)),offset:parseFloat(t.toFixed(4))});
+        }
+        var span=document.createElement('span');
+        span.textContent=emoji;
+        span.setAttribute('aria-hidden','true');
+        Object.assign(span.style,{position:'absolute',left:(w*randomBetween(0.46,0.54))+'px',top:(h*0.9)+'px',fontSize:randomBetween(18,28)+'px',lineHeight:'1',display:'inline-block',willChange:'transform,opacity',pointerEvents:'none',userSelect:'none'});
+        container.appendChild(span);
+        var dur=randomBetween(3200,3800),delay=randomBetween(0,60);
+        if(dur+delay>maxDur)maxDur=dur+delay;
+        try{var anim=span.animate(keyframes,{duration:dur,delay:delay,easing:'linear',fill:'forwards'});animations.push(anim);}catch(e){}
+      }
+      var cleaned=false;
+      function cleanup(){if(cleaned)return;cleaned=true;container.remove();}
+      var finished=animations.filter(function(a){return a&&typeof a.finished==='object';}).map(function(a){return a.finished.catch(function(){});});
+      if(finished.length>0)Promise.allSettled(finished).then(cleanup);
+      setTimeout(cleanup,maxDur+500);
+    }
+    var trigger=document.getElementById('confetti-trigger');
+    if(trigger){trigger.addEventListener('click',fireConfetti);}
+  })();
+</script>
