@@ -1864,6 +1864,8 @@ details[open] summary { color: var(--fimby-earth-teal); }
   .feature-block-icon { margin: 0 auto; }
   .onb-pages { flex-direction: column; align-items: center; }
   .approach-grid, .approach-grid.reverse { grid-template-columns: 1fr; }
+  .approach-grid.text-first-mobile .approach-text { order: 1; }
+  .approach-grid.text-first-mobile .journey-visual { order: 2; }
   .language-row { grid-template-columns: 1fr; }
 }
 
