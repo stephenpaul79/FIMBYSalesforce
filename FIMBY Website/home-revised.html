@@ -79,6 +79,9 @@
       @media (min-width: 768px) { #rooted .rooted-grid { grid-template-columns: 230px 1fr; gap: 40px; } }
       #rooted .rooted-art-frame { max-width: 230px; margin: 0 auto; }
       #rooted .value-chips { flex-direction: column; align-items: flex-start; }
+      @media (max-width: 760px) {
+        #rooted .value-chips { align-items: center; }
+      }
       #what-you-can-do .capability-lead { max-width: none; }
       #support-people .trust-prose p { max-width: none; }
 
@@ -120,6 +123,20 @@
         --fimby-text-muted: #6F5B43;      /* was #B5A088 (2.1:1) — too light for real text */
         --fimby-earth-teal: #2F6B78;      /* was #448E9E (3.0–3.5:1) → ~4.8–5.6:1 for links */
       }
+
+      /* ── Mobile polish (≤760px) — travels with inject; desktop untouched ── */
+      @media (max-width: 760px) {
+        .stakes { padding: 36px 0; }
+        .stakes-shell {
+          gap: 20px;
+          width: min(1120px, calc(100% - 24px));
+        }
+        .stakes-post-card { transform: none !important; }
+        .stakes-copy h2 { max-width: none; }
+        #rooted.trust-section { padding-bottom: 24px; }
+        .reframe-band { padding: 22px 0; }
+        .reframe-band h2 { max-width: none; }
+      }
     </style>
 
     <!-- ═══ 1. HERO ═══ -->
@@ -144,7 +161,7 @@
               <img src="https://fimby.com/wp-content/uploads/2026/06/google-play-badge.png" alt="Get FIMBY on Google Play" />
             </a>
           </div>
-          <a href="/contact-us/" class="hero-tertiary-link">Do you live outside Vancouver? Bring FIMBY to you →</a>
+          <a href="/contact-us/" class="hero-tertiary-link">Do you live outside Vancouver?<br class="br-mobile"> Bring FIMBY to you →</a>
         </div>
 
         <div class="device-frame">
@@ -349,7 +366,7 @@
             </div>
           </div>
         </div>
-        <p class="preview-caption">Example posts: what a week on FIMBY can look like.</p>
+        <p class="preview-caption">Example posts:<br class="br-mobile"> what a week on FIMBY can look like.</p>
       </div>
     </section>
 
@@ -442,7 +459,7 @@
       <div class="container-inset">
         <div class="rooted-grid">
           <div class="rooted-art-frame">
-            <img src="https://fimby.com/wp-content/uploads/2026/06/trellisbefore.png" alt="A young vine climbing a wooden trellis, a simple structure giving new growth something to hold onto" class="rooted-art" />
+            <img src="https://fimby.com/wp-content/uploads/2026/06/trellisbefore.png" alt="A young vine climbing a wooden trellis, a simple structure giving new growth something to hold onto" class="rooted-art" loading="lazy" decoding="async" />
           </div>
           <div>
             <div class="section-copy trust-prose">
@@ -500,7 +517,7 @@
 
         <!-- RIGHT: the embodied "after" moment -->
         <figure class="stakes-photo-wrap">
-          <img class="stakes-photo" src="https://fimby.com/wp-content/uploads/2026/06/hotpot-table.png" alt="Neighbours gathered around a home table for a hot pot dinner, with shared food and bowls in the centre." />
+          <img class="stakes-photo" src="https://fimby.com/wp-content/uploads/2026/06/hotpot-table.png" alt="Neighbours gathered around a home table for a hot pot dinner, with shared food and bowls in the centre." loading="lazy" decoding="async" />
         </figure>
 
       </div>
@@ -511,7 +528,7 @@
       <div class="container">
         <div class="credibility-grid">
           <div>
-            <img src="https://fimby.com/wp-content/uploads/2026/02/JacksonAve.png" alt="A familiar street in Vancouver's Downtown Eastside neighbourhood" class="credibility-photo" />
+            <img src="https://fimby.com/wp-content/uploads/2026/02/JacksonAve.png" alt="A familiar street in Vancouver's Downtown Eastside neighbourhood" class="credibility-photo" loading="lazy" decoding="async" />
           </div>
           <div class="section-copy trust-prose credibility-text">
             <div class="section-kicker"><span class="eyebrow-dot"></span>Not a thought experiment</div>
@@ -539,6 +556,13 @@
       </div>
     </section>
 
+    <!-- ═══ BRIDGE STRIP ═══ -->
+    <div class="bridge-strip">
+      <div class="container-inset">
+        <p>New here? <a href="/how-it-works/">See how FIMBY works.</a></p>
+      </div>
+    </div>
+
     <!-- ═══ 10. FINAL CTA (dual fork) ═══ -->
     <section id="join" class="final-cta">
       <div class="container-inset">
@@ -546,7 +570,7 @@
           <div class="section-kicker final-kicker">
             <span class="eyebrow-dot"></span>Start where you are
           </div>
-          <h2>Ready to meet your neighbours?</h2>
+          <h2>Turn on the porch light?</h2>
           <p>If this neighbourhood is part of your real life, you're welcome here.</p>
           <div class="dual-cta-grid">
             <div class="dual-cta-col">
@@ -554,15 +578,15 @@
               <div class="bridge-steps">
                 <div class="bridge-step">
                   <span class="step-number">1</span>
-                  <span class="step-text">Sign up with your postal code</span>
+                  <span class="step-text">Complete the sign up form<br class="br-mobile"> with your postal code</span>
                 </div>
                 <div class="bridge-step">
                   <span class="step-number">2</span>
-                  <span class="step-text">Share how you'd like to connect</span>
+                  <span class="step-text">Moderator activates your account</span>
                 </div>
                 <div class="bridge-step">
                   <span class="step-number">3</span>
-                  <span class="step-text">Start seeing what's happening nearby</span>
+                  <span class="step-text">Start seeing what's<br class="br-mobile"> happening nearby</span>
                 </div>
               </div>
               <div class="dual-cta-foot">
@@ -570,7 +594,7 @@
                   <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Check your neighbourhood</a>
                 </div>
                 <p class="faith-block">Part of a community group or organization? You can join too. Just tick the box when you sign up.</p>
-                <p class="quiet-note">For adults 19+ in BC. Families welcome: parents add a family profile from their own login. <a href="/faq/">More in the FAQ</a>.</p>
+                <p class="quiet-note">For adults 19+. Families welcome: parents add a family profile from their own login. <a href="/faq/">More in the FAQ</a>.</p>
               </div>
             </div>
             <div class="dual-cta-col dual-cta-col--secondary">

@@ -1,0 +1,57 @@
+---
+description: Mobile-first conventions for editing marketing site HTML in the FIMBY Website folder (fimby.com pages). Does NOT apply to LWC HTML.
+globs: FIMBY Website/**/*.html
+alwaysApply: false
+---
+
+# FIMBY Website — Mobile Editing
+
+These are static marketing pages published to **fimby.com** (WordPress via Respira inject), not the Experience Cloud app. This rule covers `FIMBY Website/*.html` only — it must never fire on LWC templates under `force-app/**/lwc/**`.
+
+## Golden rule: never break desktop
+
+- Desktop layout is the source of truth. **Add mobile behaviour through media queries only** — never restructure the base/desktop styles to fix a phone issue.
+- Baseline test viewport: **iPhone 13 mini, 375×812**. If it works at 375px it works wider.
+- Breakpoints already in use (reuse these, don't invent new ones): `1024px` (tablet/stacked hero), `767px` (single-column grids), `760px` (line-break + step alignment tweaks).
+
+## Where styles live
+
+- Shared/reusable mobile CSS → `FIMBY Website/custom-css.css` (published to WordPress Additional CSS / enqueued). Keep it under the **"HOMEPAGE MOBILE POLISH"** block.
+- Page-specific one-offs → inline `<style>` in the page's own HTML.
+
+## Layout reflow
+
+- To reorder stacked content on mobile (e.g. show a heading/caption before an image), set `order` on the flex/grid children inside the media query — don't move the markup in the HTML.
+- Multi-column card grids collapse to **1 column ≤767px**; center card icons/text.
+- Watch for half-page left gutters: full-bleed sections must reach true edge at 375px.
+
+## Typography & line breaks
+
+- Use the `.br-mobile` utility for intentional mobile line breaks: `<br class="br-mobile">` is hidden on desktop and active ≤760px. Don't hard-wrap text that should flow on desktop.
+- Numbered CTA / how-it-works steps: **left-align** on mobile (`align-items: flex-start`, full width) — never centered/indented relative to the heading.
+
+## Images
+
+- **Alt text**: descriptive alt for meaningful photos; decorative UI/mockup icons get `alt=""` (add `aria-hidden="true"` only when no adjacent text label exists). Action icons that are the only label (e.g. create/＋) get a real `alt`.
+- **Lazy-load below-the-fold photos**: add `loading="lazy" decoding="async"` to large content images that aren't in the first viewport (section photos, illustrations). Leave above-the-fold hero/mockup and tiny cached icons eager.
+
+## Mobile QA checklist — single-column pitfalls
+
+When desktop content collapses to one strict sequential column, multi-column logic breaks in predictable ways. Check for these (they are the class of bugs that matter most here):
+
+- **No photo before its heading.** In a stacked column, lead with the kicker + `H2`, *then* the image(s). A reader hitting a full-width photo with no section label first is the #1 failure mode. Fix with `order` on the grid/flex children, not by duplicating markup.
+- **Captions attach to what they describe.** A caption/subtitle must sit *above* or *inside* the thing it explains (e.g. the phone mockup), never orphaned below it after the reader has scrolled past.
+- **One alignment axis per band type.** Don't let the page whiplash left → center → left-in-box → center down the scroll. Pick a rule: editorial/body prose **left**, emotional pull-quotes and CTAs **center**. Bands that already nail it: reframe band, dual-CTA card, footer, coloured bridge quotes.
+- **Never a left-hugging card with centered text inside** (or vice versa). Either a full-width centered card, or left-aligned text in a full-width card — not a narrow left slab with centered type.
+- **Collapse cramped multi-column grids to 1 column ≤760px.** A 2-up grid at 375px (e.g. two ~156px columns) crushes icons/titles and produces stubby 2-word lines. Match the existing `.feature-blocks` single-column behaviour.
+- **Drop `ch`-based width caps on headings at mobile.** A desktop `max-width: 10.5ch` on `h1` fights the full-width phone column and forces orphans ("you belong." alone). Relax/remove below 760px and let the headline use content width.
+- **Orphans/widows are usually a container problem, not a utility gap.** Keep `text-wrap: balance` on headings and `text-wrap: pretty` on body prose; then fix the too-narrow container (grid/`ch` cap) causing the bad break. Reach for `.br-mobile` or `&nbsp;` only for the last editorial nudge.
+- **Vertical rhythm should be intentional.** Don't give full-bleed photos hero-level spacing while text bands feel cramped. Watch for large dead zones between a mockup and the next band, and big gaps between two stacked photos.
+- **Edge padding parity.** Header inner padding (logo/hamburger) should match the body `.container` gutter (`calc(100% - 20px)` at 760px) so nothing hugs the screen edge.
+- **Re-check muted-token contrast on mobile**, especially footer secondary links on the beige band.
+
+## Publish workflow (do not skip)
+
+- Edit the page's source HTML directly (e.g. `home-revised.html`, `how-it-works.html`).
+- Inject the source file via Respira (see the respira-inject skill).
+- **Do not create or maintain minified (`*.min.html`) copies.** Minification is no longer part of this workflow — do not add a `min` step to any plan.

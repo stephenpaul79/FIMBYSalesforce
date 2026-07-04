@@ -599,14 +599,15 @@ footer .territory-line {
     @media (max-width: 760px) {
       .nav { display: none; }
       section { padding: 28px 0; }
-      .hero { padding-top: 14px; }
+      .hero { padding-top: 14px; padding-bottom: 20px; }
       .container { width: min(var(--page-max), calc(100% - 20px)); }
-      .hero h1 { font-size: clamp(2.3rem,12vw,3.8rem); }
+      .hero h1 { font-size: clamp(2.3rem,12vw,3.8rem); line-height: 1.02; }
       .card-header { flex-wrap: wrap; }
       .card-type-badge { order: 3; margin-top: 6px; }
       .card-footer-bar { flex-direction: column; align-items: stretch; }
       .response-pill, .response-pill-responded, .btn { width: 100%; justify-content: center; }
-      .bridge-steps { flex-direction: column; align-items: center; gap: 10px; }
+      .bridge-steps { flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; margin-left: 0; margin-right: 0; }
+      .bridge-step { align-items: flex-start; }
     }
     @media (prefers-reduced-motion: reduce) {
       .feed-card-wrapper, .fimby-card, .modal, .modal-content { transition: none; }
@@ -659,10 +660,11 @@ footer .territory-line {
   border-radius: var(--fimby-radius-sm); background: var(--fimby-surface-input);
   font-size: 0.9rem; color: var(--fimby-text-primary);
 }
-.onb-pages { display: flex; gap: 16px; align-items: stretch; }
+.onb-pages { display: flex; gap: 16px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
 .onb-page-label {
   font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fimby-text-muted); margin-bottom: 4px;
+  text-align: center;
 }
 .care-question { display: flex; flex-direction: column; gap: 6px; }
 .care-question .field-label { font-size: 0.82rem; font-weight: 600; color: var(--fimby-text-primary); margin-bottom: 2px; }
@@ -1459,9 +1461,12 @@ footer .territory-line {
 
 /* Bridge strip */
 .bridge-strip { text-align: center; padding: 28px 16px; border-top: 1px solid var(--fimby-divider-default); }
-.bridge-strip p { font-size: 1rem; color: var(--fimby-text-secondary); line-height: 1.6; }
+.bridge-strip p { margin: 0; font-size: 1rem; color: var(--fimby-text-secondary); line-height: 1.6; }
 .bridge-strip a { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .bridge-strip a:hover { color: var(--fimby-btn-primary-bg); }
+/* Bridge-strip already supplies the gap above the CTA; drop the CTA's own top padding
+   so the space below the bridge text matches the space above it. */
+.bridge-strip + .final-cta { padding-top: 0; }
 
 /* ═══════════════════════════════════════════════════
    OUR APPROACH
@@ -1843,10 +1848,25 @@ details[open] summary { color: var(--fimby-earth-teal); }
 .faq-answer { padding: 0 18px 16px; font-size: 0.9rem; color: var(--fimby-text-secondary); line-height: 1.6; }
 .faq-answer a { color: var(--fimby-earth-teal); text-decoration: underline; text-underline-offset: 2px; }
 .faq-answer a:hover { color: var(--fimby-btn-primary-bg); }
-.soft-cta { text-align: center; padding: 32px 0 16px; border-top: 1px solid var(--fimby-divider-default); }
-.soft-cta p { font-size: 0.95rem; color: var(--fimby-text-secondary); margin-bottom: 14px; }
-.soft-cta a { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-.soft-cta a:hover { color: var(--fimby-btn-primary-bg); }
+/* Medium-weight FAQ close: a compact tinted card — warmer than a text line,
+   lighter than the story pages' full dual-CTA band. */
+.soft-cta {
+  text-align: center;
+  margin: 36px 0 8px;
+  padding: 28px 24px;
+  background: var(--fimby-surface-section);
+  border: 1px solid var(--fimby-border-subtle);
+  border-radius: var(--fimby-radius-lg);
+}
+.soft-cta p {
+  font-size: 1rem;
+  color: var(--fimby-text-secondary);
+  max-width: 46ch;
+  margin: 0 auto 18px;
+}
+.soft-cta .button-row { justify-content: center; }
+.soft-cta p a { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.soft-cta p a:hover { color: var(--fimby-btn-primary-bg); }
 .faq-disclaimer { text-align: center; padding: 12px 0 8px; font-size: 0.82rem; color: var(--fimby-text-muted); font-style: italic; }
 
 /* ═══════════════════════════════════════════════════
@@ -1882,6 +1902,10 @@ details[open] summary { color: var(--fimby-earth-teal); }
   .feature-block-icon { margin: 0 auto; }
   .onb-pages { flex-direction: column; align-items: center; }
   .approach-grid, .approach-grid.reverse { grid-template-columns: 1fr; }
+  .approach-grid .approach-text,
+  .approach-grid.reverse .approach-text { order: 1; }
+  .approach-grid .journey-visual,
+  .approach-grid.reverse .journey-visual { order: 2; }
   .approach-grid.text-first-mobile .approach-text { order: 1; }
   .approach-grid.text-first-mobile .journey-visual { order: 2; }
   .language-row { grid-template-columns: 1fr; }
@@ -2031,28 +2055,42 @@ details[open] summary { color: var(--fimby-earth-teal); }
     .legal-page .scope-note p { margin-bottom: 8px; font-size: 0.95rem; }
     .legal-page .scope-note p:last-child { margin-bottom: 0; }
 
+/* Land acknowledgment: single line on desktop, wraps naturally on narrow
+   viewports. No width cap so it doesn't break early on wide screens. */
 .territory-line {
   font-size: 1em;
   font-style: italic;
-  opacity: 1;
-  margin-bottom: 1rem;
+  color: var(--fimby-text-muted);
+  margin: 0 auto 1rem;
 }
 
-.nav-line {
-  font-size: 0.95em;
-  opacity: 0.85;
-  margin-bottom: 1rem;
-}
-
+/* Fine-print baseline: uppercase + tracked so it reads as boilerplate, set
+   off from the warm zone by a hairline. */
 .legal-line {
-  font-size: 0.8em;
-  opacity: 0.6;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--fimby-border-subtle);
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fimby-text-muted);
 }
 
 .legal-line a,
-.nav-line a,
 .territory-line a {
   color: inherit;
+}
+
+/* Faint dot between legal items so multi-word links stay distinct. */
+.legal-line a:not(:last-child)::after {
+  content: "\00b7";
+  margin: 0 0.85rem;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .help-page .urgent-callout {
@@ -2561,19 +2599,19 @@ a.capability-card {
 /* ═══ FOOTER ═══ */
 .site-footer { padding: 32px 0; background-color: var(--fimby-surface-section); border-top: 1px solid var(--fimby-border-subtle); }
 
-/* Attribution sits on its own quiet line, separate from the nav links. */
+/* Attribution leads the warm zone as a quiet closing note. */
 .footer-credit {
-  font-size: 0.8em;
-  opacity: 0.6;
+  font-size: 0.85em;
+  color: var(--fimby-text-muted);
   margin-bottom: 1rem;
 }
 .footer-credit a { color: inherit; }
 
-/* App badges pinned to the very bottom, centered, no label. */
+/* App badges close the warm zone, with room to breathe as the one CTA. */
 .footer-app {
   display: flex;
   justify-content: center;
-  margin-top: 4px;
+  margin-top: 1.25rem;
 }
 .footer-store-badges { margin: 0; }
 
@@ -2590,16 +2628,9 @@ a.capability-card {
 .vision-funnel-banner a { font-weight: 600; color: var(--fimby-earth-teal); text-decoration: underline; }
 .vision-funnel-banner + .page-hero { padding-top: 32px; }
 
-/* ═══ APPROACH FOOTER FORK ═══ */
-.approach-footer-fork {
-  margin-top: 24px;
-  padding: 24px;
-  background-color: var(--fimby-surface-section);
-  border-radius: var(--fimby-radius-lg);
-}
-.approach-footer-fork .button-row { margin-top: 16px; }
-.approach-footer-fork .objection-links {
-  margin-top: 28px;
+/* General "still have questions?" note under the canonical CTA fork */
+.cta-faq-note {
+  margin: 28px auto 0;
   padding-top: 22px;
   border-top: 1px solid var(--fimby-divider-default);
   text-align: center;
@@ -2607,10 +2638,8 @@ a.capability-card {
   font-size: 0.88rem;
   color: var(--fimby-text-secondary);
   max-width: 52ch;
-  margin-left: auto;
-  margin-right: auto;
 }
-.objection-links a { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; }
+.cta-faq-note a { color: var(--fimby-earth-teal); font-weight: 600; text-decoration: underline; }
 
 /* ═══ FAQ PAGE INSET ═══ */
 .faq-page-inset { padding-bottom: 40px; }
@@ -2852,6 +2881,181 @@ a.capability-card {
 @media (max-width: 760px) {
   .store-badge img { height: 44px; }
   .store-badges--mini .store-badge img { height: 30px; }
+}
+
+/* Intentional mobile line breaks — editorial control without affecting desktop wrap */
+.br-mobile { display: none; }
+@media (max-width: 760px) {
+  br.br-mobile { display: block; }
+}
+
+/* ═══ HOMEPAGE MOBILE POLISH — max-width queries only; desktop untouched ═══ */
+
+/* Stacked hero (tablet + phone): caption before phone mockup */
+@media (max-width: 1024px) {
+  .hero-grid > div:first-child { order: 0; }
+  .hero-grid .preview-caption {
+    order: 1;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+  }
+  .hero-grid .device-frame { order: 2; }
+}
+
+@media (min-width: 1025px) {
+  .hero-grid .preview-caption,
+  .hero-grid .device-frame { order: unset; }
+}
+
+@media (max-width: 767px) {
+  .capability-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero p.lead { margin-bottom: 14px; }
+  .hero-note { margin-top: 8px; margin-bottom: 14px; }
+  .hero .button-row { gap: 10px; }
+  .hero .store-badges {
+    justify-content: center;
+    width: 100%;
+  }
+  .hero-tertiary-link {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .capability-card {
+    align-items: center;
+    text-align: center;
+    padding: 20px 18px;
+  }
+  .capability-card-icon { margin: 0 auto; }
+  .capability-strip { padding: 32px 0; }
+  .capability-strip .capability-lead { margin-bottom: 20px; }
+
+  .problem-band { padding: 16px 0; }
+
+  #stay-local .section-copy,
+  #stay-local .section-copy p { max-width: none; }
+  #stay-local .split-section { gap: 24px; }
+
+  #credibility .credibility-grid > :first-child { order: 2; }
+  #credibility .credibility-grid > .credibility-text { order: 1; }
+  #credibility .credibility-grid { gap: 20px; }
+
+  #rooted .rooted-grid { text-align: center; }
+  #rooted .section-copy.trust-prose h2,
+  #rooted .section-copy.trust-prose p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #rooted .value-chips {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .trust-prose:not(.trust-prose--center) h2 { max-width: none; }
+  #support-people .trust-prose p { max-width: none; }
+
+  .bridge-teal { padding: 24px 0; }
+  .bridge-teal p {
+    padding: 22px 20px;
+    font-size: 1.1rem;
+  }
+
+  .quiet-note {
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  footer {
+    color: var(--fimby-text-secondary);
+    font-size: 0.88rem;
+  }
+
+  .bridge-steps {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    align-items: flex-start;
+  }
+  .dual-cta-col .bridge-steps { align-self: stretch; }
+  .bridge-step { align-items: flex-start; }
+  .step-text { text-align: left; text-wrap: pretty; line-height: 1.45; }
+  .step-number { margin-top: 1px; }
+
+  /* How it works — editorial bands stay left; mock grids collapse to 1 column */
+  .journey-text p { max-width: none; }
+  /* Feature cards — centered icon + title, full-width left body */
+  .feature-block {
+    grid-template-columns: 1fr;
+    text-align: left;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .feature-block-icon { margin: 0 auto; }
+  .feature-block > div { width: 100%; min-width: 0; }
+  .feature-block h4 { text-align: center; }
+  .feature-block p { text-align: left; text-wrap: pretty; }
+  .feature-block .celebration-demo,
+  .feature-block .celebration-wrapper { text-align: left; align-items: flex-start; }
+  .feature-block .celebration-demo-row { justify-content: flex-start; }
+  .feature-block .celebration-note { text-align: left; }
+  .feature-block .notif-toggles,
+  .feature-block .thermometer-wrap { width: 100%; margin: 0; }
+  .library-type-grid-mock {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+  .quick-post-modal .type-buttons { grid-template-columns: 1fr; }
+  .hiw-summary-grid > .device-frame { margin-top: 12px; }
+
+  /* Phone mockups — keep Respond / Comment / Borrow inline on the right */
+  .device-frame .card-footer-bar,
+  .preview-shell .card-footer-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .device-frame .response-pill,
+  .device-frame .response-pill-responded,
+  .preview-shell .response-pill,
+  .preview-shell .response-pill-responded {
+    width: auto;
+    justify-content: center;
+  }
+  .device-frame .card-header,
+  .preview-shell .card-header { flex-wrap: nowrap; }
+  .device-frame .card-type-badge,
+  .preview-shell .card-type-badge { order: unset; margin-top: 0; }
+
+  /* Our Approach + Vision — editorial bands on phone */
+  .approach-text p,
+  .approach-text .pull-quote { text-wrap: pretty; max-width: none; }
+  .vision-subintro { max-width: none; }
+  .vision-funnel-banner { padding: 14px 16px; font-size: 0.88rem; }
+  /* Standalone section photos only — not phone-mockup shell icons inside .device-frame */
+  .approach-grid .journey-visual > img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+  .approach-heading-icons {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .approach-heading-icons > span {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+  }
 }
 
 /* ═══ WARMTH BY DESIGN — compact celebration demo ═══
