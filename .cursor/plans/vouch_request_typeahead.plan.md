@@ -130,7 +130,7 @@ Replace the three `<input>` rows with:
   - Rejects when requester already has pending request
 - Existing `submitVoucherDetails` test ⇒ now asserts the shim returns the deprecation message
 
-### Smoke (manual QA, desktop + mobile via Playwright)
+### Smoke (agent-driven browser QA, desktop + emulated mobile)
 - New user (Vouched_Status = New) opens library, taps "Request a vouch"
 - Modal renders explainer → "Request a vouch"
 - Form shows toggle + empty search

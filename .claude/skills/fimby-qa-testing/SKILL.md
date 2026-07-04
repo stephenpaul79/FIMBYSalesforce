@@ -5,7 +5,7 @@ description: FIMBY QA — test credentials, personas, login flow, navigation dis
 
 # FIMBY QA & Login
 
-> **Tooling note.** The Cursor rules drive QA through Cursor's `cursor-ide-browser` MCP. Claude does **not** have that tool. Use whatever browser-automation surface is connected to this session (a browser MCP if available, or the `verify` / `run` skills). If no automation surface can reach a step, **do not declare it out of scope** — hand off to the human tester (see *Human–agent handoff*). There is no separate persistent regression suite; each runbook in `C:\Users\srathjen\.cursor\plans\` is the source of truth, executed live.
+> **Tooling note.** The Cursor rules drive QA through Cursor's `cursor-ide-browser` MCP. Claude does **not** have that tool. Use whatever browser-automation surface is connected to this session (a browser MCP if available, or the `verify` / `run` skills). If no automation surface can reach a step, **do not declare it out of scope** — hand off to the human tester (see *Human–agent handoff*). There is no separate persistent regression suite; each runbook in `C:\Users\srathjen\.cursor\plans\` is the source of truth, executed live. **Do not use Playwright** — the `tests-e2e/` suite was removed from the repo; do not recreate or reference it.
 
 ## Scope & viewports
 QA covers **desktop and emulated mobile**. Per-runbook scope decides required sizes; default:

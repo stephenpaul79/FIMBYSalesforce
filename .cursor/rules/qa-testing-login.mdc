@@ -9,6 +9,8 @@ alwaysApply: true
 
 Agent-driven QA on this project uses the Cursor IDE **`cursor-ide-browser` MCP** as the only browser-automation surface. There is **no separate persistent regression suite**; each runbook in `C:\Users\srathjen\.cursor\plans\` is the source of truth for what to test, executed live by the agent.
 
+**Do not use Playwright.** The former `tests-e2e/` project and `.github/workflows/playwright.yml` were removed on purpose — do not reinstall, recreate, or reference them as part of FIMBY QA.
+
 ## Scope
 
 Agent QA covers **desktop and emulated mobile**. Per-runbook scope determines which viewport sizes are required; default to:

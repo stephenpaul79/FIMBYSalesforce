@@ -28,7 +28,3 @@ Updated during autonomous session (you at gym).
 ## B2 organiser-cancel notification
 
 - R1 **does** receive `Bulk_Buy_Status` for B5 organiser-cancel path today. B2 row may be stale (pre `notifyAllReservers` ordering). No code change this session.
-
-## Playwright
-
-- Removed from runbook todos per your direction — not used for BB QA.
