@@ -157,7 +157,7 @@
     }
     .hero p.lead { color: var(--fimby-text-primary); font-size: 1.1rem; max-width: 54ch; margin-bottom: 16px; }
     .button-row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .hero-note { margin-top: 10px; font-size: 0.92rem; color: var(--fimby-text-secondary); }
+    .hero-note { margin-top: 10px; margin-bottom: 20px; font-size: 0.92rem; color: var(--fimby-text-secondary); }
 
     /* ═══ APP PREVIEW SHELL (iPhone bezel + screen) ═══ */
     .device-frame {
@@ -750,7 +750,7 @@ footer .territory-line {
 }
 
 /* Event tier cards */
-.gather-grid { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr) minmax(0, 0.8fr) !important; align-items: stretch; }
+.gather-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) !important; align-items: center; }
 .gather-grid .journey-visual { display: flex; }
 .gather-grid .device-frame { flex: 1; width: 100%; }
 .gather-grid .preview-shell { flex: 1; display: flex; flex-direction: column; }
@@ -1716,13 +1716,33 @@ footer .territory-line {
   justify-self: center;
   width: fit-content;
   max-width: 100%;
-  padding: 12px 22px;
+  padding: 14px 24px;
   background: var(--fimby-btn-primary-bg); color: var(--fimby-surface-card);
   border-radius: var(--fimby-radius-md);
   font-size: 1rem; font-weight: 600;
-  line-height: 1.5; text-align: center;
+  line-height: 1.4; text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.contrast-close b { font-weight: 700; }
+.contrast-close-lead {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.contrast-close-punch {
+  display: block;
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.contrast-close-punch b {
+  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
 
 /* sources — page footer block */
 .approach-sources {
@@ -1855,8 +1875,6 @@ details[open] summary { color: var(--fimby-earth-teal); }
   .journey-grid, .journey-grid.reverse { grid-template-columns: 1fr !important; }
   .journey-grid .journey-text, .journey-grid.reverse .journey-text { order: 1; }
   .journey-grid .journey-visual, .journey-grid.reverse .journey-visual { order: 2; }
-  .gather-grid { grid-template-columns: 1fr !important; }
-  .gather-grid .tier-stack { order: 3; }
   .gather-grid { grid-template-columns: 1fr !important; }
   .tier-grid { grid-template-columns: 1fr; max-width: 360px; margin-left: auto; margin-right: auto; }
   .feature-blocks { grid-template-columns: 1fr; }
@@ -2190,6 +2208,16 @@ details[open] summary { color: var(--fimby-earth-teal); }
 }
 .recurrence-toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .recurrence-detail { margin-top: 6px; color: var(--fimby-text-secondary); font-size: 0.8rem; }
+/* Collapsed picklist look for the recurrence field (Step 5 mock) */
+.recurrence-select {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px; padding: 8px 12px;
+  background: var(--fimby-surface-card);
+  border: 1px solid var(--fimby-border-default);
+  border-radius: var(--fimby-radius-sm);
+  font-size: 0.82rem; color: var(--fimby-text-primary);
+}
+.recurrence-chevron { color: var(--fimby-text-secondary); font-size: 0.7rem; }
 
 /* ═══ LIBRARY MODE CHIPS (how-it-works mock) ═══ */
 .lib-chip.skills-chip.active,
@@ -2198,10 +2226,11 @@ details[open] summary { color: var(--fimby-earth-teal); }
 /* ═══ ADD LIBRARY TYPE GRID (mock) ═══ */
 .library-type-grid-mock {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 168px));
   gap: 12px;
-  max-width: 360px;
-  margin: 0 auto;
+  max-width: 48ch;
+  margin: 16px 0 0;
+  justify-content: left;
 }
 .library-type-card-mock {
   display: flex;
@@ -2824,3 +2853,15 @@ a.capability-card {
   .store-badge img { height: 44px; }
   .store-badges--mini .store-badge img { height: 30px; }
 }
+
+/* ═══ WARMTH BY DESIGN — compact celebration demo ═══
+   In the feature grid the GIF and "Try it" button sit side by side to fill
+   width and cut height, and the "You did it!" message shares one line with
+   the milestone label. Replaces the old inline styles + stacked layout. */
+.feature-block .celebration-demo { margin-top: 16px; }
+.celebration-wrapper--compact { padding: 14px 16px; gap: 8px; }
+.celebration-line { font-size: 0.95rem; margin-bottom: 4px; }
+.celebration-line .milestone-label { display: inline; margin-left: 6px; font-size: 0.82rem; }
+.celebration-demo-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px; }
+.celebration-gif { width: 120px; height: auto; border-radius: var(--fimby-radius-md); }
+.celebration-demo-row .confetti-btn { margin-top: 0; }
