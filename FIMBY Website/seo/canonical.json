@@ -1,0 +1,45 @@
+{
+  "organization": {
+    "name": "FIMBY",
+    "alternateName": "Family In My Backyard",
+    "url": "https://fimby.com/",
+    "logo": "https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png",
+    "language": "en-CA"
+  },
+  "canonicalParagraph": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you.",
+  "bridgeSentence": "FIMBY works in any browser at our.fimby.com and as a free app for iPhone and Android — same account, same neighbourhood.",
+  "platformLine": "Same account, same neighbourhood — use FIMBY in your browser or get the app.",
+  "urls": {
+    "marketing": "https://fimby.com/",
+    "webApp": "https://our.fimby.com/",
+    "webAppLogin": "https://our.fimby.com/login",
+    "webAppSignUp": "https://our.fimby.com/sign-up",
+    "deepLinks": "https://app.fimby.com/",
+    "appStore": "https://apps.apple.com/app/fimby/id6776707632",
+    "googlePlay": "https://play.google.com/store/apps/details?id=com.fimby.app",
+    "privacyPolicy": "https://fimby.com/privacy-policy/",
+    "termsOfService": "https://fimby.com/terms-of-service/",
+    "faq": "https://fimby.com/faq/",
+    "howItWorks": "https://fimby.com/how-it-works/",
+    "ourApproach": "https://fimby.com/our-approach/",
+    "contact": "https://fimby.com/contact-us/"
+  },
+  "identifiers": {
+    "appStoreId": "6776707632",
+    "androidPackage": "com.fimby.app",
+    "iosBundleId": "com.fimby.app"
+  },
+  "sameAs": [
+    "https://our.fimby.com/",
+    "https://apps.apple.com/app/fimby/id6776707632",
+    "https://play.google.com/store/apps/details?id=com.fimby.app",
+    "https://www.facebook.com/profile.php?id=100083517094655",
+    "https://www.instagram.com/fimby.family/"
+  ],
+  "schemaIds": {
+    "organization": "https://fimby.com/#organization",
+    "website": "https://fimby.com/#website",
+    "mobileApp": "https://fimby.com/#mobile-app",
+    "webApp": "https://fimby.com/#web-app"
+  }
+}

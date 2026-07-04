@@ -1,5 +1,48 @@
   <main>
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "MobileApplication",
+          "@id": "https://fimby.com/#mobile-app",
+          "name": "FIMBY",
+          "alternateName": "Family In My Backyard",
+          "description": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you. FIMBY works in any browser at our.fimby.com and as a free app for iPhone and Android — same account, same neighbourhood.",
+          "operatingSystem": "iOS, Android",
+          "applicationCategory": "SocialNetworkingApplication",
+          "installUrl": [
+            "https://apps.apple.com/app/fimby/id6776707632",
+            "https://play.google.com/store/apps/details?id=com.fimby.app"
+          ],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CAD"
+          },
+          "publisher": { "@id": "https://fimby.com/#organization" }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://fimby.com/#web-app",
+          "name": "FIMBY",
+          "alternateName": "Family In My Backyard",
+          "url": "https://our.fimby.com/",
+          "description": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Use FIMBY in any browser at our.fimby.com or in the free iPhone and Android apps — same account, same neighbourhood.",
+          "applicationCategory": "SocialNetworkingApplication",
+          "browserRequirements": "Requires modern browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CAD"
+          },
+          "publisher": { "@id": "https://fimby.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
     <!-- ═══ INLINE STYLE for new sections (travels with <main> on inject) ═══ -->
     <style>
       /* Reframe band — the hopeful pivot, rhymes with .problem-band */
@@ -12,7 +55,7 @@
       .stakes { padding: 56px 0; background: var(--fimby-surface-card); border-top: 1px solid var(--fimby-divider-default); border-bottom: 1px solid var(--fimby-divider-default); }
       .stakes-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; display: grid; gap: 28px; align-items: center; }
       @media (min-width: 880px) {
-        .stakes-shell { grid-template-columns: 28fr 34fr 38fr; gap: 56px; }
+        .stakes-shell { grid-template-columns: 24fr 42fr 34fr; gap: 48px; }
       }
 
       /* LEFT — simplified example post cards, leaning toward the middle */
@@ -147,7 +190,7 @@
             <span class="eyebrow-dot"></span>For the people who actually live near you
           </div>
           <h1>Turn the place you live into a place you belong.</h1>
-          <p class="lead"><strong>Family In My Backyard</strong> (FIMBY) is a shared space for the people in your neighbourhood: to ask for help, offer what you have, and stay connected in small everyday ways. Not a city-wide feed. Just the people around you.</p>
+          <p class="lead"><strong>Family In My Backyard</strong> (FIMBY) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you.</p>
           <p class="hero-note">Live now in Vancouver's Downtown Eastside and Strathcona (postal code V6A).</p>
           <div class="button-row">
             <a href="https://our.fimby.com/sign-up" class="btn btn-primary">Check your neighbourhood</a>
@@ -161,7 +204,8 @@
               <img src="https://fimby.com/wp-content/uploads/2026/06/google-play-badge.png" alt="Get FIMBY on Google Play" />
             </a>
           </div>
-          <a href="/contact-us/" class="hero-tertiary-link">Do you live outside Vancouver?<br class="br-mobile"> Bring FIMBY to you →</a>
+          <p class="platform-bridge">Same account, same neighbourhood — use FIMBY in your <a href="https://our.fimby.com/login">browser</a> or get the app.</p>
+          <a href="/contact-us/" class="hero-tertiary-link">Not in Vancouver's V6A?<br class="br-mobile"> Bring FIMBY to your neighbourhood →</a>
         </div>
 
         <div class="device-frame">
@@ -392,7 +436,7 @@
         <div class="section-copy">
           <h2>Designed to stay local</h2>
           <p>FIMBY keeps things close to home. You'll see the same neighbours, not thousands of strangers, so names become familiar and small acts of care build real relationships.</p>
-          <p>And unlike apps built to buy, sell, or give away, FIMBY is built for lending. You loan a neighbour your drill, it comes back, and so does the conversation: a face you'll see again, not a stranger across town.</p>
+          <p>And unlike apps built to buy, sell, or give away, FIMBY is built to foster relationships. You loan a neighbour your drill, it comes back, and so does the conversation: a face you'll see again, not a stranger across town.</p>
         </div>
 
       </div>
@@ -510,7 +554,8 @@
           <div class="section-kicker"><span class="eyebrow-dot"></span>More than an app</div>
           <h2>The feed is not the point.</h2>
           <p>FIMBY isn't really about software. It's about refusing something we've quietly accepted: that people can live a few doors apart for years and still remain strangers.</p>
-          <p>A borrowed pot becomes a conversation. A shared meal becomes a check-in. A thank-you becomes a story the neighbourhood remembers.</p>
+          <p>A borrowed pot becomes a conversation. A shared meal becomes a check-in. A thank-you becomes a story the neighbourhood remembers. The one who lent the ladder in June is the one asking for a ride in November. Nobody stays the helper. Nobody stays the helped.</p>
+          <p>There's an old name for this: mutual aid. Not charity flowing one direction, just neighbours trading places, season after season.</p>
           <p>We know this works, because it already has. Not a bigger network, but a neighbourhood that feels a little more like family.</p>
           <a href="#join" class="stakes-jump">Check your neighbourhood →</a>
         </div>
@@ -532,12 +577,11 @@
           </div>
           <div class="section-copy trust-prose credibility-text">
             <div class="section-kicker"><span class="eyebrow-dot"></span>Not a thought experiment</div>
-            <h2>We've been doing this for twenty years</h2>
-            <p>FIMBY was forged on some of the hardest blocks in Canada, Vancouver's Downtown Eastside, through twenty-plus years of neighbouring before it was ever an app: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much.</p>
-            <p>The software is newer than that story. What stayed the same is the radius: a block, a building, a few streets, where you see the same faces again and small acts of care can turn into real trust.</p>
-            <p>This isn't theory. During our initial pilot, one neighbour asked for book recommendations and ended up inside another's home (purusing their bookshelf) for the first time, after living a block apart for nine years.</p>
-            <p class="faith-block">That kind of neighbouring started here as a Christian practice, and it stays open to everyone. Prayer and faith stories are welcome, never required.</p>
-            <p class="crisis-line">It's also not a crisis line, or a substitute for shelters, detox, or health care. It's the everyday kind of neighbouring that sits alongside those supports, never in their place.</p>
+            <h2>Twenty years of an ancient practice</h2>
+            <p>Neighbouring is not our invention. People have been doing it for as long as there have been neighbours: on this land for thousands of years, and on these blocks long before us. FIMBY is just our attempt to keep an old practice alive in a new time.</p>
+            <p>Our part of the story is twenty-plus years in Vancouver's Downtown Eastside, on blocks that carry more than their share: block parties, shared meals, borrowed ladders, and showing up when someone was carrying too much. For us that practice is rooted in Christian tradition, and it stays open to everyone. The app is newer than that. What stayed the same is the radius: a block, a building, a few streets, where you see the same faces again and small acts of care can turn into real trust.</p>
+            <p class="quiet-note">It's not a crisis line, or a substitute for shelters, detox, or health care. It's the everyday kind of neighbouring that sits alongside those supports, never in their place.</p>
+            <p>This isn't theory. During our initial pilot, one neighbour asked for book recommendations and ended up inside another's home for the first time, after living a block apart for nine years.</p>
           </div>
         </div>
       </div>

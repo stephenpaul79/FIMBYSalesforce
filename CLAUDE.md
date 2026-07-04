@@ -63,7 +63,7 @@ Auth: Mobile → OAuth PKCE → auth bridge exchanges for app JWTs (15min access
 
 ### Change cost: simple publish vs. full app rebuild
 
-The app is **live and approved on both stores** ([App Store](https://apps.apple.com/us/app/fimby/id6776707632), [Google Play](https://play.google.com/store/apps/details?id=com.fimby.app)). Because the app is a **WebView shell**, the two layers have very different change costs — weigh this on every design choice.
+The app is **live and approved on both stores** ([App Store](https://apps.apple.com/app/fimby/id6776707632), [Google Play](https://play.google.com/store/apps/details?id=com.fimby.app)). Because the app is a **WebView shell**, the two layers have very different change costs — weigh this on every design choice.
 
 | Change location | Path | Cost to ship |
 |--------|--------|--------|

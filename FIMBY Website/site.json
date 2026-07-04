@@ -1,6 +1,11 @@
 {
   "site_name": "FIMBY",
-  "site_description": "Neighbourhood mutual aid for Vancouver and growing communities — ask, offer, lend, gather, and share life locally. Open to everyone.",
+  "site_description": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you.",
+  "seo": {
+    "canonical_file": "seo/canonical.json",
+    "bridge_sentence": "FIMBY works in any browser at our.fimby.com and as a free app for iPhone and Android — same account, same neighbourhood.",
+    "platform_line": "Same account, same neighbourhood — use FIMBY in your browser or get the app."
+  },
   "site_url": "https://fimby.com",
   "home_url": "https://fimby.com",
   "language": "en-CA",

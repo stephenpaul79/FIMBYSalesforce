@@ -6,6 +6,17 @@ All website work lives in `FIMBY Website/`.
 
 Follow the 8-step recipe in `.cursor/rules/respira-wordpress-inject.mdc` (build → sanity-check → `CallMcpTool` in-thread → verify → delete staging).
 
+### SEO inject (2026-07-04)
+
+| Local HTML | Page ID | Markers |
+|------------|---------|---------|
+| `home-revised.html` | 26 | `MobileApplication,platform-bridge` |
+| `faq.html` | 59 | `FAQPage,faq-page-inset` |
+
+Also paste `custom-css.css` delta (`.platform-bridge`) and `footer.html` into WP template parts. Full checklist: `seo/README.md`.
+
+Apply AIOSEO values from `seo/aioseo-setup.md` (WP Admin — not injectable via Respira).
+
 ## After local edits
 
 1. Paste/rebuild each page from the matching `.html` (or sync from `pages/*.md` drafts).

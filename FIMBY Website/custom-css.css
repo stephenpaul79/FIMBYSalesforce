@@ -2883,6 +2883,25 @@ a.capability-card {
   .store-badges--mini .store-badge img { height: 30px; }
 }
 
+/* Web + app bridge line — visible to crawlers near store badges */
+.platform-bridge {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--fimby-text-secondary);
+}
+.platform-bridge a {
+  color: var(--fimby-earth-teal);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.platform-bridge--footer {
+  text-align: center;
+  margin: 0 0 12px;
+  color: var(--fimby-text-muted);
+}
+
 /* Intentional mobile line breaks — editorial control without affecting desktop wrap */
 .br-mobile { display: none; }
 @media (max-width: 760px) {
