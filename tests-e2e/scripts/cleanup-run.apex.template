@@ -1,4 +1,0 @@
-// Anonymous Apex: clean up records anchored to a single Playwright run.
-// Templated by playwright/helpers/salesforce-cli.ts at runtime: {RUN_ID} is replaced.
-FimbyTestDataCleanup.CleanupResult result = FimbyTestDataCleanup.cleanupRun('{RUN_ID}');
-System.debug('FIMBY_E2E_CLEANUP runId={RUN_ID} deleted=' + result.recordsDeleted + ' breakdown=' + JSON.serialize(result.deletedByObject) + ' warnings=' + JSON.serialize(result.warnings));

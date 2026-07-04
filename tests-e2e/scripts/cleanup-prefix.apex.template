@@ -1,4 +1,0 @@
-// Anonymous Apex: sweep all records whose anchored title starts with the given prefix.
-// Templated at runtime: {PREFIX} is replaced. The Apex method enforces minimum length and a trailing space.
-FimbyTestDataCleanup.CleanupResult result = FimbyTestDataCleanup.cleanupPrefix('{PREFIX}');
-System.debug('FIMBY_E2E_CLEANUP prefix={PREFIX} deleted=' + result.recordsDeleted + ' breakdown=' + JSON.serialize(result.deletedByObject) + ' warnings=' + JSON.serialize(result.warnings));

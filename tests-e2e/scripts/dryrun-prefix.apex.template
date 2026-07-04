@@ -1,4 +1,0 @@
-// Anonymous Apex: count records that would be deleted by cleanupPrefix without deleting them.
-// Templated at runtime: {PREFIX} is replaced.
-FimbyTestDataCleanup.CleanupResult result = FimbyTestDataCleanup.dryRun('{PREFIX}');
-System.debug('FIMBY_E2E_DRYRUN prefix={PREFIX} wouldDelete=' + result.recordsDeleted + ' breakdown=' + JSON.serialize(result.deletedByObject) + ' warnings=' + JSON.serialize(result.warnings));
