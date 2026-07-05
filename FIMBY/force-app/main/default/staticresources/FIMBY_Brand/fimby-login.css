@@ -214,22 +214,22 @@ input.fimby-vf-auth__btn:focus-visible {
 a[href$="/sign-up"],
 a[href$="sign-up"] {
   display: block;
-  width: fit-content;
-  margin: 20px auto 0;
+  width: 100%;
+  margin: 24px auto 0;
   box-sizing: border-box;
-  padding: 16px 44px;
-  min-height: 56px;
-  min-width: 12rem;
-  font-size: 1.125rem;
+  padding: 12px 20px;
+  min-height: 48px;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
   line-height: 24px;
   text-align: center;
   text-decoration: none !important;
   color: var(--fimby-text-primary, #4A3526) !important;
   background-color: var(--fimby-surface-card, #FAF7F2);
-  border: 1.5px solid var(--fimby-text-primary, #4A3526);
-  border-radius: var(--fimby-btn-radius, 12px);
-  box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+  border: 1px solid var(--fimby-text-primary, #4A3526);
+  border-radius: 10px;
+  box-shadow: none;
   transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
@@ -262,16 +262,16 @@ community_login-login-form button.comm-login-form__login-button {
   display: flex !important;
   align-items: center;
   justify-content: center;
-  width: fit-content !important;
-  min-width: 12rem;
-  margin-left: auto !important;
-  margin-right: auto !important;
+  width: 100% !important;
+  margin: 0 !important;
   box-sizing: border-box;
-  min-height: 56px !important;
-  padding: 16px 44px !important;
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
-  border-radius: var(--fimby-btn-radius, 12px) !important;
+  min-height: 48px !important;
+  padding: 12px 20px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(38, 26, 17, 0.12) !important;
 }
 
 .fimby-vf-auth__messages {
