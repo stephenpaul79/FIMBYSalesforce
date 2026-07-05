@@ -206,6 +206,52 @@ input.fimby-vf-auth__btn:focus-visible {
   outline-offset: 2px;
 }
 
+/* ── Sign Up link → Tier 1 secondary outline button ──────────────
+   Styles the existing "~ Sign Up ~" link (href → /sign-up) in place,
+   so no login head-markup change is needed. Dark-brown outline to
+   match the --fimby-* secondary/outline button used across the LWCs.
+   ────────────────────────────────────────────────────────────────── */
+a[href$="/sign-up"],
+a[href$="sign-up"] {
+  display: block;
+  width: fit-content;
+  margin: 20px auto 0;
+  box-sizing: border-box;
+  padding: 14px 36px;
+  min-height: 52px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+  text-decoration: none !important;
+  color: var(--fimby-text-primary, #4A3526) !important;
+  background-color: var(--fimby-surface-card, #FAF7F2);
+  border: 1.5px solid var(--fimby-text-primary, #4A3526);
+  border-radius: var(--fimby-btn-radius, 12px);
+  box-shadow: var(--fimby-btn-shadow, 0 2px 4px rgba(0,0,0,0.15));
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+a[href$="/sign-up"]:hover,
+a[href$="sign-up"]:hover {
+  background-color: var(--fimby-text-primary, #4A3526);
+  color: var(--fimby-surface-card, #FAF7F2) !important;
+}
+
+a[href$="/sign-up"]:active,
+a[href$="sign-up"]:active {
+  background-color: var(--fimby-text-strong, #261A11);
+  color: var(--fimby-surface-card, #FAF7F2) !important;
+  box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
+  transform: scale(0.97);
+}
+
+a[href$="/sign-up"]:focus-visible,
+a[href$="sign-up"]:focus-visible {
+  outline: 2px solid var(--fimby-focus-ring, #3A7D8C);
+  outline-offset: 2px;
+}
+
 .fimby-vf-auth__messages {
   margin-bottom: 1rem;
 }
