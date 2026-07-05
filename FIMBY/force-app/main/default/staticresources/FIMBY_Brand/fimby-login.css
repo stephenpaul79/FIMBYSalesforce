@@ -215,6 +215,7 @@ a[href$="/sign-up"],
 a[href$="sign-up"] {
   display: block;
   width: 100%;
+  max-width: 324px;
   margin: 24px auto 0;
   box-sizing: border-box;
   padding: 12px 20px;
