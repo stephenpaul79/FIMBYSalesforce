@@ -217,9 +217,10 @@ a[href$="sign-up"] {
   width: fit-content;
   margin: 20px auto 0;
   box-sizing: border-box;
-  padding: 14px 36px;
-  min-height: 52px;
-  font-size: 1.0625rem;
+  padding: 16px 44px;
+  min-height: 56px;
+  min-width: 12rem;
+  font-size: 1.125rem;
   font-weight: 600;
   line-height: 24px;
   text-align: center;
@@ -250,6 +251,27 @@ a[href$="/sign-up"]:focus-visible,
 a[href$="sign-up"]:focus-visible {
   outline: 2px solid var(--fimby-focus-ring, #3A7D8C);
   outline-offset: 2px;
+}
+
+/* ── Sign In button → match Sign Up proportions ──────────────────
+   The stock login button is slds-button_stretch (full-width, short).
+   Constrain the width, add height, centre it, and bump the label so
+   it mirrors the Sign Up outline button directly below it.
+   ────────────────────────────────────────────────────────────────── */
+community_login-login-form button.comm-login-form__login-button {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: fit-content !important;
+  min-width: 12rem;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+  min-height: 56px !important;
+  padding: 16px 44px !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  border-radius: var(--fimby-btn-radius, 12px) !important;
 }
 
 .fimby-vf-auth__messages {
