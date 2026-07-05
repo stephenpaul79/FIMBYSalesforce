@@ -1,16 +1,38 @@
 ﻿<template>
     <footer class="site-footer">
         <div class="footer-container">
+            <div class="footer-credit">
+                Made by neighbours in Vancouver's Downtown Eastside,
+                <a href="https://www.strathconavineyard.com/" target="_blank" rel="noopener noreferrer" class="footer-link">supported by Strathcona Vineyard</a>.
+            </div>
+
             <div class="territory-line">
                 FIMBY operates on the unceded traditional territories of the xʷməθkʷəy̓əm, Sḵwx̱wú7mesh, and səlilwətaɬ Nations.
             </div>
 
-            <div class="nav-line">
-                <a href="https://fimby.com/" target="_self" class="footer-link">Home</a> · <a href="https://fimby.com/how-it-works/" target="_self" class="footer-link">How it works</a> · <a href="https://fimby.com/our-approach/" target="_self" class="footer-link">Our approach</a> · <a href="https://fimby.com/vision/" target="_self" class="footer-link">Our vision</a> · <a href="https://fimby.com/faq/" target="_self" class="footer-link">FAQ</a> · <a href="https://fimby.com/contact/" target="_self" class="footer-link">Contact</a> · Made by neighbours in Vancouver's Downtown Eastside, <a href="https://www.strathconavineyard.com/" target="_self" class="footer-link">supported by Strathcona Vineyard</a>
+            <div class="footer-app">
+                <p class="platform-bridge platform-bridge--footer">
+                    Same account, same neighbourhood: use FIMBY in your
+                    <a href="https://our.fimby.com/login" target="_blank" rel="noopener noreferrer" class="footer-link">browser</a>
+                    or get the app.
+                </p>
+                <div class="store-badges store-badges--center store-badges--mini footer-store-badges">
+                    <a href={iosStoreUrl} class="store-badge store-badge--apple" target="_blank" rel="noopener noreferrer">
+                        <img src={appStoreBadgeUrl} alt="Download FIMBY on the App Store" />
+                    </a>
+                    <a href={androidStoreUrl} class="store-badge store-badge--google" target="_blank" rel="noopener noreferrer">
+                        <img src={googlePlayBadgeUrl} alt="Get FIMBY on Google Play" />
+                    </a>
+                </div>
             </div>
 
             <div class="legal-line">
-                <a href="https://fimby.com/terms-of-service/" target="_self" class="footer-link">Terms</a> · <a href="https://fimby.com/community-group-agreement/" target="_self" class="footer-link">Community Group Agreement</a> · <a href="https://fimby.com/privacy-policy/" target="_self" class="footer-link">Privacy</a> · <a href="https://fimby.com/community-standards/" target="_self" class="footer-link">Community Standards</a> · <a href="https://fimby.com/delete-account/" target="_self" class="footer-link">Delete account</a> · <a href="/account-paused" target="_self" class="footer-link">Account in grace period? Restore it</a>
+                <a href="https://fimby.com/terms-of-service/" target="_blank" rel="noopener noreferrer" class="footer-link">Terms</a>
+                <a href="https://fimby.com/privacy-policy/" target="_blank" rel="noopener noreferrer" class="footer-link">Privacy</a>
+                <a href="https://fimby.com/community-standards/" target="_blank" rel="noopener noreferrer" class="footer-link">Community Standards</a>
+                <a href="https://fimby.com/community-group-agreement/" target="_blank" rel="noopener noreferrer" class="footer-link">Community Group Agreement</a>
+                <a href="https://fimby.com/delete-account/" target="_blank" rel="noopener noreferrer" class="footer-link">Delete account</a>
+                <a href="/account-paused" onclick={handleAccountPausedNav} class="footer-link">Account in grace period? Restore it</a>
             </div>
         </div>
     </footer>
