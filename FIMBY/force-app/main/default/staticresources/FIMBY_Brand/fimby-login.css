@@ -228,7 +228,7 @@ a[href$="sign-up"] {
   text-align: center;
   text-decoration: none !important;
   color: var(--fimby-text-primary, #4A3526) !important;
-  background-color: var(--fimby-surface-card, #FAF7F2) !important;
+  background-color: transparent !important;
   border: 1px solid var(--fimby-text-primary, #4A3526) !important;
   border-radius: 10px;
   box-shadow: none;
