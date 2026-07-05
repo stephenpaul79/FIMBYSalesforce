@@ -236,14 +236,14 @@ a[href$="sign-up"] {
 
 a[href$="/sign-up"]:hover,
 a[href$="sign-up"]:hover {
-  background-color: var(--fimby-text-primary, #4A3526);
-  color: var(--fimby-surface-card, #FAF7F2) !important;
+  background-color: var(--fimby-hover-bg, #EBE6DD);
+  border-color: var(--fimby-text-strong, #261A11);
 }
 
 a[href$="/sign-up"]:active,
 a[href$="sign-up"]:active {
-  background-color: var(--fimby-text-strong, #261A11);
-  color: var(--fimby-surface-card, #FAF7F2) !important;
+  background-color: var(--fimby-pressed-bg, #E0D9CF);
+  border-color: var(--fimby-text-strong, #261A11);
   box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
   transform: scale(0.97);
 }
@@ -275,6 +275,17 @@ community_login-login-form button.comm-login-form__login-button {
   letter-spacing: 0.01em;
   border-radius: 10px !important;
   box-shadow: 0 1px 2px rgba(38, 26, 17, 0.12) !important;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+community_login-login-form button.comm-login-form__login-button:hover {
+  background-color: var(--fimby-btn-primary-bg-hover, #336F7D) !important;
+}
+
+community_login-login-form button.comm-login-form__login-button:active {
+  background-color: var(--fimby-btn-primary-bg-active, #2B5F6D) !important;
+  box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(38, 26, 17, 0.12)) !important;
+  transform: scale(0.98);
 }
 
 /* ── Centre the "Forgot your password?" link ─────────────────────── */
