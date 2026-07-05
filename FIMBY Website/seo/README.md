@@ -16,7 +16,7 @@ Single source of truth for search/AI entity consistency across **fimby.com**, **
 
 ## Code changes (local)
 
-- [`home-revised.html`](../home-revised.html) — `MobileApplication` + `WebApplication` JSON-LD, canonical hero copy, platform bridge line
+- [`home-revised.html`](../home-revised.html) — `MobileApplication` + `WebApplication` JSON-LD, platform bridge line (**homepage hero copy unchanged**)
 - [`faq.html`](../faq.html) — `FAQPage` JSON-LD (27 Q&As), aligned app/website answer
 - [`footer.html`](../footer.html) — platform bridge line
 - [`custom-css.css`](../custom-css.css) — `.platform-bridge` styles

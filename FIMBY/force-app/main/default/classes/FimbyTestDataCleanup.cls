@@ -1,9 +1,8 @@
 /**
- * Test-data cleanup utility for the Playwright end-to-end suite.
+ * Test-data cleanup utility for prefixed QA / automation runs.
  *
- * Records created by E2E specs are anchored with a `[E2E] <runId>` title prefix
- * on the user-visible name field. After each test, Node-side cleanup shells
- * `sf apex run` against this class.
+ * Records created during a run are anchored with a `[E2E] <runId>` title prefix
+ * on the user-visible name field. Invoked via `sf apex run` against this class.
  *
  * Safety rules (enforced here, not on the caller):
  *   1. Prefix must be at least `MIN_PREFIX_LENGTH` chars and contain a space, to

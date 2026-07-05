@@ -6,8 +6,10 @@
     "logo": "https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png",
     "language": "en-CA"
   },
-  "canonicalParagraph": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you — ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you.",
-  "bridgeSentence": "FIMBY works in any browser at our.fimby.com and as a free app for iPhone and Android — same account, same neighbourhood.",
+  "homepageHeroLead": "Family In My Backyard (FIMBY) is a shared space for the people in your neighbourhood: to ask for help, offer what you have, and stay connected in small everyday ways. Not a city-wide feed. Just the people around you.",
+  "canonicalParagraph": "FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform for the people who actually live near you: ask for help, offer what you have, lend and borrow, gather, and share life in small everyday ways. Not a city-wide feed. Just the people around you.",
+  "_note": "homepageHeroLead is the live homepage tagline — do not replace it. canonicalParagraph is for meta descriptions, JSON-LD, and store listings only.",
+  "bridgeSentence": "FIMBY works in any browser at our.fimby.com and as a free app for iPhone and Android: same account, same neighbourhood.",
   "platformLine": "Same account, same neighbourhood — use FIMBY in your browser or get the app.",
   "urls": {
     "marketing": "https://fimby.com/",

@@ -600,7 +600,22 @@ footer .territory-line {
       .nav { display: none; }
       section { padding: 28px 0; }
       .hero { padding-top: 14px; padding-bottom: 20px; }
-      .container { width: min(var(--page-max), calc(100% - 20px)); }
+      .container {
+        width: 100%;
+        max-width: var(--page-max);
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        margin-inline: auto;
+        box-sizing: border-box;
+      }
+      .container-inset {
+        width: 100%;
+        max-width: 720px;
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        margin-inline: auto;
+        box-sizing: border-box;
+      }
       .hero h1 { font-size: clamp(2.3rem,12vw,3.8rem); line-height: 1.02; }
       .card-header { flex-wrap: wrap; }
       .card-type-badge { order: 3; margin-top: 6px; }
@@ -1431,7 +1446,7 @@ footer .territory-line {
 }
 .feature-block-icon { width: 44px; height: 44px; object-fit: contain; }
 .feature-block h4 { font-size: 0.95rem; font-weight: 700; color: var(--fimby-text-primary); margin-bottom: 4px; }
-.feature-block p { font-size: 0.88rem; color: var(--fimby-text-secondary); line-height: 1.5; }
+.feature-block p { font-size: 0.88rem; color: var(--fimby-text-secondary); line-height: 1.5; max-width: none; }
 
 /* Thermometer */
 .thermometer-wrap { margin-top: 10px; }
@@ -1897,9 +1912,33 @@ details[open] summary { color: var(--fimby-earth-teal); }
   .journey-grid .journey-visual, .journey-grid.reverse .journey-visual { order: 2; }
   .gather-grid { grid-template-columns: 1fr !important; }
   .tier-grid { grid-template-columns: 1fr; max-width: 360px; margin-left: auto; margin-right: auto; }
-  .feature-blocks { grid-template-columns: 1fr; }
-  .feature-block { grid-template-columns: 1fr; text-align: center; }
-  .feature-block-icon { margin: 0 auto; }
+  .feature-blocks { grid-template-columns: 1fr; width: 100%; min-width: 0; }
+  .feature-block {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    grid-template-columns: unset;
+  }
+  .feature-block-icon { margin-inline: auto; flex-shrink: 0; }
+  .feature-block > div { width: 100%; min-width: 0; max-width: none; }
+  .feature-block h4 { text-align: center; text-wrap: wrap; }
+  .feature-block p {
+    display: block;
+    text-align: left;
+    width: 100%;
+    max-width: none;
+    text-wrap: wrap;
+    margin-right: 0;
+    padding-right: 0;
+  }
+  .feature-block .thermometer-wrap,
+  .feature-block .notif-toggles,
+  .feature-block .celebration-demo { width: 100%; max-width: none; margin: 0; }
+  .feature-block .celebration-demo,
+  .feature-block .celebration-wrapper { text-align: left; align-items: flex-start; }
+  .feature-block .celebration-demo-row { justify-content: flex-start; }
+  .feature-block .celebration-note { text-align: left; }
   .onb-pages { flex-direction: column; align-items: center; }
   .approach-grid, .approach-grid.reverse { grid-template-columns: 1fr; }
   .approach-grid .approach-text,
@@ -1970,10 +2009,6 @@ details[open] summary { color: var(--fimby-earth-teal); }
   --wp--custom--spacing--outer: 0px !important;
 }
 
-@media (max-width: 760px) {
-  .container { width: min(var(--page-max), calc(100% - 48px)) !important; }
-  .container-inset { width: min(720px, calc(100% - 48px)) !important; }
-}
 
 
 
@@ -2191,6 +2226,7 @@ details[open] summary { color: var(--fimby-earth-teal); }
   right: 0;
   z-index: 35;
   padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
   background-color: var(--fimby-surface-card);
   border-top: 1px solid var(--fimby-border-subtle);
   box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
@@ -2493,7 +2529,9 @@ a.capability-card {
   gap: 24px;
 }
 /* Widen the final-CTA box so the two columns get more room and land closer in height. */
-.final-cta .container-inset { width: min(900px, calc(100% - 32px)); }
+@media (min-width: 761px) {
+  .final-cta .container-inset { width: min(900px, calc(100% - 32px)); }
+}
 @media (min-width: 768px) {
   /* Let each column hug its own content instead of stretching to equal height —
      the lighter secondary box reads as intentional hierarchy, no dead space. */
@@ -2935,7 +2973,17 @@ a.capability-card {
 }
 
 @media (max-width: 760px) {
-  .hero p.lead { margin-bottom: 14px; }
+  .hero p.lead { margin-bottom: 14px; max-width: none; }
+  .section-copy p,
+  .final-box p { max-width: none; }
+  .final-cta .container-inset {
+    width: 100%;
+    max-width: 900px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
   .hero-note { margin-top: 8px; margin-bottom: 14px; }
   .hero .button-row { gap: 10px; }
   .hero .store-badges {
@@ -3006,28 +3054,13 @@ a.capability-card {
   }
   .dual-cta-col .bridge-steps { align-self: stretch; }
   .bridge-step { align-items: flex-start; }
-  .step-text { text-align: left; text-wrap: pretty; line-height: 1.45; }
+  .step-text { text-align: left; text-wrap: wrap; line-height: 1.45; }
   .step-number { margin-top: 1px; }
 
   /* How it works — editorial bands stay left; mock grids collapse to 1 column */
   .journey-text p { max-width: none; }
-  /* Feature cards — centered icon + title, full-width left body */
-  .feature-block {
-    grid-template-columns: 1fr;
-    text-align: left;
-    gap: 12px;
-    align-items: stretch;
-  }
-  .feature-block-icon { margin: 0 auto; }
-  .feature-block > div { width: 100%; min-width: 0; }
-  .feature-block h4 { text-align: center; }
-  .feature-block p { text-align: left; text-wrap: pretty; }
-  .feature-block .celebration-demo,
-  .feature-block .celebration-wrapper { text-align: left; align-items: flex-start; }
-  .feature-block .celebration-demo-row { justify-content: flex-start; }
-  .feature-block .celebration-note { text-align: left; }
-  .feature-block .notif-toggles,
-  .feature-block .thermometer-wrap { width: 100%; margin: 0; }
+  html, body, #page, .entry-content, .wp-site-blocks { max-width: 100%; overflow-x: clip; }
+  .device-frame { max-width: 100%; }
   .library-type-grid-mock {
     grid-template-columns: 1fr;
     max-width: none;
@@ -3056,7 +3089,7 @@ a.capability-card {
 
   /* Our Approach + Vision — editorial bands on phone */
   .approach-text p,
-  .approach-text .pull-quote { text-wrap: pretty; max-width: none; }
+  .approach-text .pull-quote { text-wrap: wrap; max-width: none; }
   .vision-subintro { max-width: none; }
   .vision-funnel-banner { padding: 14px 16px; font-size: 0.88rem; }
   /* Standalone section photos only — not phone-mockup shell icons inside .device-frame */
