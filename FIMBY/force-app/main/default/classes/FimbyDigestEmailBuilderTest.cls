@@ -83,7 +83,6 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(result.html.contains('border-radius:8px'), 'Should use rich card layout');
         System.assert(result.html.contains('border-radius:10px'), 'Should contain badge pills');
         System.assert(result.html.contains('open &rsaquo;'), 'Cards should carry the shared open link');
-        System.assert(result.html.contains('tap any card to open it in FIMBY'), 'Should include the tap hint');
         // Stories/library carry image URLs in the factory, so the fixed-thumbnail cell renders.
         System.assert(result.html.contains('class="dg-img"'), 'Cards with images should use the fixed thumbnail cell');
     }

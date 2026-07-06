@@ -99,7 +99,7 @@ public without sharing class FimbyDigestEmailBuilder {
         String resolutionHtml = buildResolutionSection(neighbourhoodId, frequency, windowStartDt, windowEndDt, feedCardCount);
         String anchorHtml = buildAnchorCard();
 
-        result.html = buildTapHint() + resolutionHtml + storiesHtml + asksOffersHtml + eventsHtml
+        result.html = resolutionHtml + storiesHtml + asksOffersHtml + eventsHtml
             + bulkBuysHtml + libraryHtml + anchorHtml;
         return result;
     }
@@ -811,11 +811,6 @@ public without sharing class FimbyDigestEmailBuilder {
         if (parts.isEmpty()) { return ''; }
         return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">'
             + String.join(parts, ' &middot; ') + '</p>';
-    }
-
-    private static String buildTapHint() {
-        return '<p style="' + FimbyEmailHtmlBuilder.F + 'text-align:center;font-size:13px;font-style:italic;'
-            + 'color:' + TEXT_SECONDARY + ';margin:0 0 12px;padding:0 12px;">tap any card to open it in FIMBY</p>';
     }
 
     private static String snippetRow(String description) {
