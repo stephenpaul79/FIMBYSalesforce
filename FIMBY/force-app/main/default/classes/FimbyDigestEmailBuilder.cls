@@ -16,12 +16,14 @@
 public without sharing class FimbyDigestEmailBuilder {
 
     private static final Integer MAX_CARDS_PER_SECTION = 5;
-    private static final Integer SNIPPET_LENGTH = 280;
+    private static final Integer SNIPPET_LENGTH = 140;
 
-    // Adaptive card layout: badge/avatar header and CTA footer span the full card width;
-    // only the title/body share a two-column row with the photo (text left, image right).
-    // That row is percentage-based (34% image / 66% text) so the photo scales to ~1/3 on
-    // every viewport and keeps its true aspect ratio (no crop). See buildSplitCardRow.
+    // Compact card layout (email real-estate efficiency): the badge + linked title and the body
+    // snippet sit in the left column; a fixed 140x120 cropped thumbnail sits in the right column
+    // (see FimbyEmailHtmlBuilder.buildDigestImageCell). A shared footer row carries the avatar +
+    // first-name byline (left) and a single quiet "open ›" link (right) — the title, thumbnail
+    // and open link all point at the record, so there is no per-type CTA button. Cards with no
+    // image collapse to a single column with the same footer.
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
 
     private static String stripTrailingSlash(String url) {
@@ -97,7 +99,7 @@ public without sharing class FimbyDigestEmailBuilder {
         String resolutionHtml = buildResolutionSection(neighbourhoodId, frequency, windowStartDt, windowEndDt, feedCardCount);
         String anchorHtml = buildAnchorCard();
 
-        result.html = resolutionHtml + storiesHtml + asksOffersHtml + eventsHtml
+        result.html = buildTapHint() + resolutionHtml + storiesHtml + asksOffersHtml + eventsHtml
             + bulkBuysHtml + libraryHtml + anchorHtml;
         return result;
     }
@@ -647,54 +649,44 @@ public without sharing class FimbyDigestEmailBuilder {
         String badgeLabel = rt == 'Need' ? 'ASK' : 'OFFER';
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
 
-        String header = badgeAvatarRow(badgeLabel, rt, post.Contact__r);
-        String middle = titleRow(post.Name) + snippetRow(post.Details__c);
-        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Respond', ctaUrl, 'reply.png');
-        return buildCard(post.Image_1_URL__c, header, middle, footer);
+        String leftBody = badgeTitleRow(badgeLabel, rt, post.Name, ctaUrl)
+            + snippetRow(post.Details__c);
+        return buildCard(post.Image_1_URL__c, leftBody, post.Contact__r, ctaUrl);
     }
 
     private static String buildEventCard(Needs_Offers__c evt) {
         String evtType = String.isNotBlank(evt.Event_Type__c) ? evt.Event_Type__c : 'Gathering';
         String badgeLabel;
-        String ctaLabel;
         if (evtType == 'Community_Event') {
             badgeLabel = 'COMMUNITY EVENT';
-            ctaLabel = 'I\'m Interested';
         } else if (evtType == 'Open_Event') {
             badgeLabel = 'EVENT';
-            ctaLabel = 'I\'m Going';
         } else {
             badgeLabel = 'GATHERING';
-            ctaLabel = 'RSVP';
         }
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', evt.Id);
         String freqBadge = formatRecurrenceFrequencyBadge(
             evt.Recurrence_Frequency__c,
             evt.Recurrence_Interval__c
         );
-        String freqPill = String.isNotBlank(freqBadge)
-            ? FimbyEmailHtmlBuilder.buildBadgePill(freqBadge, FimbyEmailHtmlBuilder.getBadgeColor(evtType), null)
-            : null;
+        String recurrenceWord = String.isNotBlank(freqBadge) ? freqBadge.toLowerCase() : null;
 
-        String header = badgeAvatarRow(badgeLabel, evtType, freqPill, evt.Contact__r);
-        String middle = titleRow(evt.Name)
-            + FimbyEmailHtmlBuilder.buildDateLocationLine(evt.Start_Date__c, evt.Location__c)
+        String leftBody = badgeTitleRow(badgeLabel, evtType, evt.Name, ctaUrl)
+            + eventMetaLine(evt.Start_Date__c, evt.Location__c, recurrenceWord)
             + snippetRow(evt.Details__c);
-        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton(ctaLabel, ctaUrl, FimbyEmailHtmlBuilder.getCtaIcon(evtType));
-        return buildCard(evt.Image_1_URL__c, header, middle, footer);
+        return buildCard(evt.Image_1_URL__c, leftBody, evt.Contact__r, ctaUrl);
     }
 
     private static String buildBulkBuyCard(Needs_Offers__c bb) {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
-        String header = badgeAvatarRow('BULK BUY', 'Bulk_Buy', bb.Contact__r);
-        String middle = titleRow(bb.Name) + snippetRow(bb.Details__c);
-        String footer = FimbyEmailHtmlBuilder.buildThermometer(
+        String leftBody = badgeTitleRow('BULK BUY', 'Bulk_Buy', bb.Name, ctaUrl)
+            + snippetRow(bb.Details__c)
+            + FimbyEmailHtmlBuilder.buildThermometer(
                 bb.Total_Reserved__c, bb.Total_Quantity__c,
                 bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
-            )
-            + FimbyEmailHtmlBuilder.buildCenteredCtaButton('Reserve-A-Share', ctaUrl, 'buy.png');
-        return buildCard(bb.Image_1_URL__c, header, middle, footer);
+            );
+        return buildCard(bb.Image_1_URL__c, leftBody, bb.Contact__r, ctaUrl);
     }
 
     private static String buildStoryCard(Story__c story) {
@@ -703,10 +695,9 @@ public without sharing class FimbyDigestEmailBuilder {
         String ctaUrl = FimbySettings.getUrl('Story', story.Id);
         String body = String.isNotBlank(story.Message_Preview__c) ? story.Message_Preview__c : story.Message__c;
 
-        String header = badgeAvatarRow(badgeLabel, storyType, story.Posted_By__r);
-        String middle = titleRow(story.Name) + snippetRow(body);
-        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Read More', ctaUrl, 'comment.png');
-        return buildCard(story.Image_URL__c, header, middle, footer);
+        String leftBody = badgeTitleRow(badgeLabel, storyType, story.Name, ctaUrl)
+            + snippetRow(body);
+        return buildCard(story.Image_URL__c, leftBody, story.Posted_By__r, ctaUrl);
     }
 
     private static String buildLibraryCard(Library_Item__c item) {
@@ -715,10 +706,9 @@ public without sharing class FimbyDigestEmailBuilder {
         // Section heading already says "Library"; show the category as the single badge,
         // falling back to LIBRARY only when the item has no category.
         String badgeLabel = String.isNotBlank(item.Category__c) ? item.Category__c : 'LIBRARY';
-        String header = badgeAvatarRow(badgeLabel, 'Library', item.Owner_Contact__r);
-        String middle = titleRow(item.Name) + snippetRow(item.Description__c);
-        String footer = FimbyEmailHtmlBuilder.buildCenteredCtaButton('Borrow', ctaUrl, 'borrow.png');
-        return buildCard(item.Image_URL__c, header, middle, footer);
+        String leftBody = badgeTitleRow(badgeLabel, 'Library', item.Name, ctaUrl)
+            + snippetRow(item.Description__c);
+        return buildCard(item.Image_URL__c, leftBody, item.Owner_Contact__r, ctaUrl);
     }
 
     /* ---------------------------------------------------------------
@@ -731,74 +721,107 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Assembles a feed card in three stacked bands: the badge + avatar header
-     * and the CTA footer each span the full card width, while only the title/body share a
-     * two-column row with the photo (text left, image right). Pulling the widest, least-
-     * wrappable elements (the name row and the button) out of the narrow column, plus a
-     * percentage-based image column (see buildSplitCardRow) that scales to ~1/3 of the row on
-     * every viewport, keeps cards readable on ~375px phones where a fixed-width photo would
-     * otherwise crush the text. The image keeps its true aspect ratio (no crop). Cards with
-     * no image render the three bands stacked in a single full-width column.
+     * @description Assembles a compact feed card. The left column carries the badge + linked
+     * title and the body snippet; the right column carries a fixed 140x120 cropped thumbnail
+     * (both title and thumbnail link to the record). A shared full-width footer row carries the
+     * avatar + first-name byline (left) and a single quiet "open ›" link (right) on one baseline,
+     * so there is no per-type CTA button. Cards with no image collapse to a single column with
+     * the same footer.
      */
-    private static String buildCard(String imageUrl, String headerHtml, String middleHtml, String footerHtml) {
-        if (String.isBlank(imageUrl)) {
-            return openCard() + openCardBody() + headerHtml + middleHtml + footerHtml + closeCardBody();
+    private static String buildCard(String imageUrl, String leftBodyHtml, SObject contactRef, String ctaUrl) {
+        String imageCell = FimbyEmailHtmlBuilder.buildDigestImageCell(imageUrl, ctaUrl);
+        String footer = bylineOpenFooter(contactRef, ctaUrl);
+
+        if (String.isBlank(imageCell)) {
+            return openCard()
+                + '<tr><td style="padding:12px 16px 2px;">' + leftBodyHtml + '</td></tr>'
+                + '<tr><td style="padding:0 16px 10px;">' + footer + '</td></tr>'
+                + '</table>';
         }
 
         return openCard()
-            + '<tr><td colspan="2" style="padding:14px 16px 8px;">' + headerHtml + '</td></tr>'
-            + FimbyEmailHtmlBuilder.buildSplitCardRow(imageUrl, middleHtml)
-            + '<tr><td colspan="2" style="padding:8px 16px 14px;">' + footerHtml + '</td></tr>'
+            + '<tr>'
+            + '<td valign="top" style="padding:12px 6px 2px 16px;">' + leftBodyHtml + '</td>'
+            + imageCell
+            + '</tr>'
+            + '<tr><td colspan="2" style="padding:0 16px 10px;">' + footer + '</td></tr>'
             + '</table>';
     }
 
-    private static String openCardBody() {
-        return '<tr><td style="padding:12px 16px;">';
-    }
-
-    private static String closeCardBody() {
-        return '</td></tr></table>';
-    }
-
-    private static String badgeAvatarRow(String label, String typeKey, SObject contactRef) {
-        return badgeAvatarRow(label, typeKey, null, contactRef);
-    }
-
-    private static String badgeAvatarRow(String label, String typeKey, String extraPillHtml, SObject contactRef) {
-        String leftHtml = FimbyEmailHtmlBuilder.buildBadgePill(label,
+    /**
+     * @description Badge + linked title on one row. The badge is vertically centred against the
+     * title and never wraps; the title is a link to the record (large, honest tap target).
+     */
+    private static String badgeTitleRow(String label, String typeKey, String title, String ctaUrl) {
+        String badge = FimbyEmailHtmlBuilder.buildBadgePill(label,
             FimbyEmailHtmlBuilder.getBadgeColor(typeKey),
             FimbyEmailHtmlBuilder.getBadgeIcon(typeKey));
-        if (String.isNotBlank(extraPillHtml)) {
-            leftHtml += extraPillHtml;
+        String titleHtml = '';
+        if (String.isNotBlank(title)) {
+            titleHtml = '<a href="' + ctaUrl + '" style="' + FimbyEmailHtmlBuilder.F
+                + 'font-size:16px;font-weight:700;color:' + TEXT_HEADING
+                + ';text-decoration:none;vertical-align:middle;line-height:1.3;">' + escHtml(title) + '</a>';
         }
+        return '<p style="margin:0 0 4px;line-height:1.3;">'
+            + '<span style="white-space:nowrap;margin-right:8px;">' + badge + '</span>'
+            + titleHtml + '</p>';
+    }
 
-        String rightHtml = '';
+    /**
+     * @description Shared card footer: avatar + first-name byline on the left, a single quiet
+     * "open ›" link on the right, both pointing at the record. First name only (per design) so
+     * long full names never wrap the footer.
+     */
+    private static String bylineOpenFooter(SObject contactRef, String ctaUrl) {
+        String leftHtml = '&nbsp;';
         if (contactRef != null) {
             String imageUrl = (String) contactRef.get('Display_Avatar_URL__c');
             String firstName = (String) contactRef.get('FirstName');
-            String fullName = (String) contactRef.get('Full_Name__c');
-            rightHtml = FimbyEmailHtmlBuilder.buildAvatar(imageUrl, firstName, null)
-                + '<span style="' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:' + TEXT_SECONDARY + ';vertical-align:middle;">'
-                + escHtml(fullName) + '</span>';
+            leftHtml = FimbyEmailHtmlBuilder.buildAvatar(imageUrl, firstName, null)
+                + '<span style="' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:' + TEXT_SECONDARY
+                + ';vertical-align:middle;">' + escHtml(firstName) + '</span>';
         }
-
-        return '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;">'
+        String openHtml = '<a href="' + ctaUrl + '" style="' + FimbyEmailHtmlBuilder.F
+            + 'font-size:13px;font-weight:700;letter-spacing:0.3px;color:' + CTA_BG
+            + ';text-decoration:none;white-space:nowrap;">open &rsaquo;</a>';
+        return '<table cellpadding="0" cellspacing="0" border="0" width="100%">'
             + '<tr>'
             + '<td style="vertical-align:middle;">' + leftHtml + '</td>'
-            + '<td align="right" style="vertical-align:middle;">' + rightHtml + '</td>'
+            + '<td align="right" style="vertical-align:middle;">' + openHtml + '</td>'
             + '</tr></table>';
     }
 
-    private static String titleRow(String title) {
-        if (String.isBlank(title)) { return ''; }
-        return '<p style="margin:0 0 4px;' + FimbyEmailHtmlBuilder.F + 'font-size:17px;font-weight:600;color:' + TEXT_HEADING + ';">'
-            + escHtml(title) + '</p>';
+    /**
+     * @description Single event meta line: date · location · recurrence, in whatever combination
+     * is present. Recurrence folds in here (lowercase) rather than a second badge so it never
+     * stacks the header row on narrow phones.
+     */
+    private static String eventMetaLine(Date startDate, String location, String recurrenceWord) {
+        List<String> parts = new List<String>();
+        if (startDate != null) {
+            Datetime dt = Datetime.newInstance(startDate, Time.newInstance(0, 0, 0, 0));
+            parts.add('&#128197; ' + dt.format('EEE, MMM d'));
+        }
+        if (String.isNotBlank(location)) {
+            parts.add('&#128205; ' + escHtml(location));
+        }
+        if (String.isNotBlank(recurrenceWord)) {
+            parts.add(escHtml(recurrenceWord));
+        }
+        if (parts.isEmpty()) { return ''; }
+        return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">'
+            + String.join(parts, ' &middot; ') + '</p>';
+    }
+
+    private static String buildTapHint() {
+        return '<p style="' + FimbyEmailHtmlBuilder.F + 'text-align:center;font-size:13px;font-style:italic;'
+            + 'color:' + TEXT_SECONDARY + ';margin:0 0 12px;padding:0 12px;">tap any card to open it in FIMBY</p>';
     }
 
     private static String snippetRow(String description) {
         String snippet = truncate(description, SNIPPET_LENGTH);
         if (String.isBlank(snippet)) { return ''; }
-        return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:15px;color:' + TEXT_BODY + ';line-height:1.5;">'
+        return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:' + TEXT_BODY + ';line-height:1.5;">'
             + escHtml(snippet) + '</p>';
     }
 
@@ -817,7 +840,14 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static String truncate(String text, Integer maxLen) {
         if (String.isBlank(text) || text.length() <= maxLen) { return text; }
-        return text.substring(0, maxLen) + '...';
+        String cut = text.substring(0, maxLen);
+        Integer lastSpace = cut.lastIndexOf(' ');
+        // Break on the last word boundary unless that would trim off more than ~20% of the
+        // snippet (e.g. one very long token), in which case keep the hard cut.
+        if (lastSpace > maxLen - (maxLen / 5)) {
+            cut = cut.substring(0, lastSpace);
+        }
+        return cut.trim() + '\u2026';
     }
 
     private static String escHtml(String input) {

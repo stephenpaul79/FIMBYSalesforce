@@ -269,6 +269,11 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<head><meta charset="UTF-8"/>'
             + '<meta name="viewport" content="width=device-width,initial-scale=1.0"/>'
             + '<title>' + safeDocumentTitle + '</title>'
+            + '<style>@media only screen and (max-width:480px){'
+            + '.dg-imgcell{width:100px!important;padding-left:6px!important;}'
+            + '.dg-imgwrap{width:100px!important;height:92px!important;}'
+            + '.dg-img{width:100px!important;height:92px!important;}'
+            + '}</style>'
             + '</head>'
             + '<body style="margin:0;padding:0;background-color:' + BG_PAGE + ';font-family:' + FONT_STACK + ';">'
             + '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:' + BG_PAGE + ';">'
@@ -851,6 +856,28 @@ public without sharing class FimbyEmailHtmlBuilder {
             + 'style="display:block;width:100%;height:auto;border:0;border-radius:8px;" />'
             + '</td>';
         return '<tr>' + bodyCell + imgCell + '</tr>';
+    }
+
+    /**
+     * @description Fixed-size right-hand image cell for digest cards. The photo is capped to a
+     * 140x120 box (100x92 on phones via the .dg-* media-query classes) and cropped with
+     * object-fit:cover in modern clients; desktop Outlook honours the width/height attributes
+     * and bounds the box (mild aspect distortion, no overflow). Wrapped in a link so the whole
+     * thumbnail opens the record. Returns '' (no cell) when there is no image, so the caller
+     * renders a single-column card. See FimbyDigestEmailBuilder.buildCard.
+     */
+    public static String buildDigestImageCell(String imageUrl, String linkUrl) {
+        String url = completeImageUrl(imageUrl);
+        if (String.isBlank(url)) { return ''; }
+        String img = '<span class="dg-imgwrap" style="display:block;width:140px;height:120px;overflow:hidden;'
+            + 'border-radius:8px;background:#EEEEEE;">'
+            + '<img class="dg-img" src="' + url + '" width="140" height="120" alt="" '
+            + 'style="width:140px;height:120px;object-fit:cover;display:block;border:0;" /></span>';
+        String linked = String.isNotBlank(linkUrl)
+            ? '<a href="' + linkUrl + '" style="text-decoration:none;border:0;">' + img + '</a>'
+            : img;
+        return '<td class="dg-imgcell" width="140" valign="top" style="width:140px;padding:12px 16px 2px 6px;">'
+            + linked + '</td>';
     }
 
     public static String buildBadgePill(String label, String bgColor, String iconFilename) {

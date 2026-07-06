@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FIMBY — Digest Email Redesign Mockup (draft)</title>
+<style>
+  /* ------------------------------------------------------------------
+     PROTOTYPE ONLY. This mirrors the intended digest-email card markup
+     (table-based, inline-style-friendly) so we can eyeball the layout
+     and resize the window BEFORE porting it into FimbyDigestEmailBuilder.
+     The .note banners and the page chrome are NOT part of the email.
+     Real email will use server-side text truncation (~140 chars) instead
+     of CSS clamping, and Base64/absolute image URLs instead of picsum.
+     ------------------------------------------------------------------ */
+
+  body {
+    margin: 0;
+    background: #EDE7DE;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #2D2D2D;
+  }
+
+  .page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px 12px 48px;
+  }
+
+  /* -- prototype-only helper chrome ---------------------------------- */
+  .proto-bar {
+    background: #2D2D2D; color: #fff; padding: 12px 16px; border-radius: 8px;
+    font-size: 13px; line-height: 1.5; margin-bottom: 18px;
+  }
+  .proto-bar strong { color: #F2C879; }
+  .proto-bar code { background: rgba(255,255,255,.15); padding: 1px 5px; border-radius: 4px; }
+  .note {
+    font-size: 12px; color: #8a6d3b; background: #FBF3E2; border: 1px dashed #E3C98A;
+    border-radius: 6px; padding: 6px 10px; margin: 0 0 8px;
+  }
+
+  /* -- email header (simplified) ------------------------------------- */
+  .email-head { padding: 4px 6px 14px; }
+  .email-head .logo { font-size: 22px; font-weight: 800; color: #476B4C; letter-spacing: -.5px; }
+  .email-head .logo span { color: #C9772F; }
+  .email-head .hello { font-size: 15px; color: #4A4A4A; margin: 10px 0 2px; }
+  .email-head .sub { font-size: 18px; font-weight: 700; color: #2D2D2D; margin: 0; }
+  .tap-hint { font-size: 13px; font-style: italic; color: #6B6B6B; margin: 10px 0 0; }
+
+  /* -- section header ------------------------------------------------- */
+  .section {
+    border-radius: 8px; padding: 6px 12px; margin: 20px 0 8px;
+    color: #fff; font-size: 14px; font-weight: 600;
+  }
+  .sec-ochre     { background: #7D6234; }
+  .sec-sage      { background: #476B4C; }
+  .sec-teal      { background: #357280; }
+  .sec-driftwood { background: #6B5E50; }
+
+  /* -- card ----------------------------------------------------------- */
+  .card {
+    width: 100%; border-collapse: separate; background: #FFFFFF;
+    border: 1px solid #E8E0D6; border-radius: 8px; overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .card td { vertical-align: top; }
+  .card-text { padding: 12px 14px 2px; }
+  .card-media { padding: 12px 14px 2px 0; width: 140px; }
+
+  /* shared bottom footer: byline left, OPEN right, one baseline for every card */
+  .card-foot { padding: 0 14px 10px; }
+  .card-foot-inner { width: 100%; }
+  .card-foot-inner td { vertical-align: middle; }
+
+  /* badge + title row */
+  .badge {
+    display: inline-block; vertical-align: middle; white-space: nowrap;
+    color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    padding: 3px 9px; border-radius: 10px; line-height: 1.2; margin-right: 8px;
+  }
+  .b-ochre { background: #7D6234; }
+  .b-sage  { background: #476B4C; }
+  .b-teal  { background: #357280; }
+  .b-drift { background: #6B5E50; }
+  .b-freq  { background: #9A8B79; margin-left: 4px; }
+
+  .title {
+    display: inline; vertical-align: middle;
+    font-size: 16px; font-weight: 700; color: #2D2D2D; text-decoration: none;
+    line-height: 1.3;
+  }
+  .title:hover { text-decoration: underline; }
+
+  /* capped body: server truncates to ~140 chars; CSS clamp here just
+     visualises the cap in-browser. */
+  .body {
+    font-size: 14px; color: #4A4A4A; line-height: 1.5; margin: 6px 0 8px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .body.uncapped { display: block; -webkit-line-clamp: none; }
+
+  /* byline */
+  .byline { font-size: 13px; color: #6B6B6B; }
+  .byline img { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 6px; object-fit: cover; }
+  .byline span { vertical-align: middle; }
+
+  /* thumbnail crop box — the height/width cap that makes layout reliable */
+  .thumb {
+    display: block; width: 140px; height: 120px; overflow: hidden;
+    border-radius: 8px; background: #EEE;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; border: 0; }
+
+  .open {
+    font-size: 13px; font-weight: 700; letter-spacing: .3px; white-space: nowrap;
+    color: #3A7D8C; text-decoration: none;
+  }
+  .open:hover { text-decoration: underline; }
+
+  /* event date/location line */
+  .meta-line { font-size: 13px; color: #6B6B6B; margin: 2px 0 8px; }
+  .meta-line .sep { margin: 0 8px; color: #C9C2B6; }
+
+  /* bulk-buy thermometer */
+  .thermo { height: 10px; border-radius: 5px; overflow: hidden; margin: 6px 0 4px; display: flex; }
+  .thermo .filled { background: #4E6878; }
+  .thermo .empty  { background: #5B8760; }
+  .thermo-label { font-size: 12px; color: #6B6B6B; }
+  .thermo-label b { color: #2D2D2D; float: right; }
+
+  /* ---- mobile behaviour (many clients honour <style> media queries;
+     where not honoured, the 140px thumb still fits) ------------------ */
+  @media only screen and (max-width: 480px) {
+    .card-media { width: 100px; padding-left: 0; }
+    .thumb { width: 100px; height: 92px; }
+    .title { font-size: 15px; }
+    .body  { font-size: 13px; -webkit-line-clamp: 3; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="proto-bar">
+    <strong>DRAFT PROTOTYPE — not the live email.</strong><br />
+    Resize your browser narrow (down to ~320px) and wide (~600px+) to test reflow.
+    Watch: (1) long titles + badge staying on one row, (2) byline + <code>OPEN ›</code> now share a
+    footer baseline at the card bottom on every card, (3) portrait vs landscape photos cropping to the
+    same <code>140×120</code> box, (4) the last card (no image) collapsing to a single column.
+    The one card marked <em>uncapped</em> shows why the ~140-char body limit matters.
+  </div>
+
+  <!-- ===== EMAIL HEADER ===== -->
+  <div class="email-head">
+    <div class="logo">FIMB<span>Y</span></div>
+    <p class="hello">Hi Stephen,</p>
+    <p class="sub">A few things your neighbours shared yesterday</p>
+    <p class="tap-hint">Tap any card to open it in FIMBY.</p>
+  </div>
+
+  <!-- ===== SHARED LIFE ===== -->
+  <div class="section sec-ochre">Shared Life</div>
+
+  <!-- normal BIO card -->
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-ochre">BIO</span><a class="title" href="#">Hi neighbours</a></div>
+        <p class="body">Hi, I'm Joseph. I'm new to Strathcona / DTES. We've met a few times and I'm looking forward to getting to know more of you.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/josephstory/900/1100" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/josephav/80/80" alt="" /><span>Joseph Rzeplinski</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- STRESS: long title + long name + portrait photo, body CAPPED -->
+  <div class="note">Stress test: very long title, very long name, tall portrait photo — body capped at ~140 chars.</div>
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-ochre">NEIGHBOURHOOD</span><a class="title" href="#">The morning the whole block showed up to help move Mrs. Alvarez's piano</a></div>
+        <p class="body">It started with one text and by 9am there were eleven of us on the sidewalk with dollies, coffee, and absolutely no idea what we were doing but somehow it worked out fine in the end and…</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/piano/800/1200" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/bartav/80/80" alt="" /><span>Bartholomew Featherstonehaugh-Cholmondeley</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- SAME card but UNCAPPED body to show why the limit matters -->
+  <div class="note">Same content but <em>uncapped</em> body — this is what we're avoiding.</div>
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-ochre">NEIGHBOURHOOD</span><a class="title" href="#">The morning the whole block showed up to help move Mrs. Alvarez's piano</a></div>
+        <p class="body uncapped">It started with one text and by 9am there were eleven of us on the sidewalk with dollies, coffee, and absolutely no idea what we were doing but somehow it worked out fine in the end. Rosa made tamales for everyone afterward and we sat on her steps until noon. This is the kind of street I always hoped I'd live on, and I just wanted to write it down so we remember it happened.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/piano/800/1200" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/bartav/80/80" alt="" /><span>Bartholomew Featherstonehaugh-Cholmondeley</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- ===== ASKS & OFFERS ===== -->
+  <div class="section sec-sage">Asks &amp; Offers</div>
+
+  <!-- landscape photo -->
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-sage">OFFER</span><a class="title" href="#">Two yellow kayaks</a></div>
+        <p class="body">Two single person kayaks for loan or barter.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/kayak/1200/800" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/josephav/80/80" alt="" /><span>Joseph Rzeplinski</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- portrait photo + medium body -->
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-sage">OFFER</span><a class="title" href="#">AussieDoodles</a></div>
+        <p class="body">Three non-shedding small AussieDoodles for sale in late July post vet care (shots, toilet training). Energetic, smart, social, healthy dogs.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/doodle/850/1100" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/josephav/80/80" alt="" /><span>Joseph Rzeplinski</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- short body, small square photo -->
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-sage">OFFER</span><a class="title" href="#">Rice steamer</a></div>
+        <p class="body">2 - 3 servings rice cooker, like new.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/ricecooker/700/700" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/josephav/80/80" alt="" /><span>Joseph Rzeplinski</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- ===== EVENTS ===== -->
+  <div class="section sec-teal">Events</div>
+
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-teal">COMMUNITY EVENT</span><a class="title" href="#">Thursday evening soup &amp; bannock in the alley garden</a></div>
+        <p class="meta-line">&#128197; Thu, Jul 9<span class="sep">&middot;</span>&#128205; Cottonwood Community Garden<span class="sep">&middot;</span>weekly</p>
+        <p class="body">Bring a bowl if you can. Everyone welcome, kids too. We start around 6 once the pot's on.</p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/soup/1000/900" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/joanav/80/80" alt="" /><span>Joan Whitecloud</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- ===== BULK BUYS ===== -->
+  <div class="section sec-ochre">Bulk Buys</div>
+
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-ochre">BULK BUY</span><a class="title" href="#">25kg sack of jasmine rice</a></div>
+        <p class="body">Splitting a wholesale sack. Bring your own container on pickup day.</p>
+        <div class="thermo">
+          <div class="filled" style="width:60%"></div><div class="empty" style="width:40%"></div>
+        </div>
+        <p class="thermo-label">6 reserved &middot; 4 available <b>~$8/share</b></p>
+      </td>
+      <td class="card-media">
+        <a href="#"><span class="thumb"><img src="https://picsum.photos/seed/rice/900/900" alt="" /></span></a>
+      </td>
+    </tr>
+    <tr><td class="card-foot" colspan="2">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/marcusav/80/80" alt="" /><span>Marcus Bell</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <!-- ===== NO-IMAGE FALLBACK ===== -->
+  <div class="section sec-driftwood">Library</div>
+  <div class="note">No-image card: collapses to a single column, byline left + OPEN right on one baseline.</div>
+
+  <table class="card">
+    <tr>
+      <td class="card-text">
+        <div><span class="badge b-drift">TOOLS</span><a class="title" href="#">Cordless drill + bit set</a></div>
+        <p class="body">Happy to lend it out for a weekend. Just message me.</p>
+      </td>
+    </tr>
+    <tr><td class="card-foot">
+      <table class="card-foot-inner"><tr>
+        <td class="byline"><img src="https://picsum.photos/seed/amirav/80/80" alt="" /><span>Amir Haddad</span></td>
+        <td align="right"><a class="open" href="#">OPEN &rsaquo;</a></td>
+      </tr></table>
+    </td></tr>
+  </table>
+
+  <p style="text-align:center;font-size:12px;color:#8a8a8a;margin-top:24px;">
+    Family In My Backyard &nbsp;·&nbsp; Email preferences
+  </p>
+
+</div>
+</body>
+</html>

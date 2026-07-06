@@ -82,6 +82,10 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(!result.isEmpty);
         System.assert(result.html.contains('border-radius:8px'), 'Should use rich card layout');
         System.assert(result.html.contains('border-radius:10px'), 'Should contain badge pills');
+        System.assert(result.html.contains('open &rsaquo;'), 'Cards should carry the shared open link');
+        System.assert(result.html.contains('tap any card to open it in FIMBY'), 'Should include the tap hint');
+        // Stories/library carry image URLs in the factory, so the fixed-thumbnail cell renders.
+        System.assert(result.html.contains('class="dg-img"'), 'Cards with images should use the fixed thumbnail cell');
     }
 
     @IsTest
@@ -99,13 +103,12 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(result.itemCount > 0);
         System.assert(result.html.contains('Shared Life'), 'Should have stories section');
         System.assert(result.html.contains('Asks'), 'Should have asks section');
-        System.assert(result.html.contains('Read More'), 'Should have story CTA');
-        System.assert(result.html.contains('Respond'), 'Should have ask/offer CTA');
         System.assert(result.html.contains('Events'), 'Should have events section');
         System.assert(result.html.contains('Bulk Buys'), 'Should have bulk buys section');
-        System.assert(result.html.contains('Reserve-A-Share'), 'Should have bulk buy CTA');
         System.assert(result.html.contains('Library'), 'Should have library section');
-        System.assert(result.html.contains('Borrow'), 'Should have library CTA');
+        // Every card now uses the single quiet "open ›" affordance (no per-type CTA verbs).
+        System.assert(result.html.contains('open &rsaquo;'), 'Cards should use the shared open link');
+        System.assert(!result.html.contains('Reserve-A-Share'), 'Per-type CTA verbs should be gone');
         System.assert(result.html.contains('/asks-offers/'), 'Ask/offer CTAs should use /asks-offers/');
         System.assert(!result.html.contains('/needs-offers/'), 'Legacy /needs-offers/ must not appear in digest links');
     }
@@ -451,7 +454,7 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void buildCard_withImage_usesPercentageSplitRow() {
+    static void buildCard_withImage_usesFixedThumbnailCell() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
@@ -466,14 +469,14 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // Image column is percentage-based so it scales to ~1/3 of the row on every viewport.
+        // Fixed 140x120 cropped thumbnail cell, responsive down to 100px via .dg-* classes.
         System.assert(
-            result.html.contains('width="34%"') && result.html.contains('width="66%"'),
-            'Card should use a 34/66 percentage split row. HTML: ' + result.html
+            result.html.contains('class="dg-imgcell"') && result.html.contains('class="dg-img"'),
+            'Card should use the fixed thumbnail cell. HTML: ' + result.html
         );
         System.assert(
-            result.html.contains('height:auto'),
-            'Image should keep its natural aspect ratio (no fixed height). HTML: ' + result.html
+            result.html.contains('object-fit:cover'),
+            'Thumbnail should crop with object-fit:cover. HTML: ' + result.html
         );
     }
 
@@ -482,7 +485,7 @@ private class FimbyDigestEmailBuilderTest {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
-        stories[0].Image_Ratio__c = '200x100'; // landscape 2:1 — must not drive a fixed px size
+        stories[0].Image_Ratio__c = '200x100'; // landscape 2:1 — must crop to the same fixed box
         insert stories;
 
         Test.startTest();
@@ -493,14 +496,14 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // No ratio-derived pixel height: the image fills its percentage cell at height:auto.
+        // Every ratio crops to the same 140x120 box; the old percentage split is gone.
         System.assert(
-            result.html.contains('width="34%"') && result.html.contains('height:auto'),
-            'Landscape photo should still use the percentage column, not a fixed pixel size. HTML: ' + result.html
+            result.html.contains('width:140px;height:120px'),
+            'Landscape photo should crop to the fixed 140x120 box. HTML: ' + result.html
         );
         System.assert(
-            !result.html.contains('width="220" height='),
-            'Card should no longer emit a fixed 220px image width. HTML: ' + result.html
+            !result.html.contains('width="34%"'),
+            'Card should no longer emit the 34% percentage image column. HTML: ' + result.html
         );
     }
 
