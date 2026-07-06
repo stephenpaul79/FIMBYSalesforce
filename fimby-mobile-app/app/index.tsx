@@ -170,6 +170,9 @@ const BOOTSTRAP_LOADING_MESSAGE = "Herding the dust bunnies…";
 const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
 const WEBVIEW_HANDOFF_MIN_MS = 1000;
 const WEBVIEW_HANDOFF_FADE_MS = 550;
+/** If the EC shell never posts quietHours (Apex/bridge failure), lift the kettle
+ *  anyway so the user is never stuck. Measured from first EC document loadEnd. */
+const WEBVIEW_HANDOFF_FALLBACK_MS = 8000;
 
 /** Playback time (s) at which the themed dissolve overlay starts fading in over
  *  the splash video. Tuned to the 3s clip's built-in fade-out tail. */
@@ -521,6 +524,9 @@ export default function IndexScreen() {
   const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
   const webViewHandoffDismissedRef = useRef(false);
   const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const webViewHandoffFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Set when quietHours arrives before the kettle overlay has a shownAt clock. */
+  const webViewShellReadyPendingRef = useRef(false);
   // A frontdoor handoff requested while the splash video was still playing. The
   // kettle decision (skip vs show) is deferred to the video-lift effect below.
   const handoffPendingRef = useRef(false);
@@ -786,12 +792,20 @@ export default function IndexScreen() {
     injectFallbackRef.current = null;
   }, []);
 
+  const clearWebViewHandoffFallback = useCallback(() => {
+    if (webViewHandoffFallbackTimeoutRef.current) {
+      clearTimeout(webViewHandoffFallbackTimeoutRef.current);
+      webViewHandoffFallbackTimeoutRef.current = null;
+    }
+  }, []);
+
   const dismissWebViewHandoff = useCallback(
     (opts?: { immediate?: boolean }) => {
       if (webViewHandoffDismissTimeoutRef.current) {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
       }
+      clearWebViewHandoffFallback();
 
       const finish = () => {
         webViewHandoffDismissedRef.current = true;
@@ -813,7 +827,7 @@ export default function IndexScreen() {
         if (finished) finish();
       });
     },
-    [webViewHandoffFade]
+    [webViewHandoffFade, clearWebViewHandoffFallback]
   );
 
   const scheduleWebViewHandoffDismiss = useCallback(() => {
@@ -836,6 +850,38 @@ export default function IndexScreen() {
     }, delay);
   }, [dismissWebViewHandoff]);
 
+  const markWebViewShellReady = useCallback(
+    (source: string) => {
+      if (webViewHandoffDismissedRef.current) return;
+      if (webViewHandoffEcReadyAtRef.current != null) return;
+
+      log("[WebView] Shell ready for handoff:", source);
+      authTimingMark("webview_shell_ready", { source });
+      clearWebViewHandoffFallback();
+
+      if (webViewHandoffShownAtRef.current == null) {
+        webViewShellReadyPendingRef.current = true;
+        return;
+      }
+
+      webViewHandoffEcReadyAtRef.current = Date.now();
+      scheduleWebViewHandoffDismiss();
+    },
+    [clearWebViewHandoffFallback, scheduleWebViewHandoffDismiss]
+  );
+
+  const armWebViewHandoffFallback = useCallback(() => {
+    if (webViewHandoffDismissedRef.current) return;
+    if (webViewHandoffShownAtRef.current == null) return;
+    if (webViewHandoffEcReadyAtRef.current != null) return;
+    if (webViewHandoffFallbackTimeoutRef.current != null) return;
+
+    webViewHandoffFallbackTimeoutRef.current = setTimeout(() => {
+      webViewHandoffFallbackTimeoutRef.current = null;
+      markWebViewShellReady("load-end-fallback");
+    }, WEBVIEW_HANDOFF_FALLBACK_MS);
+  }, [markWebViewShellReady]);
+
   // Single deferred loading overlay used for BOTH phases. The caption swaps in
   // place (bunny → kettle); the minimum-view clock is anchored once, when the
   // overlay first appears, so the two phases never stack and never flash.
@@ -854,13 +900,18 @@ export default function IndexScreen() {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
       }
+      clearWebViewHandoffFallback();
       webViewHandoffDismissedRef.current = false;
       webViewHandoffEcReadyAtRef.current = null;
       webViewHandoffShownAtRef.current = Date.now();
       setWebViewHandoffVisible(true);
       webViewHandoffFade.setValue(1);
+      if (webViewShellReadyPendingRef.current) {
+        webViewShellReadyPendingRef.current = false;
+        markWebViewShellReady("shell-ready-deferred");
+      }
     },
-    [webViewHandoffFade]
+    [webViewHandoffFade, clearWebViewHandoffFallback, markWebViewShellReady]
   );
 
   const showWebViewHandoff = useCallback(() => {
@@ -888,7 +939,10 @@ export default function IndexScreen() {
 
     if (handoffPendingRef.current) {
       handoffPendingRef.current = false;
-      if (webViewHandoffEcReadyAtRef.current != null) return; // EC ready → skip
+      if (webViewHandoffEcReadyAtRef.current != null || webViewShellReadyPendingRef.current) {
+        webViewShellReadyPendingRef.current = false;
+        return;
+      }
       presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE);
       return;
     }
@@ -900,7 +954,7 @@ export default function IndexScreen() {
   // Safety net: if the overlay is in the pre-frontdoor (bunny) phase but auth
   // resolves to something other than the WebView (error, quiet-hours panda, or
   // no session), drop it so the right screen shows. The kettle phase dismisses
-  // itself on WebView load.
+  // when the EC shell signals ready (quietHours) or the load-end fallback fires.
   React.useEffect(() => {
     if (!webViewHandoffVisible || webViewUrl) return;
     const stillWaitingOnAuth = booting && !bootstrapError && !showPanda;
@@ -923,13 +977,9 @@ export default function IndexScreen() {
 
       if (!url || !isExperienceCloudUrl(url)) return;
       if (loading === true) return;
-      if (webViewHandoffDismissedRef.current) return;
-      if (webViewHandoffEcReadyAtRef.current != null) return;
-
-      webViewHandoffEcReadyAtRef.current = Date.now();
-      scheduleWebViewHandoffDismiss();
+      armWebViewHandoffFallback();
     },
-    [scheduleWebViewHandoffDismiss]
+    [armWebViewHandoffFallback]
   );
 
   // Holds an access token when push is wanted but OS permission is still
@@ -1694,6 +1744,12 @@ export default function IndexScreen() {
       // Clear it again as soon as they navigate anywhere else.
       if (isFimbyErrorPage(url)) {
         setStuckOnErrorPage(true);
+        // The error page never mounts fimbyUniversalHeader, so no quietHours
+        // shell-ready signal will arrive. Lift the kettle now (still honours the
+        // 1s minimum) so the recovery card is usable without waiting the full
+        // fallback window. /login is deliberately excluded: it may be a silent
+        // re-auth bounce the kettle should keep hidden.
+        markWebViewShellReady("error-page");
       } else if (!navState.loading) {
         setStuckOnErrorPage(false);
       }
@@ -1726,7 +1782,7 @@ export default function IndexScreen() {
         void reestablishEcSession(ecUrlToRetPath(lastEcUrlRef.current), "nav-login-timeout");
       }
     },
-    [clearInjectFallback, completeLogout, reestablishEcSession]
+    [clearInjectFallback, completeLogout, reestablishEcSession, markWebViewShellReady]
   );
 
   /**
@@ -1805,7 +1861,7 @@ export default function IndexScreen() {
 
   /**
    * Handle messages from LWC (postMessage bridge)
-   * Currently handles quiet hours preference sync
+   * quietHours: preference sync + shell-ready signal for the kettle handoff
    */
   const onWebViewMessage = useCallback(
     (event: WebViewMessageEvent) => {
@@ -1814,6 +1870,7 @@ export default function IndexScreen() {
         if (data.type === "quietHours" && data.window) {
           AsyncStorage.setItem("fimby_quiet_hours", data.window).catch(() => {});
           log("[WebView] Quiet hours synced:", data.window);
+          markWebViewShellReady("quiet-hours");
         } else if (data.type === "themeChange" && (data.theme === "light" || data.theme === "dark" || data.theme === "auto")) {
           setThemePref(data.theme);
           AsyncStorage.setItem(THEME_STORAGE_KEY, data.theme).catch(() => {});
@@ -1832,7 +1889,7 @@ export default function IndexScreen() {
         // Not JSON or not a message we handle
       }
     },
-    [syncPushRegistration, completeLogout]
+    [syncPushRegistration, completeLogout, markWebViewShellReady]
   );
 
   /**
@@ -2450,11 +2507,15 @@ export default function IndexScreen() {
       >
         <StatusBar style={themeColors.barStyle} backgroundColor={themeColors.statusBar} />
         <Stack.Screen options={{ headerShown: false }} />
+        {/* WebView backgroundColor themed (surface-page) so the loading canvas
+            is never bare white — this is what caused the dark-mode flash when
+            the kettle faded before EC painted. SafeArea/StatusBar stay on the
+            surface-card tone so the top inset matches the EC header. */}
         <WebView
           key={webViewKey}
           ref={webViewRef}
           source={{ uri: webViewUrl }}
-          style={styles.webView}
+          style={[styles.webView, { backgroundColor: handoffPalette.bg }]}
           originWhitelist={[
             "https://*.fimby.com",
             "https://*.my.site.com",
@@ -2812,7 +2873,6 @@ const styles = StyleSheet.create({
   // WebView styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   webView: {
     flex: 1,

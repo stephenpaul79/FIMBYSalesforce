@@ -423,6 +423,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
                 // real data gate; this cover is only visual.
                 this._tosGatePending = false;
                 this._applyScrollLock();
+                this._notifyNativeShellReady();
             });
     }
 
@@ -451,6 +452,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             this._orgAccountId = actingResult.organizationAccountId || null;
         }
         this._actingAsContactId = actingResult.actingAsContactId;
+        this._notifyNativeShellReady();
     }
 
     _loadAvailableIdentitiesIfNeeded() {
@@ -926,6 +928,31 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     /* --- App-open tracking + quiet hours sync ----------------------- */
 
+    _quietHoursPreference = '10PM_6AM';
+
+    /** Sync quiet-hours pref to the native shell (also signals shell-ready for
+     *  the kettle handoff when the WebView bridge is present). */
+    _syncQuietHoursToNative() {
+        try {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(
+                    JSON.stringify({
+                        type: 'quietHours',
+                        window: this._quietHoursPreference || '10PM_6AM'
+                    })
+                );
+            }
+        } catch {
+            // native bridge unavailable (desktop web)
+        }
+    }
+
+    /** Fired once identity/TOS veil resolves — native keeps the kettle up until
+     *  this message so the themed shell paints before the overlay lifts. */
+    _notifyNativeShellReady() {
+        this._syncQuietHoursToNative();
+    }
+
     _recordAppOpenAndSyncQuietHours() {
         this._lastAppOpenTs = Date.now();
         try {
@@ -936,13 +963,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         recordAppOpen()
             .then(result => {
-                if (result?.quietHoursPreference && window.ReactNativeWebView) {
-                    window.ReactNativeWebView.postMessage(
-                        JSON.stringify({
-                            type: 'quietHours',
-                            window: result.quietHoursPreference
-                        })
-                    );
+                if (result?.quietHoursPreference) {
+                    this._quietHoursPreference = result.quietHoursPreference;
+                }
+                // Identity may have already posted with the default; refresh storage
+                // when the server pref arrives without blocking on recordAppOpen first.
+                if (!this._tosGatePending) {
+                    this._syncQuietHoursToNative();
                 }
             })
             .catch(err => {

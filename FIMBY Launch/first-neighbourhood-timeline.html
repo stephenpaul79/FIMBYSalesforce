@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FIMBY — First Neighbourhood Launch Timeline (V6A)</title>
+<style>
+  :root {
+    --fimby-surface-page: #F0EBE3;
+    --fimby-surface-section: #EBE6DD;
+    --fimby-surface-card: #FAF7F2;
+    --fimby-border-subtle: #E0D9CF;
+    --fimby-border-default: #D6CFC5;
+    --fimby-divider-default: rgba(38, 26, 17, 0.10);
+    --fimby-text-strong: #261A11;
+    --fimby-text-primary: #4A3526;
+    --fimby-text-secondary: #6F5B43;   /* AA-deepened, matches live site */
+    --fimby-earth-teal: #2F6B78;       /* AA-deepened link/accent teal */
+    --fimby-earth-sage: #5B8760;
+    --fimby-earth-ochre: #A38045;
+    --fimby-earth-slate: #5E7B92;
+    --fimby-earth-terracotta: #B07248;
+    --fimby-earth-dusty-violet: #7E7495;
+    --fimby-earth-moss: #6B7D54;
+    --fimby-earth-driftwood: #8D7B6A;
+    --fimby-btn-primary-bg: #3A7D8C;
+    --fimby-radius-sm: 8px;
+    --fimby-radius-md: 12px;
+    --fimby-radius-lg: 16px;
+    --fimby-radius-full: 9999px;
+    --fimby-shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --fimby-shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .container { width: min(920px, calc(100% - 40px)); margin: 0 auto; }
+
+  /* ── Hero ── */
+  .page-hero {
+    background: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    padding: 44px 0 32px;
+    text-align: center;
+  }
+  .page-hero img.logo { height: 64px; margin-bottom: 14px; }
+  .page-hero h1 {
+    margin: 0 0 8px;
+    color: var(--fimby-text-strong);
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .page-hero .subtitle { color: var(--fimby-text-secondary); max-width: 58ch; margin: 0 auto; font-size: 1.02rem; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full); padding: 5px 14px; margin-bottom: 14px;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--fimby-text-secondary);
+  }
+  .eyebrow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fimby-earth-sage); }
+
+  .jump-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+  .jump-links a {
+    text-decoration: none; font-size: 0.82rem; font-weight: 600;
+    color: var(--fimby-earth-teal);
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full); padding: 5px 13px;
+    transition: background 0.15s ease;
+  }
+  .jump-links a:hover { background: var(--fimby-surface-section); }
+
+  /* ── North star band ── */
+  .north-star { padding: 36px 0; }
+  .north-star .card {
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card);
+    padding: 26px 28px;
+  }
+  .north-star h2 { margin: 0 0 10px; color: var(--fimby-text-strong); font-size: 1.3rem; letter-spacing: -0.01em; }
+  .pull-quote {
+    font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-style: italic; font-size: 1.15rem; line-height: 1.5;
+    color: var(--fimby-text-strong);
+    border-left: 3px solid var(--fimby-earth-terracotta);
+    padding-left: 16px; margin: 18px 0;
+  }
+
+  /* ── Month sections ── */
+  .month { padding: 26px 0; }
+  .month-card {
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card);
+    overflow: hidden;
+  }
+  .month-head {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--fimby-divider-default);
+  }
+  .month-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    border-radius: var(--fimby-radius-md); padding: 5px 12px; white-space: nowrap;
+  }
+  .month-head h2 { margin: 0; font-size: 1.25rem; color: var(--fimby-text-strong); letter-spacing: -0.01em; flex: 1 1 auto; }
+  .month-progress { font-size: 0.8rem; font-weight: 600; color: var(--fimby-text-secondary); white-space: nowrap; }
+  .month-body { padding: 18px 24px 22px; }
+  .month-body > p.month-theme { margin: 0 0 14px; color: var(--fimby-text-secondary); font-size: 0.98rem; }
+
+  /* ── Checklists ── */
+  ul.checklist { list-style: none; margin: 0; padding: 0; }
+  ul.checklist li { margin: 0; border-bottom: 1px solid var(--fimby-divider-default); }
+  ul.checklist li:last-child { border-bottom: none; }
+  ul.checklist label {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 4px; cursor: pointer;
+    transition: background 0.12s ease;
+    border-radius: var(--fimby-radius-sm);
+  }
+  ul.checklist label:hover { background: var(--fimby-surface-page); }
+  ul.checklist input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    flex: 0 0 auto; width: 21px; height: 21px; margin-top: 2px;
+    border: 2px solid var(--fimby-border-default); border-radius: 6px;
+    background: var(--fimby-surface-card); cursor: pointer; position: relative;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  ul.checklist input[type="checkbox"]:checked { background: var(--fimby-earth-sage); border-color: var(--fimby-earth-sage); }
+  ul.checklist input[type="checkbox"]:checked::after {
+    content: ""; position: absolute; left: 5px; top: 1px;
+    width: 5px; height: 10px;
+    border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+  }
+  ul.checklist input[type="checkbox"]:focus-visible { outline: 3px solid rgba(103,187,210,0.45); outline-offset: 1px; }
+  ul.checklist .item-text { flex: 1; }
+  ul.checklist input:checked ~ .item-text { color: var(--fimby-text-secondary); text-decoration: line-through; text-decoration-color: var(--fimby-border-default); }
+  ul.checklist .item-text .why { display: block; font-size: 0.84rem; color: var(--fimby-text-secondary); margin-top: 1px; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: var(--fimby-radius-md);
+    padding: 14px 18px; margin-top: 18px;
+    background: var(--fimby-surface-page);
+    border-left: 4px solid var(--fimby-earth-ochre);
+    font-size: 0.94rem;
+  }
+  .callout strong { color: var(--fimby-text-strong); }
+  .callout.watch { border-left-color: var(--fimby-earth-slate); }
+  .callout.guard { border-left-color: var(--fimby-earth-terracotta); }
+
+  /* ── Rhythm + dashboard bands ── */
+  .band {
+    background: var(--fimby-surface-card);
+    border-top: 1px solid var(--fimby-divider-default);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    padding: 36px 0; margin: 26px 0;
+  }
+  .band h2 { margin: 0 0 6px; color: var(--fimby-text-strong); font-size: 1.4rem; letter-spacing: -0.015em; }
+  .band .band-lede { margin: 0 0 18px; color: var(--fimby-text-secondary); }
+
+  .rhythm-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .rhythm-col {
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-md); padding: 16px 18px;
+  }
+  .rhythm-col h3 { margin: 0 0 10px; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fimby-earth-teal); }
+  .rhythm-col ul { margin: 0; padding-left: 18px; font-size: 0.93rem; }
+  .rhythm-col li { margin-bottom: 6px; }
+
+  table.dashboard { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  table.dashboard th, table.dashboard td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--fimby-divider-default); vertical-align: top; }
+  table.dashboard th { color: var(--fimby-text-strong); font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  table.dashboard td:first-child { font-weight: 600; color: var(--fimby-text-strong); white-space: nowrap; }
+  .not-these { margin-top: 14px; font-size: 0.9rem; color: var(--fimby-text-secondary); }
+
+  /* ── Red flags ── */
+  .flag-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .flag-list li {
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-left: 4px solid var(--fimby-earth-terracotta);
+    border-radius: var(--fimby-radius-md); padding: 13px 16px; font-size: 0.95rem;
+  }
+  .flag-list strong { color: var(--fimby-text-strong); display: block; margin-bottom: 2px; }
+
+  /* ── Footer ── */
+  footer { padding: 30px 0 44px; text-align: center; color: var(--fimby-text-secondary); font-size: 0.86rem; }
+  footer a { color: var(--fimby-earth-teal); }
+
+  /* Month accent colours */
+  .m-minus2 .month-badge { background: var(--fimby-earth-sage); }
+  .m-minus1 .month-badge { background: var(--fimby-earth-moss); }
+  .m-launch .month-badge { background: var(--fimby-earth-teal); }
+  .m-plus1 .month-badge { background: var(--fimby-earth-slate); }
+  .m-plus2 .month-badge { background: var(--fimby-earth-dusty-violet); }
+  .m-plus3 .month-badge { background: var(--fimby-earth-ochre); }
+  .m-plus4 .month-badge { background: var(--fimby-earth-terracotta); }
+
+  @media (max-width: 640px) {
+    .container { width: calc(100% - 24px); }
+    .month-head { padding: 15px 16px 12px; }
+    .month-body { padding: 14px 16px 18px; }
+  }
+  @media print {
+    .jump-links { display: none; }
+    .month-card, .north-star .card { box-shadow: none; break-inside: avoid; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="page-hero">
+  <div class="container">
+    <img class="logo" src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" />
+    <div><span class="eyebrow"><span class="eyebrow-dot"></span>Operator's field guide · V6A</span></div>
+    <h1>Getting the first neighbourhood off the ground</h1>
+    <p class="subtitle">A six-month working timeline for the person making it happen. Two months of seeding before the doors open, four months of tending after. Check things off as you go — your ticks are saved in this browser.</p>
+    <nav class="jump-links">
+      <a href="#north-star">North star</a>
+      <a href="#m-minus2">July</a>
+      <a href="#m-minus1">August</a>
+      <a href="#m-launch">Sept · Launch</a>
+      <a href="#m-plus1">October</a>
+      <a href="#m-plus2">November</a>
+      <a href="#m-plus3">December</a>
+      <a href="#rhythm">Weekly rhythm</a>
+      <a href="#dashboard">What "alive" means</a>
+      <a href="#flags">Red flags</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ NORTH STAR ═══ -->
+<section class="north-star" id="north-star">
+  <div class="container">
+    <div class="card">
+      <h2>The one thing this timeline is for</h2>
+      <p>FIMBY doesn't need a big network. It needs <strong>one small network that feels alive</strong> — roughly 15–30 neighbours in V6A who keep crossing paths, closing loops, and slowly trusting each other. Everything below serves that single outcome.</p>
+      <div class="pull-quote">The app is live but the neighbourhood isn't yet. Your job for six months is to be the network's heartbeat until it has its own.</div>
+      <p>Three principles to carry through every month:</p>
+      <ul>
+        <li><strong>Offline first.</strong> The relationship precedes the app. Every recruitment, welcome, and recovery move works better in person.</li>
+        <li><strong>Protect the first ask.</strong> An ask that gets no response is a trust wound. In these six months, no ask goes unanswered — even if you have to hand-route it yourself.</li>
+        <li><strong>Cadence beats volume.</strong> One predictable weekly post makes a small network feel alive. Ten sporadic ones don't.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTH −2 · JULY ═══ -->
+<section class="month m-minus2" id="m-minus2">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Month −2 · July</span>
+        <h2>Seed the core</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">The app is essentially empty right now — that's fine, nobody's watching yet. This month is entirely offline: assemble the 10–20 people and the content engine that will make the feed worth opening in September.</p>
+        <ul class="checklist" data-section="jul">
+          <li><label><input type="checkbox" data-key="jul-1" /><span class="item-text">Write the list: 10–20 V6A neighbours you can actually recognize, by name.<span class="why">This list is the launch. If you can't fill it, the launch date moves — not the bar.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-2" /><span class="item-text">Personally invite each one — face to face or by phone, never a group text.<span class="why">The ask: "I'm starting something small on our block. Come to one gathering and bring one thing you'd lend."</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-3" /><span class="item-text">Turn your maybe-helpers into definite helpers by giving each a small, named job.<span class="why">"Greeter", "library steward", "gathering host" — a role is easier to say yes to than "help me".</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-4" /><span class="item-text">Lock in your committed org's weekly rhythm: agree the post, the day, and the person who posts it. Get their rep set up in the app.<span class="why">This is your feed's steady pulse. It should be running before launch, not after.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-5" /><span class="item-text">Start recruiting a second org (neighbourhood house, centre, another church) — ask for just one recurring post a month to begin.<span class="why">Two orgs on rhythm means the feed survives a quiet peer week.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-6" /><span class="item-text">Hold the seeding gathering: porch, coffee, community room. Everyone signs up on the spot and lists one thing they'd lend.<span class="why">Sign-ups done shoulder-to-shoulder surface every onboarding rough edge while you're standing right there.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-7" /><span class="item-text">Seed the lending library to ~30 items — every core member lists 2 or 3.<span class="why">The library is single-player value: one pressure washer creates worth before any relationship exists.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-8" /><span class="item-text">Plant the first bulk buy (a Costco run) with 2–3 committed participants.<span class="why">Bulk buys only need two people to work — perfect cold-start content.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-9" /><span class="item-text">Learn onboarding cold: quiet hours, digest, vouching, the support-person option.<span class="why">You'll be walking neighbours through it one-on-one for months.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="jul-10" /><span class="item-text">Draft the launch comms: flyer, poster spots, a two-sentence word-of-mouth script, org bulletin blurbs.</span></label></li>
+          <li><label><input type="checkbox" data-key="jul-11" /><span class="item-text">Start an operator's log — a few lines a week: what happened, who needs a nudge, what confused people.<span class="why">In December this log becomes the playbook for neighbourhood #2.</span></span></label></li>
+        </ul>
+        <div class="callout watch"><strong>Watch for:</strong> anyone on your list who wants in but struggles with the phone. That's not a lost member — that's your first supported participant. Pair them with someone they trust who can act on their behalf.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTH −1 · AUGUST ═══ -->
+<section class="month m-minus1" id="m-minus1">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Month −1 · August</span>
+        <h2>Make it feel alive before the doors open</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">A newcomer in September should walk into a room where something is already happening. This month the core group builds habits, and you rehearse every loop end-to-end at least once.</p>
+        <ul class="checklist" data-section="aug">
+          <li><label><input type="checkbox" data-key="aug-1" /><span class="item-text">Get every core member to complete three low-vulnerability actions: list an item, join the bulk buy, RSVP to a gathering.<span class="why">Asking for help needs trust that doesn't exist yet. These actions don't.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="aug-2" /><span class="item-text">Run the first on-app gathering: post it, collect RSVPs, hold it, and post thank-yous naming real neighbours afterward.<span class="why">One real gathering generates a week of feed content — before, during, and after.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="aug-3" /><span class="item-text">Plant 2–3 safe first asks from core members (a ride, a borrowed pot, extra tomato starts) and make sure each is answered within hours.<span class="why">The feed needs to demonstrate that asking works here — before strangers arrive to test it.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="aug-4" /><span class="item-text">Close one full loop end-to-end: ask → response → the help actually happens → thanks posted.<span class="why">If any step feels clunky, better to find out now.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="aug-5" /><span class="item-text">Get every core member vouched, and practice the request-a-vouch flow with at least two people.</span></label></li>
+          <li><label><input type="checkbox" data-key="aug-6" /><span class="item-text">Dry-run onboarding with two people who weren't at the seeding gathering. Note every point of confusion.</span></label></li>
+          <li><label><input type="checkbox" data-key="aug-7" /><span class="item-text">Confirm the moderator-activation workflow: target under 24 hours from sign-up to a personal welcome.<span class="why">In September this is the front door. A slow activation reads as "nobody's home".</span></span></label></li>
+          <li><label><input type="checkbox" data-key="aug-8" /><span class="item-text">Set the launch gathering: date, place, food, and who is inviting whom.</span></label></li>
+          <li><label><input type="checkbox" data-key="aug-9" /><span class="item-text">Final week: posters up, org bulletins scheduled, word-of-mouth script in helpers' hands.</span></label></li>
+          <li><label><input type="checkbox" data-key="aug-10" /><span class="item-text">Sketch a week-one content calendar: between the org rhythm, a gathering, the bulk buy, and library highlights, something real appears most weekdays.<span class="why">Not manufactured content — just scheduling what's genuinely happening so it doesn't clump.</span></span></label></li>
+        </ul>
+        <div class="callout guard"><strong>Guardrail:</strong> if the core group hasn't formed by late August — fewer than 10 active, library thin, no gathering held — move the launch date. A quiet extra month costs nothing. A dead launch month feeds the "another dead app" story and is expensive to undo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LAUNCH MONTH · SEPTEMBER ═══ -->
+<section class="month m-launch" id="m-launch">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Launch · September</span>
+        <h2>Open the doors, close every loop</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">Signups open to all of V6A. Your job flips from builder to concierge: every newcomer gets a human welcome, and no loop is allowed to stall. This is the highest-touch month of the six.</p>
+        <ul class="checklist" data-section="sep">
+          <li><label><input type="checkbox" data-key="sep-1" /><span class="item-text">Hold the launch gathering — the doorway moment. Core members each bring a neighbour.</span></label></li>
+          <li><label><input type="checkbox" data-key="sep-2" /><span class="item-text">Open broad signups: posters out, org announcements live, helpers using the word-of-mouth script.</span></label></li>
+          <li><label><input type="checkbox" data-key="sep-3" /><span class="item-text">Run the zero-unanswered-asks guarantee: sweep the feed twice a day; hand-route any stalled ask within hours ("Marcus has a truck — I'll text him").<span class="why">The platform can't fill this gap yet. You are the plumbing behind the neighbourhood that responds.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="sep-4" /><span class="item-text">Personally welcome every new member within 24 hours and connect them to someone who can vouch.</span></label></li>
+          <li><label><input type="checkbox" data-key="sep-5" /><span class="item-text">Get each newcomer to one real action in their first week: borrow something, RSVP, join a bulk buy.<span class="why">A member whose first week includes one closed loop comes back. One who only scrolled doesn't.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="sep-6" /><span class="item-text">Keep the weekly rhythm visible and unbroken: org post, standing gathering.</span></label></li>
+          <li><label><input type="checkbox" data-key="sep-7" /><span class="item-text">Post (or prompt) thank-yous naming real neighbours after everything that happens.<span class="why">Thank-yous are the feed's proof of life — they show newcomers that help actually lands here.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="sep-8" /><span class="item-text">Track three numbers weekly in the log: signups, time-to-first-action, ask fulfillment.</span></label></li>
+        </ul>
+        <div class="callout watch"><strong>Watch for the wobble:</strong> a dip in weeks two and three post-launch is normal, not failure. Respond with a gathering, not a notification blast — FIMBY doesn't tap shoulders, you do.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTH +1 · OCTOBER ═══ -->
+<section class="month m-plus1" id="m-plus1">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Month +1 · October</span>
+        <h2>From concierge to habit</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">Launch energy fades in October — habits have to replace it. Growth now travels through members rather than posters, and pieces of your job start moving to other hands.</p>
+        <ul class="checklist" data-section="oct">
+          <li><label><input type="checkbox" data-key="oct-1" /><span class="item-text">Start the second wave through members, not marketing: ask each active member, "who's one neighbour you'd vouch for?"<span class="why">Vouching means growth is inherently person-to-person. Use the chain, don't fight it.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="oct-2" /><span class="item-text">Establish the standing rhythm event — weekly movie night, monthly soup night — with a named host who isn't you.</span></label></li>
+          <li><label><input type="checkbox" data-key="oct-3" /><span class="item-text">Run a bulk buy that includes at least two post-launch members.</span></label></li>
+          <li><label><input type="checkbox" data-key="oct-4" /><span class="item-text">Hand one moderation duty (activations or welcomes) to a helper.</span></label></li>
+          <li><label><input type="checkbox" data-key="oct-5" /><span class="item-text">Check in on quiet members in person — a doorstep hello beats anything in-app.</span></label></li>
+          <li><label><input type="checkbox" data-key="oct-6" /><span class="item-text">First reciprocity pass: who has only given? Invite them to receive. Who has only received? Offer them a way to give.<span class="why">"Nobody stays the helper, nobody stays the helped" is the whole model — start tending it early.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="oct-7" /><span class="item-text">In the log, mark what's now carrying itself versus what only happens when you push.</span></label></li>
+          <li><label><input type="checkbox" data-key="oct-8" /><span class="item-text">Confirm the second org is posting on rhythm. If not, this is the month to land it.</span></label></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTH +2 · NOVEMBER ═══ -->
+<section class="month m-plus2" id="m-plus2">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Month +2 · November</span>
+        <h2>Let the network carry weight</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">Time to find out what the network can hold on its own. You deliberately step back in places, watch what stalls, and step in only where loops actually break.</p>
+        <ul class="checklist" data-section="nov">
+          <li><label><input type="checkbox" data-key="nov-1" /><span class="item-text">Stop hand-routing asks for one full week. Watch what happens.<span class="why">The stalls tell you exactly where the network is still thin. Step back in only there.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="nov-2" /><span class="item-text">Help one member post a Shared Life story about something real that happened between neighbours.<span class="why">Stories move the feed's centre of gravity from logistics to relationship.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="nov-3" /><span class="item-text">Review the vouch map: anyone unvouched or unconnected? Fix each one personally.</span></label></li>
+          <li><label><input type="checkbox" data-key="nov-4" /><span class="item-text">Host a "bring a neighbour" gathering — darker evenings are on your side; make it warm and easy.</span></label></li>
+          <li><label><input type="checkbox" data-key="nov-5" /><span class="item-text">Watch for second and third exchanges between the same pair of neighbours, and quietly celebrate them.<span class="why">Repeat pairs are the earliest signal that acquaintance is turning into relationship.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="nov-6" /><span class="item-text">Run the dashboard honestly (section below) and write down the gaps without flinching.</span></label></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTH +3/+4 · DECEMBER ═══ -->
+<section class="month m-plus3" id="m-plus3">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge">Months +3 &amp; +4 · December</span>
+        <h2>Prove it's alive, write it down</h2>
+        <span class="month-progress" data-progress></span>
+      </div>
+      <div class="month-body">
+        <p class="month-theme">The closing test: can this neighbourhood run without you for two weeks? And can what you learned become a kit someone else could follow? (The companion playbook file is where those lessons land.)</p>
+        <ul class="checklist" data-section="dec">
+          <li><label><input type="checkbox" data-key="dec-1" /><span class="item-text">Run the alive-test against the dashboard below. Green, yellow, or red — name it plainly.</span></label></li>
+          <li><label><input type="checkbox" data-key="dec-2" /><span class="item-text">Hold a thanksgiving gathering: celebrate the loops closed since September, by name. Seasonal timing is a gift — use it.</span></label></li>
+          <li><label><input type="checkbox" data-key="dec-3" /><span class="item-text">The succession test: step fully back for two weeks. Does the org rhythm hold? Do asks get answered? Do gatherings happen?</span></label></li>
+          <li><label><input type="checkbox" data-key="dec-4" /><span class="item-text">Turn the operator's log into the new-neighbourhood playbook: what you'd repeat, what you'd skip, what surprised you.</span></label></li>
+          <li><label><input type="checkbox" data-key="dec-5" /><span class="item-text">Decide with discipline: consolidate V6A, or begin discerning neighbourhood #2 — only if the full launch kit exists there.<span class="why">The waitlist tells you where people want FIMBY. The kit tells you where it can actually live.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="dec-6" /><span class="item-text">Thank your helpers and org partners properly, in person. They are the reason this worked.</span></label></li>
+        </ul>
+        <div class="callout guard"><strong>Guardrail:</strong> expansion is a supply decision, not a demand decision. A second neighbourhood launched without its own anchor host, orgs, and core group produces a dead hub — and a dead hub is worse than a waitlist.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WEEKLY RHYTHM ═══ -->
+<section class="band" id="rhythm">
+  <div class="container">
+    <h2>Your recurring rhythm</h2>
+    <p class="band-lede">The months change; this loop doesn't. It's the whole job in miniature, from September onward.</p>
+    <div class="rhythm-grid">
+      <div class="rhythm-col">
+        <h3>Most days</h3>
+        <ul>
+          <li>Sweep for unanswered asks — hand-route anything stalling</li>
+          <li>Welcome new signups within 24 hours</li>
+        </ul>
+      </div>
+      <div class="rhythm-col">
+        <h3>Every week</h3>
+        <ul>
+          <li>Confirm the org post went out</li>
+          <li>Attend or enable the standing gathering</li>
+          <li>Post or prompt one thank-you naming real neighbours</li>
+          <li>Check in on one quiet member, in person if you can</li>
+          <li>Write three lines in the operator's log</li>
+        </ul>
+      </div>
+      <div class="rhythm-col">
+        <h3>Every month</h3>
+        <ul>
+          <li>Dashboard review (below)</li>
+          <li>Reciprocity pass: only-givers and only-receivers</li>
+          <li>Helper check-in — are their roles still the right size?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DASHBOARD ═══ -->
+<section class="band" id="dashboard" style="margin-top:0;">
+  <div class="container">
+    <h2>What "alive" means here</h2>
+    <p class="band-lede">FIMBY's goal is relationship outside the app, so health is measured in loops closed and reciprocity — never in attention.</p>
+    <table class="dashboard">
+      <thead><tr><th>Measure</th><th>Healthy signal by December</th></tr></thead>
+      <tbody>
+        <tr><td>Ask fulfillment</td><td>Every ask answered — 100% while you're concierge; at least 90% within 48 hours once you step back.</td></tr>
+        <tr><td>Time to first response</td><td>Under 24 hours, consistently.</td></tr>
+        <tr><td>Loops closed per month</td><td>Loans completed and returned, bulk buys fulfilled, gatherings held — trending up, month over month.</td></tr>
+        <tr><td>Reciprocity ratio</td><td>At least half of active members have both given <em>and</em> received.</td></tr>
+        <tr><td>Vouch coverage</td><td>Every member vouched; no one stuck at the borrowing gate.</td></tr>
+        <tr><td>Repeat pairs</td><td>The same two neighbours interacting a second and third time — growing steadily.</td></tr>
+        <tr><td>Time to first action</td><td>New members complete one real action within their first week.</td></tr>
+      </tbody>
+    </table>
+    <p class="not-these"><strong>Deliberately not measured:</strong> daily active users, session length, post counts, scroll depth. If those ever become the scoreboard, the neighbourhood has already lost the plot.</p>
+  </div>
+</section>
+
+<!-- ═══ RED FLAGS ═══ -->
+<section class="month" id="flags" style="padding-top:0;">
+  <div class="container">
+    <div class="month-card">
+      <div class="month-head">
+        <span class="month-badge" style="background: var(--fimby-earth-terracotta);">Any month</span>
+        <h2>Red flags &amp; how to recover</h2>
+      </div>
+      <div class="month-body">
+        <ul class="flag-list">
+          <li><strong>An ask sits unanswered past 24 hours.</strong> Hand-route it today. This is the single most damaging cold-start event — the asker's worst fear, confirmed.</li>
+          <li><strong>The feed goes silent for three days or more.</strong> Don't fill it with noise. Check the org rhythm first, then announce or hold a gathering — one real event repopulates a week of feed.</li>
+          <li><strong>Signups pile up without activation or first actions.</strong> Your bottleneck is onboarding, not demand. Slow the promotion, speed up the welcomes.</li>
+          <li><strong>You're the only one posting.</strong> Stop posting and start prompting. Ask a member to share the thing you were about to share.</li>
+          <li><strong>Helpers going quiet.</strong> Their role is probably the wrong size. Shrink it before they disappear — a smaller kept commitment beats a bigger abandoned one.</li>
+          <li><strong>A dead fortnight.</strong> Recoverable — one warm gathering resets it. A dead quarter is what reads as "another dead app". Act at the fortnight.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>FIMBY · Family In My Backyard — operator's reference, first neighbourhood (V6A), 2026.<br />
+    Companion file: <a href="new-neighbourhood-playbook.html">New Neighbourhood Launch Playbook</a> — for every neighbourhood after this one.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORE = 'fimby-launch-v6a-checklist';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) {}
+
+  var boxes = document.querySelectorAll('input[type="checkbox"][data-key]');
+  boxes.forEach(function (box) {
+    if (saved[box.dataset.key]) box.checked = true;
+    box.addEventListener('change', function () {
+      saved[box.dataset.key] = box.checked;
+      try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (e) {}
+      updateProgress();
+    });
+  });
+
+  function updateProgress() {
+    document.querySelectorAll('.month-card').forEach(function (card) {
+      var label = card.querySelector('[data-progress]');
+      if (!label) return;
+      var all = card.querySelectorAll('input[type="checkbox"][data-key]');
+      if (!all.length) return;
+      var done = card.querySelectorAll('input[type="checkbox"][data-key]:checked').length;
+      label.textContent = done + ' / ' + all.length + (done === all.length ? ' ✓' : '');
+    });
+  }
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FIMBY — New Neighbourhood Launch Playbook</title>
+<style>
+  :root {
+    --fimby-surface-page: #F0EBE3;
+    --fimby-surface-section: #EBE6DD;
+    --fimby-surface-card: #FAF7F2;
+    --fimby-border-subtle: #E0D9CF;
+    --fimby-border-default: #D6CFC5;
+    --fimby-divider-default: rgba(38, 26, 17, 0.10);
+    --fimby-text-strong: #261A11;
+    --fimby-text-primary: #4A3526;
+    --fimby-text-secondary: #6F5B43;
+    --fimby-earth-teal: #2F6B78;
+    --fimby-earth-sage: #5B8760;
+    --fimby-earth-ochre: #A38045;
+    --fimby-earth-slate: #5E7B92;
+    --fimby-earth-terracotta: #B07248;
+    --fimby-earth-dusty-violet: #7E7495;
+    --fimby-earth-moss: #6B7D54;
+    --fimby-earth-driftwood: #8D7B6A;
+    --fimby-btn-primary-bg: #3A7D8C;
+    --fimby-radius-sm: 8px;
+    --fimby-radius-md: 12px;
+    --fimby-radius-lg: 16px;
+    --fimby-radius-full: 9999px;
+    --fimby-shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --fimby-shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .container { width: min(920px, calc(100% - 40px)); margin: 0 auto; }
+
+  /* ── Hero ── */
+  .page-hero {
+    background: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    padding: 44px 0 32px;
+    text-align: center;
+  }
+  .page-hero img.logo { height: 64px; margin-bottom: 14px; }
+  .page-hero h1 {
+    margin: 0 0 8px;
+    color: var(--fimby-text-strong);
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .page-hero .subtitle { color: var(--fimby-text-secondary); max-width: 60ch; margin: 0 auto; font-size: 1.02rem; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full); padding: 5px 14px; margin-bottom: 14px;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--fimby-text-secondary);
+  }
+  .eyebrow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fimby-earth-teal); }
+
+  .jump-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+  .jump-links a {
+    text-decoration: none; font-size: 0.82rem; font-weight: 600;
+    color: var(--fimby-earth-teal);
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full); padding: 5px 13px;
+    transition: background 0.15s ease;
+  }
+  .jump-links a:hover { background: var(--fimby-surface-section); }
+
+  /* ── Sections ── */
+  section.block { padding: 30px 0 4px; }
+  .card {
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card);
+    padding: 24px 28px; margin-bottom: 26px;
+  }
+  .card h2 { margin: 0 0 6px; color: var(--fimby-text-strong); font-size: 1.4rem; letter-spacing: -0.015em; }
+  .card .lede { margin: 0 0 16px; color: var(--fimby-text-secondary); }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    border-radius: var(--fimby-radius-md); padding: 5px 12px; margin-bottom: 12px;
+    background: var(--fimby-earth-teal);
+  }
+  .pull-quote {
+    font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-style: italic; font-size: 1.15rem; line-height: 1.5;
+    color: var(--fimby-text-strong);
+    border-left: 3px solid var(--fimby-earth-terracotta);
+    padding-left: 16px; margin: 18px 0;
+  }
+
+  /* ── Ingredient grid ── */
+  .ingredient-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 6px; }
+  .ingredient {
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-md); padding: 16px 18px;
+    border-top: 4px solid var(--fimby-earth-sage);
+  }
+  .ingredient:nth-child(2) { border-top-color: var(--fimby-earth-teal); }
+  .ingredient:nth-child(3) { border-top-color: var(--fimby-earth-ochre); }
+  .ingredient:nth-child(4) { border-top-color: var(--fimby-earth-slate); }
+  .ingredient:nth-child(5) { border-top-color: var(--fimby-earth-terracotta); }
+  .ingredient:nth-child(6) { border-top-color: var(--fimby-earth-dusty-violet); }
+  .ingredient h3 { margin: 0 0 6px; font-size: 1.02rem; color: var(--fimby-text-strong); }
+  .ingredient p { margin: 0; font-size: 0.92rem; }
+  .ingredient .must { display: inline-block; margin-top: 10px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fimby-earth-terracotta); }
+
+  /* ── Phases ── */
+  .phase { border-left: 4px solid var(--fimby-earth-sage); background: var(--fimby-surface-page); border-radius: var(--fimby-radius-md); padding: 18px 22px; margin-bottom: 16px; }
+  .phase.p2 { border-left-color: var(--fimby-earth-moss); }
+  .phase.p3 { border-left-color: var(--fimby-earth-teal); }
+  .phase.p4 { border-left-color: var(--fimby-earth-slate); }
+  .phase.p5 { border-left-color: var(--fimby-earth-terracotta); }
+  .phase h3 { margin: 0 0 2px; font-size: 1.08rem; color: var(--fimby-text-strong); }
+  .phase .phase-when { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fimby-text-secondary); }
+  .phase p.goal { margin: 8px 0 10px; font-size: 0.95rem; }
+  .phase ul { margin: 0; padding-left: 20px; font-size: 0.94rem; }
+  .phase li { margin-bottom: 6px; }
+  .phase .exit {
+    margin-top: 12px; padding: 10px 14px; font-size: 0.9rem;
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-sm);
+  }
+  .phase .exit strong { color: var(--fimby-earth-teal); }
+
+  /* ── Gate checklist ── */
+  ul.gate { list-style: none; margin: 0; padding: 0; }
+  ul.gate li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 4px; border-bottom: 1px solid var(--fimby-divider-default); }
+  ul.gate li:last-child { border-bottom: none; }
+  ul.gate .tick {
+    flex: 0 0 auto; width: 22px; height: 22px; margin-top: 2px;
+    border-radius: 50%; background: var(--fimby-earth-sage); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700;
+  }
+  ul.gate .gate-text strong { color: var(--fimby-text-strong); }
+  ul.gate .gate-text .why { display: block; font-size: 0.86rem; color: var(--fimby-text-secondary); }
+
+  /* ── Roles table ── */
+  table.roles { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  table.roles th, table.roles td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--fimby-divider-default); vertical-align: top; }
+  table.roles th { color: var(--fimby-text-strong); font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  table.roles td:first-child { font-weight: 600; color: var(--fimby-text-strong); white-space: nowrap; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: var(--fimby-radius-md);
+    padding: 14px 18px; margin-top: 16px;
+    background: var(--fimby-surface-page);
+    border-left: 4px solid var(--fimby-earth-ochre);
+    font-size: 0.94rem;
+  }
+  .callout strong { color: var(--fimby-text-strong); }
+  .callout.guard { border-left-color: var(--fimby-earth-terracotta); }
+  .callout.watch { border-left-color: var(--fimby-earth-slate); }
+
+  /* ── Not-yet list ── */
+  .flag-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .flag-list li {
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-left: 4px solid var(--fimby-earth-terracotta);
+    border-radius: var(--fimby-radius-md); padding: 13px 16px; font-size: 0.95rem;
+  }
+  .flag-list strong { color: var(--fimby-text-strong); display: block; margin-bottom: 2px; }
+
+  /* ── Bridge quote band ── */
+  .bridge-teal { padding: 8px 0 30px; }
+  .bridge-teal p {
+    margin: 0; background: var(--fimby-btn-primary-bg); color: #fff;
+    border-radius: 18px; padding: 26px 30px; text-align: center;
+    font-size: 1.18rem; line-height: 1.45; font-weight: 600;
+    box-shadow: var(--fimby-shadow-card); letter-spacing: -0.01em;
+  }
+
+  footer { padding: 24px 0 44px; text-align: center; color: var(--fimby-text-secondary); font-size: 0.86rem; }
+  footer a { color: var(--fimby-earth-teal); }
+
+  @media (max-width: 640px) {
+    .container { width: calc(100% - 24px); }
+    .card { padding: 18px 18px; }
+  }
+  @media print {
+    .jump-links { display: none; }
+    .card, .phase { box-shadow: none; break-inside: avoid; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="page-hero">
+  <div class="container">
+    <img class="logo" src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" />
+    <div><span class="eyebrow"><span class="eyebrow-dot"></span>Launch playbook · every neighbourhood after the first</span></div>
+    <h1>How a FIMBY neighbourhood gets started</h1>
+    <p class="subtitle">The repeatable kit for bringing FIMBY somewhere new — distilled from the first neighbourhood. Written so an anchor host, org partner, or launch teammate can follow it without the FIMBY team in the room.</p>
+    <nav class="jump-links">
+      <a href="#premise">The premise</a>
+      <a href="#kit">The launch kit</a>
+      <a href="#gate">Go / no-go gate</a>
+      <a href="#phases">The five phases</a>
+      <a href="#roles">Who does what</a>
+      <a href="#alive">Is it alive?</a>
+      <a href="#not-yet">When to say "not yet"</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ PREMISE ═══ -->
+<section class="block" id="premise">
+  <div class="container">
+    <div class="card">
+      <h2>The premise: small is the strategy</h2>
+      <p>Most social apps fail cold start because they need thousands of users before they're worth opening. FIMBY needs about twenty — in one geography, who can recognize each other. That's the whole game: assemble one <strong>atomic network</strong> of 15–30 neighbours, make it feel alive within weeks, and let trust do the growing.</p>
+      <p>Which means a FIMBY launch is not a marketing campaign. It's closer to organizing a really good block party — and then not letting the momentum die.</p>
+      <div class="pull-quote">A neighbourhood doesn't join FIMBY because it downloaded an app.<br />It joins because someone local decided their block should know each other, and did the work.</div>
+      <p>Three rules travel with every launch:</p>
+      <ul>
+        <li><strong>Offline first.</strong> The relationship precedes the app. Recruitment, welcome, and recovery all happen face to face; the app documents and extends what's already real.</li>
+        <li><strong>Protect the first ask.</strong> An unanswered ask is a trust wound. In a new neighbourhood's first months, someone owns making sure no ask ever goes quiet.</li>
+        <li><strong>Cadence beats volume.</strong> One weekly post the neighbourhood can count on beats ten sporadic ones. Predictability is what makes a small network feel alive.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE KIT ═══ -->
+<section class="block" id="kit">
+  <div class="container">
+    <div class="card">
+      <span class="kicker">The launch kit</span>
+      <h2>Six ingredients, no substitutions</h2>
+      <p class="lede">A neighbourhood launches when all six exist — not when enough people are curious. Missing ingredients are recruited, not waived.</p>
+      <div class="ingredient-grid">
+        <div class="ingredient">
+          <h3>1 · An anchor host</h3>
+          <p>One local person who owns the launch: convener, welcomer, first responder. They live there, they're known, and they've got roughly 4–6 hours a week for six months. Not a FIMBY staffer parachuted in.</p>
+          <span class="must">The kit fails without this</span>
+        </div>
+        <div class="ingredient">
+          <h3>2 · A core of 10–20 neighbours</h3>
+          <p>People the anchor host can name and recognize, each personally invited. This list <em>is</em> the launch — posters and press come later, if ever.</p>
+          <span class="must">Names, not estimates</span>
+        </div>
+        <div class="ingredient">
+          <h3>3 · Two orgs on a rhythm</h3>
+          <p>Churches, neighbourhood houses, community centres — each committed to one recurring post (a meal, a drop-in, a ride offer). Orgs are the feed's steady pulse when peer activity is quiet.</p>
+          <span class="must">Committed, not just supportive</span>
+        </div>
+        <div class="ingredient">
+          <h3>4 · A moderator</h3>
+          <p>Someone who activates accounts within 24 hours and gives every newcomer a human welcome. Often the anchor host at first — but named, and with FIMBY team support behind them.</p>
+        </div>
+        <div class="ingredient">
+          <h3>5 · A seeded library &amp; first bulk buy</h3>
+          <p>About 30 lendable items (every core member lists two or three) and one Costco-run bulk buy with a few committed participants. Single-player value that works before trust exists.</p>
+        </div>
+        <div class="ingredient">
+          <h3>6 · A standing gathering</h3>
+          <p>One recurring, low-key event — soup night, movie night, porch coffee — with a named host. Gatherings are the launch engine: each one generates a week of real feed content.</p>
+        </div>
+      </div>
+      <div class="callout watch"><strong>Also count the offline neighbours.</strong> FIMBY's support-person model means one account can carry elders or low-tech neighbours into the neighbourhood's life. Recruit supported participants deliberately — a 20-account launch can be a 35-person network.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GO / NO-GO GATE ═══ -->
+<section class="block" id="gate">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-terracotta);">The gate</span>
+      <h2>Go / no-go: the pre-launch checklist</h2>
+      <p class="lede">Run this the month before opening signups. Every line true, or the date moves. A delayed launch costs nothing; a dead hub is expensive and hard to restart.</p>
+      <ul class="gate">
+        <li><span class="tick">✓</span><span class="gate-text"><strong>The anchor host has done a seeding gathering</strong> and the core group signed up shoulder-to-shoulder.<span class="why">In-person signup surfaces every onboarding rough edge while help is standing right there.</span></span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>At least 10 core members are active</strong> — each has listed items, RSVP'd, or joined the bulk buy.<span class="why">Low-vulnerability actions first; asking for help comes after trust.</span></span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>Both orgs have already posted</strong> on their rhythm — before launch, not promised for after.</span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>One full loop has closed end-to-end:</strong> ask → response → help happened → thanks posted, by name.<span class="why">The feed must prove that asking works here before strangers arrive to test it.</span></span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>Every core member is vouched</strong> and the vouch flow has been practiced.</span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>Moderator activation runs in under 24 hours</strong>, with a personal welcome attached.</span></li>
+        <li><span class="tick">✓</span><span class="gate-text"><strong>The launch gathering has a date, a place, and food</strong> — and core members each know which neighbour they're bringing.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE FIVE PHASES ═══ -->
+<section class="block" id="phases">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-sage);">The arc</span>
+      <h2>Five phases, six months</h2>
+      <p class="lede">Every neighbourhood so far follows the same shape. Dates flex; the order and the exit tests don't. (The V6A timeline file holds the detailed month-by-month checklists behind these phases.)</p>
+
+      <div class="phase">
+        <h3>Phase 1 — Seed</h3>
+        <span class="phase-when">≈ two months before launch</span>
+        <p class="goal"><strong>Goal:</strong> assemble the kit. Entirely offline.</p>
+        <ul>
+          <li>Anchor host writes the list of 10–20 and invites each one personally — face to face, never a group text.</li>
+          <li>Helpers get small named roles (greeter, library steward, gathering host). A role is easier to say yes to than "help me".</li>
+          <li>Org rhythms locked: the post, the day, the person.</li>
+          <li>Seeding gathering held; library seeded to ~30 items; first bulk buy planted.</li>
+        </ul>
+        <div class="exit"><strong>Exit test:</strong> the six kit ingredients all exist, by name.</div>
+      </div>
+
+      <div class="phase p2">
+        <h3>Phase 2 — Rehearse</h3>
+        <span class="phase-when">≈ one month before launch</span>
+        <p class="goal"><strong>Goal:</strong> the core group builds habits, and every loop runs end-to-end at least once before an audience arrives.</p>
+        <ul>
+          <li>First on-app gathering: posted, RSVP'd, held, and thanked afterward by name.</li>
+          <li>2–3 safe first asks planted and answered within hours.</li>
+          <li>Onboarding dry-run with people who missed the seeding gathering; every confusion noted.</li>
+          <li>Week-one content calendar sketched — real things, scheduled so they don't clump.</li>
+        </ul>
+        <div class="exit"><strong>Exit test:</strong> the go / no-go gate above passes in full.</div>
+      </div>
+
+      <div class="phase p3">
+        <h3>Phase 3 — Open the doors</h3>
+        <span class="phase-when">Launch month</span>
+        <p class="goal"><strong>Goal:</strong> newcomers walk into a room where something is already happening. Highest-touch month of the six.</p>
+        <ul>
+          <li>Launch gathering first, broad signups second — the doorway is a table, not a poster.</li>
+          <li><strong>Zero-unanswered-asks guarantee:</strong> the anchor host sweeps the feed twice daily and hand-routes anything stalling ("Marcus has a truck — I'll text him").</li>
+          <li>Every newcomer welcomed within 24 hours and connected to someone who can vouch.</li>
+          <li>Every newcomer reaches one real action in week one: borrow, RSVP, or join a bulk buy.</li>
+        </ul>
+        <div class="exit"><strong>Exit test:</strong> weekly rhythm unbroken; every ask answered; new members acting, not just scrolling.</div>
+      </div>
+
+      <div class="phase p4">
+        <h3>Phase 4 — Hand over</h3>
+        <span class="phase-when">Months 1–2 after launch</span>
+        <p class="goal"><strong>Goal:</strong> habits replace launch energy, and the anchor host starts giving the job away.</p>
+        <ul>
+          <li>Second wave recruited through members, not marketing: "who's one neighbour you'd vouch for?"</li>
+          <li>Standing gathering gets a host who isn't the anchor.</li>
+          <li>One moderation duty handed to a helper; quiet members get a doorstep hello.</li>
+          <li>First reciprocity pass: only-givers invited to receive, only-receivers offered a way to give.</li>
+          <li>One deliberate week without hand-routing asks — the stalls show exactly where the network is still thin.</li>
+        </ul>
+        <div class="exit"><strong>Exit test:</strong> at least half the weekly rhythm happens without the anchor host pushing.</div>
+      </div>
+
+      <div class="phase p5">
+        <h3>Phase 5 — Prove &amp; record</h3>
+        <span class="phase-when">Months 3–4 after launch</span>
+        <p class="goal"><strong>Goal:</strong> demonstrate the neighbourhood runs without its founder, and bank the lessons.</p>
+        <ul>
+          <li>The succession test: anchor host steps fully back for two weeks. Rhythm holds? Asks answered? Gatherings happen?</li>
+          <li>A thanksgiving gathering celebrates the loops closed since launch, by name.</li>
+          <li>The operator's log becomes feedback into this playbook: what to repeat, skip, or change.</li>
+        </ul>
+        <div class="exit"><strong>Exit test:</strong> the "alive" dashboard below reads green — then, and only then, is this neighbourhood a template for the next one.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ROLES ═══ -->
+<section class="block" id="roles">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-slate);">Division of labour</span>
+      <h2>Who does what</h2>
+      <p class="lede">FIMBY grows one neighbourhood at a time because each launch needs local ownership. The split of responsibilities:</p>
+      <table class="roles">
+        <thead><tr><th>Role</th><th>Owns</th></tr></thead>
+        <tbody>
+          <tr><td>Anchor host (local)</td><td>The list of 10–20, personal invitations, the launch and standing gatherings, the zero-unanswered-asks guarantee, the operator's log.</td></tr>
+          <tr><td>Moderator (local)</td><td>Account activation within 24 hours, personal welcomes, connecting newcomers to a voucher. Often the anchor host at first.</td></tr>
+          <tr><td>Org partners (local)</td><td>One recurring post each, on a named day, by a named person. The feed's steady pulse.</td></tr>
+          <tr><td>Helpers (local)</td><td>Small named roles: greeter, library steward, gathering host. Sized to be kept, not heroic.</td></tr>
+          <tr><td>FIMBY team</td><td>The platform, onboarding materials, moderator training and backup, this playbook, and the go / no-go call alongside the anchor host.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>Sizing rule for helpers:</strong> when a helper goes quiet, their role is probably too big. Shrink it before they disappear — a smaller kept commitment beats a bigger abandoned one.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ALIVE DASHBOARD ═══ -->
+<section class="block" id="alive">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-ochre);">Health, not hype</span>
+      <h2>How we know a neighbourhood is alive</h2>
+      <p class="lede">FIMBY's purpose is relationship outside the app, so health is measured in loops closed and reciprocity — never attention. By month four post-launch:</p>
+      <table class="roles">
+        <thead><tr><th>Measure</th><th>Healthy signal</th></tr></thead>
+        <tbody>
+          <tr><td>Ask fulfillment</td><td>At least 90% of asks answered within 48 hours, without hand-routing.</td></tr>
+          <tr><td>Loops closed</td><td>Loans completed and returned, bulk buys fulfilled, gatherings held — rising month over month.</td></tr>
+          <tr><td>Reciprocity</td><td>Half of active members have both given <em>and</em> received. Nobody stays the helper; nobody stays the helped.</td></tr>
+          <tr><td>Repeat pairs</td><td>The same two neighbours interacting a second and third time — the earliest signal of real relationship.</td></tr>
+          <tr><td>Vouch coverage</td><td>Everyone vouched; no one stuck at the borrowing gate.</td></tr>
+          <tr><td>Succession</td><td>Two weeks without the anchor host, and the rhythm holds.</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px; font-size:0.9rem; color:var(--fimby-text-secondary);"><strong>Deliberately not measured:</strong> daily actives, session length, post counts. If those become the scoreboard, the neighbourhood has lost the plot.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHEN TO SAY NOT YET ═══ -->
+<section class="block" id="not-yet">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-terracotta);">Discipline</span>
+      <h2>When to say "not yet"</h2>
+      <p class="lede">The waitlist tells us where people <em>want</em> FIMBY. The kit tells us where it can actually <em>live</em>. Expansion is a supply decision, not a demand decision — these are the honest reasons to hold a launch:</p>
+      <ul class="flag-list">
+        <li><strong>No anchor host.</strong> Enthusiastic signups without a local owner produce a hub nobody tends. Recruit the host first; everything else follows them.</li>
+        <li><strong>A list of "interested people" instead of a list of names.</strong> If the host can't name 10–20 neighbours they recognize, the seeding phase hasn't happened yet.</li>
+        <li><strong>Orgs supportive but not committed.</strong> A letter of support doesn't post weekly meals. Wait for the rhythm to actually start.</li>
+        <li><strong>The launch would depend on the FIMBY team being present.</strong> If it can't run locally, it can't run. The team supports; it doesn't substitute.</li>
+        <li><strong>The previous neighbourhood isn't green yet.</strong> Each launch consumes the team's concierge capacity. A struggling hub plus a new launch usually means two struggling hubs.</li>
+      </ul>
+      <div class="callout guard"><strong>Why this matters:</strong> a dead hub is worse than a waitlist. A waitlisted neighbour stays hopeful; a neighbour who joined a silent feed becomes evidence for "another dead app" — and wins that argument on your behalf.</div>
+    </div>
+  </div>
+</section>
+
+<div class="bridge-teal">
+  <div class="container">
+    <p>FIMBY can't make anyone a good neighbour.<br />A launch just gives good neighbouring somewhere to grow.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>FIMBY · Family In My Backyard — new neighbourhood launch playbook, 2026.<br />
+    Companion file: <a href="first-neighbourhood-timeline.html">First Neighbourhood Launch Timeline (V6A)</a> — the detailed month-by-month checklists this playbook grew from.</p>
+  </div>
+</footer>
+
+</body>
+</html>
