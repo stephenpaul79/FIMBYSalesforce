@@ -44,37 +44,6 @@
                 </div>
 
 
-                <!-- ========== HOW NEIGHBOURS SEE YOU ========== -->
-                <div class="info-section">
-                    <h3 class="section-title">
-                        <img src={accountIconUrl} alt="" class="section-icon">
-                        How neighbours see you
-                    </h3>
-                    <div class="toggle-row toggle-row-with-description">
-                        <div class="toggle-row-header">
-                            <span class="toggle-label">Hide last name (initial only)</span>
-                            <input type="checkbox" class="toggle-switch"
-                                   checked={settings.maskLastName}
-                                   data-field="Mask_Last_Name__c"
-                                   data-key="maskLastName"
-                                   onchange={handlePrivacyToggle}>
-                        </div>
-                        <span class="toggle-description">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</span>
-                    </div>
-                    <div class="toggle-row toggle-row-with-description">
-                        <div class="toggle-row-header">
-                            <span class="toggle-label">Hide profile photo (initials only)</span>
-                            <input type="checkbox" class="toggle-switch"
-                                   checked={settings.maskAvatar}
-                                   data-field="Mask_Avatar__c"
-                                   data-key="maskAvatar"
-                                   onchange={handlePrivacyToggle}>
-                        </div>
-                        <span class="toggle-description">Neighbours will see your initials instead of your photo.</span>
-                    </div>
-                </div>
-
-
                 <!-- ========== 2. NOTIFICATIONS & EMAIL ========== -->
                 <div class="info-section">
                     <h3 class="section-title">
@@ -203,6 +172,36 @@
                             <span class="settings-label">Account &amp; Safety</span>
                             <span class="toggle-description">We always send important account safety messages — password resets, login alerts, account changes, and vouching activity. There's no toggle for these.</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ========== HOW NEIGHBOURS SEE YOU ========== -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <img src={accountIconUrl} alt="" class="section-icon">
+                        How neighbours see you
+                    </h3>
+                    <div class="toggle-row toggle-row-with-description">
+                        <div class="toggle-row-header">
+                            <span class="toggle-label">Hide last name (initial only)</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.maskLastName}
+                                   data-field="Mask_Last_Name__c"
+                                   data-key="maskLastName"
+                                   onchange={handlePrivacyToggle}>
+                        </div>
+                        <span class="toggle-description">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</span>
+                    </div>
+                    <div class="toggle-row toggle-row-with-description">
+                        <div class="toggle-row-header">
+                            <span class="toggle-label">Hide profile photo (initials only)</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.maskAvatar}
+                                   data-field="Mask_Avatar__c"
+                                   data-key="maskAvatar"
+                                   onchange={handlePrivacyToggle}>
+                        </div>
+                        <span class="toggle-description">Neighbours will see your initials instead of your photo.</span>
                     </div>
                 </div>
 
