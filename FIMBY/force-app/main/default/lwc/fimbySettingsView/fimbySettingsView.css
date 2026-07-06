@@ -213,6 +213,24 @@
     border-bottom: none;
 }
 
+.toggle-row-with-description {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+}
+
+.toggle-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.toggle-row-with-description .toggle-description {
+    margin-top: 0;
+}
+
 .toggle-label {
     font-size: 0.9rem;
     font-weight: 500;

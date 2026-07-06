@@ -50,27 +50,27 @@
                         <img src={accountIconUrl} alt="" class="section-icon">
                         How neighbours see you
                     </h3>
-                    <div class="settings-row">
-                        <div>
-                            <span class="settings-label">Hide last name (initial only)</span>
-                            <span class="toggle-description">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</span>
+                    <div class="toggle-row toggle-row-with-description">
+                        <div class="toggle-row-header">
+                            <span class="toggle-label">Hide last name (initial only)</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.maskLastName}
+                                   data-field="Mask_Last_Name__c"
+                                   data-key="maskLastName"
+                                   onchange={handlePrivacyToggle}>
                         </div>
-                        <input type="checkbox" class="toggle-switch"
-                               checked={settings.maskLastName}
-                               data-field="Mask_Last_Name__c"
-                               data-key="maskLastName"
-                               onchange={handlePrivacyToggle}>
+                        <span class="toggle-description">Neighbours will see your first name and last initial (e.g. &ldquo;Sarah M.&rdquo;) instead of your full name.</span>
                     </div>
-                    <div class="settings-row">
-                        <div>
-                            <span class="settings-label">Hide profile photo (initials only)</span>
-                            <span class="toggle-description">Neighbours will see your initials instead of your photo.</span>
+                    <div class="toggle-row toggle-row-with-description">
+                        <div class="toggle-row-header">
+                            <span class="toggle-label">Hide profile photo (initials only)</span>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={settings.maskAvatar}
+                                   data-field="Mask_Avatar__c"
+                                   data-key="maskAvatar"
+                                   onchange={handlePrivacyToggle}>
                         </div>
-                        <input type="checkbox" class="toggle-switch"
-                               checked={settings.maskAvatar}
-                               data-field="Mask_Avatar__c"
-                               data-key="maskAvatar"
-                               onchange={handlePrivacyToggle}>
+                        <span class="toggle-description">Neighbours will see your initials instead of your photo.</span>
                     </div>
                 </div>
 
@@ -122,6 +122,24 @@
                         </p>
                     </template>
 
+                    <!-- Neighbourhood Digest Email -->
+                    <div class="settings-row">
+                        <span class="settings-label">Neighbourhood Digest Email</span>
+                        <select class="settings-select" onchange={handleEmailFrequencyChange}>
+                            <template for:each={emailFrequencyOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value}
+                                        selected={opt.selected}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                    <template lwc:if={showDigestHint}>
+                        <p class="settings-inline-hint" role="status">
+                            <strong class="settings-inline-hint-title">Staying in the loop</strong>
+                            We send a daily roundup of what&rsquo;s happening on your street so you don&rsquo;t have to keep checking back. Pick a different rhythm here anytime.
+                            <button type="button" class="settings-inline-hint-dismiss" onclick={handleDismissDigestHint}>Got it</button>
+                        </p>
+                    </template>
+
                     <!-- Category grid -->
                     <div class="category-grid">
                         <div class="category-header">
@@ -167,27 +185,6 @@
                                    onchange={handleToggle}>
                         </div>
                     </div>
-
-                    <!-- Divider -->
-                    <div class="settings-divider"></div>
-
-                    <!-- Neighbourhood Digest -->
-                    <div class="settings-row">
-                        <span class="settings-label">Neighbourhood Digest</span>
-                        <select class="settings-select" onchange={handleEmailFrequencyChange}>
-                            <template for:each={emailFrequencyOptions} for:item="opt">
-                                <option key={opt.value} value={opt.value}
-                                        selected={opt.selected}>{opt.label}</option>
-                            </template>
-                        </select>
-                    </div>
-                    <template lwc:if={showDigestHint}>
-                        <p class="settings-inline-hint" role="status">
-                            <strong class="settings-inline-hint-title">Staying in the loop</strong>
-                            We send a daily roundup of what&rsquo;s happening on your street so you don&rsquo;t have to keep checking back. Pick a different rhythm here anytime.
-                            <button type="button" class="settings-inline-hint-dismiss" onclick={handleDismissDigestHint}>Got it</button>
-                        </p>
-                    </template>
 
                     <!-- Divider -->
                     <div class="settings-divider"></div>
