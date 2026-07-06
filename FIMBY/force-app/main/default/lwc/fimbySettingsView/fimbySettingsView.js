@@ -112,13 +112,18 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track showPushPermissionModal = false;
     _pushResultHandler = null;
 
-    // Biometric app lock (native app only). Capability + current state are read
-    // from window.__FIMBY_APP_LOCK__ (injected by the shell); the shell confirms
-    // enable/disable via window.__fimbyAppLockResult after a biometric check.
+    // Biometric app lock (native app only). Capability + current enabled state
+    // are pulled on-demand at connectedCallback via an appLockCapabilityRequest
+    // message — the shell replies through window.__fimbyAppLockCapabilityResult.
+    // This avoids racing first paint against async LocalAuthentication reads.
+    // The shell also confirms enable/disable via window.__fimbyAppLockResult
+    // after each biometric prompt.
     @track appLockAvailable = false;
     @track appLockEnabled = false;
     @track appLockMethodLabel = 'biometric unlock';
     _appLockResultHandler = null;
+    _appLockCapabilityHandler = null;
+    _appLockCapabilityTimeout = null;
     _appLockPending = null;
 
     // Fun stuff
@@ -312,6 +317,14 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             delete window.__fimbyAppLockResult;
         }
         this._appLockResultHandler = null;
+        if (this._appLockCapabilityHandler && window.__fimbyAppLockCapabilityResult === this._appLockCapabilityHandler) {
+            delete window.__fimbyAppLockCapabilityResult;
+        }
+        this._appLockCapabilityHandler = null;
+        if (this._appLockCapabilityTimeout) {
+            clearTimeout(this._appLockCapabilityTimeout);
+            this._appLockCapabilityTimeout = null;
+        }
         if (this._successTimer) {
             clearTimeout(this._successTimer);
             this._successTimer = null;
@@ -330,17 +343,40 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         }
     }
 
+    // Ask the shell — on Settings mount — whether biometrics are available on
+    // this device and whether the user has the lock enabled. The reply comes
+    // back through window.__fimbyAppLockCapabilityResult (registered here).
+    // Older app builds that don't understand the message simply never reply,
+    // and the safety timeout leaves the section hidden.
     _initAppLock() {
-        try {
-            const cap = window.__FIMBY_APP_LOCK__;
-            if (cap && typeof cap === 'object') {
-                this.appLockAvailable = cap.available === true;
-                this.appLockEnabled = cap.enabled === true;
-                this.appLockMethodLabel = this._appLockLabelForType(cap.type);
+        if (!this.isInFimbyApp) return;
+
+        this._appLockCapabilityHandler = (payload) => {
+            if (this._appLockCapabilityTimeout) {
+                clearTimeout(this._appLockCapabilityTimeout);
+                this._appLockCapabilityTimeout = null;
             }
-        } catch {
-            // Bridge unavailable (desktop web) — section stays hidden.
-        }
+            if (!payload || typeof payload !== 'object') return;
+            this.appLockAvailable = payload.available === true;
+            this.appLockEnabled = payload.enabled === true;
+            this.appLockMethodLabel = this._appLockLabelForType(payload.type);
+        };
+        try {
+            window.__fimbyAppLockCapabilityResult = this._appLockCapabilityHandler;
+        } catch { /* native bridge / LWS unavailable */ }
+
+        try {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'appLockCapabilityRequest'
+                }));
+            }
+        } catch { /* native bridge unavailable */ }
+
+        this._appLockCapabilityTimeout = setTimeout(() => {
+            this._appLockCapabilityTimeout = null;
+            // No reply within the safety window — leave the section hidden.
+        }, 500);
     }
 
     // The native shell calls window.__fimbyAppLockResult({ granted, enabled })

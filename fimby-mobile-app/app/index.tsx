@@ -2328,6 +2328,17 @@ export default function IndexScreen() {
         } else if (data.type === "appLock" && typeof data.enabled === "boolean") {
           log("[WebView] App lock toggle requested:", data.enabled);
           void handleAppLockToggle(data.enabled);
+        } else if (data.type === "appLockCapabilityRequest") {
+          // Settings LWC asks on mount so it never renders based on stale
+          // first-paint data. Detection long since resolved by this point.
+          const payload = JSON.stringify({
+            available: appLockCapability.available,
+            type: appLockCapability.type,
+            enabled: appLockEnabledRef.current,
+          });
+          webViewRef.current?.injectJavaScript(
+            `window.__fimbyAppLockCapabilityResult && window.__fimbyAppLockCapabilityResult(${payload}); true;`
+          );
         } else if (data.type === "logout") {
           // Explicit, user-initiated logout from inside the WebView (header,
           // account deletion). Native owns teardown so a real logout is never
@@ -2339,7 +2350,7 @@ export default function IndexScreen() {
         // Not JSON or not a message we handle
       }
     },
-    [syncPushRegistration, completeLogout, markWebViewShellReady, handleAppLockToggle]
+    [syncPushRegistration, completeLogout, markWebViewShellReady, handleAppLockToggle, appLockCapability]
   );
 
   /**
@@ -3223,11 +3234,11 @@ export default function IndexScreen() {
           textZoom={100}
           applicationNameForUserAgent="FIMBY-WebView/1.0"
           injectedJavaScriptBeforeContentLoaded={
-            `window.__FIMBY_NATIVE_APP__ = true; window.__FIMBY_APP_LOCK__ = ${JSON.stringify({
-              available: appLockCapability.available,
-              type: appLockCapability.type,
-              enabled: appLockEnabled,
-            })}; true;`
+            // Only the always-true "am I in the native app" flag is injected up
+            // front. Biometric capability is a Settings-only concern; the LWC
+            // pulls it on-demand via an appLockCapabilityRequest message so we
+            // never race first paint against async LocalAuthentication reads.
+            `window.__FIMBY_NATIVE_APP__ = true; true;`
           }
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onNavigationStateChange={onNavigationStateChange}
