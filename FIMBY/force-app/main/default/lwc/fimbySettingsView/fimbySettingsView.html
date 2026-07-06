@@ -209,6 +209,25 @@
                     </div>
                 </div>
 
+                <!-- ========== APP SECURITY (native app only, biometric-capable devices) ========== -->
+                <template lwc:if={showAppLock}>
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <img src={accountIconUrl} alt="" class="section-icon">
+                            App security
+                        </h3>
+                        <div class="toggle-row">
+                            <div>
+                                <span class="toggle-label">{appLockToggleLabel}</span>
+                                <span class="toggle-description">Adds a lock when the app opens, so your neighbourhood stays yours even if someone borrows your phone.</span>
+                            </div>
+                            <input type="checkbox" class="toggle-switch"
+                                   checked={appLockEnabled}
+                                   onchange={handleAppLockToggle}>
+                        </div>
+                    </div>
+                </template>
+
                 <!-- ========== 3a. UPDATES ABOUT FIMBY ITSELF ========== -->
                 <!--
                     Separate from the transactional notification matrix above.

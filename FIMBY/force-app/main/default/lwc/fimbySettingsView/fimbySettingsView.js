@@ -112,6 +112,15 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track showPushPermissionModal = false;
     _pushResultHandler = null;
 
+    // Biometric app lock (native app only). Capability + current state are read
+    // from window.__FIMBY_APP_LOCK__ (injected by the shell); the shell confirms
+    // enable/disable via window.__fimbyAppLockResult after a biometric check.
+    @track appLockAvailable = false;
+    @track appLockEnabled = false;
+    @track appLockMethodLabel = 'biometric unlock';
+    _appLockResultHandler = null;
+    _appLockPending = null;
+
     // Fun stuff
     @track funToggleGifUrl = null;
     _confettiLoaded = false;
@@ -158,6 +167,16 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
 
     get showStoreBadges() {
         return !this.isInFimbyApp && !!this.iosStoreUrl && !!this.androidStoreUrl;
+    }
+
+    // Only in the native app, and only on devices that actually have biometrics
+    // enrolled — desktop/web and non-capable devices never see this.
+    get showAppLock() {
+        return this.isInFimbyApp && this.appLockAvailable;
+    }
+
+    get appLockToggleLabel() {
+        return `Require ${this.appLockMethodLabel} to open FIMBY`;
     }
     get themeLightIconUrl() { return `${IMPACT_ICONS}/lightbulb.png`; }
     get themeDarkIconUrl() { return `${IMPACT_ICONS}/moon.png`; }
@@ -279,6 +298,8 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     async connectedCallback() {
         this._loadThemeCacheFast();
         this._registerPushResultBridge();
+        this._initAppLock();
+        this._registerAppLockBridge();
         await this.loadSettings();
     }
 
@@ -287,10 +308,77 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             delete window.__fimbyPushResult;
         }
         this._pushResultHandler = null;
+        if (this._appLockResultHandler && window.__fimbyAppLockResult === this._appLockResultHandler) {
+            delete window.__fimbyAppLockResult;
+        }
+        this._appLockResultHandler = null;
         if (this._successTimer) {
             clearTimeout(this._successTimer);
             this._successTimer = null;
         }
+    }
+
+    // ============================================
+    // APP SECURITY (biometric app lock — native only)
+    // ============================================
+    _appLockLabelForType(type) {
+        switch (type) {
+            case 'faceId': return 'Face ID';
+            case 'touchId': return 'Touch ID';
+            case 'fingerprint': return 'fingerprint';
+            default: return 'biometric unlock';
+        }
+    }
+
+    _initAppLock() {
+        try {
+            const cap = window.__FIMBY_APP_LOCK__;
+            if (cap && typeof cap === 'object') {
+                this.appLockAvailable = cap.available === true;
+                this.appLockEnabled = cap.enabled === true;
+                this.appLockMethodLabel = this._appLockLabelForType(cap.type);
+            }
+        } catch {
+            // Bridge unavailable (desktop web) — section stays hidden.
+        }
+    }
+
+    // The native shell calls window.__fimbyAppLockResult({ granted, enabled })
+    // after it runs the biometric confirm for an enable/disable request. On a
+    // cancel/failure we revert the toggle to its previous state so the UI never
+    // claims a lock that isn't actually armed.
+    _registerAppLockBridge() {
+        this._appLockResultHandler = (payload) => {
+            const granted = payload && payload.granted;
+            if (granted) {
+                if (typeof payload.enabled === 'boolean') {
+                    this.appLockEnabled = payload.enabled;
+                }
+            } else if (this._appLockPending !== null) {
+                // Revert to the state before the user flipped it.
+                this.appLockEnabled = !this._appLockPending;
+            }
+            this._appLockPending = null;
+        };
+        try {
+            window.__fimbyAppLockResult = this._appLockResultHandler;
+        } catch { /* native bridge / LWS unavailable */ }
+    }
+
+    handleAppLockToggle(event) {
+        const desired = event.target.checked;
+        // Optimistic; the shell confirms (or reverts via __fimbyAppLockResult)
+        // after the biometric check.
+        this._appLockPending = desired;
+        this.appLockEnabled = desired;
+        try {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'appLock',
+                    enabled: desired
+                }));
+            }
+        } catch { /* native bridge unavailable */ }
     }
 
     // The native shell calls window.__fimbyPushResult({ granted }) after it

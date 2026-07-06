@@ -1,8 +1,10 @@
 import * as AuthSession from "expo-auth-session";
+import * as LocalAuthentication from "expo-local-authentication";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEventListener } from "expo";
 import { StatusBar } from "expo-status-bar";
@@ -12,9 +14,9 @@ import React, { useRef, useCallback } from "react";
 import {
   AccessibilityInfo,
   ActivityIndicator,
-  Alert,
   Animated,
   AppState,
+  BackHandler,
   Easing,
   Image,
   Platform,
@@ -117,6 +119,37 @@ const SPLASH_BG = '#F0EBE3';
 
 const THEME_STORAGE_KEY = 'fimby_app_theme';
 
+// Pre-auth inline cards — warm, themed replacements for the old OS Alert.alert
+// modals. Rendered on the pre-auth screen (logo stays above) with the action
+// button right there, instead of a jarring system dialog.
+type PreAuthCardId = 'session' | 'door' | 'signin-failed' | 'offline';
+
+const PRE_AUTH_CARDS: Record<
+  PreAuthCardId,
+  { heading: string; body: string; button: string | null }
+> = {
+  session: {
+    heading: "Welcome back!",
+    body: "It's been a little while, so we signed you out to keep your account safe. Come on in.",
+    button: "Sign in",
+  },
+  door: {
+    heading: "Hmm, the door's jammed.",
+    body: "We couldn't open your neighbourhood. Give it another try in a moment.",
+    button: "Try again",
+  },
+  'signin-failed': {
+    heading: "Hmmm that didn't work",
+    body: "Something got tangled up. Let's try that sign-in once more.",
+    button: "Try again",
+  },
+  offline: {
+    heading: "You're offline right now",
+    body: "No rush. We'll be open for business when you're back online.",
+    button: null,
+  },
+};
+
 const FAREWELL_MESSAGES = [
   "Sweet dreams, neighbour.",
   "Night night! See you in the morning.",
@@ -152,6 +185,49 @@ const SF_AUTH_HOST = "https://fimby.my.site.com";
 // Key names in SecureStore
 const REFRESH_KEY = "fimby_refresh_token";
 
+// Push-permission primer: shown at most once per install. We record when it was
+// shown (either choice) and, separately, when the user chose "Not now" so we can
+// respect that decision and never auto-re-ask.
+const PUSH_PRIMER_SHOWN_KEY = "fimby_push_primer_shown";
+const PUSH_PRIMER_DECLINED_KEY = "fimby_push_primer_declined_at";
+
+// Biometric app lock: opt-in, stored per install. Locks on cold launch and on
+// resume after a long absence (see threshold). Cleared on sign-out.
+const APP_LOCK_ENABLED_KEY = "fimby_app_lock_enabled";
+const APP_LOCK_RESUME_THRESHOLD_MS = 5 * 60 * 1000;
+
+type BiometricType = 'faceId' | 'touchId' | 'fingerprint' | 'none';
+
+// Map the OS's supported authentication types to the device-specific term Apple
+// HIG requires (never say "Face ID" on a Touch ID device). Android collapses to
+// the generic "fingerprint".
+function resolveBiometricType(
+  types: LocalAuthentication.AuthenticationType[]
+): BiometricType {
+  const hasFace = types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
+  const hasFinger = types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
+  if (Platform.OS === 'ios') {
+    if (hasFace) return 'faceId';
+    if (hasFinger) return 'touchId';
+    return 'none';
+  }
+  if (hasFinger || hasFace) return 'fingerprint';
+  return 'none';
+}
+
+function biometricMethodLabel(type: BiometricType): string {
+  switch (type) {
+    case 'faceId':
+      return 'Face ID';
+    case 'touchId':
+      return 'Touch ID';
+    case 'fingerprint':
+      return 'fingerprint';
+    default:
+      return 'biometric unlock';
+  }
+}
+
 // Endpoints
 const BACKEND_LOGIN_AND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/login-and-frontdoor`;
 const BACKEND_REFRESH_URL = `${BACKEND_BASE_URL}/api/session/refresh`;
@@ -164,10 +240,43 @@ const BACKEND_PUSH_ACTION_URL = `${BACKEND_BASE_URL}/api/notifications/action`;
  *  kettle moment), this is the message shown in that gap. */
 const BOOTSTRAP_LOADING_MESSAGE = "Herding the dust bunnies…";
 
+/** Loading-phrase pool for the kettle handoff overlay. One is chosen at random
+ *  per launch (see LAUNCH_PHRASES) so each cold start feels a little different;
+ *  the phrase stays put while visible and only rotates on a long wait (>5s), so
+ *  slow readers and screen-reader users aren't fighting a moving target. */
+const LOADING_PHRASES = [
+  "Putting the kettle on…",
+  "Raking up the leaves…",
+  "Sweeping the front porch…",
+  "Letting folks know you're here…",
+  "Setting out some cookies…",
+  "Checking the mailbox…",
+  "Turning on the porch light…",
+];
+
+function shuffledPhrases(): string[] {
+  const a = [...LOADING_PHRASES];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Shuffled once per JS launch: different order each cold start, stable while a
+// given phrase is on screen. LAUNCH_PHRASES[0] is the initial kettle caption.
+const LAUNCH_PHRASES = shuffledPhrases();
+
+// Rotation timing: hold the first phrase for a while, then advance gently only
+// when the wait is genuinely long, so variety appears exactly when there's time
+// to enjoy it (never mid-read on a fast handoff).
+const LOADING_ROTATE_START_MS = 5000;
+const LOADING_ROTATE_INTERVAL_MS = 4000;
+
 /** WebView handoff overlay — the FINAL loading state before the app, triggered
  *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
  *  everyone right before they land in the app. */
-const WEBVIEW_HANDOFF_MESSAGE = "Putting the kettle on…";
+const WEBVIEW_HANDOFF_MESSAGE = LAUNCH_PHRASES[0];
 const WEBVIEW_HANDOFF_MIN_MS = 1000;
 const WEBVIEW_HANDOFF_FADE_MS = 550;
 /** If the EC shell never posts quietHours (Apex/bridge failure), lift the kettle
@@ -364,6 +473,23 @@ function parseFimbyDeepLink(rawUrl: string): string | null {
   }
 }
 
+/**
+ * True when the app was opened from the FimbyAppHandoff Visualforce page (the
+ * post-set-password "Open the FIMBY app" button carries ?src=handoff). When
+ * this fires we run the next OAuth prompt non-ephemerally once, so the sign-in
+ * sheet can reuse the live fimby.my.site.com cookie the browser just set —
+ * turning a password retype into a tap-through. See item 9 in the pre-auth plan.
+ */
+function isHandoffDeepLink(rawUrl: string): boolean {
+  try {
+    const u = new URL(rawUrl);
+    if (u.hostname.toLowerCase() !== APP_LINK_HOST) return false;
+    return u.searchParams.get("src") === "handoff";
+  } catch {
+    return false;
+  }
+}
+
 // Your Salesforce PKCE Connected App Client Id (Public client)
 const SF_PKCE_CLIENT_ID =
   "3MVG9p1Q1BCe9GmAritiW5LdGnQ5D.mAz06DvuBuDIjAQFVoo7meaVL8frF_wqAhScnkYePDt4XndVqdUooO8";
@@ -491,6 +617,44 @@ export default function IndexScreen() {
     return () => sub.remove();
   }, []);
 
+  // Biometric capability detection + cold-launch lock gate. Runs once on mount.
+  React.useEffect(() => {
+    (async () => {
+      let available = false;
+      let type: BiometricType = 'none';
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+        type = resolveBiometricType(types);
+        available = hasHardware && enrolled && type !== 'none';
+      } catch {
+        available = false;
+      }
+      let enabledStored = false;
+      try {
+        enabledStored = (await SecureStore.getItemAsync(APP_LOCK_ENABLED_KEY)) === 'true';
+      } catch {
+        enabledStored = false;
+      }
+      const enabled = enabledStored && available;
+      setAppLockCapability({ available, type });
+      setAppLockEnabled(enabled);
+      appLockEnabledRef.current = enabled;
+      // Cold-launch gate: if the lock is on, cover the screen until the user
+      // proves it's them. EC can still load behind the lock for a fast unlock.
+      if (enabled) {
+        setLocked(true);
+      }
+    })();
+  }, []);
+
+  // Warm/cold splash decision. null = still deciding (SecureStore read in
+  // flight); 'video' = cold/signed-out launch, play the full mp4 ceremony;
+  // 'static' = warm start (stored token) or reduced-motion — skip the mp4 and
+  // go straight to the themed branded screen + loading states.
+  const [splashDecision, setSplashDecision] = React.useState<'video' | 'static' | null>(null);
+
   // Splash video state - track separately so bootstrap can run in parallel
   const [splashVideoComplete, setSplashVideoComplete] = React.useState(false);
   // Ref mirror so showWebViewHandoff can tell, without re-binding, whether the
@@ -506,12 +670,27 @@ export default function IndexScreen() {
   // Track bootstrap errors for retry functionality
   const [bootstrapError, setBootstrapError] = React.useState<'network' | 'other' | null>(null);
 
+  // Inline pre-auth card (replaces the old OS Alert.alert modals). Shown on the
+  // pre-auth screen; `detail` carries optional small-print (e.g. a raw OAuth
+  // error for support). See PRE_AUTH_CARDS for copy.
+  const [preAuthCard, setPreAuthCard] = React.useState<{ id: PreAuthCardId; detail?: string } | null>(null);
+
   // WebView state
   const [webViewUrl, setWebViewUrl] = React.useState<string | null>(null);
   // Bumped to force a full remount of the native WebView when its content
   // process is terminated (iOS) or killed (Android) — recovers a blank page.
   const [webViewKey, setWebViewKey] = React.useState(0);
   const [webViewError, setWebViewError] = React.useState<string | null>(null);
+  // In-session WebView offline state (load failed with no connectivity). Shows a
+  // themed offline overlay instead of the generic error screen; auto-reloads on
+  // reconnect.
+  const [webViewOffline, setWebViewOffline] = React.useState(false);
+  const webViewOfflineRef = useRef(false);
+  // Latest known connectivity, updated by the NetInfo subscription. null/unknown
+  // internet-reachability is treated as connected (don't false-alarm offline).
+  const netConnectedRef = useRef(true);
+  // True while the pre-auth offline card is up, so a reconnect can auto-resume.
+  const offlineCardActiveRef = useRef(false);
   // True while the WebView is sitting on the Experience Cloud /error route, so
   // we can overlay our own recovery card (the EC error page has no navigation).
   const [stuckOnErrorPage, setStuckOnErrorPage] = React.useState(false);
@@ -519,6 +698,9 @@ export default function IndexScreen() {
   // Caption for the single deferred loading overlay; swaps in place from the
   // "bunny" (pre-frontdoor) line to the "kettle" (WebView loading) line.
   const [loadingCaption, setLoadingCaption] = React.useState(WEBVIEW_HANDOFF_MESSAGE);
+  // True only in the kettle phase (not the pre-frontdoor "bunny" phase): enables
+  // the slow phrase rotation on long waits.
+  const [loadingRotates, setLoadingRotates] = React.useState(false);
   const webViewHandoffFade = useRef(new Animated.Value(1)).current;
   const webViewHandoffShownAtRef = useRef<number | null>(null);
   const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
@@ -608,14 +790,12 @@ export default function IndexScreen() {
   const splashFadeAnim = useRef(new Animated.Value(0)).current;
   const splashFadeStartedRef = useRef(false);
 
-  // Deferred alert to show after splash video completes
-  const pendingAlertRef = useRef<{ title: string; message: string } | null>(null);
-
-  // Create video player for splash screen
+  // Create video player for splash screen. Playback is NOT started here — the
+  // warm/cold decision below (splashDecision) starts it only for cold/signed-out
+  // launches. Warm starts and reduced-motion skip the ceremony entirely.
   const splashPlayer = useVideoPlayer(SPLASH_VIDEO, (player) => {
     player.loop = false;
     player.timeUpdateEventInterval = 0.25;
-    player.play();
   });
 
   // Handle splash video completion using expo-video event system
@@ -637,8 +817,55 @@ export default function IndexScreen() {
     }).start();
   });
 
+  // Warm/cold splash decision (runs once on mount). A stored refresh token means
+  // this is a returning neighbour — skip the mp4 ceremony and land them faster
+  // on the themed loading screen that dissolves into the app. Reduced-motion
+  // users always get the static path (see item 4). A cold/signed-out launch
+  // plays the full branded animation, keeping the ceremony with the sign-in
+  // moment.
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let staticSplash = false;
+      try {
+        staticSplash = await AccessibilityInfo.isReduceMotionEnabled();
+      } catch {
+        staticSplash = false;
+      }
+      if (!staticSplash) {
+        try {
+          const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
+          staticSplash = !!refresh;
+        } catch {
+          staticSplash = false;
+        }
+      }
+      if (cancelled) return;
+      if (staticSplash) {
+        setSplashDecision('static');
+        // No video ceremony: treat the splash as already complete so the loading
+        // orchestration (kettle handoff, bootstrap spinner) takes over at once.
+        setSplashVideoComplete(true);
+      } else {
+        setSplashDecision('video');
+        try {
+          splashPlayer.play();
+        } catch {
+          // If playback can't start, fall through to the static path so the
+          // user is never stuck behind a paused frame.
+          setSplashDecision('static');
+          setSplashVideoComplete(true);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [splashPlayer]);
+
   // Splash video timeout fallback - ensures user is never stuck on splash
   React.useEffect(() => {
+    if (splashDecision !== 'video') return;
     const timeout = setTimeout(() => {
       if (!splashVideoComplete) {
         warn("Splash video timeout - forcing completion");
@@ -647,20 +874,23 @@ export default function IndexScreen() {
     }, 10000); // 10 seconds max
 
     return () => clearTimeout(timeout);
-  }, [splashVideoComplete]);
+  }, [splashVideoComplete, splashDecision]);
 
-  // Show deferred alerts after splash completes
+  // Announce a newly shown pre-auth card to screen readers (heading + body).
   React.useEffect(() => {
-    if (splashVideoComplete && pendingAlertRef.current) {
-      const { title, message } = pendingAlertRef.current;
-      pendingAlertRef.current = null;
-      Alert.alert(title, message);
-    }
-  }, [splashVideoComplete]);
+    if (!preAuthCard) return;
+    const card = PRE_AUTH_CARDS[preAuthCard.id];
+    AccessibilityInfo.announceForAccessibility(`${card.heading}. ${card.body}`);
+  }, [preAuthCard]);
 
-  // Coordinated fade-in animation when splash completes
+  // Coordinated fade-in animation when splash completes. Reduced-motion users
+  // get an instant reveal instead of the fade.
   React.useEffect(() => {
     if (splashVideoComplete) {
+      if (reduceMotionRef.current) {
+        fadeAnim.setValue(1);
+        return;
+      }
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,
@@ -668,6 +898,20 @@ export default function IndexScreen() {
       }).start();
     }
   }, [splashVideoComplete, fadeAnim]);
+
+  // Announce meaningful status transitions to screen readers on iOS (Android
+  // gets these via the accessibilityLiveRegion on the status line). Skips the
+  // initial mount value so we only speak actual progress changes.
+  const lastAnnouncedStatusRef = useRef<string | null>(null);
+  React.useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    if (!status) return;
+    if (lastAnnouncedStatusRef.current === status) return;
+    if (lastAnnouncedStatusRef.current !== null) {
+      AccessibilityInfo.announceForAccessibility(status);
+    }
+    lastAnnouncedStatusRef.current = status;
+  }, [status]);
 
   // Panda Screen: check quiet hours on cold launch (before auth)
   React.useEffect(() => {
@@ -723,6 +967,10 @@ export default function IndexScreen() {
   const injectFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Replay a link received while backgrounded once AppState returns to active.
   const resumeDeepLinkPathRef = useRef<string | null>(null);
+  // One-shot: set when opened via the FimbyAppHandoff deep link so the very next
+  // OAuth prompt runs non-ephemerally (shares the browser's fresh site cookie),
+  // then cleared. See isHandoffDeepLink / item 9.
+  const handoffSignInRef = useRef(false);
 
   // Cold-start Universal Links are captured by runBootstrap() (which controls
   // the auto-login openFimby call). This guard stops the separate deep-link
@@ -731,6 +979,9 @@ export default function IndexScreen() {
 
   // WebView ref for deep linking from notifications
   const webViewRef = useRef<WebView>(null);
+  // Mirrors WebView history depth so the Android hardware/gesture back can walk
+  // the EC page stack instead of backgrounding the app on the first press.
+  const webViewCanGoBackRef = useRef(false);
   // After a push launch is handled (or none pending), skip cold-start re-checks on later loadEnd events.
   const coldStartPushHandledRef = useRef(false);
 
@@ -830,6 +1081,15 @@ export default function IndexScreen() {
     [webViewHandoffFade, clearWebViewHandoffFallback]
   );
 
+  // Reveal the pre-auth offline card and stop any doomed loading. A reconnect
+  // (NetInfo subscription) auto-resumes via resumeAfterOffline — no button.
+  const showOfflineCard = useCallback(() => {
+    dismissWebViewHandoff({ immediate: true });
+    setBooting(false);
+    offlineCardActiveRef.current = true;
+    setPreAuthCard({ id: 'offline' });
+  }, [dismissWebViewHandoff]);
+
   const scheduleWebViewHandoffDismiss = useCallback(() => {
     if (webViewHandoffDismissedRef.current) return;
     const shownAt = webViewHandoffShownAtRef.current;
@@ -886,8 +1146,12 @@ export default function IndexScreen() {
   // place (bunny → kettle); the minimum-view clock is anchored once, when the
   // overlay first appears, so the two phases never stack and never flash.
   const presentLoadingOverlay = useCallback(
-    (caption: string) => {
+    (caption: string, opts?: { rotate?: boolean }) => {
       setLoadingCaption(caption);
+      // Rotation is enabled only for the kettle phase; the pre-frontdoor bunny
+      // line stays fixed. Set before the early-return so a bunny→kettle swap
+      // (overlay already up) still turns rotation on.
+      setLoadingRotates(!!opts?.rotate);
       // Already up (e.g. the bunny phase): keep the clock running and just swap
       // the caption — one continuous minimum, no reset, no flash.
       if (
@@ -924,7 +1188,7 @@ export default function IndexScreen() {
       handoffPendingRef.current = true;
       return;
     }
-    presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE);
+    presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE, { rotate: true });
   }, [presentLoadingOverlay]);
 
   // When the splash video lifts, decide the loading overlay (runs once):
@@ -943,13 +1207,17 @@ export default function IndexScreen() {
         webViewShellReadyPendingRef.current = false;
         return;
       }
-      presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE);
+      presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE, { rotate: true });
       return;
     }
-    if (!webViewUrl && !showPanda && booting) {
+    // Cold start only: the video just lifted and auth is still resolving, so
+    // show the bunny bootstrap overlay in the gap. On a warm/static start we let
+    // the branded pre-auth screen (logo on themed background) show during
+    // bootstrap instead, then the kettle appears when the frontdoor is ready.
+    if (splashDecision === 'video' && !webViewUrl && !showPanda && booting) {
       presentLoadingOverlay(BOOTSTRAP_LOADING_MESSAGE);
     }
-  }, [splashVideoComplete, webViewUrl, showPanda, booting, presentLoadingOverlay]);
+  }, [splashVideoComplete, splashDecision, webViewUrl, showPanda, booting, presentLoadingOverlay]);
 
   // Safety net: if the overlay is in the pre-frontdoor (bunny) phase but auth
   // resolves to something other than the WebView (error, quiet-hours panda, or
@@ -970,6 +1238,25 @@ export default function IndexScreen() {
     dismissWebViewHandoff,
   ]);
 
+  // Loading-phrase rotation. Only in the kettle phase, and only once the wait
+  // passes LOADING_ROTATE_START_MS — then advance gently through the launch's
+  // shuffled pool. Short/normal handoffs never rotate (no text swap mid-read).
+  React.useEffect(() => {
+    if (!webViewHandoffVisible || !loadingRotates) return;
+    let idx = 0; // LAUNCH_PHRASES[0] is the initial kettle caption
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const start = setTimeout(() => {
+      interval = setInterval(() => {
+        idx = (idx + 1) % LAUNCH_PHRASES.length;
+        setLoadingCaption(LAUNCH_PHRASES[idx]);
+      }, LOADING_ROTATE_INTERVAL_MS);
+    }, LOADING_ROTATE_START_MS);
+    return () => {
+      clearTimeout(start);
+      if (interval) clearInterval(interval);
+    };
+  }, [webViewHandoffVisible, loadingRotates]);
+
   const handleWebViewLoadEnd = useCallback(
     (url?: string, loading?: boolean) => {
       authTimingMark("webview_load_end", { url: safeUrlForLog(url), loading });
@@ -977,6 +1264,10 @@ export default function IndexScreen() {
 
       if (!url || !isExperienceCloudUrl(url)) return;
       if (loading === true) return;
+      if (webViewOfflineRef.current) {
+        webViewOfflineRef.current = false;
+        setWebViewOffline(false);
+      }
       armWebViewHandoffFallback();
     },
     [armWebViewHandoffFallback]
@@ -987,6 +1278,28 @@ export default function IndexScreen() {
   // the login/frontdoor handoff and fired once the WebView is stable (onLoadEnd)
   // to avoid backgrounding the app mid-navigation. Cleared after it fires.
   const pendingPushPromptRef = useRef<string | null>(null);
+
+  // Push-permission primer sheet: a warm, themed explainer shown once in front
+  // of the OS permission prompt (which spends its single one-shot ask only after
+  // the user has already said yes → near-100% grant rate).
+  const [showPushPrimer, setShowPushPrimer] = React.useState(false);
+
+  // Biometric app lock. Capability is detected once on mount; `enabled` is the
+  // user's stored opt-in (gated on capability). `locked` drives the native lock
+  // overlay. The ref mirror lets []-dep handlers read the latest enabled state.
+  const [appLockCapability, setAppLockCapability] = React.useState<{
+    available: boolean;
+    type: BiometricType;
+  }>({ available: false, type: 'none' });
+  const [appLockEnabled, setAppLockEnabled] = React.useState(false);
+  const appLockEnabledRef = useRef(false);
+  React.useEffect(() => {
+    appLockEnabledRef.current = appLockEnabled;
+  }, [appLockEnabled]);
+  const [locked, setLocked] = React.useState(false);
+  const [lockPromptFailed, setLockPromptFailed] = React.useState(false);
+  const lockInProgressRef = useRef(false);
+  const [appLockDisabledNotice, setAppLockDisabledNotice] = React.useState(false);
 
   // Guards the device-token-rotation re-registration below. Re-acquiring the
   // Expo token internally fetches a device token, which can re-fire the
@@ -1183,9 +1496,132 @@ export default function IndexScreen() {
   const maybeRunDeferredPushPrompt = useCallback(async () => {
     const token = pendingPushPromptRef.current;
     if (!token) return;
+    // Primer shows at most once per install. If it's already been shown (either
+    // choice), never surface it again — the EC Settings toggle is the recovery
+    // path, and flipping that fires the OS prompt directly via syncPushRegistration.
+    try {
+      const shown = await AsyncStorage.getItem(PUSH_PRIMER_SHOWN_KEY);
+      if (shown) {
+        pendingPushPromptRef.current = null;
+        return;
+      }
+    } catch {
+      // If storage is unreadable, err on the side of showing the primer once.
+    }
+    setShowPushPrimer(true);
+  }, []);
+
+  // "Yes please": mark the primer shown, then fire the real OS permission prompt.
+  const acceptPushPrimer = useCallback(async () => {
+    setShowPushPrimer(false);
+    const token = pendingPushPromptRef.current;
     pendingPushPromptRef.current = null;
-    await registerPushNotificationsAsync(token, { prompt: true });
+    try {
+      await AsyncStorage.setItem(PUSH_PRIMER_SHOWN_KEY, new Date().toISOString());
+    } catch {
+      // Non-fatal — worst case the primer could show again next launch.
+    }
+    if (token) {
+      await registerPushNotificationsAsync(token, { prompt: true });
+    }
   }, [registerPushNotificationsAsync]);
+
+  // "Not now": record the decline, do NOT fire the OS prompt (its one-shot ask
+  // stays unspent). We never auto-re-ask; the EC Settings toggle is the way back.
+  const declinePushPrimer = useCallback(async () => {
+    setShowPushPrimer(false);
+    pendingPushPromptRef.current = null;
+    const now = new Date().toISOString();
+    try {
+      await AsyncStorage.multiSet([
+        [PUSH_PRIMER_SHOWN_KEY, now],
+        [PUSH_PRIMER_DECLINED_KEY, now],
+      ]);
+    } catch {
+      // Non-fatal.
+    }
+  }, []);
+
+  // Run the native biometric (or device-passcode fallback) unlock. On success
+  // the lock lifts; on cancel/failure the lock screen offers a retry. If the
+  // device has NO secure lock at all, there's nothing to protect — fail open
+  // once, auto-disable the lock, and explain why.
+  const runBiometricUnlock = useCallback(async () => {
+    if (lockInProgressRef.current) return;
+    lockInProgressRef.current = true;
+    setLockPromptFailed(false);
+    try {
+      let level = LocalAuthentication.SecurityLevel.NONE;
+      try {
+        level = await LocalAuthentication.getEnrolledLevelAsync();
+      } catch {
+        level = LocalAuthentication.SecurityLevel.NONE;
+      }
+      if (level === LocalAuthentication.SecurityLevel.NONE) {
+        appLockEnabledRef.current = false;
+        setAppLockEnabled(false);
+        await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY).catch(() => {});
+        setLocked(false);
+        setAppLockDisabledNotice(true);
+        return;
+      }
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Unlock FIMBY',
+        cancelLabel: 'Cancel',
+        disableDeviceFallback: false,
+      });
+      if (result.success) {
+        setLocked(false);
+      } else {
+        setLockPromptFailed(true);
+      }
+    } catch {
+      setLockPromptFailed(true);
+    } finally {
+      lockInProgressRef.current = false;
+    }
+  }, []);
+
+  // Auto-fire the unlock prompt whenever the lock overlay appears.
+  React.useEffect(() => {
+    if (locked) {
+      void runBiometricUnlock();
+    }
+  }, [locked, runBiometricUnlock]);
+
+  // Enable/disable the app lock from EC Settings. Both directions require a
+  // biometric confirm ("prove it's you") before committing, then ack the result
+  // back so the toggle reflects reality (reverts on cancel/failure).
+  const handleAppLockToggle = useCallback(async (enable: boolean) => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: enable ? "Confirm it's you" : 'Confirm to turn off the lock',
+        disableDeviceFallback: false,
+      });
+      if (!result.success) {
+        webViewRef.current?.injectJavaScript(
+          "window.__fimbyAppLockResult && window.__fimbyAppLockResult({granted:false}); true;"
+        );
+        return;
+      }
+      if (enable) {
+        await SecureStore.setItemAsync(APP_LOCK_ENABLED_KEY, 'true');
+        setAppLockEnabled(true);
+        appLockEnabledRef.current = true;
+      } else {
+        await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY);
+        setAppLockEnabled(false);
+        appLockEnabledRef.current = false;
+      }
+      webViewRef.current?.injectJavaScript(
+        `window.__fimbyAppLockResult && window.__fimbyAppLockResult({granted:true, enabled:${enable}}); true;`
+      );
+    } catch {
+      webViewRef.current?.injectJavaScript(
+        "window.__fimbyAppLockResult && window.__fimbyAppLockResult({granted:false}); true;"
+      );
+    }
+  }, []);
 
   // Hardening: the OS device push token can rotate mid-session. When it does,
   // re-acquire the *Expo* push token and re-register it so a long-lived session
@@ -1348,7 +1784,7 @@ export default function IndexScreen() {
       const url = payload?.url;
       if (!url) {
         log("Frontdoor response missing url:", payload);
-        Alert.alert("Could not open FIMBY", "No URL returned.");
+        setPreAuthCard({ id: 'door' });
         return;
       }
 
@@ -1363,6 +1799,7 @@ export default function IndexScreen() {
       }
 
       authTimingMark("frontdoor_url_set");
+      setPreAuthCard(null);
       showWebViewHandoff();
       // Anchor the EC session age clock and clear the re-auth loop guard: a
       // freshly minted frontdoor is a clean, full-lifetime session.
@@ -1389,17 +1826,16 @@ export default function IndexScreen() {
       if (!token) {
         const result = await refreshSession();
         if (result.sessionExpired) {
-          Alert.alert(
-            "Please Sign In",
-            result.message || "Your session has expired. Please sign in again."
-          );
+          setPreAuthCard({ id: 'session' });
           return;
         }
         token = result.token;
       }
 
       if (!token) {
-        Alert.alert("Not signed in", "Tap Sign in to start a session.");
+        // No session at all — this IS the sign-in screen's default state, so no
+        // card is needed; the Sign In button says it all.
+        setPreAuthCard(null);
         return;
       }
 
@@ -1423,14 +1859,11 @@ export default function IndexScreen() {
 
         const result = await refreshSession();
         if (result.sessionExpired) {
-          Alert.alert(
-            "Please Sign In",
-            result.message || "Your session has expired. Please sign in again."
-          );
+          setPreAuthCard({ id: 'session' });
           return;
         }
         if (!result.token) {
-          Alert.alert("Session expired", "Please sign in again.");
+          setPreAuthCard({ id: 'session' });
           return;
         }
 
@@ -1442,7 +1875,7 @@ export default function IndexScreen() {
         if (!retry.ok) {
           const retryBody = await jsonOrText(retry);
           log("Frontdoor retry failed:", retryBody);
-          Alert.alert("Could not open FIMBY", "Try again.");
+          setPreAuthCard({ id: 'door' });
           return;
         }
 
@@ -1534,6 +1967,10 @@ export default function IndexScreen() {
         }
       }
       await SecureStore.deleteItemAsync(REFRESH_KEY);
+      // A signed-out app has nothing to protect; next user starts fresh.
+      await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY).catch(() => {});
+      setAppLockEnabled(false);
+      appLockEnabledRef.current = false;
       setAccessToken(null);
       bootstrapRanRef.current = false;
     } catch (e: any) {
@@ -1583,14 +2020,11 @@ export default function IndexScreen() {
       }
       lastReauthAtRef.current = now;
 
-      const fallToSignIn = (message?: string) => {
+      const fallToSignIn = (_message?: string) => {
         dismissWebViewHandoff({ immediate: true });
         setWebViewUrl(null);
         setAccessToken(null);
-        Alert.alert(
-          "Please Sign In",
-          message || "Your session has expired. Please sign in again."
-        );
+        setPreAuthCard({ id: 'session' });
       };
 
       if (reauthAttemptCountRef.current > REAUTH_MAX_ATTEMPTS) {
@@ -1646,6 +2080,9 @@ export default function IndexScreen() {
       }
 
       await SecureStore.deleteItemAsync(REFRESH_KEY);
+      await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY).catch(() => {});
+      setAppLockEnabled(false);
+      appLockEnabledRef.current = false;
       setAccessToken(null);
       setWebViewUrl(null);
       dismissWebViewHandoff({ immediate: true });
@@ -1725,6 +2162,9 @@ export default function IndexScreen() {
       const url = navState.url;
       log("[WebView] onNavigationStateChange:", safeUrlForLog(url));
 
+      // Track history depth for the Android back handler below.
+      webViewCanGoBackRef.current = navState.canGoBack;
+
       // Remember the last committed, authenticated page so we can reload it if
       // the WebView process is later killed while backgrounded. Skip the login
       // redirect, about:blank, and anything off the FIMBY/SF surface.
@@ -1793,6 +2233,13 @@ export default function IndexScreen() {
       const { nativeEvent } = event;
       log("[WebView] Render error:", nativeEvent.description);
       dismissWebViewHandoff({ immediate: true });
+      // If the load failed because we're offline, show the warm offline overlay
+      // (auto-reloads on reconnect) instead of the generic error screen.
+      if (!netConnectedRef.current) {
+        webViewOfflineRef.current = true;
+        setWebViewOffline(true);
+        return;
+      }
       setWebViewError(nativeEvent.description || "Something went wrong loading the page.");
     },
     [dismissWebViewHandoff]
@@ -1878,6 +2325,9 @@ export default function IndexScreen() {
         } else if (data.type === "pushNotifications" && typeof data.enabled === "boolean") {
           log("[WebView] Push toggle synced:", data.enabled);
           void syncPushRegistration(data.enabled);
+        } else if (data.type === "appLock" && typeof data.enabled === "boolean") {
+          log("[WebView] App lock toggle requested:", data.enabled);
+          void handleAppLockToggle(data.enabled);
         } else if (data.type === "logout") {
           // Explicit, user-initiated logout from inside the WebView (header,
           // account deletion). Native owns teardown so a real logout is never
@@ -1889,7 +2339,7 @@ export default function IndexScreen() {
         // Not JSON or not a message we handle
       }
     },
-    [syncPushRegistration, completeLogout, markWebViewShellReady]
+    [syncPushRegistration, completeLogout, markWebViewShellReady, handleAppLockToggle]
   );
 
   /**
@@ -2001,6 +2451,7 @@ export default function IndexScreen() {
     try {
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
+        if (isHandoffDeepLink(initialUrl)) handoffSignInRef.current = true;
         const path = parseFimbyDeepLink(initialUrl);
         if (path) {
           captureDeepLinkIntent(path, "bootstrap");
@@ -2018,17 +2469,29 @@ export default function IndexScreen() {
       setStatus("Checking if you're still you…");
       const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
       if (refresh) {
+        // Offline pre-flight: a doomed refresh just spins. Show the offline card
+        // and auto-resume bootstrap the moment connectivity returns.
+        try {
+          const net = await NetInfo.fetch();
+          if (net.isConnected === false || net.isInternetReachable === false) {
+            netConnectedRef.current = false;
+            log("[BOOTSTRAP] offline — showing offline card");
+            setBooting(false);
+            showOfflineCard();
+            return;
+          }
+        } catch {
+          // If the probe itself fails, fall through and let the fetch surface it.
+        }
         log("[BOOTSTRAP] stored refresh token present");
         const result = await refreshSession();
 
         if (result.sessionExpired) {
-          // Session TTL exceeded - defer alert until after splash video
+          // Session TTL exceeded. The card renders on the pre-auth screen, which
+          // is naturally covered by the splash until it lifts — no manual defer.
           log("Session expired due to TTL policy.");
           setStatus("Let's catch up!");
-          pendingAlertRef.current = {
-            title: "Welcome Back!",
-            message: result.message || "Your session has expired. Please sign in again.",
-          };
+          setPreAuthCard({ id: 'session' });
         } else if (result.token) {
           log("Valid session found, auto-opening FIMBY...");
           authTimingMark("bootstrap_auto_login");
@@ -2056,7 +2519,54 @@ export default function IndexScreen() {
     } finally {
       setBooting(false);
     }
-  }, [refreshSession, openFimby, isNetworkError, captureDeepLinkIntent]);
+  }, [refreshSession, openFimby, isNetworkError, captureDeepLinkIntent, showOfflineCard]);
+
+  // Keep a ref to the latest runBootstrap so the reconnect resume can re-run it
+  // without capturing a stale closure.
+  const runBootstrapRef = useRef(runBootstrap);
+  runBootstrapRef.current = runBootstrap;
+
+  // On reconnect after an offline card, clear it and pick up where we left off:
+  // re-run bootstrap if a session token exists, otherwise fall to the sign-in
+  // screen's default state.
+  const resumeAfterOffline = useCallback(async () => {
+    offlineCardActiveRef.current = false;
+    setPreAuthCard((prev) => (prev?.id === 'offline' ? null : prev));
+    let refresh: string | null = null;
+    try {
+      refresh = await SecureStore.getItemAsync(REFRESH_KEY);
+    } catch {
+      refresh = null;
+    }
+    if (refresh) {
+      void runBootstrapRef.current();
+    } else {
+      setStatus("Neighbours are waiting.");
+    }
+  }, []);
+
+  // NetInfo subscription: track connectivity and auto-resume on reconnect (both
+  // the pre-auth offline card and an in-session WebView offline overlay).
+  React.useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const connected =
+        state.isConnected !== false && state.isInternetReachable !== false;
+      const wasConnected = netConnectedRef.current;
+      netConnectedRef.current = connected;
+      if (wasConnected || !connected) return;
+
+      // Just came back online.
+      if (offlineCardActiveRef.current) {
+        void resumeAfterOffline();
+      }
+      if (webViewOfflineRef.current) {
+        webViewOfflineRef.current = false;
+        setWebViewOffline(false);
+        webViewRef.current?.reload();
+      }
+    });
+    return () => unsubscribe();
+  }, [resumeAfterOffline]);
 
   // Initial bootstrap effect
   React.useEffect(() => {
@@ -2089,12 +2599,14 @@ export default function IndexScreen() {
       .then((url) => {
         if (cancelled || !url) return;
         if (coldStartDeepLinkHandledRef.current) return;
+        if (isHandoffDeepLink(url)) handoffSignInRef.current = true;
         const path = parseFimbyDeepLink(url);
         if (path) applyDeepLink(path);
       })
       .catch((err) => warn("[DEEPLINK] getInitialURL error:", err));
 
     const sub = Linking.addEventListener("url", (event) => {
+      if (isHandoffDeepLink(event.url)) handoffSignInRef.current = true;
       const path = parseFimbyDeepLink(event.url);
       if (path) applyDeepLink(path);
     });
@@ -2139,6 +2651,17 @@ export default function IndexScreen() {
       : null;
     // Null immediately so a later inactive→active blip can't reuse a stale time.
     backgroundedAtRef.current = null;
+
+    // Biometric lock gate: re-lock after a long absence (> threshold). Quick app
+    // switches stay unlocked. EC work below still runs behind the lock overlay so
+    // the app is warm the moment they unlock.
+    if (
+      appLockEnabledRef.current &&
+      awayForMs != null &&
+      awayForMs >= APP_LOCK_RESUME_THRESHOLD_MS
+    ) {
+      setLocked(true);
+    }
 
     // 1. Deferred deep link wins, before any throttle. Auth for this branch is
     //    delegated to applyDeepLink/openFimby and the existing /login intercept.
@@ -2189,10 +2712,7 @@ export default function IndexScreen() {
           dismissWebViewHandoff({ immediate: true });
           setWebViewUrl(null);
           setAccessToken(null);
-          Alert.alert(
-            "Please Sign In",
-            result.message || "Your session has expired. Please sign in again."
-          );
+          setPreAuthCard({ id: 'session' });
         }
       }
     } catch (e: any) {
@@ -2236,6 +2756,23 @@ export default function IndexScreen() {
     return () => sub.remove();
   }, [handleAppResumed]);
 
+  // Android hardware/gesture back: walk the WebView's page history instead of
+  // backgrounding the app on the first press. Only intercepts when the WebView
+  // is showing and has somewhere to go back to; otherwise returns false so the
+  // OS default (background the app) runs. iOS has no system back button, so this
+  // is Android-only and never touches the iOS swipe gesture.
+  React.useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (webViewUrl && webViewCanGoBackRef.current && webViewRef.current) {
+        webViewRef.current.goBack();
+        return true;
+      }
+      return false;
+    });
+    return () => sub.remove();
+  }, [webViewUrl]);
+
   /**
    * Start Sign In flow (pre-flight network check + OAuth)
    * Used by both Sign In button and Try Again button
@@ -2244,6 +2781,7 @@ export default function IndexScreen() {
     if (!request) return;
 
     setBusy(true);
+    setPreAuthCard(null);
     // Don't clear bootstrapError yet - wait until network check passes
     // This keeps "Try Again" visible during the check
 
@@ -2260,6 +2798,18 @@ export default function IndexScreen() {
         clearTimeout(timeoutId);
       } catch (networkErr: any) {
         log("Pre-flight network check failed:", networkErr?.message);
+        let offline = !netConnectedRef.current;
+        try {
+          const net = await NetInfo.fetch();
+          offline = net.isConnected === false || net.isInternetReachable === false;
+        } catch {
+          // keep the netConnectedRef-based guess
+        }
+        if (offline) {
+          netConnectedRef.current = false;
+          showOfflineCard();
+          return;
+        }
         if (isNetworkError(networkErr) || networkErr?.name === 'AbortError') {
           setBootstrapError('network');
           setStatus('The internet said "BRB"');
@@ -2281,7 +2831,16 @@ export default function IndexScreen() {
       );
 
       setStatus("Opening the door…");
-      const result = await promptAsync({ preferEphemeralSession: true });
+      // One-shot non-ephemeral sign-in right after browser password setup: the
+      // handoff deep link means Safari holds a live site cookie, so a non-
+      // ephemeral sheet turns a retype into a tap-through (iOS). Consumed once,
+      // then we fall back to the ephemeral default. Android ignores this flag
+      // (Custom Tabs already share cookies).
+      const useHandoffSession = handoffSignInRef.current;
+      handoffSignInRef.current = false;
+      const result = await promptAsync({
+        preferEphemeralSession: !useHandoffSession,
+      });
 
       // Handle non-success responses (user cancelled, dismissed, or error)
       if (result.type === 'dismiss' || result.type === 'cancel') {
@@ -2296,7 +2855,7 @@ export default function IndexScreen() {
     } finally {
       setBusy(false);
     }
-  }, [request, promptAsync, isNetworkError, discardDeepLinkIntent]);
+  }, [request, promptAsync, isNetworkError, discardDeepLinkIntent, showOfflineCard]);
 
   /**
    * ========= HANDLE PKCE REDIRECT =========
@@ -2318,7 +2877,7 @@ export default function IndexScreen() {
         log("OAuth state mismatch, rejecting auth response");
         handledAuthCodeRef.current = null;
         discardDeepLinkIntent("oauth-state-mismatch");
-        Alert.alert("Sign in failed", "Authentication response was invalid. Please try again.");
+        setPreAuthCard({ id: 'signin-failed' });
         return;
       }
 
@@ -2344,7 +2903,7 @@ export default function IndexScreen() {
       } catch (e: any) {
         handledAuthCodeRef.current = null;
         discardDeepLinkIntent("oauth-failed");
-        Alert.alert("Sign in failed", e?.message || "Unknown error");
+        setPreAuthCard({ id: 'signin-failed', detail: e?.message });
       } finally {
         setBusy(false);
       }
@@ -2370,7 +2929,17 @@ export default function IndexScreen() {
   // WebView keeps a stable tree position across splashVideoComplete). On a slow
   // network the "kettle" handoff / booting spinner is simply what's revealed when
   // the video lifts. Dismissal is still video-driven (playToEnd / 10s fallback).
-  const splashOverlay = !splashVideoComplete ? (
+  // Neutral themed cover shown only during the brief warm/cold decision window
+  // (SecureStore read in flight), so neither the pre-auth screen nor a paused
+  // video frame flashes before we know which path to take.
+  const nullCover =
+    splashDecision === null ? (
+      <View
+        style={[StyleSheet.absoluteFill, { backgroundColor: PREAUTH_COLORS[appTheme].bg }]}
+      />
+    ) : null;
+
+  const splashOverlay = splashDecision === 'video' && !splashVideoComplete ? (
     <View style={[StyleSheet.absoluteFill, styles.splashContainer]}>
       <VideoView
         player={splashPlayer}
@@ -2421,6 +2990,115 @@ export default function IndexScreen() {
         {loadingCaption}
       </Text>
     </Animated.View>
+  ) : null;
+
+  // Push-permission primer sheet. Shown over the WebView the first (and only)
+  // time we would otherwise fire the OS prompt, so the user knows what they're
+  // agreeing to before the one-shot system dialog is spent.
+  const pushPrimerOverlay = showPushPrimer ? (
+    <View style={styles.primerBackdrop}>
+      <View
+        style={[styles.primerSheet, { backgroundColor: PREAUTH_COLORS[appTheme].bg }]}
+        accessibilityViewIsModal
+      >
+        <Text style={[styles.primerHeading, { color: PREAUTH_COLORS[appTheme].heading }]}>
+          Can we knock when something&apos;s waiting?
+        </Text>
+        <Text style={[styles.primerBody, { color: PREAUTH_COLORS[appTheme].secondary }]}>
+          When a neighbour writes to you or something needs your attention, FIMBY sends one
+          notification for messages, one for what&apos;s happening nearby, then waits quietly
+          until you&apos;ve stopped by. No piling on, and no buzzing during your quiet hours.
+          You choose what&apos;s worth a nudge in Settings.
+        </Text>
+        <Pressable
+          style={[styles.button, styles.primerPrimary, { backgroundColor: PREAUTH_COLORS[appTheme].primaryBg }]}
+          accessibilityRole="button"
+          onPress={() => void acceptPushPrimer()}
+        >
+          <Text style={[styles.buttonText, { color: PREAUTH_COLORS[appTheme].primaryText }]}>
+            Yes please
+          </Text>
+        </Pressable>
+        <Pressable
+          style={styles.primerDismiss}
+          accessibilityRole="button"
+          onPress={() => void declinePushPrimer()}
+        >
+          <Text style={[styles.primerDismissText, { color: PREAUTH_COLORS[appTheme].secondary }]}>
+            Not now
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  ) : null;
+
+  // Biometric lock screen. Opaque, themed, topmost. Auto-fires the unlock prompt
+  // (see effect); offers a retry after a failed/cancelled attempt and a sign-out
+  // escape hatch so nobody is ever locked out of their own device's app.
+  const lockMethodLabel = biometricMethodLabel(appLockCapability.type);
+  const lockOverlay = locked ? (
+    <View style={[styles.lockOverlay, { backgroundColor: PREAUTH_COLORS[appTheme].bg }]}>
+      <Image
+        source={getTimeOfDayLogo()}
+        style={styles.lockLogo}
+        resizeMode="contain"
+        accessibilityRole="image"
+        accessibilityLabel="FIMBY"
+      />
+      <Text style={[styles.lockTitle, { color: PREAUTH_COLORS[appTheme].heading }]}>
+        Unlock FIMBY
+      </Text>
+      {lockPromptFailed && (
+        <Pressable
+          style={[styles.button, styles.lockButton, { backgroundColor: PREAUTH_COLORS[appTheme].primaryBg }]}
+          accessibilityRole="button"
+          onPress={() => void runBiometricUnlock()}
+        >
+          <Text style={[styles.buttonText, { color: PREAUTH_COLORS[appTheme].primaryText }]}>
+            {`Try ${lockMethodLabel} again`}
+          </Text>
+        </Pressable>
+      )}
+      <Pressable
+        style={styles.lockSignOut}
+        accessibilityRole="button"
+        onPress={() => {
+          setLocked(false);
+          void logout();
+        }}
+      >
+        <Text style={[styles.lockSignOutText, { color: PREAUTH_COLORS[appTheme].secondary }]}>
+          Sign out instead
+        </Text>
+      </Pressable>
+    </View>
+  ) : null;
+
+  // Fail-open notice: shown when the lock auto-disabled because the device has no
+  // secure lock of its own to fall back on.
+  const appLockNoticeOverlay = appLockDisabledNotice ? (
+    <View style={styles.primerBackdrop}>
+      <View
+        style={[styles.primerSheet, { backgroundColor: PREAUTH_COLORS[appTheme].bg }]}
+        accessibilityViewIsModal
+      >
+        <Text style={[styles.primerHeading, { color: PREAUTH_COLORS[appTheme].heading }]}>
+          App lock turned off
+        </Text>
+        <Text style={[styles.primerBody, { color: PREAUTH_COLORS[appTheme].secondary }]}>
+          Your phone doesn&apos;t have a screen lock set up yet, so FIMBY can&apos;t add one. Add a
+          passcode or biometric lock in your phone&apos;s settings, then switch this back on in
+          FIMBY Settings.
+        </Text>
+        <Pressable
+          style={[styles.button, styles.primerPrimary, { backgroundColor: PREAUTH_COLORS[appTheme].primaryBg }]}
+          accessibilityRole="button"
+          onPress={() => setAppLockDisabledNotice(false)}
+        >
+          <Text style={[styles.buttonText, { color: PREAUTH_COLORS[appTheme].primaryText }]}>Got it</Text>
+        </Pressable>
+      </View>
+    </View>
   ) : null;
 
   // Panda Screen: quiet hours interstitial (before auth)
@@ -2491,6 +3169,9 @@ export default function IndexScreen() {
         </View>
       </View>
       {splashOverlay}
+      {nullCover}
+      {lockOverlay}
+      {appLockNoticeOverlay}
       </>
     );
   }
@@ -2541,7 +3222,13 @@ export default function IndexScreen() {
           // what made everything (text + rem-based spacing) larger on Android.
           textZoom={100}
           applicationNameForUserAgent="FIMBY-WebView/1.0"
-          injectedJavaScriptBeforeContentLoaded={"window.__FIMBY_NATIVE_APP__ = true; true;"}
+          injectedJavaScriptBeforeContentLoaded={
+            `window.__FIMBY_NATIVE_APP__ = true; window.__FIMBY_APP_LOCK__ = ${JSON.stringify({
+              available: appLockCapability.available,
+              type: appLockCapability.type,
+              enabled: appLockEnabled,
+            })}; true;`
+          }
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onNavigationStateChange={onNavigationStateChange}
           onError={onWebViewError}
@@ -2587,7 +3274,28 @@ export default function IndexScreen() {
             </Pressable>
           </View>
         )}
-        {stuckOnErrorPage && !webViewError && (
+        {webViewOffline && !webViewError && (
+          <View style={[styles.webViewHandoff, { backgroundColor: handoffPalette.bg }]}>
+            <Text style={[styles.cardHeading, { color: handoffPalette.heading }]}>
+              You&apos;re offline right now
+            </Text>
+            <Text style={[styles.cardBody, { color: handoffPalette.secondary }]}>
+              No rush. We&apos;ll be open for business when you&apos;re back online.
+            </Text>
+            <Pressable
+              style={[styles.button, { backgroundColor: handoffPalette.primaryBg }]}
+              accessibilityRole="button"
+              onPress={() => {
+                webViewOfflineRef.current = false;
+                setWebViewOffline(false);
+                webViewRef.current?.reload();
+              }}
+            >
+              <Text style={[styles.buttonText, { color: handoffPalette.primaryText }]}>Try again</Text>
+            </Pressable>
+          </View>
+        )}
+        {stuckOnErrorPage && !webViewError && !webViewOffline && (
           <View style={styles.stuckOverlay} pointerEvents="box-none">
             <Pressable
               style={[styles.stuckPrimaryButton, { backgroundColor: handoffPalette.primaryBg }]}
@@ -2620,7 +3328,11 @@ export default function IndexScreen() {
         )}
       </SafeAreaView>
       {loadingOverlay}
+      {pushPrimerOverlay}
       {splashOverlay}
+      {nullCover}
+      {lockOverlay}
+      {appLockNoticeOverlay}
       </>
     );
   }
@@ -2630,6 +3342,46 @@ export default function IndexScreen() {
 
   // Determine what content to show
   const renderContent = () => {
+    // Inline card (replaces the old OS alerts). Takes precedence so a session /
+    // door / sign-in-failed / offline message is what the user sees.
+    if (preAuthCard) {
+      const card = PRE_AUTH_CARDS[preAuthCard.id];
+      return (
+        <View style={styles.centerContent}>
+          <Text style={[styles.cardHeading, { color: c.heading }]}>{card.heading}</Text>
+          <Text style={[styles.cardBody, { color: c.secondary }]}>{card.body}</Text>
+          {preAuthCard.detail ? (
+            <Text style={[styles.cardDetail, { color: c.secondary }]}>{preAuthCard.detail}</Text>
+          ) : null}
+          {card.button ? (
+            <Pressable
+              style={[
+                styles.button,
+                styles.cardButton,
+                { backgroundColor: c.primaryBg },
+                (!request || busy) && styles.buttonDisabled,
+              ]}
+              disabled={!request || busy}
+              accessibilityRole="button"
+              onPress={() => {
+                if (preAuthCard.id === 'door') {
+                  setPreAuthCard(null);
+                  void openFimby();
+                } else {
+                  void startSignIn();
+                }
+              }}
+            >
+              <Text style={[styles.buttonText, { color: c.primaryText }]}>{card.button}</Text>
+            </Pressable>
+          ) : null}
+          {busy && (
+            <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
+          )}
+        </View>
+      );
+    }
+
     // Pre-kettle loading screen (session restoring). Runs UNDER the splash
     // video; revealed if the video lifts before the frontdoor URL is ready.
     if (booting) {
@@ -2658,7 +3410,13 @@ export default function IndexScreen() {
           {busy && (
             <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
           )}
-          <Text style={[styles.status, { color: c.secondary }]}>{status}</Text>
+          <Text
+            style={[styles.status, { color: c.secondary }]}
+            accessibilityRole="text"
+            accessibilityLiveRegion="polite"
+          >
+            {status}
+          </Text>
         </View>
       );
     }
@@ -2678,7 +3436,13 @@ export default function IndexScreen() {
           <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
         )}
 
-        <Text style={[styles.status, { color: c.secondary }]}>{status}</Text>
+        <Text
+          style={[styles.status, { color: c.secondary }]}
+          accessibilityRole="text"
+          accessibilityLiveRegion="polite"
+        >
+          {status}
+        </Text>
       </View>
     );
   };
@@ -2714,7 +3478,7 @@ export default function IndexScreen() {
 
         {/* LOWER: secondary action + footer links */}
         <Animated.View style={[styles.lowerSection, { opacity: fadeAnim }]}>
-          {!booting && !bootstrapError && (
+          {!booting && !bootstrapError && !preAuthCard && (
             <Pressable
               style={[styles.createAccountButton, { borderColor: c.signUpOutline }]}
               accessibilityRole="button"
@@ -2748,6 +3512,9 @@ export default function IndexScreen() {
     </SafeAreaView>
     {loadingOverlay}
     {splashOverlay}
+    {nullCover}
+    {lockOverlay}
+    {appLockNoticeOverlay}
     </>
   );
 }
@@ -2828,6 +3595,100 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { fontSize: 20, fontFamily: "Nunito_800ExtraBold" },
+  cardHeading: {
+    fontSize: 22,
+    fontFamily: "Nunito_800ExtraBold",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  cardBody: {
+    fontSize: 16,
+    lineHeight: 23,
+    fontFamily: "Nunito_400Regular",
+    textAlign: "center",
+    paddingHorizontal: 8,
+    marginBottom: 24,
+  },
+  cardDetail: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontFamily: "Nunito_400Regular",
+    textAlign: "center",
+    opacity: 0.7,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  cardButton: {
+    marginTop: 0,
+  },
+  // Push-permission primer sheet
+  primerBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  primerSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 28,
+    paddingTop: 28,
+    paddingBottom: 40,
+    alignItems: "center",
+  },
+  primerHeading: {
+    fontSize: 21,
+    fontFamily: "Nunito_800ExtraBold",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+  primerBody: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontFamily: "Nunito_400Regular",
+    textAlign: "center",
+    marginBottom: 26,
+  },
+  primerPrimary: {
+    alignSelf: "stretch",
+  },
+  primerDismiss: {
+    paddingVertical: 14,
+    marginTop: 8,
+  },
+  primerDismissText: {
+    fontSize: 16,
+    fontFamily: "Nunito_700Bold",
+  },
+  // Biometric lock screen
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  lockLogo: {
+    height: 96,
+    aspectRatio: HERO_LOGO_ASPECT,
+    maxWidth: "88%",
+    marginBottom: 20,
+  },
+  lockTitle: {
+    fontSize: 20,
+    fontFamily: "Nunito_800ExtraBold",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  lockButton: {
+    marginBottom: 8,
+  },
+  lockSignOut: {
+    paddingVertical: 14,
+    marginTop: 8,
+  },
+  lockSignOutText: {
+    fontSize: 15,
+    fontFamily: "Nunito_700Bold",
+  },
   createAccountButton: {
     borderWidth: 1.5,
     paddingVertical: 10,

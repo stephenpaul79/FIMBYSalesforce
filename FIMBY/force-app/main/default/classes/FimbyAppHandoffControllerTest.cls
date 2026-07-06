@@ -27,7 +27,14 @@ private class FimbyAppHandoffControllerTest {
 
         FimbyAppHandoffController ctrl = new FimbyAppHandoffController();
 
-        System.assertEquals(FimbySettings.getUrl('Site_Base'), ctrl.appOpenUrl);
+        System.assert(
+            ctrl.appOpenUrl.startsWith(FimbySettings.getUrl('Site_Base')),
+            'App open URL should be built from Site_Base'
+        );
+        System.assert(
+            ctrl.appOpenUrl.contains('src=handoff'),
+            'App open URL must carry the handoff marker for tap-through sign-in'
+        );
         System.assert(
             ctrl.continueUrl != null && ctrl.continueUrl.contains('continue'),
             'Continue URL should include escape-hatch param'

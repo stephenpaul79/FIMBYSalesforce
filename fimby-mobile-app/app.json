@@ -17,7 +17,8 @@
       ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "FIMBY uses the camera so you can add a photo to a post, library item, profile, or message."
+        "NSCameraUsageDescription": "FIMBY uses the camera so you can add a photo to a post, library item, profile, or message.",
+        "NSFaceIDUsageDescription": "FIMBY uses Face ID to unlock the app, so your neighbourhood stays yours even if someone borrows your phone."
       }
     },
     "android": {
@@ -62,7 +63,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#F0EBE3",
           "dark": {
-            "backgroundColor": "#F0EBE3"
+            "backgroundColor": "#14100D"
           }
         }
       ],

@@ -64,6 +64,7 @@
             <h1 class="fimby-vf-auth__title">You're all set</h1>
             <p class="fimby-vf-auth__body">
                 Your password is saved. Open the FIMBY app and sign in with the same password.
+                When the app opens, your phone may ask permission to sign you in, just tap Continue.
             </p>
             <div class="fimby-vf-auth__actions fimby-vf-auth__actions--stack">
                 <a href="{!appOpenUrl}" class="fimby-vf-auth__btn">Open the FIMBY app</a>

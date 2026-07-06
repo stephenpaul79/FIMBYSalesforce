@@ -14,7 +14,7 @@ public with sharing class FimbyAppHandoffController {
     public Boolean showStoreLink { get; private set; }
 
     public FimbyAppHandoffController() {
-        appOpenUrl = FimbySettings.getUrl('Site_Base');
+        appOpenUrl = buildAppOpenUrl();
         continueUrl = buildContinueInBrowserUrl();
 
         String userAgent = getUserAgent();
@@ -24,6 +24,20 @@ public with sharing class FimbyAppHandoffController {
             storeUrl = FimbySettings.appStoreUrlAndroid();
         }
         showStoreLink = String.isNotBlank(storeUrl);
+    }
+
+    /**
+     * Site_Base with a `src=handoff` marker so the native app can recognise it
+     * was opened from this page and run the next OAuth prompt non-ephemerally
+     * once (tap-through sign-in reusing the browser's fresh site cookie).
+     */
+    private static String buildAppOpenUrl() {
+        String base = FimbySettings.getUrl('Site_Base');
+        if (String.isBlank(base)) {
+            return base;
+        }
+        String separator = base.contains('?') ? '&' : '?';
+        return base + separator + 'src=handoff';
     }
 
     private static String getUserAgent() {
