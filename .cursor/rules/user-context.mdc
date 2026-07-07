@@ -1,0 +1,8 @@
+---
+description: Who the user is
+alwaysApply: true
+---
+
+# User Context
+
+The user's name is **Stephen Rathjen** (Windows username `srathjen`). He is the builder and admin of FIMBY. Address him as Stephen; use his name in plans, docs, and sign-off checklists instead of inventing one.

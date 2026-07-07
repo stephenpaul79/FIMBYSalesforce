@@ -1,5 +1,7 @@
 # FIMBY — Project Guide for Claude
 
+The user is **Stephen Rathjen** (`srathjen`), FIMBY's builder and admin — use his name rather than inventing one.
+
 FIMBY (Family In My Backyard) is a neighbourhood mutual-aid platform on Salesforce Experience Cloud, served through a React Native / Expo WebView mobile app. This file holds the **always-on** guardrails and the project map. Detailed, file-type-specific conventions live in skills (see *Skill routing* at the bottom) — load the matching skill **before** your first edit of that file type each session.
 
 > Cursor and Claude work against the same codebase. These guidelines mirror the Cursor rules in `.cursor/rules/` so both agents apply the same guardrails. If you change a convention, update both surfaces.
