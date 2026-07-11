@@ -271,7 +271,7 @@ const LAUNCH_PHRASES = shuffledPhrases();
 // when the wait is genuinely long, so variety appears exactly when there's time
 // to enjoy it (never mid-read on a fast handoff).
 const LOADING_ROTATE_START_MS = 5000;
-const LOADING_ROTATE_INTERVAL_MS = 4000;
+const LOADING_ROTATE_INTERVAL_MS = 3000;
 
 /** WebView handoff overlay — the FINAL loading state before the app, triggered
  *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
