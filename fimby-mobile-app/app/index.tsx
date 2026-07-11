@@ -728,6 +728,20 @@ export default function IndexScreen() {
   const pandaCheckedRef = useRef(false);
   const pandaVideoReadyRef = useRef(false);
   const pandaVideoFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // "Come on in" pressed — swaps the two buttons for a spinner + caption while
+  // openFimby runs, and keeps the panda screen visible until openFimby resolves
+  // (either to WebView, session card, or offline). Avoids the panda-to-preauth
+  // cream flash in light mode by never exposing pre-auth between tap and
+  // handoff.
+  const [pandaAcknowledged, setPandaAcknowledged] = React.useState(false);
+  // Post-panda transition — while true, the kettle overlay uses the panda dark
+  // palette regardless of user theme, so the handoff from panda → EC content
+  // is a single dark canvas. Cleared when the EC shell signals ready.
+  const [postPandaTransition, setPostPandaTransition] = React.useState(false);
+  const postPandaTransitionRef = useRef(false);
+  React.useEffect(() => {
+    postPandaTransitionRef.current = postPandaTransition;
+  }, [postPandaTransition]);
 
   // Panda video player (looping) - used when showPanda is true
   const pandaPlayer = useVideoPlayer(PANDA_SLEEPING_VIDEO, (player) => {
@@ -915,12 +929,19 @@ export default function IndexScreen() {
     lastAnnouncedStatusRef.current = status;
   }, [status]);
 
-  // Panda Screen: check quiet hours on cold launch (before auth)
+  // Panda Screen: check quiet hours on cold launch. Signed-in only — panda is
+  // a personal "not now" gesture, so we never show it to a user who has no
+  // relationship with FIMBY yet. Fresh installs during quiet hours go straight
+  // to the pre-auth screen; the panda greets them the second night after
+  // they've signed in and their pref has been cached.
   React.useEffect(() => {
     if (pandaCheckedRef.current) return;
     pandaCheckedRef.current = true;
 
     (async () => {
+      const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
+      if (!refresh) return;
+
       const pref = (await AsyncStorage.getItem("fimby_quiet_hours")) || "10PM_6AM";
       if (pref === "NONE") return;
 
@@ -1120,6 +1141,12 @@ export default function IndexScreen() {
       log("[WebView] Shell ready for handoff:", source);
       authTimingMark("webview_shell_ready", { source });
       clearWebViewHandoffFallback();
+      // EC content is painted → the post-panda dark override can drop; the
+      // kettle's fade will hand off to the user's real theme in the WebView.
+      if (postPandaTransitionRef.current) {
+        postPandaTransitionRef.current = false;
+        setPostPandaTransition(false);
+      }
 
       if (webViewHandoffShownAtRef.current == null) {
         webViewShellReadyPendingRef.current = true;
@@ -2989,7 +3016,12 @@ export default function IndexScreen() {
   // curtain drop from bunny → kettle → live app is invisible to the user —
   // only the caption text swaps. Sign Up is intentionally omitted here; once
   // we're loading, we're already signed in.
-  const loadingPalette = PREAUTH_COLORS[appTheme];
+  // Post-panda override: keep the loading canvas dark (matches the panda
+  // backdrop) until EC content paints, so a light-mode user never sees a bright
+  // cream flash between panda dismiss and their neighbourhood loading.
+  const loadingPalette = postPandaTransition
+    ? PREAUTH_COLORS.dark
+    : PREAUTH_COLORS[appTheme];
   const loadingOverlay = webViewHandoffVisible ? (
     <Animated.View
       style={[
@@ -3171,9 +3203,22 @@ export default function IndexScreen() {
   if (showPanda && !webViewUrl) {
     const dismissPanda = async () => {
       await AsyncStorage.setItem("lastPandaDate", new Date().toDateString());
-      setShowPanda(false);
       setPandaFarewell(null);
-      void openFimby();
+      // Announce the intent to hand off before we do any async work. This flips
+      // the panda screen into "opening the door" mode (spinner + caption) and
+      // arms the dark palette for the kettle so the panda → EC transition
+      // stays visually continuous. The screen itself remains up until
+      // openFimby settles (WebView URL set, session card set, or offline
+      // path taken) — this is what kills the light-mode cream flash.
+      setPandaAcknowledged(true);
+      setPostPandaTransition(true);
+      postPandaTransitionRef.current = true;
+      try {
+        await openFimby();
+      } finally {
+        setShowPanda(false);
+        setPandaAcknowledged(false);
+      }
     };
 
     const showFarewell = () => {
@@ -3213,9 +3258,18 @@ export default function IndexScreen() {
         </View>
         <View style={pandaStyles.contentSection}>
         <Text style={pandaStyles.caption}>
-          {pandaFarewell || "FIMBY is resting right now, but you're always welcome."}
+          {pandaAcknowledged
+            ? "Opening the door…"
+            : (pandaFarewell || "FIMBY is resting right now, but you're always welcome.")}
         </Text>
-        {!pandaFarewell && (
+        {pandaAcknowledged && (
+          <ActivityIndicator
+            size="large"
+            color={PREAUTH_COLORS.dark.spinner}
+            style={styles.spinner}
+          />
+        )}
+        {!pandaFarewell && !pandaAcknowledged && (
           <>
             <Pressable style={pandaStyles.primaryButton} onPress={dismissPanda}>
               <Text style={pandaStyles.primaryButtonText}>Come on in</Text>
