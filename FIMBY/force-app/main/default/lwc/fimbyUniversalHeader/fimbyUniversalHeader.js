@@ -113,10 +113,24 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     // mounted, the highlight can no longer be set once in connectedCallback —
     // it must recompute whenever the current page changes. CurrentPageReference
     // fires on every (soft or hard) navigation. Also closes out nav-timing.
+    // Guard so the native kettle-handoff signal fires exactly once per shell
+    // mount. We want it on first paint of this header — the opaque
+    // fimby-tos-modal-backdrop is already covering the DOM by then, so the
+    // native shell can safely dissolve the kettle without a flash of unstyled
+    // content. The old post-Apex signal added a 500ms–2s network round-trip
+    // to the perceived load time. See renderedCallback below.
+    _shellReadySent = false;
+
     @wire(CurrentPageReference)
     wiredPageRef() {
         this._activeTab = this._detectActiveTab();
         endNavTiming();
+    }
+
+    renderedCallback() {
+        if (this._shellReadySent) return;
+        this._shellReadySent = true;
+        this._notifyNativeShellReady();
     }
 
     connectedCallback() {

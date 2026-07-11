@@ -280,8 +280,10 @@ const WEBVIEW_HANDOFF_MESSAGE = LAUNCH_PHRASES[0];
 const WEBVIEW_HANDOFF_MIN_MS = 1000;
 const WEBVIEW_HANDOFF_FADE_MS = 550;
 /** If the EC shell never posts quietHours (Apex/bridge failure), lift the kettle
- *  anyway so the user is never stuck. Measured from first EC document loadEnd. */
-const WEBVIEW_HANDOFF_FALLBACK_MS = 8000;
+ *  anyway so the user is never stuck. Measured from first EC document loadEnd.
+ *  Header now signals from renderedCallback (pre-Apex) so this should almost
+ *  never fire — 4s covers a really slow LWR boot without being a visible wait. */
+const WEBVIEW_HANDOFF_FALLBACK_MS = 4000;
 
 /** Playback time (s) at which the themed dissolve overlay starts fading in over
  *  the splash video. Tuned to the 3s clip's built-in fade-out tail. */
@@ -2981,25 +2983,78 @@ export default function IndexScreen() {
   // Single deferred loading overlay (bunny → kettle). Rendered above the body so
   // it covers both the pre-frontdoor pre-auth screen and the loading WebView,
   // and below the splash overlay so the video stays on top while it plays.
+  //
+  // Layout is a pixel-match of the pre-auth screen (logo + tagline up top,
+  // spinner + rotating caption in the middle, HELP · FAQ at the bottom) so the
+  // curtain drop from bunny → kettle → live app is invisible to the user —
+  // only the caption text swaps. Sign Up is intentionally omitted here; once
+  // we're loading, we're already signed in.
+  const loadingPalette = PREAUTH_COLORS[appTheme];
   const loadingOverlay = webViewHandoffVisible ? (
     <Animated.View
-      pointerEvents="none"
       style={[
-        styles.webViewHandoff,
-        {
-          backgroundColor: PREAUTH_COLORS[appTheme].bg,
-          opacity: webViewHandoffFade,
-        },
+        StyleSheet.absoluteFill,
+        { opacity: webViewHandoffFade },
       ]}
     >
-      <ActivityIndicator
-        size="large"
-        color={PREAUTH_COLORS[appTheme].spinner}
-        style={styles.spinner}
-      />
-      <Text style={[styles.webViewHandoffText, { color: PREAUTH_COLORS[appTheme].secondary }]}>
-        {loadingCaption}
-      </Text>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: loadingPalette.bg }]}
+        edges={["top", "bottom"]}
+      >
+        <View style={styles.contentShift}>
+          <View style={styles.upperSection}>
+            <Image
+              source={getTimeOfDayLogo()}
+              style={styles.heroLogo}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel="FIMBY"
+            />
+            <Text style={[styles.tagline, { color: loadingPalette.secondary }]}>
+              Turning the place you live{"\n"}into a place you belong.
+            </Text>
+          </View>
+
+          <View style={styles.middleSection}>
+            <View style={styles.centerContent}>
+              <ActivityIndicator
+                size="large"
+                color={loadingPalette.spinner}
+                style={styles.spinner}
+              />
+              <Text
+                style={[styles.status, { color: loadingPalette.secondary }]}
+                accessibilityRole="text"
+                accessibilityLiveRegion="polite"
+              >
+                {loadingCaption}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.lowerSection}>
+            <View style={styles.footerRow}>
+              <Pressable
+                hitSlop={12}
+                accessibilityRole="link"
+                accessibilityLabel="Help"
+                onPress={() => openExternal(HELP_URL)}
+              >
+                <Text style={[styles.footerLinkText, { color: loadingPalette.secondary }]}>HELP</Text>
+              </Pressable>
+              <Text style={[styles.footerBullet, { color: loadingPalette.secondary }]}>·</Text>
+              <Pressable
+                hitSlop={12}
+                accessibilityRole="link"
+                accessibilityLabel="FAQ"
+                onPress={() => openExternal(FAQ_URL)}
+              >
+                <Text style={[styles.footerLinkText, { color: loadingPalette.secondary }]}>FAQ</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
     </Animated.View>
   ) : null;
 
