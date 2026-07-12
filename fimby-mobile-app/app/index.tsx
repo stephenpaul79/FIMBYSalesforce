@@ -273,6 +273,15 @@ const LAUNCH_PHRASES = shuffledPhrases();
 const LOADING_ROTATE_START_MS = 5000;
 const LOADING_ROTATE_INTERVAL_MS = 3000;
 
+/** How long the kettle overlay holds the bunny arrival caption ("Herding
+ *  the dust bunnies…") after snapping opaque before handing off to the
+ *  caller's real target caption + rotation. The overlay snaps to full
+ *  opacity in the same commit as the Layer 1 primary swap so the swap is
+ *  never visible; the bunny caption then sits for this window so the two
+ *  loading phases still feel like distinct beats rather than one flash.
+ *  Reduced-motion users skip this hold and go straight to the target. */
+const LOADING_BUNNY_HOLD_MS = 350;
+
 /** WebView handoff overlay — the FINAL loading state before the app, triggered
  *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
  *  everyone right before they land in the app. */
@@ -703,12 +712,45 @@ export default function IndexScreen() {
   // True only in the kettle phase (not the pre-frontdoor "bunny" phase): enables
   // the slow phrase rotation on long waits.
   const [loadingRotates, setLoadingRotates] = React.useState(false);
-  const webViewHandoffFade = useRef(new Animated.Value(1)).current;
+  // Post-fade-in target: caption + rotation the caller *actually* wants once
+  // the arrival fade completes. Read live inside the fade animation's
+  // completion callback so any mid-fade update (e.g. bunny→kettle handoff
+  // fires while the intro fade is still running) is honoured with the
+  // latest intent, not a stale closure over the first caller's args.
+  const loadingTargetRef = useRef<{ caption: string; rotate: boolean }>({
+    caption: WEBVIEW_HANDOFF_MESSAGE,
+    rotate: true,
+  });
+  // Kettle overlay opacity. Initial value is 0 because the overlay is now
+  // *pre-mounted* — its Animated.View + SafeAreaView + logo + spinner +
+  // caption + HELP/FAQ subtree renders from the very first frame of the
+  // app, sitting there invisible. When the loading state is needed we
+  // *snap* opacity to 1 in the same commit as the Layer 1 primary swap
+  // (pre-auth tree → WebView tree), so Layer 3 is fully opaque on the
+  // very first frame the swap is visible on. Layer 3's native views are
+  // already laid out and painted — the opacity flip is the only work
+  // left, and there is no fade window during which the swap could leak
+  // through. See presentLoadingOverlay for the snap + bunny hold →
+  // kettle handoff.
+  const webViewHandoffFade = useRef(new Animated.Value(0)).current;
+  // WebView reveal (Plan C). Starts at 0 so the WKWebView's first-mount frame
+  // dance (0,0,0,0 → 0,0,W,0 → 0,0,W,H) happens completely invisibly behind
+  // our opaque kettle overlay. Ramped to 1 in parallel with the overlay's
+  // dismiss fade — a crossfade rather than a hard cut. Reset back to 0
+  // whenever a new loading cycle starts (fresh sign-in, crash recovery,
+  // sign-out then sign-in again) so the next WebView mount is invisible too.
+  const webViewRevealFade = useRef(new Animated.Value(0)).current;
   const webViewHandoffShownAtRef = useRef<number | null>(null);
   const webViewHandoffEcReadyAtRef = useRef<number | null>(null);
   const webViewHandoffDismissedRef = useRef(false);
   const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewHandoffFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Handle for the "hold bunny caption for LOADING_BUNNY_HOLD_MS then swap to
+  // the caller's target" timer scheduled inside presentLoadingOverlay. Cleared
+  // on dismiss (so the swap doesn't fire onto an invisible overlay) and on
+  // every fresh present (defensive — the already-up branch short-circuits
+  // before this in normal use).
+  const loadingBunnyHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Set when quietHours arrives before the kettle overlay has a shownAt clock. */
   const webViewShellReadyPendingRef = useRef(false);
   // A frontdoor handoff requested while the splash video was still playing. The
@@ -1079,6 +1121,10 @@ export default function IndexScreen() {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
       }
+      if (loadingBunnyHoldTimeoutRef.current) {
+        clearTimeout(loadingBunnyHoldTimeoutRef.current);
+        loadingBunnyHoldTimeoutRef.current = null;
+      }
       clearWebViewHandoffFallback();
 
       const finish = () => {
@@ -1087,11 +1133,24 @@ export default function IndexScreen() {
       };
 
       if (opts?.immediate || reduceMotionRef.current) {
+        // Snap both layers into their end state simultaneously so no
+        // dark/blank frame ever exists.
         webViewHandoffFade.setValue(0);
+        webViewRevealFade.setValue(1);
         finish();
         return;
       }
 
+      // Snap Layer 2 (WebView) to opacity 1 IMMEDIATELY at dismiss start.
+      // By the time markWebViewShellReady fires, the WKWebView has fully
+      // finished its mount lifecycle inside our opaque kettle, EC's LWC
+      // has painted (renderedCallback), and the underlying tree is stable
+      // — there is nothing left to reflow. Making it opaque now means the
+      // kettle then fades to reveal a *fully rendered* EC, giving a clean
+      // 50/50 crossfade at every intermediate frame (kettle * α + EC * (1-α))
+      // rather than the double-transparency blend that Animated.parallel
+      // would have produced.
+      webViewRevealFade.setValue(1);
       Animated.timing(webViewHandoffFade, {
         toValue: 0,
         duration: WEBVIEW_HANDOFF_FADE_MS,
@@ -1101,7 +1160,7 @@ export default function IndexScreen() {
         if (finished) finish();
       });
     },
-    [webViewHandoffFade, clearWebViewHandoffFallback]
+    [webViewHandoffFade, webViewRevealFade, clearWebViewHandoffFallback]
   );
 
   // Reveal the pre-auth offline card and stop any doomed loading. A reconnect
@@ -1171,40 +1230,102 @@ export default function IndexScreen() {
     }, WEBVIEW_HANDOFF_FALLBACK_MS);
   }, [markWebViewShellReady]);
 
-  // Single deferred loading overlay used for BOTH phases. The caption swaps in
-  // place (bunny → kettle); the minimum-view clock is anchored once, when the
-  // overlay first appears, so the two phases never stack and never flash.
+  // Single deferred loading overlay used for BOTH phases. On first present
+  // the overlay *snaps* to full opacity in the same React commit as the
+  // Layer 1 primary swap (pre-auth SafeAreaView → WebView SafeAreaView) so
+  // the swap is never visible — no fade window through which the underlying
+  // tree can flicker. It then holds the bunny caption ("Herding the dust
+  // bunnies…") for LOADING_BUNNY_HOLD_MS as an arrival beat, and finally
+  // hands off to the caller's intended caption + rotation (kettle rotation
+  // for the WebView loading phase, or just staying on bunny if the caller
+  // wanted bunny because auth is still in flight).
+  //
+  // The overlay itself is *pre-mounted* in the tree from app launch (see
+  // loadingOverlay + webViewHandoffFade initial value 0). The snap is a
+  // single opacity flip on already-laid-out native views — no mount race
+  // between Layer 1 (primary swap) and Layer 3.
+  //
+  // The minimum-view clock is anchored once, when the overlay first
+  // appears, so the two caption phases never stack and never flash.
   const presentLoadingOverlay = useCallback(
     (caption: string, opts?: { rotate?: boolean }) => {
-      setLoadingCaption(caption);
-      // Rotation is enabled only for the kettle phase; the pre-frontdoor bunny
-      // line stays fixed. Set before the early-return so a bunny→kettle swap
-      // (overlay already up) still turns rotation on.
-      setLoadingRotates(!!opts?.rotate);
-      // Already up (e.g. the bunny phase): keep the clock running and just swap
-      // the caption — one continuous minimum, no reset, no flash.
+      const rotate = !!opts?.rotate;
+      // Update the "what we ultimately want on screen" target immediately.
+      // If a fade-in is already in flight when a later call updates this
+      // (e.g. showWebViewHandoff fires during the bunny fade), the fade's
+      // completion callback reads the latest value from this ref rather
+      // than a stale closure.
+      loadingTargetRef.current = { caption, rotate };
+
+      // Already up: skip the fade-in and just swap caption/rotation live.
+      // The overlay is opaque, nothing to mount, no clock to re-anchor.
       if (
         webViewHandoffShownAtRef.current != null &&
         !webViewHandoffDismissedRef.current
       ) {
+        setLoadingCaption(caption);
+        setLoadingRotates(rotate);
         return;
       }
+
       if (webViewHandoffDismissTimeoutRef.current) {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
+      }
+      if (loadingBunnyHoldTimeoutRef.current) {
+        clearTimeout(loadingBunnyHoldTimeoutRef.current);
+        loadingBunnyHoldTimeoutRef.current = null;
       }
       clearWebViewHandoffFallback();
       webViewHandoffDismissedRef.current = false;
       webViewHandoffEcReadyAtRef.current = null;
       webViewHandoffShownAtRef.current = Date.now();
       setWebViewHandoffVisible(true);
-      webViewHandoffFade.setValue(1);
+      // Start of a new loading cycle — make sure the WebView (Layer 2)
+      // begins the next mount fully invisible. Also covers the case where
+      // a previous session set webViewRevealFade to 1 during dismiss and
+      // we're now signing in again (sign-out then sign-in, crash recovery).
+      webViewRevealFade.setValue(0);
+
+      if (reduceMotionRef.current) {
+        // No bunny intro — go straight to the caller's caption and full
+        // opacity so reduced-motion users get the loading state instantly
+        // with the intended text.
+        setLoadingCaption(caption);
+        setLoadingRotates(rotate);
+        webViewHandoffFade.setValue(1);
+      } else {
+        // Snap Layer 3 to full opacity in the same commit as any Layer 1
+        // primary swap the caller triggered (e.g. openFimby setting
+        // webViewUrl). Because Layer 3 is pre-mounted and its subtree is
+        // already laid out, this is a single native opacity flip — no
+        // fade window during which the swap could leak through. Then
+        // hold the bunny caption briefly as an arrival beat before
+        // handing off to the caller's target caption + rotation.
+        webViewHandoffFade.setValue(1);
+        setLoadingCaption(BOOTSTRAP_LOADING_MESSAGE);
+        setLoadingRotates(false);
+        loadingBunnyHoldTimeoutRef.current = setTimeout(() => {
+          loadingBunnyHoldTimeoutRef.current = null;
+          // Guard: if the overlay was dismissed during the hold (very
+          // fast EC + short minimum view + immediate dismiss path), do
+          // nothing — we don't want to reflash a caption onto an
+          // invisible overlay.
+          if (webViewHandoffDismissedRef.current) return;
+          // Read the latest intent — any mid-hold call that updated
+          // loadingTargetRef takes effect here.
+          const target = loadingTargetRef.current;
+          setLoadingCaption(target.caption);
+          setLoadingRotates(target.rotate);
+        }, LOADING_BUNNY_HOLD_MS);
+      }
+
       if (webViewShellReadyPendingRef.current) {
         webViewShellReadyPendingRef.current = false;
         markWebViewShellReady("shell-ready-deferred");
       }
     },
-    [webViewHandoffFade, clearWebViewHandoffFallback, markWebViewShellReady]
+    [webViewHandoffFade, webViewRevealFade, clearWebViewHandoffFallback, markWebViewShellReady]
   );
 
   const showWebViewHandoff = useCallback(() => {
@@ -3022,8 +3143,15 @@ export default function IndexScreen() {
   const loadingPalette = postPandaTransition
     ? PREAUTH_COLORS.dark
     : PREAUTH_COLORS[appTheme];
-  const loadingOverlay = webViewHandoffVisible ? (
+  // Layer 3, ALWAYS in the tree — see webViewHandoffFade for the "why".
+  // Visibility is now purely an opacity animation, not a mount/unmount, so
+  // no first-paint delay can ever leak a raw underlying frame at the moment
+  // the loading state is requested. `pointerEvents` is bound to the visible
+  // flag so the invisible overlay never intercepts taps on the pre-auth
+  // Sign In button underneath.
+  const loadingOverlay = (
     <Animated.View
+      pointerEvents={webViewHandoffVisible ? "auto" : "none"}
       style={[
         StyleSheet.absoluteFill,
         { opacity: webViewHandoffFade },
@@ -3088,7 +3216,7 @@ export default function IndexScreen() {
         </View>
       </SafeAreaView>
     </Animated.View>
-  ) : null;
+  );
 
   // Push-permission primer sheet. Shown over the WebView the first (and only)
   // time we would otherwise fire the OS prompt, so the user knows what they're
@@ -3199,6 +3327,15 @@ export default function IndexScreen() {
     </View>
   ) : null;
 
+  // Primary content tree is chosen inline below and rendered inside a single
+  // stable top-level Fragment together with all the absolute overlays
+  // (loading, push primer, splash, null cover, lock, app-lock notice). Keeping
+  // the outer Fragment stable across `showPanda` / `webViewUrl` transitions is
+  // what prevents the loading overlay from being unmounted-and-remounted
+  // during a branch swap — the source of the "spinner jumps up then back down"
+  // stutter Stephen caught between the two loading wheels.
+  let primary: React.ReactNode = null;
+
   // Panda Screen: quiet hours interstitial (before auth)
   if (showPanda && !webViewUrl) {
     const dismissPanda = async () => {
@@ -3234,8 +3371,7 @@ export default function IndexScreen() {
       }, 5000);
     };
 
-    return (
-      <>
+    primary = (
       <View style={pandaStyles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={pandaStyles.pandaTopSpacer} />
@@ -3288,20 +3424,11 @@ export default function IndexScreen() {
         )}
         </View>
       </View>
-      {splashOverlay}
-      {nullCover}
-      {lockOverlay}
-      {appLockNoticeOverlay}
-      </>
     );
-  }
-
-  // If WebView URL is set, show the WebView full-screen with no UI chrome
-  if (webViewUrl) {
+  } else if (webViewUrl) {
     const themeColors = THEME_COLORS[appTheme];
     const handoffPalette = PREAUTH_COLORS[appTheme];
-    return (
-      <>
+    primary = (
       <SafeAreaView
         style={[styles.safeArea, { backgroundColor: themeColors.statusBar }]}
         edges={Platform.OS === "android" ? ["top", "bottom"] : ["top"]}
@@ -3312,6 +3439,22 @@ export default function IndexScreen() {
             is never bare white — this is what caused the dark-mode flash when
             the kettle faded before EC painted. SafeArea/StatusBar stay on the
             surface-card tone so the top inset matches the EC header. */}
+        {/* Plan C: hide the WebView (Layer 2) until EC is truly ready.
+            react-native-webview issue #474 confirms WKWebView's frame goes
+            through 0,0,0,0 → 0,0,W,0 → 0,0,W,H on iOS first mount, and even
+            though our opaque kettle overlay (Layer 3) sits on top, that
+            mount reflow was leaking through — this is the "flash between
+            bunny and kettle" Stephen was seeing. Wrapping the WebView in an
+            Animated.View at opacity=0 makes the mount literally invisible.
+            The reveal happens in dismissWebViewHandoff as a crossfade with
+            the kettle's own 1→0 fade, so the user only ever sees kettle or
+            EC or a smooth blend of the two — never a raw WebView frame. */}
+        <Animated.View
+          style={[
+            styles.webViewWrapper,
+            { backgroundColor: handoffPalette.bg, opacity: webViewRevealFade },
+          ]}
+        >
         <WebView
           key={webViewKey}
           ref={webViewRef}
@@ -3328,14 +3471,17 @@ export default function IndexScreen() {
           ]}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={[styles.webViewHandoff, { backgroundColor: handoffPalette.bg }]}>
-              <ActivityIndicator size="large" color={handoffPalette.spinner} />
-            </View>
-          )}
+          // Intentionally NO startInLoadingState / renderLoading. Our own
+          // `loadingOverlay` is the canonical kettle. (See wrapping comment
+          // above for the Plan C reveal-crossfade story.)
           sharedCookiesEnabled={true}
           thirdPartyCookiesEnabled={true}
+          // iOS: don't let WKWebView auto-adjust its own scroll insets for
+          // safe areas — our SafeAreaView already positions the WebView in
+          // the correct frame, and double-inset math is one of the things
+          // that makes the WKWebView mount reflow visible.
+          contentInsetAdjustmentBehavior="never"
+          automaticallyAdjustContentInsets={false}
           // Android scales web content by the OS font/display-size setting;
           // iOS (WKWebView) ignores it. Pin to 100% so both platforms render
           // the LWR site at the same baseline — the device-font scaling was
@@ -3369,6 +3515,7 @@ export default function IndexScreen() {
             void maybeRunDeferredPushPrompt();
           }}
         />
+        </Animated.View>
         {webViewError && (
           <View style={styles.errorOverlay}>
             <Text style={styles.errorOverlayText}>{webViewError}</Text>
@@ -3447,18 +3594,10 @@ export default function IndexScreen() {
           </View>
         )}
       </SafeAreaView>
-      {loadingOverlay}
-      {pushPrimerOverlay}
-      {splashOverlay}
-      {nullCover}
-      {lockOverlay}
-      {appLockNoticeOverlay}
-      </>
     );
-  }
-
-  // Theme-aware pre-auth palette (applied inline; StyleSheet is static)
-  const c = PREAUTH_COLORS[appTheme];
+  } else {
+    // Theme-aware pre-auth palette (applied inline; StyleSheet is static)
+    const c = PREAUTH_COLORS[appTheme];
 
   // Determine what content to show
   const renderContent = () => {
@@ -3567,74 +3706,92 @@ export default function IndexScreen() {
     );
   };
 
-  // Main pre-auth layout: three distinct sections distributed top / middle / bottom
+    // Main pre-auth layout: three distinct sections distributed top / middle / bottom
+    primary = (
+      <SafeAreaView style={[styles.container, { backgroundColor: c.bg }]} edges={["top", "bottom"]}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar style={THEME_COLORS[appTheme].barStyle} backgroundColor={c.bg} />
+
+        {/* Whole stack nudged down so the content reads optically centered
+            (top gap was smaller than the bottom gap). Tweak PREAUTH_VERTICAL_NUDGE. */}
+        <View style={styles.contentShift}>
+          {/* UPPER: full FIMBY logo + tagline */}
+          <Animated.View style={[styles.upperSection, { opacity: fadeAnim }]}>
+            <Image
+              source={getTimeOfDayLogo()}
+              style={styles.heroLogo}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel="FIMBY"
+            />
+            <Text style={[styles.tagline, { color: c.secondary }]}>
+              Turning the place you live{"\n"}into a place you belong.
+            </Text>
+          </Animated.View>
+
+          {/* MIDDLE: primary action + status (or loading / error state) */}
+          <Animated.View style={[styles.middleSection, { opacity: fadeAnim }]}>
+            {renderContent()}
+          </Animated.View>
+
+          {/* LOWER: secondary action + footer links */}
+          <Animated.View style={[styles.lowerSection, { opacity: fadeAnim }]}>
+            {!booting && !bootstrapError && !preAuthCard && (
+              <Pressable
+                style={[styles.createAccountButton, { borderColor: c.signUpOutline }]}
+                accessibilityRole="button"
+                accessibilityLabel="Sign Up"
+                onPress={() => openExternal(SIGN_UP_URL)}
+              >
+                <Text style={[styles.createAccountText, { color: c.signUpOutline }]}>Sign Up</Text>
+              </Pressable>
+            )}
+            <View style={styles.footerRow}>
+              <Pressable
+                hitSlop={12}
+                accessibilityRole="link"
+                accessibilityLabel="Help"
+                onPress={() => openExternal(HELP_URL)}
+              >
+                <Text style={[styles.footerLinkText, { color: c.secondary }]}>HELP</Text>
+              </Pressable>
+              <Text style={[styles.footerBullet, { color: c.secondary }]}>·</Text>
+              <Pressable
+                hitSlop={12}
+                accessibilityRole="link"
+                accessibilityLabel="FAQ"
+                onPress={() => openExternal(FAQ_URL)}
+              >
+                <Text style={[styles.footerLinkText, { color: c.secondary }]}>FAQ</Text>
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Single, stable top-level Fragment. Because the outer Fragment structure
+  // never changes across a `showPanda` / `webViewUrl` swap, React reconciles
+  // every overlay in place — `loadingOverlay` (the kettle) in particular
+  // stays continuously mounted while the primary tree switches between
+  // pre-auth, panda, and WebView. That kills the pre-auth → WebView remount
+  // gap where the WebView's built-in centered ActivityIndicator briefly
+  // painted underneath our overlay and read as a spinner jumping up and back
+  // down. `loadingOverlay` and `pushPrimerOverlay` are already `null` when
+  // inactive, so sharing them across branches doesn't leak any behavior; the
+  // panda "Opening the door…" state is a beat shorter now because the kettle
+  // lands on top the moment `showWebViewHandoff()` fires (dark-to-dark, so
+  // visually continuous).
   return (
     <>
-    <SafeAreaView style={[styles.container, { backgroundColor: c.bg }]} edges={["top", "bottom"]}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar style={THEME_COLORS[appTheme].barStyle} backgroundColor={c.bg} />
-
-      {/* Whole stack nudged down so the content reads optically centered
-          (top gap was smaller than the bottom gap). Tweak PREAUTH_VERTICAL_NUDGE. */}
-      <View style={styles.contentShift}>
-        {/* UPPER: full FIMBY logo + tagline */}
-        <Animated.View style={[styles.upperSection, { opacity: fadeAnim }]}>
-          <Image
-            source={getTimeOfDayLogo()}
-            style={styles.heroLogo}
-            resizeMode="contain"
-            accessibilityRole="image"
-            accessibilityLabel="FIMBY"
-          />
-          <Text style={[styles.tagline, { color: c.secondary }]}>
-            Turning the place you live{"\n"}into a place you belong.
-          </Text>
-        </Animated.View>
-
-        {/* MIDDLE: primary action + status (or loading / error state) */}
-        <Animated.View style={[styles.middleSection, { opacity: fadeAnim }]}>
-          {renderContent()}
-        </Animated.View>
-
-        {/* LOWER: secondary action + footer links */}
-        <Animated.View style={[styles.lowerSection, { opacity: fadeAnim }]}>
-          {!booting && !bootstrapError && !preAuthCard && (
-            <Pressable
-              style={[styles.createAccountButton, { borderColor: c.signUpOutline }]}
-              accessibilityRole="button"
-              accessibilityLabel="Sign Up"
-              onPress={() => openExternal(SIGN_UP_URL)}
-            >
-              <Text style={[styles.createAccountText, { color: c.signUpOutline }]}>Sign Up</Text>
-            </Pressable>
-          )}
-          <View style={styles.footerRow}>
-            <Pressable
-              hitSlop={12}
-              accessibilityRole="link"
-              accessibilityLabel="Help"
-              onPress={() => openExternal(HELP_URL)}
-            >
-              <Text style={[styles.footerLinkText, { color: c.secondary }]}>HELP</Text>
-            </Pressable>
-            <Text style={[styles.footerBullet, { color: c.secondary }]}>·</Text>
-            <Pressable
-              hitSlop={12}
-              accessibilityRole="link"
-              accessibilityLabel="FAQ"
-              onPress={() => openExternal(FAQ_URL)}
-            >
-              <Text style={[styles.footerLinkText, { color: c.secondary }]}>FAQ</Text>
-            </Pressable>
-          </View>
-        </Animated.View>
-      </View>
-    </SafeAreaView>
-    {loadingOverlay}
-    {splashOverlay}
-    {nullCover}
-    {lockOverlay}
-    {appLockNoticeOverlay}
+      {primary}
+      {loadingOverlay}
+      {pushPrimerOverlay}
+      {splashOverlay}
+      {nullCover}
+      {lockOverlay}
+      {appLockNoticeOverlay}
     </>
   );
 }
@@ -3856,6 +4013,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   webView: {
+    flex: 1,
+  },
+  webViewWrapper: {
+    // Occupies the same flex slot the raw WebView used to; hosts the
+    // reveal Animated.Value so we can crossfade EC in as the kettle
+    // fades out. backgroundColor is applied inline so the wrapper matches
+    // the current theme's handoff palette (light cream / dark surface),
+    // meaning any frame where the WebView is at opacity 0 shows flat
+    // themed colour rather than a bare gap.
     flex: 1,
   },
   webViewHandoff: {
