@@ -235,9 +235,11 @@ const BACKEND_FRONTDOOR_URL = `${BACKEND_BASE_URL}/api/frontdoor`;
 const BACKEND_LOGOUT_URL = `${BACKEND_BASE_URL}/api/logout`;
 const BACKEND_PUSH_ACTION_URL = `${BACKEND_BASE_URL}/api/notifications/action`;
 
-/** Pre-kettle loading line. The bootstrap spinner runs UNDER the splash video
- *  from app start; if the video lifts before the frontdoor URL is ready (the
- *  kettle moment), this is the message shown in that gap. */
+/** Pre-frontdoor loading line, owned by the pre-auth screen (Layer 1). Shows
+ *  under `booting` — while tokens are being refreshed or a bootstrap request
+ *  is in flight. If the splash video lifts before the frontdoor URL is ready,
+ *  this is what's visible on the pre-auth surface. Layer 3 (the kettle
+ *  overlay) never renders this — it only ever displays kettle captions. */
 const BOOTSTRAP_LOADING_MESSAGE = "Herding the dust bunnies…";
 
 /** Loading-phrase pool for the kettle handoff overlay. One is chosen at random
@@ -267,20 +269,10 @@ function shuffledPhrases(): string[] {
 // given phrase is on screen. LAUNCH_PHRASES[0] is the initial kettle caption.
 const LAUNCH_PHRASES = shuffledPhrases();
 
-// Rotation timing: hold the first phrase for a while, then advance gently only
-// when the wait is genuinely long, so variety appears exactly when there's time
-// to enjoy it (never mid-read on a fast handoff).
-const LOADING_ROTATE_START_MS = 5000;
+// Rotation interval: every phrase (including the first kettle phrase) gets
+// the same read window. On a short handoff (EC ready before this ticks) no
+// rotation happens at all — dismiss unmounts the interval before it fires.
 const LOADING_ROTATE_INTERVAL_MS = 3000;
-
-/** How long the kettle overlay holds the bunny arrival caption ("Herding
- *  the dust bunnies…") after snapping opaque before handing off to the
- *  caller's real target caption + rotation. The overlay snaps to full
- *  opacity in the same commit as the Layer 1 primary swap so the swap is
- *  never visible; the bunny caption then sits for this window so the two
- *  loading phases still feel like distinct beats rather than one flash.
- *  Reduced-motion users skip this hold and go straight to the target. */
-const LOADING_BUNNY_HOLD_MS = 350;
 
 /** WebView handoff overlay — the FINAL loading state before the app, triggered
  *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
@@ -712,15 +704,6 @@ export default function IndexScreen() {
   // True only in the kettle phase (not the pre-frontdoor "bunny" phase): enables
   // the slow phrase rotation on long waits.
   const [loadingRotates, setLoadingRotates] = React.useState(false);
-  // Post-fade-in target: caption + rotation the caller *actually* wants once
-  // the arrival fade completes. Read live inside the fade animation's
-  // completion callback so any mid-fade update (e.g. bunny→kettle handoff
-  // fires while the intro fade is still running) is honoured with the
-  // latest intent, not a stale closure over the first caller's args.
-  const loadingTargetRef = useRef<{ caption: string; rotate: boolean }>({
-    caption: WEBVIEW_HANDOFF_MESSAGE,
-    rotate: true,
-  });
   // Kettle overlay opacity. Initial value is 0 because the overlay is now
   // *pre-mounted* — its Animated.View + SafeAreaView + logo + spinner +
   // caption + HELP/FAQ subtree renders from the very first frame of the
@@ -730,8 +713,8 @@ export default function IndexScreen() {
   // very first frame the swap is visible on. Layer 3's native views are
   // already laid out and painted — the opacity flip is the only work
   // left, and there is no fade window during which the swap could leak
-  // through. See presentLoadingOverlay for the snap + bunny hold →
-  // kettle handoff.
+  // through. See presentLoadingOverlay for the snap + direct-paint of
+  // the caller's caption and rotation.
   const webViewHandoffFade = useRef(new Animated.Value(0)).current;
   // WebView reveal (Plan C). Starts at 0 so the WKWebView's first-mount frame
   // dance (0,0,0,0 → 0,0,W,0 → 0,0,W,H) happens completely invisibly behind
@@ -745,12 +728,6 @@ export default function IndexScreen() {
   const webViewHandoffDismissedRef = useRef(false);
   const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewHandoffFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Handle for the "hold bunny caption for LOADING_BUNNY_HOLD_MS then swap to
-  // the caller's target" timer scheduled inside presentLoadingOverlay. Cleared
-  // on dismiss (so the swap doesn't fire onto an invisible overlay) and on
-  // every fresh present (defensive — the already-up branch short-circuits
-  // before this in normal use).
-  const loadingBunnyHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Set when quietHours arrives before the kettle overlay has a shownAt clock. */
   const webViewShellReadyPendingRef = useRef(false);
   // A frontdoor handoff requested while the splash video was still playing. The
@@ -1121,10 +1098,6 @@ export default function IndexScreen() {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
       }
-      if (loadingBunnyHoldTimeoutRef.current) {
-        clearTimeout(loadingBunnyHoldTimeoutRef.current);
-        loadingBunnyHoldTimeoutRef.current = null;
-      }
       clearWebViewHandoffFallback();
 
       const finish = () => {
@@ -1230,15 +1203,17 @@ export default function IndexScreen() {
     }, WEBVIEW_HANDOFF_FALLBACK_MS);
   }, [markWebViewShellReady]);
 
-  // Single deferred loading overlay used for BOTH phases. On first present
-  // the overlay *snaps* to full opacity in the same React commit as the
-  // Layer 1 primary swap (pre-auth SafeAreaView → WebView SafeAreaView) so
-  // the swap is never visible — no fade window through which the underlying
-  // tree can flicker. It then holds the bunny caption ("Herding the dust
-  // bunnies…") for LOADING_BUNNY_HOLD_MS as an arrival beat, and finally
-  // hands off to the caller's intended caption + rotation (kettle rotation
-  // for the WebView loading phase, or just staying on bunny if the caller
-  // wanted bunny because auth is still in flight).
+  // The kettle overlay (Layer 3). Single job: cover the Layer 1 → Layer 2
+  // primary swap during the handoff to Experience Cloud. On present the
+  // overlay *snaps* to full opacity in the same React commit as the primary
+  // swap (pre-auth SafeAreaView → WebView SafeAreaView) so the swap is
+  // never visible — no fade window through which the underlying tree can
+  // flicker. The kettle caption + rotation the caller passed are painted
+  // immediately.
+  //
+  // Pre-frontdoor waiting (spinner + "Herding the dust bunnies…") is owned
+  // by the pre-auth screen (Layer 1), not this overlay. Layer 3 is not
+  // presented until we have a frontdoor URL ready.
   //
   // The overlay itself is *pre-mounted* in the tree from app launch (see
   // loadingOverlay + webViewHandoffFade initial value 0). The snap is a
@@ -1246,18 +1221,12 @@ export default function IndexScreen() {
   // between Layer 1 (primary swap) and Layer 3.
   //
   // The minimum-view clock is anchored once, when the overlay first
-  // appears, so the two caption phases never stack and never flash.
+  // appears, so callers never re-anchor it mid-flight.
   const presentLoadingOverlay = useCallback(
     (caption: string, opts?: { rotate?: boolean }) => {
       const rotate = !!opts?.rotate;
-      // Update the "what we ultimately want on screen" target immediately.
-      // If a fade-in is already in flight when a later call updates this
-      // (e.g. showWebViewHandoff fires during the bunny fade), the fade's
-      // completion callback reads the latest value from this ref rather
-      // than a stale closure.
-      loadingTargetRef.current = { caption, rotate };
 
-      // Already up: skip the fade-in and just swap caption/rotation live.
+      // Already up: skip the snap and just swap caption/rotation live.
       // The overlay is opaque, nothing to mount, no clock to re-anchor.
       if (
         webViewHandoffShownAtRef.current != null &&
@@ -1272,10 +1241,6 @@ export default function IndexScreen() {
         clearTimeout(webViewHandoffDismissTimeoutRef.current);
         webViewHandoffDismissTimeoutRef.current = null;
       }
-      if (loadingBunnyHoldTimeoutRef.current) {
-        clearTimeout(loadingBunnyHoldTimeoutRef.current);
-        loadingBunnyHoldTimeoutRef.current = null;
-      }
       clearWebViewHandoffFallback();
       webViewHandoffDismissedRef.current = false;
       webViewHandoffEcReadyAtRef.current = null;
@@ -1287,38 +1252,13 @@ export default function IndexScreen() {
       // we're now signing in again (sign-out then sign-in, crash recovery).
       webViewRevealFade.setValue(0);
 
-      if (reduceMotionRef.current) {
-        // No bunny intro — go straight to the caller's caption and full
-        // opacity so reduced-motion users get the loading state instantly
-        // with the intended text.
-        setLoadingCaption(caption);
-        setLoadingRotates(rotate);
-        webViewHandoffFade.setValue(1);
-      } else {
-        // Snap Layer 3 to full opacity in the same commit as any Layer 1
-        // primary swap the caller triggered (e.g. openFimby setting
-        // webViewUrl). Because Layer 3 is pre-mounted and its subtree is
-        // already laid out, this is a single native opacity flip — no
-        // fade window during which the swap could leak through. Then
-        // hold the bunny caption briefly as an arrival beat before
-        // handing off to the caller's target caption + rotation.
-        webViewHandoffFade.setValue(1);
-        setLoadingCaption(BOOTSTRAP_LOADING_MESSAGE);
-        setLoadingRotates(false);
-        loadingBunnyHoldTimeoutRef.current = setTimeout(() => {
-          loadingBunnyHoldTimeoutRef.current = null;
-          // Guard: if the overlay was dismissed during the hold (very
-          // fast EC + short minimum view + immediate dismiss path), do
-          // nothing — we don't want to reflash a caption onto an
-          // invisible overlay.
-          if (webViewHandoffDismissedRef.current) return;
-          // Read the latest intent — any mid-hold call that updated
-          // loadingTargetRef takes effect here.
-          const target = loadingTargetRef.current;
-          setLoadingCaption(target.caption);
-          setLoadingRotates(target.rotate);
-        }, LOADING_BUNNY_HOLD_MS);
-      }
+      // Paint the caller's caption + rotation directly and snap opacity to
+      // 1 in the same commit. No intermediate bunny hold: it was a legacy
+      // beat from the fade-in era and, with hard snap, only produced a
+      // 350ms cosmetic caption flash that the eye read as flicker.
+      setLoadingCaption(caption);
+      setLoadingRotates(rotate);
+      webViewHandoffFade.setValue(1);
 
       if (webViewShellReadyPendingRef.current) {
         webViewShellReadyPendingRef.current = false;
@@ -1341,10 +1281,14 @@ export default function IndexScreen() {
     presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE, { rotate: true });
   }, [presentLoadingOverlay]);
 
-  // When the splash video lifts, decide the loading overlay (runs once):
-  //  - EC already loaded behind the video  → skip, straight to app
+  // When the splash video lifts, decide whether to show the kettle (runs once):
+  //  - EC already loaded behind the video → skip, straight to app
   //  - frontdoor ready, page still loading → kettle
-  //  - auth still in flight                → bunny (swaps to kettle when ready)
+  //  - auth still in flight → do nothing; the pre-auth screen (Layer 1) owns
+  //    the pre-frontdoor waiting state (spinner + "Herding the dust bunnies…"),
+  //    and when auth resolves showWebViewHandoff will snap the kettle overlay
+  //    up in the same commit as the Layer 1 → Layer 2 primary swap. Layer 3's
+  //    single job is the handoff moment, not the wait.
   React.useEffect(() => {
     if (!splashVideoComplete) return;
     splashVideoCompleteRef.current = true;
@@ -1358,16 +1302,8 @@ export default function IndexScreen() {
         return;
       }
       presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE, { rotate: true });
-      return;
     }
-    // Cold start only: the video just lifted and auth is still resolving, so
-    // show the bunny bootstrap overlay in the gap. On a warm/static start we let
-    // the branded pre-auth screen (logo on themed background) show during
-    // bootstrap instead, then the kettle appears when the frontdoor is ready.
-    if (splashDecision === 'video' && !webViewUrl && !showPanda && booting) {
-      presentLoadingOverlay(BOOTSTRAP_LOADING_MESSAGE);
-    }
-  }, [splashVideoComplete, splashDecision, webViewUrl, showPanda, booting, presentLoadingOverlay]);
+  }, [splashVideoComplete, presentLoadingOverlay]);
 
   // Safety net: if the overlay is in the pre-frontdoor (bunny) phase but auth
   // resolves to something other than the WebView (error, quiet-hours panda, or
@@ -1388,23 +1324,18 @@ export default function IndexScreen() {
     dismissWebViewHandoff,
   ]);
 
-  // Loading-phrase rotation. Only in the kettle phase, and only once the wait
-  // passes LOADING_ROTATE_START_MS — then advance gently through the launch's
-  // shuffled pool. Short/normal handoffs never rotate (no text swap mid-read).
+  // Loading-phrase rotation. Only in the kettle phase; every phrase (including
+  // the first) gets an equal LOADING_ROTATE_INTERVAL_MS read window. On a
+  // short handoff the overlay dismisses before this ticks and no rotation
+  // is ever seen.
   React.useEffect(() => {
     if (!webViewHandoffVisible || !loadingRotates) return;
     let idx = 0; // LAUNCH_PHRASES[0] is the initial kettle caption
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const start = setTimeout(() => {
-      interval = setInterval(() => {
-        idx = (idx + 1) % LAUNCH_PHRASES.length;
-        setLoadingCaption(LAUNCH_PHRASES[idx]);
-      }, LOADING_ROTATE_INTERVAL_MS);
-    }, LOADING_ROTATE_START_MS);
-    return () => {
-      clearTimeout(start);
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(() => {
+      idx = (idx + 1) % LAUNCH_PHRASES.length;
+      setLoadingCaption(LAUNCH_PHRASES[idx]);
+    }, LOADING_ROTATE_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, [webViewHandoffVisible, loadingRotates]);
 
   const handleWebViewLoadEnd = useCallback(
@@ -3128,15 +3059,16 @@ export default function IndexScreen() {
     </View>
   ) : null;
 
-  // Single deferred loading overlay (bunny → kettle). Rendered above the body so
-  // it covers both the pre-frontdoor pre-auth screen and the loading WebView,
-  // and below the splash overlay so the video stays on top while it plays.
+  // Kettle overlay (Layer 3). Rendered above the body so it covers the
+  // loading WebView during the handoff to Experience Cloud, and below the
+  // splash overlay so the video stays on top while it plays.
   //
   // Layout is a pixel-match of the pre-auth screen (logo + tagline up top,
-  // spinner + rotating caption in the middle, HELP · FAQ at the bottom) so the
-  // curtain drop from bunny → kettle → live app is invisible to the user —
-  // only the caption text swaps. Sign Up is intentionally omitted here; once
-  // we're loading, we're already signed in.
+  // spinner + rotating caption in the middle, HELP · FAQ at the bottom) so
+  // the curtain drop from pre-auth → this overlay → live app is invisible to
+  // the user; only the caption text and the surface underneath change. Sign
+  // Up is intentionally omitted here; once we're loading, we're already
+  // signed in.
   // Post-panda override: keep the loading canvas dark (matches the panda
   // backdrop) until EC content paints, so a light-mode user never sees a bright
   // cream flash between panda dismiss and their neighbourhood loading.
