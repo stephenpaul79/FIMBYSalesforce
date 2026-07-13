@@ -38,11 +38,21 @@ export default function RootLayout() {
     return null;
   }
 
+  // Themed content background behind the Stack, matched to the app.json
+  // splash colors so the ~1-frame gap between native splash lift and the
+  // index.tsx's own paint doesn't flash a hardcoded color. Previously this
+  // was locked to #67BBD2 (teal), which read as a bright flash between the
+  // dark native splash and the dark splash video in dark mode. Duplicated
+  // rather than imported from index.tsx to keep this layout module free of
+  // heavy imports — if you change the app.json splash colors, mirror them
+  // here (light) and in PREAUTH_COLORS.dark.bg / index.tsx (dark).
+  const rootBg = colorScheme === 'dark' ? '#14100D' : '#F0EBE3';
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack
         screenOptions={{
-          contentStyle: { backgroundColor: '#67BBD2' },
+          contentStyle: { backgroundColor: rootBg },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />

@@ -52,8 +52,11 @@ import {
   type DeepLinkSource,
 } from "../lib/deep-link-intent";
 
-// Splash video asset
-const SPLASH_VIDEO = require("../assets/Fimby_Startup.mp4");
+// Splash video assets — one per theme so a dark-mode user doesn't see a
+// bright cream flash for 3 seconds on cold launch. The correct source is
+// picked at mount from useColorScheme() (see splashSourceRef below).
+const SPLASH_VIDEO_LIGHT = require("../assets/Fimby_Startup.mp4");
+const SPLASH_VIDEO_DARK = require("../assets/Fimby_Startup_Dark.mp4");
 
 // Hero logo (full FIMBY lockup: house + wordmark + tree) for the pre-auth screen.
 // Time-of-day variants (all 1024x358 transparent PNGs): morning has a sunrise +
@@ -113,9 +116,15 @@ const PREAUTH_COLORS = {
   },
 } as const;
 
-// Splash + pre-video continuity background — matches the animation's canvas so
-// there is no color flash at launch.
-const SPLASH_BG = '#F0EBE3';
+// Splash + pre-video continuity background — matches each splash video's
+// canvas so there is no color flash between the native launch screen (see
+// app.json's expo-splash-screen dark/light backgroundColor) and the first
+// frame of Fimby_Startup.mp4 / Fimby_Startup_Dark.mp4. Applied inline based
+// on appTheme; the SplashContainer style itself carries no backgroundColor.
+const SPLASH_BGS = {
+  light: '#F0EBE3',
+  dark: '#14100D',
+} as const;
 
 const THEME_STORAGE_KEY = 'fimby_app_theme';
 
@@ -274,6 +283,23 @@ const LAUNCH_PHRASES = shuffledPhrases();
 // rotation happens at all — dismiss unmounts the interval before it fires.
 const LOADING_ROTATE_INTERVAL_MS = 3000;
 
+/** Crossfade duration for the pre-auth middleSection content swap when the
+ *  user taps Sign In (button → spinner+bunny) or OAuth returns non-success
+ *  (spinner+bunny → button). Dip-through-zero: 150ms fade-out, swap content,
+ *  150ms fade-in. Total 300ms — enough to read as intentional, short enough
+ *  to feel responsive. Reduced-motion users snap directly, no animation. */
+const MIDDLE_CROSSFADE_MS = 150;
+
+/** Delay between `promptAsync()` firing and the pre-auth crossfade to the
+ *  spinner+bunny layout, so the button → spinner swap happens BEHIND the
+ *  OAuth popup rather than glimpsing in front of it while the popup mounts.
+ *  ASWebAuthenticationSession on iOS typically presents within 150-300ms;
+ *  Android Custom Tabs are usually faster. 250ms is the sweet spot — long
+ *  enough that the popup is almost always covering pre-auth before the fade
+ *  begins, short enough that on a rapid dismiss the timer clears before it
+ *  ever fires and there is no visible crossfade at all. */
+const OAUTH_POPUP_HOLD_MS = 250;
+
 /** WebView handoff overlay — the FINAL loading state before the app, triggered
  *  the moment the frontdoor URL is ready. Trigger is unchanged; shown to
  *  everyone right before they land in the app. */
@@ -285,6 +311,22 @@ const WEBVIEW_HANDOFF_FADE_MS = 550;
  *  Header now signals from renderedCallback (pre-Apex) so this should almost
  *  never fire — 4s covers a really slow LWR boot without being a visible wait. */
 const WEBVIEW_HANDOFF_FALLBACK_MS = 4000;
+
+/** Adaptive settle: after the WebView's onLoadEnd (HTML + bundled JS downloaded),
+ *  wait a short beat for the LWC framework to hydrate and paint the universal
+ *  header before revealing. The wait scales with the measured HTML/JS load time —
+ *  our best in-app proxy for connection health (setWebViewUrl → onLoadEnd delta).
+ *  Whichever fires first — the LWC shell-ready postMessage, this settle timer,
+ *  or the 4s hard fallback — dismisses the kettle. Values are best-guess starting
+ *  bands; the `webview_settle_chosen` timing mark logs (loadMs, settleMs) so we
+ *  can retune from real device data. Kept intentionally coarse: sub-100ms
+ *  precision buys us nothing when LWC hydration itself is variable. */
+const WEBVIEW_SETTLE_TIERS: readonly { loadMax: number; settle: number }[] = [
+  { loadMax: 800, settle: 400 },
+  { loadMax: 2000, settle: 800 },
+  { loadMax: 4000, settle: 1400 },
+  { loadMax: Infinity, settle: 2000 },
+];
 
 /** Playback time (s) at which the themed dissolve overlay starts fading in over
  *  the splash video. Tuned to the 3s clip's built-in fade-out tail. */
@@ -667,6 +709,27 @@ export default function IndexScreen() {
 
   const [booting, setBooting] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
+  // True from the moment the user taps Sign In until we either (a) transition
+  // to Layer 3's kettle handoff on OAuth success, or (b) hit a non-success
+  // exit (offline, network fail, bootstrap error, OAuth cancel/dismiss/error,
+  // token exchange failure). While true, the pre-auth screen mirrors the
+  // booting layout (spinner + "Herding the dust bunnies…") instead of showing
+  // the Sign In button, so the visual state under the OAuth popup matches
+  // Layer 3 exactly — the eventual Layer 3 snap is caption-only, zero layout
+  // shift. Distinct from `busy` because `busy` toggles false→true again on
+  // the success path (finally clears it before the response effect re-sets
+  // it for the token exchange), which would flicker the button back briefly.
+  // `signInAttemptActive` stays monotonically true across that gap.
+  const [signInAttemptActive, setSignInAttemptActive] = React.useState(false);
+  // Lags behind `signInAttemptActive` by the crossfade duration — the
+  // middleSection reads this value so the content swap (button → spinner or
+  // spinner → button) only happens at the mid-point of the crossfade (opacity
+  // 0), never with content visible mid-transition. See MIDDLE_CROSSFADE_MS.
+  const [displayedSignInActive, setDisplayedSignInActive] = React.useState(false);
+  // Opacity driver for the middleSection content crossfade. Composed with
+  // `fadeAnim` (the initial mount fade) via a nested Animated.View so the
+  // two animations don't fight over the same opacity property.
+  const middleSectionCrossfade = useRef(new Animated.Value(1)).current;
   const [accessToken, setAccessToken] = React.useState<string | null>(null);
   const [status, setStatus] = React.useState<string>("Waking up…");
 
@@ -728,6 +791,14 @@ export default function IndexScreen() {
   const webViewHandoffDismissedRef = useRef(false);
   const webViewHandoffDismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewHandoffFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // When setWebViewUrl transitioned to a non-null value. Used at onLoadEnd time
+  // to compute the HTML+JS load duration and pick an adaptive settle delay from
+  // WEBVIEW_SETTLE_TIERS. Cleared on unmount (webViewUrl → null).
+  const webViewMountedAtRef = useRef<number | null>(null);
+  // Adaptive-settle timer scheduled from handleWebViewLoadEnd. Races the LWC
+  // shell-ready postMessage and the 4s hard fallback; first-one-wins is enforced
+  // by markWebViewShellReady's early-exit guard.
+  const webViewSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Set when quietHours arrives before the kettle overlay has a shownAt clock. */
   const webViewShellReadyPendingRef = useRef(false);
   // A frontdoor handoff requested while the splash video was still playing. The
@@ -825,10 +896,22 @@ export default function IndexScreen() {
   const splashFadeAnim = useRef(new Animated.Value(0)).current;
   const splashFadeStartedRef = useRef(false);
 
+  // Pick the splash video source ONCE at mount from the OS scheme (via
+  // useColorScheme, which is synchronous — no async delay). Pinned in a ref
+  // so subsequent renders don't hand useVideoPlayer a new reference and
+  // restart playback mid-ceremony. The vast majority of users are on
+  // themePref='auto' (default), so this matches their expected theme. Users
+  // with an explicit stored override that differs from the OS scheme might
+  // see the wrong-theme video for the ~3s splash — rare, and the loaded
+  // themePref will correct the rest of the UI moments later.
+  const splashSourceRef = useRef(
+    deviceScheme === 'dark' ? SPLASH_VIDEO_DARK : SPLASH_VIDEO_LIGHT
+  );
+
   // Create video player for splash screen. Playback is NOT started here — the
   // warm/cold decision below (splashDecision) starts it only for cold/signed-out
   // launches. Warm starts and reduced-motion skip the ceremony entirely.
-  const splashPlayer = useVideoPlayer(SPLASH_VIDEO, (player) => {
+  const splashPlayer = useVideoPlayer(splashSourceRef.current, (player) => {
     player.loop = false;
     player.timeUpdateEventInterval = 0.25;
   });
@@ -1090,6 +1173,13 @@ export default function IndexScreen() {
       clearTimeout(webViewHandoffFallbackTimeoutRef.current);
       webViewHandoffFallbackTimeoutRef.current = null;
     }
+    // The adaptive settle timer is a peer racer; whenever we clear the hard
+    // fallback (dismiss, new loading cycle, shell-ready arrived), the settle
+    // beat is also either done or moot.
+    if (webViewSettleTimeoutRef.current) {
+      clearTimeout(webViewSettleTimeoutRef.current);
+      webViewSettleTimeoutRef.current = null;
+    }
   }, []);
 
   const dismissWebViewHandoff = useCallback(
@@ -1103,6 +1193,13 @@ export default function IndexScreen() {
       const finish = () => {
         webViewHandoffDismissedRef.current = true;
         setWebViewHandoffVisible(false);
+        // Belt-and-braces reset of the sign-in-attempt flag. The startSignIn
+        // early-exit branches already clear it explicitly; this covers the
+        // success path (Layer 3 dismisses when EC is ready), and the various
+        // teardown paths (logout, fallToSignIn on expired session, offline
+        // card) that all call dismissWebViewHandoff({ immediate: true }).
+        // If it was already false, this is a no-op.
+        setSignInAttemptActive(false);
       };
 
       if (opts?.immediate || reduceMotionRef.current) {
@@ -1299,11 +1396,20 @@ export default function IndexScreen() {
       handoffPendingRef.current = false;
       if (webViewHandoffEcReadyAtRef.current != null || webViewShellReadyPendingRef.current) {
         webViewShellReadyPendingRef.current = false;
+        // EC finished loading behind the splash video — skip the kettle beat
+        // entirely and reveal the WebView (Layer 2) as the splash unmounts in
+        // this same commit. Without this snap the WebView would stay at
+        // opacity 0 (its initial value) and the user would see the themed
+        // SafeAreaView background instead of EC. dismissWebViewHandoff in
+        // immediate mode does exactly what we need: snap kettle to 0 (already
+        // 0), snap WebView to 1, mark the handoff dismissed so subsequent
+        // shell-ready signals no-op, and clean up sign-in state.
+        dismissWebViewHandoff({ immediate: true });
         return;
       }
       presentLoadingOverlay(WEBVIEW_HANDOFF_MESSAGE, { rotate: true });
     }
-  }, [splashVideoComplete, presentLoadingOverlay]);
+  }, [splashVideoComplete, presentLoadingOverlay, dismissWebViewHandoff]);
 
   // Safety net: if the overlay is in the pre-frontdoor (bunny) phase but auth
   // resolves to something other than the WebView (error, quiet-hours panda, or
@@ -1323,6 +1429,54 @@ export default function IndexScreen() {
     showPanda,
     dismissWebViewHandoff,
   ]);
+
+  // Pre-auth middleSection crossfade. When the user taps Sign In (or when a
+  // Sign In attempt ends via cancel / OAuth failure / token exchange fail),
+  // the middleSection content changes shape (button → spinner + caption, or
+  // vice versa). Instead of hard-swapping, dip-through-zero: fade current
+  // content to opacity 0, update the displayed state (React re-renders with
+  // the new content while invisible), fade the new content up to opacity 1.
+  // Reduced-motion users snap directly, no animation.
+  React.useEffect(() => {
+    if (signInAttemptActive === displayedSignInActive) {
+      // States match — the section should be at opacity 1. This runs in two
+      // situations: (a) normal completion of a crossfade (the fade-out
+      // callback fired setDisplayedSignInActive, triggering an effect re-run
+      // that lands here), and (b) a rapid re-toggle back to the previous
+      // state mid-fade-out (e.g., OAuth cancel + immediate re-tap of Sign In
+      // inside MIDDLE_CROSSFADE_MS) which would otherwise strand opacity at
+      // 0. Animating to 1 (rather than snapping) preserves the smooth fade-
+      // in in case (a) and rescues case (b) with a matching fade-in shape.
+      Animated.timing(middleSectionCrossfade, {
+        toValue: 1,
+        duration: MIDDLE_CROSSFADE_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+    if (reduceMotionRef.current) {
+      setDisplayedSignInActive(signInAttemptActive);
+      middleSectionCrossfade.setValue(1);
+      return;
+    }
+    let cancelled = false;
+    Animated.timing(middleSectionCrossfade, {
+      toValue: 0,
+      duration: MIDDLE_CROSSFADE_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (!finished || cancelled) return;
+      // Swap the displayed state at opacity 0. The setState triggers an
+      // effect re-run which lands in the match branch above and animates
+      // opacity back up to 1 — no need to start the fade-in here.
+      setDisplayedSignInActive(signInAttemptActive);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [signInAttemptActive, displayedSignInActive, middleSectionCrossfade]);
 
   // Loading-phrase rotation. Only in the kettle phase; every phrase (including
   // the first) gets an equal LOADING_ROTATE_INTERVAL_MS read window. On a
@@ -1350,8 +1504,32 @@ export default function IndexScreen() {
         setWebViewOffline(false);
       }
       armWebViewHandoffFallback();
+
+      // Adaptive settle: schedule a shell-ready signal from the load-end path,
+      // sized by measured HTML+JS load time (a proxy for connection speed).
+      // This races the LWC's own quietHours postMessage; whichever arrives
+      // first dismisses the kettle (markWebViewShellReady early-exit guard).
+      // Result: fast connections reveal quickly; slow connections get a longer
+      // beat so LWC has a fighting chance to paint the universal header before
+      // we lift the curtain.
+      const mountedAt = webViewMountedAtRef.current;
+      if (mountedAt != null && !webViewHandoffDismissedRef.current) {
+        const loadMs = Date.now() - mountedAt;
+        const tier =
+          WEBVIEW_SETTLE_TIERS.find((t) => loadMs < t.loadMax) ??
+          WEBVIEW_SETTLE_TIERS[WEBVIEW_SETTLE_TIERS.length - 1];
+        const settleMs = tier.settle;
+        authTimingMark("webview_settle_chosen", { loadMs, settleMs });
+        if (webViewSettleTimeoutRef.current) {
+          clearTimeout(webViewSettleTimeoutRef.current);
+        }
+        webViewSettleTimeoutRef.current = setTimeout(() => {
+          webViewSettleTimeoutRef.current = null;
+          markWebViewShellReady("load-end-settled");
+        }, settleMs);
+      }
     },
-    [armWebViewHandoffFallback]
+    [armWebViewHandoffFallback, markWebViewShellReady]
   );
 
   // Holds an access token when push is wanted but OS permission is still
@@ -1484,6 +1662,18 @@ export default function IndexScreen() {
       clearBadge();
     }
   }, [webViewUrl, clearBadge]);
+
+  // Track when the WebView starts loading a new URL so onLoadEnd can measure the
+  // real HTML+JS download time and pick an adaptive settle delay. Reset to null
+  // whenever the WebView is torn down (logout, crash recovery) so a subsequent
+  // sign-in gets a fresh measurement rather than an inflated one from the gap.
+  React.useEffect(() => {
+    if (webViewUrl) {
+      webViewMountedAtRef.current = Date.now();
+    } else {
+      webViewMountedAtRef.current = null;
+    }
+  }, [webViewUrl]);
 
   // Register push notifications after successful login.
   // prompt=false (the default on the login/app-open path) registers only when
@@ -1865,6 +2055,10 @@ export default function IndexScreen() {
       const url = payload?.url;
       if (!url) {
         log("Frontdoor response missing url:", payload);
+        // Release the loading state so the card is visible — with loading
+        // taking precedence in renderContent, leaving signInAttemptActive
+        // true would hide the door card behind the kettle spinner.
+        setSignInAttemptActive(false);
         setPreAuthCard({ id: 'door' });
         return;
       }
@@ -1907,6 +2101,9 @@ export default function IndexScreen() {
       if (!token) {
         const result = await refreshSession();
         if (result.sessionExpired) {
+          // Same reasoning as above — clear the loading state so the
+          // session card is visible over the kettle spinner.
+          setSignInAttemptActive(false);
           setPreAuthCard({ id: 'session' });
           return;
         }
@@ -1916,6 +2113,7 @@ export default function IndexScreen() {
       if (!token) {
         // No session at all — this IS the sign-in screen's default state, so no
         // card is needed; the Sign In button says it all.
+        setSignInAttemptActive(false);
         setPreAuthCard(null);
         return;
       }
@@ -1940,10 +2138,12 @@ export default function IndexScreen() {
 
         const result = await refreshSession();
         if (result.sessionExpired) {
+          setSignInAttemptActive(false);
           setPreAuthCard({ id: 'session' });
           return;
         }
         if (!result.token) {
+          setSignInAttemptActive(false);
           setPreAuthCard({ id: 'session' });
           return;
         }
@@ -1956,6 +2156,7 @@ export default function IndexScreen() {
         if (!retry.ok) {
           const retryBody = await jsonOrText(retry);
           log("Frontdoor retry failed:", retryBody);
+          setSignInAttemptActive(false);
           setPreAuthCard({ id: 'door' });
           return;
         }
@@ -2872,8 +3073,34 @@ export default function IndexScreen() {
   const startSignIn = useCallback(async () => {
     if (!request) return;
 
+    // Two entry modes with different crossfade timing:
+    //  - First-time tap (Sign In button visible on a clean pre-auth screen):
+    //    defer the crossfade until ~250ms into promptAsync() so the button
+    //    → spinner swap happens BEHIND the OAuth popup rather than glimpsing
+    //    in front of it.
+    //  - Retry from an error/card UI (bootstrapError set, or a preAuthCard
+    //    like session/signin-failed/offline visible): fire the crossfade
+    //    IMMEDIATELY so the retry UI transitions cleanly to the loading
+    //    layout. Deferring here would leave stale UI up during the network
+    //    check and then briefly flash to the Sign In button — jarring.
+    const isRetry = bootstrapError !== null || preAuthCard !== null;
+
     setBusy(true);
-    setPreAuthCard(null);
+    if (isRetry) {
+      // Eager: kick off the crossfade so the current retry UI fades into
+      // the loading layout. Do NOT clear preAuthCard here — the reordered
+      // render branches (loading takes precedence over preAuthCard once
+      // displayedSignInActive flips true) hide it at the opacity-zero
+      // midpoint of the crossfade, so the card visibly fades out rather
+      // than snap-clearing. We'll clear it explicitly on each result path
+      // below so the reverse crossfade (on cancel/error) lands on Sign In,
+      // not the stale card.
+      setSignInAttemptActive(true);
+    } else {
+      // First-time tap: defensive clear (shouldn't be a card in this
+      // branch — isRetry would be true — but keep the invariant).
+      setPreAuthCard(null);
+    }
     // Don't clear bootstrapError yet - wait until network check passes
     // This keeps "Try Again" visible during the check
 
@@ -2897,6 +3124,14 @@ export default function IndexScreen() {
         } catch {
           // keep the netConnectedRef-based guess
         }
+        // Clear the loading layout so the error/offline UI can be seen.
+        // No-op on the first-time flow (flag was never set); necessary on
+        // retry (we eagerly set it above).
+        setSignInAttemptActive(false);
+        // Clear any pre-tap card so the retry/error UI isn't blocked by a
+        // stale card. `showOfflineCard` below sets its own card if truly
+        // offline — that runs after this clear, so the offline card wins.
+        setPreAuthCard(null);
         if (offline) {
           netConnectedRef.current = false;
           showOfflineCard();
@@ -2930,24 +3165,62 @@ export default function IndexScreen() {
       // (Custom Tabs already share cookies).
       const useHandoffSession = handoffSignInRef.current;
       handoffSignInRef.current = false;
-      const result = await promptAsync({
+
+      // Kick off OAuth without awaiting yet. On the first-time flow
+      // (not a retry), schedule the pre-auth crossfade on a short hold so
+      // the button → spinner swap lands behind the OAuth popup rather than
+      // in front of it. If the user dismisses inside the hold window, the
+      // finally clears the timer before it fires and there's no visible
+      // crossfade at all — the Sign In button stays put. On retry we
+      // already set signInAttemptActive true above, so no timer is needed.
+      const oauthPromise = promptAsync({
         preferEphemeralSession: !useHandoffSession,
       });
+      const crossfadeHoldTimer = isRetry
+        ? null
+        : setTimeout(() => {
+            setSignInAttemptActive(true);
+          }, OAUTH_POPUP_HOLD_MS);
 
-      // Handle non-success responses (user cancelled, dismissed, or error)
+      let result;
+      try {
+        result = await oauthPromise;
+      } finally {
+        if (crossfadeHoldTimer !== null) clearTimeout(crossfadeHoldTimer);
+      }
+
+      // Handle non-success responses (user cancelled, dismissed, or error).
+      // If the hold timer never fired (rapid dismiss), signInAttemptActive
+      // is still false and setting it false again is a no-op — no fade.
+      // preAuthCard is cleared on EVERY exit path (retry from a card left
+      // it set) so the reverse crossfade lands on the Sign In branch, not
+      // the stale card, and later state changes (e.g. token exchange fail
+      // wanting to set a new 'signin-failed' card) start from a clean slate.
       if (result.type === 'dismiss' || result.type === 'cancel') {
         discardDeepLinkIntent("oauth-cancel");
         setStatus("Neighbours are waiting.");
+        setPreAuthCard(null);
+        setSignInAttemptActive(false);
       } else if (result.type === 'error') {
         discardDeepLinkIntent("oauth-error");
         log("OAuth error:", result.error);
         setStatus("Something went sideways. Try again?");
+        setPreAuthCard(null);
+        setSignInAttemptActive(false);
+      } else if (result.type === 'success') {
+        // Belt-and-braces: on a very fast OAuth turnaround (handoff cookie
+        // auto-signs in inside OAUTH_POPUP_HOLD_MS), the hold timer never
+        // fired. Ensure pre-auth is on the loading layout so Layer 3's
+        // kettle snap covers the same geometry rather than the button.
+        // Also clear any card so it doesn't linger behind the WebView and
+        // reappear on a later logout.
+        setPreAuthCard(null);
+        setSignInAttemptActive(true);
       }
-      // 'success' is handled by the useEffect watching response
     } finally {
       setBusy(false);
     }
-  }, [request, promptAsync, isNetworkError, discardDeepLinkIntent, showOfflineCard]);
+  }, [request, promptAsync, isNetworkError, discardDeepLinkIntent, showOfflineCard, bootstrapError, preAuthCard]);
 
   /**
    * ========= HANDLE PKCE REDIRECT =========
@@ -2969,6 +3242,7 @@ export default function IndexScreen() {
         log("OAuth state mismatch, rejecting auth response");
         handledAuthCodeRef.current = null;
         discardDeepLinkIntent("oauth-state-mismatch");
+        setSignInAttemptActive(false);
         setPreAuthCard({ id: 'signin-failed' });
         return;
       }
@@ -2995,6 +3269,7 @@ export default function IndexScreen() {
       } catch (e: any) {
         handledAuthCodeRef.current = null;
         discardDeepLinkIntent("oauth-failed");
+        setSignInAttemptActive(false);
         setPreAuthCard({ id: 'signin-failed', detail: e?.message });
       } finally {
         setBusy(false);
@@ -3032,7 +3307,12 @@ export default function IndexScreen() {
     ) : null;
 
   const splashOverlay = splashDecision === 'video' && !splashVideoComplete ? (
-    <View style={[StyleSheet.absoluteFill, styles.splashContainer]}>
+    // Theme-picked background sits UNDER the VideoView so the first-frame
+    // load lag (and any letterboxed edge from contentFit="cover") reads as
+    // the video's own canvas rather than a bright flash. Matched to the
+    // app.json splash colors so the native launch → RN → video handoff is
+    // a single continuous colour in both light and dark modes.
+    <View style={[StyleSheet.absoluteFill, styles.splashContainer, { backgroundColor: SPLASH_BGS[appTheme] }]}>
       <VideoView
         player={splashPlayer}
         style={styles.splashVideo}
@@ -3533,8 +3813,37 @@ export default function IndexScreen() {
 
   // Determine what content to show
   const renderContent = () => {
-    // Inline card (replaces the old OS alerts). Takes precedence so a session /
-    // door / sign-in-failed / offline message is what the user sees.
+    // Loading state — covers both:
+    //  1. `booting`: bootstrap in flight (cold start restoring session).
+    //  2. `displayedSignInActive`: user tapped Sign In (or Try Again, or a
+    //     card's retry button) and we're waiting on OAuth → token exchange
+    //     → openFimby → Layer 3. `displayedSignInActive` lags the raw
+    //     `signInAttemptActive` state by the crossfade dip so the content
+    //     swap happens invisibly.
+    // Placed FIRST so on a card-based retry, once displayedSignInActive
+    // flips true at opacity 0, this branch takes over from the preAuthCard
+    // branch — letting the crossfade dip visibly fade the card out into the
+    // loading layout rather than snap-clearing the card in startSignIn.
+    // Same layout, same caption, same geometry as Layer 3's kettle overlay
+    // middleSection, so when Layer 3 snaps opaque on the success path the
+    // only change on screen is the caption text ("Herding the dust
+    // bunnies…" → "Putting the kettle on…"). Zero layout shift.
+    if (booting || displayedSignInActive) {
+      return (
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
+          <Text style={[styles.status, { color: c.secondary }]}>
+            {BOOTSTRAP_LOADING_MESSAGE}
+          </Text>
+        </View>
+      );
+    }
+
+    // Inline card (replaces the old OS alerts). Session / door /
+    // sign-in-failed / offline messages. When the user taps the card's
+    // action button, startSignIn (or openFimby for 'door') runs — for
+    // signIn-triggering cards, signInAttemptActive flips true and the
+    // loading branch above takes over via the crossfade dip.
     if (preAuthCard) {
       const card = PRE_AUTH_CARDS[preAuthCard.id];
       return (
@@ -3566,27 +3875,18 @@ export default function IndexScreen() {
               <Text style={[styles.buttonText, { color: c.primaryText }]}>{card.button}</Text>
             </Pressable>
           ) : null}
-          {busy && (
-            <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
-          )}
+          {/* Below-card spinner removed: on a card button tap startSignIn
+              flips signInAttemptActive → true synchronously with busy, so
+              the loading branch above owns the "waiting" visual via the
+              crossfade — no in-card spinner ever needed. */}
         </View>
       );
     }
 
-    // Pre-kettle loading screen (session restoring). Runs UNDER the splash
-    // video; revealed if the video lifts before the frontdoor URL is ready.
-    if (booting) {
-      return (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
-          <Text style={[styles.status, { color: c.secondary }]}>
-            {BOOTSTRAP_LOADING_MESSAGE}
-          </Text>
-        </View>
-      );
-    }
-
-    // Error screen with retry button
+    // Error screen with retry button. When the user taps Try Again,
+    // startSignIn flips signInAttemptActive → true synchronously with busy,
+    // so the loading branch above owns the "waiting on the retry" visual —
+    // no below-button spinner needed here.
     if (bootstrapError) {
       return (
         <View style={styles.centerContent}>
@@ -3598,9 +3898,6 @@ export default function IndexScreen() {
           >
             <Text style={[styles.buttonText, { color: c.primaryText }]}>Try Again</Text>
           </Pressable>
-          {busy && (
-            <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
-          )}
           <Text
             style={[styles.status, { color: c.secondary }]}
             accessibilityRole="text"
@@ -3612,7 +3909,9 @@ export default function IndexScreen() {
       );
     }
 
-    // Sign In screen (no session, or session expired)
+    // Sign In screen (no session, or session expired). Same reasoning as the
+    // bootstrapError branch: the moment the button is tapped we're in the
+    // loading branch above, so no below-button spinner is ever needed.
     return (
       <View style={styles.centerContent}>
         <Pressable
@@ -3622,10 +3921,6 @@ export default function IndexScreen() {
         >
           <Text style={[styles.buttonText, { color: c.primaryText }]}>Sign In</Text>
         </Pressable>
-
-        {busy && (
-          <ActivityIndicator size="large" color={c.spinner} style={styles.spinner} />
-        )}
 
         <Text
           style={[styles.status, { color: c.secondary }]}
@@ -3661,22 +3956,34 @@ export default function IndexScreen() {
             </Text>
           </Animated.View>
 
-          {/* MIDDLE: primary action + status (or loading / error state) */}
+          {/* MIDDLE: primary action + status (or loading / error state).
+              Outer opacity is the initial mount fade shared with upper/lower;
+              inner opacity is the sign-in-attempt crossfade so button →
+              spinner (and reverse) dip through zero rather than hard-swap. */}
           <Animated.View style={[styles.middleSection, { opacity: fadeAnim }]}>
-            {renderContent()}
+            <Animated.View style={{ opacity: middleSectionCrossfade, width: "100%" }}>
+              {renderContent()}
+            </Animated.View>
           </Animated.View>
 
-          {/* LOWER: secondary action + footer links */}
+          {/* LOWER: secondary action + footer links. Sign Up rides the same
+              middleSectionCrossfade opacity as the primary button so it fades
+              out in sync when the user starts signing in (and back in on a
+              non-success return). HELP · FAQ below stays put — it matches
+              Layer 3's footer position exactly, so the kettle snap doesn't
+              move it either. */}
           <Animated.View style={[styles.lowerSection, { opacity: fadeAnim }]}>
-            {!booting && !bootstrapError && !preAuthCard && (
-              <Pressable
-                style={[styles.createAccountButton, { borderColor: c.signUpOutline }]}
-                accessibilityRole="button"
-                accessibilityLabel="Sign Up"
-                onPress={() => openExternal(SIGN_UP_URL)}
-              >
-                <Text style={[styles.createAccountText, { color: c.signUpOutline }]}>Sign Up</Text>
-              </Pressable>
+            {!booting && !bootstrapError && !preAuthCard && !displayedSignInActive && (
+              <Animated.View style={{ opacity: middleSectionCrossfade }}>
+                <Pressable
+                  style={[styles.createAccountButton, { borderColor: c.signUpOutline }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign Up"
+                  onPress={() => openExternal(SIGN_UP_URL)}
+                >
+                  <Text style={[styles.createAccountText, { color: c.signUpOutline }]}>Sign Up</Text>
+                </Pressable>
+              </Animated.View>
             )}
             <View style={styles.footerRow}>
               <Pressable
@@ -3732,7 +4039,10 @@ const styles = StyleSheet.create({
   // Splash video styles
   splashContainer: {
     flex: 1,
-    backgroundColor: SPLASH_BG,
+    // backgroundColor applied inline from SPLASH_BGS[appTheme] — see the
+    // splashOverlay render below. Baking it into the static stylesheet
+    // locked us to a single (light) tone and caused a cream flash before
+    // the dark splash video's first frame in dark mode.
   },
   splashVideo: {
     flex: 1,
