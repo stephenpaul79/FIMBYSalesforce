@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FIMBY — V6A Hybrid: load quietly, launch loud</title>
+<style>
+  :root {
+    --fimby-surface-page: #F0EBE3;
+    --fimby-surface-section: #EBE6DD;
+    --fimby-surface-card: #FAF7F2;
+    --fimby-border-subtle: #E0D9CF;
+    --fimby-border-default: #D6CFC5;
+    --fimby-divider-default: rgba(38, 26, 17, 0.10);
+    --fimby-text-strong: #261A11;
+    --fimby-text-primary: #4A3526;
+    --fimby-text-secondary: #6F5B43;
+    --fimby-earth-teal: #2F6B78;
+    --fimby-earth-sage: #5B8760;
+    --fimby-earth-ochre: #A38045;
+    --fimby-earth-slate: #5E7B92;
+    --fimby-earth-terracotta: #B07248;
+    --fimby-earth-dusty-violet: #7E7495;
+    --fimby-earth-moss: #6B7D54;
+    --fimby-earth-driftwood: #8D7B6A;
+    --fimby-btn-primary-bg: #3A7D8C;
+    --fimby-radius-sm: 8px;
+    --fimby-radius-md: 12px;
+    --fimby-radius-lg: 16px;
+    --fimby-radius-full: 9999px;
+    --fimby-shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --fimby-shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .container { width: min(860px, calc(100% - 40px)); margin: 0 auto; }
+
+  /* ── Hero ── */
+  .page-hero { background: var(--fimby-surface-card); border-bottom: 1px solid var(--fimby-divider-default); padding: 44px 0 30px; text-align: center; }
+  .page-hero img.logo { height: 60px; margin-bottom: 14px; }
+  .page-hero h1 { margin: 0 0 8px; color: var(--fimby-text-strong); font-size: clamp(1.6rem, 4vw, 2.3rem); letter-spacing: -0.025em; line-height: 1.1; text-wrap: balance; }
+  .page-hero .subtitle { color: var(--fimby-text-secondary); max-width: 58ch; margin: 0 auto; font-size: 1.02rem; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-radius: var(--fimby-radius-full); padding: 5px 14px; margin-bottom: 14px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fimby-text-secondary); }
+  .eyebrow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fimby-earth-terracotta); }
+  .jump-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+  .jump-links a { text-decoration: none; font-size: 0.82rem; font-weight: 600; color: var(--fimby-earth-teal); background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-radius: var(--fimby-radius-full); padding: 5px 13px; transition: background 0.15s ease; }
+  .jump-links a:hover { background: var(--fimby-surface-section); }
+
+  /* ── Cards ── */
+  section.block { padding: 26px 0 2px; }
+  .card { background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle); border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card); padding: 24px 26px; margin-bottom: 22px; }
+  .card h2 { margin: 0 0 8px; color: var(--fimby-text-strong); font-size: 1.3rem; letter-spacing: -0.015em; }
+  .card p { margin: 0 0 12px; }
+  .card p:last-child { margin-bottom: 0; }
+  .pull-quote { font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif; font-style: italic; font-size: 1.12rem; line-height: 1.5; color: var(--fimby-text-strong); border-left: 3px solid var(--fimby-earth-terracotta); padding-left: 16px; margin: 16px 0; }
+  .kicker { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: var(--fimby-radius-md); padding: 5px 12px; margin-bottom: 12px; background: var(--fimby-earth-teal); }
+
+  /* ── Target panel ── */
+  .targets { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: 4px; }
+  .target { background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-top: 4px solid var(--fimby-earth-teal); border-radius: var(--fimby-radius-md); padding: 15px 17px; }
+  .target:nth-child(2) { border-top-color: var(--fimby-earth-sage); }
+  .target:nth-child(3) { border-top-color: var(--fimby-earth-ochre); }
+  .target:nth-child(4) { border-top-color: var(--fimby-earth-terracotta); }
+  .target .num { font-size: 1.7rem; font-weight: 800; color: var(--fimby-text-strong); letter-spacing: -0.02em; line-height: 1; }
+  .target .lbl { display: block; margin-top: 5px; font-size: 0.9rem; color: var(--fimby-text-secondary); }
+
+  /* ── Phase cards ── */
+  .phase-card { background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle); border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card); overflow: hidden; margin-bottom: 20px; }
+  .phase-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 18px 24px 14px; border-bottom: 1px solid var(--fimby-divider-default); }
+  .phase-badge { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: var(--fimby-radius-md); padding: 5px 12px; white-space: nowrap; }
+  .p-load .phase-badge { background: var(--fimby-earth-sage); }
+  .p-bang .phase-badge { background: var(--fimby-earth-terracotta); }
+  .p-catch .phase-badge { background: var(--fimby-earth-slate); }
+  .phase-head h2 { margin: 0; font-size: 1.2rem; color: var(--fimby-text-strong); letter-spacing: -0.01em; flex: 1 1 auto; }
+  .phase-when { font-size: 0.78rem; font-weight: 600; color: var(--fimby-text-secondary); white-space: nowrap; }
+  .phase-progress { font-size: 0.8rem; font-weight: 700; color: var(--fimby-earth-teal); white-space: nowrap; }
+  .phase-body { padding: 16px 24px 22px; }
+  .phase-goal { margin: 0 0 14px; color: var(--fimby-text-secondary); font-size: 0.97rem; }
+
+  ul.checklist { list-style: none; margin: 0; padding: 0; }
+  ul.checklist li { border-bottom: 1px solid var(--fimby-divider-default); }
+  ul.checklist li:last-child { border-bottom: none; }
+  ul.checklist label { display: flex; align-items: flex-start; gap: 12px; padding: 10px 4px; cursor: pointer; border-radius: var(--fimby-radius-sm); transition: background 0.12s ease; }
+  ul.checklist label:hover { background: var(--fimby-surface-page); }
+  ul.checklist input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: 0 0 auto; width: 21px; height: 21px; margin-top: 2px; border: 2px solid var(--fimby-border-default); border-radius: 6px; background: var(--fimby-surface-card); cursor: pointer; position: relative; transition: background 0.12s, border-color 0.12s; }
+  ul.checklist input:checked { background: var(--fimby-earth-sage); border-color: var(--fimby-earth-sage); }
+  ul.checklist input:checked::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+  ul.checklist input:focus-visible { outline: 3px solid rgba(103,187,210,0.45); outline-offset: 1px; }
+  ul.checklist .item-text { flex: 1; }
+  ul.checklist input:checked ~ .item-text { color: var(--fimby-text-secondary); text-decoration: line-through; text-decoration-color: var(--fimby-border-default); }
+  ul.checklist .item-text .why { display: block; font-size: 0.84rem; color: var(--fimby-text-secondary); margin-top: 1px; }
+
+  /* ── Run of show ── */
+  .runshow { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: ros; }
+  .runshow li { position: relative; padding: 10px 0 10px 44px; border-bottom: 1px solid var(--fimby-divider-default); font-size: 0.94rem; }
+  .runshow li:last-child { border-bottom: none; }
+  .runshow li::before { counter-increment: ros; content: counter(ros); position: absolute; left: 0; top: 10px; width: 30px; height: 30px; border-radius: 50%; background: var(--fimby-earth-terracotta); color: #fff; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; }
+  .runshow strong { color: var(--fimby-text-strong); }
+  .runshow .mins { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--fimby-text-secondary); }
+
+  /* ── Callouts ── */
+  .callout { border-radius: var(--fimby-radius-md); padding: 14px 18px; margin-top: 16px; background: var(--fimby-surface-page); border-left: 4px solid var(--fimby-earth-ochre); font-size: 0.94rem; }
+  .callout strong { color: var(--fimby-text-strong); }
+  .callout.guard { border-left-color: var(--fimby-earth-terracotta); }
+  .callout.watch { border-left-color: var(--fimby-earth-slate); }
+
+  .fire-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .fire-list li { background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-left: 4px solid var(--fimby-earth-terracotta); border-radius: var(--fimby-radius-md); padding: 13px 16px; font-size: 0.95rem; }
+  .fire-list strong { color: var(--fimby-text-strong); display: block; margin-bottom: 2px; }
+
+  .care-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .care-list li { background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-left: 4px solid var(--fimby-earth-sage); border-radius: var(--fimby-radius-md); padding: 13px 16px; font-size: 0.95rem; }
+  .care-list li:nth-child(2) { border-left-color: var(--fimby-earth-teal); }
+  .care-list li:nth-child(3) { border-left-color: var(--fimby-earth-slate); }
+  .care-list strong { color: var(--fimby-text-strong); display: block; margin-bottom: 2px; }
+
+  footer { padding: 26px 0 44px; text-align: center; color: var(--fimby-text-secondary); font-size: 0.86rem; }
+  footer a { color: var(--fimby-earth-teal); }
+
+  @media (max-width: 560px) { .container { width: calc(100% - 24px); } .card { padding: 18px 18px; } .phase-body { padding: 14px 16px 18px; } }
+  @media print { .jump-links { display: none; } .phase-card, .card { box-shadow: none; break-inside: avoid; } body { background: #fff; } }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="page-hero">
+  <div class="container">
+    <img class="logo" src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" />
+    <div><span class="eyebrow"><span class="eyebrow-dot"></span>V6A hybrid · load quietly, launch loud</span></div>
+    <h1>Load the cannon, then fire it once</h1>
+    <p class="subtitle">The bigger-bang plan: quiet founder-sized prep, then one church-hosted neighbourhood launch night that puts a recognizable crowd on the app in a single evening — so nobody arrives to tumbleweeds. The gentle one-thing-a-week starter stays as your low-energy fallback.</p>
+    <nav class="jump-links">
+      <a href="#idea">The idea</a>
+      <a href="#target">Takeoff target</a>
+      <a href="#load">1 · Load</a>
+      <a href="#bang">2 · Launch night</a>
+      <a href="#catch">3 · Catch</a>
+      <a href="#fire">Fire safely</a>
+      <a href="#care">Your part</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ THE IDEA ═══ -->
+<section class="block" id="idea">
+  <div class="container">
+    <div class="card">
+      <h2>Why a bang — and why it isn't on your shoulders</h2>
+      <p>A neighbourhood feed has a liquidity threshold: below it, every newcomer opens the app, sees nothing, and leaves — and you only get one first impression each. A slow drip of one-coffee-a-week keeps joins <em>staggered</em>, so everyone arrives to emptiness. That's the tumbleweed death you're worried about, and you're right to be.</p>
+      <div class="pull-quote">The fix isn't you grinding harder. It's a lot of people who already know each other joining in the same evening — so each one opens the app and instantly sees familiar faces.</div>
+      <p>The density comes from <strong>the church and the block</strong>, not from you: Strathcona Vineyard is a pre-assembled, trusting, V6A-rooted crowd, and a leader's public blessing confers permission in one night that a hundred of your coffees couldn't. Your job is to <strong>load the cannon</strong> — team, church buy-in, seeded content — and then let a bounded, team-run event do the loud part.</p>
+      <p>And a dated event is actually <strong>easier</strong> on your fluctuating energy than an endless daily drip: it has edges. You prepare for one evening with a team, then hand off — instead of being on call forever.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TAKEOFF TARGET ═══ -->
+<section class="block" id="target">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-ochre);">Design targets, not your scoreboard</span>
+      <h2>What "takeoff" looks like</h2>
+      <p>These size the room and the seeding — they tell you how big to plan and when the cannon is loaded enough to fire. They are <strong>not</strong> a personal report card; your own scoreboard stays "one honest action a week" (see the bottom).</p>
+      <div class="targets">
+        <div class="target"><span class="num">30+</span><span class="lbl">signed up on the night (invite 40–60 to get there)</span></div>
+        <div class="target"><span class="num">20+</span><span class="lbl">of them living in a walkable core — a few blocks, not the whole city</span></div>
+        <div class="target"><span class="num">~30</span><span class="lbl">posts created live in the room, so the feed is full on day one</span></div>
+        <div class="target"><span class="num">~25</span><span class="lbl">library items + 1 bulk buy + 2 gatherings seeded before doors open</span></div>
+      </div>
+      <div class="callout guard"><strong>Minimum viable bang — don't fire below this:</strong> a full room of ~20 walkable-core locals with seed content ready beats 50 people scattered across the city. Geographic concentration is what creates the "I see people I know" feeling. If you can't clear that floor, delay the night — never fire an empty or scattered cannon.</div>
+      <div class="callout watch"><strong>Self-sustaining, a few weeks on:</strong> ~20–40 active, recognizable locals; every ask answered within 24 hours (team-backed); something new in the feed most days — mostly the church rhythm and gatherings, not you.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PHASE 1 · LOAD ═══ -->
+<section class="block p-load" id="load">
+  <div class="container">
+    <div class="phase-card">
+      <div class="phase-head">
+        <span class="phase-badge">Phase 1 · Load the cannon</span>
+        <h2>Quiet prep, founder-sized</h2>
+        <span class="phase-when">≈ 5–6 weeks · one-thing-a-week pace</span>
+        <span class="phase-progress" data-progress></span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-goal">No public anything yet. This is the gentle starter's work, pointed at one evening. Most items are a single warm conversation with someone you already know — couch-week fallbacks still apply (a text instead of a meeting).</p>
+        <ul class="checklist" data-section="load">
+          <li><label><input type="checkbox" data-key="load-1" /><span class="item-text">Recruit 2–3 launch teammates from your close friends — each with one named role (welcomer, signup-station runner, "notice unanswered posts").<span class="why">The team is what lets the bang happen without landing on you. Recruit it first.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="load-2" /><span class="item-text">Sit with Vineyard staff / leadership: get the launch night on the calendar, a leader willing to bless it from the front, and the church to invite its V6A-resident members to bring a neighbour.<span class="why">The institution is your density engine and your permission-giver.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="load-3" /><span class="item-text">Lock one staff-owned recurring post (a meal, drop-in, or ride offer) and confirm it's live before the night.<span class="why">The feed's steady pulse should already be beating when the room fills up.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="load-4" /><span class="item-text">Seed content with the team: ~25 library items, one bulk buy teed up, two gatherings on the calendar.<span class="why">So a newcomer's first open shows a living neighbourhood, not a blank page.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="load-5" /><span class="item-text">Nail the night's logistics: date, church venue, food, a staffed signup station (a couple of tablets / a QR to sign-up), and a simple run-of-show (below).</span></label></li>
+          <li><label><input type="checkbox" data-key="load-6" /><span class="item-text">Invite the block, not just the pews: door-knock a walkable core, posters in local spots, and each teammate personally brings 3–5 neighbours.<span class="why">This is what keeps the crowd geographically concentrated instead of city-wide.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="load-7" /><span class="item-text">Rehearse one full loop with the core team: an ask posted, answered, and thanked — so you all know the mechanics before the room does.</span></label></li>
+        </ul>
+        <div class="callout"><strong>Green/couch still applies here.</strong> These weeks are gentle by design. On a low week, do the text-version of an item or a solo task (seeding your own library items), and let a teammate carry a conversation. Nothing is public yet, so nobody's waiting.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PHASE 2 · BANG ═══ -->
+<section class="block p-bang" id="bang">
+  <div class="container">
+    <div class="phase-card">
+      <div class="phase-head">
+        <span class="phase-badge">Phase 2 · Launch night</span>
+        <h2>One loud evening — team-run</h2>
+        <span class="phase-when">the bang · a single dated event</span>
+        <span class="phase-progress" data-progress></span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-goal">Church-hosted, block-aimed. Everyone joins in the same window and posts their first thing in the room, so the feed fills live and each person walks out already seeing neighbours they recognize. Your personal load: about five minutes at the front, then circulate. The team runs the rest — so it survives even if the night lands on a low day.</p>
+
+        <p style="margin:0 0 4px; font-weight:700; color:var(--fimby-text-strong);">Run of show (~75 minutes)</p>
+        <ul class="runshow">
+          <li><span class="mins">0–15 min</span><br /><strong>Food and mingling.</strong> Warm, low-key, name tags. People arrive to a room, not a presentation.</li>
+          <li><span class="mins">15–25 min</span><br /><strong>Welcome + blessing.</strong> A Vineyard leader introduces and blesses it; you tell the one true story (the neighbour who ended up inside another's home after nine years a block apart). Five minutes, not a pitch.</li>
+          <li><span class="mins">25–45 min</span><br /><strong>Sign up together.</strong> Team works the signup station; everyone joins at once. This synchronized join is the whole point.</li>
+          <li><span class="mins">45–60 min</span><br /><strong>Post your first thing.</strong> Everyone lists one ask, offer, or lendable item right now. The feed fills to ~30 posts live, in front of them.</li>
+          <li><span class="mins">60–75 min</span><br /><strong>Name the next beat.</strong> Announce the first gathering / bulk buy from the front so there's an obvious next thing, then back to mingling.</li>
+        </ul>
+
+        <ul class="checklist" data-section="bang" style="margin-top:14px;">
+          <li><label><input type="checkbox" data-key="bang-1" /><span class="item-text">Doors open only once the seed content and team are confirmed live (see "fire safely").</span></label></li>
+          <li><label><input type="checkbox" data-key="bang-2" /><span class="item-text">Signup station staffed the whole time — nobody stuck at a broken step.</span></label></li>
+          <li><label><input type="checkbox" data-key="bang-3" /><span class="item-text">Everyone leaves having posted at least one thing and having seen a familiar name in the feed.</span></label></li>
+          <li><label><input type="checkbox" data-key="bang-4" /><span class="item-text">A teammate captures who joined and who to follow up with — not you, so you can just be present.</span></label></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PHASE 3 · CATCH ═══ -->
+<section class="block p-catch" id="catch">
+  <div class="container">
+    <div class="phase-card">
+      <div class="phase-head">
+        <span class="phase-badge">Phase 3 · Catch, don't carry</span>
+        <h2>Turn one night into a habit</h2>
+        <span class="phase-when">first 2–3 weeks after · team on a rota</span>
+        <span class="phase-progress" data-progress></span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-goal">The danger after a bang is a founder-load spike — a surge of welcomes and questions right when you might hit a couch week. So the team catches it, on a rota, and the promise is <em>"no neighbour is ignored,"</em> not "Stephen answers everything."</p>
+        <ul class="checklist" data-section="catch">
+          <li><label><input type="checkbox" data-key="catch-1" /><span class="item-text">Team rota for the daily "has anyone been left unanswered?" sweep — a different person each day, you only occasionally.<span class="why">This is the load that otherwise crushes founders. Share it from day one.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="catch-2" /><span class="item-text">Every new member gets a human welcome within 24 hours and a connection to someone who can vouch.</span></label></li>
+          <li><label><input type="checkbox" data-key="catch-3" /><span class="item-text">Hold the second gathering within two weeks of the night, so the momentum has an immediate next beat.<span class="why">One event's energy fades fast; a second one converts a launch into a rhythm.</span></span></label></li>
+          <li><label><input type="checkbox" data-key="catch-4" /><span class="item-text">Confirm the standing weekly rhythm is running on its own: the church post + a standing gathering.</span></label></li>
+          <li><label><input type="checkbox" data-key="catch-5" /><span class="item-text">Prompt a few thank-yous naming real neighbours, so newcomers see help actually landing.</span></label></li>
+        </ul>
+        <div class="callout watch"><strong>Expect a week-two dip.</strong> The post-event lull is normal, not failure. Answer it with the second gathering, not a guilt spiral — and let the team, not you alone, hold the line.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FIRE SAFELY ═══ -->
+<section class="block" id="fire">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-terracotta);">A bang is one-shot</span>
+      <h2>Fire safely</h2>
+      <p>You can't cheaply re-bang, so a handful of conditions are non-negotiable before you light the fuse:</p>
+      <ul class="fire-list">
+        <li><strong>Never fire an empty cannon.</strong> Seed content and the team must be live <em>before</em> the night. An empty feed on launch night spends your one best impression.</li>
+        <li><strong>Keep it walkable.</strong> Aim the invite at a geographic core. A scattered city-wide crowd feels dead to each person even if the headcount is high — and it breaks the neighbourhood trust boundary.</li>
+        <li><strong>Make it survive your low day.</strong> Team-run and church-hosted means the night happens even if you're depleted. You owe five minutes at the front; the rest has other hands.</li>
+        <li><strong>The prep earns the bang.</strong> If Phase 1 isn't done, move the date. A steady later night beats a frantic empty one — and delay costs far less than a dead-on-arrival launch.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ YOUR PART ═══ -->
+<section class="block" id="care">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-sage);">Your part, kept human</span>
+      <h2>What's actually on you</h2>
+      <p>The bang is bigger, but your share stays bounded — because the church and the team carry the density and the surge. Three rules from the starter carry straight over:</p>
+      <ul class="care-list">
+        <li><strong>Never miss twice.</strong> Skip a prep week and just don't skip the next. Reduce the next action; don't rewrite the plan.</li>
+        <li><strong>If a step demands the tea-and-cookies you, shrink it or move it to a green week.</strong> A wave is not a broken promise; a text is not a failed meeting.</li>
+        <li><strong>Bounded by default.</strong> The launch is one dated, finite evening with a run-of-show and a team — edges are exactly what make a big moment possible for someone with up-and-down energy.</li>
+      </ul>
+      <div class="callout"><strong>Your whole scoreboard is unchanged:</strong> "Did I take one honest, bounded action this week?" The takeoff numbers above describe the <em>event</em>, not you. The church fills the room; you just keep loading the cannon, one bounded action at a time.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>FIMBY · Family In My Backyard — V6A hybrid launch plan, 2026.<br />
+    Companion files: <a href="first-neighbourhood-starter.html">V6A Starter (one thing a week)</a> — the gentle fallback · <a href="first-neighbourhood-timeline.html">First Neighbourhood Launch Timeline</a> · <a href="new-neighbourhood-playbook.html">New Neighbourhood Launch Playbook</a>.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORE = 'fimby-hybrid-v6a';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) {}
+
+  var boxes = document.querySelectorAll('input[type="checkbox"][data-key]');
+  boxes.forEach(function (box) {
+    if (saved[box.dataset.key]) box.checked = true;
+    box.addEventListener('change', function () {
+      saved[box.dataset.key] = box.checked;
+      try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (e) {}
+      updateProgress();
+    });
+  });
+
+  function updateProgress() {
+    document.querySelectorAll('.phase-card').forEach(function (card) {
+      var label = card.querySelector('[data-progress]');
+      if (!label) return;
+      var all = card.querySelectorAll('input[type="checkbox"][data-key]');
+      if (!all.length) return;
+      var done = card.querySelectorAll('input[type="checkbox"][data-key]:checked').length;
+      label.textContent = done + ' / ' + all.length + (done === all.length ? ' ✓' : '');
+    });
+  }
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FIMBY — V6A Starter: one thing a week</title>
+<style>
+  :root {
+    --fimby-surface-page: #F0EBE3;
+    --fimby-surface-section: #EBE6DD;
+    --fimby-surface-card: #FAF7F2;
+    --fimby-border-subtle: #E0D9CF;
+    --fimby-border-default: #D6CFC5;
+    --fimby-divider-default: rgba(38, 26, 17, 0.10);
+    --fimby-text-strong: #261A11;
+    --fimby-text-primary: #4A3526;
+    --fimby-text-secondary: #6F5B43;
+    --fimby-earth-teal: #2F6B78;
+    --fimby-earth-sage: #5B8760;
+    --fimby-earth-ochre: #A38045;
+    --fimby-earth-slate: #5E7B92;
+    --fimby-earth-terracotta: #B07248;
+    --fimby-earth-dusty-violet: #7E7495;
+    --fimby-earth-moss: #6B7D54;
+    --fimby-earth-driftwood: #8D7B6A;
+    --fimby-btn-primary-bg: #3A7D8C;
+    --fimby-radius-sm: 8px;
+    --fimby-radius-md: 12px;
+    --fimby-radius-lg: 16px;
+    --fimby-radius-full: 9999px;
+    --fimby-shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --fimby-shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fimby-surface-page);
+    color: var(--fimby-text-primary);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .container { width: min(820px, calc(100% - 40px)); margin: 0 auto; }
+
+  /* ── Hero ── */
+  .page-hero {
+    background: var(--fimby-surface-card);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    padding: 44px 0 30px;
+    text-align: center;
+  }
+  .page-hero img.logo { height: 60px; margin-bottom: 14px; }
+  .page-hero h1 {
+    margin: 0 0 8px;
+    color: var(--fimby-text-strong);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .page-hero .subtitle { color: var(--fimby-text-secondary); max-width: 56ch; margin: 0 auto; font-size: 1.02rem; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-full); padding: 5px 14px; margin-bottom: 14px;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--fimby-text-secondary);
+  }
+  .eyebrow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fimby-earth-sage); }
+
+  /* ── Cards / bands ── */
+  section.block { padding: 26px 0 2px; }
+  .card {
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card);
+    padding: 24px 26px; margin-bottom: 22px;
+  }
+  .card h2 { margin: 0 0 8px; color: var(--fimby-text-strong); font-size: 1.3rem; letter-spacing: -0.015em; }
+  .card p { margin: 0 0 12px; }
+  .card p:last-child { margin-bottom: 0; }
+  .pull-quote {
+    font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-style: italic; font-size: 1.12rem; line-height: 1.5;
+    color: var(--fimby-text-strong);
+    border-left: 3px solid var(--fimby-earth-terracotta);
+    padding-left: 16px; margin: 16px 0;
+  }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    border-radius: var(--fimby-radius-md); padding: 5px 12px; margin-bottom: 12px;
+    background: var(--fimby-earth-teal);
+  }
+
+  /* ── Two-state legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .state {
+    flex: 1 1 240px;
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-md); padding: 14px 16px; font-size: 0.94rem;
+  }
+  .state.green { border-left: 4px solid var(--fimby-earth-sage); }
+  .state.couch { border-left: 4px solid var(--fimby-earth-slate); }
+  .state h3 { margin: 0 0 4px; font-size: 0.98rem; color: var(--fimby-text-strong); display: flex; align-items: center; gap: 7px; }
+  .state h3 .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .state.green .dot { background: var(--fimby-earth-sage); }
+  .state.couch .dot { background: var(--fimby-earth-slate); }
+  .state p { margin: 0; font-size: 0.9rem; color: var(--fimby-text-secondary); }
+
+  /* ── Week engine ── */
+  .weeks-head { text-align: center; margin: 6px 0 4px; }
+  .weeks-head h2 { margin: 0 0 4px; color: var(--fimby-text-strong); font-size: 1.5rem; letter-spacing: -0.02em; }
+  .weeks-head p { margin: 0 auto 4px; color: var(--fimby-text-secondary); max-width: 54ch; }
+  .weeks-progress { font-size: 0.82rem; font-weight: 700; color: var(--fimby-earth-teal); }
+
+  .week-card {
+    background: var(--fimby-surface-card); border: 1px solid var(--fimby-border-subtle);
+    border-radius: var(--fimby-radius-lg); box-shadow: var(--fimby-shadow-card);
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .week-top { display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px 6px; }
+  .week-num {
+    flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 1.02rem; background: var(--fimby-earth-teal);
+  }
+  .week-card:nth-child(2) .week-num { background: var(--fimby-earth-sage); }
+  .week-card:nth-child(3) .week-num { background: var(--fimby-earth-moss); }
+  .week-card:nth-child(4) .week-num { background: var(--fimby-earth-driftwood); }
+  .week-card:nth-child(5) .week-num { background: var(--fimby-earth-ochre); }
+  .week-card:nth-child(6) .week-num { background: var(--fimby-earth-slate); }
+  .week-card:nth-child(7) .week-num { background: var(--fimby-earth-dusty-violet); }
+  .week-card:nth-child(8) .week-num { background: var(--fimby-earth-terracotta); }
+  .week-head-text { flex: 1; }
+  .week-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fimby-text-secondary); }
+  .week-action { margin: 2px 0 0; font-size: 1.06rem; color: var(--fimby-text-strong); font-weight: 600; line-height: 1.35; }
+  .week-check { flex: 0 0 auto; margin-top: 2px; }
+  .week-check input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    width: 24px; height: 24px; border: 2px solid var(--fimby-border-default); border-radius: 7px;
+    background: var(--fimby-surface-card); cursor: pointer; position: relative; transition: background 0.12s, border-color 0.12s;
+  }
+  .week-check input:checked { background: var(--fimby-earth-sage); border-color: var(--fimby-earth-sage); }
+  .week-check input:checked::after { content: ""; position: absolute; left: 7px; top: 2px; width: 6px; height: 12px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+  .week-check input:focus-visible { outline: 3px solid rgba(103,187,210,0.45); outline-offset: 1px; }
+  .week-body { padding: 0 20px 16px 74px; }
+  .week-shape { font-size: 0.92rem; color: var(--fimby-text-primary); margin: 4px 0 10px; }
+  .week-shape strong { color: var(--fimby-text-strong); }
+  .week-couch {
+    display: flex; gap: 9px; align-items: flex-start;
+    background: var(--fimby-surface-page); border-left: 4px solid var(--fimby-earth-slate);
+    border-radius: var(--fimby-radius-sm); padding: 9px 13px; font-size: 0.88rem; color: var(--fimby-text-secondary);
+  }
+  .week-couch .moon { flex: 0 0 auto; font-size: 0.95rem; }
+  .week-couch strong { color: var(--fimby-earth-slate); }
+  @media (max-width: 560px) { .week-body { padding-left: 20px; } }
+
+  /* ── Arc (demoted reference) ── */
+  .band {
+    background: var(--fimby-surface-card);
+    border-top: 1px solid var(--fimby-divider-default);
+    border-bottom: 1px solid var(--fimby-divider-default);
+    padding: 32px 0; margin: 24px 0;
+  }
+  .band h2 { margin: 0 0 4px; color: var(--fimby-text-strong); font-size: 1.35rem; letter-spacing: -0.015em; }
+  .band .band-lede { margin: 0 0 16px; color: var(--fimby-text-secondary); font-size: 0.96rem; }
+  .arc { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .arc li {
+    background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle);
+    border-left: 4px solid var(--fimby-earth-driftwood); border-radius: var(--fimby-radius-md);
+    padding: 12px 16px; font-size: 0.93rem;
+  }
+  .arc li strong { color: var(--fimby-text-strong); }
+  .arc .when { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fimby-text-secondary); display: block; margin-bottom: 2px; }
+
+  /* ── Callouts ── */
+  .callout { border-radius: var(--fimby-radius-md); padding: 14px 18px; margin-top: 14px; background: var(--fimby-surface-page); border-left: 4px solid var(--fimby-earth-ochre); font-size: 0.94rem; }
+  .callout strong { color: var(--fimby-text-strong); }
+  .care-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .care-list li { background: var(--fimby-surface-page); border: 1px solid var(--fimby-border-subtle); border-left: 4px solid var(--fimby-earth-sage); border-radius: var(--fimby-radius-md); padding: 13px 16px; font-size: 0.95rem; }
+  .care-list li:nth-child(2) { border-left-color: var(--fimby-earth-terracotta); }
+  .care-list li:nth-child(3) { border-left-color: var(--fimby-earth-teal); }
+  .care-list strong { color: var(--fimby-text-strong); display: block; margin-bottom: 2px; }
+
+  .scoreboard { text-align: center; }
+  .scoreboard .big {
+    font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-style: italic; font-size: 1.2rem; color: var(--fimby-text-strong);
+    max-width: 40ch; margin: 6px auto 0;
+  }
+
+  footer { padding: 26px 0 44px; text-align: center; color: var(--fimby-text-secondary); font-size: 0.86rem; }
+  footer a { color: var(--fimby-earth-teal); }
+
+  @media (max-width: 560px) { .container { width: calc(100% - 24px); } .card { padding: 18px 18px; } }
+  @media print { .week-card, .card { box-shadow: none; break-inside: avoid; } body { background: #fff; } }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="page-hero">
+  <div class="container">
+    <img class="logo" src="https://fimby.com/wp-content/uploads/2026/03/FIMBYwGrass.png" alt="FIMBY" />
+    <div><span class="eyebrow"><span class="eyebrow-dot"></span>V6A starter · built for real energy</span></div>
+    <h1>One thing a week</h1>
+    <p class="subtitle">The lighter, do-it version of the launch plan — shaped so you can just execute, sized to one hour a day and one real conversation a week, and leaning on Strathcona Vineyard rather than on you alone.</p>
+  </div>
+</header>
+
+<!-- ═══ START HERE ═══ -->
+<section class="block">
+  <div class="container">
+    <div class="card">
+      <h2>Start here</h2>
+      <p>You already have what most launches spend months chasing: twenty years in V6A, a church with staff behind you, and a couple of close friends who'd help. So this isn't a recruiting campaign. It's a handful of warm conversations with people you already know.</p>
+      <div class="pull-quote">Your project this week is not "launch FIMBY." It's the one small action at the top of the list below — nothing past it.</div>
+      <p>Two ground rules that make the rest work:</p>
+      <ul>
+        <li><strong>One shaped action a week.</strong> Every step below is already given its shape — no figuring-out-what-it-means before you can do it. If a step ever feels vague, it's not ready; cut it smaller.</li>
+        <li><strong>You carry the least.</strong> The church carries the feed's rhythm; a friend holds one role; you mostly show up warmly for people you know.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TWO STATES ═══ -->
+<section class="block">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-slate);">However the week finds you</span>
+      <h2>Green weeks and couch weeks</h2>
+      <p>Some weeks you'll kick butt; some weeks you won't leave the couch. The plan is built for both — every week below has a full version and a couch version, and either one counts as done.</p>
+      <div class="legend">
+        <div class="state green">
+          <h3><span class="dot"></span>Green week</h3>
+          <p>You've got energy. Do the week's action as written — the in-person, warm version.</p>
+        </div>
+        <div class="state couch">
+          <h3><span class="dot"></span>Couch week</h3>
+          <p>You're low. Do the smaller fallback under each week (usually a text instead of a meeting, or a solo task). Still done. Nothing is live yet, so nobody is waiting — resting costs nothing.</p>
+        </div>
+      </div>
+      <div class="callout"><strong>The same grace the app gives.</strong> FIMBY believes in quiet hours, seasons, and never punishing people for being human. You get that too. A couch week isn't falling behind — it's the app's own values, pointed back at its founder.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THIS WEEK ENGINE ═══ -->
+<section class="block">
+  <div class="container">
+    <div class="weeks-head">
+      <h2>The next eight weeks</h2>
+      <p>One action each, in order. Do this week's and stop. <span class="weeks-progress" id="weeks-progress"></span></p>
+    </div>
+
+    <!-- Week 1 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">1</span>
+        <div class="week-head-text">
+          <span class="week-label">This week</span>
+          <p class="week-action">Coffee with the one friend who's easiest to be around.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w1" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One invite, a real date and time, about 45 minutes, coffee near you. No agenda past "let me show you this thing I'm building." Show them FIMBY on your phone and think out loud about V6A.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Just send the invite for a date next week. Booking it counts as done.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 2 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">2</span>
+        <div class="week-head-text">
+          <span class="week-label">Next</span>
+          <p class="week-action">Ask that friend to hold one small, named role.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w2" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One concrete job with edges — "keep half an eye out for posts nobody's answered, and help welcome a new neighbour now and then." Not "help me with FIMBY." Your first co-steward, so you're never the only one holding it.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Send the ask as a voice note or text instead of in person.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 3 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">3</span>
+        <div class="week-head-text">
+          <span class="week-label">Then</span>
+          <p class="week-action">Sit with the Vineyard staff person closest to you.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w3" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One conversation. Ask for <strong>one</strong> recurring post — a meal, a drop-in, a ride offer — and who on staff will own putting it up each week. This is the church carrying the feed's pulse, which is the job you most want off your own plate.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Email the one-paragraph version instead of meeting.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 4 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">4</span>
+        <div class="week-head-text">
+          <span class="week-label">A solo week — good for a low one</span>
+          <p class="week-action">Write down eight people you already know.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w4" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> Eight names — Vineyard or V6A people who'd get what FIMBY is. Circle the three easiest to approach. Just names on paper; no contact yet. This is the "find founding neighbours" task, already given its shape. No social battery required.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Write three names instead of eight. Still done.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 5 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">5</span>
+        <div class="week-head-text">
+          <span class="week-label">Then</span>
+          <p class="week-action">Show FIMBY to one of your circled three.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w5" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One person, one bounded coffee or porch visit with a stated start and finish. Same warm show-and-tell as week 1 — you're just widening the circle by one.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Text them to float it — "want to see a thing I'm building? No rush." Scheduling it counts.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 6 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">6</span>
+        <div class="week-head-text">
+          <span class="week-label">Then</span>
+          <p class="week-action">List a few lendable things — with your co-steward.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w6" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One working hour together (this is the week's social touch). You each list three things you'd lend, in the app. Six real items beats an empty library — and it's a gentle, side-by-side kind of hangout.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Do it solo from the couch — list your own three items, skip the meetup.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 7 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">7</span>
+        <div class="week-head-text">
+          <span class="week-label">Then</span>
+          <p class="week-action">Confirm the church's first post is going up.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w7" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> One short check-in with the staff owner from week 3 — confirm the recurring post has a day and is actually being posted. Confirm it; don't redesign it. This is your first real feed heartbeat.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> A confirming text is enough.</span></div>
+      </div>
+    </div>
+
+    <!-- Week 8 -->
+    <div class="week-card">
+      <div class="week-top">
+        <span class="week-num">8</span>
+        <div class="week-head-text">
+          <span class="week-label">The small payoff</span>
+          <p class="week-action">Hold a tiny pilot gathering — co-hosted, not solo.</p>
+        </div>
+        <span class="week-check"><input type="checkbox" data-key="w8" /></span>
+      </div>
+      <div class="week-body">
+        <p class="week-shape"><strong>Shape it:</strong> Small, at the church or a friend's place, co-hosted with your co-steward. Invite whoever from your list said yes. Bounded — a stated start and finish (60–75 min), food, one clear purpose: "come try FIMBY together." You are not hosting alone. This is where more helpers naturally surface.</p>
+        <div class="week-couch"><span class="moon">🌙</span><span><strong>Couch version:</strong> Shrink it — three people at a coffee shop — or slide it a week. Reduce, don't cancel.</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ THE ARC BEHIND THE WEEKS ═══ -->
+<section class="band">
+  <div class="container">
+    <h2>The arc behind the weeks</h2>
+    <p class="band-lede">Where the eight weeks are heading — kept faint on purpose. Don't work from this; just glance at it so the near-term makes sense. The full month-by-month version lives in the original timeline file.</p>
+    <ul class="arc">
+      <li><span class="when">Weeks 1–8 · now</span><strong>Seed.</strong> The list above — a co-steward, the church's rhythm, a small library, a first gathering.</li>
+      <li><span class="when">After the pilot</span><strong>Rehearse.</strong> With your core group, run one full loop before anyone new arrives: an ask that gets answered, a thank-you posted by name.</li>
+      <li><span class="when">When ready — not on a date</span><strong>Go broad.</strong> Open V6A signups once the church post is steady, the library isn't empty, and a co-steward is active. Let a Vineyard announcement do the inviting. (Originally penciled for September — let it land later, Oct/Nov, if the gentle pace needs it. A steady late launch beats a frantic early one.)</li>
+      <li><span class="when">After going broad</span><strong>Hand over.</strong> Co-steward and staff take welcoming and a once-daily "has anyone been left unanswered?" check. The promise is <em>"no neighbour is ignored"</em> — not "Stephen answers everything."</li>
+      <li><span class="when">The real test</span><strong>Prove.</strong> Can it run two weeks without you? Then it's alive.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ WHEN A WEEK GOES SIDEWAYS ═══ -->
+<section class="block">
+  <div class="container">
+    <div class="card">
+      <span class="kicker" style="background: var(--fimby-earth-sage);">When a week goes sideways</span>
+      <h2>Three rules for the hard ones</h2>
+      <ul class="care-list">
+        <li><strong>Never miss twice.</strong> Skip a week's action and the only rule is: don't skip the next one too. Reduce it, don't rewrite the plan. One missed text is not a verdict on FIMBY.</li>
+        <li><strong>If a step demands the tea-and-cookies you, shrink it.</strong> When something feels like it needs your warmest, most available self, that's the signal to cut it to the smallest honest version — or move it to a green week. A wave is not a broken promise.</li>
+        <li><strong>Bounded by default.</strong> Every invite names a start, a finish, and a purpose. Edges are what make it possible to say yes — to your neighbours, and to yourself.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCOREBOARD ═══ -->
+<section class="block">
+  <div class="container">
+    <div class="card scoreboard">
+      <h2>Your whole scoreboard</h2>
+      <p style="color:var(--fimby-text-secondary);">Not signups, not activity, not anyone else's yardstick. One question at the end of each week:</p>
+      <p class="big">"Did I take one honest, bounded action this week?"</p>
+      <p style="color:var(--fimby-text-secondary); margin-top:12px;">Yes — couch week or green week — is a good FIMBY week. The neighbourhood's health metrics (loops closed, reciprocity) live in the original timeline for when you're ready for them. For now, this is the only number that's yours.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>FIMBY · Family In My Backyard — V6A starter, 2026. Built for real, fluctuating energy.<br />
+    Companion files: <a href="first-neighbourhood-timeline.html">First Neighbourhood Launch Timeline</a> (the full month-by-month) · <a href="new-neighbourhood-playbook.html">New Neighbourhood Launch Playbook</a>.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORE = 'fimby-starter-v6a';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) {}
+
+  var boxes = document.querySelectorAll('input[type="checkbox"][data-key]');
+  boxes.forEach(function (box) {
+    if (saved[box.dataset.key]) box.checked = true;
+    box.addEventListener('change', function () {
+      saved[box.dataset.key] = box.checked;
+      try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (e) {}
+      updateProgress();
+    });
+  });
+
+  function updateProgress() {
+    var all = document.querySelectorAll('input[type="checkbox"][data-key]');
+    var done = document.querySelectorAll('input[type="checkbox"][data-key]:checked').length;
+    var el = document.getElementById('weeks-progress');
+    if (el) el.textContent = done + ' / ' + all.length + ' done';
+  }
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
