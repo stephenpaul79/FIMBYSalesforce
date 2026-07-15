@@ -67,6 +67,8 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     _pendingScrollY = null;
     _restoredFromCache = false;
     _saveThrottleTimer = null;
+    // Set on logout so pagehide/disconnected saves can't resurrect the cache.
+    _suppressStateSave = false;
     // Holds the feed invisible during a cache-resume scroll restore.
     @track _resumeHidden = false;
 
@@ -121,6 +123,14 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
         this._pagehideHandler = () => this._saveLibraryState();
         window.addEventListener('pagehide', this._pagehideHandler);
+
+        // On logout, stop saving and drop the cache so the imminent unload can't
+        // re-persist this user's library for the next login on the same device.
+        this._logoutHandler = () => {
+            this._suppressStateSave = true;
+            this._clearLibraryCache();
+        };
+        window.addEventListener('fimbylogout', this._logoutHandler);
         this._unregisterTourAnchors = registerTourAnchorProvider(this);
     }
 
@@ -140,6 +150,9 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         }
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
+        }
+        if (this._logoutHandler) {
+            window.removeEventListener('fimbylogout', this._logoutHandler);
         }
         if (this._unregisterTourAnchors) {
             this._unregisterTourAnchors();
@@ -863,6 +876,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     // =============================================
 
     _saveLibraryState() {
+        if (this._suppressStateSave) return;
         if (!this.allItems || this.allItems.length === 0) return;
         try {
             const state = {

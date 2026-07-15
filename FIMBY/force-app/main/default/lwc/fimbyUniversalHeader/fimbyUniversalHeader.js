@@ -892,6 +892,12 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     async handleLogoutClick() {
         this.showMenuOverlay = false;
+        // Tell the feeds to stop persisting state and drop their own caches
+        // BEFORE we clear here. Otherwise the imminent unload fires each feed's
+        // pagehide/disconnectedCallback save, which would re-write the cache we
+        // just cleared and resurrect the previous user's feed for the next
+        // login. Dispatched synchronously so listeners run before the redirect.
+        window.dispatchEvent(new CustomEvent('fimbylogout'));
         // Wipe cached feed/library/badge state before we leave, so the next user
         // to log in on this device never sees the previous user's neighbourhood
         // content. Synchronous and best-effort — runs regardless of the redirect

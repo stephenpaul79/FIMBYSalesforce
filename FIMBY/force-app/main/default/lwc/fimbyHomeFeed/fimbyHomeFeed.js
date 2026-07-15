@@ -187,6 +187,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     // sure a previous user's feed can never flash before the match is verified.
     _cachedOwnerStamp = null;
     @track _cacheIdentityVerified = false;
+    // Set on logout so pagehide/disconnected saves can't resurrect the cache.
+    _suppressStateSave = false;
 
     defaultAvatarUrl = `${IMPACT_ICONS}/NoProfilePhoto.png`;
     feedColumnSizes = SIZES.feedColumn;
@@ -401,6 +403,14 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         this._pagehideHandler = () => this._saveFeedState();
         window.addEventListener('pagehide', this._pagehideHandler);
 
+        // On logout, stop saving and drop the cache so the imminent unload can't
+        // re-persist this user's feed for the next login on the same device.
+        this._logoutHandler = () => {
+            this._suppressStateSave = true;
+            this._clearFeedCache();
+        };
+        window.addEventListener('fimbylogout', this._logoutHandler);
+
         this._tourResetFeedScrollHandler = () => this._resetScrollForTour();
         window.addEventListener('fimbytourresetfeedscroll', this._tourResetFeedScrollHandler);
 
@@ -443,6 +453,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         }
         if (this._pagehideHandler) {
             window.removeEventListener('pagehide', this._pagehideHandler);
+        }
+        if (this._logoutHandler) {
+            window.removeEventListener('fimbylogout', this._logoutHandler);
         }
         if (this._tourResetFeedScrollHandler) {
             window.removeEventListener('fimbytourresetfeedscroll', this._tourResetFeedScrollHandler);
@@ -1339,6 +1352,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      * Feed state persistence (sessionStorage)
      * =============================================================== */
     _saveFeedState() {
+        if (this._suppressStateSave) return;
         if (!this.feedItems || this.feedItems.length === 0) return;
         try {
             const state = {
