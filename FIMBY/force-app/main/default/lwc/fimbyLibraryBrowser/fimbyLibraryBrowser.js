@@ -875,6 +875,11 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 skillsOffset: this._skillsOffset,
                 hasMoreContent: this.hasMoreContent,
                 scrollY: window.scrollY,
+                // Stamp the cache with the viewer it belongs to. On restore we
+                // discard it unless the current viewer matches, so a different
+                // user (or neighbourhood) logging in on this device can never
+                // read the previous user's library items.
+                ownerContactId: this.currentContactId || null,
                 timestamp: Date.now()
             };
             sessionStorage.setItem(LIB_CACHE_KEY, JSON.stringify(state));
@@ -897,6 +902,16 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
             const state = JSON.parse(raw);
             if (Date.now() - state.timestamp > LIB_CACHE_MAX_AGE_MS) {
+                sessionStorage.removeItem(LIB_CACHE_KEY);
+                return false;
+            }
+
+            // Privacy gate: the cache is only usable if it belongs to the viewer
+            // now logged in. currentContactId is resolved from the server earlier
+            // in connectedCallback, so this is authoritative and runs before any
+            // cached row renders. Missing/mismatched stamp (incl. legacy caches
+            // written before this stamp existed) -> discard and fetch fresh.
+            if ((state.ownerContactId || null) !== (this.currentContactId || null)) {
                 sessionStorage.removeItem(LIB_CACHE_KEY);
                 return false;
             }

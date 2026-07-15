@@ -180,6 +180,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     // Holds the feed invisible during a cache-resume scroll restore.
     @track _resumeHidden = false;
     _saveThrottleTimer = null;
+    // Identity the restored cache was stamped with, and whether the current
+    // viewer has been confirmed to match. Unlike the library (which knows the
+    // viewer before it restores), the home feed restores first and resolves
+    // identity async, so the cache-resume reveal is gated on this flag to make
+    // sure a previous user's feed can never flash before the match is verified.
+    _cachedOwnerStamp = null;
+    @track _cacheIdentityVerified = false;
 
     defaultAvatarUrl = `${IMPACT_ICONS}/NoProfilePhoto.png`;
     feedColumnSizes = SIZES.feedColumn;
@@ -578,6 +585,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      * isPoster / RSVP labels match the current viewer (not a previous session user).
      */
     async _hydrateIdentityAndReprocessFeed() {
+        let identityResolved = false;
         try {
             const category = this.activeFilter === 'all' ? null : this.activeFilter;
             const subType = this.activeSubFilter === 'All' ? null : this.activeSubFilter;
@@ -593,13 +601,41 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             if (result?.actingAsContactId) {
                 this.actingAsContactId = result.actingAsContactId;
             }
+            identityResolved = !!(result?.currentContactId || result?.actingAsContactId);
         } catch {
-            // Non-fatal; next loadNextBatch will hydrate.
+            // Fall through to the fail-safe discard below.
         }
+
+        // Privacy gate: only reveal the restored feed once the server confirms
+        // the current viewer owns it. If identity couldn't be resolved, fail
+        // safe and discard rather than risk showing another user's content.
+        if (!identityResolved || this._identityStamp() !== this._cachedOwnerStamp) {
+            this._discardRestoredFeedForIdentityMismatch();
+            return;
+        }
+
+        this._cacheIdentityVerified = true;
         if (this.feedItems?.length) {
             this.feedItems = this.processItems(this.feedItems.map((fi) => this._toRawFeedItem(fi)));
             this.applyFilter();
         }
+    }
+
+    /**
+     * The restored cache belongs to a different viewer than the one now logged
+     * in (or identity couldn't be confirmed). Drop the hidden cached rows and
+     * load a fresh, correctly-scoped feed — the reveal happens through the
+     * normal fresh-load path, so no stale content is ever shown.
+     */
+    _discardRestoredFeedForIdentityMismatch() {
+        this._pendingScrollY = null;
+        this._restoredFromCache = false;
+        this._cachedOwnerStamp = null;
+        this._resumeHidden = false;
+        try {
+            window.scrollTo(0, 0);
+        } catch { /* ignore */ }
+        this.loadInitialData();
     }
 
     /** Fields that come from Apex UnifiedFeedItem (strip client-only UI keys before reprocessing). */
@@ -1314,6 +1350,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 hasMoreContent: this.hasMoreContent,
                 totalCount: this.totalCount,
                 scrollY: window.scrollY,
+                // Stamp with the viewer this feed belongs to (real + acting-as
+                // identity). Verified against the server on restore so a
+                // different user logging in on this device can never read the
+                // previous user's neighbourhood feed.
+                ownerStamp: this._identityStamp(),
                 timestamp: Date.now()
             };
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(state));
@@ -1351,10 +1392,20 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
             this._pendingScrollY = state.scrollY || 0;
             this._restoredFromCache = true;
+            // Hold the identity stamp for verification; the reveal stays gated
+            // on _cacheIdentityVerified until _hydrateIdentityAndReprocessFeed
+            // confirms the current viewer matches.
+            this._cachedOwnerStamp = state.ownerStamp || null;
+            this._cacheIdentityVerified = false;
             return true;
         } catch {
             return false;
         }
+    }
+
+    /** Fingerprint of the current viewer (real + acting-as contact). */
+    _identityStamp() {
+        return `${this.currentContactId || ''}:${this.actingAsContactId || ''}`;
     }
 
     _clearFeedCache() {
@@ -1362,7 +1413,11 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     renderedCallback() {
-        if (this._pendingScrollY != null && this._restoredFromCache) {
+        // Gate the cache-resume reveal on identity verification: never position
+        // and unveil a restored feed until the current viewer is confirmed to
+        // own it. On a mismatch, _hydrateIdentityAndReprocessFeed purges the
+        // cache and loads fresh instead, so this block simply never fires.
+        if (this._pendingScrollY != null && this._restoredFromCache && this._cacheIdentityVerified) {
             const scrollContainer = this.template.querySelector('c-fimby-infinite-scroll');
             if (scrollContainer && scrollContainer.restoreState) {
                 scrollContainer.restoreState(this.hasMoreContent);

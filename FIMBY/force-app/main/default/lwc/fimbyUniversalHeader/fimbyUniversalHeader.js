@@ -649,10 +649,22 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         navigate(this, '/moderator-dashboard');
     }
 
+    // Wipe every per-user browser cache the feeds/library/header write, so a
+    // logout, identity switch, or session-timeout re-auth can't leak the prior
+    // user's content to the next login in the same tab/WebView (sessionStorage
+    // survives the logout->login redirect because the document isn't torn down).
+    // Keys MUST stay in sync with each writer:
+    //   fimby-home-feed-state       -> fimbyHomeFeed CACHE_KEY
+    //   fimby-library-browser-v3    -> fimbyLibraryBrowser LIB_CACHE_KEY
+    //   fimby-badge-counts          -> BADGE_CACHE_KEY (above)
+    // The feeds also identity-stamp their caches and self-discard on a mismatch,
+    // so correctness never depends on this list being exhaustive — this is the
+    // proactive belt to the feeds' suspenders.
     _clearFeedCaches() {
         try {
             sessionStorage.removeItem('fimby-home-feed-state');
-            sessionStorage.removeItem('fimby-library-state');
+            sessionStorage.removeItem('fimby-library-browser-v3');
+            sessionStorage.removeItem(BADGE_CACHE_KEY);
         } catch { /* ignore */ }
     }
 
@@ -880,6 +892,11 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     async handleLogoutClick() {
         this.showMenuOverlay = false;
+        // Wipe cached feed/library/badge state before we leave, so the next user
+        // to log in on this device never sees the previous user's neighbourhood
+        // content. Synchronous and best-effort — runs regardless of the redirect
+        // path below.
+        this._clearFeedCaches();
         // End every server-side session first so re-entry requires real
         // re-authentication. /secur/logout.jsp only clears the WebView's cookie;
         // the OAuth browser keeps a live session that lets Salesforce silently
