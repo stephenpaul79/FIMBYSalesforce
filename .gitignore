@@ -64,6 +64,12 @@ temp_*
 *.tmp
 *.log
 
+# --- Google Drive sync artifacts (repo lives inside a synced Drive) -------
+.tmp.driveupload/
+.tmp.drivedownload/
+**/.tmp.driveupload/
+**/.tmp.drivedownload/
+
 # --- OS / editor cruft ----------------------------------------------------
 .DS_Store
 Thumbs.db

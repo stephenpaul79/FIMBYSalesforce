@@ -95,6 +95,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     // cold load. Cleared (fail-open) once getActingAsContact returns or errors.
     @track _tosGatePending = true;
     _savedBodyOverflow = null;
+    _quickPostOpen = false;
 
     _guidedTourRequestHandler;
     _tourOpenMenuHandler;
@@ -160,6 +161,22 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this._openQuickPostHandler = () => this.handleNewClick();
         window.addEventListener('fimbyopenquickpost', this._openQuickPostHandler);
 
+        // Lock background (window) scroll while the Quick Post modal is open so
+        // touch/wheel gestures can't scroll the feed behind the scrim. The modal
+        // is mounted in both the header and bottom nav; these window events fire
+        // regardless of which instance opened it. The modal's own .modal-content
+        // keeps its internal overflow-y scroll — this only freezes the page.
+        this._quickPostOpenHandler = () => {
+            this._quickPostOpen = true;
+            this._applyScrollLock();
+        };
+        this._quickPostCloseHandler = () => {
+            this._quickPostOpen = false;
+            this._applyScrollLock();
+        };
+        window.addEventListener('fimbyquickpostopened', this._quickPostOpenHandler);
+        window.addEventListener('fimbyquickpostclosed', this._quickPostCloseHandler);
+
         this._refreshRequestHandler = () => this._pollBadgeCounts();
         window.addEventListener('fimbyrequestbadgerefresh', this._refreshRequestHandler);
 
@@ -210,6 +227,12 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         if (this._openQuickPostHandler) {
             window.removeEventListener('fimbyopenquickpost', this._openQuickPostHandler);
+        }
+        if (this._quickPostOpenHandler) {
+            window.removeEventListener('fimbyquickpostopened', this._quickPostOpenHandler);
+        }
+        if (this._quickPostCloseHandler) {
+            window.removeEventListener('fimbyquickpostclosed', this._quickPostCloseHandler);
         }
         if (this._refreshRequestHandler) {
             window.removeEventListener('fimbyrequestbadgerefresh', this._refreshRequestHandler);
@@ -544,7 +567,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     // wheel/touch can't move the page underneath. Save/restore the prior value
     // rather than blindly clearing, matching the other FIMBY modals.
     _applyScrollLock() {
-        const shouldLock = this._tosGatePending || this.showTosModal;
+        const shouldLock = this._tosGatePending || this.showTosModal || this._quickPostOpen;
         if (shouldLock) {
             if (this._savedBodyOverflow === null) {
                 this._savedBodyOverflow = document.body.style.overflow;
