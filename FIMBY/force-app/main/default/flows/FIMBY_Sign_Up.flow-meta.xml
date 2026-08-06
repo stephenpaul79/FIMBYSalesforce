@@ -1,53 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Resolve_Postal_Code</name>
+        <label>Resolve Postal Code</label>
+        <locationX>402</locationX>
+        <locationY>350</locationY>
+        <actionName>FimbyPostalResolver</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Postal_Code_Branch</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>postalCode</name>
+            <value>
+                <elementReference>Postal_COde</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>FimbyPostalResolver</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
     <apiVersion>58.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
-    <environments>Default</environments>
-    <formulas>
-        <name>ConnectFIX</name>
-        <dataType>String</dataType>
-        <expression>SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE({!connect}, &quot;%20&quot;, &quot; &quot;),&quot;%21&quot;, &quot;!&quot;),&quot;%22&quot;, &quot;\&quot;&quot;),&quot;%23&quot;, &quot;#&quot;),&quot;%24&quot;, &quot;$&quot;),&quot;%25&quot;, &quot;%&quot;),&quot;%26&quot;, &quot;&amp;&quot;),&quot;%27&quot;, &quot;&apos;&quot;),&quot;%2A&quot;, &quot;*&quot;),&quot;%2B&quot;, &quot;+&quot;),&quot;%2C&quot;, &quot;,&quot;),&quot;%2D&quot;, &quot;-&quot;),&quot;%2E&quot;, &quot;.&quot;)</expression>
-    </formulas>
-    <formulas>
-        <name>emailfix</name>
-        <dataType>String</dataType>
-        <expression>SUBSTITUTE({!e}, &quot;%40&quot;,&quot;@&quot;)</expression>
-    </formulas>
-    <formulas>
-        <name>FNFix</name>
-        <dataType>String</dataType>
-        <expression>SUBSTITUTE({!fn}, &quot;%20&quot;, &quot; &quot;)</expression>
-    </formulas>
-    <formulas>
-        <name>LNfix</name>
-        <dataType>String</dataType>
-        <expression>SUBSTITUTE({!ln}, &quot;%20&quot;, &quot; &quot;)</expression>
-    </formulas>
-    <formulas>
-        <name>Lead_Company_Display</name>
-        <dataType>String</dataType>
-        <expression>IF(NOT(ISBLANK({!Community_Group_Connection})),
-   {!Community_Group_Connection},
-   IF(NOT(ISBLANK({!City})),
-      {!City},
-      &quot;Unknown neighbourhood - &quot; &amp; BLANKVALUE({!Postal_COde}, &quot;&quot;)
-   )
-)</expression>
-    </formulas>
     <choices>
-        <name>Launch_Type_Neighbourhood</name>
-        <choiceText>A neighbourhood I&apos;m part of</choiceText>
+        <name>Contact_Method_Either</name>
+        <choiceText>Either</choiceText>
         <dataType>String</dataType>
         <value>
-            <stringValue>Neighbourhood_Startup</stringValue>
-        </value>
-    </choices>
-    <choices>
-        <name>Launch_Type_Community_Group</name>
-        <choiceText>A community group or church I&apos;m part of</choiceText>
-        <dataType>String</dataType>
-        <value>
-            <stringValue>Community_Group_Startup</stringValue>
+            <stringValue>Either</stringValue>
         </value>
     </choices>
     <choices>
@@ -67,85 +48,26 @@
         </value>
     </choices>
     <choices>
-        <name>Contact_Method_Either</name>
-        <choiceText>Either</choiceText>
+        <name>Launch_Type_Community_Group</name>
+        <choiceText>A community group or church I&apos;m part of</choiceText>
         <dataType>String</dataType>
         <value>
-            <stringValue>Either</stringValue>
+            <stringValue>Community_Group_Startup</stringValue>
         </value>
     </choices>
-    <interviewLabel>FIMBY Sign Up {!$Flow.CurrentDateTime}</interviewLabel>
-    <label>FIMBY Sign Up</label>
-    <processMetadataValues>
-        <name>BuilderType</name>
+    <choices>
+        <name>Launch_Type_Neighbourhood</name>
+        <choiceText>A neighbourhood I&apos;m part of</choiceText>
+        <dataType>String</dataType>
         <value>
-            <stringValue>LightningFlowBuilder</stringValue>
+            <stringValue>Neighbourhood_Startup</stringValue>
         </value>
-    </processMetadataValues>
-    <processMetadataValues>
-        <name>CanvasMode</name>
-        <value>
-            <stringValue>FREE_FORM_CANVAS</stringValue>
-        </value>
-    </processMetadataValues>
-    <processMetadataValues>
-        <name>OriginBuilderType</name>
-        <value>
-            <stringValue>LightningFlowBuilder</stringValue>
-        </value>
-    </processMetadataValues>
-    <processType>Flow</processType>
-    <actionCalls>
-        <name>Resolve_Postal_Code</name>
-        <label>Resolve Postal Code</label>
-        <locationX>778</locationX>
-        <locationY>410</locationY>
-        <actionName>FimbyPostalResolver</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Postal_Code_Branch</targetReference>
-        </connector>
-        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
-        <inputParameters>
-            <name>postalCode</name>
-            <value>
-                <elementReference>Postal_COde</elementReference>
-            </value>
-        </inputParameters>
-        <nameSegment>FimbyPostalResolver</nameSegment>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-        <versionSegment>1</versionSegment>
-    </actionCalls>
-    <decisions>
-        <name>Postal_Code_Branch</name>
-        <label>Postal Code Branch</label>
-        <locationX>778</locationX>
-        <locationY>490</locationY>
-        <defaultConnector>
-            <targetReference>Not_In_Neighbourhood_Screen</targetReference>
-        </defaultConnector>
-        <defaultConnectorLabel>Not Active</defaultConnectorLabel>
-        <rules>
-            <name>Active_Neighbourhood</name>
-            <conditionLogic>and</conditionLogic>
-            <conditions>
-                <leftValueReference>Resolve_Postal_Code.isActiveNeighbourhood</leftValueReference>
-                <operator>EqualTo</operator>
-                <rightValue>
-                    <booleanValue>true</booleanValue>
-                </rightValue>
-            </conditions>
-            <connector>
-                <targetReference>Create_Contact</targetReference>
-            </connector>
-            <label>Active Neighbourhood</label>
-        </rules>
-    </decisions>
+    </choices>
     <decisions>
         <name>Launch_Lead_Branch</name>
         <label>Launch Lead Branch</label>
-        <locationX>500</locationX>
-        <locationY>700</locationY>
+        <locationX>622</locationX>
+        <locationY>674</locationY>
         <defaultConnector>
             <targetReference>Create_Waitlist_Contact</targetReference>
         </defaultConnector>
@@ -169,8 +91,8 @@
     <decisions>
         <name>Org_Signup_Branch</name>
         <label>Org Signup Branch</label>
-        <locationX>1040</locationX>
-        <locationY>620</locationY>
+        <locationX>182</locationX>
+        <locationY>674</locationY>
         <defaultConnector>
             <targetReference>Thank_You</targetReference>
         </defaultConnector>
@@ -191,189 +113,90 @@
             <label>Is Community Group</label>
         </rules>
     </decisions>
-    <recordCreates>
-        <name>Create_Waitlist_Contact</name>
-        <label>Create Waitlist Contact</label>
-        <locationX>400</locationX>
-        <locationY>830</locationY>
-        <connector>
-            <targetReference>Waitlist_Thank_You</targetReference>
-        </connector>
-        <inputAssignments>
-            <field>Age_Attestation_Confirmed__c</field>
-            <value>
-                <elementReference>Age_Attestation</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Age_Attestation_Date__c</field>
-            <value>
-                <elementReference>$Flow.CurrentDateTime</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Age_Attestation_Source__c</field>
-            <value>
-                <stringValue>Public Sign-up Form</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Email</field>
-            <value>
-                <elementReference>Email.value</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>FirstName</field>
-            <value>
-                <elementReference>First_Name</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Household_Nickname__c</field>
-            <value>
-                <elementReference>Household_Nickname_Username</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>LastName</field>
-            <value>
-                <elementReference>Last_Name</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>MailingCity</field>
-            <value>
-                <elementReference>City</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>MailingPostalCode</field>
-            <value>
-                <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>MailingState</field>
-            <value>
-                <elementReference>Province_State</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>MailingStreet</field>
-            <value>
-                <elementReference>Mailing_Street</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Phone</field>
-            <value>
-                <elementReference>Phone.value</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Status__c</field>
-            <value>
-                <stringValue>New Public Signup</stringValue>
-            </value>
-        </inputAssignments>
-        <object>Contact</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordCreates>
-    <recordCreates>
-        <name>Create_Launch_Lead</name>
-        <label>Create Launch Lead</label>
-        <locationX>600</locationX>
-        <locationY>970</locationY>
-        <connector>
-            <targetReference>Launch_Thank_You</targetReference>
-        </connector>
-        <inputAssignments>
-            <field>Best_Contact_Method__c</field>
-            <value>
-                <elementReference>Best_Contact_Method</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Community_Group_Connection__c</field>
-            <value>
-                <elementReference>Community_Group_Connection</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Company</field>
-            <value>
-                <elementReference>Lead_Company_Display</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Email</field>
-            <value>
-                <elementReference>Email.value</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Estimated_Launch_Cohort_Size__c</field>
-            <value>
-                <elementReference>Estimated_Launch_Cohort_Size</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>FIMBY_Lead_Type__c</field>
-            <value>
-                <elementReference>Launch_Lead_Type</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>FirstName</field>
-            <value>
-                <elementReference>First_Name</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Is_Launch_Lead__c</field>
-            <value>
-                <booleanValue>true</booleanValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>LastName</field>
-            <value>
-                <elementReference>Last_Name</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Launch_Notes__c</field>
-            <value>
-                <elementReference>Launch_Notes</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>LeadSource</field>
-            <value>
-                <stringValue>FIMBY Sign-Up</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Phone</field>
-            <value>
-                <elementReference>Phone.value</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>PostalCode</field>
-            <value>
-                <elementReference>Postal_COde</elementReference>
-            </value>
-        </inputAssignments>
-        <object>Lead</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordCreates>
+    <decisions>
+        <name>Postal_Code_Branch</name>
+        <label>Postal Code Branch</label>
+        <locationX>402</locationX>
+        <locationY>458</locationY>
+        <defaultConnector>
+            <targetReference>Not_In_Neighbourhood_Screen</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Active</defaultConnectorLabel>
+        <rules>
+            <name>Active_Neighbourhood</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Resolve_Postal_Code.isActiveNeighbourhood</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Contact</targetReference>
+            </connector>
+            <label>Active Neighbourhood</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>ConnectFIX</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE({!connect}, &quot;%20&quot;, &quot; &quot;),&quot;%21&quot;, &quot;!&quot;),&quot;%22&quot;, &quot;\&quot;&quot;),&quot;%23&quot;, &quot;#&quot;),&quot;%24&quot;, &quot;$&quot;),&quot;%25&quot;, &quot;%&quot;),&quot;%26&quot;, &quot;&amp;&quot;),&quot;%27&quot;, &quot;&apos;&quot;),&quot;%2A&quot;, &quot;*&quot;),&quot;%2B&quot;, &quot;+&quot;),&quot;%2C&quot;, &quot;,&quot;),&quot;%2D&quot;, &quot;-&quot;),&quot;%2E&quot;, &quot;.&quot;)</expression>
+    </formulas>
+    <formulas>
+        <name>emailfix</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE({!e}, &quot;%40&quot;,&quot;@&quot;)</expression>
+    </formulas>
+    <formulas>
+        <name>FNFix</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE({!fn}, &quot;%20&quot;, &quot; &quot;)</expression>
+    </formulas>
+    <formulas>
+        <name>Lead_Company_Display</name>
+        <dataType>String</dataType>
+        <expression>IF(NOT(ISBLANK({!Community_Group_Connection})),
+   {!Community_Group_Connection},
+   IF(NOT(ISBLANK({!City})),
+      {!City},
+      &quot;Unknown neighbourhood - &quot; &amp; BLANKVALUE({!Postal_COde}, &quot;&quot;)
+   )
+)</expression>
+    </formulas>
+    <formulas>
+        <name>LNfix</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE({!ln}, &quot;%20&quot;, &quot; &quot;)</expression>
+    </formulas>
+    <interviewLabel>FIMBY Sign Up {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
+    <label>FIMBY Sign Up</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
     <recordCreates>
         <name>Create_Contact</name>
         <label>Create Contact</label>
-        <locationX>776</locationX>
-        <locationY>620</locationY>
+        <locationX>182</locationX>
+        <locationY>566</locationY>
         <connector>
             <targetReference>Org_Signup_Branch</targetReference>
         </connector>
@@ -465,10 +288,99 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordCreates>
+        <name>Create_Launch_Lead</name>
+        <label>Create Launch Lead</label>
+        <locationX>490</locationX>
+        <locationY>890</locationY>
+        <connector>
+            <targetReference>Launch_Thank_You</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Best_Contact_Method__c</field>
+            <value>
+                <elementReference>Best_Contact_Method</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Community_Group_Connection__c</field>
+            <value>
+                <elementReference>Community_Group_Connection</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Company</field>
+            <value>
+                <elementReference>Lead_Company_Display</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Email</field>
+            <value>
+                <elementReference>Email.value</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Estimated_Launch_Cohort_Size__c</field>
+            <value>
+                <elementReference>Estimated_Launch_Cohort_Size</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FIMBY_Lead_Type__c</field>
+            <value>
+                <elementReference>Launch_Lead_Type</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FirstName</field>
+            <value>
+                <elementReference>First_Name</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Is_Launch_Lead__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>LastName</field>
+            <value>
+                <elementReference>Last_Name</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Launch_Notes__c</field>
+            <value>
+                <elementReference>Launch_Notes</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>LeadSource</field>
+            <value>
+                <stringValue>FIMBY Sign-Up</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Phone</field>
+            <value>
+                <elementReference>Phone.value</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>PostalCode</field>
+            <value>
+                <elementReference>Postal_COde</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Lead</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordCreates>
         <name>Create_Org_Account</name>
         <label>Create Org Account</label>
-        <locationX>1040</locationX>
-        <locationY>950</locationY>
+        <locationX>50</locationX>
+        <locationY>998</locationY>
         <connector>
             <targetReference>Update_Contact_Org_Link</targetReference>
         </connector>
@@ -535,11 +447,101 @@
         <object>Account</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
+    <recordCreates>
+        <name>Create_Waitlist_Contact</name>
+        <label>Create Waitlist Contact</label>
+        <locationX>754</locationX>
+        <locationY>782</locationY>
+        <connector>
+            <targetReference>Waitlist_Thank_You</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Age_Attestation_Confirmed__c</field>
+            <value>
+                <elementReference>Age_Attestation</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Age_Attestation_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Age_Attestation_Source__c</field>
+            <value>
+                <stringValue>Public Sign-up Form</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Email</field>
+            <value>
+                <elementReference>Email.value</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FirstName</field>
+            <value>
+                <elementReference>First_Name</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Household_Nickname__c</field>
+            <value>
+                <elementReference>Household_Nickname_Username</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>LastName</field>
+            <value>
+                <elementReference>Last_Name</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingCity</field>
+            <value>
+                <elementReference>City</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingPostalCode</field>
+            <value>
+                <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingState</field>
+            <value>
+                <elementReference>Province_State</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MailingStreet</field>
+            <value>
+                <elementReference>Mailing_Street</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Phone</field>
+            <value>
+                <elementReference>Phone.value</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value>
+                <stringValue>New Public Signup</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Contact</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
     <recordLookups>
         <name>Get_Org_RecordType</name>
         <label>Get Org RecordType</label>
-        <locationX>1040</locationX>
-        <locationY>840</locationY>
+        <locationX>50</locationX>
+        <locationY>890</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Create_Org_Account</targetReference>
         </connector>
@@ -565,8 +567,8 @@
     <recordUpdates>
         <name>Update_Contact_Org_Link</name>
         <label>Update Contact Org Link</label>
-        <locationX>1040</locationX>
-        <locationY>1060</locationY>
+        <locationX>50</locationX>
+        <locationY>1106</locationY>
         <connector>
             <targetReference>Thank_You</targetReference>
         </connector>
@@ -590,8 +592,8 @@
     <screens>
         <name>DisclaimerScreen</name>
         <label>Disclaimer</label>
-        <locationX>777</locationX>
-        <locationY>188</locationY>
+        <locationX>402</locationX>
+        <locationY>134</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -600,7 +602,7 @@
         </connector>
         <fields>
             <name>Disclaimer</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Welcome, neighbour.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;FIMBY is a small, practical way to share life with the people on your street — to ask for help, offer what you have, borrow a drill, split a Costco run, or just learn a few names.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;We’ll start with a few basics: your name, address, and a way for us to reach you. If your postal code is in a FIMBY neighbourhood, you’ll be in. If we’re not there yet, we’ll add you to the waitlist and let you know when we arrive.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Click &lt;/span&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Next&lt;/strong&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt; to get started.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Welcome, neighbour.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;FIMBY is a small, practical way to share life with the people on your street — to ask for help, offer what you have, borrow a drill, split a Costco run, or just learn a few names.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;We’ll start with a few basics: your name, address, and a way for us to reach you. If your postal code is in a FIMBY neighbourhood, you’ll be in. If we’re not there yet, we’ll add you to the waitlist and let you know when we arrive.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Click &lt;/span&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Next&lt;/strong&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt; to get started.&lt;/span&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -659,8 +661,389 @@
         </fields>
         <fields>
             <name>ChristianDIsclaimer</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;color: rgb(115, 115, 115); background-color: rgb(255, 255, 255);&quot;&gt;FIMBY is rooted in a Christian vision of love and community, but practiced in everyday, neighbour-level ways.&lt;/em&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;font-size: 12px; color: rgb(115, 115, 115);&quot;&gt;FIMBY is inspired by the way of Jesus, especially his call to love our neighbours in ordinary, practical ways. Neighbours of any faith or no faith are welcome.&lt;/em&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Launch_Lead_Details_Screen</name>
+        <label>Launch Lead Details</label>
+        <locationX>490</locationX>
+        <locationY>782</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Create_Launch_Lead</targetReference>
+        </connector>
+        <fields>
+            <name>Launch_Lead_Intro</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Tell us a little more&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;A few quick questions so we can follow up about launching FIMBY in your area.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Launch_Lead_Type</name>
+            <choiceReferences>Launch_Type_Neighbourhood</choiceReferences>
+            <choiceReferences>Launch_Type_Community_Group</choiceReferences>
+            <dataType>String</dataType>
+            <defaultSelectedChoiceReference>Launch_Type_Neighbourhood</defaultSelectedChoiceReference>
+            <fieldText>What kind of launch?</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Community_Group_Connection</name>
+            <dataType>String</dataType>
+            <fieldText>If you&apos;re part of a community group or church, what is its name?</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Estimated_Launch_Cohort_Size</name>
+            <dataType>Number</dataType>
+            <fieldText>How many people could you launch with?</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <scale>0</scale>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Best_Contact_Method</name>
+            <choiceReferences>Contact_Method_Email</choiceReferences>
+            <choiceReferences>Contact_Method_Phone</choiceReferences>
+            <choiceReferences>Contact_Method_Either</choiceReferences>
+            <dataType>String</dataType>
+            <defaultSelectedChoiceReference>Contact_Method_Email</defaultSelectedChoiceReference>
+            <fieldText>Best way to reach you?</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Launch_Notes</name>
+            <fieldText>Anything else you&apos;d like us to know?</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Launch_Submit_Button</name>
+            <extensionName>c:fsc_flowButtonBar</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>alignment</name>
+                <value>
+                    <stringValue>right</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>orientation</name>
+                <value>
+                    <stringValue>horizontal</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>actionMode</name>
+                <value>
+                    <stringValue>navigation</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>buttons</name>
+                <value>
+                    <stringValue>[{&quot;label&quot;:&quot;Submit&quot;,&quot;value&quot;:&quot;Submit&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
+                </value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Launch_Thank_You</name>
+        <label>Launch Thank You</label>
+        <locationX>490</locationX>
+        <locationY>998</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Launch_Thank_You_Display</name>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Thank you.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Helping launch a new FIMBY neighbourhood takes a small spark of leadership. We&apos;ll be in touch soon with what comes next.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Not_In_Neighbourhood_Screen</name>
+        <label>Not In Neighbourhood</label>
+        <locationX>622</locationX>
+        <locationY>566</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Launch_Lead_Branch</targetReference>
+        </connector>
+        <fields>
+            <name>Not_In_Neighbourhood_Display</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;We&apos;re not yet in your neighbourhood.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Thank you for your interest. We&apos;ll add you to our waitlist and let you know when FIMBY launches in your area.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;If you&apos;re part of a community group, church, or neighbourhood network that would like to help launch FIMBY in your area, let us know below.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Want_To_Help_Launch</name>
+            <dataType>Boolean</dataType>
+            <fieldText>I&apos;d like to help bring FIMBY to my neighbourhood.</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Not_In_Neighbourhood_Continue</name>
+            <extensionName>c:fsc_flowButtonBar</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>alignment</name>
+                <value>
+                    <stringValue>right</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>orientation</name>
+                <value>
+                    <stringValue>horizontal</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>showLines</name>
+                <value>
+                    <stringValue>neither</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>actionMode</name>
+                <value>
+                    <stringValue>navigation</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>buttons</name>
+                <value>
+                    <stringValue>[{&quot;label&quot;:&quot;Continue&quot;,&quot;value&quot;:&quot;Continue&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
+                </value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Org_Details_Screen</name>
+        <label>Organization Details</label>
+        <locationX>50</locationX>
+        <locationY>782</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Get_Org_RecordType</targetReference>
+        </connector>
+        <fields>
+            <name>Org_Details_Intro</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Tell us about your group&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Just the basics for now. We&apos;ll follow up to set up your group&apos;s presence and confirm a few details.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Name</name>
+            <dataType>String</dataType>
+            <fieldText>Organization or group name</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Website</name>
+            <dataType>String</dataType>
+            <fieldText>Website (optional)</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Description</name>
+            <fieldText>What does your group do? (optional)</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Org_Submit_Button</name>
+            <extensionName>c:fsc_flowButtonBar</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>alignment</name>
+                <value>
+                    <stringValue>right</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>orientation</name>
+                <value>
+                    <stringValue>horizontal</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>actionMode</name>
+                <value>
+                    <stringValue>navigation</stringValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>buttons</name>
+                <value>
+                    <stringValue>[{&quot;label&quot;:&quot;Submit&quot;,&quot;value&quot;:&quot;Submit&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
+                </value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -676,8 +1059,8 @@
     <screens>
         <name>Signup_for_FIMBY</name>
         <label>Signup for FIMBY</label>
-        <locationX>778</locationX>
-        <locationY>317</locationY>
+        <locationX>402</locationX>
+        <locationY>242</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -942,8 +1325,9 @@
                 <fields>
                     <name>Province_State</name>
                     <dataType>String</dataType>
-                    <fieldText>Province (State)</fieldText>
+                    <fieldText>Province</fieldText>
                     <fieldType>InputField</fieldType>
+                    <helpText>&lt;p&gt;AKA &quot;State&quot; for you Americans.&lt;/p&gt;</helpText>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <styleProperties>
@@ -996,8 +1380,9 @@
                 <fields>
                     <name>Household_Nickname_Username</name>
                     <dataType>String</dataType>
-                    <fieldText>Household Name (e.g. Smith Household)</fieldText>
+                    <fieldText>Household Nickname</fieldText>
                     <fieldType>InputField</fieldType>
+                    <helpText>&lt;p&gt;&amp;nbsp;e.g. Smith Household, Blue House, &lt;/p&gt;</helpText>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <styleProperties>
@@ -1019,6 +1404,22 @@
             </fields>
             <isRequired>false</isRequired>
             <regionContainerType>SectionWithoutHeader</regionContainerType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Is_Community_Group_Signup</name>
+            <dataType>Boolean</dataType>
+            <fieldText>I&apos;m signing up on behalf of a community group or organization.</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -1073,6 +1474,10 @@
                             <stringValue>12</stringValue>
                         </width>
                     </styleProperties>
+                    <validationRule>
+                        <errorMessage>&lt;p&gt;You must be 19 years of age or older to use FIMBY.&lt;/p&gt;</errorMessage>
+                        <formulaExpression>{!Age_Attestation} = TRUE</formulaExpression>
+                    </validationRule>
                 </fields>
                 <inputParameters>
                     <name>width</name>
@@ -1095,21 +1500,6 @@
             </fields>
             <isRequired>false</isRequired>
             <regionContainerType>SectionWithoutHeader</regionContainerType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Is_Community_Group_Signup</name>
-            <dataType>Boolean</dataType>
-            <fieldText>I&apos;m signing up on behalf of a community group or organization.</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -1194,202 +1584,17 @@
         <showHeader>false</showHeader>
     </screens>
     <screens>
-        <name>Not_In_Neighbourhood_Screen</name>
-        <label>Not In Neighbourhood</label>
-        <locationX>500</locationX>
-        <locationY>570</locationY>
+        <name>Thank_You</name>
+        <label>Thank You</label>
+        <locationX>182</locationX>
+        <locationY>1298</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
-        <connector>
-            <targetReference>Launch_Lead_Branch</targetReference>
-        </connector>
         <fields>
-            <name>Not_In_Neighbourhood_Display</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;We&apos;re not yet in your neighbourhood.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Thank you for your interest. We&apos;ll add you to our waitlist and let you know when FIMBY launches in your area.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;If you&apos;re part of a community group, church, or neighbourhood network that would like to help launch FIMBY in your area, let us know below.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <name>ThankyouConfirmation</name>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;You’re in a FIMBY neighbourhood.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Thanks for signing up — your postal code is in a neighbourhood that’s up and running.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Next, one of your neighbourhood moderators will take a look and activate your account — usually within a day or two. When they do, you’ll get a welcome email with your login and a few tips for getting started.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;In the meantime, you can get the FIMBY app so it’s ready when your account is. Same account, same neighbourhood — FIMBY also works in any browser.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;a href=&quot;https://apps.apple.com/app/fimby/id6776707632&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://fimby.com/wp-content/uploads/2026/06/app-store-badge.png&quot; alt=&quot;Download FIMBY on the App Store&quot; height=&quot;40&quot;&gt;&lt;/a&gt;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;https://play.google.com/store/apps/details?id=com.fimby.app&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://fimby.com/wp-content/uploads/2026/06/google-play-badge.png&quot; alt=&quot;Get FIMBY on Google Play&quot; height=&quot;40&quot;&gt;&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Want_To_Help_Launch</name>
-            <dataType>Boolean</dataType>
-            <fieldText>I&apos;d like to help bring FIMBY to my neighbourhood.</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Not_In_Neighbourhood_Continue</name>
-            <extensionName>c:fsc_flowButtonBar</extensionName>
-            <fieldType>ComponentInstance</fieldType>
-            <inputParameters>
-                <name>alignment</name>
-                <value>
-                    <stringValue>right</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>orientation</name>
-                <value>
-                    <stringValue>horizontal</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>showLines</name>
-                <value>
-                    <stringValue>neither</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>actionMode</name>
-                <value>
-                    <stringValue>navigation</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>buttons</name>
-                <value>
-                    <stringValue>[{&quot;label&quot;:&quot;Continue&quot;,&quot;value&quot;:&quot;Continue&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
-                </value>
-            </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>true</isRequired>
-            <storeOutputAutomatically>true</storeOutputAutomatically>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <showFooter>false</showFooter>
-        <showHeader>false</showHeader>
-    </screens>
-    <screens>
-        <name>Launch_Lead_Details_Screen</name>
-        <label>Launch Lead Details</label>
-        <locationX>700</locationX>
-        <locationY>840</locationY>
-        <allowBack>true</allowBack>
-        <allowFinish>true</allowFinish>
-        <allowPause>false</allowPause>
-        <connector>
-            <targetReference>Create_Launch_Lead</targetReference>
-        </connector>
-        <fields>
-            <name>Launch_Lead_Intro</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Tell us a little more&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;A few quick questions so we can follow up about launching FIMBY in your area.&lt;/span&gt;&lt;/p&gt;</fieldText>
-            <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Launch_Lead_Type</name>
-            <choiceReferences>Launch_Type_Neighbourhood</choiceReferences>
-            <choiceReferences>Launch_Type_Community_Group</choiceReferences>
-            <dataType>String</dataType>
-            <defaultSelectedChoiceReference>Launch_Type_Neighbourhood</defaultSelectedChoiceReference>
-            <fieldText>What kind of launch?</fieldText>
-            <fieldType>DropdownBox</fieldType>
-            <isRequired>true</isRequired>
-        </fields>
-        <fields>
-            <name>Community_Group_Connection</name>
-            <dataType>String</dataType>
-            <fieldText>If you&apos;re part of a community group or church, what is its name?</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Estimated_Launch_Cohort_Size</name>
-            <dataType>Number</dataType>
-            <fieldText>How many people could you launch with?</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
-            <scale>0</scale>
-        </fields>
-        <fields>
-            <name>Best_Contact_Method</name>
-            <choiceReferences>Contact_Method_Email</choiceReferences>
-            <choiceReferences>Contact_Method_Phone</choiceReferences>
-            <choiceReferences>Contact_Method_Either</choiceReferences>
-            <dataType>String</dataType>
-            <defaultSelectedChoiceReference>Contact_Method_Email</defaultSelectedChoiceReference>
-            <fieldText>Best way to reach you?</fieldText>
-            <fieldType>DropdownBox</fieldType>
-            <isRequired>true</isRequired>
-        </fields>
-        <fields>
-            <name>Launch_Notes</name>
-            <dataType>String</dataType>
-            <fieldText>Anything else you&apos;d like us to know?</fieldText>
-            <fieldType>LargeTextArea</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
-        </fields>
-        <fields>
-            <name>Launch_Submit_Button</name>
-            <extensionName>c:fsc_flowButtonBar</extensionName>
-            <fieldType>ComponentInstance</fieldType>
-            <inputParameters>
-                <name>alignment</name>
-                <value>
-                    <stringValue>right</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>orientation</name>
-                <value>
-                    <stringValue>horizontal</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>actionMode</name>
-                <value>
-                    <stringValue>navigation</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>buttons</name>
-                <value>
-                    <stringValue>[{&quot;label&quot;:&quot;Submit&quot;,&quot;value&quot;:&quot;Submit&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
-                </value>
-            </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>true</isRequired>
-            <storeOutputAutomatically>true</storeOutputAutomatically>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -1405,8 +1610,8 @@
     <screens>
         <name>Waitlist_Thank_You</name>
         <label>Waitlist Thank You</label>
-        <locationX>300</locationX>
-        <locationY>960</locationY>
+        <locationX>754</locationX>
+        <locationY>890</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -1426,169 +1631,14 @@
         <showFooter>false</showFooter>
         <showHeader>false</showHeader>
     </screens>
-    <screens>
-        <name>Launch_Thank_You</name>
-        <label>Launch Thank You</label>
-        <locationX>700</locationX>
-        <locationY>1100</locationY>
-        <allowBack>false</allowBack>
-        <allowFinish>true</allowFinish>
-        <allowPause>false</allowPause>
-        <fields>
-            <name>Launch_Thank_You_Display</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Thank you.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Helping launch a new FIMBY neighbourhood takes a small spark of leadership. We&apos;ll be in touch soon with what comes next.&lt;/span&gt;&lt;/p&gt;</fieldText>
-            <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <showFooter>false</showFooter>
-        <showHeader>false</showHeader>
-    </screens>
-    <screens>
-        <name>Thank_You</name>
-        <label>Thank You</label>
-        <locationX>771</locationX>
-        <locationY>790</locationY>
-        <allowBack>false</allowBack>
-        <allowFinish>true</allowFinish>
-        <allowPause>false</allowPause>
-        <fields>
-            <name>ThankyouConfirmation</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;You’re all set.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;We’ve received your sign-up, and you’ll hear from us shortly with what comes next.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;</fieldText>
-            <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <showFooter>false</showFooter>
-        <showHeader>false</showHeader>
-    </screens>
-    <screens>
-        <name>Org_Details_Screen</name>
-        <label>Organization Details</label>
-        <locationX>1040</locationX>
-        <locationY>730</locationY>
-        <allowBack>true</allowBack>
-        <allowFinish>true</allowFinish>
-        <allowPause>false</allowPause>
-        <connector>
-            <targetReference>Get_Org_RecordType</targetReference>
-        </connector>
-        <fields>
-            <name>Org_Details_Intro</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Tell us about your group&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Just the basics for now. We&apos;ll follow up to set up your group&apos;s presence and confirm a few details.&lt;/span&gt;&lt;/p&gt;</fieldText>
-            <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Org_Name</name>
-            <dataType>String</dataType>
-            <fieldText>Organization or group name</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>true</isRequired>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Org_Website</name>
-            <dataType>String</dataType>
-            <fieldText>Website (optional)</fieldText>
-            <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Org_Description</name>
-            <dataType>String</dataType>
-            <fieldText>What does your group do? (optional)</fieldText>
-            <fieldType>LargeTextArea</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
-        </fields>
-        <fields>
-            <name>Org_Submit_Button</name>
-            <extensionName>c:fsc_flowButtonBar</extensionName>
-            <fieldType>ComponentInstance</fieldType>
-            <inputParameters>
-                <name>alignment</name>
-                <value>
-                    <stringValue>right</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>orientation</name>
-                <value>
-                    <stringValue>horizontal</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>actionMode</name>
-                <value>
-                    <stringValue>navigation</stringValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>buttons</name>
-                <value>
-                    <stringValue>[{&quot;label&quot;:&quot;Submit&quot;,&quot;value&quot;:&quot;Submit&quot;,&quot;iconPosition&quot;:&quot;left&quot;,&quot;variant&quot;:&quot;brand&quot;,&quot;index&quot;:0}]</stringValue>
-                </value>
-            </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>true</isRequired>
-            <storeOutputAutomatically>true</storeOutputAutomatically>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <showFooter>false</showFooter>
-        <showHeader>false</showHeader>
-    </screens>
     <start>
-        <locationX>668</locationX>
-        <locationY>50</locationY>
+        <locationX>276</locationX>
+        <locationY>0</locationY>
         <connector>
             <targetReference>DisclaimerScreen</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Draft</status>
     <textTemplates>
         <name>Privacy</name>
         <isViewedAsPlainText>false</isViewedAsPlainText>
