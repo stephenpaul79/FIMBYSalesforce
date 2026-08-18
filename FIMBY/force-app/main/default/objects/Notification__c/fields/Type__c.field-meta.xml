@@ -184,6 +184,11 @@
                 <default>false</default>
                 <label>Response Reply</label>
             </value>
+            <value>
+                <fullName>Contact_Info_Shared</fullName>
+                <default>false</default>
+                <label>Contact Info Shared</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
