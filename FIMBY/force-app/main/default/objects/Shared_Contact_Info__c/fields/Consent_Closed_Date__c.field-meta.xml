@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Consent_Closed_Date__c</fullName>
+    <description>When this consent episode was closed, either by the sharer revoking it or by migration superseding a duplicate. Stays blank on historical rows revoked before this field existed, where the real closure date is unknowable. LastModifiedDate is not a reliable substitute.</description>
+    <externalId>false</externalId>
+    <label>Consent Closed Date</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

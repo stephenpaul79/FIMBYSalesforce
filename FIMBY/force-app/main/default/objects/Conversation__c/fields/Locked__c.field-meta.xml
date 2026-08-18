@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Locked__c</fullName>
     <defaultValue>false</defaultValue>
-    <description>When true, no new messages can be sent. Set when bulk buy is completed/cancelled/expired.</description>
+    <description>When true, no new messages can be sent and the thread is read-only history. Set when a bulk buy is completed/cancelled/expired, and when the consent episode in Authorizing Shared Contact Info is revoked. Reasons differ, so read the surrounding context rather than treating this flag as a single meaning.</description>
     <externalId>false</externalId>
     <label>Locked</label>
     <trackTrending>false</trackTrending>

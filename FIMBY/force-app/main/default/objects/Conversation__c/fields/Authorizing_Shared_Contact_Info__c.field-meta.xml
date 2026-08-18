@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Authorizing_Shared_Contact_Info__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The consent episode that authorized this thread. Set for SCI-gated Direct and Skill conversations only; null for response, lending, group, event, Vouch, organization, and moderator threads. The thread creator is always the episode recipient (Shared_To__c). Revoking the episode locks this thread. SetNull so right-to-be-forgotten deletion of a share is never blocked; a resulting orphan fails closed.</description>
+    <label>Authorizing Shared Contact Info</label>
+    <referenceTo>Shared_Contact_Info__c</referenceTo>
+    <relationshipLabel>Authorized Conversations</relationshipLabel>
+    <relationshipName>Authorized_Conversations</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

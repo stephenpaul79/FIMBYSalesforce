@@ -59,6 +59,11 @@
                 <default>false</default>
                 <label>Vouch Revoked</label>
             </value>
+            <value>
+                <fullName>Contact_Sharing_Revoked</fullName>
+                <default>false</default>
+                <label>Contact Sharing Revoked</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
