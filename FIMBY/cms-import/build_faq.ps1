@@ -67,7 +67,7 @@ $faqItems = @(
     @{ ck = "MCD4UWHPUXJJFRHDEAODRWFDP4MU"; api = "who_can_see_my_profile_and_posts"; url = "what-is-my-neighbourhood"; title = "What is my neighbourhood, and who can see what I share?"; body = @'
 {
     "question" : "What is my neighbourhood, and who can see what I share?",
-    "answer" : "<p>FIMBY is organised by neighbourhood, and your neighbourhood is your trust boundary. Your profile, posts, shared life, and library items are visible only to other registered neighbours in your neighbourhood - never to the public or to anyone outside it.</p><p>Your contact details (email, phone, address) stay private until you decide to <a href='/shared-contacts'>share them</a> with a specific neighbour. You are always in control of who sees them.</p>",
+    "answer" : "<p>FIMBY is organised by neighbourhood, and your neighbourhood is your trust boundary. Your profile, posts, shared life, and library items are visible only to other registered neighbours in your neighbourhood - never to the public or to anyone outside it.</p><p>Your contact details (email, phone, address) stay private until you decide to <a href='/my-stuff/my-contacts'>share them</a> with a specific neighbour. You are always in control of who sees them.</p>",
     "sortOrder" : "040",
     "category" : "Getting Started"
   }
@@ -163,7 +163,7 @@ $faqItems = @(
     @{ ck = "MC4XSGKHEYDZG77GTNBHPSFPJ6DI"; api = "how_do_i_send_a_message"; url = "how-do-i-message-a-neighbour"; title = "How do I message a neighbour?"; body = @'
 {
     "question" : "How do I message a neighbour?",
-    "answer" : "<p>Open <a href='/messages'>Messages</a> and tap <strong>New</strong> to search for someone and start a conversation. You can also tap <strong>Message</strong> on a neighbour's profile.</p><p>To keep everyone safe, you can message neighbours you have <strong>shared contact info</strong> with (in either direction), plus community groups in your neighbourhood. If you have not connected yet, share your details first - see <strong>How do I share my contact info?</strong> below.</p>",
+    "answer" : "<p>Open <a href='/messages'>Messages</a> and tap <strong>New</strong> to search for someone and start a conversation. You can also tap <strong>Message</strong> on a neighbour's profile.</p><p>To keep everyone safe, sharing works in one direction. You can start a conversation with a neighbour once <strong>they have shared their contact info with you</strong>, and they can always reply. Sharing your own details does not let you message them - it invites them to message you. You can also message community groups in your neighbourhood.</p>",
     "sortOrder" : "300",
     "category" : "Messaging"
   }
@@ -251,7 +251,7 @@ $faqItems = @(
     @{ ck = "MCNYYLKGDNYFESBEECFHKEUA3YVM"; api = "how_do_i_share_contact_info"; url = "how-do-i-share-contact-info"; title = "How do I share my contact info with a neighbour?"; body = @'
 {
     "question" : "How do I share my contact info with a neighbour?",
-    "answer" : "<p>Your email, phone, and address stay private until you choose to share them - and sharing is what lets the two of you message each other.</p><p>In a response or conversation, tap <strong>Share Contact Info</strong> and tick exactly what you want to share: <strong>Email</strong>, <strong>Phone</strong>, or <strong>Address</strong>. You will see the details before they are sent. You can also turn on <strong>Auto-Share Contact Info</strong> when you create an ask or offer so it is shared automatically with whoever responds.</p><p>See who you are connected with under <a href='/shared-contacts'>Shared Contacts</a>.</p>",
+    "answer" : "<p>Your email, phone, and address stay private until you choose to share them. Sharing goes one way: it lets the neighbour you shared with start a conversation with you, and you can reply. To message them first, they need to share with you too.</p><p>In a response or conversation, tap <strong>Share Contact Info</strong> and tick exactly what you want to share: <strong>Email</strong>, <strong>Phone</strong>, or <strong>Address</strong>. You will see the details before they are sent. You can also turn on <strong>Auto-Share Contact Info</strong> when you create an ask or offer so it is shared automatically with whoever responds.</p><p>You can stop sharing at any time. FIMBY will hide your details and close that conversation, though details already emailed or saved by the other person cannot be taken back. Sharing again starts fresh, with a new conversation.</p><p>See who you are connected with under <a href='/my-stuff/my-contacts'>My Contacts</a>.</p>",
     "sortOrder" : "600",
     "category" : "Privacy & Account"
   }

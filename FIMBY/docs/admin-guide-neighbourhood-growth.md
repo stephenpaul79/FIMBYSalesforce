@@ -195,7 +195,7 @@ Check the `Error_Detail__c` field on the split record for details.
 
 If two people have exchanged contact info and are in adjacent neighbourhoods, they see each other's Neighbourhood-scoped posts (Tier 3 override). This preserves relationships after a split.
 
-If they are NOT adjacent (e.g., one moved, or a later split made them non-adjacent), the feed override stops — but the relationship persists. They can still message each other, and the shared contact record stays active. **The relationship is sacred; the feed override is geographic.**
+If they are NOT adjacent (e.g., one moved, or a later split made them non-adjacent), the feed override stops — but the relationship persists. Their existing conversation stays open and the shared contact record stays active. **The relationship is sacred; the feed override is geographic.**
 
 ### @mentions
 
@@ -203,7 +203,9 @@ Same neighbourhood OR shared contacts in adjacent neighbourhoods. If you can see
 
 ### Messaging
 
-Not affected by neighbourhood boundaries. If you've shared contacts, you can message each other regardless of which neighbourhood either person lives in.
+Not affected by neighbourhood boundaries. Sharing is directional: a share from A to B lets **B** start a conversation with A, and A can reply in that conversation. B messaging A first requires B to have shared with A. This holds regardless of which neighbourhood either person lives in.
+
+Revoking a share closes that conversation permanently (read-only history). Sharing again creates a new share record and a new conversation — the old one is never reopened.
 
 ---
 

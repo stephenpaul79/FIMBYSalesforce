@@ -3,7 +3,7 @@
   "title" : "How do I message a neighbour?",
   "contentBody" : {
     "question" : "How do I message a neighbour?",
-    "answer" : "<p>Open <a href='/messages'>Messages</a> and tap <strong>New</strong> to search for someone and start a conversation. You can also tap <strong>Message</strong> on a neighbour's profile.</p><p>To keep everyone safe, you can message neighbours you have <strong>shared contact info</strong> with (in either direction), plus community groups in your neighbourhood. If you have not connected yet, share your details first - see <strong>How do I share my contact info?</strong> below.</p>",
+    "answer" : "<p>Open <a href='/messages'>Messages</a> and tap <strong>New</strong> to search for someone and start a conversation. You can also tap <strong>Message</strong> on a neighbour's profile.</p><p>To keep everyone safe, sharing works in one direction. You can start a conversation with a neighbour once <strong>they have shared their contact info with you</strong>, and they can always reply. Sharing your own details does not let you message them - it invites them to message you. You can also message community groups in your neighbourhood.</p>",
     "sortOrder" : "300",
     "category" : "Messaging"
   },

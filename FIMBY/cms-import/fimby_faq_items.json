@@ -155,7 +155,7 @@
             "urlName": "how-do-i-message-a-neighbour",
             "body": {
                 "question": "How do I message a neighbour?",
-                "answer": "<p>Open the <strong>Messages</strong> tab and tap <strong>New</strong>, then search for a neighbour and pick them to start a conversation. You can also message someone from their profile or from a post they made. All your conversations live in the Messages tab.</p>",
+                "answer": "<p>Open the <strong>Messages</strong> tab and tap <strong>New</strong>, or tap <strong>Message</strong> on a neighbour profile. Sharing works in one direction: you can start a conversation with a neighbour once <strong>they have shared their contact info with you</strong>, and they can always reply. Sharing your own details invites them to message you rather than the other way round. You can also message community groups in your neighbourhood.</p>",
                 "sortOrder": "300",
                 "category": "Messaging"
             }
@@ -265,7 +265,7 @@
             "urlName": "how-do-i-share-contact-info",
             "body": {
                 "question": "How do I share my contact info with a neighbour?",
-                "answer": "<p>Your contact details stay private until you choose to share them. When you are in a response or conversation with a neighbour, use <strong>Share Contact Info</strong> and tick exactly what you want to share - <strong>Email</strong>, <strong>Phone</strong>, or <strong>Address</strong>. You will see a preview before it is sent. You can also turn on <strong>Auto-Share Contact Info</strong> when you create an ask or offer so it is shared automatically with whoever responds.</p>",
+                "answer": "<p>Your email, phone, and address stay private until you choose to share them. Sharing goes one way: it lets the neighbour you shared with start a conversation with you, and you can reply. To message them first, they need to share with you too.</p><p>In a response or conversation, tap <strong>Share Contact Info</strong> and tick exactly what you want to share: <strong>Email</strong>, <strong>Phone</strong>, or <strong>Address</strong>. You will see the details before they are sent. You can also turn on <strong>Auto-Share Contact Info</strong> when you create an ask or offer so it is shared automatically with whoever responds.</p><p>You can stop sharing at any time. FIMBY will hide your details and close that conversation, though details already emailed or saved by the other person cannot be taken back. Sharing again starts fresh, with a new conversation.</p><p>See who you are connected with under <a href='/my-stuff/my-contacts'>My Contacts</a>.</p>",
                 "sortOrder": "600",
                 "category": "Privacy & Account"
             }
