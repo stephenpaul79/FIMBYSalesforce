@@ -96,7 +96,7 @@
     </values>
     <values>
         <field>Library_Just_Listed_Days__c</field>
-        <value xsi:type="xsd:double">7.0</value>
+        <value xsi:type="xsd:double">21.0</value>
     </values>
     <values>
         <field>Library_Page_Size__c</field>
@@ -269,6 +269,10 @@
     <values>
         <field>Unified_Feed_Min_Query_Limit__c</field>
         <value xsi:type="xsd:double">50.0</value>
+    </values>
+    <values>
+        <field>Unified_Feed_Query_Limit__c</field>
+        <value xsi:type="xsd:double">150.0</value>
     </values>
     <values>
         <field>Lending_Confirmation_Expiry_Days__c</field>

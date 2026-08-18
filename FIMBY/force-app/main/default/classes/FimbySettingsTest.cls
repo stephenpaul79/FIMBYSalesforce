@@ -9,7 +9,7 @@ private class FimbySettingsTest {
         System.assertEquals(180, FimbySettings.responseThreadCleanupDays());
         System.assertEquals(180, FimbySettings.libraryConversationCleanupDays());
         System.assertEquals(30, FimbySettings.notificationRetentionDays());
-        System.assertEquals(7, FimbySettings.libraryJustListedDays());
+        System.assertEquals(21, FimbySettings.libraryJustListedDays());
         System.assertEquals(7, FimbySettings.needDefaultEndDays());
         System.assertEquals(21, FimbySettings.offerDefaultEndDays());
         System.assertEquals(7, FimbySettings.refreshCooldownDays());
@@ -46,7 +46,7 @@ private class FimbySettingsTest {
         System.assertEquals(50, FimbySettings.storyCommentsLimit());
         System.assertEquals(1000, FimbySettings.markAllReadLimit());
         System.assertEquals(2000, FimbySettings.deleteAllNotificationsLimit());
-        System.assertEquals(50, FimbySettings.unifiedFeedMinQueryLimit());
+        System.assertEquals(150, FimbySettings.unifiedFeedQueryLimit());
     }
 
     @isTest

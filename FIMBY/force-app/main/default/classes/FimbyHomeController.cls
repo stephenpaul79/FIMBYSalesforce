@@ -5,6 +5,7 @@ public with sharing class FimbyHomeController {
 
     /**
      * @description LWC-callable method that fetches stories for the home feed, scoped to user's neighbourhood.
+     * Stories-only surface, so full history is returned — Story_Feed_TTL_Days__c governs the combined feed only.
      * @param offset Pagination offset
      * @param pageSize Number of items per page
      * @return StoriesResult with stories and hasMore flag
@@ -30,9 +31,6 @@ public with sharing class FimbyHomeController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            Integer ttlDays = FimbySettings.storyFeedTtlDays();
-            String ttlFilter = (ttlDays > 0) ? 'CreatedDate >= LAST_N_DAYS:' + ttlDays : '';
-
             String query = 'SELECT Id, Name, Message__c, Type__c, CreatedDate, ' +
                           'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                           'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
@@ -46,9 +44,6 @@ public with sharing class FimbyHomeController {
                 wheres.add('(Neighbourhood__c = :neighbourhoodAccountId' +
                     ' OR (Neighbourhood__c IN :adjacentIds AND Visibility_Scope__c IN (\'Adjacent\',\'Regional\'))' +
                     ' OR (Neighbourhood__c IN :adjacentIds AND Contact__c IN :sharedContactIds))');
-            }
-            if (String.isNotBlank(ttlFilter)) {
-                wheres.add(ttlFilter);
             }
             wheres.add('(Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')');
             if (!wheres.isEmpty()) {
@@ -343,9 +338,9 @@ public with sharing class FimbyHomeController {
 
             List<FimbyFeedItem> allItems = new List<FimbyFeedItem>();
 
-            // Neighbourhood scope is capped at ~150 users; posts have a 1-3 week active life.
-            // 150 per object is the practical ceiling and maps directly to the neighbourhood size limit.
-            final Integer queryLimit = 150;
+            // Fetched per object type, then sorted and paged in memory. The default maps to the
+            // neighbourhood soft cap, since posts have a 1-3 week active life.
+            final Integer queryLimit = FimbySettings.unifiedFeedQueryLimit();
 
             /* -----------------------------------------------------------
              * Fetch Stories (when category is 'all' or 'story')
@@ -456,7 +451,7 @@ public with sharing class FimbyHomeController {
 
             /* -----------------------------------------------------------
              * Fetch Library Items — only in "all" view as "just listed"
-             * announcements (items created in the last 7 days).
+             * announcements, within Library_Just_Listed_Days__c of listing.
              * When a specific category filter is active, library items
              * are excluded entirely — the Library has its own nav.
              * ----------------------------------------------------------- */

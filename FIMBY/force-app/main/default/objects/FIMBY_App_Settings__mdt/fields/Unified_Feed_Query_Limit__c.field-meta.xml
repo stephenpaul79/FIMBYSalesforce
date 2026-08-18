@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Unified_Feed_Query_Limit__c</fullName>
+    <defaultValue>150</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Unified Feed Query Limit</label>
+    <precision>7</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>Maximum rows fetched per content type (stories, asks and offers, library items) when building the home feed, before sorting and paging. Also caps how far back the Shared Life filter can scroll.</inlineHelpText>
+</CustomField>

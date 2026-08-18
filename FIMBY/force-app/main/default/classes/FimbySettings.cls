@@ -18,7 +18,7 @@ public with sharing class FimbySettings {
 
     // ---- Time Windows ----
     /** @description Days a story remains in the combined "All" home feed; the Shared Life filter is unbounded. */
-    public static Integer storyFeedTtlDays()        { return safe(get()?.Story_Feed_TTL_Days__c, 90); }
+    public static Integer storyFeedTtlDays()        { return safe(get()?.Story_Feed_TTL_Days__c, 60); }
     /** @description Days before inactive conversations and response threads are cleaned up (consolidated window). */
     public static Integer conversationCleanupDays()  { return safe(get()?.Conversation_Cleanup_Days__c, 180); }
     /** @description Days before response threads are cleaned up. */
@@ -27,8 +27,8 @@ public with sharing class FimbySettings {
     public static Integer libraryConversationCleanupDays() { return safe(get()?.Library_Conversation_Cleanup_Days__c, 180); }
     /** @description Days notifications are retained before cleanup. */
     public static Integer notificationRetentionDays(){ return safe(get()?.Notification_Retention_Days__c, 30); }
-    /** @description Days an item shows as "Just Listed" in library. */
-    public static Integer libraryJustListedDays()    { return safe(get()?.Library_Just_Listed_Days__c, 7); }
+    /** @description Days a new library item appears as an announcement card in the combined "All" home feed. */
+    public static Integer libraryJustListedDays()    { return safe(get()?.Library_Just_Listed_Days__c, 21); }
     /** @description Days a borrower has to confirm before the request expires. */
     public static Integer lendingConfirmationExpiryDays() { return safe(get()?.Lending_Confirmation_Expiry_Days__c, 3); }
     /** @description Default end days for Need posts. */
@@ -109,8 +109,8 @@ public with sharing class FimbySettings {
     public static Integer markAllReadLimit()             { return safe(get()?.Mark_All_Read_Limit__c, 1000); }
     /** @description Max notifications to delete in one operation. */
     public static Integer deleteAllNotificationsLimit()  { return safe(get()?.Delete_All_Notifications_Limit__c, 2000); }
-    /** @description Minimum query limit for unified feed. */
-    public static Integer unifiedFeedMinQueryLimit()     { return safe(get()?.Unified_Feed_Min_Query_Limit__c, 50); }
+    /** @description Max rows fetched per object type when assembling the unified feed, before sorting and paging. */
+    public static Integer unifiedFeedQueryLimit()        { return safe(get()?.Unified_Feed_Query_Limit__c, 150); }
 
     // ---- Neighbourhood Health & Split Thresholds ----
     private static Decimal safeDec(Decimal val, Decimal fallback) {

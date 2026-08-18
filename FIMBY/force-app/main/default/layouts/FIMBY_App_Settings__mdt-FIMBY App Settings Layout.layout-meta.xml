@@ -39,7 +39,7 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Unified_Feed_Min_Query_Limit__c</field>
+                <field>Unified_Feed_Query_Limit__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
