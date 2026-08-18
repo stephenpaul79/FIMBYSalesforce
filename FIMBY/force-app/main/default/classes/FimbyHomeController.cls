@@ -325,7 +325,8 @@ public with sharing class FimbyHomeController {
      *
      * @param offset    Pagination offset
      * @param pageSize  Number of items per page
-     * @param category  L1 filter: null/'all' = everything, 'story' = stories only, 'askOffer' = needs/offers only
+     * @param category  L1 filter: null/'all' = everything (stories capped at Story_Feed_TTL_Days__c),
+     *                  'story' = stories only (full history), 'askOffer' = needs/offers only
      * @param subType   L2 filter: null/'All' = no sub-filter, or specific sub-type string
      *                  - For stories: 'Thank You', 'God Story', 'Prayer', 'Lament', 'Bio'
      *                  - For askOffer: 'Need', 'Offer', 'Event', 'Bulk Buy'
@@ -350,7 +351,9 @@ public with sharing class FimbyHomeController {
              * Fetch Stories (when category is 'all' or 'story')
              * ----------------------------------------------------------- */
             if (isAllCategory || category == 'story') {
-                Integer storyTtl = FimbySettings.storyFeedTtlDays();
+                // The combined view stays finite so neighbours can reach the bottom and feel
+                // caught up. Story history stays reachable by selecting the Shared Life chip.
+                Integer storyTtl = isAllCategory ? FimbySettings.storyFeedTtlDays() : 0;
                 String storyQuery = 'SELECT Id, Name, Message__c, Type__c, CreatedDate, ' +
                                    'Posted_By__c, Contact__c, Comment_Count__c, ' +
                                    'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +

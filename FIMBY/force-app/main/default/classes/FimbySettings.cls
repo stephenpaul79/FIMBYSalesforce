@@ -17,7 +17,7 @@ public with sharing class FimbySettings {
     }
 
     // ---- Time Windows ----
-    /** @description Days a story remains in the feed. */
+    /** @description Days a story remains in the combined "All" home feed; the Shared Life filter is unbounded. */
     public static Integer storyFeedTtlDays()        { return safe(get()?.Story_Feed_TTL_Days__c, 90); }
     /** @description Days before inactive conversations and response threads are cleaned up (consolidated window). */
     public static Integer conversationCleanupDays()  { return safe(get()?.Conversation_Cleanup_Days__c, 180); }

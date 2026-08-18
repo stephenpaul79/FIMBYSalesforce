@@ -4,7 +4,7 @@ private class FimbySettingsTest {
     @isTest
     static void testAllAccessorsReturnDefaults() {
         // Without a CMT record in test context, all accessors should return their fallback defaults
-        System.assertEquals(90, FimbySettings.storyFeedTtlDays());
+        System.assertEquals(60, FimbySettings.storyFeedTtlDays());
         System.assertEquals(180, FimbySettings.conversationCleanupDays());
         System.assertEquals(180, FimbySettings.responseThreadCleanupDays());
         System.assertEquals(180, FimbySettings.libraryConversationCleanupDays());
