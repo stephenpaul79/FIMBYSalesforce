@@ -661,7 +661,7 @@ IF( !ISBLANK({!AddressText}), &quot;Address: &quot; + {!AddressText}, &quot;&quo
         <recordTriggerType>Create</recordTriggerType>
         <triggerType>RecordAfterSave</triggerType>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <textTemplates>
         <name>EmailBody</name>
         <isViewedAsPlainText>false</isViewedAsPlainText>

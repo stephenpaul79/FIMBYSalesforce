@@ -1052,7 +1052,7 @@ LEN({!Why_do_you_want_to_be_a_part_of_FIMBY}) &lt;= 255</formulaExpression>
             <targetReference>Contact_Id_Owner</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <variables>
         <name>OtherContact</name>
         <dataType>Boolean</dataType>

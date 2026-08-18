@@ -743,7 +743,7 @@ IF({!WhosReplyingFormula} = {!RespondingContact15Digits}, SUBSTITUTE({!Response.
             <targetReference>Response</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <subflows>
         <name>Share_Contact_Info</name>
         <label>Share Contact Info</label>
