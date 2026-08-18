@@ -396,18 +396,6 @@ public with sharing class FimbyMyStuffController {
         return new SharedContactHelper().getNeighbourProfileInternal(myContactId, neighbourContactId);
     }
 
-    /**
-     * Undo a revoke — restore Status__c to 'Active'.
-     */
-    @AuraEnabled
-    public static void undoRevokeSharedContactInfo(Id sharedContactInfoId) {
-        String contactId = FimbyIdentityRepository.getActingAsContactId();
-        if (String.isBlank(contactId)) {
-            throw new AuraHandledException('Unable to resolve current user.');
-        }
-        new SharedContactHelper().undoRevokeInternal(contactId, sharedContactInfoId);
-    }
-
     /* ---------------------------------------------------------------
      * ARCHIVE METHODS — paginated queries with filters + total counts
      * --------------------------------------------------------------- */
@@ -676,8 +664,7 @@ public with sharing class FimbyMyStuffController {
          * @return Number of Shared_Contact_Info__c records
          */
         public Integer countSharedContacts(String contactId) {
-            return [SELECT COUNT() FROM Shared_Contact_Info__c
-                    WHERE Contact__c = :contactId OR Shared_To__c = :contactId];
+            return getContactCards(contactId, null).size();
         }
 
         /**
@@ -697,90 +684,98 @@ public with sharing class FimbyMyStuffController {
                        Country__c, Additional_Info__c, Status__c, Origin__c, CreatedDate
                 FROM Shared_Contact_Info__c
                 WHERE Contact__c = :contactId OR Shared_To__c = :contactId
-                ORDER BY CreatedDate DESC
+                ORDER BY CreatedDate DESC, Id DESC
                 LIMIT :sharedLim
             ];
 
-            Map<Id, ContactCardWrapper> contactMap = new Map<Id, ContactCardWrapper>();
+            // A consent episode is directional and immutable once revoked, so only the
+            // newest row per direction describes the present. Older rows are history and
+            // must never write back over newer state.
+            Map<Id, Shared_Contact_Info__c> currentInbound = new Map<Id, Shared_Contact_Info__c>();
+            Map<Id, Shared_Contact_Info__c> currentOutbound = new Map<Id, Shared_Contact_Info__c>();
+
             for (Shared_Contact_Info__c sci : shared) {
-                Id otherId;
-                String otherName, otherFirstName, otherLastName, otherNeighbourhood;
-                Boolean iShared = (sci.Contact__c == contactId);
-                Boolean theyShared = (sci.Shared_To__c == contactId);
-
-                if (iShared) {
-                    otherId = sci.Shared_To__c;
-                    otherName = sci.Shared_To__r?.Full_Name__c;
-                    otherFirstName = sci.Shared_To__r?.FirstName;
-                    otherLastName = sci.Shared_To__r?.LastName;
-                    otherNeighbourhood = sci.Shared_To__r?.Account?.Name;
-                } else {
-                    otherId = sci.Contact__c;
-                    otherName = sci.Contact__r?.Full_Name__c;
-                    otherFirstName = sci.Contact__r?.FirstName;
-                    otherLastName = sci.Contact__r?.LastName;
-                    otherNeighbourhood = sci.Contact__r?.Account?.Name;
-                }
-
-                if (otherId == null) continue;
-
-                if (String.isNotBlank(searchTerm)) {
-                    String term = searchTerm.toLowerCase();
-                    if (otherName == null || !otherName.toLowerCase().contains(term)) continue;
-                }
-
-                ContactCardWrapper w = contactMap.get(otherId);
-                if (w == null) {
-                    w = new ContactCardWrapper();
-                    w.contactId = otherId;
-                    w.name = otherName;
-                    w.firstName = otherFirstName;
-                    w.lastName = otherLastName;
-                    w.neighbourhood = otherNeighbourhood;
-                    w.connectedDate = sci.CreatedDate;
-                    w.theySharedWithMe = false;
-                    w.iSharedWithThem = false;
-                    contactMap.put(otherId, w);
-                }
-
-                if (iShared) {
-                    w.iSharedWithThem = true;
-                    w.mySharedInfoId = sci.Id;
-                    w.mySharedEmail = sci.Email__c;
-                    w.mySharedPhone = sci.Phone__c;
-                    w.mySharedStreet = sci.Street__c;
-                    w.mySharedCity = sci.City__c;
-                    w.mySharedProvinceState = sci.Province_State__c;
-                    w.mySharedPostalCode = sci.Postal_Code__c;
-                    w.mySharedCountry = sci.Country__c;
-                    w.mySharedAdditionalInfo = sci.Additional_Info__c;
-                    w.mySharedStatus = sci.Status__c;
-                    w.isRevoked = (sci.Status__c == FimbyConstants.SHARED_CONTACT_REVOKED);
-                    w.origin = sci.Origin__c;
-                }
-                if (theyShared) {
-                    w.theySharedWithMe = true;
-                    if (w.origin == null) w.origin = sci.Origin__c;
-                }
-
-                if (theyShared) {
-                    w.email = sci.Email__c;
-                    w.phone = sci.Phone__c;
-                    w.street = sci.Street__c;
-                    w.city = sci.City__c;
-                    w.provinceState = sci.Province_State__c;
-                    w.postalCode = sci.Postal_Code__c;
-                } else if (w.theySharedWithMe != true) {
-                    w.email = sci.Email__c;
-                    w.phone = sci.Phone__c;
-                    w.street = sci.Street__c;
-                    w.city = sci.City__c;
-                    w.provinceState = sci.Province_State__c;
-                    w.postalCode = sci.Postal_Code__c;
+                if (sci.Contact__c == contactId && sci.Shared_To__c != null) {
+                    if (!currentOutbound.containsKey(sci.Shared_To__c)) {
+                        currentOutbound.put(sci.Shared_To__c, sci);
+                    }
+                } else if (sci.Shared_To__c == contactId && sci.Contact__c != null) {
+                    if (!currentInbound.containsKey(sci.Contact__c)) {
+                        currentInbound.put(sci.Contact__c, sci);
+                    }
                 }
             }
 
-            return contactMap.values();
+            Set<Id> counterpartIds = new Set<Id>();
+            counterpartIds.addAll(currentInbound.keySet());
+            counterpartIds.addAll(currentOutbound.keySet());
+
+            String term = String.isNotBlank(searchTerm) ? searchTerm.toLowerCase() : null;
+            List<ContactCardWrapper> cards = new List<ContactCardWrapper>();
+
+            for (Id otherId : counterpartIds) {
+                Shared_Contact_Info__c inbound = currentInbound.get(otherId);
+                Shared_Contact_Info__c outbound = currentOutbound.get(otherId);
+                Shared_Contact_Info__c anyRow = inbound != null ? inbound : outbound;
+
+                Contact other = (inbound != null) ? inbound.Contact__r : outbound.Shared_To__r;
+                String otherName = other?.Full_Name__c;
+
+                if (term != null && (otherName == null || !otherName.toLowerCase().contains(term))) {
+                    continue;
+                }
+
+                ContactCardWrapper w = new ContactCardWrapper();
+                w.contactId = otherId;
+                w.name = otherName;
+                w.firstName = other?.FirstName;
+                w.lastName = other?.LastName;
+                w.neighbourhood = other?.Account?.Name;
+                w.connectedDate = anyRow.CreatedDate;
+                w.theySharedWithMe = false;
+                w.iSharedWithThem = false;
+
+                if (inbound != null && !isRevoked(inbound)) {
+                    w.theySharedWithMe = true;
+                    w.origin = inbound.Origin__c;
+                    w.email = inbound.Email__c;
+                    w.phone = inbound.Phone__c;
+                    w.street = inbound.Street__c;
+                    w.city = inbound.City__c;
+                    w.provinceState = inbound.Province_State__c;
+                    w.postalCode = inbound.Postal_Code__c;
+                }
+
+                if (outbound != null) {
+                    w.iSharedWithThem = true;
+                    w.mySharedInfoId = outbound.Id;
+                    w.mySharedEmail = outbound.Email__c;
+                    w.mySharedPhone = outbound.Phone__c;
+                    w.mySharedStreet = outbound.Street__c;
+                    w.mySharedCity = outbound.City__c;
+                    w.mySharedProvinceState = outbound.Province_State__c;
+                    w.mySharedPostalCode = outbound.Postal_Code__c;
+                    w.mySharedCountry = outbound.Country__c;
+                    w.mySharedAdditionalInfo = outbound.Additional_Info__c;
+                    w.mySharedStatus = outbound.Status__c;
+                    w.isRevoked = isRevoked(outbound);
+                    if (w.origin == null) w.origin = outbound.Origin__c;
+                }
+
+                cards.add(w);
+            }
+
+            return cards;
+        }
+
+        /**
+         * @description True when a share row's current status closes the episode.
+         *              Legacy rows with a null status are treated as Active.
+         * @param sci Shared_Contact_Info__c row to evaluate
+         * @return true when the episode is revoked
+         */
+        private Boolean isRevoked(Shared_Contact_Info__c sci) {
+            return sci.Status__c == FimbyConstants.SHARED_CONTACT_REVOKED;
         }
 
         /**
@@ -859,56 +854,40 @@ public with sharing class FimbyMyStuffController {
                 throw new AuraHandledException('Select at least one type of contact info to share.');
             }
 
-            Contact sharing = [SELECT Id, Name, FirstName, LastName FROM Contact WHERE Id = :sharingContactId LIMIT 1];
             Contact recipient = [SELECT Id, Name FROM Contact WHERE Id = :recipientContactId LIMIT 1];
 
-            String sciName = sharing.FirstName + ' ' + sharing.LastName + ' - ' + String.valueOf(Date.today());
+            FimbySharedContactService.ShareRequest request = new FimbySharedContactService.ShareRequest();
+            request.sharerContactId = (Id) sharingContactId;
+            request.recipientContactId = (Id) recipientContactId;
+            request.origin = 'My Neighbours';
+            request.writeMode = FimbySharedContactService.MODE_REPLACE;
+            request.shareEmail = shareEmail;
+            request.sharePhone = sharePhone;
+            request.shareAddress = shareAddress;
+            request.email = email;
+            request.phone = phone;
+            request.street = street;
+            request.city = city;
+            request.provinceState = state;
+            request.postalCode = postalCode;
+            request.country = country;
+            request.setAdditionalInfo = data.containsKey('additionalInfo');
+            request.additionalInfo = additionalInfo;
 
-            List<Shared_Contact_Info__c> existing = [
-                SELECT Id, Status__c, Additional_Info__c FROM Shared_Contact_Info__c
-                WHERE Contact__c = :sharingContactId AND Shared_To__c = :recipientContactId
-                LIMIT 1
-            ];
-
-            Shared_Contact_Info__c sci;
-            if (existing.isEmpty()) {
-                sci = new Shared_Contact_Info__c(
-                    Name = sciName,
-                    Contact__c = sharingContactId,
-                    Shared_To__c = recipientContactId,
-                    Origin__c = 'My Neighbours',
-                    Status__c = FimbyConstants.SHARED_CONTACT_ACTIVE,
-                    Email__c = shareEmail ? email : null,
-                    Phone__c = sharePhone ? phone : null,
-                    Street__c = shareAddress ? street : null,
-                    City__c = shareAddress ? city : null,
-                    Province_State__c = shareAddress ? state : null,
-                    Postal_Code__c = shareAddress ? postalCode : null,
-                    Country__c = shareAddress ? country : null,
-                    Additional_Info__c = data.containsKey('additionalInfo')
-                        ? (String) data.get('additionalInfo') : null
+            FimbySharedContactService.ShareResult saved;
+            try {
+                FimbySharedContactService.assertRecipientAllowed(
+                    (Id) sharingContactId, (Id) recipientContactId
                 );
-                insert sci;
-            } else {
-                sci = existing[0];
-                sci.Name = sciName;
-                sci.Status__c = FimbyConstants.SHARED_CONTACT_ACTIVE;
-                sci.Email__c = shareEmail ? email : null;
-                sci.Phone__c = sharePhone ? phone : null;
-                sci.Street__c = shareAddress ? street : null;
-                sci.City__c = shareAddress ? city : null;
-                sci.Province_State__c = shareAddress ? state : null;
-                sci.Postal_Code__c = shareAddress ? postalCode : null;
-                sci.Country__c = shareAddress ? country : null;
-                if (data.containsKey('additionalInfo')) {
-                    sci.Additional_Info__c = (String) data.get('additionalInfo');
-                }
-                update sci;
+                saved = FimbySharedContactService.saveActiveEpisode(request);
+            } catch (FimbySharedContactService.SharedContactException e) {
+                throw new AuraHandledException(e.getMessage());
             }
 
             return new Map<String, Object>{
                 'success' => true,
-                'sharedContactInfoId' => sci.Id,
+                'sharedContactInfoId' => saved.sharedContactInfoId,
+                'createdNewEpisode' => saved.createdNewEpisode,
                 'message' => 'Contact info shared with ' + recipient.Name
             };
         }
@@ -957,29 +936,15 @@ public with sharing class FimbyMyStuffController {
                 && !isBlocked
                 && c.Care_Standing_Visible__c == true;
 
-            List<Shared_Contact_Info__c> sharedRecords = [
-                SELECT Id, Contact__c, Shared_To__c, Email__c, Phone__c, Street__c, City__c,
-                       Province_State__c, Postal_Code__c, Country__c, Status__c
-                FROM Shared_Contact_Info__c
-                WHERE Status__c != 'Revoked'
-                  AND (
-                      (Contact__c = :neighbourContactId AND Shared_To__c = :myContactId)
-                      OR (Contact__c = :myContactId AND Shared_To__c = :neighbourContactId)
-                  )
-            ];
-
-            Boolean hasSharedContactInfo = false;
-            Boolean iHaveSharedWithThem = false;
-            Shared_Contact_Info__c themToMeShare;
-
-            for (Shared_Contact_Info__c sci : sharedRecords) {
-                if (sci.Contact__c == neighbourContactId && sci.Shared_To__c == myContactId) {
-                    hasSharedContactInfo = true;
-                    themToMeShare = sci;
-                } else if (sci.Contact__c == myContactId && sci.Shared_To__c == neighbourContactId) {
-                    iHaveSharedWithThem = true;
-                }
-            }
+            // Each direction is its own consent episode, resolved newest-row-wins so a
+            // closed share can never keep rendering details through an older Active row.
+            Shared_Contact_Info__c themToMeShare = FimbySharedContactAccess.getActiveInboundSnapshot(
+                (Id) neighbourContactId, (Id) myContactId
+            );
+            Boolean hasSharedContactInfo = (themToMeShare != null);
+            Boolean iHaveSharedWithThem = FimbySharedContactAccess.hasActiveEpisode(
+                (Id) myContactId, (Id) neighbourContactId
+            );
 
             Map<String, Object> result = new Map<String, Object>{
                 'contactId' => c.Id,
@@ -1030,35 +995,13 @@ public with sharing class FimbyMyStuffController {
          * @param sharedContactInfoId Id of the Shared_Contact_Info__c to revoke
          */
         public void revokeInternal(String myContactId, Id sharedContactInfoId) {
-            Shared_Contact_Info__c sci = [
-                SELECT Id, Contact__c, Status__c
-                FROM Shared_Contact_Info__c
-                WHERE Id = :sharedContactInfoId LIMIT 1
-            ];
-            if (sci.Contact__c != myContactId) {
-                throw new AuraHandledException('You can only revoke sharing that you initiated.');
+            try {
+                FimbySharedContactService.revokeEpisode((Id) myContactId, sharedContactInfoId);
+            } catch (FimbySharedContactService.SharedContactException e) {
+                throw new AuraHandledException(e.getMessage());
             }
-            sci.Status__c = FimbyConstants.SHARED_CONTACT_REVOKED;
-            update sci;
         }
 
-        /**
-         * @description Restores a revoked Shared_Contact_Info__c to Active status.
-         * @param myContactId Current user's contact Id (must match Contact__c)
-         * @param sharedContactInfoId Id of the Shared_Contact_Info__c to restore
-         */
-        public void undoRevokeInternal(String myContactId, Id sharedContactInfoId) {
-            Shared_Contact_Info__c sci = [
-                SELECT Id, Contact__c, Status__c
-                FROM Shared_Contact_Info__c
-                WHERE Id = :sharedContactInfoId LIMIT 1
-            ];
-            if (sci.Contact__c != myContactId) {
-                throw new AuraHandledException('You can only restore sharing that you initiated.');
-            }
-            sci.Status__c = FimbyConstants.SHARED_CONTACT_ACTIVE;
-            update sci;
-        }
     }
 
     public class ContactCardWrapper {

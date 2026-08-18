@@ -41,6 +41,19 @@ public class FimbyCommunicationControllerTest {
         return [SELECT Id, Name FROM Contact WHERE Id != :myContact.Id AND AccountId = :myContact.AccountId ORDER BY Id];
     }
 
+    private static Id insertDirectConversation(Id me, Id other) {
+        Conversation__c conv = new Conversation__c(
+            Participant_1__c = me,
+            Participant_2__c = other,
+            Context_Type__c = FimbyConstants.CTX_DIRECT,
+            Status__c = FimbyConstants.CONVERSATION_ACTIVE,
+            Last_Message_Date__c = Datetime.now(),
+            Last_Message_Preview__c = 'hello'
+        );
+        insert conv;
+        return conv.Id;
+    }
+
     // ================================================================
     // getThreads tests
     // ================================================================
@@ -66,7 +79,7 @@ public class FimbyCommunicationControllerTest {
         List<Contact> others = getOtherContacts();
 
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(others[0].Id);
+            insertDirectConversation(testUser.ContactId, others[0].Id);
         }
 
         Test.startTest();
@@ -83,13 +96,33 @@ public class FimbyCommunicationControllerTest {
     }
 
     @IsTest
+    static void testGetThreadsLockedShowsReadOnlyBadge() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+        Id convId;
+        System.runAs(testUser) {
+            convId = insertDirectConversation(testUser.ContactId, others[0].Id);
+        }
+        update new Conversation__c(Id = convId, Locked__c = true);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            System.assertEquals(1, result.totalCount, 'Locked history stays listed');
+            System.assertEquals('Read-only', result.threads[0].statusBadge);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetThreadsHidesBlockedContact() {
         User testUser = getTestUser();
         List<Contact> others = getOtherContacts();
         Contact viewer = [SELECT Id FROM Contact WHERE Id = :testUser.ContactId];
 
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(others[0].Id);
+            insertDirectConversation(testUser.ContactId, others[0].Id);
         }
 
         insert new Blocked_Contact__c(
@@ -114,7 +147,7 @@ public class FimbyCommunicationControllerTest {
         List<Contact> others = getOtherContacts();
 
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(others[0].Id);
+            insertDirectConversation(testUser.ContactId, others[0].Id);
         }
 
         Test.startTest();
@@ -356,7 +389,7 @@ public class FimbyCommunicationControllerTest {
         List<Contact> others = getOtherContacts();
 
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(others[0].Id);
+            insertDirectConversation(testUser.ContactId, others[0].Id);
         }
 
         Test.startTest();
@@ -378,8 +411,8 @@ public class FimbyCommunicationControllerTest {
         List<Contact> others = getOtherContacts();
 
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(others[0].Id);
-            FimbyConversationController.getOrCreateConversation(others[1].Id);
+            insertDirectConversation(testUser.ContactId, others[0].Id);
+            insertDirectConversation(testUser.ContactId, others[1].Id);
         }
 
         Test.startTest();
@@ -585,8 +618,7 @@ public class FimbyCommunicationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> convResult = FimbyConversationController.getOrCreateConversation(others[0].Id);
-            convId = (Id) convResult.get('conversationId');
+            convId = insertDirectConversation(testUser.ContactId, others[0].Id);
 
             FimbyCommunicationController.markThreadUnread('direct', convId);
 
@@ -689,8 +721,7 @@ public class FimbyCommunicationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> convResult = FimbyConversationController.getOrCreateConversation(others[0].Id);
-            convId = (Id) convResult.get('conversationId');
+            convId = insertDirectConversation(testUser.ContactId, others[0].Id);
 
             FimbyCommunicationController.archiveThread('direct', convId);
 
@@ -925,8 +956,7 @@ public class FimbyCommunicationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> convResult = FimbyConversationController.getOrCreateConversation(others[0].Id);
-            convId = (Id) convResult.get('conversationId');
+            convId = insertDirectConversation(testUser.ContactId, others[0].Id);
 
             FimbyCommunicationController.markThreadUnread('direct', convId);
 
@@ -1463,8 +1493,7 @@ public class FimbyCommunicationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> convResult = FimbyConversationController.getOrCreateConversation(others[0].Id);
-            convId = (Id) convResult.get('conversationId');
+            convId = insertDirectConversation(testUser.ContactId, others[0].Id);
 
             FimbyCommunicationController.archiveThread('direct', convId);
             Conversation__c archived = [

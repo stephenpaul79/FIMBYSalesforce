@@ -967,12 +967,13 @@ public class FimbyLendingControllerTest {
     static void testApproveLendingRequest_WithAddress() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();
+        Contact borrower = FimbyTestDataFactory.createNeighbourhoodContact(testContact.AccountId, true);
 
         Library_Item__c item = createTestLibraryItem(testUser, testContact);
 
         Lending_Request__c request = new Lending_Request__c(
             Library_Item__c = item.Id,
-            Requested_By__c = testContact.Id,
+            Requested_By__c = borrower.Id,
             Item_Owner__c = testContact.Id,
             Requested_Date__c = Date.today().addDays(1),
             of_Days_Needed__c = 3,

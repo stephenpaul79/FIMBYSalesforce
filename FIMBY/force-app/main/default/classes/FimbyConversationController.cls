@@ -37,6 +37,20 @@ public with sharing class FimbyConversationController {
     }
 
     /**
+     * Runs the directional initiation gate for any SCI-gated context and returns the
+     * exact consent episode that authorized it (null when the context is exempt, e.g.
+     * an organization contact or a moderator). Callers that build their own
+     * conversation record — currently FimbySkillsController — must stamp the returned
+     * Id on Authorizing_Shared_Contact_Info__c so revoking the share locks the thread.
+     * Apex-only; not exposed to LWC.
+     */
+    public static Id validateSharingGatedInitiation(Id initiatorContactId, Id targetContactId) {
+        return new ConversationHelper().validateCanMessage(
+            String.valueOf(initiatorContactId), String.valueOf(targetContactId)
+        );
+    }
+
+    /**
      * Find or create a Direct conversation, then send the first (or next) message.
      * Rate limit applies only when a new conversation is created.
      */
@@ -105,7 +119,7 @@ public with sharing class FimbyConversationController {
 
     /**
      * Get the list of shared contacts available for starting new conversations.
-     * Returns contacts from Shared_Contact_Info__c (either direction).
+     * Returns neighbours who currently share inbound with the acting identity.
      */
     @AuraEnabled(cacheable=false)
     public static List<Map<String, Object>> getMessageableContacts(String searchTerm) {
@@ -119,6 +133,16 @@ public with sharing class FimbyConversationController {
     @AuraEnabled(cacheable=false)
     public static Boolean isConversationRevoked(Id conversationId) {
         return new ConversationHelper().isConversationRevokedInternal(conversationId);
+    }
+
+    /**
+     * Structured consent state for a thread: whether the authorizing episode closed,
+     * when it closed, and which episode it was. Lets the conversation view explain
+     * a read-only thread instead of showing a generic locked banner.
+     */
+    @AuraEnabled(cacheable=false)
+    public static ConversationAccessState getConversationAccessState(Id conversationId) {
+        return new ConversationHelper().getAccessStateInternal(conversationId);
     }
 
     /**
@@ -271,22 +295,36 @@ public with sharing class FimbyConversationController {
             return myContactId;
         }
 
-        private void validateCanMessage(String myContactId, String targetContactId) {
+        /**
+         * @description Directional initiation gate. A share is one person's disclosure
+         *              to one other person: only the RECIPIENT may open a conversation,
+         *              and only with the sharer. Disclosing your own details invites
+         *              contact, it does not grant you the right to make it.
+         *              Returns the exact episode that authorized this, so creation can
+         *              bind to the same row instead of re-querying and possibly picking
+         *              a different one. Returns null for contexts that are exempt from
+         *              SCI entirely (organization contacts, moderators).
+         * @param myContactId The initiator's represented identity.
+         * @param targetContactId The person they want to reach.
+         * @return The authorizing episode Id, or null when the context is exempt.
+         */
+        private Id validateCanMessage(String myContactId, String targetContactId) {
             if (myContactId == targetContactId) {
                 throw new AuraHandledException('You cannot start a conversation with yourself.');
             }
 
+            Id authorizingSciId = null;
             if (!eitherIsOrgContact(myContactId, targetContactId)
                 && !isModeratorForContact(myContactId, targetContactId)) {
-                Integer sharedCount = [
-                    SELECT COUNT() FROM Shared_Contact_Info__c
-                    WHERE ((Contact__c = :myContactId AND Shared_To__c = :targetContactId)
-                       OR (Contact__c = :targetContactId AND Shared_To__c = :myContactId))
-                      AND (Status__c = 'Active' OR Status__c = null)
-                ];
-                if (sharedCount == 0) {
-                    throw new AuraHandledException('Contact info sharing has been revoked. You cannot start new conversations.');
+                Shared_Contact_Info__c episode = FimbySharedContactAccess.findActiveEpisode(
+                    (Id) targetContactId, (Id) myContactId
+                );
+                if (episode == null) {
+                    throw new AuraHandledException(
+                        'You can start a conversation once this neighbour has shared their contact info with you.'
+                    );
                 }
+                authorizingSciId = episode.Id;
             }
 
             Integer blockCount = [
@@ -297,19 +335,55 @@ public with sharing class FimbyConversationController {
             if (blockCount > 0) {
                 throw new AuraHandledException('This contact is blocked.');
             }
+            return authorizingSciId;
         }
 
-        private Conversation__c findDirectConversation(String myContactId, String targetContactId) {
-            List<Conversation__c> existing = [
-                SELECT Id, Status__c,
-                       Participant_1__c, Participant_2__c,
-                       Participant_1_Archived__c, Participant_2_Archived__c
-                FROM Conversation__c
-                WHERE ((Participant_1__c = :myContactId AND Participant_2__c = :targetContactId)
-                    OR (Participant_1__c = :targetContactId AND Participant_2__c = :myContactId))
-                  AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
-                LIMIT 1
-            ];
+        /**
+         * @description Finds the one writable thread that belongs to this consent
+         *              episode. A thread is never reused merely because the same two
+         *              people are in it: it must be bound to this exact episode and
+         *              created by that episode's recipient. Re-sharing after a revoke
+         *              therefore opens a fresh thread instead of resurrecting a closed
+         *              conversation.
+         *              Exempt (org/moderator) threads keep the legacy unbound lookup.
+         * @param myContactId The initiator (always the episode recipient when bound).
+         * @param targetContactId The other participant.
+         * @param authorizingSciId The episode, or null for an exempt context.
+         * @return The reusable conversation, or null when one must be created.
+         */
+        private Conversation__c findWritableConversationForEpisode(
+            String myContactId, String targetContactId, Id authorizingSciId
+        ) {
+            List<Conversation__c> existing;
+            if (authorizingSciId != null) {
+                existing = [
+                    SELECT Id, Status__c, Locked__c, Authorizing_Shared_Contact_Info__c,
+                           Participant_1__c, Participant_2__c,
+                           Participant_1_Archived__c, Participant_2_Archived__c
+                    FROM Conversation__c
+                    WHERE Participant_1__c = :myContactId
+                      AND Participant_2__c = :targetContactId
+                      AND Authorizing_Shared_Contact_Info__c = :authorizingSciId
+                      AND Locked__c = false
+                      AND Status__c != :FimbyConstants.CONVERSATION_BLOCKED
+                      AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
+                    ORDER BY CreatedDate DESC
+                    LIMIT 1
+                ];
+            } else {
+                existing = [
+                    SELECT Id, Status__c, Locked__c, Authorizing_Shared_Contact_Info__c,
+                           Participant_1__c, Participant_2__c,
+                           Participant_1_Archived__c, Participant_2_Archived__c
+                    FROM Conversation__c
+                    WHERE ((Participant_1__c = :myContactId AND Participant_2__c = :targetContactId)
+                        OR (Participant_1__c = :targetContactId AND Participant_2__c = :myContactId))
+                      AND Locked__c = false
+                      AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
+                    ORDER BY CreatedDate DESC
+                    LIMIT 1
+                ];
+            }
 
             if (existing.isEmpty()) {
                 return null;
@@ -330,7 +404,32 @@ public with sharing class FimbyConversationController {
             return conv;
         }
 
-        private Conversation__c createDirectConversation(String myContactId, String targetContactId) {
+        /**
+         * @description Read-only lookup used by the composer preview so opening a
+         *              draft never mutates anything. Returns any thread between the
+         *              pair, bound or not, so the UI can offer to continue it.
+         * @param myContactId The viewer.
+         * @param targetContactId The other participant.
+         * @return An existing thread, or null.
+         */
+        private Conversation__c peekDirectConversation(String myContactId, String targetContactId) {
+            List<Conversation__c> existing = [
+                SELECT Id, Status__c, Locked__c, Authorizing_Shared_Contact_Info__c,
+                       Participant_1__c, Participant_2__c
+                FROM Conversation__c
+                WHERE ((Participant_1__c = :myContactId AND Participant_2__c = :targetContactId)
+                    OR (Participant_1__c = :targetContactId AND Participant_2__c = :myContactId))
+                  AND Locked__c = false
+                  AND (Context_Type__c = null OR Context_Type__c = :FimbyConstants.CTX_DIRECT)
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ];
+            return existing.isEmpty() ? null : existing[0];
+        }
+
+        private Conversation__c createDirectConversation(
+            String myContactId, String targetContactId, Id authorizingSciId
+        ) {
             Date today = Date.today();
             Datetime startOfDay = Datetime.newInstance(today.year(), today.month(), today.day(), 0, 0, 0);
             Integer todayCount = [
@@ -345,11 +444,23 @@ public with sharing class FimbyConversationController {
                 );
             }
 
+            // Re-check the episode under lock: consent can be revoked between the
+            // gate and the insert, and an orphaned thread would be unexplainable.
+            if (authorizingSciId != null) {
+                Shared_Contact_Info__c locked = FimbySharedContactAccess.lockEpisode(authorizingSciId);
+                if (locked == null || !FimbySharedContactAccess.isOpen(locked)) {
+                    throw new AuraHandledException(
+                        'Contact sharing changed, so this conversation can no longer be started.'
+                    );
+                }
+            }
+
             Conversation__c newConv = new Conversation__c(
                 Participant_1__c = myContactId,
                 Participant_2__c = targetContactId,
                 Context_Type__c = FimbyConstants.CTX_DIRECT,
                 Status__c = FimbyConstants.CONVERSATION_ACTIVE,
+                Authorizing_Shared_Contact_Info__c = authorizingSciId,
                 Participant_1_Unread_Count__c = 0,
                 Participant_2_Unread_Count__c = 0,
                 Participant_1_Archived__c = false,
@@ -401,28 +512,23 @@ public with sharing class FimbyConversationController {
         }
 
         /**
-         * @description Finds or creates a conversation with the target contact; validates shared contact info and blocks.
-         * @param targetContactId Contact Id to start conversation with
-         * @return Map with success, conversationId, and isNew flag
+         * @description Find-existing-only. Opening a composer must never create an
+         *              empty thread: a conversation now belongs to a consent episode,
+         *              and an empty unbound row would be indistinguishable from real
+         *              history when that episode later closes. Only sendDirectMessage
+         *              creates a thread, together with its first message.
+         * @param targetContactId Contact Id to look for a conversation with
+         * @return Map with success, conversationId (null when none), and isNew=false
          */
         public Map<String, Object> getOrCreateConversationInternal(String targetContactId) {
             String myContactId = resolveActingAsContactId();
             validateCanMessage(myContactId, targetContactId);
 
-            Conversation__c existing = findDirectConversation(myContactId, targetContactId);
-            if (existing != null) {
-                return new Map<String, Object>{
-                    'success' => true,
-                    'conversationId' => existing.Id,
-                    'isNew' => false
-                };
-            }
-
-            Conversation__c newConv = createDirectConversation(myContactId, targetContactId);
+            Conversation__c existing = peekDirectConversation(myContactId, targetContactId);
             return new Map<String, Object>{
                 'success' => true,
-                'conversationId' => newConv.Id,
-                'isNew' => true
+                'conversationId' => existing != null ? existing.Id : null,
+                'isNew' => false
             };
         }
 
@@ -437,7 +543,7 @@ public with sharing class FimbyConversationController {
 
             String myContactId = identity.actingAsContactId;
             validateCanMessage(myContactId, targetContactId);
-            Conversation__c existing = findDirectConversation(myContactId, targetContactId);
+            Conversation__c existing = peekDirectConversation(myContactId, targetContactId);
             return buildDraftResult(identity, myContactId, targetContactId, existing);
         }
 
@@ -446,12 +552,14 @@ public with sharing class FimbyConversationController {
          */
         public Map<String, Object> sendDirectMessageInternal(String targetContactId, String body) {
             String myContactId = resolveActingAsContactId();
-            validateCanMessage(myContactId, targetContactId);
+            Id authorizingSciId = validateCanMessage(myContactId, targetContactId);
 
-            Conversation__c conv = findDirectConversation(myContactId, targetContactId);
+            Conversation__c conv = findWritableConversationForEpisode(
+                myContactId, targetContactId, authorizingSciId
+            );
             Boolean isNew = false;
             if (conv == null) {
-                conv = createDirectConversation(myContactId, targetContactId);
+                conv = createDirectConversation(myContactId, targetContactId, authorizingSciId);
                 isNew = true;
             }
 
@@ -699,7 +807,7 @@ public with sharing class FimbyConversationController {
         }
 
         /**
-         * @description Returns contacts who have shared contact info (either direction) and are not blocked.
+         * @description Returns contacts who currently share with the viewer (inbound Active only).
          * @param searchTerm Optional filter by name
          * @return List of maps with contactId, contactName, contactFirstName
          */
@@ -711,43 +819,37 @@ public with sharing class FimbyConversationController {
             Set<Id> blockedIds = getBlockedContactIds(myContactId);
             Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
 
-            // Get all contacts who have shared info with me or I've shared with (Active only)
+            // Only people who have shared with ME can be started with. Someone I
+            // shared my own details with is not messageable until they reciprocate.
             Integer contactsLimit = FimbySettings.messageableContactsLimit();
-            List<Shared_Contact_Info__c> shared = [
-                SELECT Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
-                       Shared_To__c, Shared_To__r.Name, Shared_To__r.Full_Name__c, Shared_To__r.FirstName, Shared_To__r.Image_URL__c, Shared_To__r.Display_Avatar_URL__c
-                FROM Shared_Contact_Info__c
-                WHERE (Contact__c = :myContactId OR Shared_To__c = :myContactId)
-                  AND (Status__c = 'Active' OR Status__c = null)
-                ORDER BY CreatedDate DESC
-                LIMIT :contactsLimit
-            ];
+            Set<Id> sharerIds = FimbySharedContactAccess.getActiveIncomingSharerIds((Id) myContactId);
+            sharerIds.removeAll(blockedIds);
 
             Set<Id> seen = new Set<Id>();
             String term = String.isNotBlank(searchTerm) ? searchTerm.toLowerCase() : null;
 
-            for (Shared_Contact_Info__c sci : shared) {
-                Id otherId = (sci.Contact__c == myContactId) ? sci.Shared_To__c : sci.Contact__c;
-                String otherName = (sci.Contact__c == myContactId)
-                    ? sci.Shared_To__r?.Full_Name__c : sci.Contact__r?.Full_Name__c;
-                String otherFirstName = (sci.Contact__c == myContactId)
-                    ? sci.Shared_To__r?.FirstName : sci.Contact__r?.FirstName;
+            if (!sharerIds.isEmpty()) {
+                for (Contact sharer : [
+                    SELECT Id, Name, Full_Name__c, FirstName, Image_URL__c, Display_Avatar_URL__c
+                    FROM Contact
+                    WHERE Id IN :sharerIds
+                    ORDER BY Name
+                    LIMIT :contactsLimit
+                ]) {
+                    if (seen.contains(sharer.Id)) continue;
+                    seen.add(sharer.Id);
 
-                String otherImageUrl = (sci.Contact__c == myContactId)
-                    ? sci.Shared_To__r?.Display_Avatar_URL__c : sci.Contact__r?.Display_Avatar_URL__c;
+                    if (term != null && (sharer.Full_Name__c == null
+                            || !sharer.Full_Name__c.toLowerCase().contains(term))) continue;
 
-                if (otherId == null || seen.contains(otherId) || blockedIds.contains(otherId)) continue;
-                seen.add(otherId);
-
-                if (term != null && (otherName == null || !otherName.toLowerCase().contains(term))) continue;
-
-                result.add(new Map<String, Object>{
-                    'contactId' => otherId,
-                    'contactName' => otherName,
-                    'contactFirstName' => otherFirstName,
-                    'isOrgContact' => false,
-                    'avatarUrl' => otherImageUrl
-                });
+                    result.add(new Map<String, Object>{
+                        'contactId' => sharer.Id,
+                        'contactName' => sharer.Full_Name__c,
+                        'contactFirstName' => sharer.FirstName,
+                        'isOrgContact' => false,
+                        'avatarUrl' => sharer.Display_Avatar_URL__c
+                    });
+                }
             }
 
             // Org contacts in the same neighbourhood are messageable without SCI
@@ -814,45 +916,87 @@ public with sharing class FimbyConversationController {
         }
 
         /**
-         * @description Checks if shared contact info between conversation participants has been revoked.
+         * @description Whether this thread's consent episode has closed. A thread
+         *              belongs to ONE episode, so a reverse-direction share staying
+         *              Active must not keep a revoked thread writable.
          * @param conversationId Id of the Conversation__c
-         * @return true if no Active Shared_Contact_Info__c exists between participants
+         * @return true when the authorizing episode is closed
          */
         public Boolean isConversationRevokedInternal(Id conversationId) {
-            Conversation__c convo = [
-                SELECT Participant_1__c, Participant_2__c, Context_Type__c
+            return getAccessStateInternal(conversationId).isConsentRevoked;
+        }
+
+        /**
+         * @description Structured consent state for a thread, so the UI can render the
+         *              read-only banner from a real reason rather than the generic
+         *              Locked__c flag, which also covers bulk-buy closure.
+         * @param conversationId Id of the Conversation__c
+         * @return The access state
+         */
+        public ConversationAccessState getAccessStateInternal(Id conversationId) {
+            ConversationAccessState state = new ConversationAccessState();
+            state.isConsentRevoked = false;
+
+            List<Conversation__c> rows = [
+                SELECT Participant_1__c, Participant_2__c, Context_Type__c, Locked__c,
+                       Authorizing_Shared_Contact_Info__c,
+                       Authorizing_Shared_Contact_Info__r.Status__c,
+                       Authorizing_Shared_Contact_Info__r.Consent_Closed_Date__c
                 FROM Conversation__c
                 WHERE Id = :conversationId LIMIT 1
             ];
+            if (rows.isEmpty()) {
+                return state;
+            }
+            Conversation__c convo = rows[0];
+            state.isLocked = convo.Locked__c == true;
 
             if (convo.Context_Type__c == FimbyConstants.CTX_VOUCH_REQUEST) {
-                return false;
+                return state;
             }
 
             Id p1 = convo.Participant_1__c;
             Id p2 = convo.Participant_2__c;
 
             if (eitherIsOrgContact(p1, p2)) {
-                return false;
+                return state;
             }
-
             if (isModeratorForContact(p1, p2) || isModeratorForContact(p2, p1)) {
-                return false;
+                return state;
             }
 
-            Integer activeCount = [
-                SELECT COUNT() FROM Shared_Contact_Info__c
-                WHERE ((Contact__c = :p1 AND Shared_To__c = :p2)
-                    OR (Contact__c = :p2 AND Shared_To__c = :p1))
-                  AND (Status__c = 'Active' OR Status__c = null)
-            ];
-            return (activeCount == 0);
+            if (convo.Authorizing_Shared_Contact_Info__c != null) {
+                state.authorizingSciId = convo.Authorizing_Shared_Contact_Info__c;
+                String status = convo.Authorizing_Shared_Contact_Info__r.Status__c;
+                state.isConsentRevoked = (status == FimbyConstants.SHARED_CONTACT_REVOKED);
+                state.consentClosedDate = convo.Authorizing_Shared_Contact_Info__r.Consent_Closed_Date__c;
+                return state;
+            }
+
+            // Unbound SCI-gated thread (created before binding shipped, or orphaned by
+            // a right-to-be-forgotten deletion). Fail closed unless the recorded
+            // creator still has a live episode entitling them to this conversation.
+            Boolean creatorStillEntitled = FimbySharedContactAccess.hasActiveEpisode(p2, p1);
+            state.isConsentRevoked = !creatorStillEntitled;
+            return state;
         }
     }
 
     /* ---------------------------------------------------------------
      * Wrapper classes
      * --------------------------------------------------------------- */
+
+    /**
+     * @description Why a thread is read-only, so the UI can explain it rather than
+     *              showing one generic locked state for every cause.
+     */
+    public class ConversationAccessState {
+        @AuraEnabled public Boolean isConsentRevoked { get; set; }
+        @AuraEnabled public Boolean isLocked { get; set; }
+        @AuraEnabled public Datetime consentClosedDate { get; set; }
+        @AuraEnabled public Id authorizingSciId { get; set; }
+    }
+
     public class ConversationListResult {
         @AuraEnabled public List<ConversationWrapper> conversations { get; set; }
         @AuraEnabled public Integer totalCount { get; set; }

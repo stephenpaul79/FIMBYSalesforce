@@ -31,9 +31,19 @@ public class FimbyConversationControllerTest {
 
     private static Contact getOtherContact() {
         User u = getTestUser();
-        Contact myContact = [SELECT Id, AccountId FROM Contact WHERE Id = :u.ContactId];
-        Id neighbourhoodId = myContact.AccountId;
-        return [SELECT Id FROM Contact WHERE Id != :myContact.Id AND AccountId = :neighbourhoodId LIMIT 1];
+        return [
+            SELECT Id
+            FROM Contact
+            WHERE Id IN (
+                SELECT Contact__c FROM Shared_Contact_Info__c WHERE Shared_To__c = :u.ContactId
+            )
+            LIMIT 1
+        ];
+    }
+
+    private static Id startDirectThread(Id targetId) {
+        Map<String, Object> result = FimbyConversationController.sendDirectMessage(targetId, 'Hello neighbour');
+        return (Id) result.get('conversationId');
     }
 
     @IsTest
@@ -61,13 +71,13 @@ public class FimbyConversationControllerTest {
             Map<String, Object> result = FimbyConversationController.getOrCreateConversation(other.Id);
 
             System.assertEquals(true, result.get('success'), 'Should succeed');
-            System.assertEquals(true, result.get('isNew'), 'Should be a new conversation');
-            System.assertNotEquals(null, result.get('conversationId'), 'Should have conversation ID');
+            System.assertEquals(false, result.get('isNew'), 'Opening a composer must not create a thread');
+            System.assertEquals(null, result.get('conversationId'), 'No thread exists yet');
 
-            // Call again — should find existing
+            Id convId = startDirectThread(other.Id);
             Map<String, Object> result2 = FimbyConversationController.getOrCreateConversation(other.Id);
-            System.assertEquals(false, result2.get('isNew'), 'Should find existing conversation');
-            System.assertEquals(result.get('conversationId'), result2.get('conversationId'), 'Should be same conversation');
+            System.assertEquals(false, result2.get('isNew'), 'Find-existing must stay non-mutating');
+            System.assertEquals(convId, result2.get('conversationId'), 'Should find the sent thread');
         }
         Test.stopTest();
     }
@@ -100,7 +110,7 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(other.Id);
+            startDirectThread(other.Id);
 
             FimbyConversationController.ConversationListResult result =
                 FimbyConversationController.getConversations(20, 0, 'all', null);
@@ -132,8 +142,7 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> conv = FimbyConversationController.getOrCreateConversation(other.Id);
-            Id convId = (Id) conv.get('conversationId');
+            Id convId = startDirectThread(other.Id);
 
             FimbyConversationController.archiveConversation(convId);
 
@@ -171,8 +180,7 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            // Create conversation first
-            FimbyConversationController.getOrCreateConversation(other.Id);
+            startDirectThread(other.Id);
 
             // Block
             Map<String, Object> blockResult = FimbyConversationController.blockContact(
@@ -260,7 +268,7 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            FimbyConversationController.getOrCreateConversation(other.Id);
+            startDirectThread(other.Id);
 
             FimbyConversationController.ConversationListResult result =
                 FimbyConversationController.getConversations(20, 0, 'all', 'Resident');
@@ -277,8 +285,7 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> conv = FimbyConversationController.getOrCreateConversation(other.Id);
-            Id convId = (Id) conv.get('conversationId');
+            Id convId = startDirectThread(other.Id);
 
             Boolean revoked = FimbyConversationController.isConversationRevoked(convId);
             System.assertEquals(false, revoked, 'Should not be revoked with active SCI');
@@ -294,8 +301,7 @@ public class FimbyConversationControllerTest {
         // First create a conversation
         Id convId;
         System.runAs(testUser) {
-            Map<String, Object> conv = FimbyConversationController.getOrCreateConversation(other.Id);
-            convId = (Id) conv.get('conversationId');
+            convId = startDirectThread(other.Id);
         }
 
         // Revoke all SCI records between the two contacts
@@ -324,19 +330,23 @@ public class FimbyConversationControllerTest {
 
         Test.startTest();
         System.runAs(testUser) {
-            Map<String, Object> conv = FimbyConversationController.getOrCreateConversation(other.Id);
-            Id convId = (Id) conv.get('conversationId');
+            Id convId = startDirectThread(other.Id);
 
             FimbyConversationController.archiveConversation(convId);
 
             Conversation__c archived = [SELECT Participant_1_Archived__c FROM Conversation__c WHERE Id = :convId];
             System.assertEquals(true, archived.Participant_1_Archived__c, 'Should be archived');
 
-            Map<String, Object> reopened = FimbyConversationController.getOrCreateConversation(other.Id);
-            System.assertEquals(convId, reopened.get('conversationId'), 'Should return same conversation');
+            Map<String, Object> peeked = FimbyConversationController.getOrCreateConversation(other.Id);
+            System.assertEquals(convId, peeked.get('conversationId'), 'Find-existing still returns the thread');
+            Conversation__c afterPeek = [SELECT Participant_1_Archived__c FROM Conversation__c WHERE Id = :convId];
+            System.assertEquals(true, afterPeek.Participant_1_Archived__c,
+                'Opening the composer must not unarchive');
 
-            Conversation__c afterReopen = [SELECT Participant_1_Archived__c FROM Conversation__c WHERE Id = :convId];
-            System.assertEquals(false, afterReopen.Participant_1_Archived__c, 'Should be unarchived after getOrCreate');
+            FimbyConversationController.sendDirectMessage(other.Id, 'Still here');
+            Conversation__c afterSend = [SELECT Participant_1_Archived__c FROM Conversation__c WHERE Id = :convId];
+            System.assertEquals(false, afterSend.Participant_1_Archived__c,
+                'Sending into the episode should unarchive');
         }
         Test.stopTest();
     }
@@ -375,8 +385,8 @@ public class FimbyConversationControllerTest {
         insert revokedContact;
 
         Shared_Contact_Info__c sci = new Shared_Contact_Info__c(
-            Contact__c = testUser.ContactId,
-            Shared_To__c = revokedContact.Id,
+            Contact__c = revokedContact.Id,
+            Shared_To__c = testUser.ContactId,
             Email__c = 'revoked@test.com',
             Status__c = 'Revoked'
         );
@@ -403,8 +413,13 @@ public class FimbyConversationControllerTest {
         System.runAs(testUser) {
             Map<String, Object> result = FimbyConversationController.getOrCreateConversation(orgContact.Id);
             System.assertEquals(true, result.get('success'), 'Should succeed without SCI for org contact');
-            System.assertEquals(true, result.get('isNew'), 'Should be a new conversation');
-            System.assertNotEquals(null, result.get('conversationId'), 'Should have conversation ID');
+            System.assertEquals(false, result.get('isNew'), 'Composer open must not create a thread');
+            System.assertEquals(null, result.get('conversationId'), 'No org thread exists yet');
+
+            Map<String, Object> sent = FimbyConversationController.sendDirectMessage(orgContact.Id, 'Hello org');
+            System.assertEquals(true, sent.get('success'), 'Org send should create the thread');
+            System.assertEquals(true, sent.get('isNew'), 'First org message creates the conversation');
+            System.assertNotEquals(null, sent.get('conversationId'), 'Should have conversation ID');
         }
         Test.stopTest();
     }
@@ -428,8 +443,10 @@ public class FimbyConversationControllerTest {
         System.runAs(testUser) {
             Map<String, Object> result = FimbyConversationController.getOrCreateConversation(other.Id);
             System.assertEquals(true, result.get('success'), 'Should succeed');
-            System.assertEquals(true, result.get('isNew'), 'Should create a new direct conversation');
-            Id directConvId = (Id) result.get('conversationId');
+            System.assertEquals(false, result.get('isNew'), 'Composer open must not create a thread');
+            System.assertEquals(null, result.get('conversationId'), 'Must ignore the vouch thread');
+
+            Id directConvId = startDirectThread(other.Id);
             System.assertNotEquals(vouchConv.Id, directConvId, 'Should not return the vouch thread');
 
             Conversation__c directConv = [
@@ -563,8 +580,7 @@ public class FimbyConversationControllerTest {
         Contact other = getOtherContact();
         Id existingConvId;
         System.runAs(testUser) {
-            Map<String, Object> created = FimbyConversationController.getOrCreateConversation(other.Id);
-            existingConvId = (Id) created.get('conversationId');
+            existingConvId = startDirectThread(other.Id);
         }
 
         Test.startTest();
@@ -611,8 +627,7 @@ public class FimbyConversationControllerTest {
         Contact other = getOtherContact();
         Id existingConvId;
         System.runAs(testUser) {
-            Map<String, Object> created = FimbyConversationController.getOrCreateConversation(other.Id);
-            existingConvId = (Id) created.get('conversationId');
+            existingConvId = startDirectThread(other.Id);
         }
 
         Test.startTest();
@@ -668,8 +683,8 @@ public class FimbyConversationControllerTest {
         insert rateLimitTarget;
 
         insert new Shared_Contact_Info__c(
-            Contact__c = testUser.ContactId,
-            Shared_To__c = rateLimitTarget.Id,
+            Contact__c = rateLimitTarget.Id,
+            Shared_To__c = testUser.ContactId,
             Email__c = 'ratelimit-target@test.com'
         );
 
@@ -712,5 +727,127 @@ public class FimbyConversationControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, threw, 'Should throw when daily limit reached');
+    }
+
+    @IsTest
+    static void testSharerCannotInitiateOutboundOnly() {
+        User testUser = getTestUser();
+        Contact outboundOnly = [
+            SELECT Id FROM Contact
+            WHERE Id IN (
+                SELECT Shared_To__c FROM Shared_Contact_Info__c WHERE Contact__c = :testUser.ContactId
+            )
+            LIMIT 1
+        ];
+
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyConversationController.sendDirectMessage(outboundOnly.Id, 'May I start?');
+                System.assert(false, 'Sharer must not initiate on an outbound-only share');
+            } catch (AuraHandledException e) {
+                System.assertNotEquals(null, e.getMessage(), 'Should explain they need a share back');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testRevokeLocksBoundThreadAndReshareCreatesNew() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Id firstConvId;
+        Id firstSciId;
+        System.runAs(testUser) {
+            firstConvId = startDirectThread(other.Id);
+            firstSciId = [
+                SELECT Authorizing_Shared_Contact_Info__c
+                FROM Conversation__c WHERE Id = :firstConvId
+            ].Authorizing_Shared_Contact_Info__c;
+        }
+
+        Shared_Contact_Info__c inbound = [
+            SELECT Id, Contact__c FROM Shared_Contact_Info__c WHERE Id = :firstSciId
+        ];
+        inbound.Status__c = 'Revoked';
+        update inbound;
+
+        Conversation__c locked = [
+            SELECT Locked__c FROM Conversation__c WHERE Id = :firstConvId
+        ];
+        System.assertEquals(true, locked.Locked__c, 'Revoke must lock the bound thread');
+        System.assertEquals(
+            1,
+            [
+                SELECT COUNT() FROM Message__c
+                WHERE Conversation__c = :firstConvId
+                AND Is_System_Message__c = true
+                AND System_Message_Type__c = 'Contact_Sharing_Revoked'
+            ],
+            'Revoke must insert exactly one explanation bubble'
+        );
+
+        FimbyConversationController.ConversationAccessState access;
+        System.runAs(testUser) {
+            access = FimbyConversationController.getConversationAccessState(firstConvId);
+        }
+        System.assertEquals(true, access.isConsentRevoked, 'Access state should mark consent closed');
+        System.assertEquals(true, access.isLocked, 'Access state should mark the thread read-only');
+
+        insert new Shared_Contact_Info__c(
+            Contact__c = other.Id,
+            Shared_To__c = testUser.ContactId,
+            Email__c = 'reshare@test.com',
+            Status__c = 'Active'
+        );
+
+        Id secondConvId;
+        System.runAs(testUser) {
+            Map<String, Object> sent = FimbyConversationController.sendDirectMessage(other.Id, 'Starting fresh');
+            secondConvId = (Id) sent.get('conversationId');
+            System.assertEquals(true, sent.get('isNew'), 'Re-share must open a new thread');
+        }
+        System.assertNotEquals(firstConvId, secondConvId, 'Old thread must stay closed');
+        Conversation__c stillLocked = [
+            SELECT Locked__c FROM Conversation__c WHERE Id = :firstConvId
+        ];
+        System.assertEquals(true, stillLocked.Locked__c, 'Historical thread stays read-only after re-share');
+        Shared_Contact_Info__c oldRow = [
+            SELECT Status__c FROM Shared_Contact_Info__c WHERE Id = :firstSciId
+        ];
+        System.assertEquals('Revoked', oldRow.Status__c, 'Old episode must stay revoked');
+    }
+
+    @IsTest
+    static void testReciprocalShareDoesNotKeepRevokedThreadOpen() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Id rosaToSarahConvId;
+        System.runAs(testUser) {
+            rosaToSarahConvId = startDirectThread(other.Id);
+        }
+
+        insert new Shared_Contact_Info__c(
+            Contact__c = testUser.ContactId,
+            Shared_To__c = other.Id,
+            Email__c = 'sarah-to-rosa@test.com',
+            Status__c = 'Active'
+        );
+
+        Shared_Contact_Info__c inbound = [
+            SELECT Id FROM Shared_Contact_Info__c
+            WHERE Contact__c = :other.Id AND Shared_To__c = :testUser.ContactId
+            AND Status__c = 'Active'
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        inbound.Status__c = 'Revoked';
+        update inbound;
+
+        Conversation__c locked = [
+            SELECT Locked__c FROM Conversation__c WHERE Id = :rosaToSarahConvId
+        ];
+        System.assertEquals(true, locked.Locked__c,
+            'Reverse Active share must not keep the revoked episode thread writable');
     }
 }

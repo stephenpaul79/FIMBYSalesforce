@@ -222,7 +222,7 @@ public with sharing class FimbyCommunicationController {
                 + ' Last_Message_Preview__c, Last_Message_Date__c, Last_Message_Sender__c,'
                 + ' Participant_1_Unread_Count__c, Participant_2_Unread_Count__c,'
                 + ' Participant_1_Archived__c, Participant_2_Archived__c,'
-                + ' Context_Type__c, Related_Record_Id__c, Status__c'
+                + ' Context_Type__c, Related_Record_Id__c, Status__c, Locked__c'
                 + ' FROM Conversation__c'
                 + ' WHERE (Participant_1__c = :myContactId OR Participant_2__c = :myContactId)'
                 + ' AND (Is_Group__c = false OR Is_Group__c = null)'
@@ -351,7 +351,9 @@ public with sharing class FimbyCommunicationController {
                 t.isUnread = unread > 0;
                 t.unreadCount = unread;
                 t.messageCount = dmMsgCounts.containsKey(conv.Id) ? dmMsgCounts.get(conv.Id) : 0;
-                t.statusBadge = null;
+                // Two rows with the same neighbour — a closed episode and a new one —
+                // must be distinguishable before either is opened.
+                t.statusBadge = conv.Locked__c == true ? 'Read-only' : null;
                 t.actionUrl = FimbySettings.getUrl('Conversation', String.valueOf(conv.Id));
                 threads.add(t);
             }

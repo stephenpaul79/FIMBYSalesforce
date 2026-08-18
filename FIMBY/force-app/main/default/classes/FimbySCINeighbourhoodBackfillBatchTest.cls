@@ -8,12 +8,14 @@ private class FimbySCINeighbourhoodBackfillBatchTest {
         Contact c1 = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhoods[0].Id, true);
         Contact c2 = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhoods[1].Id, true);
 
+        FimbySharedContactService.skipTrigger = true;
         insert new Shared_Contact_Info__c(
             Contact__c = c1.Id,
             Shared_To__c = c2.Id,
             Status__c = 'Active'
-            // Deliberately omitting neighbourhood fields to test backfill
+            // Deliberately omitting neighbourhood fields to test historical backfill
         );
+        FimbySharedContactService.skipTrigger = false;
     }
 
     @isTest

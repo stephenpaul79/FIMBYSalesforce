@@ -210,8 +210,8 @@ private class FimbySkillsControllerTest {
         insert skill;
 
         Shared_Contact_Info__c sci = new Shared_Contact_Info__c(
-            Contact__c = requester.Id,
-            Shared_To__c = owner.Id,
+            Contact__c = owner.Id,
+            Shared_To__c = requester.Id,
             Status__c = 'Active'
         );
         insert sci;
@@ -225,12 +225,14 @@ private class FimbySkillsControllerTest {
 
         System.assertNotEquals(null, result.get('conversationId'));
         List<Conversation__c> convos = [
-            SELECT Id, Context_Type__c, Related_Record_Id__c
+            SELECT Id, Context_Type__c, Related_Record_Id__c, Authorizing_Shared_Contact_Info__c
             FROM Conversation__c
             WHERE Context_Type__c = :FimbyConstants.CTX_SKILL
               AND Related_Record_Id__c = :skill.Id
         ];
         System.assertEquals(1, convos.size());
+        System.assertEquals(sci.Id, convos[0].Authorizing_Shared_Contact_Info__c,
+            'Skill thread must bind to the inbound consent episode');
     }
 
     @isTest

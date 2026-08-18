@@ -239,6 +239,7 @@ public with sharing class FimbyMessageController {
             // Verify participation and check for blocks
             Conversation__c conv = [
                 SELECT Id, Participant_1__c, Participant_2__c, Status__c, Locked__c,
+                       Context_Type__c, Authorizing_Shared_Contact_Info__c,
                        Participant_1_Unread_Count__c, Participant_2_Unread_Count__c
                 FROM Conversation__c
                 WHERE Id = :conversationId LIMIT 1
@@ -278,15 +279,26 @@ public with sharing class FimbyMessageController {
                 throw new AuraHandledException('You are no longer connected to this contact.');
             }
 
-            if (!eitherIsOrg && !senderIsModerator) {
-                Integer activeSciCount = [
-                    SELECT COUNT() FROM Shared_Contact_Info__c
-                    WHERE ((Contact__c = :p1 AND Shared_To__c = :p2)
-                        OR (Contact__c = :p2 AND Shared_To__c = :p1))
-                      AND (Status__c = 'Active' OR Status__c = null)
-                ];
-                if (activeSciCount == 0) {
-                    throw new AuraHandledException('You are no longer connected to this contact.');
+            // Replying is symmetric — both parties may write while the episode is open —
+            // but the episode is the thread's OWN one. A reverse-direction share staying
+            // Active must not keep a revoked thread writable. Contextual threads
+            // (response, lending, bulk buy, event, Vouch, group) carry their own
+            // authorization and are never gated on contact sharing.
+            if (!eitherIsOrg && !senderIsModerator && isSharingGatedContext(conv.Context_Type__c)) {
+                Boolean stillConnected;
+                if (conv.Authorizing_Shared_Contact_Info__c != null) {
+                    stillConnected = FimbySharedContactAccess.isEpisodeActive(
+                        conv.Authorizing_Shared_Contact_Info__c
+                    );
+                } else {
+                    // Unbound legacy thread: Participant_1__c is the recorded creator, so
+                    // the episode that could have authorized it runs P2 -> P1. Fail closed.
+                    stillConnected = FimbySharedContactAccess.hasActiveEpisode(p2, p1);
+                }
+                if (!stillConnected) {
+                    throw new AuraHandledException(
+                        'Contact sharing changed, so this conversation is now read-only.'
+                    );
                 }
             }
 
@@ -358,6 +370,20 @@ public with sharing class FimbyMessageController {
                 FROM Moderator_Assignment__c
                 WHERE Contact__c = :contactId AND Status__c = 'Active'
             ] > 0;
+        }
+
+        /**
+         * @description Only Direct threads (including legacy null) and Skill-help
+         *              threads exist because contact info was shared. Every other
+         *              context is authorized by its own record and must never be
+         *              blocked by a contact-sharing change.
+         * @param contextType The conversation's Context_Type__c.
+         * @return true when the thread is gated on a consent episode.
+         */
+        private Boolean isSharingGatedContext(String contextType) {
+            return contextType == null
+                || contextType == FimbyConstants.CTX_DIRECT
+                || contextType == FimbyConstants.CTX_SKILL;
         }
 
     }

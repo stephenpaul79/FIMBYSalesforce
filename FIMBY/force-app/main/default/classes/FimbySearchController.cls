@@ -39,7 +39,10 @@ public with sharing class FimbySearchController {
         String neighbourhoodAccountId = null;
         String currentContactId = null;
         if (currentUser.ContactId != null) {
-            currentContactId = currentUser.ContactId;
+            // Scope every privacy gate to the represented identity, not the login
+            // Contact, so a support person or org rep cannot carry one identity's
+            // shares and blocks into another identity's neighbourhood.
+            currentContactId = FimbyIdentityRepository.getActingAsContactId();
             neighbourhoodAccountId = FimbyIdentityRepository.getNeighbourhoodId();
         }
 
@@ -496,31 +499,15 @@ public with sharing class FimbySearchController {
      */
     private without sharing class SharedContactLookup {
         /**
-         * @description Returns Contact Ids with whom the given contact has shared contact info (either direction).
+         * @description Returns Contact Ids who have a currently-active share TO the given
+         *              contact. Inbound only: disclosing your own details grants the
+         *              recipient visibility of you, never you extra visibility of them.
          * @param contactId Contact Id to look up
          * @return Set of Contact Ids
          */
         public Set<Id> getSharedContactIds(String contactId) {
-            Set<Id> ids = new Set<Id>();
-            if (String.isBlank(contactId)) return ids;
-
-            for (Shared_Contact_Info__c sci : [
-                SELECT Contact__c
-                FROM Shared_Contact_Info__c
-                WHERE Shared_To__c = :contactId
-                AND Contact__c != null
-            ]) {
-                ids.add(sci.Contact__c);
-            }
-            for (Shared_Contact_Info__c sci : [
-                SELECT Shared_To__c
-                FROM Shared_Contact_Info__c
-                WHERE Contact__c = :contactId
-                AND Shared_To__c != null
-            ]) {
-                ids.add(sci.Shared_To__c);
-            }
-            return ids;
+            if (String.isBlank(contactId)) return new Set<Id>();
+            return FimbySharedContactAccess.getActiveIncomingSharerIds((Id) contactId);
         }
 
         /**
@@ -536,11 +523,17 @@ public with sharing class FimbySearchController {
             Set<Id> ids = new Set<Id>();
             if (String.isBlank(contactId) || String.isBlank(pattern)) return ids;
 
+            // Only the current episode may be searched. A revoked snapshot must not
+            // remain findable, and an older Active row must not resurrect a closed one.
+            Set<Id> activeSharerIds = FimbySharedContactAccess.getActiveIncomingSharerIds((Id) contactId);
+            if (activeSharerIds.isEmpty()) return ids;
+
             for (Shared_Contact_Info__c sci : [
                 SELECT Contact__c
                 FROM Shared_Contact_Info__c
                 WHERE Shared_To__c = :contactId
-                AND Contact__c != null
+                AND Contact__c IN :activeSharerIds
+                AND (Status__c = :FimbyConstants.SHARED_CONTACT_ACTIVE OR Status__c = null)
                 AND (Email__c LIKE :pattern
                      OR Phone__c LIKE :pattern
                      OR First_Name__c LIKE :pattern

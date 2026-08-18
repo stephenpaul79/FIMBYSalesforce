@@ -887,15 +887,12 @@ public with sharing class FimbyResponseThreadController {
          * @return True if an active Shared_Contact_Info__c exists between the contacts
          */
         public Boolean hasSharedContactInfo(String myContactId, String otherParticipantId) {
-            if (String.isBlank(otherParticipantId)) return false;
-            List<Shared_Contact_Info__c> existing = [
-                SELECT Id FROM Shared_Contact_Info__c
-                WHERE Contact__c = :myContactId
-                  AND Shared_To__c = :otherParticipantId
-                  AND (Status__c = 'Active' OR Status__c = null)
-                LIMIT 1
-            ];
-            return !existing.isEmpty();
+            if (String.isBlank(otherParticipantId) || String.isBlank(myContactId)) return false;
+            // Current-episode logic, so an older Active duplicate cannot hide the
+            // re-share prompt after the sharer has revoked.
+            return FimbySharedContactAccess.hasActiveEpisode(
+                (Id) myContactId, (Id) otherParticipantId
+            );
         }
     }
 }

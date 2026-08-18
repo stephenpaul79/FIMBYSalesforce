@@ -31,18 +31,21 @@ public with sharing class FimbyNeighbourhoodService {
         if (adjacentIds.isEmpty() || myContactId == null) {
             return cachedAdjacentSharedContactIds;
         }
+        // Inbound only: a neighbour becomes visible across a cell boundary because
+        // THEY shared with me. Sharing my own details outward must not grant me
+        // extra visibility of the recipient.
+        Set<Id> adjacentSharers = new Set<Id>();
         for (Shared_Contact_Info__c sci : [
-            SELECT Contact__c, Shared_To__c
+            SELECT Contact__c
             FROM Shared_Contact_Info__c
-            WHERE (
-                (Contact__c = :myContactId AND Shared_To_Neighbourhood__c IN :adjacentIds)
-                OR (Shared_To__c = :myContactId AND Contact_Neighbourhood__c IN :adjacentIds)
-            )
-            AND (Status__c = 'Active' OR Status__c = null)
+            WHERE Shared_To__c = :myContactId
+            AND Contact__c != null
+            AND Contact_Neighbourhood__c IN :adjacentIds
         ]) {
-            cachedAdjacentSharedContactIds.add(
-                sci.Contact__c == myContactId ? sci.Shared_To__c : sci.Contact__c);
+            adjacentSharers.add(sci.Contact__c);
         }
+        cachedAdjacentSharedContactIds =
+            FimbySharedContactAccess.filterToActiveIncomingSharers(myContactId, adjacentSharers);
         return cachedAdjacentSharedContactIds;
     }
 

@@ -104,17 +104,11 @@ global with sharing class FimbyVCardService {
          * @return The Shared_Contact_Info__c record or null if none found
          */
         public Shared_Contact_Info__c findSharedRecord(String sharerContactId, String recipientContactId) {
-            List<Shared_Contact_Info__c> records = [
-                SELECT Id, First_Name__c, Last_Name__c,
-                       Email__c, Phone__c,
-                       Street__c, City__c, Province_State__c, Postal_Code__c, Country__c
-                FROM Shared_Contact_Info__c
-                WHERE Contact__c = :sharerContactId
-                  AND Shared_To__c = :recipientContactId
-                  AND Status__c != 'Revoked'
-                LIMIT 1
-            ];
-            return records.isEmpty() ? null : records[0];
+            // Newest-row-wins: an unordered LIMIT 1 could return a stale duplicate and
+            // hand out details the sharer has since withdrawn.
+            return FimbySharedContactAccess.getActiveInboundSnapshot(
+                (Id) sharerContactId, (Id) recipientContactId
+            );
         }
     }
 }

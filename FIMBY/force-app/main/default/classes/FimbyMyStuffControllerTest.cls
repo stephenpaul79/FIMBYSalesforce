@@ -454,7 +454,7 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
-    static void testUndoRevokeSharedContactInfo() {
+    static void testShareAgainAfterRevokeInsertsNewEpisode() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
         User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
@@ -475,22 +475,40 @@ public class FimbyMyStuffControllerTest {
         );
         insert sci;
 
+        String shareData = '{"recipientContactId":"' + otherContact.Id + '",' +
+            '"shareEmail":true,"sharePhone":false,"shareAddress":false,' +
+            '"email":"fresh@test.com","phone":"","street":"","city":"","state":"","postalCode":"","country":""}';
+
         Test.startTest();
         System.runAs(testUser) {
-            // Undo the revoke
-            FimbyMyStuffController.undoRevokeSharedContactInfo(sci.Id);
+            Map<String, Object> result = FimbyMyStuffController.shareContactInfoDirect(shareData);
+            System.assertEquals(true, result.get('success'), 'Share again should succeed');
+            System.assertEquals(true, result.get('createdNewEpisode'), 'Share again must insert a new episode');
 
-            // Verify it's active again
             List<FimbyMyStuffController.ContactCardWrapper> contacts = FimbyMyStuffController.getMyContacts(null);
             FimbyMyStuffController.ContactCardWrapper card = null;
             for (FimbyMyStuffController.ContactCardWrapper c : contacts) {
                 if (c.contactId == otherContact.Id) card = c;
             }
             System.assertNotEquals(null, card, 'Should find the contact');
-            System.assertEquals(false, card.isRevoked, 'Should no longer be revoked');
+            System.assertEquals(false, card.isRevoked, 'Newest episode should be Active');
             System.assertEquals('Active', card.mySharedStatus, 'Status should be Active');
         }
         Test.stopTest();
+
+        Shared_Contact_Info__c oldRow = [
+            SELECT Status__c, Email__c FROM Shared_Contact_Info__c WHERE Id = :sci.Id
+        ];
+        System.assertEquals('Revoked', oldRow.Status__c, 'Closed episode must stay revoked');
+        System.assertEquals('undo@test.com', oldRow.Email__c, 'Closed snapshot must not be overwritten');
+        System.assertEquals(
+            2,
+            [
+                SELECT COUNT() FROM Shared_Contact_Info__c
+                WHERE Contact__c = :testContact.Id AND Shared_To__c = :otherContact.Id
+            ],
+            'Re-share must insert a second row'
+        );
     }
 
     @IsTest
@@ -548,8 +566,17 @@ public class FimbyMyStuffControllerTest {
         Test.stopTest();
 
         sci = [SELECT Status__c, Email__c FROM Shared_Contact_Info__c WHERE Id = :sci.Id];
-        System.assertEquals('Active', sci.Status__c, 'Re-share should reactivate revoked record');
-        System.assertEquals('new@test.com', sci.Email__c, 'Email should update on re-share');
+        System.assertEquals('Revoked', sci.Status__c, 'Closed episode must stay revoked');
+        System.assertEquals('old@test.com', sci.Email__c, 'Closed snapshot must not be overwritten');
+        Shared_Contact_Info__c newest = [
+            SELECT Status__c, Email__c FROM Shared_Contact_Info__c
+            WHERE Contact__c = :testContact.Id AND Shared_To__c = :otherContact.Id
+            ORDER BY CreatedDate DESC, Id DESC
+            LIMIT 1
+        ];
+        System.assertEquals('Active', newest.Status__c, 'Re-share should insert a new Active episode');
+        System.assertEquals('new@test.com', newest.Email__c, 'New episode should hold the new email');
+        System.assertNotEquals(sci.Id, newest.Id, 'Re-share must not reuse the revoked row');
     }
 
     @IsTest

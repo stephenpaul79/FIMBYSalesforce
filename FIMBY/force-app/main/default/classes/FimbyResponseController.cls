@@ -405,7 +405,7 @@ public with sharing class FimbyResponseController {
 
             String shareContactInfoUrl = null;
             if (shareContactInfo) {
-                shareContactInfoUrl = '/flow/Share_Contact_Info?recordId=' + responseId;
+                shareContactInfoUrl = '/share-contact?recordId=' + responseId;
             }
 
             return new Map<String, Object>{
@@ -1212,67 +1212,37 @@ public with sharing class FimbyResponseController {
                 LIMIT 1
             ];
 
-            List<Shared_Contact_Info__c> existingRecords = [
-                SELECT Id, Email__c, Phone__c, Street__c, City__c, Province_State__c,
-                       Postal_Code__c, Country__c, Additional_Info__c
-                FROM Shared_Contact_Info__c
-                WHERE Contact__c = :sharingContactId
-                  AND Shared_To__c = :recipientContactId
-                LIMIT 1
-            ];
+            // Response sharing is incremental — a neighbour may share their phone now
+            // and their address later — so it MERGES rather than clearing unticked
+            // fields. The service decides whether that edits the open episode or opens
+            // a new one after a revoke; it never overwrites revoked history.
+            FimbySharedContactService.ShareRequest request = new FimbySharedContactService.ShareRequest();
+            request.sharerContactId = (Id) sharingContactId;
+            request.recipientContactId = (Id) recipientContactId;
+            request.origin = 'Response';
+            request.writeMode = FimbySharedContactService.MODE_MERGE;
+            request.shareEmail = shareEmail && String.isNotBlank(email);
+            request.sharePhone = sharePhone && String.isNotBlank(phone);
+            request.shareAddress = shareAddress;
+            request.email = email;
+            request.phone = phone;
+            request.street = street;
+            request.city = city;
+            request.provinceState = state;
+            request.postalCode = postalCode;
+            request.country = country;
 
-            Shared_Contact_Info__c sharedInfo;
-            Boolean isNew = existingRecords.isEmpty();
-            Shared_Contact_Info__c beforeShare = isNew
-                ? null
-                : existingRecords[0].clone(false, false, false, false);
-
-            Boolean shouldSendEmail = isNew || FimbySharedContactInfoHelper.hasExpandedContactShare(
-                beforeShare,
-                FimbySharedContactInfoHelper.buildAfterStateMerge(
-                    beforeShare,
-                    shareEmail,
-                    sharePhone,
-                    shareAddress,
-                    email,
-                    phone,
-                    street,
-                    city,
-                    state,
-                    postalCode,
-                    country,
-                    null
-                )
-            );
-
-            if (isNew) {
-                sharedInfo = new Shared_Contact_Info__c(
-                    Contact__c = sharingContactId,
-                    Shared_To__c = recipientContactId,
-                    Response__c = responseId,
-                    Origin__c = 'Response'
-                );
-            } else {
-                sharedInfo = existingRecords[0];
-                sharedInfo.Response__c = responseId;
-                sharedInfo.Origin__c = 'Response';
+            FimbySharedContactService.ShareResult saved;
+            try {
+                saved = FimbySharedContactService.saveActiveEpisode(request);
+            } catch (FimbySharedContactService.SharedContactException e) {
+                throw new AuraHandledException(e.getMessage());
             }
 
-            if (shareEmail && String.isNotBlank(email)) {
-                sharedInfo.Email__c = email;
-            }
-            if (sharePhone && String.isNotBlank(phone)) {
-                sharedInfo.Phone__c = phone;
-            }
-            if (shareAddress) {
-                sharedInfo.Street__c = street;
-                sharedInfo.City__c = city;
-                sharedInfo.Province_State__c = state;
-                sharedInfo.Postal_Code__c = postalCode;
-                sharedInfo.Country__c = country;
-            }
+            Boolean isNew = saved.createdNewEpisode;
+            Boolean shouldSendEmail = saved.createdNewEpisode || saved.expandedExistingEpisode;
 
-            new SharedContactInfoDmlHelper().upsertSharedContactInfo(sharedInfo, isNew);
+            new SharedContactInfoDmlHelper().stampResponse(saved.sharedContactInfoId, responseId);
 
             Map<String, Object> systemMessage = FimbyResponseThreadController.recordContactSharedSystemMessage(
                 responseId,
@@ -1315,7 +1285,8 @@ public with sharing class FimbyResponseController {
             return new Map<String, Object>{
                 'success' => true,
                 'message' => 'Contact information shared successfully',
-                'sharedContactInfoId' => sharedInfo.Id,
+                'sharedContactInfoId' => saved.sharedContactInfoId,
+                'createdNewEpisode' => isNew,
                 'systemMessage' => systemMessage
             };
         }
@@ -1323,16 +1294,20 @@ public with sharing class FimbyResponseController {
 
     private without sharing class SharedContactInfoDmlHelper {
         /**
-         * @description Inserts or updates a Shared_Contact_Info__c record based on isNew flag.
-         * @param record The Shared_Contact_Info__c record to upsert
-         * @param isNew True to insert, false to update
+         * @description Records which response a share was made from. Kept separate from
+         *              the disclosure itself so FimbySharedContactService stays the only
+         *              writer of consent state.
+         * @param sharedContactInfoId The episode to stamp
+         * @param responseId The originating response
          */
-        public void upsertSharedContactInfo(Shared_Contact_Info__c record, Boolean isNew) {
-            if (isNew) {
-                insert record;
-            } else {
-                update record;
+        public void stampResponse(Id sharedContactInfoId, Id responseId) {
+            if (sharedContactInfoId == null || responseId == null) {
+                return;
             }
+            update new Shared_Contact_Info__c(
+                Id = sharedContactInfoId,
+                Response__c = responseId
+            );
         }
     }
 }

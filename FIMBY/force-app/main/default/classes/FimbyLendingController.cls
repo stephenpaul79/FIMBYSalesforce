@@ -1470,6 +1470,9 @@ public with sharing class FimbyLendingController {
         }
 
         private void shareContactInfoForLending(String sendingContactId, String recipientContactId, String shareDataJson, Id lendingRequestId) {
+            if (String.isBlank(shareDataJson) || sendingContactId == recipientContactId) {
+                return;
+            }
             Map<String, Object> shareData = (Map<String, Object>) JSON.deserializeUntyped(shareDataJson);
 
             Boolean shareEmail = shareData.get('shareEmail') == true;
@@ -1492,75 +1495,42 @@ public with sharing class FimbyLendingController {
                 LIMIT 1
             ];
 
-            // Build shared contact info name
-            String sharedContactInfoName = sender.FirstName + ' ' + sender.LastName + ' - ' + String.valueOf(Date.today());
+            // Lending forms present every field each time, so unticking a box must
+            // actually withdraw it — REPLACE mode. The service opens a new episode
+            // rather than overwriting one the sender already revoked.
+            FimbySharedContactService.ShareRequest request = new FimbySharedContactService.ShareRequest();
+            request.sharerContactId = (Id) sendingContactId;
+            request.recipientContactId = (Id) recipientContactId;
+            request.origin = 'Lending';
+            request.writeMode = FimbySharedContactService.MODE_REPLACE;
+            request.shareEmail = shareEmail;
+            request.sharePhone = sharePhone;
+            request.shareAddress = shareAddress;
+            request.email = (String) shareData.get('email');
+            request.phone = (String) shareData.get('phone');
+            request.street = (String) shareData.get('street');
+            request.city = (String) shareData.get('city');
+            request.provinceState = (String) shareData.get('state');
+            request.postalCode = (String) shareData.get('postalCode');
+            request.country = (String) shareData.get('country');
+            request.setAdditionalInfo = true;
+            request.additionalInfo = shareAddress ? (String) shareData.get('additionalInfo') : null;
 
-            // Look for existing Shared_Contact_Info__c
-            List<Shared_Contact_Info__c> existingSharedInfo = [
-                SELECT Id, Email__c, Phone__c, Street__c, City__c, Province_State__c,
-                       Postal_Code__c, Country__c, Additional_Info__c
-                FROM Shared_Contact_Info__c
-                WHERE Contact__c = :sendingContactId
-                AND Shared_To__c = :recipientContactId
-                LIMIT 1
-            ];
+            FimbySharedContactService.ShareResult saved;
+            try {
+                saved = FimbySharedContactService.saveActiveEpisode(request);
+            } catch (FimbySharedContactService.SharedContactException e) {
+                throw new AuraHandledException(e.getMessage());
+            }
 
-            Shared_Contact_Info__c sharedContactInfo;
-            Boolean isNew = existingSharedInfo.isEmpty();
-            Shared_Contact_Info__c beforeShare = isNew
-                ? null
-                : existingSharedInfo[0].clone(false, false, false, false);
-
-            Boolean shouldSendEmail = isNew || FimbySharedContactInfoHelper.hasExpandedContactShare(
-                beforeShare,
-                FimbySharedContactInfoHelper.buildAfterStateReplace(
-                    beforeShare,
-                    shareEmail,
-                    sharePhone,
-                    shareAddress,
-                    (String) shareData.get('email'),
-                    (String) shareData.get('phone'),
-                    (String) shareData.get('street'),
-                    (String) shareData.get('city'),
-                    (String) shareData.get('state'),
-                    (String) shareData.get('postalCode'),
-                    (String) shareData.get('country'),
-                    (String) shareData.get('additionalInfo')
-                )
-            );
-
-            if (isNew) {
-                sharedContactInfo = new Shared_Contact_Info__c(
-                    Name = sharedContactInfoName,
-                    Contact__c = sendingContactId,
-                    Shared_To__c = recipientContactId,
-                    Lending_Request__c = lendingRequestId,
-                    Origin__c = 'Lending'
+            if (lendingRequestId != null) {
+                update new Shared_Contact_Info__c(
+                    Id = saved.sharedContactInfoId,
+                    Lending_Request__c = lendingRequestId
                 );
-            } else {
-                sharedContactInfo = existingSharedInfo[0];
-                sharedContactInfo.Name = sharedContactInfoName;
-                sharedContactInfo.Lending_Request__c = lendingRequestId;
-                sharedContactInfo.Origin__c = 'Lending';
             }
 
-            // Set values based on what's being shared
-            sharedContactInfo.Email__c = shareEmail ? (String) shareData.get('email') : null;
-            sharedContactInfo.Phone__c = sharePhone ? (String) shareData.get('phone') : null;
-            sharedContactInfo.Street__c = shareAddress ? (String) shareData.get('street') : null;
-            sharedContactInfo.City__c = shareAddress ? (String) shareData.get('city') : null;
-            sharedContactInfo.Province_State__c = shareAddress ? (String) shareData.get('state') : null;
-            sharedContactInfo.Postal_Code__c = shareAddress ? (String) shareData.get('postalCode') : null;
-            sharedContactInfo.Country__c = shareAddress ? (String) shareData.get('country') : null;
-            sharedContactInfo.Additional_Info__c = shareAddress ? (String) shareData.get('additionalInfo') : null;
-
-            if (isNew) {
-                insert sharedContactInfo;
-            } else {
-                update sharedContactInfo;
-            }
-
-            if (shouldSendEmail) {
+            if (saved.createdNewEpisode || saved.expandedExistingEpisode) {
                 sendShareContactEmail(sender, recipient, shareData);
             }
         }

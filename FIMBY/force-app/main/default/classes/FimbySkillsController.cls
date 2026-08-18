@@ -274,17 +274,40 @@ public with sharing class FimbySkillsController {
             }
 
             Id ownerContactId = skill.Owner_Contact__c;
-            FimbyConversationController.prepareDirectConversation(String.valueOf(ownerContactId));
+            // A skill thread is still a contact-sharing conversation, so it runs the
+            // same directional gate and binds to the same episode. Without the
+            // binding, revoking the share would leave this thread writable.
+            Id authorizingSciId =
+                FimbyConversationController.validateSharingGatedInitiation(actingAsContactId, ownerContactId);
 
-            List<Conversation__c> existing = [
-                SELECT Id
-                FROM Conversation__c
-                WHERE Context_Type__c = :FimbyConstants.CTX_SKILL
-                  AND Related_Record_Id__c = :skillOfferId
-                  AND ((Participant_1__c = :actingAsContactId AND Participant_2__c = :ownerContactId)
-                    OR (Participant_1__c = :ownerContactId AND Participant_2__c = :actingAsContactId))
-                LIMIT 1
-            ];
+            List<Conversation__c> existing;
+            if (authorizingSciId != null) {
+                existing = [
+                    SELECT Id
+                    FROM Conversation__c
+                    WHERE Context_Type__c = :FimbyConstants.CTX_SKILL
+                      AND Related_Record_Id__c = :skillOfferId
+                      AND Participant_1__c = :actingAsContactId
+                      AND Participant_2__c = :ownerContactId
+                      AND Locked__c = false
+                      AND Authorizing_Shared_Contact_Info__c = :authorizingSciId
+                    ORDER BY CreatedDate DESC
+                    LIMIT 1
+                ];
+            } else {
+                existing = [
+                    SELECT Id
+                    FROM Conversation__c
+                    WHERE Context_Type__c = :FimbyConstants.CTX_SKILL
+                      AND Related_Record_Id__c = :skillOfferId
+                      AND Participant_1__c = :actingAsContactId
+                      AND Participant_2__c = :ownerContactId
+                      AND Locked__c = false
+                      AND Authorizing_Shared_Contact_Info__c = null
+                    ORDER BY CreatedDate DESC
+                    LIMIT 1
+                ];
+            }
 
             Id conversationId;
             Boolean isNew = false;
@@ -296,13 +319,14 @@ public with sharing class FimbySkillsController {
                     Participant_2__c = ownerContactId,
                     Status__c = FimbyConstants.CONVERSATION_ACTIVE,
                     Context_Type__c = FimbyConstants.CTX_SKILL,
+                    Authorizing_Shared_Contact_Info__c = authorizingSciId,
                     Related_Record_Id__c = String.valueOf(skillOfferId),
                     Participant_1_Unread_Count__c = 0,
                     Participant_2_Unread_Count__c = 0,
                     Participant_1_Archived__c = false,
                     Participant_2_Archived__c = false
                 );
-                insert newConv;
+                new SkillsQueryHelper().insertConversation(newConv);
                 conversationId = newConv.Id;
                 isNew = true;
             }
@@ -389,6 +413,10 @@ public with sharing class FimbySkillsController {
                 LIMIT 1
             ];
             return rows.isEmpty() ? null : rows[0];
+        }
+
+        public void insertConversation(Conversation__c conv) {
+            insert conv;
         }
 
         public List<Skill_Offer__c> queryOwnedActiveSkills(Id ownerContactId) {

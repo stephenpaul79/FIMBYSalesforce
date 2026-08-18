@@ -7,19 +7,20 @@ public class FimbyMessageControllerTest {
         List<Contact> contacts = FimbyTestDataFactory.createNeighbourhoodContacts(neighbourhood.Id, 2, true);
         User communityUser = FimbyTestDataFactory.createCommunityUser(contacts[0].Id, 'Customer Community User - Mobile App', true);
 
-        // Create shared contact info so messaging is allowed
         Shared_Contact_Info__c sci = new Shared_Contact_Info__c(
-            Contact__c = contacts[0].Id,
-            Shared_To__c = contacts[1].Id,
-            Email__c = 'shared@test.com'
+            Contact__c = contacts[1].Id,
+            Shared_To__c = contacts[0].Id,
+            Email__c = 'shared@test.com',
+            Status__c = 'Active'
         );
         insert sci;
 
-        // Create a conversation between the two contacts
         Conversation__c conv = new Conversation__c(
             Participant_1__c = contacts[0].Id,
             Participant_2__c = contacts[1].Id,
+            Context_Type__c = FimbyConstants.CTX_DIRECT,
             Status__c = 'Active',
+            Authorizing_Shared_Contact_Info__c = sci.Id,
             Participant_1_Unread_Count__c = 0,
             Participant_2_Unread_Count__c = 0,
             Participant_1_Archived__c = false,

@@ -47,15 +47,7 @@ public without sharing class FimbyResponseAutoShareHelper {
                 return;
             }
 
-            List<Shared_Contact_Info__c> existing = [
-                SELECT Id
-                FROM Shared_Contact_Info__c
-                WHERE Contact__c = :sharingContactId
-                  AND Shared_To__c = :responderContactId
-                  AND Response__c = :resp.Id
-                LIMIT 1
-            ];
-            if (!existing.isEmpty()) {
+            if (FimbySharedContactAccess.hasActiveEpisode(sharingContactId, responderContactId)) {
                 return;
             }
 
