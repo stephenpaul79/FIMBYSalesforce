@@ -346,7 +346,8 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             subjectLine,
             showPreview,
             previewText,
-            hasSecondLine
+            hasSecondLine,
+            isReadOnly: thread.statusBadge === 'Read-only'
         };
     }
 

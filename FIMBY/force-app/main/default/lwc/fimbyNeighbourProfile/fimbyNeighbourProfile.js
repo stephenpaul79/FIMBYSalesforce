@@ -72,11 +72,11 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     }
     get awaitingShareMessage() {
         const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
-        return `You've shared your details with ${name}. You'll be connected once they share back.`;
+        return `You've shared your details with ${name}. That invites them to start a conversation with you. You can message them once they share with you too.`;
     }
     get reciprocityMessage() {
         const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
-        return `Messaging and ${name}'s contact details open up once they share their info back with you. Sharing yours first is a friendly way to invite that.`;
+        return `Sharing your details invites ${name} to message you. You can start a conversation with them once they share their contact info with you.`;
     }
 
     @track showShareModal = false;

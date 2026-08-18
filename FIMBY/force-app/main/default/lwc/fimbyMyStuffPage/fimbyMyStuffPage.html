@@ -13,19 +13,19 @@
                 <div class="feed-sub-filters contacts-sub-row">
                     <div class="filters-scroll">
                         <button class={receivedFilterClass}
-                                title="People who have shared their contact info with you (email, phone, address)"
+                                title="People who have shared their contact info with you (email, phone, address) - you can start a conversation with them"
                                 onclick={handleContactsSubFilter}
                                 data-filter="received">
                             <span>Received</span>
                         </button>
                         <button class={sharedFilterClass}
-                                title="People you have shared your contact info with — update or add more details anytime"
+                                title="People you have shared your contact info with — they can start a conversation with you, and you can update or add more details anytime"
                                 onclick={handleContactsSubFilter}
                                 data-filter="shared">
                             <span>Shared</span>
                         </button>
                         <button class={revokedFilterClass}
-                                title="Sharing you have revoked — you can restore it anytime"
+                                title="Sharing you have stopped — you can share again anytime, which starts a fresh conversation"
                                 onclick={handleContactsSubFilter}
                                 data-filter="revoked">
                             <span>Revoked</span>
@@ -307,12 +307,12 @@
                                                     Revoke
                                                 </button>
                                             </template>
-                                            <template lwc:if={contact.showUndoRevokeBtn}>
+                                            <template lwc:if={contact.showShareAgainBtn}>
                                                 <button class="undo-revoke-btn"
-                                                        onclick={handleUndoRevoke}
-                                                        data-shared-info-id={contact.mySharedInfoId}
+                                                        onclick={handleShareAgain}
+                                                        data-contact-id={contact.contactId}
                                                         data-contact-name={contact.name}>
-                                                    Restore Sharing
+                                                    Share again
                                                 </button>
                                             </template>
                                             <template lwc:if={contact.showEditBtn}>
@@ -324,7 +324,7 @@
                                                     Edit
                                                 </button>
                                             </template>
-                                            <template lwc:if={contact.isNotRevoked}>
+                                            <template lwc:if={contact.canMessage}>
                                                 <button class="message-contact-btn"
                                                         onclick={handleMessageContact}
                                                         data-contact-id={contact.contactId}>

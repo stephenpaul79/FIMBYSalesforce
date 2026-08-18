@@ -370,11 +370,10 @@
             </template>
         </template>
 
-        <template lwc:if={showDisconnectedBanner}>
-            <!-- Revoked Warning Banner -->
-            <div class="conversation-revoked-banner">
-                <lightning-icon icon-name="utility:warning" size="small"></lightning-icon>
-                <span>You are no longer connected to this contact.</span>
+        <template lwc:if={showConsentRevokedBanner}>
+            <div class="conversation-revoked-banner" role="status">
+                <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                <span>{consentRevokedBannerText}</span>
             </div>
         </template>
         <template lwc:if={canReply}>

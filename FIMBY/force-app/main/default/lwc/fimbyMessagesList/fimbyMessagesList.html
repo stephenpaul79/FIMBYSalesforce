@@ -125,6 +125,9 @@
                                                 <span class="inbox-count">({thread.messageCountDisplay})</span>
                                             </template>
                                         </span>
+                                        <template lwc:if={thread.isReadOnly}>
+                                            <span class="inbox-readonly-badge">Read-only</span>
+                                        </template>
                                         <span class={thread.badgeCssClass}>{thread.badgeLabel}</span>
                                         <span class="inbox-date">{thread.formattedDate}</span>
                                     </div>

@@ -1,21 +1,36 @@
 <template>
     <template lwc:if={isOpen}>
-        <section class="slds-modal slds-fade-in-open share-contact-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+        <section class="slds-modal slds-fade-in-open share-contact-modal"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="share-modal-title"
+                 onkeydown={handleDialogKeydown}>
             <div class="slds-modal__container">
                 <header class="slds-modal__header">
                     <h2 id="share-modal-title" class="slds-modal__title slds-hyphenate">{shareModalTitle}</h2>
-                    <button class="slds-button slds-button_icon slds-modal__close" onclick={handleClose} title="Close">
+                    <button class="slds-button slds-button_icon slds-modal__close"
+                            onclick={handleClose}
+                            title="Close"
+                            aria-label="Close share contact info">
                         <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
                     </button>
                 </header>
 
                 <div class="slds-modal__content slds-p-around_medium">
+                    <template lwc:if={showIdentityBanner}>
+                        <div class="posting-as">
+                            <img src={posterIconUrl} alt="" class="posting-as-icon">
+                            <span class="posting-as-label">Sharing as:</span>
+                            <span class="posting-as-value">{postingAsDisplayName}</span>
+                        </div>
+                    </template>
                     <template lwc:if={isNotEditMode}>
                         <template lwc:if={shareRecipientNotSelected}>
                             <div class="share-step">
-                                <label class="slds-form-element__label">Find a neighbour to share with</label>
+                                <label class="slds-form-element__label" for="share-search-input">Find a neighbour to share with</label>
                                 <div class="slds-form-element slds-m-bottom_small">
                                     <input type="text"
+                                           id="share-search-input"
                                            class="slds-input share-search-input"
                                            placeholder="Search by name or email (min 2 characters)..."
                                            value={shareSearchTerm}
@@ -50,7 +65,7 @@
                                 <span class="share-recipient-pill">
                                     {selectedRecipientName}
                                     <template lwc:if={isNotEditMode}>
-                                        <button class="share-recipient-remove" onclick={handleDeselectRecipient} title="Change recipient">
+                                        <button class="share-recipient-remove" onclick={handleDeselectRecipient} title="Change recipient" aria-label="Change recipient">
                                             <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
                                         </button>
                                     </template>

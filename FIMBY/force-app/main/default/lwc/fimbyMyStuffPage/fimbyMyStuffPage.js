@@ -10,7 +10,6 @@ import getMySkills from '@salesforce/apex/FimbyMyStuffController.getMySkills';
 import getMyBorrowedItems from '@salesforce/apex/FimbyMyStuffController.getMyBorrowedItems';
 import getMyContacts from '@salesforce/apex/FimbyMyStuffController.getMyContacts';
 import revokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.revokeSharedContactInfo';
-import undoRevokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.undoRevokeSharedContactInfo';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
 import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
@@ -386,12 +385,16 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         return filtered.map(c => ({
             ...c,
             isNotRevoked: !c.isRevoked,
+            // Sharing is directional: you can start a conversation only with someone
+            // who has shared with you. `isRevoked` describes your own outbound share,
+            // so it must not decide whether you may message them.
+            canMessage: c.theySharedWithMe === true,
             showReciprocatePill: sub === 'received',
             showReciprocatedLabel: sub === 'received' && c.iSharedWithThem && !c.isRevoked,
             showReciprocateAction: sub === 'received' && (!c.iSharedWithThem || c.isRevoked),
             iSharedWithThemFalse: !c.iSharedWithThem,
             showRevokeBtn: sub === 'shared' && c.iSharedWithThem && !c.isRevoked,
-            showUndoRevokeBtn: sub === 'revoked' && c.isRevoked,
+            showShareAgainBtn: sub === 'revoked' && c.isRevoked,
             showEditBtn: c.iSharedWithThem && !c.isRevoked,
             chevronIcon: c.isExpanded ? 'utility:chevrondown' : 'utility:chevronright',
             cardClass: 'contact-card-wrapper' + (c.isExpanded ? ' contact-card-expanded' : '')
@@ -551,14 +554,22 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     }
 
     /* ===============================================================
-     * Revoke / Undo Revoke handlers
+     * Revoke / Share again handlers
      * =============================================================== */
     async handleRevokeSharedInfo(event) {
         event.stopPropagation();
         const sharedInfoId = event.currentTarget.dataset.sharedInfoId;
         const contactName = event.currentTarget.dataset.contactName;
+        // Says plainly what FIMBY can and cannot undo. Revocation is prospective:
+        // details already emailed or saved are beyond the platform's reach, and
+        // promising otherwise would be a false assurance about someone's privacy.
         // eslint-disable-next-line no-alert -- revoke sharing confirmation until modal refactor
-        if (!window.confirm(`Are you sure you want to revoke sharing with ${contactName}? They will no longer see your contact info.`)) {
+        if (!window.confirm(
+            `Stop sharing your contact info with ${contactName}?\n\n`
+            + 'FIMBY will hide your details from them and your conversation will become read-only. '
+            + 'Details they were already emailed or saved cannot be taken back.\n\n'
+            + 'You can share again later, which starts a fresh connection.'
+        )) {
             return;
         }
         try {
@@ -568,24 +579,19 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             this._contactsLoaded = false;
             await this._loadContacts();
         } catch (error) {
-            const msg = error.body?.message || error.message || 'We couldn’t revoke sharing just now. Please try again.';
+            const msg = error.body?.message || error.message || 'We couldn’t stop sharing just now. Please try again.';
             fireToast({ message: msg, variant: 'error' });
         }
     }
 
-    async handleUndoRevoke(event) {
+    // Sharing again is a new act of consent, not an undo, so it opens the normal
+    // share modal and creates a fresh record rather than reopening the closed one.
+    handleShareAgain(event) {
         event.stopPropagation();
-        const sharedInfoId = event.currentTarget.dataset.sharedInfoId;
-        try {
-            await undoRevokeSharedContactInfo({ sharedContactInfoId: sharedInfoId });
-            // The contact moves back to the Shared list on reload — the surface
-            // change is the confirmation, so no banner.
-            this._contactsLoaded = false;
-            await this._loadContacts();
-        } catch (error) {
-            const msg = error.body?.message || error.message || 'We couldn’t restore sharing just now. Please try again.';
-            fireToast({ message: msg, variant: 'error' });
-        }
+        this.shareModalEditMode = false;
+        this.shareRecipientId = event.currentTarget.dataset.contactId;
+        this.shareRecipientName = event.currentTarget.dataset.contactName || '';
+        this.showShareModal = true;
     }
 
     _formatDate(dateValue) {

@@ -1,8 +1,11 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { fireToast } from 'c/fimbyToastHelper';
 import searchNeighbourhoodContacts from '@salesforce/apex/FimbyMyStuffController.searchNeighbourhoodContacts';
 import getMyContactDetailsForSharing from '@salesforce/apex/FimbyMyStuffController.getMyContactDetailsForSharing';
 import shareContactInfoDirect from '@salesforce/apex/FimbyMyStuffController.shareContactInfoDirect';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
 export default class FimbyShareContactModal extends LightningElement {
     @api editMode = false;
@@ -24,10 +27,13 @@ export default class FimbyShareContactModal extends LightningElement {
     @track shareCountryValue = '';
     @track shareAdditionalInfoValue = '';
     @track shareSubmitting = false;
+    @track actingAsContact = null;
+    @track hasMultipleIdentities = false;
 
     _isOpen = false;
     _shareSearchTimeout;
     _initializedForOpen = false;
+    _previouslyFocused = null;
 
     @api
     get isOpen() {
@@ -35,14 +41,41 @@ export default class FimbyShareContactModal extends LightningElement {
     }
     set isOpen(value) {
         const opening = value === true && !this._isOpen;
+        const closing = value !== true && this._isOpen;
         this._isOpen = value === true;
         if (!this._isOpen) {
             this._initializedForOpen = false;
         } else if (opening) {
             this._initializedForOpen = false;
-             
+            this._previouslyFocused = document.activeElement;
             Promise.resolve().then(() => this._onOpen());
         }
+        if (closing) {
+            this._restoreFocus();
+        }
+    }
+
+    @wire(getAvailableIdentities)
+    wiredIdentities({ error, data }) {
+        if (data) {
+            this.hasMultipleIdentities = data.length > 0;
+        } else if (error) {
+            this.hasMultipleIdentities = false;
+        }
+    }
+
+    get postingAsDisplayName() {
+        return this.actingAsContact?.postingAsDisplayName
+            || this.actingAsContact?.contactName
+            || '';
+    }
+
+    get showIdentityBanner() {
+        return this.hasMultipleIdentities && !!this.postingAsDisplayName;
+    }
+
+    get posterIconUrl() {
+        return `${IMPACT_ICONS}/ProfileActive.png`;
     }
 
     @api
@@ -119,6 +152,12 @@ export default class FimbyShareContactModal extends LightningElement {
         this.shareSearching = false;
         this.shareSubmitting = false;
 
+        try {
+            this.actingAsContact = await getActingAsContact();
+        } catch (e) {
+            console.error('Error loading acting-as identity:', e);
+        }
+
         if (!this.editMode) {
             try {
                 const details = await getMyContactDetailsForSharing();
@@ -133,6 +172,37 @@ export default class FimbyShareContactModal extends LightningElement {
             const closeBtn = this.template.querySelector('.slds-modal__close');
             if (closeBtn) closeBtn.focus();
         }, 50);
+    }
+
+    _restoreFocus() {
+        const prior = this._previouslyFocused;
+        this._previouslyFocused = null;
+        if (prior && typeof prior.focus === 'function') {
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => prior.focus(), 0);
+        }
+    }
+
+    handleDialogKeydown(event) {
+        if (event.key === 'Escape') {
+            event.stopPropagation();
+            this.handleClose();
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(this.template.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter((el) => el.offsetParent !== null);
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && event.target === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && event.target === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 
     _applyContactDetails(details) {

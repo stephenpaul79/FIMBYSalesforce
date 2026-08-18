@@ -7,7 +7,7 @@ import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getMessages from '@salesforce/apex/FimbyMessageController.getMessages';
 import sendMessage from '@salesforce/apex/FimbyMessageController.sendMessage';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
-import checkConversationRevoked from '@salesforce/apex/FimbyConversationController.isConversationRevoked';
+import getConversationAccessState from '@salesforce/apex/FimbyConversationController.getConversationAccessState';
 import prepareDirectConversation from '@salesforce/apex/FimbyConversationController.prepareDirectConversation';
 import sendDirectMessage from '@salesforce/apex/FimbyConversationController.sendDirectMessage';
 import getFollowUpByConversation from '@salesforce/apex/FimbyFollowUpController.getFollowUpByConversation';
@@ -96,9 +96,20 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track showNeighbourlyBanner = true;
     @track isConversationRevoked = false;
     @track isConversationLocked = false;
+    @track consentClosedDate = null;
 
-    get showDisconnectedBanner() {
+    get showConsentRevokedBanner() {
         return this.isConversationRevoked && !this.isVouchContext;
+    }
+
+    get consentRevokedBannerText() {
+        if (this.consentClosedDate) {
+            const when = new Date(this.consentClosedDate).toLocaleDateString('en-AU', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            });
+            return `Contact sharing changed on ${when}, so this conversation is now read-only.`;
+        }
+        return 'Contact sharing changed, so this conversation is now read-only.';
     }
 
     get canReply() {
@@ -394,9 +405,14 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             this.processMessages();
 
             try {
-                this.isConversationRevoked = await checkConversationRevoked({ conversationId: this.activeConversationId });
+                const access = await getConversationAccessState({ conversationId: this.activeConversationId });
+                this.isConversationRevoked = access?.isConsentRevoked === true;
+                this.consentClosedDate = access?.consentClosedDate || null;
+                if (access?.isLocked === true) {
+                    this.isConversationLocked = true;
+                }
             } catch (e) {
-                console.error('Error checking revoke status:', e);
+                console.error('Error checking conversation access:', e);
             }
 
             this._checkForFollowUp();
