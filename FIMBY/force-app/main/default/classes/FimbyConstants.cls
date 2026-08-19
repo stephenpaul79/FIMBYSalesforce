@@ -70,6 +70,7 @@ public class FimbyConstants {
     public static final String NOTIF_THANKS_RECEIVED = 'Thanks_Received';
     public static final String NOTIF_REFRESH_REMINDER = 'Refresh_Reminder';
     public static final String NOTIF_RESPONSE_REPLY = 'Response_Reply';
+    public static final String NOTIF_CONTACT_INFO_SHARED = 'Contact_Info_Shared';
 
     // Needs/Offers record types
     public static final String RT_NEED = 'Need';

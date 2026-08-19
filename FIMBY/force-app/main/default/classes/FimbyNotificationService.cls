@@ -40,7 +40,12 @@ public without sharing class FimbyNotificationService {
             FimbyConstants.NOTIF_VOUCH_DECLINED         => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCH_REVOKED          => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCHER_PAUSED         => FimbyPushNotificationService.NotificationType.MESSAGE,
-            FimbyConstants.NOTIF_REFRESH_REMINDER       => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS
+            FimbyConstants.NOTIF_REFRESH_REMINDER       => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS,
+            // Sharing contact info is a personal act between two neighbours, so it
+            // rides the Messages toggle alongside the vouch lifecycle rather than the
+            // Asks & Offers activity toggle. An unmapped type would push while
+            // honouring no per-category preference at all.
+            FimbyConstants.NOTIF_CONTACT_INFO_SHARED => FimbyPushNotificationService.NotificationType.MESSAGE
         };
 
     // Push notifications NEVER bypass user preferences. A user who disables the

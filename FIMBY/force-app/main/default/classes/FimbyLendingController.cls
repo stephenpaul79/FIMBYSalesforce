@@ -1479,22 +1479,6 @@ public with sharing class FimbyLendingController {
             Boolean sharePhone = shareData.get('sharePhone') == true;
             Boolean shareAddress = shareData.get('shareAddress') == true;
 
-            // Get sender contact details
-            Contact sender = [
-                SELECT Id, FirstName, LastName, Email
-                FROM Contact
-                WHERE Id = :sendingContactId
-                LIMIT 1
-            ];
-
-            // Get recipient contact details
-            Contact recipient = [
-                SELECT Id, FirstName, LastName, Email
-                FROM Contact
-                WHERE Id = :recipientContactId
-                LIMIT 1
-            ];
-
             // Lending forms present every field each time, so unticking a box must
             // actually withdraw it — REPLACE mode. The service opens a new episode
             // rather than overwriting one the sender already revoked.
@@ -1515,6 +1499,8 @@ public with sharing class FimbyLendingController {
             request.country = (String) shareData.get('country');
             request.setAdditionalInfo = true;
             request.additionalInfo = shareAddress ? (String) shareData.get('additionalInfo') : null;
+            // The service owns the notification and the email for every share surface.
+            request.emailContextLabel = 'Lending item';
 
             FimbySharedContactService.ShareResult saved;
             try {
@@ -1529,46 +1515,6 @@ public with sharing class FimbyLendingController {
                     Lending_Request__c = lendingRequestId
                 );
             }
-
-            if (saved.createdNewEpisode || saved.expandedExistingEpisode) {
-                sendShareContactEmail(sender, recipient, shareData);
-            }
-        }
-
-        private void sendShareContactEmail(Contact sender, Contact recipient, Map<String, Object> shareData) {
-            List<User> users = [
-                SELECT Id FROM User
-                WHERE ContactId = :recipient.Id AND IsActive = true
-                LIMIT 1
-            ];
-            if (users.isEmpty()) return;
-
-            Boolean shareEmail = shareData.get('shareEmail') == true;
-            Boolean sharePhone = shareData.get('sharePhone') == true;
-            Boolean shareAddress = shareData.get('shareAddress') == true;
-
-            String senderName = sender.FirstName + ' ' + sender.LastName;
-            String emailVal = shareEmail ? (String) shareData.get('email') : null;
-            String phoneVal = sharePhone ? (String) shareData.get('phone') : null;
-            String streetVal = shareAddress ? (String) shareData.get('street') : null;
-            String additionalVal = shareAddress ? (String) shareData.get('additionalInfo') : null;
-
-            Id recipientUserId = users[0].Id;
-            String cardHtml = FimbyEmailHtmlBuilder.buildContactShareCard(
-                FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
-                senderName, emailVal, phoneVal, streetVal, additionalVal, 'Lending item',
-                null, null, null
-            );
-
-            FimbyTransactionalEmailService.TransactionalEmailRequest req =
-                new FimbyTransactionalEmailService.TransactionalEmailRequest();
-            req.recipientUserId = recipientUserId;
-            req.subject = senderName + ' shared their contact info with you';
-            req.cardHtml = cardHtml;
-            req.skipSubjectBlock = true;
-            req.replyToEmail = sender.Email;
-
-            FimbyTransactionalEmailService.send(req);
         }
 
         /**

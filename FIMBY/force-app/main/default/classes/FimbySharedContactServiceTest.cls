@@ -6,6 +6,8 @@ private class FimbySharedContactServiceTest {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         List<Contact> peeps = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 3, true);
         FimbyTestDataFactory.createCommunityUser(peeps[0].Id, null, true);
+        // The recipient needs a User for the email lane to have anywhere to send.
+        FimbyTestDataFactory.createCommunityUser(peeps[1].Id, null, true);
     }
 
     private static List<Contact> getContacts() {
@@ -166,6 +168,161 @@ private class FimbySharedContactServiceTest {
             System.assertEquals(true, threw, 'Cannot share with yourself');
         }
         Test.stopTest();
+    }
+
+    @IsTest
+    static void newEpisodeNotifiesRecipientButPlainEditDoesNot() {
+        List<Contact> peeps = getContacts();
+
+        Test.startTest();
+        FimbySharedContactService.saveActiveEpisode(baseRequest(peeps[0].Id, peeps[1].Id));
+
+        // Correcting an already-shared email is an edit to what the recipient can
+        // already see, so it must not announce itself a second time.
+        FimbySharedContactService.ShareRequest typoFix = baseRequest(peeps[0].Id, peeps[1].Id);
+        typoFix.email = 'corrected@test.com';
+        FimbySharedContactService.saveActiveEpisode(typoFix);
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Type__c, Title__c, Body__c, Actor_Name__c, Actor_Contact__c,
+                   Action_URL__c, Related_Record_Id__c, Related_Record_Type__c
+            FROM Notification__c
+            WHERE Contact__c = :peeps[1].Id
+              AND Type__c = :FimbyConstants.NOTIF_CONTACT_INFO_SHARED
+        ];
+        System.assertEquals(1, notifs.size(), 'A typo fix must not re-notify the recipient');
+        System.assertEquals('shared their contact info with you', notifs[0].Title__c);
+        System.assertEquals('You can now see their email address.', notifs[0].Body__c);
+        System.assertEquals(peeps[0].Id, notifs[0].Actor_Contact__c, 'Actor is the sharer');
+        System.assertNotEquals(null, notifs[0].Actor_Name__c, 'Actor name is never null or blank');
+        System.assertNotEquals('', notifs[0].Actor_Name__c, 'Actor name is never null or blank');
+        System.assertEquals('Shared_Contact_Info__c', notifs[0].Related_Record_Type__c);
+        System.assert(
+            notifs[0].Action_URL__c.contains('/neighbour?id=' + peeps[0].Id),
+            'Action URL should deep-link to the sharer profile, got: ' + notifs[0].Action_URL__c
+        );
+    }
+
+    @IsTest
+    static void expandingDisclosureNotifiesAgainAndSuppressionIsHonoured() {
+        List<Contact> peeps = getContacts();
+        FimbySharedContactService.saveActiveEpisode(baseRequest(peeps[0].Id, peeps[1].Id));
+
+        Test.startTest();
+        FimbySharedContactService.ShareRequest addPhone = baseRequest(peeps[0].Id, peeps[1].Id);
+        addPhone.sharePhone = true;
+        addPhone.phone = '0400111222';
+        FimbySharedContactService.saveActiveEpisode(addPhone);
+
+        FimbySharedContactService.ShareRequest addAddress = baseRequest(peeps[0].Id, peeps[1].Id);
+        addAddress.sharePhone = true;
+        addAddress.phone = '0400111222';
+        addAddress.shareAddress = true;
+        addAddress.street = '12 Maple Lane';
+        addAddress.city = 'Vancouver';
+        FimbySharedContactService.saveActiveEpisode(addAddress);
+
+        FimbySharedContactService.ShareRequest silentToOther = baseRequest(peeps[0].Id, peeps[2].Id);
+        silentToOther.suppressNotification = true;
+        FimbySharedContactService.saveActiveEpisode(silentToOther);
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Body__c FROM Notification__c
+            WHERE Contact__c = :peeps[1].Id
+              AND Type__c = :FimbyConstants.NOTIF_CONTACT_INFO_SHARED
+            ORDER BY CreatedDate ASC
+        ];
+        System.assertEquals(3, notifs.size(), 'Each newly visible field should notify again');
+        System.assertEquals(
+            'You can now see their email address and phone number.',
+            notifs[1].Body__c
+        );
+        System.assertEquals(
+            'You can now see their email address, phone number, and address.',
+            notifs[2].Body__c
+        );
+        System.assertEquals(
+            0,
+            [
+                SELECT COUNT() FROM Notification__c
+                WHERE Contact__c = :peeps[2].Id
+                  AND Type__c = :FimbyConstants.NOTIF_CONTACT_INFO_SHARED
+            ],
+            'Suppressed shares must stay silent so migrations do not replay consent'
+        );
+    }
+
+    @IsTest
+    static void emailReachesRecipientUnlessTheyOptedOut() {
+        List<Contact> peeps = getContacts();
+        User recipientUser = [
+            SELECT Id, Email_Alerts_Enabled__c FROM User
+            WHERE ContactId = :peeps[1].Id AND IsActive = true LIMIT 1
+        ];
+
+        Test.startTest();
+        FimbyTransactionalEmailService.testSendInvocationCount = 0;
+        FimbySharedContactService.saveActiveEpisode(baseRequest(peeps[0].Id, peeps[1].Id));
+        Integer afterFirstShare = FimbyTransactionalEmailService.testSendInvocationCount;
+
+        // runAs isolates the setup-object DML from the Shared_Contact_Info__c writes.
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            recipientUser.Email_Alerts_Enabled__c = false;
+            update recipientUser;
+        }
+
+        FimbySharedContactService.ShareRequest addPhone = baseRequest(peeps[0].Id, peeps[1].Id);
+        addPhone.sharePhone = true;
+        addPhone.phone = '0400111222';
+        FimbySharedContactService.saveActiveEpisode(addPhone);
+        Test.stopTest();
+
+        System.assertEquals(1, afterFirstShare, 'A new episode should email the recipient');
+        System.assertEquals(
+            1,
+            FimbyTransactionalEmailService.testSendInvocationCount,
+            'A recipient who turned email alerts off must not be emailed'
+        );
+        System.assertEquals(
+            2,
+            [
+                SELECT COUNT() FROM Notification__c
+                WHERE Contact__c = :peeps[1].Id
+                  AND Type__c = :FimbyConstants.NOTIF_CONTACT_INFO_SHARED
+            ],
+            'Opting out of email must not silence the in-app bell'
+        );
+    }
+
+    @IsTest
+    static void emailCarriesSurfaceContextAndAddress() {
+        List<Contact> peeps = getContacts();
+
+        Test.startTest();
+        FimbyTransactionalEmailService.testSendInvocationCount = 0;
+        FimbySharedContactService.ShareRequest request = baseRequest(peeps[0].Id, peeps[1].Id);
+        request.shareAddress = true;
+        request.street = '12 Maple Lane';
+        request.city = 'Vancouver';
+        request.provinceState = 'BC';
+        request.postalCode = 'V5K 0A1';
+        request.emailContextLabel = 'Lending item';
+        FimbySharedContactService.saveActiveEpisode(request);
+        Test.stopTest();
+
+        System.assertEquals(1, FimbyTransactionalEmailService.testSendInvocationCount);
+        String card = FimbyTransactionalEmailService.testLastCardHtml;
+        System.assert(card.contains('Lending item'), 'Card should carry the surface context');
+        System.assert(
+            card.contains('12 Maple Lane, Vancouver, BC, V5K 0A1'),
+            'Card should show the full shared address on one line, got: ' + card
+        );
+        System.assert(
+            FimbyTransactionalEmailService.testLastSubject.endsWith('shared their contact info with you'),
+            'Subject should name the sharer, got: ' + FimbyTransactionalEmailService.testLastSubject
+        );
     }
 
     @IsTest

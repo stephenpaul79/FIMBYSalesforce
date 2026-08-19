@@ -68,6 +68,14 @@ public without sharing class FimbySharedContactService {
         public String country;
         public Boolean setAdditionalInfo = false;
         public String additionalInfo;
+        /** Migrations and backfills replay consent that already happened; they must not re-notify. */
+        public Boolean suppressNotification = false;
+        /** Surface context for the email card, e.g. the post name or 'Lending item'. */
+        public String emailContextLabel;
+        /** Overrides the email CTA. Defaults to the sharer's neighbour profile. */
+        public String emailCtaUrl;
+        public String emailCtaLabel;
+        public String emailCtaIcon;
     }
 
     /**
@@ -152,7 +160,191 @@ public without sharing class FimbySharedContactService {
             || (result.hasPhoneAfter && !result.hadPhoneBefore)
             || (result.hasAddressAfter && !result.hadAddressBefore)
         );
+
+        announceToRecipient(request, result, row);
         return result;
+    }
+
+    /**
+     * @description Tells the recipient something became visible to them, in-app and by
+     *              email. Both live here rather than in each controller so the
+     *              neighbour-profile, response, and lending surfaces cannot drift apart.
+     *              The profile path previously told the recipient nothing at all, which
+     *              left browser-only neighbours to discover a share by chance.
+     *
+     *              Fires only when something became visible that was not visible before.
+     *              Correcting a typo in an already-shared phone number is an edit to the
+     *              recipient's existing view, not a new act of consent to announce.
+     */
+    private static void announceToRecipient(
+        ShareRequest request,
+        ShareResult result,
+        Shared_Contact_Info__c row
+    ) {
+        if (request.suppressNotification == true) {
+            return;
+        }
+        if (!result.createdNewEpisode && !result.expandedExistingEpisode) {
+            return;
+        }
+        notifyRecipient(request, result);
+        emailRecipient(request, row);
+    }
+
+    private static void notifyRecipient(ShareRequest request, ShareResult result) {
+        List<String> visible = new List<String>();
+        if (result.hasEmailAfter) {
+            visible.add('email address');
+        }
+        if (result.hasPhoneAfter) {
+            visible.add('phone number');
+        }
+        if (result.hasAddressAfter) {
+            visible.add('address');
+        }
+
+        String body = visible.isEmpty()
+            ? 'Their contact details are on their profile now.'
+            : 'You can now see their ' + joinWithAnd(visible) + '.';
+
+        FimbyNotificationService.createNotification(
+            request.recipientContactId,
+            FimbyConstants.NOTIF_CONTACT_INFO_SHARED,
+            'shared their contact info with you',
+            body,
+            result.sharedContactInfoId,
+            'Shared_Contact_Info__c',
+            sharerProfileUrl(request.sharerContactId),
+            sharerDisplayName(request.sharerContactId),
+            false,
+            request.sharerContactId
+        );
+    }
+
+    /**
+     * @description Emails the recipient the details that just became visible. Email is
+     *              the only channel that reaches a neighbour who is not currently in the
+     *              app, which matters for the browser-only and low-tech users FIMBY is
+     *              built for — the in-app bell requires them to already be looking.
+     *
+     *              Unlike the per-controller sends this replaces, it honours the global
+     *              email switch and the recipient's own Email_Alerts_Enabled__c. A
+     *              contact share is not safety messaging, so it is opt-out-able.
+     */
+    private static void emailRecipient(ShareRequest request, Shared_Contact_Info__c row) {
+        if (!FimbySettings.emailAlertsGlobalEnabled()) {
+            return;
+        }
+
+        List<User> recipients = [
+            SELECT Id, Email_Alerts_Enabled__c
+            FROM User
+            WHERE ContactId = :request.recipientContactId AND IsActive = true
+            LIMIT 1
+        ];
+        if (recipients.isEmpty() || recipients[0].Email_Alerts_Enabled__c == false) {
+            return;
+        }
+
+        Id recipientUserId = recipients[0].Id;
+        Contact sharer = sharerContact(request.sharerContactId);
+        String senderName = sharerDisplayName(request.sharerContactId);
+
+        String cardHtml = FimbyEmailHtmlBuilder.buildContactShareCard(
+            FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
+            senderName,
+            row.Email__c,
+            row.Phone__c,
+            formatAddress(row),
+            row.Additional_Info__c,
+            request.emailContextLabel,
+            String.isNotBlank(request.emailCtaUrl)
+                ? request.emailCtaUrl
+                : sharerProfileUrl(request.sharerContactId),
+            String.isNotBlank(request.emailCtaLabel) ? request.emailCtaLabel : 'View Profile',
+            request.emailCtaIcon
+        );
+
+        FimbyTransactionalEmailService.TransactionalEmailRequest emailReq =
+            new FimbyTransactionalEmailService.TransactionalEmailRequest();
+        emailReq.recipientUserId = recipientUserId;
+        emailReq.subject = senderName + ' shared their contact info with you';
+        emailReq.cardHtml = cardHtml;
+        emailReq.skipSubjectBlock = true;
+        emailReq.replyToEmail = sharer == null ? null : sharer.Email;
+
+        FimbyTransactionalEmailService.send(emailReq);
+    }
+
+    /**
+     * @description One readable line, skipping the parts that were not shared.
+     */
+    private static String formatAddress(Shared_Contact_Info__c row) {
+        List<String> parts = new List<String>();
+        for (String part : new List<String>{
+            row.Street__c, row.City__c, row.Province_State__c, row.Postal_Code__c
+        }) {
+            if (String.isNotBlank(part)) {
+                parts.add(part.trim());
+            }
+        }
+        return parts.isEmpty() ? null : String.join(parts, ', ');
+    }
+
+    private static String sharerProfileUrl(Id sharerContactId) {
+        return FimbySettings.getUrl('Neighbour', null, '?id=' + sharerContactId);
+    }
+
+    /**
+     * @description "phone number and address", "email address, phone number, and address".
+     */
+    private static String joinWithAnd(List<String> parts) {
+        if (parts.size() == 1) {
+            return parts[0];
+        }
+        if (parts.size() == 2) {
+            return parts[0] + ' and ' + parts[1];
+        }
+        List<String> leading = new List<String>(parts);
+        String last = leading.remove(leading.size() - 1);
+        return String.join(leading, ', ') + ', and ' + last;
+    }
+
+    /**
+     * @description Full_Name__c honours Mask_Last_Name__c ("Emily D."); never use raw
+     *              Name, which leaks the full last name regardless of the privacy setting.
+     */
+    private static String sharerDisplayName(Id sharerContactId) {
+        Contact c = sharerContact(sharerContactId);
+        if (c == null) {
+            return 'A neighbour';
+        }
+        if (String.isNotBlank(c.Full_Name__c)) {
+            return c.Full_Name__c;
+        }
+        return String.isNotBlank(c.Name) ? c.Name : 'A neighbour';
+    }
+
+    /** Cached so the notification and the email do not each query the sharer. */
+    private static Map<Id, Contact> sharerCache = new Map<Id, Contact>();
+
+    private static Contact sharerContact(Id sharerContactId) {
+        if (sharerContactId == null) {
+            return null;
+        }
+        if (!sharerCache.containsKey(sharerContactId)) {
+            Contact found = null;
+            for (Contact c : [
+                SELECT Full_Name__c, Name, Email
+                FROM Contact
+                WHERE Id = :sharerContactId
+                LIMIT 1
+            ]) {
+                found = c;
+            }
+            sharerCache.put(sharerContactId, found);
+        }
+        return sharerCache.get(sharerContactId);
     }
 
     /**

@@ -1191,20 +1191,6 @@ public with sharing class FimbyResponseController {
             String postalCode = (String) data.get('postalCode');
             String country = (String) data.get('country');
 
-            Contact sharingContact = [
-                SELECT Id, Name, FirstName, LastName, Email
-                FROM Contact
-                WHERE Id = :sharingContactId
-                LIMIT 1
-            ];
-
-            Contact recipientContact = [
-                SELECT Id, Name, Email
-                FROM Contact
-                WHERE Id = :recipientContactId
-                LIMIT 1
-            ];
-
             Response__c response = [
                 SELECT Id, Need_Offer_Responded_To__r.Name
                 FROM Response__c
@@ -1231,6 +1217,12 @@ public with sharing class FimbyResponseController {
             request.provinceState = state;
             request.postalCode = postalCode;
             request.country = country;
+            // The service owns the notification and the email for every share surface.
+            // It only needs the context that is specific to a response thread.
+            request.emailContextLabel = response.Need_Offer_Responded_To__r?.Name;
+            request.emailCtaUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId);
+            request.emailCtaLabel = 'View Conversation';
+            request.emailCtaIcon = 'reply.png';
 
             FimbySharedContactService.ShareResult saved;
             try {
@@ -1240,7 +1232,6 @@ public with sharing class FimbyResponseController {
             }
 
             Boolean isNew = saved.createdNewEpisode;
-            Boolean shouldSendEmail = saved.createdNewEpisode || saved.expandedExistingEpisode;
 
             new SharedContactInfoDmlHelper().stampResponse(saved.sharedContactInfoId, responseId);
 
@@ -1248,39 +1239,6 @@ public with sharing class FimbyResponseController {
                 responseId,
                 Id.valueOf(sharingContactId)
             );
-
-            if (shouldSendEmail) {
-                List<User> recipientUsers = [
-                    SELECT Id FROM User
-                    WHERE ContactId = :recipientContact.Id AND IsActive = true
-                    LIMIT 1
-                ];
-                if (!recipientUsers.isEmpty()) {
-                    String senderName = sharingContact.FirstName + ' ' + sharingContact.LastName;
-                    String contextLabel = response.Need_Offer_Responded_To__r?.Name;
-                    String emailVal = (shareEmail && String.isNotBlank(email)) ? email : null;
-                    String phoneVal = (sharePhone && String.isNotBlank(phone)) ? phone : null;
-                    String streetVal = shareAddress ? (street + ', ' + city + ', ' + state + ' ' + postalCode) : null;
-
-                    Id recipientUserId = recipientUsers[0].Id;
-                    String ctaUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId);
-                    String cardHtml = FimbyEmailHtmlBuilder.buildContactShareCard(
-                        FimbyTransactionalEmailService.lookupRecipientFirstName(recipientUserId),
-                        senderName, emailVal, phoneVal, streetVal, null, contextLabel,
-                        ctaUrl, 'View Conversation', 'reply.png'
-                    );
-
-                    FimbyTransactionalEmailService.TransactionalEmailRequest emailReq =
-                        new FimbyTransactionalEmailService.TransactionalEmailRequest();
-                    emailReq.recipientUserId = recipientUserId;
-                    emailReq.subject = 'Contact info shared — ' + (contextLabel != null ? contextLabel : 'your post');
-                    emailReq.cardHtml = cardHtml;
-                    emailReq.skipSubjectBlock = true;
-                    emailReq.replyToEmail = sharingContact.Email;
-
-                    FimbyTransactionalEmailService.send(emailReq);
-                }
-            }
 
             return new Map<String, Object>{
                 'success' => true,
