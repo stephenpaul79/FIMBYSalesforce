@@ -21,6 +21,7 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     @track _vouchingLoading = false;
     @track _vouchingActionInFlight = false;
     @track _vouchingError = '';
+    @track _showOverrideConfirm = false;
 
     @api
     get panelData() { return this._panelData; }
@@ -127,14 +128,22 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     handleMarkWelcomed() { this._dispatch('markWelcomed'); }
     handleViewProfile() { this._dispatch('viewProfile', { contactId: this._panelData?.contactId }); }
 
-    async handleOverrideVouchClick() {
+    handleOverrideVouchClick() {
+        if (this._vouchingActionInFlight) return;
+        if (!this._panelData?.contactId) return;
+        this._showOverrideConfirm = true;
+    }
+
+    get showOverrideConfirm() { return this._showOverrideConfirm; }
+
+    handleOverrideCancelled() {
+        this._showOverrideConfirm = false;
+    }
+
+    async handleOverrideConfirmed() {
         if (this._vouchingActionInFlight) return;
         const contactId = this._panelData?.contactId;
         if (!contactId) return;
-        // eslint-disable-next-line no-alert -- moderator override confirmation until modal refactor
-        if (!window.confirm('Mark this neighbour as Vouched directly? They will be able to borrow from the lending library immediately.')) {
-            return;
-        }
         this._vouchingActionInFlight = true;
         this._vouchingError = '';
         try {
@@ -146,10 +155,12 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
                 || 'Could not override-vouch. Please try again.';
         } finally {
             this._vouchingActionInFlight = false;
+            this._showOverrideConfirm = false;
         }
     }
 
     get vouchingError() { return this._vouchingError; }
+    get vouchingActionInFlight() { return this._vouchingActionInFlight; }
 
     _dispatch(action, payload) {
         this.dispatchEvent(new CustomEvent('modalaction', {

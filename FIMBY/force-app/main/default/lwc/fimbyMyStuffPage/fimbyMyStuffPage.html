@@ -356,5 +356,17 @@
             onclose={handleShareModalClose}
             onshared={handleShareModalShared}>
         </c-fimby-share-contact-modal>
+
+        <c-fimby-confirm-modal
+            is-open={showRevokeConfirm}
+            title="Stop sharing your contact info?"
+            message={revokeConfirmMessage}
+            confirm-label="Stop sharing"
+            processing-label="Stopping..."
+            variant="danger"
+            is-processing={isRevoking}
+            onconfirm={handleRevokeConfirmed}
+            oncancel={handleRevokeCancelled}>
+        </c-fimby-confirm-modal>
     </div>
 </template>

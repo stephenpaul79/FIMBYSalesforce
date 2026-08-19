@@ -29,6 +29,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
 
     @track postTitle = '';
     @track postDescription = '';
+    @track showDiscardConfirm = false;
 
     @track quantity = 1;
     @track perResponseLimit = 1;
@@ -587,18 +588,29 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
 
         if (this.currentStep === STEP_FORM) {
             if (this.hasUnsavedChanges()) {
-                // eslint-disable-next-line no-alert
-                if (!window.confirm('You have unsaved changes. Are you sure you want to go back?')) {
-                    return;
-                }
+                this.showDiscardConfirm = true;
+                return;
             }
-            this.resetForm();
-            this.currentStep = STEP_TYPE_SELECTION;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            this._discardAndReturnToTypeSelection();
             return;
         }
 
         this[NavigationMixin.Navigate]({ type: 'standard__namedPage', attributes: { pageName: 'home' } });
+    }
+
+    handleDiscardConfirmed() {
+        this.showDiscardConfirm = false;
+        this._discardAndReturnToTypeSelection();
+    }
+
+    handleDiscardCancelled() {
+        this.showDiscardConfirm = false;
+    }
+
+    _discardAndReturnToTypeSelection() {
+        this.resetForm();
+        this.currentStep = STEP_TYPE_SELECTION;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     hasUnsavedChanges() {

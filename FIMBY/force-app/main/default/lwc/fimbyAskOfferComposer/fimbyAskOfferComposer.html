@@ -587,5 +587,16 @@
                 </div>
             </div>
         </template>
+
+        <c-fimby-confirm-modal
+            is-open={showDiscardConfirm}
+            title="Leave without saving?"
+            message="What you have written here will not be kept. You can stay on this page and finish it instead."
+            confirm-label="Discard"
+            cancel-label="Keep editing"
+            variant="danger"
+            onconfirm={handleDiscardConfirmed}
+            oncancel={handleDiscardCancelled}>
+        </c-fimby-confirm-modal>
     </div>
 </template>

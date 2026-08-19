@@ -135,6 +135,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track vouchContext = null;
     @track isVouchActionProcessing = false;
     @track vouchActionError = '';
+    @track showVouchWithdrawConfirm = false;
 
     _composeAutoOpened = false;
 
@@ -504,10 +505,17 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         this.loadMessages();
     }
 
-    async handleVouchWithdraw() {
+    handleVouchWithdraw() {
         if (this.isVouchActionProcessing || !this.vouchContext?.vouchRecordId) return;
-        // eslint-disable-next-line no-alert -- vouch withdraw confirmation until modal refactor
-        if (!window.confirm('Withdraw this vouch request?')) return;
+        this.showVouchWithdrawConfirm = true;
+    }
+
+    handleVouchWithdrawCancelled() {
+        this.showVouchWithdrawConfirm = false;
+    }
+
+    async handleVouchWithdrawConfirmed() {
+        if (this.isVouchActionProcessing || !this.vouchContext?.vouchRecordId) return;
         this.isVouchActionProcessing = true;
         this.vouchActionError = '';
         try {
@@ -518,6 +526,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             this.vouchActionError = error?.body?.message || error?.message || 'Could not withdraw the request. Please try again.';
         } finally {
             this.isVouchActionProcessing = false;
+            this.showVouchWithdrawConfirm = false;
         }
     }
 

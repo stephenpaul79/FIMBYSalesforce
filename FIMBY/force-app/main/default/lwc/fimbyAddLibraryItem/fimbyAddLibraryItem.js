@@ -27,6 +27,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     @track autoAcceptRequests = false;
     @track autoShareContactInfo = false;
     @track damageWaiverConfirmed = false;
+    @track showDiscardConfirm = false;
 
     // Content mode: item | skill
     @track postMode = 'item';
@@ -264,13 +265,19 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
 
     handleBack() {
         if (this.hasUnsavedChanges()) {
-            // eslint-disable-next-line no-alert -- unsaved-changes guard until modal refactor
-            if (window.confirm('You have unsaved changes. Are you sure you want to go back?')) {
-                this.navigateToLibrary();
-            }
+            this.showDiscardConfirm = true;
         } else {
             this.navigateToLibrary();
         }
+    }
+
+    handleDiscardConfirmed() {
+        this.showDiscardConfirm = false;
+        this.navigateToLibrary();
+    }
+
+    handleDiscardCancelled() {
+        this.showDiscardConfirm = false;
     }
 
     hasUnsavedChanges() {

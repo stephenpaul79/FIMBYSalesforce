@@ -466,5 +466,17 @@
 
         <!-- Vouch Decline Modal -->
         <c-fimby-vouch-decline-modal ondeclinesubmitted={handleVouchDeclineSubmitted}></c-fimby-vouch-decline-modal>
+
+        <c-fimby-confirm-modal
+            is-open={showVouchWithdrawConfirm}
+            title="Withdraw this vouch request?"
+            message="They will no longer be asked to vouch for you. You can ask them again later, or ask a different neighbour."
+            confirm-label="Withdraw request"
+            processing-label="Withdrawing..."
+            variant="danger"
+            is-processing={isVouchActionProcessing}
+            onconfirm={handleVouchWithdrawConfirmed}
+            oncancel={handleVouchWithdrawCancelled}>
+        </c-fimby-confirm-modal>
     </div>
 </template>

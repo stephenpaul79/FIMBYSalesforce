@@ -107,6 +107,11 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     @track shareRecipientId = null;
     @track shareRecipientName = '';
 
+    // Revoke confirmation state
+    @track showRevokeConfirm = false;
+    @track isRevoking = false;
+    _pendingRevoke = null;
+
     // Data loaded flags
     _postsLoaded = false;
     _storiesLoaded = false;
@@ -556,31 +561,54 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     /* ===============================================================
      * Revoke / Share again handlers
      * =============================================================== */
-    async handleRevokeSharedInfo(event) {
+    handleRevokeSharedInfo(event) {
         event.stopPropagation();
-        const sharedInfoId = event.currentTarget.dataset.sharedInfoId;
-        const contactName = event.currentTarget.dataset.contactName;
-        // Says plainly what FIMBY can and cannot undo. Revocation is prospective:
-        // details already emailed or saved are beyond the platform's reach, and
-        // promising otherwise would be a false assurance about someone's privacy.
-        // eslint-disable-next-line no-alert -- revoke sharing confirmation until modal refactor
-        if (!window.confirm(
-            `Stop sharing your contact info with ${contactName}?\n\n`
+        this._pendingRevoke = {
+            sharedInfoId: event.currentTarget.dataset.sharedInfoId,
+            contactName: event.currentTarget.dataset.contactName || 'this neighbour'
+        };
+        this.showRevokeConfirm = true;
+    }
+
+    // Says plainly what FIMBY can and cannot undo. Revocation is prospective:
+    // details already emailed or saved are beyond the platform's reach, and
+    // promising otherwise would be a false assurance about someone's privacy.
+    get revokeConfirmMessage() {
+        const name = this._pendingRevoke?.contactName || 'this neighbour';
+        return `Stop sharing your contact info with ${name}?\n\n`
             + 'FIMBY will hide your details from them and your conversation will become read-only. '
             + 'Details they were already emailed or saved cannot be taken back.\n\n'
-            + 'You can share again later, which starts a fresh connection.'
-        )) {
-            return;
-        }
+            + 'You can share again later, which starts a fresh connection.';
+    }
+
+    handleRevokeCancelled() {
+        this.showRevokeConfirm = false;
+        this._pendingRevoke = null;
+    }
+
+    async handleRevokeConfirmed() {
+        const pending = this._pendingRevoke;
+        if (!pending || this.isRevoking) return;
+
+        this.isRevoking = true;
+        let revoked = false;
         try {
-            await revokeSharedContactInfo({ sharedContactInfoId: sharedInfoId });
+            await revokeSharedContactInfo({ sharedContactInfoId: pending.sharedInfoId });
+            revoked = true;
+        } catch (error) {
+            const msg = error.body?.message || error.message || 'We couldn’t stop sharing just now. Please try again.';
+            fireToast({ message: msg, variant: 'error' });
+        } finally {
+            this.isRevoking = false;
+            this.showRevokeConfirm = false;
+            this._pendingRevoke = null;
+        }
+
+        if (revoked) {
             // The contact moves to the Revoked list on reload — the surface change
             // is the confirmation, so no banner.
             this._contactsLoaded = false;
             await this._loadContacts();
-        } catch (error) {
-            const msg = error.body?.message || error.message || 'We couldn’t stop sharing just now. Please try again.';
-            fireToast({ message: msg, variant: 'error' });
         }
     }
 

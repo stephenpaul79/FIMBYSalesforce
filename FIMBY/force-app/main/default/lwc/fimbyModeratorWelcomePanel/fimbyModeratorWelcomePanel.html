@@ -68,4 +68,16 @@
         </div>
         <button class="btn-action btn-link" onclick={handleViewProfile}>View Profile</button>
     </div>
+
+    <c-fimby-confirm-modal
+        is-open={showOverrideConfirm}
+        title="Mark this neighbour as vouched?"
+        message="They will be able to borrow from the lending library immediately, without waiting for a neighbour to vouch for them."
+        confirm-label="Mark as vouched"
+        processing-label="Saving..."
+        variant="primary"
+        is-processing={vouchingActionInFlight}
+        onconfirm={handleOverrideConfirmed}
+        oncancel={handleOverrideCancelled}>
+    </c-fimby-confirm-modal>
 </template>
