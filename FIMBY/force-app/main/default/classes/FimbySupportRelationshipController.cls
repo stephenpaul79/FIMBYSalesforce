@@ -96,6 +96,65 @@ public with sharing class FimbySupportRelationshipController {
         }
     }
 
+    /**
+     * Honours the ?actAs= parameter carried by a notification deep link.
+     *
+     * The client sends only a Contact Id, so the mandate is re-derived here from
+     * an Approved relationship the caller actually holds — a hand-typed or
+     * forwarded link cannot grant access to someone else's inbox.
+     *
+     * Returns true only when this call changed the acting identity, so the
+     * caller can reload once and not at all on a repeat visit.
+     */
+    @AuraEnabled
+    public static Boolean switchIdentityToContact(Id actAsContactId) {
+        try {
+            if (actAsContactId == null) {
+                return false;
+            }
+
+            User currentUser = FimbyIdentityRepository.getCurrentUser();
+            if (currentUser.ContactId == null) {
+                throw new AuraHandledException('No Contact associated with current user');
+            }
+
+            // Landing on your own notification is the ordinary case, not an error.
+            if (actAsContactId == currentUser.ContactId) {
+                Contact self = new IdentityReader().currentIdentity(currentUser.ContactId);
+                if (self.Logged_In_As_Contact__c == null) {
+                    return false;
+                }
+                new IdentityHelper().setIdentity(currentUser.ContactId, null, null);
+                FimbyIdentityRepository.clearCache();
+                return true;
+            }
+
+            List<Support_Relationship__c> mandates = new IdentityReader()
+                .approvedMandateFor(currentUser.ContactId, actAsContactId);
+
+            if (mandates.isEmpty()) {
+                throw new AuraHandledException(
+                    'You no longer have access to that profile.'
+                );
+            }
+
+            Contact caller = new IdentityReader().currentIdentity(currentUser.ContactId);
+            if (caller.Logged_In_As_Contact__c == actAsContactId) {
+                return false;
+            }
+
+            new IdentityHelper().setIdentity(
+                currentUser.ContactId, actAsContactId, mandates[0].Neighbourhood__c
+            );
+            FimbyIdentityRepository.clearCache();
+            return true;
+        } catch (AuraHandledException ae) {
+            throw ae;
+        } catch (Exception e) {
+            throw new AuraHandledException('Error switching identity: ' + e.getMessage());
+        }
+    }
+
     @AuraEnabled
     public static void switchToSelf() {
         try {
@@ -825,6 +884,34 @@ public with sharing class FimbySupportRelationshipController {
                 }
             }
             return options;
+        }
+    }
+
+    /**
+     * Reads the caller's own mandate rows. Runs without sharing because a
+     * guardian must be able to see the relationship that authorises them even
+     * when the child record itself is not shared to them.
+     */
+    private without sharing class IdentityReader {
+        public List<Support_Relationship__c> approvedMandateFor(Id callerContactId, Id targetContactId) {
+            return [
+                SELECT Id, Neighbourhood__c
+                FROM Support_Relationship__c
+                WHERE Contact__c = :callerContactId
+                  AND Related_Contact__c = :targetContactId
+                  AND Status__c = 'Approved'
+                  AND Relationship_Type__c IN :FimbyProxiedPresenceGuard.CONTACT_BACKED_TYPES
+                LIMIT 1
+            ];
+        }
+
+        public Contact currentIdentity(Id contactId) {
+            return [
+                SELECT Id, Logged_In_As_Contact__c
+                FROM Contact
+                WHERE Id = :contactId
+                LIMIT 1
+            ];
         }
     }
 

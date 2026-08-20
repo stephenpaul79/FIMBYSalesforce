@@ -224,6 +224,92 @@ private class FimbySupportRelationshipControllerTest {
     }
 
     @IsTest
+    static void aNotificationDeepLinkOpensInTheSupportedPersonsView() {
+        User testUser = getHelperUser();
+        Contact subject = getSubjectContact();
+        Account nh = getNeighbourhood();
+        createSupportPersonRelationship('Approved');
+
+        System.runAs(testUser) {
+            Test.startTest();
+            Boolean switched =
+                FimbySupportRelationshipController.switchIdentityToContact(subject.Id);
+            Test.stopTest();
+
+            System.assertEquals(true, switched, 'The first tap must change the acting identity');
+
+            Contact after = [
+                SELECT Logged_In_As_Contact__c, Logged_In_As_Neighbourhood__c
+                FROM Contact
+                WHERE Id = :testUser.ContactId
+            ];
+            System.assertEquals(subject.Id, after.Logged_In_As_Contact__c);
+            System.assertEquals(nh.Id, after.Logged_In_As_Neighbourhood__c);
+
+            // A second tap on the same link must not trigger another page reload.
+            System.assertEquals(
+                false,
+                FimbySupportRelationshipController.switchIdentityToContact(subject.Id),
+                'Re-opening the same link is already in the right identity'
+            );
+        }
+    }
+
+    @IsTest
+    static void aDeepLinkCannotOpenAProfileTheUserHasNoMandateFor() {
+        User testUser = getHelperUser();
+        Contact stranger = new Contact(
+            FirstName = 'Not', LastName = 'Mine', AccountId = getNeighbourhood().Id
+        );
+        insert stranger;
+
+        System.runAs(testUser) {
+            Test.startTest();
+            try {
+                FimbySupportRelationshipController.switchIdentityToContact(stranger.Id);
+                System.assert(false, 'A hand-typed actAs must not grant access');
+            } catch (AuraHandledException e) {
+                System.assert(true, 'Refused as expected');
+            }
+            Test.stopTest();
+
+            Contact after = [
+                SELECT Logged_In_As_Contact__c FROM Contact WHERE Id = :testUser.ContactId
+            ];
+            System.assertEquals(null, after.Logged_In_As_Contact__c,
+                'A refused link must leave the acting identity untouched');
+        }
+    }
+
+    @IsTest
+    static void aDeepLinkForYourOwnInboxSwitchesBackToYourself() {
+        User testUser = getHelperUser();
+        Support_Relationship__c rel = createSupportPersonRelationship('Approved');
+
+        System.runAs(testUser) {
+            FimbySupportRelationshipController.switchIdentity(rel.Id);
+
+            Test.startTest();
+            Boolean switched =
+                FimbySupportRelationshipController.switchIdentityToContact(testUser.ContactId);
+            Test.stopTest();
+
+            System.assertEquals(true, switched, 'Landing on your own notification must switch back');
+
+            Contact after = [
+                SELECT Logged_In_As_Contact__c FROM Contact WHERE Id = :testUser.ContactId
+            ];
+            System.assertEquals(null, after.Logged_In_As_Contact__c);
+
+            System.assertEquals(
+                false,
+                FimbySupportRelationshipController.switchIdentityToContact(testUser.ContactId),
+                'Already yourself is a no-op, not an error'
+            );
+        }
+    }
+
+    @IsTest
     static void testSwitchIdentityRejectsNonApproved() {
         User testUser = getHelperUser();
         Support_Relationship__c rel = createSupportPersonRelationship('Pending');

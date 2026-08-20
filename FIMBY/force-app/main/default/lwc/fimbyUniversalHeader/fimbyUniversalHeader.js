@@ -14,6 +14,7 @@ import recordAppOpen from '@salesforce/apex/FimbyContactController.recordAppOpen
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
+import switchIdentityToContact from '@salesforce/apex/FimbySupportRelationshipController.switchIdentityToContact';
 import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
 import endAllSessions from '@salesforce/apex/FimbySessionController.endAllSessions';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -136,6 +137,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     connectedCallback() {
+        this._honourActAsDeepLink();
         this._activeTab = this._detectActiveTab();
         this._hydrateBadgeCountsFromCache();
         this._pollBadgeCounts();
@@ -599,6 +601,50 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         return this.hasPriorTosAcceptance
             ? 'Our Terms of Service have changed since you last agreed. Please read the current version and confirm you\'re 19 or older to continue.'
             : 'To be part of your neighbourhood on FIMBY, please read our Terms of Service and confirm you\'re 19 or older.';
+    }
+
+    /**
+     * A notification about a supported neighbour carries ?actAs=<contactId>, so
+     * tapping it lands the helper already looking through the right identity
+     * instead of arriving as themselves and finding an empty or wrong-voiced
+     * screen. The parameter is advisory — the server re-derives the mandate.
+     *
+     * The parameter is stripped before any reload so a forwarded or bookmarked
+     * link carries no identity, and so the reload cannot loop.
+     */
+    _honourActAsDeepLink() {
+        let actAs;
+        try {
+            actAs = new URLSearchParams(window.location.search).get('actAs');
+        } catch (error) {
+            return;
+        }
+        if (!actAs || !/^[a-zA-Z0-9]{15,18}$/.test(actAs)) return;
+
+        const cleanUrl = this._urlWithoutActAs();
+        window.history.replaceState({}, '', cleanUrl);
+
+        switchIdentityToContact({ actAsContactId: actAs })
+            .then(switched => {
+                if (!switched) return;
+                this._clearFeedCaches();
+                window.location.replace(cleanUrl);
+            })
+            .catch(error => {
+                fireToast({
+                    title: 'Showing your own view',
+                    message: error?.body?.message
+                        || 'We could not open that on behalf of the person you support.',
+                    variant: 'warning'
+                });
+            });
+    }
+
+    _urlWithoutActAs() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('actAs');
+        const query = url.searchParams.toString();
+        return url.pathname + (query ? `?${query}` : '') + url.hash;
     }
 
     handleIdentitySwitch(event) {
