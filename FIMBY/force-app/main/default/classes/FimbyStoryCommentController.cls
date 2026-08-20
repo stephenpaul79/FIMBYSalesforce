@@ -161,12 +161,28 @@ public with sharing class FimbyStoryCommentController {
 
             FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
             Id realContactId = identity.contact?.Id;
-            Id actingAsContactId = String.isNotBlank(commentContactId)
-                ? (Id) commentContactId
-                : identity.actingAsContactId;
-            if (actingAsContactId == null) {
-                actingAsContactId = realContactId;
+            Id actingAsContactId = identity.actingAsContactId != null
+                ? identity.actingAsContactId
+                : realContactId;
+
+            // The client still sends the identity it drew on screen. It is used
+            // only to detect that the two disagree — someone switched identity
+            // on another device or tab after this form was rendered — so the
+            // comment is refused rather than published in a voice the author
+            // did not choose. It is never trusted as the identity to stamp.
+            if (String.isNotBlank(commentContactId)
+                    && (Id) commentContactId != actingAsContactId) {
+                AuraHandledException stale = new AuraHandledException(
+                    'You switched who you\'re acting as since you started this comment. '
+                    + 'Please refresh and post it again.'
+                );
+                stale.setMessage(
+                    'You switched who you\'re acting as since you started this comment. '
+                    + 'Please refresh and post it again.'
+                );
+                throw stale;
             }
+
             Id neighbourhoodId = identity.neighbourhoodId;
 
             StoryCommentAccessHelper accessHelper = new StoryCommentAccessHelper();

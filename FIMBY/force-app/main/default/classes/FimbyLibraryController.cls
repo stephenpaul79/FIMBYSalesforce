@@ -353,15 +353,34 @@ public with sharing class FimbyLibraryController {
             Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(requestData);
 
             String itemId = (String) data.get('itemId');
-            String requestedById = (String) data.get('requestedById');
-            String requestedByRealContactId = (String) data.get('requestedByRealContactId');
+            String clientRequestedById = (String) data.get('requestedById');
             String requestedDateStr = (String) data.get('requestedDate');
             Integer daysNeeded = Integer.valueOf(data.get('daysNeeded'));
             String message = (String) data.get('message');
 
-            // Server-side fallback: when LWC doesn't pass it explicitly, derive real Contact from running user
-            if (String.isBlank(requestedByRealContactId)) {
-                requestedByRealContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+            // Both halves of the dual stamp are derived here, never taken from
+            // the client. A borrow request is a commitment made in someone's
+            // name; accepting the name from the browser would let anyone borrow
+            // as anyone.
+            Id requestedByRealContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+            Id actingAsId = FimbyIdentityRepository.getActingAsContactId();
+            Id requestedById = actingAsId != null ? actingAsId : requestedByRealContactId;
+
+            // The client's copy is only used to catch a disagreement: they
+            // switched identity in another tab or on another device after this
+            // form was drawn, so the request would go out in a name they did
+            // not choose.
+            if (String.isNotBlank(clientRequestedById)
+                    && (Id) clientRequestedById != requestedById) {
+                AuraHandledException stale = new AuraHandledException(
+                    'You switched who you\'re acting as since you opened this request. '
+                    + 'Please refresh and ask again.'
+                );
+                stale.setMessage(
+                    'You switched who you\'re acting as since you opened this request. '
+                    + 'Please refresh and ask again.'
+                );
+                throw stale;
             }
 
             Library_Item__c item = [

@@ -31,6 +31,15 @@ public class FimbyLibraryControllerTest {
         insert orgAccount;
     }
 
+    /** Setup DML must be isolated from Contact DML in the same transaction. */
+    private static User createUserFor(Id contactId) {
+        User created;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            created = FimbyTestDataFactory.createCommunityUser(contactId, null, true);
+        }
+        return created;
+    }
+
     private static User getTestUser() {
         Contact testContact = getTestContact();
         List<User> users = [
@@ -430,7 +439,8 @@ public class FimbyLibraryControllerTest {
         Contact borrower = new Contact(
             FirstName = 'Borrower',
             LastName = 'Test',
-            AccountId = testContact.AccountId
+            AccountId = testContact.AccountId,
+            Vouched_Status__c = 'Vouched'
         );
         insert borrower;
 
@@ -448,6 +458,11 @@ public class FimbyLibraryControllerTest {
         );
         insert item;
 
+        // The borrower must actually be at the keyboard: the controller derives
+        // both halves of the dual stamp from the running user rather than from
+        // the payload, so no one can file a request in someone else's name.
+        User borrowerUser = createUserFor(borrower.Id);
+
         Map<String, Object> requestData = new Map<String, Object>{
             'itemId' => item.Id,
             'requestedById' => borrower.Id,
@@ -458,13 +473,64 @@ public class FimbyLibraryControllerTest {
 
         Test.startTest();
         Map<String, Object> result;
-        System.runAs(testUser) {
+        System.runAs(borrowerUser) {
             result = FimbyLibraryController.createLendingRequest(JSON.serialize(requestData));
         }
         Test.stopTest();
 
         System.assertEquals(true, result.get('success'), 'Should return success');
         System.assertEquals(true, result.get('autoApproved'), 'Should be auto-approved');
+    }
+
+    /**
+     * A borrow request is a commitment made in someone's name. If the browser
+     * says one identity and the session says another, the person switched hats
+     * mid-form — publish nothing and ask them to look again.
+     */
+    @isTest
+    static void aRequestIsRefusedWhenTheIdentityOnScreenNoLongerMatchesTheSession() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Contact someoneElse = new Contact(
+            FirstName = 'Someone', LastName = 'Else', AccountId = testContact.AccountId
+        );
+        insert someoneElse;
+
+        Library_Item__c item = new Library_Item__c(
+            Name = 'Stale Identity Item',
+            Description__c = 'Test',
+            Category__c = 'Tools',
+            Owned_By__c = 'Self',
+            Owner_Contact__c = testContact.Id,
+            Neighbourhood__c = testContact.AccountId,
+            Status__c = 'Available',
+            Max_Lending_Time_In_Days__c = 7
+        );
+        insert item;
+
+        Map<String, Object> requestData = new Map<String, Object>{
+            'itemId' => item.Id,
+            'requestedById' => someoneElse.Id,
+            'requestedDate' => String.valueOf(Date.today().addDays(1)),
+            'daysNeeded' => 2,
+            'message' => 'Not in my name'
+        };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            try {
+                FimbyLibraryController.createLendingRequest(JSON.serialize(requestData));
+                System.assert(false, 'A request in another Contact\'s name must be refused');
+            } catch (AuraHandledException e) {
+                System.assert(true, 'Refused as expected');
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(0,
+            [SELECT COUNT() FROM Lending_Request__c WHERE Requested_By__c = :someoneElse.Id],
+            'Nothing may be written in the other person\'s name');
     }
 
     @isTest
@@ -475,7 +541,8 @@ public class FimbyLibraryControllerTest {
         Contact borrower = new Contact(
             FirstName = 'Borrower2',
             LastName = 'Test',
-            AccountId = testContact.AccountId
+            AccountId = testContact.AccountId,
+            Vouched_Status__c = 'Vouched'
         );
         insert borrower;
 
@@ -493,6 +560,8 @@ public class FimbyLibraryControllerTest {
         );
         insert item;
 
+        User borrowerUser = createUserFor(borrower.Id);
+
         Map<String, Object> requestData = new Map<String, Object>{
             'itemId' => item.Id,
             'requestedById' => borrower.Id,
@@ -503,7 +572,7 @@ public class FimbyLibraryControllerTest {
 
         Test.startTest();
         Map<String, Object> result;
-        System.runAs(testUser) {
+        System.runAs(borrowerUser) {
             result = FimbyLibraryController.createLendingRequest(JSON.serialize(requestData));
         }
         Test.stopTest();

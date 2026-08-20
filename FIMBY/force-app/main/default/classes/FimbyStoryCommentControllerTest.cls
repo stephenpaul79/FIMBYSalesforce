@@ -259,6 +259,42 @@ public class FimbyStoryCommentControllerTest {
         System.assertEquals(1, mentionNotifs.size(), 'Mentioned contact should receive a notification');
     }
 
+    /**
+     * The identity is derived from the session, never from the payload. If the
+     * browser's copy disagrees the author switched hats after the form was
+     * drawn, so the comment is refused rather than published in a voice they
+     * did not choose.
+     */
+    @isTest
+    static void aCommentIsRefusedWhenTheIdentityOnScreenNoLongerMatchesTheSession() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Contact someoneElse = FimbyTestDataFactory.createNeighbourhoodContact(testContact.AccountId, true);
+
+        Boolean refused = false;
+        Story__c testStory;
+        Test.startTest();
+        System.runAs(testUser) {
+            testStory = createTestStory(testContact);
+            Map<String, Object> commentData = new Map<String, Object>{
+                'storyId' => testStory.Id,
+                'commentText' => 'Posted in the wrong voice',
+                'commentContactId' => someoneElse.Id
+            };
+            try {
+                FimbyStoryCommentController.postStoryComment(JSON.serialize(commentData));
+            } catch (Exception e) {
+                refused = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused, 'A comment in another Contact\'s name must be refused');
+        System.assertEquals(0,
+            [SELECT COUNT() FROM Story_Comment__c WHERE Posted_By__c = :someoneElse.Id],
+            'Nothing may be written in the other person\'s name');
+    }
+
     @isTest
     static void testPostStoryComment_RequiresStoryAndBody() {
         User testUser = getTestUser();
