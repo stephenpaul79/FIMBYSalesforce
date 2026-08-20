@@ -7,6 +7,7 @@ import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 export default class FimbyNeighbourProfile extends NavigationMixin(LightningElement) {
     @track isLoading = true;
@@ -15,6 +16,7 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     @track showBlockConfirm = false;
     @track isBlocking = false;
     @track isProfileModerator = false;
+    @track isActingAsProxiedChild = false;
 
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get contactIconUrl() { return `${IMPACT_ICONS}/sign.png`; }
@@ -64,7 +66,13 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     get hasSharedContactInfo() { return this.profile.hasSharedContactInfo === true; }
     get iHaveSharedWithThem() { return this.profile.iHaveSharedWithThem === true; }
     get showRedactedContactSection() { return !this.hasSharedContactInfo; }
-    get showShareCta() { return this.showRedactedContactSection && !this.iHaveSharedWithThem; }
+    // A parent-managed child has no details of their own to offer, so the invitation
+    // to share is withheld rather than shown and then refused by the server.
+    get showShareCta() {
+        return this.showRedactedContactSection
+            && !this.iHaveSharedWithThem
+            && !this.isActingAsProxiedChild;
+    }
     get showAwaitingShareCopy() { return this.showRedactedContactSection && this.iHaveSharedWithThem; }
     get shareCtaLabel() {
         const name = this.profile.firstName || this.profile.fullName || 'this neighbour';
@@ -158,6 +166,14 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
         if (!this.neighbourContactId) {
             this.isLoading = false;
             return;
+        }
+        try {
+            const identity = await getActingAsContact();
+            this.isActingAsProxiedChild = identity?.isActingAsProxiedChild === true;
+        } catch (error) {
+            // The server is the real guard; a failed lookup must not strip an ordinary
+            // neighbour's share button.
+            console.error('Error resolving acting identity:', error);
         }
         await this._loadProfile();
     }

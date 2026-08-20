@@ -10,6 +10,7 @@ import getMySkills from '@salesforce/apex/FimbyMyStuffController.getMySkills';
 import getMyBorrowedItems from '@salesforce/apex/FimbyMyStuffController.getMyBorrowedItems';
 import getMyContacts from '@salesforce/apex/FimbyMyStuffController.getMyContacts';
 import revokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.revokeSharedContactInfo';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
 import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
@@ -100,6 +101,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     @track expandedContactId = null;
     @track contactSearchTerm = '';
     @track activeContactsSubFilter = 'received';
+    @track isActingAsProxiedChild = false;
 
     // Share Contact modal state
     @track showShareModal = false;
@@ -131,11 +133,32 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         }
         this.isLoading = true;
         try {
+            await this._resolveActingIdentity();
             await this._loadActiveSection();
         } catch (error) {
             console.error('Error initializing My Stuff section:', error);
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    /**
+     * A parent-managed child has no contact details of their own, so every outbound
+     * share affordance is hidden while acting as one. The server refuses these writes
+     * regardless; hiding them keeps a guardian from meeting a refusal they could not
+     * have predicted. Received cards stay, because an adult may still share with them.
+     */
+    async _resolveActingIdentity() {
+        try {
+            const identity = await getActingAsContact();
+            this.isActingAsProxiedChild = identity?.isActingAsProxiedChild === true;
+            if (this.isActingAsProxiedChild) {
+                this.activeContactsSubFilter = 'received';
+            }
+        } catch (error) {
+            // Failing closed would strip a guardian's own share buttons on a network
+            // blip, so the UI stays as-is and the server remains the real guard.
+            console.error('Error resolving acting identity:', error);
         }
     }
 
@@ -330,8 +353,14 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
+    /** The Shared and Revoked tabs only list outbound shares, which a child never has. */
+    get showOutboundSubFilters() { return !this.isActingAsProxiedChild; }
+
     handleContactsSubFilter(event) {
         const filter = event.currentTarget.dataset.filter;
+        if (this.isActingAsProxiedChild && filter !== 'received') {
+            return;
+        }
         if (filter === 'received' || filter === 'shared' || filter === 'revoked') {
             this.activeContactsSubFilter = filter;
             this.expandedContactId = null;
@@ -379,6 +408,9 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     get filteredContacts() {
         if (this.activeFilter !== 'contacts') return [];
         const sub = this.activeContactsSubFilter;
+        // Suppresses every affordance that would disclose the acting identity's own
+        // details: Reciprocate, Revoke, Share again, and Edit.
+        const outbound = this.isActingAsProxiedChild;
         let filtered;
         if (sub === 'received') {
             filtered = this.myContacts.filter(c => c.theySharedWithMe);
@@ -394,13 +426,13 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             // who has shared with you. `isRevoked` describes your own outbound share,
             // so it must not decide whether you may message them.
             canMessage: c.theySharedWithMe === true,
-            showReciprocatePill: sub === 'received',
+            showReciprocatePill: sub === 'received' && !outbound,
             showReciprocatedLabel: sub === 'received' && c.iSharedWithThem && !c.isRevoked,
-            showReciprocateAction: sub === 'received' && (!c.iSharedWithThem || c.isRevoked),
+            showReciprocateAction: sub === 'received' && !outbound && (!c.iSharedWithThem || c.isRevoked),
             iSharedWithThemFalse: !c.iSharedWithThem,
-            showRevokeBtn: sub === 'shared' && c.iSharedWithThem && !c.isRevoked,
-            showShareAgainBtn: sub === 'revoked' && c.isRevoked,
-            showEditBtn: c.iSharedWithThem && !c.isRevoked,
+            showRevokeBtn: sub === 'shared' && !outbound && c.iSharedWithThem && !c.isRevoked,
+            showShareAgainBtn: sub === 'revoked' && !outbound && c.isRevoked,
+            showEditBtn: !outbound && c.iSharedWithThem && !c.isRevoked,
             chevronIcon: c.isExpanded ? 'utility:chevrondown' : 'utility:chevronright',
             cardClass: 'contact-card-wrapper' + (c.isExpanded ? ' contact-card-expanded' : '')
         }));

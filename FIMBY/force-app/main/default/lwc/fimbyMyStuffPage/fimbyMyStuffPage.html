@@ -18,23 +18,27 @@
                                 data-filter="received">
                             <span>Received</span>
                         </button>
-                        <button class={sharedFilterClass}
-                                title="People you have shared your contact info with — they can start a conversation with you, and you can update or add more details anytime"
-                                onclick={handleContactsSubFilter}
-                                data-filter="shared">
-                            <span>Shared</span>
-                        </button>
-                        <button class={revokedFilterClass}
-                                title="Sharing you have stopped — you can share again anytime, which starts a fresh conversation"
-                                onclick={handleContactsSubFilter}
-                                data-filter="revoked">
-                            <span>Revoked</span>
-                        </button>
+                        <template lwc:if={showOutboundSubFilters}>
+                            <button class={sharedFilterClass}
+                                    title="People you have shared your contact info with — they can start a conversation with you, and you can update or add more details anytime"
+                                    onclick={handleContactsSubFilter}
+                                    data-filter="shared">
+                                <span>Shared</span>
+                            </button>
+                            <button class={revokedFilterClass}
+                                    title="Sharing you have stopped — you can share again anytime, which starts a fresh conversation"
+                                    onclick={handleContactsSubFilter}
+                                    data-filter="revoked">
+                                <span>Revoked</span>
+                            </button>
+                        </template>
                     </div>
+                    <template lwc:if={showOutboundSubFilters}>
                         <button class="share-contact-pill" onclick={handleOpenShareModal}>
                             <img src={shareIconUrl} alt="" class="share-pill-icon">
                             Share Info
                         </button>
+                    </template>
                 </div>
             </template>
         </div>

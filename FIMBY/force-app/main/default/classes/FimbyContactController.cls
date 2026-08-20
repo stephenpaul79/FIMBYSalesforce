@@ -38,7 +38,7 @@ public with sharing class FimbyContactController {
             } else {
                 actingAsContact = [
                     SELECT Id, Name, FirstName, LastName, AccountId, Account.Name,
-                           Image_URL__c, Is_Organization_Contact__c,
+                           Image_URL__c, Is_Organization_Contact__c, Is_Parent_Proxied__c,
                            Organization_Account__c, Organization_Account__r.Name,
                            Organization_Account__r.Logo_URL__c
                     FROM Contact
@@ -68,6 +68,13 @@ public with sharing class FimbyContactController {
             Boolean tosReacceptanceRequired = realContact.Tos_Reacceptance_Required__c == true;
             Boolean hasPriorTosAcceptance = realContact.Tos_Accepted_Date__c != null;
 
+            // Only reachable by switching: a parent-managed child never has a login of
+            // their own, so acting as yourself can never be acting as a child. Drives
+            // the UI's decision to hide outbound contact-sharing affordances, which the
+            // server refuses anyway via FimbyProxiedPresenceGuard.
+            Boolean isActingAsProxiedChild =
+                !isActingAsSelf && actingAsContact.Is_Parent_Proxied__c == true;
+
             return new Map<String, Object>{
                 'success' => true,
                 'realContactId' => realContact.Id,
@@ -81,6 +88,7 @@ public with sharing class FimbyContactController {
                 'accountName' => actingAsContact.Account?.Name,
                 'isActingAsSelf' => isActingAsSelf,
                 'isActingAsOrg' => isOrgContact,
+                'isActingAsProxiedChild' => isActingAsProxiedChild,
                 'firstName' => actingAsContact.FirstName,
                 'postingAsDisplayName' => orgDisplayName,
                 'isOrganizationContact' => isOrgContact,
