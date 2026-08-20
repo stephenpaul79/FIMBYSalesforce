@@ -162,9 +162,11 @@ private class FimbySupportRelationshipPaperFlowTest {
         FimbySupportRelationshipEmailService.sendReminderEmail(rel.Id, 14);
         FimbySupportRelationshipEmailService.sendReminderEmail(rel.Id, 30);
         FimbySupportRelationshipEmailService.sendReminderEmail(rel.Id, 60);
-        rel.Rejection_Reason__c = 'Form invalid';
-        rel.Rejection_Reason_Detail__c = 'Block C blank';
-        update rel;
+        update new Support_Relationship__c(
+            Id = rel.Id,
+            Rejection_Reason__c = 'Form invalid',
+            Rejection_Reason_Detail__c = 'Block C blank'
+        );
         FimbySupportRelationshipEmailService.sendRejectionNotification(rel.Id);
         FimbySupportRelationshipEmailService.sendApprovalNotification(rel.Id);
         Test.stopTest();
@@ -196,12 +198,16 @@ private class FimbySupportRelationshipPaperFlowTest {
         insert rel;
 
         Test.startTest();
-        rel.Status__c = 'Pending Paper Review';
-        update rel;
+        update new Support_Relationship__c(
+            Id = rel.Id,
+            Status__c = 'Pending Paper Review'
+        );
 
-        rel.Status__c = 'Rejected';
-        rel.Rejection_Reason__c = 'Form invalid';
-        update rel;
+        update new Support_Relationship__c(
+            Id = rel.Id,
+            Status__c = 'Rejected',
+            Rejection_Reason__c = 'Form invalid'
+        );
         Test.stopTest();
 
         Support_Relationship__c reloaded = [
@@ -235,9 +241,11 @@ private class FimbySupportRelationshipPaperFlowTest {
         insert rel;
 
         Test.startTest();
-        rel.Status__c = 'Approved';
-        rel.Approved_Date__c = Datetime.now();
-        update rel;
+        update new Support_Relationship__c(
+            Id = rel.Id,
+            Status__c = 'Approved',
+            Approved_Date__c = Datetime.now()
+        );
         Test.stopTest();
 
         Contact reloaded = [
@@ -275,9 +283,11 @@ private class FimbySupportRelationshipPaperFlowTest {
         insert rel;
 
         Test.startTest();
-        rel.Status__c = 'Approved';
-        rel.Approved_Date__c = Datetime.now();
-        update rel;
+        update new Support_Relationship__c(
+            Id = rel.Id,
+            Status__c = 'Approved',
+            Approved_Date__c = Datetime.now()
+        );
         Test.stopTest();
 
         Contact reloaded = [
