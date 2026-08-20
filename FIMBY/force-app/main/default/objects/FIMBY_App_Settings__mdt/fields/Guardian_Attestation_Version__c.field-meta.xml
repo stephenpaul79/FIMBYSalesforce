@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guardian_Attestation_Version__c</fullName>
+    <description>Current published version of the guardian attestation shown when an adult creates a parent-managed profile. Stamped onto Support_Relationship__c.Guardian_Attestation_Version__c so the record shows which wording the guardian actually agreed to, not merely that they agreed to something.</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Bump whenever the guardian attestation wording changes. Existing relationships keep the version they were created under.</inlineHelpText>
+    <label>Guardian Attestation Version</label>
+    <length>10</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

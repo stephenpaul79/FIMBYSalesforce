@@ -65,13 +65,16 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
 
     get headerMenuItems() {
         return [
-            { key: 'setup', label: 'New', icon: ICONS.add, display: 'inline', variant: 'primary' }
+            { key: 'setup', label: 'New', icon: ICONS.add, display: 'inline', variant: 'primary' },
+            { key: 'family', label: 'Family member', icon: ICONS.people, display: 'responsive' }
         ];
     }
 
     handleHeaderMenuAction(event) {
         if (event.detail.key === 'setup') {
             this.handleSetupNew();
+        } else if (event.detail.key === 'family') {
+            this.template.querySelector('c-fimby-family-member-setup-modal')?.open();
         }
     }
 

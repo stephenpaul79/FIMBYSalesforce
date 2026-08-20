@@ -1,0 +1,81 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Add a family member" onkeydown={handleKeydown}>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <template lwc:if={isPhotoStep}>Add a photo</template>
+                        <template lwc:else>Add a family member</template>
+                    </h2>
+                    <button type="button" class="close-x" onclick={close} aria-label="Close">&times;</button>
+                </div>
+
+                <template lwc:if={isPhotoStep}>
+                    <div class="step-content">
+                        <p class="step-label">{createdName}'s profile is ready</p>
+                        <p class="helper-text">
+                            A photo helps neighbours recognise {createdName}. You can add one now or any time later.
+                        </p>
+
+                        <c-fimby-image-uploader
+                            record-id={createdContactId}
+                            object-api-name="Contact"
+                            label="Add photo"
+                            require-people-consent
+                            onimageuploaded={handlePhotoUploaded}>
+                        </c-fimby-image-uploader>
+
+                        <div class="modal-actions">
+                            <button type="button" class="nav-btn nav-next" onclick={handleDone}>Done</button>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <div class="step-content">
+                        <p class="helper-text">
+                            A family member's profile is one you look after. They'll be part of the
+                            neighbourhood, and you'll be the one posting and replying for them.
+                        </p>
+
+                        <label class="form-field">
+                            <div class="field-label-row">
+                                <span>First name</span>
+                                <span class={firstNameCountClass}>{firstNameLength}/40</span>
+                            </div>
+                            <input type="text" class="text-input" maxlength="40"
+                                   value={firstName} oninput={handleFirstNameChange} />
+                        </label>
+
+                        <label class="form-field">
+                            <span class="field-label">Date of birth</span>
+                            <input type="date" class="date-input" value={birthdate} onchange={handleBirthdateChange} />
+                            <span class="helper-text helper-text--quiet">
+                                We use this to know they're a young person. It isn't shown to neighbours.
+                            </span>
+                        </label>
+
+                        <label class="attestation">
+                            <input type="checkbox" checked={attested} onchange={handleAttestationChange} />
+                            <span>
+                                I'm this young person's parent or legal guardian. I'm setting up this
+                                profile on their behalf, and I understand that everything posted from it
+                                is posted by me.
+                            </span>
+                        </label>
+
+                        <c-fimby-inline-banner variant="error" message={error}></c-fimby-inline-banner>
+
+                        <div class="modal-actions">
+                            <button type="button" class="nav-btn nav-back" onclick={close}>Cancel</button>
+                            <button type="button" class="nav-btn nav-next" disabled={submitDisabled} onclick={handleSubmit}>
+                                <template lwc:if={isSubmitting}>Setting up…</template>
+                                <template lwc:else>Create profile</template>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

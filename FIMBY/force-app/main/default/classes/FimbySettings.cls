@@ -198,6 +198,12 @@ public with sharing class FimbySettings {
     public static String tosCurrentVersion()             { return get()?.Tos_Current_Version__c; }
     /** @description Date the current Terms of Service version took effect. */
     public static Date   tosEffectiveDate()              { return get()?.Tos_Effective_Date__c; }
+    /**
+     * @description Current published version of the guardian attestation. Stamped onto
+     *              the relationship at creation so a record shows which wording the
+     *              guardian agreed to, not merely that they agreed to something.
+     */
+    public static String guardianAttestationVersion()    { return get()?.Guardian_Attestation_Version__c; }
     /** @description Current published version of the Community Group Agreement. */
     public static String cgaCurrentVersion()             { return get()?.Cga_Current_Version__c; }
     /** @description Date the current CGA version took effect. */

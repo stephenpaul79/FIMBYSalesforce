@@ -24,6 +24,7 @@
             <value><fullName>Stale_Post</fullName><default>false</default><label>Stale Post</label></value>
             <value><fullName>Community_Group_Lifecycle</fullName><default>false</default><label>Community Group Lifecycle</label></value>
             <value><fullName>Vouch_Pending</fullName><default>false</default><label>Vouch Pending</label></value>
+            <value><fullName>Parent_Managed_Profile</fullName><default>false</default><label>Parent-Managed Profile</label></value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
