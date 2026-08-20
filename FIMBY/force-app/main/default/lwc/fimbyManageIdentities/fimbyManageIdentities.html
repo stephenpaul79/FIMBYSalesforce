@@ -26,7 +26,11 @@
                                 <img src={rel.avatarUrl} alt="" class="row-avatar" />
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
+                                    <c-fimby-parent-managed-badge parent-managed={rel.parentManaged}></c-fimby-parent-managed-badge>
                                     <span class={rel.statusClass}>{rel.statusLabel}</span>
+                                    <template lwc:if={rel.parentManaged}>
+                                        <span class="helper-text">You post and reply as {rel.name}.</span>
+                                    </template>
                                     <template lwc:if={rel.helperText}>
                                         <span class="helper-text">{rel.helperText}</span>
                                     </template>

@@ -140,6 +140,7 @@
 @property --fimby-badge-library       { syntax: '<color>'; inherits: true; initial-value: rgba(141, 123, 106, 0.90); }
 @property --fimby-badge-skill         { syntax: '<color>'; inherits: true; initial-value: rgba(107, 122, 141, 0.85); }
 @property --fimby-badge-direct        { syntax: '<color>'; inherits: true; initial-value: rgba(94, 123, 146, 0.85); }
+@property --fimby-badge-parent-managed { syntax: '<color>'; inherits: true; initial-value: rgba(140, 106, 133, 0.90); }
 
 /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
 @property --fimby-vouch-solid   { syntax: '<color>'; inherits: true; initial-value: #925930; }
@@ -303,6 +304,10 @@
   --fimby-badge-library:    rgba(141, 123, 106, 0.90);  /* Driftwood    */
   --fimby-badge-skill:      rgba(107, 122, 141, 0.85);  /* Steel blue   */
   --fimby-badge-direct:     rgba( 94, 123, 146, 0.85);  /* Slate — DMs  */
+  /* Muted plum — parent-managed. Deliberately unlike the prayer violet and the
+     vouch copper: this badge answers "who is behind this profile", not what the
+     post is or how trusted someone is. ~4.7:1 with white, AA for badge text. */
+  --fimby-badge-parent-managed: rgba(140, 106, 133, 0.90);
 
   /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
   --fimby-vouch-solid:    #925930;                       /* Copper — solid accent           */

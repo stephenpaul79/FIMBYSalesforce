@@ -190,6 +190,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
             id: r.Id,
             name: r.Related_Contact__r?.Name || 'Unknown',
             avatarUrl: this._resolveAvatarUrl(r.Related_Contact__r?.Image_URL__c, ICONS.noProfile),
+            parentManaged: r.Related_Contact__r?.Is_Parent_Proxied__c === true,
             status: r.Status__c,
             statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),

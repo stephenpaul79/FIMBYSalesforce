@@ -121,7 +121,7 @@ const RAW_FEED_ITEM_KEYS = [
     'postedByName', 'postedByImageUrl', 'imageUrl', 'imageRatio', 'hasImage', 'objectApiName',
     'image2Url', 'image2Ratio', 'image3Url', 'image3Ratio', 'image4Url', 'image4Ratio',
     'typeValue', 'engagementCount', 'recordTypeName', 'totalReserved', 'totalQuantity',
-    'ownerShares', 'totalAvailable', 'activeReserverIds', 'isOrgContact', 'orgAccountId',
+    'ownerShares', 'totalAvailable', 'activeReserverIds', 'isOrgContact', 'isParentManaged', 'orgAccountId',
     'eventDetails', 'location', 'eventType', 'eventLinkUrl', 'ownerContactId', 'realAuthorContactId',
     'isUrgent', 'sourceScope', 'isRecurring'
 ];

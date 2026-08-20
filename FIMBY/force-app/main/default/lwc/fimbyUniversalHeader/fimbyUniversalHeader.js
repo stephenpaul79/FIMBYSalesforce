@@ -78,6 +78,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track isActingAsSelf = true;
     @track actingAsDisplayName = '';
     @track actingAsAvatarUrl = '';
+    @track actingAsIsParentManaged = false;
     @track selfMenuItem = null;
     @track otherIdentityMenuItems = [];
     @track identitiesLoading = false;
@@ -447,7 +448,15 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     get showActingAsChip() { return !this.isActingAsSelf; }
     get hasAvailableIdentities() { return this.otherIdentityMenuItems.length > 0; }
-    get actingAsAriaLabel() { return `Acting as ${this.actingAsDisplayName}. Click to switch back.`; }
+    /**
+     * The chip is the tightest surface in the app — a "Parent-managed" text badge would
+     * push the brand zone off a narrow header. Until the youth icon exists, the fact
+     * rides in the accessible label rather than being dropped entirely.
+     */
+    get actingAsAriaLabel() {
+        const kind = this.actingAsIsParentManaged ? ', a parent-managed profile' : '';
+        return `Acting as ${this.actingAsDisplayName}${kind}. Click to switch back.`;
+    }
     get selfIsActive() { return this.selfMenuItem?.isActive ?? true; }
     get switchBackAriaLabel() { return this.selfMenuItem ? `Switch back to ${this.selfMenuItem.name}` : 'Switch back to self'; }
 
@@ -486,6 +495,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
                     ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
                     : this.defaultAvatarUrl);
             this._isOrgContact = actingResult.isOrganizationContact === true;
+            this.actingAsIsParentManaged = actingResult.isActingAsProxiedChild === true;
             this._orgAccountId = actingResult.organizationAccountId || null;
         }
         this._actingAsContactId = actingResult.actingAsContactId;

@@ -30,6 +30,7 @@ public class FimbyFeedItem implements Comparable {
     @AuraEnabled public Decimal totalAvailable { get; set; }
     @AuraEnabled public String activeReserverIds { get; set; }
     @AuraEnabled public Boolean isOrgContact { get; set; }
+    @AuraEnabled public Boolean isParentManaged { get; set; }
     @AuraEnabled public String orgAccountId { get; set; }
     @AuraEnabled public String eventDetails { get; set; }
     @AuraEnabled public String location { get; set; }
@@ -56,6 +57,7 @@ public class FimbyFeedItem implements Comparable {
         this.sortDate = story.CreatedDate;
         this.postedByName = story.Posted_By__r?.Full_Name__c;
         this.isOrgContact = story.Posted_By__r?.Is_Organization_Contact__c == true;
+        this.isParentManaged = story.Posted_By__r?.Is_Parent_Proxied__c == true;
         this.orgAccountId = story.Posted_By__r?.Organization_Account__c;
         if (this.isOrgContact && story.Posted_By__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = story.Posted_By__r.Organization_Account__r.Logo_URL__c;
@@ -88,6 +90,9 @@ public class FimbyFeedItem implements Comparable {
         this.isOrgContact = hasContact
             ? (item.Contact__r.Is_Organization_Contact__c == true)
             : (item.Posted_By__r?.Is_Organization_Contact__c == true);
+        this.isParentManaged = hasContact
+            ? (item.Contact__r.Is_Parent_Proxied__c == true)
+            : (item.Posted_By__r?.Is_Parent_Proxied__c == true);
         this.orgAccountId = hasContact
             ? item.Contact__r.Organization_Account__c
             : item.Posted_By__r?.Organization_Account__c;
@@ -141,6 +146,7 @@ public class FimbyFeedItem implements Comparable {
         this.sortDate = item.CreatedDate;
         this.postedByName = item.Owner_Contact__r?.Full_Name__c;
         this.isOrgContact = item.Owner_Contact__r?.Is_Organization_Contact__c == true;
+        this.isParentManaged = item.Owner_Contact__r?.Is_Parent_Proxied__c == true;
         this.orgAccountId = item.Owner_Contact__r?.Organization_Account__c;
         if (this.isOrgContact && item.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = item.Owner_Contact__r.Organization_Account__r.Logo_URL__c;

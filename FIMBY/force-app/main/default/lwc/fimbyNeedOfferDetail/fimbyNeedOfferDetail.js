@@ -67,6 +67,7 @@ const FIELDS = [
     'Needs_Offers__c.Contact__r.Full_Name__c',
     'Needs_Offers__c.Contact__r.Image_URL__c',
     'Needs_Offers__c.Contact__r.Is_Organization_Contact__c',
+    'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c',
     'Needs_Offers__c.Contact__r.Organization_Account__c',
     // Quantity
     'Needs_Offers__c.Total_Quantity__c',
@@ -912,6 +913,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get posterContactId() {
         if (!this.record) return null;
         return getFieldValue(this.record, 'Needs_Offers__c.Contact__c');
+    }
+
+    get isPosterParentManaged() {
+        if (!this.record) return false;
+        return getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c') === true;
     }
 
     get posterProfilePath() {

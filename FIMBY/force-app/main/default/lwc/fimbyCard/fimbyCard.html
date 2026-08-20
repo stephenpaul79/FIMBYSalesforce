@@ -15,6 +15,7 @@
                 <!-- User info -->
                 <div class="user-info">
                     <div lwc:if={userName} class="user-name">{userName}</div>
+                    <c-fimby-parent-managed-badge lwc:if={parentManaged} parent-managed="true"></c-fimby-parent-managed-badge>
                     <div lwc:if={timestamp} class="timestamp">{formattedTimestamp}</div>
                 </div>
             </div>

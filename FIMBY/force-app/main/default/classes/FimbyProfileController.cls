@@ -74,7 +74,7 @@ public with sharing class FimbyProfileController {
                        Care_Welcome_Support__c, Care_Unhelpful_Things__c,
                        Care_How_To_Ask__c, Care_Hard_Nos__c,
                        Care_Standing_Visible__c, Care_Updated_Date__c,
-                       Vouched_Status__c, Vouching_Disabled__c
+                       Vouched_Status__c, Vouching_Disabled__c, Is_Parent_Proxied__c
                 FROM Contact
                 WHERE Id = :contactId
                 LIMIT 1
@@ -116,7 +116,8 @@ public with sharing class FimbyProfileController {
                 'careStandingVisible' => c.Care_Standing_Visible__c == true,
                 'careUpdatedDate' => c.Care_Updated_Date__c,
                 'vouchedStatus' => c.Vouched_Status__c,
-                'vouchingDisabled' => c.Vouching_Disabled__c
+                'vouchingDisabled' => c.Vouching_Disabled__c,
+                'isParentManaged' => c.Is_Parent_Proxied__c == true
             };
         } catch (Exception e) {
             throw new AuraHandledException('Error loading profile: ' + e.getMessage());

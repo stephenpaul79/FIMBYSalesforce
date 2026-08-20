@@ -290,7 +290,7 @@ public with sharing class FimbySearchController {
         // Stage 1 — name-only for contacts without shared info
         List<Contact> restrictedMatches = [
             SELECT Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c, About_Enjoys_Doing__c,
-                   About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Organization_Account__c
+                   About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Is_Parent_Proxied__c, Organization_Account__c
             FROM Contact
             WHERE Is_Organization_Contact__c = false
               AND Id NOT IN :sharedIds
@@ -307,7 +307,7 @@ public with sharing class FimbySearchController {
         if (!sharedIds.isEmpty()) {
             List<Contact> expandedMatches = [
                 SELECT Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c, About_Enjoys_Doing__c,
-                       About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Organization_Account__c
+                       About_Fun_Fact__c, About_Local_Place__c, Account.Name, Is_Organization_Contact__c, Is_Parent_Proxied__c, Organization_Account__c
                 FROM Contact
                 WHERE Is_Organization_Contact__c = false
                   AND Id IN :sharedIds
@@ -475,6 +475,7 @@ public with sharing class FimbySearchController {
         item.status = null;
         item.hasSharedContact = false;
         item.isOrgContact = c.Is_Organization_Contact__c == true;
+        item.isParentManaged = c.Is_Parent_Proxied__c == true;
         item.orgAccountId = c.Organization_Account__c;
         return item;
     }
@@ -574,6 +575,7 @@ public with sharing class FimbySearchController {
         @AuraEnabled public String status { get; set; }
         @AuraEnabled public Boolean hasSharedContact { get; set; }
         @AuraEnabled public Boolean isOrgContact { get; set; }
+        @AuraEnabled public Boolean isParentManaged { get; set; }
         @AuraEnabled public Id orgAccountId { get; set; }
 
         public Integer compareTo(Object compareTo) {

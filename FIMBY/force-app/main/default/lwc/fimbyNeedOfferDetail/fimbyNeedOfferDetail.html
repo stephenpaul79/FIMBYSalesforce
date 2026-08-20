@@ -74,6 +74,7 @@
                                                 </div>
                                             </template>
                                             <span class="poster-name">{posterName}</span>
+                                            <c-fimby-parent-managed-badge lwc:if={isPosterParentManaged} parent-managed="true"></c-fimby-parent-managed-badge>
                                         </div>
                                     </div>
                                     <template lwc:if={hasPostDetails}>
@@ -233,6 +234,7 @@
                                             </template>
                                             <span class="poster-identity-label">{headerIdentityLabel}</span>
                                             <span class="poster-name">{headerIdentityName}</span>
+                                            <c-fimby-parent-managed-badge lwc:if={isPosterParentManaged} parent-managed="true"></c-fimby-parent-managed-badge>
                                         </div>
                                     </div>
 

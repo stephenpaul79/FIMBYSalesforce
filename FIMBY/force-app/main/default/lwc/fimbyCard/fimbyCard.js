@@ -23,6 +23,7 @@ export default class FimbyCard extends LightningElement {
     @api showAvatar = false;
     @api avatarUrl = '';
     @api userName = '';
+    @api parentManaged = false;
     @api showMenu = false;
 
     @track menuOpen = false;
