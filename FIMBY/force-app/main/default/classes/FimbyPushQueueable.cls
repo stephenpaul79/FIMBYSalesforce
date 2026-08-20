@@ -5,8 +5,9 @@
  *
  * Transport: POSTs the ≤100-payload slice as a single batch request
  * ({ "notifications": [...] }) to dodge the bridge's per-IP rate limit. The bridge
- * returns a per-entry results array ([{ user_id, accepted, reason? }]); we mark each
- * user's rows granularly:
+ * returns a per-entry results array ([{ user_id, accepted, reason? }]). One card is
+ * emitted per user per gate, so user_id is an unambiguous key for those results.
+ * We mark each user's rows granularly:
  *   - accepted              → Sent
  *   - not accepted, quiet   → left Pending_Quiet (retried next cycle; no permanent drop)
  *   - not accepted, audible → Failed (user still gets the next audible buzz)
@@ -144,9 +145,52 @@ public without sharing class FimbyPushQueueable implements Queueable, Database.A
     /**
      * Marks each user's rows by delivery outcome. Iterates the current slice's
      * users (via quietByUser) so a chained job only touches its own rows.
+     *
+     * A fanned-out row can be delivered to several helpers, so outcomes are
+     * merged into ONE record per notification: each recipient's result is written
+     * into that row's delivery ledger and the channel status is recomputed from
+     * the whole ledger afterwards. Two guardians in the same slice would
+     * otherwise produce two updates for one Id, which DML rejects outright — and
+     * a blind per-user overwrite would let one guardian's failure erase the
+     * other's successful delivery.
      */
     private void applyResults(Map<Id, Boolean> quietByUser, Map<Id, Boolean> acceptedByUser) {
-        List<Notification__c> toUpdate = new List<Notification__c>();
+        Set<Id> rowIds = new Set<Id>();
+        for (Id userId : quietByUser.keySet()) {
+            List<Id> ids = notifIdsByUser.get(userId);
+            if (ids != null) {
+                rowIds.addAll(ids);
+            }
+        }
+        if (rowIds.isEmpty()) {
+            return;
+        }
+
+        Map<Id, Notification__c> rowById;
+        try {
+            rowById = new Map<Id, Notification__c>([
+                SELECT Id, Push_Status__c, Push_Error__c, Delivery_State__c
+                FROM Notification__c
+                WHERE Id IN :rowIds
+                WITH SYSTEM_MODE
+            ]);
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyPushQueueable', 'applyResults.query', e);
+            return;
+        }
+
+        Map<Id, FimbySupportedIdentityDelivery.Ledger> ledgerByRow =
+            new Map<Id, FimbySupportedIdentityDelivery.Ledger>();
+        for (Notification__c row : rowById.values()) {
+            FimbySupportedIdentityDelivery.Ledger ledger =
+                FimbySupportedIdentityDelivery.parseLedger(row.Delivery_State__c);
+            if (ledger != null) {
+                ledgerByRow.put(row.Id, ledger);
+            }
+        }
+
+        Set<Id> touched = new Set<Id>();
+
         for (Id userId : quietByUser.keySet()) {
             List<Id> ids = notifIdsByUser.get(userId);
             if (ids == null || ids.isEmpty()) {
@@ -155,29 +199,57 @@ public without sharing class FimbyPushQueueable implements Queueable, Database.A
             Boolean accepted = acceptedByUser.get(userId) == true;
             Boolean isQuiet = quietByUser.get(userId) == true;
 
-            if (accepted) {
-                for (Id nId : ids) {
-                    toUpdate.add(new Notification__c(Id = nId, Push_Status__c = 'Sent'));
-                }
-            } else if (isQuiet) {
+            if (!accepted && isQuiet) {
                 // Leave as Pending_Quiet — retried next cycle. A transient blip
                 // never permanently strands a quiet card.
                 continue;
-            } else {
-                for (Id nId : ids) {
-                    toUpdate.add(new Notification__c(
-                        Id = nId,
-                        Push_Status__c = 'Failed',
-                        Push_Error__c = 'Batch push not accepted'
-                    ));
-                }
             }
+
+            String outcome = accepted
+                ? FimbySupportedIdentityDelivery.SENT
+                : FimbySupportedIdentityDelivery.FAILED;
+
+            for (Id nId : ids) {
+                Notification__c row = rowById.get(nId);
+                if (row == null) {
+                    continue;
+                }
+                FimbySupportedIdentityDelivery.Ledger ledger = ledgerByRow.get(nId);
+                if (ledger == null) {
+                    row.Push_Status__c = outcome;
+                    if (!accepted) {
+                        row.Push_Error__c = 'Batch push not accepted';
+                    }
+                } else {
+                    FimbySupportedIdentityDelivery.Recipient rec = ledger.forUser(userId);
+                    if (rec == null) {
+                        continue;
+                    }
+                    rec.p = outcome;
+                    rec.x = accepted ? null : 'Batch push not accepted';
+                }
+                touched.add(nId);
+            }
+        }
+
+        List<Notification__c> toUpdate = new List<Notification__c>();
+        for (Id nId : touched) {
+            Notification__c row = rowById.get(nId);
+            FimbySupportedIdentityDelivery.Ledger ledger = ledgerByRow.get(nId);
+            if (ledger != null) {
+                // Recompute AFTER every recipient in this slice has been recorded,
+                // so the aggregate stays Pending while any helper is still owed a
+                // delivery and only lands on Sent/Partial/Failed once none are.
+                row.Delivery_State__c = FimbySupportedIdentityDelivery.serializeLedger(ledger);
+                row.Push_Status__c = ledger.pushAggregate();
+            }
+            toUpdate.add(row);
         }
         if (toUpdate.isEmpty()) {
             return;
         }
         try {
-            Database.update(toUpdate, false);
+            Database.update(toUpdate, false, AccessLevel.SYSTEM_MODE);
         } catch (Exception e) {
             FimbyLogger.error('FimbyPushQueueable', 'applyResults', e);
         }
