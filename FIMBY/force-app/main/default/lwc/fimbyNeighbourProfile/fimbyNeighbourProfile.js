@@ -28,6 +28,15 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     _d(val) { return val || '—'; }
     _dMulti(val) { return this._multiSelectToDisplay(val) || '—'; }
 
+    /**
+     * Names the arrangement rather than labelling the young person. A neighbour needs
+     * to know who they are actually talking to before they reply.
+     */
+    get parentManagedExplainer() {
+        const name = this.profile.firstName || 'This young person';
+        return `A parent or guardian looks after this profile and replies on ${name}'s behalf.`;
+    }
+
     get displayPronouns() { return this._d(this.profile.pronouns); }
     get displayAboutTenure() { return this._d(this.profile.aboutNeighbourhoodTenure); }
     get displayAboutBroughtYou() { return this._d(this.profile.aboutWhatBroughtYou); }

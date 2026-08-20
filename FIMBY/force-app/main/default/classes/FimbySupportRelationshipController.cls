@@ -16,6 +16,7 @@ public with sharing class FimbySupportRelationshipController {
                 SELECT Id, Relationship_Type__c, Neighbourhood__c, Neighbourhood__r.Name,
                        Related_Contact__c, Related_Contact__r.Name, Related_Contact__r.Full_Name__c,
                        Related_Contact__r.Image_URL__c, Related_Contact__r.Display_Avatar_URL__c,
+                       Related_Contact__r.Is_Parent_Proxied__c,
                        Related_Organization__c, Related_Organization__r.Name,
                        Related_Organization__r.Logo_URL__c, Related_Organization__r.Organization_Contact__c
                 FROM Support_Relationship__c
@@ -35,10 +36,12 @@ public with sharing class FimbySupportRelationshipController {
                 if (FimbyProxiedPresenceGuard.isContactBackedRelationship(rel.Relationship_Type__c)) {
                     identity.put('name', rel.Related_Contact__r.Full_Name__c);
                     identity.put('avatarUrl', rel.Related_Contact__r.Display_Avatar_URL__c);
+                    identity.put('parentManaged', rel.Related_Contact__r.Is_Parent_Proxied__c == true);
                     identity.put('targetContactId', rel.Related_Contact__c);
                 } else {
                     identity.put('name', rel.Related_Organization__r.Name);
                     identity.put('avatarUrl', rel.Related_Organization__r.Logo_URL__c);
+                    identity.put('parentManaged', false);
                     identity.put('targetContactId', rel.Related_Organization__r.Organization_Contact__c);
                 }
                 identities.add(identity);
@@ -122,7 +125,8 @@ public with sharing class FimbySupportRelationshipController {
 
             List<Support_Relationship__c> iSupport = [
                 SELECT Id, Related_Contact__c, Related_Contact__r.Name,
-                       Related_Contact__r.Image_URL__c, Status__c, Neighbourhood__c,
+                       Related_Contact__r.Image_URL__c, Related_Contact__r.Is_Parent_Proxied__c,
+                       Status__c, Neighbourhood__c,
                        Neighbourhood__r.Name, Approved_Date__c, Ended_Date__c,
                        Subject_Confirmed__c
                 FROM Support_Relationship__c

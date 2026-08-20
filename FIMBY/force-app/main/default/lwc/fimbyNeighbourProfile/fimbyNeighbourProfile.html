@@ -31,6 +31,10 @@
 
                     <div class="identity-info">
                         <h1 class="identity-name">{profile.fullName}</h1>
+                        <template lwc:if={profile.isParentManaged}>
+                            <c-fimby-parent-managed-badge parent-managed="true"></c-fimby-parent-managed-badge>
+                            <p class="identity-meta">{parentManagedExplainer}</p>
+                        </template>
                         <template lwc:if={isProfileModerator}>
                             <span class="moderator-badge">
                                 <img src={moderatorBadgeIconUrl} alt="" class="badge-icon-sm">
