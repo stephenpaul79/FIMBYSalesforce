@@ -306,8 +306,18 @@ global without sharing class FimbyPushBatchJob implements Schedulable {
                 payload.notificationType = mapTypeToPushCategory(only.Type__c);
                 payload.data.put('channelId', resolveChannelId(only.Type__c));
                 payload.data.put('notification_id', String.valueOf(only.Id));
-                if (String.isNotBlank(only.Action_URL__c)) {
-                    payload.data.put('action_url', only.Action_URL__c);
+                // A proxy recipient must land in the inbox the alert belongs to, so
+                // the acting identity is stamped on the link at BUILD time rather
+                // than stored on the row. Resolving it here means the same row read
+                // by the Contact's own login later carries no stale ?actAs, and a
+                // relationship revoked after creation is never honoured.
+                String actionUrl = only.Action_URL__c;
+                if (plan.proxiedInboxIds.contains(only.Contact__c)) {
+                    actionUrl = FimbySupportedIdentityDelivery.withActingIdentity(
+                        actionUrl, only.Contact__c);
+                }
+                if (String.isNotBlank(actionUrl)) {
+                    payload.data.put('action_url', actionUrl);
                 }
                 if (String.isNotBlank(only.Type__c)) {
                     payload.data.put('notification_type', only.Type__c);

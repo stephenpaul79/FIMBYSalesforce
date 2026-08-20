@@ -134,6 +134,38 @@ private class FimbyPushProxiedDeliveryTest {
     }
 
     /**
+     * The stored Action_URL__c carries no identity, so the delivery pass has to add
+     * it — otherwise the guardian taps through and lands as themselves, looking at
+     * their own empty thread instead of the child's.
+     */
+    @IsTest
+    static void deepLinkGainsTheActingIdentityAtDeliveryTime() {
+        clearNotifications();
+        Contact child = childContact();
+
+        insert new Notification__c(
+            Contact__c = child.Id,
+            Type__c = FimbyConstants.NOTIF_MESSAGE,
+            Title__c = 'sent a message', Body__c = 'b',
+            Actor_Name__c = 'Aisha Bello',
+            Action_URL__c = '/conversation?id=abc',
+            Push_Status__c = 'Pending'
+        );
+
+        CapturingMock mock = new CapturingMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        new FimbyPushBatchJob().execute(null);
+        Test.stopTest();
+
+        Map<String, Object> data =
+            (Map<String, Object>) firstNotif(mock.capturedBody).get('data');
+        System.assertEquals('/conversation?id=abc&actAs=' + child.Id, data.get('action_url'),
+            'A proxied alert must deep-link into the child\'s identity');
+    }
+
+    /**
      * With several unread rows the card becomes an aggregate, and that is exactly
      * where second-person copy would lie. It must name the child instead.
      */
