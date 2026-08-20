@@ -270,6 +270,70 @@ public without sharing class FimbySupportedIdentityDelivery {
     }
 
     /**
+     * The reverse of resolveHelperContacts: every inbox a single helper is
+     * responsible for reading. Used by the in-app bell so the number on screen
+     * matches the number on the phone's app icon — push already sums these
+     * inboxes, and a bell that disagreed would teach people to distrust both.
+     *
+     * Only user-less supportees are included, matching the fan-out rule exactly.
+     * A supportee who has their own login reads their own bell; counting their
+     * unread items in the helper's badge would double-count the household.
+     *
+     * The caller's own Contact is not included — callers add it themselves so
+     * they keep control of whether "your own inbox" is a separate group.
+     */
+    public static Set<Id> servedInboxes(Id helperContactId) {
+        Set<Id> inboxes = new Set<Id>();
+        if (helperContactId == null) {
+            return inboxes;
+        }
+
+        Set<Id> orgAccountIds = new Set<Id>();
+        for (Support_Relationship__c rel : [
+            SELECT Related_Contact__c, Related_Organization__c
+            FROM Support_Relationship__c
+            WHERE Contact__c = :helperContactId
+              AND Status__c = 'Approved'
+            WITH SYSTEM_MODE
+        ]) {
+            if (rel.Related_Contact__c != null) {
+                inboxes.add(rel.Related_Contact__c);
+            } else if (rel.Related_Organization__c != null) {
+                orgAccountIds.add(rel.Related_Organization__c);
+            }
+        }
+
+        if (!orgAccountIds.isEmpty()) {
+            for (Contact c : [
+                SELECT Id
+                FROM Contact
+                WHERE Organization_Account__c IN :orgAccountIds
+                  AND Is_Organization_Contact__c = true
+                WITH SYSTEM_MODE
+            ]) {
+                inboxes.add(c.Id);
+            }
+        }
+
+        inboxes.remove(helperContactId);
+        if (inboxes.isEmpty()) {
+            return inboxes;
+        }
+
+        Map<Id, User> ownUserByContact = new Map<Id, User>();
+        for (User u : [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId IN :inboxes AND IsActive = true
+            WITH SYSTEM_MODE
+        ]) {
+            ownUserByContact.put(u.ContactId, u);
+        }
+
+        return unbackedContacts(inboxes, ownUserByContact);
+    }
+
+    /**
      * Returns the Contacts in the set that have no active login of their own —
      * the ones whose notifications need to be fanned out to helpers.
      */

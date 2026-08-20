@@ -39,8 +39,15 @@ public with sharing class FimbyCommunicationController {
         String contactId = FimbyIdentityRepository.getActingAsContactId();
         Integer notifCount = 0;
         if (String.isNotBlank(contactId)) {
+            // Sum every inbox this person reads, not just the identity they
+            // happen to be wearing. Push already counts them all, and a helper
+            // should not have to remember to switch hats to discover that
+            // someone they look after was contacted hours ago.
+            Set<Id> inboxes = FimbySupportedIdentityDelivery.servedInboxes(FimbyIdentityRepository.getCurrentUser().ContactId);
+            inboxes.add((Id) contactId);
+
             notifCount = [SELECT COUNT() FROM Notification__c
-                          WHERE Contact__c = :contactId AND Read_Date__c = null
+                          WHERE Contact__c IN :inboxes AND Read_Date__c = null
                             AND Type__c NOT IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES];
         }
         Integer msgCount = new CommunicationHelper().getUnifiedUnreadCountInternal();

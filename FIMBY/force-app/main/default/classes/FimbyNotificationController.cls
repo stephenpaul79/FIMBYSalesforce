@@ -105,19 +105,30 @@ public with sharing class FimbyNotificationController {
             Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.notificationsPageSize();
             Integer offsetVal = (offset != null && offset >= 0) ? offset : 0;
             Boolean hasTypeFilter = (typeValues != null && !typeValues.isEmpty());
-            Set<Id> blockedContactIds = FimbyBlockingHelper.getBidirectionalBlocks((Id) contactId);
+
+            // Every inbox this person reads, so the page can account for the
+            // merged bell count. Blocking is evaluated per inbox: whom a child
+            // has blocked is not the same as whom their guardian has blocked.
+            Set<Id> inboxIds = FimbySupportedIdentityDelivery.servedInboxes(FimbyIdentityRepository.getCurrentUser().ContactId);
+            inboxIds.add((Id) contactId);
+
+            Map<Id, Set<Id>> blocksByInbox = new Map<Id, Set<Id>>();
+            for (Id inboxId : inboxIds) {
+                blocksByInbox.put(inboxId, FimbyBlockingHelper.getBidirectionalBlocks(inboxId));
+            }
 
             Set<String> hiddenTypes = FimbyConstants.BELL_HIDDEN_NOTIF_TYPES;
             String query = 'SELECT Id, Name, Type__c, Title__c, Body__c, Read_Date__c, '
                 + 'Related_Record_Id__c, Related_Record_Type__c, '
                 + 'Action_URL__c, Actor_Name__c, CreatedDate, '
+                + 'Contact__c, Contact__r.Full_Name__c, Contact__r.FirstName, '
                 + 'Actor_Contact__c, Actor_Contact__r.Display_Avatar_URL__c, '
                 + 'Actor_Contact__r.Full_Name__c, Actor_Contact__r.FirstName, '
                 + 'Actor_Contact__r.Is_Organization_Contact__c, '
                 + 'Actor_Contact__r.Organization_Account__c, '
                 + 'Actor_Contact__r.Organization_Account__r.Logo_URL__c '
                 + 'FROM Notification__c '
-                + 'WHERE Contact__c = :contactId'
+                + 'WHERE Contact__c IN :inboxIds'
                 + ' AND Type__c NOT IN :hiddenTypes';
 
             if (hasTypeFilter) {
@@ -133,8 +144,8 @@ public with sharing class FimbyNotificationController {
                 + ' LIMIT :fetchLimit';
 
             List<Notification__c> notifications = Database.query(query);
-            List<Notification__c> visibleNotifications = filterBlockedNotifications(
-                notifications, blockedContactIds
+            List<Notification__c> visibleNotifications = filterBlockedPerInbox(
+                notifications, blocksByInbox
             );
             visibleNotifications = sortUnreadFirstNewestWithin(visibleNotifications);
 
@@ -158,9 +169,22 @@ public with sharing class FimbyNotificationController {
                 w.readDate = n.Read_Date__c;
                 w.relatedRecordId = n.Related_Record_Id__c;
                 w.relatedRecordType = n.Related_Record_Type__c;
-                w.actionUrl = n.Action_URL__c;
                 w.actorName = n.Actor_Name__c;
                 w.createdDate = n.CreatedDate;
+
+                // Which inbox this row belongs to, so the page can group it and
+                // so tapping it opens in the right identity rather than showing
+                // an empty screen or inviting a reply in the wrong voice.
+                w.inboxContactId = n.Contact__c;
+                w.isForSelf = (n.Contact__c == (Id) contactId);
+                if (w.isForSelf) {
+                    w.actionUrl = n.Action_URL__c;
+                } else {
+                    w.inboxDisplayName = String.isNotBlank(n.Contact__r?.FirstName)
+                        ? n.Contact__r.FirstName
+                        : n.Contact__r?.Full_Name__c;
+                    w.actionUrl = FimbySupportedIdentityDelivery.withActingIdentity(n.Action_URL__c, n.Contact__c);
+                }
 
                 // Structured actor: drives the card avatar + bold actor name.
                 if (n.Actor_Contact__c != null && n.Actor_Contact__r != null) {
@@ -218,11 +242,27 @@ public with sharing class FimbyNotificationController {
             if (notificationId == null) {
                 return;
             }
-            List<Notification__c> notifs = [SELECT Id, Read_Date__c FROM Notification__c WHERE Id = :notificationId LIMIT 1];
-            if (!notifs.isEmpty() && notifs[0].Read_Date__c == null) {
-                notifs[0].Read_Date__c = Datetime.now();
-                update notifs[0];
+            List<Notification__c> notifs = [
+                SELECT Id, Read_Date__c, Contact__c FROM Notification__c WHERE Id = :notificationId LIMIT 1
+            ];
+            if (notifs.isEmpty() || notifs[0].Read_Date__c != null) {
+                return;
             }
+
+            // The list now shows rows from every inbox the reader serves, so
+            // the write has to be checked against that same set rather than
+            // trusting whichever Id the client sent.
+            Set<Id> readable = FimbySupportedIdentityDelivery.servedInboxes(FimbyIdentityRepository.getCurrentUser().ContactId);
+            Id actingId = FimbyIdentityRepository.getActingAsContactId();
+            if (actingId != null) {
+                readable.add(actingId);
+            }
+            if (!readable.contains(notifs[0].Contact__c)) {
+                return;
+            }
+
+            notifs[0].Read_Date__c = Datetime.now();
+            update notifs[0];
         }
 
         /**
@@ -322,6 +362,32 @@ public with sharing class FimbyNotificationController {
             }
             unread.addAll(read);
             return unread;
+        }
+
+        /**
+         * Blocking belongs to the inbox, not to the person reading it. A
+         * guardian reading their child's inbox must see it through the child's
+         * blocks, and their own blocks must not silence the child's messages.
+         */
+        private List<Notification__c> filterBlockedPerInbox(
+            List<Notification__c> notifications,
+            Map<Id, Set<Id>> blocksByInbox
+        ) {
+            if (notifications == null || notifications.isEmpty()) {
+                return new List<Notification__c>();
+            }
+
+            Map<Id, Set<Id>> actorContactsByRecord = resolveNotificationActorContacts(notifications);
+            List<Notification__c> visible = new List<Notification__c>();
+            for (Notification__c n : notifications) {
+                Set<Id> blocks = blocksByInbox.get(n.Contact__c);
+                if (blocks == null || blocks.isEmpty()) {
+                    visible.add(n);
+                } else if (!notificationInvolvesBlockedParty(n, blocks, actorContactsByRecord)) {
+                    visible.add(n);
+                }
+            }
+            return visible;
         }
 
         private List<Notification__c> filterBlockedNotifications(
@@ -516,5 +582,8 @@ public with sharing class FimbyNotificationController {
         @AuraEnabled public String actorDisplayName { get; set; }
         @AuraEnabled public Boolean actorIsOrg { get; set; }
         @AuraEnabled public Id actorOrgAccountId { get; set; }
+        @AuraEnabled public Id inboxContactId { get; set; }
+        @AuraEnabled public String inboxDisplayName { get; set; }
+        @AuraEnabled public Boolean isForSelf { get; set; }
     }
 }

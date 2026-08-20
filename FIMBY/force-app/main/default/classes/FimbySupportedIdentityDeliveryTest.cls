@@ -219,6 +219,85 @@ private class FimbySupportedIdentityDeliveryTest {
             'A Draft relationship confers no delivery mandate');
     }
 
+    /**
+     * The bell has to count the same inboxes push already counts, or the number
+     * on screen and the number on the app icon will disagree.
+     */
+    @IsTest
+    static void servedInboxesListsEveryInboxAHelperReads() {
+        User helperUser = getHelperUser();
+        Account nh = getNeighbourhood();
+
+        Contact child = new Contact(
+            FirstName = 'Maya', LastName = 'Proxied', AccountId = nh.Id);
+        Contact pendingOnly = new Contact(
+            FirstName = 'Joan', LastName = 'Pending', AccountId = nh.Id);
+        insert new List<Contact>{ child, pendingOnly };
+
+        insert new List<Support_Relationship__c>{
+            new Support_Relationship__c(
+                Contact__c = helperUser.ContactId,
+                Related_Contact__c = child.Id,
+                Relationship_Type__c = 'Parent_Guardian',
+                Status__c = 'Approved',
+                Neighbourhood__c = nh.Id,
+                Consent_Method__c = 'Written'
+            ),
+            new Support_Relationship__c(
+                Contact__c = helperUser.ContactId,
+                Related_Contact__c = pendingOnly.Id,
+                Relationship_Type__c = 'Support_Person',
+                Status__c = 'Draft',
+                Neighbourhood__c = nh.Id,
+                Consent_Method__c = 'Written'
+            )
+        };
+
+        Test.startTest();
+        Set<Id> inboxes = FimbySupportedIdentityDelivery.servedInboxes(helperUser.ContactId);
+        Test.stopTest();
+
+        System.assert(inboxes.contains(child.Id),
+            'An approved mandate over a login-less child is an inbox to read');
+        System.assert(!inboxes.contains(pendingOnly.Id),
+            'A Draft relationship confers no inbox');
+        System.assert(!inboxes.contains(helperUser.ContactId),
+            'Callers add their own inbox themselves');
+    }
+
+    @IsTest
+    static void aSupporteeWithTheirOwnLoginIsNotCountedInTheHelpersBell() {
+        User helperUser = getHelperUser();
+        Account nh = getNeighbourhood();
+
+        Contact selfServing = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+
+        insert new Support_Relationship__c(
+            Contact__c = helperUser.ContactId,
+            Related_Contact__c = selfServing.Id,
+            Relationship_Type__c = 'Support_Person',
+            Status__c = 'Approved',
+            Neighbourhood__c = nh.Id,
+            Consent_Method__c = 'Written'
+        );
+        FimbyTestDataFactory.createCommunityUser(selfServing.Id, null, true);
+
+        Test.startTest();
+        Set<Id> inboxes = FimbySupportedIdentityDelivery.servedInboxes(helperUser.ContactId);
+        Test.stopTest();
+
+        System.assert(!inboxes.contains(selfServing.Id),
+            'Someone who reads their own bell must not be double-counted in their helper\'s');
+    }
+
+    @IsTest
+    static void servedInboxesHandlesNoMandateAtAll() {
+        Test.startTest();
+        System.assertEquals(0, FimbySupportedIdentityDelivery.servedInboxes(null).size(),
+            'Null input must not query or throw');
+        Test.stopTest();
+    }
+
     @IsTest
     static void resolveHelperContactsHandlesEmptyInput() {
         Test.startTest();

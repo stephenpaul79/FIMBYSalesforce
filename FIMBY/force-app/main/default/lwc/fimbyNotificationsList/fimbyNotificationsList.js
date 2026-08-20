@@ -221,13 +221,43 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             (n.isUnread ? unread : read).push(this._enrichNotification(n));
         });
         const sections = [];
-        if (unread.length) {
-            sections.push({ key: 'unread', label: 'Unread', items: unread });
-        }
-        if (read.length) {
-            sections.push({ key: 'read', label: 'Read', items: read });
-        }
+        this._appendStateSections(sections, 'unread', 'Unread', unread);
+        this._appendStateSections(sections, 'read', 'Read', read);
         return sections;
+    }
+
+    /**
+     * The bell counts every inbox this person reads, so the list has to say
+     * whose each row is or the number stops making sense. When they only read
+     * their own inbox the headings stay plain "Unread" / "Read" — naming an
+     * identity would be noise for the overwhelming majority of neighbours.
+     */
+    _appendStateSections(sections, key, label, items) {
+        if (!items.length) return;
+
+        const others = items.filter(n => n.isForSelf === false && n.inboxDisplayName);
+        if (!others.length) {
+            sections.push({ key, label, items });
+            return;
+        }
+
+        const mine = items.filter(n => n.isForSelf !== false || !n.inboxDisplayName);
+        if (mine.length) {
+            sections.push({ key: `${key}-self`, label: `${label} · For you`, items: mine });
+        }
+
+        const seen = [];
+        others.forEach(n => {
+            if (!seen.includes(n.inboxContactId)) seen.push(n.inboxContactId);
+        });
+        seen.forEach(inboxId => {
+            const rows = others.filter(n => n.inboxContactId === inboxId);
+            sections.push({
+                key: `${key}-${inboxId}`,
+                label: `${label} · For ${rows[0].inboxDisplayName}`,
+                items: rows
+            });
+        });
     }
 
     /* ---------------------------------------------------------------
