@@ -210,6 +210,124 @@ private class FimbySupportRelationshipPaperFlowTest {
         System.assertEquals('Rejected', reloaded.Status__c);
     }
 
+    /**
+     * The paper path is the one case that may stamp a supportee as having personally
+     * attested to being 19+ and accepted the Terms. This is the regression guard: the
+     * allow-list must not have broken the elder flow it was built around.
+     */
+    @IsTest
+    static void approvingWrittenSupportPersonStampsSupporteeAttestation() {
+        User supporter = getSupporterUser();
+        Account nh = getNeighbourhood();
+        Contact supportee = new Contact(
+            FirstName = 'Joan', LastName = 'Paper', AccountId = nh.Id);
+        insert supportee;
+
+        Support_Relationship__c rel = new Support_Relationship__c(
+            Contact__c = supporter.ContactId,
+            Related_Contact__c = supportee.Id,
+            Relationship_Type__c = 'Support_Person',
+            Status__c = 'Pending Paper Review',
+            Neighbourhood__c = nh.Id,
+            Consent_Method__c = 'Written',
+            Signed_Date__c = Date.today()
+        );
+        insert rel;
+
+        Test.startTest();
+        rel.Status__c = 'Approved';
+        rel.Approved_Date__c = Datetime.now();
+        update rel;
+        Test.stopTest();
+
+        Contact reloaded = [
+            SELECT Age_Attestation_Confirmed__c, Tos_Accepted_Date__c
+            FROM Contact WHERE Id = :supportee.Id
+        ];
+        System.assertEquals(true, reloaded.Age_Attestation_Confirmed__c,
+            'A Written Support_Person supportee signed Block C personally, so approval must still stamp attestation');
+        System.assertNotEquals(null, reloaded.Tos_Accepted_Date__c,
+            'Paper acceptance must still record the Terms acceptance date');
+    }
+
+    /**
+     * Every non-paper combination must fail closed. Guardian consent is the case this
+     * protects: a parent attesting on a child's behalf must never leave the child
+     * carrying a record that the child personally attested to being 19+.
+     */
+    @IsTest
+    static void approvingGuardianConsentNeverStampsSupporteeAttestation() {
+        User supporter = getSupporterUser();
+        Account nh = getNeighbourhood();
+        Contact supportee = new Contact(
+            FirstName = 'Maya', LastName = 'Guardian', AccountId = nh.Id);
+        insert supportee;
+
+        Support_Relationship__c rel = new Support_Relationship__c(
+            Contact__c = supporter.ContactId,
+            Related_Contact__c = supportee.Id,
+            Relationship_Type__c = 'Support_Person',
+            Status__c = 'Pending',
+            Neighbourhood__c = nh.Id,
+            Consent_Method__c = 'Guardian',
+            Signed_Date__c = Date.today()
+        );
+        insert rel;
+
+        Test.startTest();
+        rel.Status__c = 'Approved';
+        rel.Approved_Date__c = Datetime.now();
+        update rel;
+        Test.stopTest();
+
+        Contact reloaded = [
+            SELECT Age_Attestation_Confirmed__c, Tos_Accepted_Date__c, Tos_Acceptance_Source__c
+            FROM Contact WHERE Id = :supportee.Id
+        ];
+        System.assertNotEquals(true, reloaded.Age_Attestation_Confirmed__c,
+            'Guardian consent must never stamp the supportee as having attested to being 19+');
+        System.assertEquals(null, reloaded.Tos_Accepted_Date__c,
+            'Guardian consent must never record a Terms acceptance against the supportee');
+        System.assertEquals(null, reloaded.Tos_Acceptance_Source__c,
+            'Guardian consent must never record a paper-form acceptance source');
+    }
+
+    /**
+     * The allow-list is exercised directly so every failing combination is pinned,
+     * including relationship types that do not exist yet.
+     */
+    @IsTest
+    static void ageAttestationAllowListFailsClosed() {
+        System.assertEquals(true,
+            FimbySupportRelationshipTriggerHandler.stampsSupporteeAgeAttestation(
+                new Support_Relationship__c(
+                    Relationship_Type__c = 'Support_Person', Consent_Method__c = 'Written')),
+            'Only the paper Support_Person path may stamp');
+
+        System.assertEquals(false,
+            FimbySupportRelationshipTriggerHandler.stampsSupporteeAgeAttestation(
+                new Support_Relationship__c(
+                    Relationship_Type__c = 'Support_Person', Consent_Method__c = 'In_App')),
+            'In-app confirmation is the subject using their own account, not a paper attestation');
+
+        System.assertEquals(false,
+            FimbySupportRelationshipTriggerHandler.stampsSupporteeAgeAttestation(
+                new Support_Relationship__c(
+                    Relationship_Type__c = 'Community_Group_Rep', Consent_Method__c = 'Written')),
+            'An organization-backed relationship has no supportee to attest');
+
+        System.assertEquals(false,
+            FimbySupportRelationshipTriggerHandler.stampsSupporteeAgeAttestation(
+                new Support_Relationship__c(
+                    Relationship_Type__c = 'Parent_Guardian_Future_Value', Consent_Method__c = 'Written')),
+            'An unknown future relationship type must fail closed, not inherit the paper path');
+
+        System.assertEquals(false,
+            FimbySupportRelationshipTriggerHandler.stampsSupporteeAgeAttestation(
+                new Support_Relationship__c()),
+            'A relationship with no type or consent method must fail closed');
+    }
+
     @IsTest
     static void reminderBatchExecutes() {
         User supporter = getSupporterUser();

@@ -187,11 +187,31 @@ public without sharing class FimbySupportRelationshipTriggerHandler {
         }
     }
 
+    /**
+     * @description Allow-list deciding whether approving a relationship may stamp the
+     *              supportee with a 19+ age attestation and a Terms acceptance. Only the
+     *              paper path qualifies: a Support_Person relationship whose supportee
+     *              physically initialled Block C, recorded as Consent_Method__c = 'Written'.
+     *
+     *              This is an allow-list rather than a deny-list on purpose. Any
+     *              relationship type or consent method added later — Parent_Guardian and
+     *              Consent_Method__c = 'Guardian' among them — fails closed and is skipped,
+     *              so a supportee who never personally consented can never end up carrying a
+     *              durable record that they attested to being 19 and accepted the Terms.
+     * @param rel Relationship transitioning into Approved.
+     * @return True only for the paper-consent supportee path.
+     */
+    @TestVisible
+    private static Boolean stampsSupporteeAgeAttestation(Support_Relationship__c rel) {
+        return rel.Relationship_Type__c == 'Support_Person'
+            && rel.Consent_Method__c == 'Written';
+    }
+
     private static void handleApproved(Set<Id> srIds) {
         List<Support_Relationship__c> rels = [
             SELECT Id, Name, Contact__c, Related_Contact__c, Signed_Date__c,
                    Approved_Date__c, Activation_Letter_Sent_Date__c,
-                   Relationship_Type__c,
+                   Relationship_Type__c, Consent_Method__c,
                    Contact__r.Vouched_Status__c,
                    Related_Contact__r.Vouched_Status__c
             FROM Support_Relationship__c
@@ -201,7 +221,7 @@ public without sharing class FimbySupportRelationshipTriggerHandler {
         String tosVersion = FimbySettings.tosCurrentVersion();
 
         for (Support_Relationship__c rel : rels) {
-            if (rel.Related_Contact__c != null) {
+            if (rel.Related_Contact__c != null && stampsSupporteeAgeAttestation(rel)) {
                 try {
                     FimbyTosController.recordPaperAcceptance(
                         rel.Related_Contact__c,
