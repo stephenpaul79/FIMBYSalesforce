@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Parent_Proxied__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True for a child Contact whose presence is operated entirely by a 19+ parent or guardian. The child never receives a User or login while this is true. Mirrors Is_Organization_Contact__c as the house pattern for a User-less Contact class. Cleared by an administrator at graduation, when the now-adult attests for themselves against this same Contact.</description>
+    <label>Is Parent Proxied</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

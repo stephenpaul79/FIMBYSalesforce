@@ -7,6 +7,7 @@
     <relationshipLabel>Support Relationships (as Supported Person)</relationshipLabel>
     <relationshipName>Support_Relationships_Supported</relationshipName>
     <required>false</required>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

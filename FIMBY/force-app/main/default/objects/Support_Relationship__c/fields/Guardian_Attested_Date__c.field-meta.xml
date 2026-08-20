@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guardian_Attested_Date__c</fullName>
+    <description>When the guardian attestation was captured. Paired with Guardian_Attestation_Version__c so it is always possible to say exactly which wording a guardian agreed to and when.</description>
+    <externalId>false</externalId>
+    <label>Guardian Attested Date</label>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <type>DateTime</type>
+</CustomField>

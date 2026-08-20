@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guardian_Echo_Confirmed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True when the guardian acknowledged the post-creation security receipt (&quot;You created Maya&apos;s parent-managed profile&quot;). Kept separate from Guardian_Attested__c because the wizard attestation is the consent artifact and switch access must never wait on this second confirmation. Its purpose is detection: an unacknowledged receipt paired with a &quot;This wasn&apos;t me&quot; report is what surfaces a profile created by the wrong adult.</description>
+    <label>Guardian Echo Confirmed</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

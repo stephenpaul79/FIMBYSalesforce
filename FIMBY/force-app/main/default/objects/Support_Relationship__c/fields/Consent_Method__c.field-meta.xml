@@ -3,6 +3,7 @@
     <fullName>Consent_Method__c</fullName>
     <label>Consent Method</label>
     <required>false</required>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>

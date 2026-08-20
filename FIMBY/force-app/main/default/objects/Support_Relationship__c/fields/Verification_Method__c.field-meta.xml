@@ -4,7 +4,7 @@
     <description>Channel used to verify supportee consent on the paper-form path. Phone Call is the gold standard; Postal Letter is the fallback when no phone or admin couldn't reach after 3 attempts.</description>
     <label>Verification Method</label>
     <required>false</required>
-    <trackHistory>false</trackHistory>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>

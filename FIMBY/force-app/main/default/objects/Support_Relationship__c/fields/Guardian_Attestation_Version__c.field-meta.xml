@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guardian_Attestation_Version__c</fullName>
+    <description>The exact version of the guardian attestation wording shown in the wizard, so a later change to that copy never rewrites what an existing guardian agreed to. Stored as the version string, not a reference, so it stays readable in an audit long after the copy has moved on.</description>
+    <externalId>false</externalId>
+    <label>Guardian Attestation Version</label>
+    <length>50</length>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

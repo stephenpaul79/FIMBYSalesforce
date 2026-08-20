@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Proxied_By_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The primary display parent for a parent-managed profile, normally the guardian who created it. DISPLAY ONLY: it drives secondary lines such as &quot;Coordinated by Sarah&quot; where naming every guardian would be noise. It carries NO authorization weight. The authoritative grant list is the set of Approved Parent_Guardian Support_Relationship__c rows, and a child may have several guardians.</description>
+    <label>Proxied By Contact</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Proxied Family Members</relationshipLabel>
+    <relationshipName>Proxied_Family_Members</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <type>Lookup</type>
+</CustomField>

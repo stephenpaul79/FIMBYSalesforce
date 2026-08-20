@@ -3,6 +3,7 @@
     <fullName>Revoked_For_Cause__c</fullName>
     <defaultValue>false</defaultValue>
     <label>Revoked For Cause</label>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Checkbox</type>
 </CustomField>

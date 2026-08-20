@@ -3,6 +3,7 @@
     <fullName>Dismissed_By_Helper__c</fullName>
     <defaultValue>false</defaultValue>
     <label>Dismissed by Helper</label>
+    <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Checkbox</type>
 </CustomField>

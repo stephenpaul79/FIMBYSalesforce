@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Age_Years__c</fullName>
+    <description>Whole years since Birthdate, decremented when this year&apos;s birthday has not yet passed. ADVISORY ONLY: use it for cheap badge and UI gating, never for eligibility. Eligibility at creation is computed in Apex, where edge cases are handled explicitly. Compares month and day rather than constructing a date, so a 29 February birthdate does not produce a null.</description>
+    <externalId>false</externalId>
+    <formula>IF(
+  ISBLANK(Birthdate),
+  null,
+  YEAR(TODAY()) - YEAR(Birthdate)
+    - IF(
+        OR(
+          MONTH(TODAY()) &lt; MONTH(Birthdate),
+          AND(
+            MONTH(TODAY()) = MONTH(Birthdate),
+            DAY(TODAY()) &lt; DAY(Birthdate)
+          )
+        ),
+        1,
+        0
+      )
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Age (Years)</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

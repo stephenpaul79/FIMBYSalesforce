@@ -4,7 +4,7 @@
     <description>Lifecycle state for the support relationship. Draft, Pending Paper Review, Pending Verification, Approved, Rejected, and Expired drive the paper-form path. Pending, Inactive, Revoked, Declined, Suspended preserve the original digital-path lifecycle.</description>
     <label>Status</label>
     <required>true</required>
-    <trackHistory>false</trackHistory>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>

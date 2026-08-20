@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guardian_Attested__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>True when the guardian affirmed in the Add a Family Member wizard that they are the parent or legal guardian of this child and accept responsibility for the profile. This is the consent artifact for a Parent_Guardian relationship. Deliberately NOT Subject_Confirmed__c, whose elder meaning is the supportee confirming for themselves — a child never consents on their own behalf.</description>
+    <label>Guardian Attested</label>
+    <trackHistory>true</trackHistory>
+    <type>Checkbox</type>
+</CustomField>
