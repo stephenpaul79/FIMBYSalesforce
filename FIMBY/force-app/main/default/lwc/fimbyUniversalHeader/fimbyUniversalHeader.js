@@ -10,6 +10,7 @@ const TOUR_PENDING_SESSION_KEY = 'fimby_tour_pending';
 import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getBadgeCounts from '@salesforce/apex/FimbyCommunicationController.getBadgeCounts';
+import getUnreadCountsByInbox from '@salesforce/apex/FimbyCommunicationController.getUnreadCountsByInbox';
 import recordAppOpen from '@salesforce/apex/FimbyContactController.recordAppOpen';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
@@ -85,6 +86,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     @track identitiesLoading = false;
     @track _identitySwitching = false;
     _identitiesLoaded = false;
+    _unreadByInbox = {};
     _actingAsContactId = null;
     @track _isOrgContact = false;
     @track _orgAccountId = null;
@@ -509,8 +511,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             return;
         }
         this.identitiesLoading = true;
-        getAvailableIdentities()
-            .then((identitiesResult) => {
+        Promise.all([getAvailableIdentities(), getUnreadCountsByInbox().catch(() => ({}))])
+            .then(([identitiesResult, unreadByInbox]) => {
+                this._unreadByInbox = unreadByInbox || {};
                 this._applyAvailableIdentities(identitiesResult);
                 this._identitiesLoaded = true;
             })
@@ -549,13 +552,32 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         });
 
         this.otherIdentityMenuItems = [];
-        if (activeRow) this.otherIdentityMenuItems.push(activeRow);
+        if (activeRow) this.otherIdentityMenuItems.push(this._withUnread(activeRow));
         const remaining = deduped.slice(0, Math.max(0, MAX_KEBAB_IDENTITIES - this.otherIdentityMenuItems.length));
-        remaining.forEach(id => this.otherIdentityMenuItems.push({
+        remaining.forEach(id => this.otherIdentityMenuItems.push(this._withUnread({
             ...id,
-            isActive: false,
-            switchAriaLabel: `Switch to ${id.name}`
-        }));
+            isActive: false
+        })));
+    }
+
+    /**
+     * The bell totals every inbox, which answers "is anything waiting" but not
+     * "for whom". These per-identity counts are the second half of that answer,
+     * so a guardian can see it is their child who has mail, not them.
+     */
+    _withUnread(identity) {
+        const count = this._unreadByInbox?.[identity.targetContactId] || 0;
+        const suffix = count > 0
+            ? `, ${count} unread notification${count === 1 ? '' : 's'}`
+            : '';
+        return {
+            ...identity,
+            unreadCount: count > 99 ? '99+' : String(count),
+            hasUnread: count > 0,
+            switchAriaLabel: identity.isActive
+                ? `${identity.name}${suffix}`
+                : `Switch to ${identity.name}${suffix}`
+        };
     }
 
     handleTosComplete() {

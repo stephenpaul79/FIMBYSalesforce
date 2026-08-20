@@ -112,6 +112,9 @@
                                     <span class="identity-pill-label">Logged in as:</span>
                                     <span class="identity-name">{identity.name}</span>
                                 </div>
+                                <template lwc:if={identity.hasUnread}>
+                                    <span class="identity-unread" aria-hidden="true">{identity.unreadCount}</span>
+                                </template>
                             </div>
                         </template>
                         <template lwc:else>
@@ -121,6 +124,9 @@
                                     <span class="identity-row-name">{identity.name}</span>
                                     <span class="identity-row-neighbourhood">{identity.neighbourhoodName}</span>
                                 </div>
+                                <template lwc:if={identity.hasUnread}>
+                                    <span class="identity-unread" aria-hidden="true">{identity.unreadCount}</span>
+                                </template>
                             </button>
                         </template>
                     </template>

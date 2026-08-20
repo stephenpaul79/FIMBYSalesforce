@@ -58,6 +58,43 @@ public with sharing class FimbyCommunicationController {
     }
 
     /**
+     * @description Unread notification count broken out per inbox, keyed by
+     * Contact Id. The bell shows the total; this is what lets the identity
+     * switcher say WHICH of the people you look after is waiting on you, so
+     * the merged number stays actionable instead of just alarming.
+     * @return Map of Contact Id (as String) to unread count, omitting zeroes
+     */
+    @AuraEnabled(cacheable=false)
+    public static Map<String, Integer> getUnreadCountsByInbox() {
+        Id ownContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+        Map<String, Integer> counts = new Map<String, Integer>();
+        if (ownContactId == null) {
+            return counts;
+        }
+
+        Set<Id> inboxes = FimbySupportedIdentityDelivery.servedInboxes(ownContactId);
+        inboxes.add(ownContactId);
+        Id actingId = FimbyIdentityRepository.getActingAsContactId();
+        if (actingId != null) {
+            inboxes.add(actingId);
+        }
+
+        for (AggregateResult ar : [
+            SELECT Contact__c inboxId, COUNT(Id) unreadCount
+            FROM Notification__c
+            WHERE Contact__c IN :inboxes AND Read_Date__c = null
+              AND Type__c NOT IN :FimbyConstants.BELL_HIDDEN_NOTIF_TYPES
+            GROUP BY Contact__c
+        ]) {
+            counts.put(
+                String.valueOf(ar.get('inboxId')),
+                (Integer) ar.get('unreadCount')
+            );
+        }
+        return counts;
+    }
+
+    /**
      * Mark a response thread as viewed by the current user.
      * Updates Poster_Last_Viewed__c or Responder_Last_Viewed__c.
      */
