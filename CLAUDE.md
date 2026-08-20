@@ -107,7 +107,7 @@ Account record types: **HH_Account**, **Neighbourhood_Account**, **Organization*
 | `Needs_Offers__c` | `Contact__c` | `Posted_By__c` |
 | `Story__c` / `Story_Comment__c` | `Posted_By__c` | `Contact__c` |
 | `Library_Item__c` | `Owner_Contact__c` | `Listed_By__c` |
-| `Message__c` / `Response_Message__c` | `On_Behalf_Of__c` | `Sender__c` |
+| `Message__c` / `Response_Message__c` | `Sender__c` | `Sent_By__c` |
 | `Response__c` | `On_Behalf_Of_Contact__c` | `Contact__c` |
 | `Feedback__c` (Content Reports) | `Posted_By__c` | `Contact__c` |
 | `Lending_Request__c` | `Requested_By__c` | `Requested_By_Real_Contact__c` |

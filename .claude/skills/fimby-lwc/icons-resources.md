@@ -31,7 +31,7 @@ get homeIconUrl() { return `${IMPACT_ICONS}/${this.isActive ? TAB_ICONS.home.act
 
 **Actions & UI:** Add `add.png`; Search `Magnify.png`; Kebab (universal header only) `Kebab.png`; horizontal dots (subheaders, feed cards, comment menus) `utility:threedots` (lightning-icon); Comment `comment.png`; Reply `reply.png`; RSVP `rsvp.png`; Borrow `borrow.png` / `BorrowActive.png`; Settings `gear.png`; Edit `edit.png`; Photo `photo.png`; Delete `trash.png`; Warning `warning.png`.
 
-**People & contact:** People `people.png`; Contact/Sign `sign.png`; Chat/About `chat.png`; Care `care.png`; Accessibility `accessibility.png`; No Profile Photo `NoProfilePhoto.png`; No Photo `NoPhoto.png`.
+**People & contact:** People `people.png`; Contact/Sign `sign.png`; Chat/About `chat.png`; Care `care.png`; Accessibility `accessibility.png`; Youth/Parent-managed `youth.png`; No Profile Photo `NoProfilePhoto.png`; No Photo `NoPhoto.png`.
 
 **Settings & account:** Account/Key `key.png`; Email `email.png`; Globe `globe.png`; Appearance `day-and-night.png`; Block User `block-user.png`; Deactivation `deactivation.png`; Lightbulb `lightbulb.png`.
 

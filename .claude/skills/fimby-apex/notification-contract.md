@@ -26,7 +26,7 @@ One sentence carrying the **deciding context** (date, quantity, location, deadli
 
 ## 4. Actor convention (mandatory)
 `Actor_Name__c` is **always one of**:
-1. A **human display name** from the **represented identity** (`Posted_By__c`/`On_Behalf_Of__c`/acting-as Contact per the dual-stamp table). Prefer full name; first-name-only when intimacy outweighs disambiguation (lending, bulk-buy).
+1. A **human display name** from the **represented identity** (`Posted_By__c`/`Sender__c`/acting-as Contact per the dual-stamp table). Prefer full name; first-name-only when intimacy outweighs disambiguation (lending, bulk-buy).
 2. A **team label**: `'Neighbourhood team'` (moderator actions, vouch revoke/pause, support relationship lifecycle) or `'FIMBY'` (system-initiated: auto-handoff, waitlist promotion, event reminders, bulk-buy broadcasts).
 3. A documented **icon token** only when it replaces a person: `'care'` (support relationship lifecycle) or `'system'` (reserved). LWC renders the icon instead of initials.
 

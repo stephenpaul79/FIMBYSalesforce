@@ -94,6 +94,7 @@ get homeIconUrl() {
 | Chat / About | `chat.png` |
 | Care | `care.png` |
 | Accessibility | `accessibility.png` |
+| Youth / Parent-managed | `youth.png` |
 | No Profile Photo | `NoProfilePhoto.png` |
 | No Photo | `NoPhoto.png` |
 

@@ -62,7 +62,7 @@ Three canonical patterns:
 
 `Actor_Name__c` is **always one of**:
 
-1. **A human display name** resolved from the **represented identity** (`Posted_By__c` / `On_Behalf_Of__c` / acting-as Contact per the dual-stamp table in `fimby-architecture.mdc`).
+1. **A human display name** resolved from the **represented identity** (`Posted_By__c` / `Sender__c` / acting-as Contact per the dual-stamp table in `fimby-architecture.mdc`).
    - Prefer **full name** by default
    - Use **first name only** when intimacy outweighs disambiguation — lending and bulk-buy domains
 2. **A neighbourhood-team label**:
