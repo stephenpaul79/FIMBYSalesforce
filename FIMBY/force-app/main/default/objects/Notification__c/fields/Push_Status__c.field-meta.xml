@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Push_Status__c</fullName>
-    <description>Push notification delivery status. Null means not eligible for push (in-app only). Pending means queued for the next batch cycle as an audible push. Pending_Quiet means queued for a passive (silent, in-place) refresh because the doorbell gate was closed. Sent means successfully delivered. Failed means delivery attempt failed.</description>
+    <description>Push notification delivery status. Null means not eligible for push (in-app only). Pending means queued for the next batch cycle as an audible push. Pending_Quiet means queued for a passive (silent, in-place) refresh because the doorbell gate was closed. Sent means successfully delivered. Failed means delivery attempt failed. Partial means the notification fanned out to multiple support-relationship helpers and at least one, but not all, delivered — see Delivery_State__c for the per-recipient ledger.</description>
     <externalId>false</externalId>
     <label>Push Status</label>
     <required>false</required>
@@ -30,6 +30,11 @@
                 <fullName>Failed</fullName>
                 <default>false</default>
                 <label>Failed</label>
+            </value>
+            <value>
+                <fullName>Partial</fullName>
+                <default>false</default>
+                <label>Partial</label>
             </value>
         </valueSetDefinition>
     </valueSet>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Delivery_State__c</fullName>
+    <description>Versioned JSON ledger of per-recipient push and email delivery state, used when the notification&apos;s Contact has no active User and delivery must fan out to every approved support relationship helper. Written and read only by FimbySupportedIdentityDelivery. Push_Status__c and Email_Status__c remain the aggregate channel statuses the batch jobs query on. Never rendered on an Experience Cloud surface.</description>
+    <externalId>false</externalId>
+    <label>Delivery State</label>
+    <length>131072</length>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+</CustomField>
