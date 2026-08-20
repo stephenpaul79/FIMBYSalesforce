@@ -11,6 +11,7 @@ import deactivateRelationship from '@salesforce/apex/FimbySupportRelationshipCon
 import dismissRelationship from '@salesforce/apex/FimbySupportRelationshipController.dismissRelationship';
 import confirmRelationship from '@salesforce/apex/FimbySupportRelationshipController.confirmRelationship';
 import requestCommunityGroupLifecycleAction from '@salesforce/apex/FimbySupportRelationshipController.requestCommunityGroupLifecycleAction';
+import deleteManagedProfile from '@salesforce/apex/FimbyParentGuardianService.deleteManagedProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 const ICONS = {
@@ -41,6 +42,10 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
 
     @track showDetailModal = false;
     @track detailRecord = null;
+
+    @track showRemoveProfileModal = false;
+    @track isRemovingProfile = false;
+    _pendingRemoval = null;
 
     // A2: Community Group lifecycle modals — Close (request review) and
     // Delete (higher-friction, type-the-name confirmation). Both file a
@@ -189,8 +194,14 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         return records.map(r => ({
             id: r.Id,
             name: r.Related_Contact__r?.Name || 'Unknown',
+            targetContactId: r.Related_Contact__c,
             avatarUrl: this._resolveAvatarUrl(r.Related_Contact__r?.Image_URL__c, ICONS.noProfile),
             parentManaged: r.Related_Contact__r?.Is_Parent_Proxied__c === true,
+            // A parent-managed profile belongs to the household, so any guardian
+            // may retire it. Adult supportees speak for themselves and are never
+            // removable this way.
+            canRemoveProfile: r.Related_Contact__r?.Is_Parent_Proxied__c === true
+                && r.Status__c === 'Approved',
             status: r.Status__c,
             statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
@@ -466,6 +477,46 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         dismissRelationship({ relationshipId: relId, viewerSide: side })
             .then(() => { this.loadRelationships(); })
             .catch(() => {});
+    }
+
+    handleRemoveManagedProfile(event) {
+        this._pendingRemoval = {
+            contactId: event.currentTarget.dataset.contactId,
+            name: event.currentTarget.dataset.name
+        };
+        this.showRemoveProfileModal = true;
+    }
+
+    get removeProfileMessage() {
+        const name = this._pendingRemoval?.name || 'this profile';
+        return `${name}'s profile, posts, replies and shared contact details will be `
+            + 'permanently removed, and every grown-up who looks after it loses access — '
+            + 'not just you. This cannot be undone.';
+    }
+
+    handleCancelRemoveProfile() {
+        this.showRemoveProfileModal = false;
+        this._pendingRemoval = null;
+    }
+
+    handleConfirmRemoveProfile() {
+        const contactId = this._pendingRemoval?.contactId;
+        if (!contactId) return;
+        this.isRemovingProfile = true;
+        deleteManagedProfile({ childContactId: contactId })
+            .then(() => {
+                this.showRemoveProfileModal = false;
+                this._pendingRemoval = null;
+                // The guardian may have been switched into the profile they just
+                // removed, so the whole shell has to re-read who they are.
+                window.location.reload();
+            })
+            .catch(err => {
+                fireErrorToast(err, 'Could not remove that profile.');
+            })
+            .finally(() => {
+                this.isRemovingProfile = false;
+            });
     }
 
     handleConfirmConnection(event) {

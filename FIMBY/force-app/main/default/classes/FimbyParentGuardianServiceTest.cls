@@ -253,4 +253,120 @@ private class FimbyParentGuardianServiceTest {
         }
         Test.stopTest();
     }
+
+    @isTest
+    static void anyOneGuardianCanRemoveTheProfileAndTheOtherIsTold() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        List<Contact> others = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 1, true);
+        Contact secondGuardian = others[0];
+
+        FimbyParentGuardianService.FamilyMemberResult created;
+        System.runAs(guardianUser()) {
+            FimbyIdentityRepository.clearCache();
+            created = FimbyParentGuardianService.createFamilyMember(
+                input('Maya', Date.today().addYears(-11), true)
+            );
+        }
+
+        // The second adult in the household holds the same mandate.
+        insert new Support_Relationship__c(
+            Relationship_Type__c = 'Parent_Guardian',
+            Contact__c = secondGuardian.Id,
+            Related_Contact__c = created.contactId,
+            Neighbourhood__c = nh.Id,
+            Status__c = 'Approved',
+            Consent_Method__c = 'Guardian'
+        );
+        // And the requesting guardian is currently switched into the child.
+        update new Contact(Id = parent.Id, Logged_In_As_Contact__c = created.contactId);
+
+        Test.startTest();
+        System.runAs(guardianUser()) {
+            FimbyIdentityRepository.clearCache();
+            FimbyParentGuardianService.deleteManagedProfile(created.contactId);
+        }
+        Test.stopTest();
+
+        Contact child = [
+            SELECT Deactivation_Requested__c FROM Contact WHERE Id = :created.contactId
+        ];
+        System.assertEquals(true, child.Deactivation_Requested__c,
+            'The profile must be queued for erasure');
+
+        System.assertEquals(null,
+            [SELECT Logged_In_As_Contact__c FROM Contact WHERE Id = :parent.Id]
+                .Logged_In_As_Contact__c,
+            'Nobody may be left acting as a profile that is being erased');
+
+        System.assertEquals(1,
+            [SELECT COUNT() FROM Notification__c WHERE Contact__c = :secondGuardian.Id],
+            'The other guardian loses access and must be told');
+    }
+
+    @isTest
+    static void someoneWithNoMandateCannotRemoveAProfile() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        List<Contact> others = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 1, true);
+        User stranger = FimbyTestDataFactory.createCommunityUser(others[0].Id, null, true);
+
+        FimbyParentGuardianService.FamilyMemberResult created;
+        System.runAs(guardianUser()) {
+            FimbyIdentityRepository.clearCache();
+            created = FimbyParentGuardianService.createFamilyMember(
+                input('Sam', Date.today().addYears(-9), true)
+            );
+        }
+
+        Boolean refused = false;
+        Test.startTest();
+        System.runAs(stranger) {
+            FimbyIdentityRepository.clearCache();
+            try {
+                FimbyParentGuardianService.deleteManagedProfile(created.contactId);
+            } catch (Exception e) {
+                refused = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused, 'Only a guardian may remove the profile');
+        System.assertEquals(false,
+            [SELECT Deactivation_Requested__c FROM Contact WHERE Id = :created.contactId]
+                .Deactivation_Requested__c,
+            'A refused request must leave the profile untouched');
+    }
+
+    @isTest
+    static void anOrdinaryContactCannotBeRemovedThroughTheFamilyPath() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        List<Contact> others = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 1, true);
+        Contact adult = others[0];
+
+        insert new Support_Relationship__c(
+            Relationship_Type__c = 'Parent_Guardian',
+            Contact__c = parent.Id,
+            Related_Contact__c = adult.Id,
+            Neighbourhood__c = nh.Id,
+            Status__c = 'Approved',
+            Consent_Method__c = 'Guardian'
+        );
+
+        Boolean refused = false;
+        Test.startTest();
+        System.runAs(guardianUser()) {
+            FimbyIdentityRepository.clearCache();
+            try {
+                FimbyParentGuardianService.deleteManagedProfile(adult.Id);
+            } catch (Exception e) {
+                refused = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused,
+            'An adult neighbour speaks for themselves and is not removable this way');
+    }
 }

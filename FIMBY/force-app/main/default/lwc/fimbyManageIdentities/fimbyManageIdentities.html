@@ -46,6 +46,9 @@
                                     <template lwc:if={rel.isInactive}>
                                         <button type="button" class="text-btn" data-id={rel.id} data-side="helper" onclick={handleDismiss}>Remove</button>
                                     </template>
+                                    <template lwc:if={rel.canRemoveProfile}>
+                                        <button type="button" class="text-btn" data-contact-id={rel.targetContactId} data-name={rel.name} onclick={handleRemoveManagedProfile}>Remove profile</button>
+                                    </template>
                                 </div>
                             </div>
                         </template>
@@ -319,6 +322,30 @@
             destructive action. Same task-filing path as Close; Account is
             never directly deleted from the LWC.
         -->
+        <template lwc:if={showRemoveProfileModal}>
+            <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="remove-profile-title">
+                <div class="modal-card">
+                    <h3 id="remove-profile-title" class="modal-title">Remove this profile?</h3>
+                    <p class="modal-body">{removeProfileMessage}</p>
+                    <div class="modal-actions">
+                        <button type="button"
+                                class="pill-btn ghost"
+                                onclick={handleCancelRemoveProfile}
+                                disabled={isRemovingProfile}>
+                            Keep it
+                        </button>
+                        <button type="button"
+                                class="pill-btn danger"
+                                onclick={handleConfirmRemoveProfile}
+                                disabled={isRemovingProfile}>
+                            <template lwc:if={isRemovingProfile}>Removing&hellip;</template>
+                            <template lwc:else>Remove profile</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <template lwc:if={showDeleteGroupModal}>
             <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-group-title">
                 <div class="modal-card">

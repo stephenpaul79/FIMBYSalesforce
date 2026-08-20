@@ -202,6 +202,103 @@ public with sharing class FimbyParentGuardianService {
     }
 
     /**
+     * @description Removes a parent-managed profile at any one guardian's request.
+     *
+     * Deliberately single-signature: a second guardian's approval is not required.
+     * Both adults already hold the same silent switch access, so requiring agreement
+     * would let one of them hold a child's presence open against the other's wishes —
+     * the opposite of what a right to be forgotten is for.
+     *
+     * The erasure itself is the ordinary account path: the Contact is flagged and
+     * FimbyAccountDeactivationBatch does the scrub, so a child is purged by exactly the
+     * same tested code as an adult, including deferral while a loan is still out.
+     *
+     * @param childContactId The parent-managed Contact to remove.
+     */
+    @AuraEnabled
+    public static void deleteManagedProfile(Id childContactId) {
+        try {
+            if (childContactId == null) {
+                throw refuse('Nothing to remove.');
+            }
+            User currentUser = FimbyIdentityRepository.getCurrentUser();
+            if (currentUser == null || currentUser.ContactId == null) {
+                throw refuse('No Contact associated with current user');
+            }
+
+            ManagedProfileReader reader = new ManagedProfileReader();
+            List<Support_Relationship__c> mandates = reader.guardiansOf(childContactId);
+            Boolean callerIsGuardian = false;
+            for (Support_Relationship__c rel : mandates) {
+                if (rel.Contact__c == currentUser.ContactId) {
+                    callerIsGuardian = true;
+                }
+            }
+            if (!callerIsGuardian) {
+                throw refuse('That profile isn\'t yours to remove.');
+            }
+
+            Contact child = reader.child(childContactId);
+            if (child == null || child.Is_Parent_Proxied__c != true) {
+                throw refuse('That profile isn\'t a parent-managed one.');
+            }
+
+            new FamilyMemberWriter().requestErasure(childContactId);
+
+            // Anyone still switched into this profile would otherwise keep acting as a
+            // presence that is being erased, so every guardian is put back in their own
+            // shoes before the scrub runs.
+            new FamilyMemberWriter().returnGuardiansToThemselves(childContactId);
+
+            notifyOtherGuardians(mandates, currentUser.ContactId, child.FirstName);
+        } catch (AuraHandledException ae) {
+            throw ae;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyParentGuardianService', 'deleteManagedProfile', e, childContactId);
+            throw refuse('We couldn\'t remove that profile.');
+        }
+    }
+
+    /**
+     * The other guardian loses access to a profile they also looked after and did not
+     * ask to remove. Telling them is the minimum; the notice names who asked so it reads
+     * as a household decision rather than something that broke.
+     */
+    private static void notifyOtherGuardians(
+        List<Support_Relationship__c> mandates,
+        Id requestingContactId,
+        String childName
+    ) {
+        try {
+            String requesterName = 'Another guardian';
+            for (Support_Relationship__c rel : mandates) {
+                if (rel.Contact__c == requestingContactId && rel.Contact__r != null) {
+                    requesterName = rel.Contact__r.Name;
+                }
+            }
+            for (Support_Relationship__c rel : mandates) {
+                if (rel.Contact__c == requestingContactId) {
+                    continue;
+                }
+                FimbyNotificationService.createNotification(
+                    rel.Contact__c,
+                    'Relationship_Approved',
+                    childName + '\'s profile has been removed',
+                    requesterName + ' removed ' + childName + '\'s parent-managed profile, '
+                        + 'so it\'s no longer available to switch to. '
+                        + 'You can set up a new one any time.',
+                    null,
+                    null,
+                    '/manage-identities',
+                    null
+                );
+            }
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyParentGuardianService', 'notifyOtherGuardians', e);
+        }
+    }
+
+    /**
      * Gaining a second identity is exactly what a compromised account would want to do
      * quietly, so the guardian is told plainly and given somewhere to go.
      */
@@ -268,6 +365,35 @@ public with sharing class FimbyParentGuardianService {
     }
 
     /**
+     * A guardian cannot see the mandate rows of the household's other guardian through
+     * sharing, but removal is a household-level decision that has to account for all of
+     * them, so the read is privileged and the authorization check is done in Apex.
+     */
+    private without sharing class ManagedProfileReader {
+        public List<Support_Relationship__c> guardiansOf(Id childContactId) {
+            return [
+                SELECT Id, Contact__c, Contact__r.Name
+                FROM Support_Relationship__c
+                WHERE Related_Contact__c = :childContactId
+                  AND Status__c = 'Approved'
+                  AND Relationship_Type__c = :FimbyProxiedPresenceGuard.TYPE_PARENT_GUARDIAN
+                WITH SYSTEM_MODE
+            ];
+        }
+
+        public Contact child(Id childContactId) {
+            List<Contact> rows = [
+                SELECT Id, FirstName, Is_Parent_Proxied__c
+                FROM Contact
+                WHERE Id = :childContactId
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
+    }
+
+    /**
      * The child Contact and its relationship are written in system mode for the same
      * reason the paper-draft supportee is: a community user has no create permission on
      * Contact, and the record being created is precisely the one that will grant them
@@ -278,6 +404,35 @@ public with sharing class FimbyParentGuardianService {
             Database.insert(child, AccessLevel.SYSTEM_MODE);
             rel.Related_Contact__c = child.Id;
             Database.insert(rel, AccessLevel.SYSTEM_MODE);
+        }
+
+        public void requestErasure(Id childContactId) {
+            Database.update(
+                new Contact(
+                    Id = childContactId,
+                    Deactivation_Requested__c = true,
+                    // No grace window: the grace period exists so a person can log
+                    // back in and change their mind, and this profile has no login.
+                    Grace_Started_At__c = null
+                ),
+                AccessLevel.SYSTEM_MODE
+            );
+        }
+
+        public void returnGuardiansToThemselves(Id childContactId) {
+            List<Contact> switched = [
+                SELECT Id FROM Contact
+                WHERE Logged_In_As_Contact__c = :childContactId
+                WITH SYSTEM_MODE
+            ];
+            if (switched.isEmpty()) {
+                return;
+            }
+            for (Contact c : switched) {
+                c.Logged_In_As_Contact__c = null;
+                c.Logged_In_As_Neighbourhood__c = null;
+            }
+            Database.update(switched, AccessLevel.SYSTEM_MODE);
         }
 
         public void confirmEcho(Id relationshipId) {

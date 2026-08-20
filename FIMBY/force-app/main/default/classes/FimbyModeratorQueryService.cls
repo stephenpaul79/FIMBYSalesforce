@@ -328,6 +328,35 @@ public without sharing class FimbyModeratorQueryService {
                 result.put('imageUrls', new List<String>());
                 result.put('contentType', 'Comment');
             }
+        } else if (recordType == 'Contact') {
+            // A reported profile has no body — the photo IS the content, so it
+            // is surfaced as the single image the moderator reviews.
+            List<Contact> records = [
+                SELECT Id, Name, Full_Name__c, Image_URL__c, Display_Avatar_URL__c,
+                       About_Enjoys_Doing__c, Is_Parent_Proxied__c, Proxied_By_Contact__c,
+                       Proxied_By_Contact__r.Name, CreatedDate
+                FROM Contact WHERE Id = :recordId LIMIT 1
+            ];
+            if (!records.isEmpty()) {
+                Contact r = records[0];
+                String displayName = String.isNotBlank(r.Full_Name__c) ? r.Full_Name__c : r.Name;
+                result.put('contentTitle', 'Profile: ' + displayName);
+                result.put('contentBody', r.About_Enjoys_Doing__c);
+                result.put('authorName', displayName);
+                result.put('authorPhotoUrl', r.Display_Avatar_URL__c);
+                result.put('authorContactId', r.Id);
+                result.put('postDate', String.valueOf(r.CreatedDate));
+                result.put('imageUrls', String.isNotBlank(r.Image_URL__c)
+                    ? new List<String>{ r.Image_URL__c }
+                    : new List<String>());
+                result.put('contentType', 'Profile');
+                // Parent-managed status is moderator-only context: it tells the
+                // reviewer which adult is accountable for this profile.
+                result.put('isParentManaged', r.Is_Parent_Proxied__c == true);
+                result.put('managedByContactId', r.Proxied_By_Contact__c);
+                result.put('managedByName', r.Proxied_By_Contact__r != null
+                    ? r.Proxied_By_Contact__r.Name : null);
+            }
         }
 
         if (taskId != null) {

@@ -121,6 +121,7 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     get headerMenuItems() {
         if (this.isLoading || this.showNotFound) return [];
         return [
+            { key: 'report', label: 'Report this profile', icon: 'warning.png', display: 'kebab' },
             { key: 'block', label: 'Block', icon: 'block-user.png', display: 'kebab' }
         ];
     }
@@ -128,6 +129,13 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     handleHeaderMenuAction(event) {
         if (event.detail.key === 'block') {
             this.showBlockConfirm = true;
+        } else if (event.detail.key === 'report') {
+            // A photo or a whole profile can be the problem, not just a post —
+            // on a parent-managed profile the resulting task lands on the adult
+            // who looks after it.
+            this.template
+                .querySelector('c-fimby-report-content')
+                ?.show(this.neighbourContactId, 'Profile');
         }
     }
 

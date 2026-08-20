@@ -203,7 +203,9 @@ public with sharing class FimbyContentReportController {
                 'Library_Item' => 'Library_Item__c',
                 'Response' => 'Response__c',
                 'Story_Comment' => 'Story_Comment__c',
-                'Skill_Offer' => 'Skill_Offer__c'
+                'Skill_Offer' => 'Skill_Offer__c',
+                'Profile' => 'Contact',
+                'Profile_Photo' => 'Contact'
             };
             return aliases.containsKey(contentType) ? aliases.get(contentType) : contentType;
         }
@@ -222,7 +224,8 @@ public with sharing class FimbyContentReportController {
                 'Needs_Offers__c' => 'Ask or Offer post',
                 'Library_Item__c' => 'library item',
                 'Response__c' => 'reply',
-                'Skill_Offer__c' => 'skill offer'
+                'Skill_Offer__c' => 'skill offer',
+                'Contact' => 'neighbour profile'
             };
             if (labels.containsKey(contentType)) { return labels.get(contentType); }
             try {
@@ -255,6 +258,18 @@ public with sharing class FimbyContentReportController {
                 } else if (contentType == 'Skill_Offer__c') {
                     List<Skill_Offer__c> recs = [SELECT Owner_Contact__c FROM Skill_Offer__c WHERE Id = :contentId LIMIT 1];
                     return recs.isEmpty() ? null : recs[0].Owner_Contact__c;
+                } else if (contentType == 'Contact') {
+                    // A profile report is about the profile itself. On a
+                    // parent-managed profile the accountable adult is the
+                    // guardian, so the task lands on them, not the child.
+                    List<Contact> recs = [
+                        SELECT Id, Is_Parent_Proxied__c, Proxied_By_Contact__c
+                        FROM Contact WHERE Id = :contentId LIMIT 1
+                    ];
+                    if (recs.isEmpty()) { return null; }
+                    return (recs[0].Is_Parent_Proxied__c == true && recs[0].Proxied_By_Contact__c != null)
+                        ? recs[0].Proxied_By_Contact__c
+                        : recs[0].Id;
                 }
             } catch (Exception e) {
                 return null;

@@ -191,10 +191,16 @@ global without sharing class FimbyAccountDeactivationBatch implements Database.B
             WHERE Owner_Contact__c IN :contactIds OR Listed_By__c IN :contactIds
         ]);
 
-        toDelete.addAll([
+        List<Shared_Contact_Info__c> episodes = [
             SELECT Id FROM Shared_Contact_Info__c
             WHERE Contact__c IN :contactIds OR Shared_To__c IN :contactIds
-        ]);
+        ];
+        // Conversation__c.Authorizing_Shared_Contact_Info__c is SetNull on
+        // delete, so deleting these episodes would leave the other neighbour
+        // looking at a thread that quietly stops working with no explanation.
+        // Lock and explain them first, while the link still exists.
+        lockThreadsAuthorizedBy(episodes);
+        toDelete.addAll(episodes);
 
         toDelete.addAll([
             SELECT Id FROM Support_Relationship__c
@@ -215,6 +221,26 @@ global without sharing class FimbyAccountDeactivationBatch implements Database.B
 
         if (!toDelete.isEmpty()) {
             Database.delete(toDelete, false);
+        }
+    }
+
+    /**
+     * Reuses the revoke path so a departing neighbour's threads close the same
+     * way a withdrawn share does — locked, with the standard notice — rather
+     * than silently failing the lazy-bind check later.
+     */
+    private void lockThreadsAuthorizedBy(List<Shared_Contact_Info__c> episodes) {
+        if (episodes == null || episodes.isEmpty()) {
+            return;
+        }
+        Set<Id> sciIds = new Map<Id, Shared_Contact_Info__c>(episodes).keySet();
+        try {
+            FimbySharedContactInfoTriggerHandler.lockAuthorizedConversations(sciIds);
+        } catch (Exception e) {
+            // A thread that cannot be locked must not strand the whole scrub;
+            // the fail-closed bind check still keeps it from being used.
+            FimbyLogger.warn('FimbyAccountDeactivationBatch', 'lockThreadsAuthorizedBy',
+                'Could not lock threads bound to deleted episodes: ' + e.getMessage());
         }
     }
 
@@ -349,6 +375,12 @@ global without sharing class FimbyAccountDeactivationBatch implements Database.B
                 Care_Updated_Date__c = null,
                 Logged_In_As_Contact__c = null,
                 Logged_In_As_Neighbourhood__c = null,
+                // A parent-managed profile carries a child's birthdate and the
+                // adult who looked after it. Both are the whole point of the
+                // erasure, so they go with the rest of the identifying data.
+                Birthdate = null,
+                Is_Parent_Proxied__c = false,
+                Proxied_By_Contact__c = null,
                 Deactivation_Requested__c = false,
                 Grace_Started_At__c = null,
                 Grace_Window_Days__c = null
