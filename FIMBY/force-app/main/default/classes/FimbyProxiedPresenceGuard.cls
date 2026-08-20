@@ -34,6 +34,15 @@ public without sharing class FimbyProxiedPresenceGuard {
     public static final String TYPE_COMMUNITY_GROUP_REP = 'Community_Group_Rep';
 
     /**
+     * Bind target for SOQL that lists the identities a person can act as. Kept beside
+     * isContactBackedRelationship so a filter and a branch can never disagree about
+     * which types are person-backed.
+     */
+    public static final Set<String> CONTACT_BACKED_TYPES = new Set<String>{
+        TYPE_SUPPORT_PERSON, TYPE_PARENT_GUARDIAN
+    };
+
+    /**
      * Shown when someone acting as a child tries to share contact details outward.
      * Names the way out rather than the rule, so a guardian is not left guessing.
      */
@@ -44,6 +53,17 @@ public without sharing class FimbyProxiedPresenceGuard {
     /** The object-level phrasing, which an admin or import may also see. */
     public static final String OUTBOUND_SHARE_INVARIANT =
         'A parent-managed profile can receive shared contact information but can never share any outward.';
+
+    /**
+     * Shown when someone acting as a child tries to list an item or a skill. A listing
+     * is an open invitation to strangers that outlives the moment it was posted, and its
+     * coordination happens in a thread with no shared context to anchor it. A parent
+     * lists under their own name instead; child coordination belongs on Ask and Offer
+     * posts, whose response threads are contextual.
+     */
+    public static final String LISTING_REFUSAL =
+        'A parent-managed profile cannot list items or skills. '
+        + 'Switch back to yourself to add this under your own name.';
 
     /** Shown when a profile edit would put reachable contact details on a child. */
     public static final String CHILD_PII_REFUSAL =

@@ -7,6 +7,27 @@
             </div>
         </template>
 
+        <!-- Parent-managed identity: a listing belongs to the adult, not the child -->
+        <template lwc:elseif={isActingAsProxiedChild}>
+            <c-fimby-page-header
+                page-title="Post Library Item"
+                parent-label="Library"
+                parent-url="/library-list">
+            </c-fimby-page-header>
+
+            <div class="photo-step-screen">
+                <div class="photo-step-content">
+                    <h2 class="photo-step-title">Listings go under your own name</h2>
+                    <p class="photo-step-message">{proxiedBlockMessage}</p>
+                    <div class="photo-step-actions">
+                        <button class="btn btn-neutral" onclick={handleBackToLibrary}>
+                            Back to Library
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <!-- Photo Upload Step (shown after form submit, before success) -->
         <template lwc:elseif={showPhotoStep}>
             <c-fimby-page-header

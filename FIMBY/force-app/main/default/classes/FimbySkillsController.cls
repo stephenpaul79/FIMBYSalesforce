@@ -128,6 +128,12 @@ public with sharing class FimbySkillsController {
             Id actingAsContactId = identity.actingAsContactId;
             Id neighbourhoodId = identity.neighbourhoodId;
 
+            // Covers edits as well as new skills: a child should never have skills to
+            // edit, and if a legacy row exists it must not be maintainable from here.
+            if (FimbyProxiedPresenceGuard.isProxied(actingAsContactId)) {
+                throw new AuraHandledException(FimbyProxiedPresenceGuard.LISTING_REFUSAL);
+            }
+
             SkillsQueryHelper queryHelper = new SkillsQueryHelper();
             Set<String> existingCategories = new Set<String>();
             for (Skill_Offer__c existing : queryHelper.queryOwnedActiveSkills(actingAsContactId)) {

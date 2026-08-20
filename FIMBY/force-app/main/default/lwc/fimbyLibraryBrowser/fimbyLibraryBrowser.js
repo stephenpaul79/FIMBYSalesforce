@@ -62,6 +62,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     @track _isVouchedForBorrowing = null;
     @track isSettlingIn = false;
     currentContactId = null;
+    @track isActingAsProxiedChild = false;
 
     // State persistence for back-navigation restore
     _pendingScrollY = null;
@@ -89,6 +90,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
                 getActingAsContact()
             ]);
             this.currentContactId = identity?.contactId || identity?.realContactId || null;
+            this.isActingAsProxiedChild = identity?.isActingAsProxiedChild === true;
             this._memesEnabled = celebCtx?.memesEnabled !== false;
             this._isVouchedForBorrowing = vouched === true;
             this.isSettlingIn = vouched === false;
@@ -534,6 +536,14 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             return 'Items and skills from your neighbours will show up here.';
         }
         return 'Got something to lend? Your neighbours are waiting.';
+    }
+
+    /**
+     * A parent-managed child cannot own a listing, so the empty state stops inviting
+     * one. Browsing and borrowing are untouched.
+     */
+    get showEmptyAction() {
+        return !this.isActingAsProxiedChild;
     }
 
     get emptyActionLabel() {

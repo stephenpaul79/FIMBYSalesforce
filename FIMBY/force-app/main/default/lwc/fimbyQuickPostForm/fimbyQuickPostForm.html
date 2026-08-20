@@ -65,15 +65,17 @@
                             </div>
                         </button>
 
-                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
-                            <div class="type-icon lending-icon">
-                                <img src={lendingIconUrl} alt="" class="type-icon-img" />
-                            </div>
-                            <div class="type-text">
-                                <div class="type-label">Add an Item / Skill</div>
-                                <div class="type-description">Add to the Library</div>
-                            </div>
-                        </button>
+                        <template lwc:if={showLendingOption}>
+                            <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
+                                <div class="type-icon lending-icon">
+                                    <img src={lendingIconUrl} alt="" class="type-icon-img" />
+                                </div>
+                                <div class="type-text">
+                                    <div class="type-label">Add an Item / Skill</div>
+                                    <div class="type-description">Add to the Library</div>
+                                </div>
+                            </button>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -141,13 +143,15 @@
                         <span class="type-description">Prayer, thanks, lament, intro, God story</span>
                     </button>
 
-                    <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
-                        <div class="type-icon lending-icon">
-                            <img src={lendingIconUrl} alt="" class="type-icon-img" />
-                        </div>
-                        <span class="type-label">Add an Item / Skill</span>
-                        <span class="type-description">Add to the Library</span>
-                    </button>
+                    <template lwc:if={showLendingOption}>
+                        <button type="button" class="type-option" onclick={handleTypeSelect} data-type="lending">
+                            <div class="type-icon lending-icon">
+                                <img src={lendingIconUrl} alt="" class="type-icon-img" />
+                            </div>
+                            <span class="type-label">Add an Item / Skill</span>
+                            <span class="type-description">Add to the Library</span>
+                        </button>
+                    </template>
                 </div>
             </div>
         </div>

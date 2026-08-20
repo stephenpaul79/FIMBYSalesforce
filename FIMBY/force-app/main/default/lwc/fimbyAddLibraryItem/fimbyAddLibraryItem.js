@@ -18,6 +18,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
     @track actingAsContactId = '';
     @track actingAsContactName = '';
     @track hasMultipleIdentities = false;
+    @track isActingAsProxiedChild = false;
 
     // Form state
     @track title = '';
@@ -205,6 +206,7 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
         if (data) {
             this.actingAsContactId = data.actingAsContactId || data.contactId;
             this.actingAsContactName = data.postingAsDisplayName || data.actingAsContactName || data.contactName;
+            this.isActingAsProxiedChild = data.isActingAsProxiedChild === true;
             this.isLoading = false;
         } else if (error) {
             this.error = error.body?.message || 'Error loading user information';
@@ -331,6 +333,23 @@ export default class FimbyAddLibraryItem extends NavigationMixin(LightningElemen
         this.showPhotoStep = false;
         this.showSuccess = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * Names the child and points at what the guardian can do instead, rather than
+     * stating a rule. A listing is a standing invitation to strangers, and its
+     * coordination happens in a thread with no shared context; an ask or offer post
+     * keeps the same help visible with a thread that has one.
+     */
+    get proxiedBlockMessage() {
+        const name = this.actingAsContactName || 'this family member';
+        return `${name}'s profile is parent-managed, so items and skills are listed by the `
+            + 'grown-up looking after it. Switch back to yourself to add this, or share what '
+            + `${name} is offering as an ask or offer post instead.`;
+    }
+
+    handleBackToLibrary() {
+        navigate(this, '/library-list');
     }
 
     handleSkipPhoto() {

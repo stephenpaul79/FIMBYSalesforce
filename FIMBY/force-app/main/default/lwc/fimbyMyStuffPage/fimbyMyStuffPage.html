@@ -179,7 +179,9 @@
                     <template lwc:else>
                         <div class="empty-section">
                             <p>You haven't offered any skills yet.</p>
-                            <a href="/library-item-post?type=skill" class="empty-action-link" onclick={handleNavLink}>Offer a skill</a>
+                            <template lwc:if={canListOwnedContent}>
+                                <a href="/library-item-post?type=skill" class="empty-action-link" onclick={handleNavLink}>Offer a skill</a>
+                            </template>
                         </div>
                     </template>
                 </template>

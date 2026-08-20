@@ -384,4 +384,143 @@ private class FimbyProxiedPresenceGuardTest {
         }
         Test.stopTest();
     }
+
+    private static String libraryItemPayload() {
+        return JSON.serialize(new Map<String, Object>{
+            'title' => 'Cordless drill',
+            'description' => 'Charged, with a full bit set.',
+            'category' => 'Tools',
+            'maxLendingDays' => 7
+        });
+    }
+
+    private static String skillPayload() {
+        return JSON.serialize(new List<Map<String, Object>>{
+            new Map<String, Object>{
+                'category' => 'Yard & Outdoor Work',
+                'title' => 'Raking leaves',
+                'description' => 'Happy to help on weekends.'
+            }
+        });
+    }
+
+    /**
+     * A listing is a standing invitation to strangers that outlives the moment, and its
+     * coordination happens in a thread with no shared context. The guardian lists under
+     * their own name instead — so the same payload must succeed for them and fail for
+     * the child, which is what separates a real guard from a broken create path.
+     */
+    @IsTest
+    static void aChildCannotListAnItemButTheirGuardianStillCan() {
+        Contact kid = child();
+        User guardianUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :guardian().Id AND IsActive = true LIMIT 1
+        ];
+
+        Map<String, Object> createdAsSelf;
+        Boolean refusedAsChild = false;
+
+        Test.startTest();
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            createdAsSelf = FimbyLibraryController.createLibraryItem(libraryItemPayload());
+        }
+
+        update new Contact(Id = guardian().Id, Logged_In_As_Contact__c = kid.Id);
+
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            try {
+                FimbyLibraryController.createLibraryItem(libraryItemPayload());
+            } catch (Exception e) {
+                refusedAsChild = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, createdAsSelf, 'A guardian listing under their own name is ordinary use');
+        System.assertEquals(true, refusedAsChild, 'A parent-managed child must not own a listing');
+        System.assertEquals(
+            0,
+            [SELECT COUNT() FROM Library_Item__c WHERE Owner_Contact__c = :kid.Id],
+            'The refused create must not have written a row owned by the child'
+        );
+    }
+
+    @IsTest
+    static void aChildCannotOfferASkillButTheirGuardianStillCan() {
+        Contact kid = child();
+        User guardianUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :guardian().Id AND IsActive = true LIMIT 1
+        ];
+
+        Boolean refusedAsChild = false;
+
+        Test.startTest();
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            FimbySkillsController.saveSkillOffers(skillPayload());
+        }
+
+        update new Contact(Id = guardian().Id, Logged_In_As_Contact__c = kid.Id);
+
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            try {
+                FimbySkillsController.saveSkillOffers(skillPayload());
+            } catch (Exception e) {
+                refusedAsChild = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(
+            1,
+            [SELECT COUNT() FROM Skill_Offer__c WHERE Owner_Contact__c = :guardian().Id],
+            'A guardian offering their own skill is ordinary use'
+        );
+        System.assertEquals(true, refusedAsChild, 'A parent-managed child must not offer a skill');
+        System.assertEquals(
+            0,
+            [SELECT COUNT() FROM Skill_Offer__c WHERE Owner_Contact__c = :kid.Id],
+            'The refused save must not have written a row owned by the child'
+        );
+    }
+
+    /**
+     * The regression this protects against is silent: reading Parent_Guardian through
+     * the organization branch yields a null name and avatar, so the child would simply
+     * be missing from Manage Identities with no error anywhere.
+     */
+    @IsTest
+    static void aChildAppearsAsASwitchableIdentityWithTheirOwnName() {
+        Contact kid = [SELECT Id, Full_Name__c FROM Contact WHERE Id = :child().Id];
+        User guardianUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :guardian().Id AND IsActive = true LIMIT 1
+        ];
+
+        List<Map<String, Object>> identities;
+        Test.startTest();
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            identities = FimbySupportRelationshipController.getAvailableIdentities();
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, identities.size(), 'The guardian can act as exactly one child');
+        System.assertEquals(
+            kid.Id,
+            identities[0].get('targetContactId'),
+            'A contact-backed relationship must resolve to the related Contact, not an organization'
+        );
+        System.assertEquals(
+            kid.Full_Name__c,
+            identities[0].get('name'),
+            'Reading a child through the organization branch leaves the name blank'
+        );
+    }
 }

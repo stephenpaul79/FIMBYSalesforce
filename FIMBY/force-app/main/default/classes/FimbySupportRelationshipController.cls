@@ -32,7 +32,7 @@ public with sharing class FimbySupportRelationshipController {
                 identity.put('neighbourhoodName', rel.Neighbourhood__r.Name);
                 identity.put('neighbourhoodId', rel.Neighbourhood__c);
 
-                if (rel.Relationship_Type__c == 'Support_Person') {
+                if (FimbyProxiedPresenceGuard.isContactBackedRelationship(rel.Relationship_Type__c)) {
                     identity.put('name', rel.Related_Contact__r.Full_Name__c);
                     identity.put('avatarUrl', rel.Related_Contact__r.Display_Avatar_URL__c);
                     identity.put('targetContactId', rel.Related_Contact__c);
@@ -72,7 +72,7 @@ public with sharing class FimbySupportRelationshipController {
             }
 
             Id targetContactId;
-            if (rel.Relationship_Type__c == 'Support_Person') {
+            if (FimbyProxiedPresenceGuard.isContactBackedRelationship(rel.Relationship_Type__c)) {
                 targetContactId = rel.Related_Contact__c;
             } else {
                 targetContactId = rel.Related_Organization__r.Organization_Contact__c;
@@ -127,7 +127,7 @@ public with sharing class FimbySupportRelationshipController {
                        Subject_Confirmed__c
                 FROM Support_Relationship__c
                 WHERE Contact__c = :myContactId
-                  AND Relationship_Type__c = 'Support_Person'
+                  AND Relationship_Type__c IN :FimbyProxiedPresenceGuard.CONTACT_BACKED_TYPES
                   AND Dismissed_By_Helper__c = false
                 ORDER BY Status__c ASC, Approved_Date__c DESC
             ];
@@ -139,7 +139,7 @@ public with sharing class FimbySupportRelationshipController {
                        Subject_Confirmed__c, Subject_Confirmed_Date__c
                 FROM Support_Relationship__c
                 WHERE Related_Contact__c = :myContactId
-                  AND Relationship_Type__c = 'Support_Person'
+                  AND Relationship_Type__c IN :FimbyProxiedPresenceGuard.CONTACT_BACKED_TYPES
                   AND Dismissed_By_Subject__c = false
                 ORDER BY Status__c ASC, Approved_Date__c DESC
             ];
@@ -565,7 +565,7 @@ public with sharing class FimbySupportRelationshipController {
 
             Id recipientId;
             String message;
-            if (rel.Relationship_Type__c == 'Support_Person') {
+            if (FimbyProxiedPresenceGuard.isContactBackedRelationship(rel.Relationship_Type__c)) {
                 recipientId = rel.Related_Contact__c;
                 message = FimbyIdentityRepository.getCurrentContact().Name +
                     ' has stepped back from supporting you. Your account and content are unchanged.';

@@ -58,6 +58,10 @@ public with sharing class FimbyLibraryController {
             Id realContactId = identity.currentUser.ContactId;
             Id actingAsContactId = identity.actingAsContactId;
 
+            if (FimbyProxiedPresenceGuard.isProxied(actingAsContactId)) {
+                throw new AuraHandledException(FimbyProxiedPresenceGuard.LISTING_REFUSAL);
+            }
+
             Contact actingAsContact = [
                 SELECT Id, AccountId, Is_Organization_Contact__c, Organization_Account__c
                 FROM Contact

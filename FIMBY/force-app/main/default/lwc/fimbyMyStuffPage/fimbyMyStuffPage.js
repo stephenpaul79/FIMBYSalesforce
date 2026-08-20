@@ -10,7 +10,7 @@ import getMySkills from '@salesforce/apex/FimbyMyStuffController.getMySkills';
 import getMyBorrowedItems from '@salesforce/apex/FimbyMyStuffController.getMyBorrowedItems';
 import getMyContacts from '@salesforce/apex/FimbyMyStuffController.getMyContacts';
 import revokeSharedContactInfo from '@salesforce/apex/FimbyMyStuffController.revokeSharedContactInfo';
-import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { isActingAsProxiedChild as loadIsActingAsProxiedChild } from 'c/fimbyProxiedIdentity';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
 import { getCategoryIconUrl as getSkillCategoryIconUrl, getCategoryStyle as getSkillCategoryStyle } from 'c/fimbySkillCategoryConfig';
@@ -149,16 +149,9 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
      * have predicted. Received cards stay, because an adult may still share with them.
      */
     async _resolveActingIdentity() {
-        try {
-            const identity = await getActingAsContact();
-            this.isActingAsProxiedChild = identity?.isActingAsProxiedChild === true;
-            if (this.isActingAsProxiedChild) {
-                this.activeContactsSubFilter = 'received';
-            }
-        } catch (error) {
-            // Failing closed would strip a guardian's own share buttons on a network
-            // blip, so the UI stays as-is and the server remains the real guard.
-            console.error('Error resolving acting identity:', error);
+        this.isActingAsProxiedChild = await loadIsActingAsProxiedChild();
+        if (this.isActingAsProxiedChild) {
+            this.activeContactsSubFilter = 'received';
         }
     }
 
@@ -355,6 +348,9 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
 
     /** The Shared and Revoked tabs only list outbound shares, which a child never has. */
     get showOutboundSubFilters() { return !this.isActingAsProxiedChild; }
+
+    /** Items and skills are listed by the guardian under their own name, never the child's. */
+    get canListOwnedContent() { return !this.isActingAsProxiedChild; }
 
     handleContactsSubFilter(event) {
         const filter = event.currentTarget.dataset.filter;

@@ -7,7 +7,7 @@ import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
-import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { isActingAsProxiedChild as loadIsActingAsProxiedChild } from 'c/fimbyProxiedIdentity';
 
 export default class FimbyNeighbourProfile extends NavigationMixin(LightningElement) {
     @track isLoading = true;
@@ -167,14 +167,7 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
             this.isLoading = false;
             return;
         }
-        try {
-            const identity = await getActingAsContact();
-            this.isActingAsProxiedChild = identity?.isActingAsProxiedChild === true;
-        } catch (error) {
-            // The server is the real guard; a failed lookup must not strip an ordinary
-            // neighbour's share button.
-            console.error('Error resolving acting identity:', error);
-        }
+        this.isActingAsProxiedChild = await loadIsActingAsProxiedChild();
         await this._loadProfile();
     }
 

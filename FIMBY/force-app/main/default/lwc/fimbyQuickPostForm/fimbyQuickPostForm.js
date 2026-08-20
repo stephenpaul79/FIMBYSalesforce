@@ -3,12 +3,14 @@ import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { isActingAsProxiedChild as loadIsActingAsProxiedChild } from 'c/fimbyProxiedIdentity';
 
 export default class FimbyQuickPostForm extends NavigationMixin(LightningElement) {
     @api selectedType = ''; // Can be passed from parent component
     @api isModal = false;   // Modal mode flag
 
     @track isVisible = false;
+    @track isActingAsProxiedChild = false;
 
     get needIconUrl()    { return `${IMPACT_ICONS}/needsm.png`; }
     get offerIconUrl()   { return `${IMPACT_ICONS}/giftsm.png`; }
@@ -29,7 +31,19 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
     _unregisterTourAnchors;
     _forceHideHandler;
 
+    /**
+     * Asks and offers stay available to a parent-managed child — only owner listings
+     * are withheld, since a listing outlives the moment and has no contextual thread.
+     */
+    get showLendingOption() {
+        return !this.isActingAsProxiedChild;
+    }
+
     connectedCallback() {
+        loadIsActingAsProxiedChild().then(proxied => {
+            this.isActingAsProxiedChild = proxied;
+        });
+
         if (this.isModal) {
             this._unregisterTourAnchors = registerTourAnchorProvider(this);
             this._forceHideHandler = () => {
