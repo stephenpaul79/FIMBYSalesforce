@@ -151,6 +151,15 @@ public with sharing class FimbyProfileController {
                 c.Care_Updated_Date__c = Date.today();
             }
 
+            // A child profile is a first name and an optional photo. Anything that
+            // could reach them off-platform is the guardian's to give under their own
+            // identity, never the child's to hold. Value-based rather than
+            // field-based, so clearing a legacy value stays possible.
+            if (FimbyProxiedPresenceGuard.hasProhibitedChildPii(c)
+                    && FimbyProxiedPresenceGuard.isProxied((Id) contactId)) {
+                throw new AuraHandledException(FimbyProxiedPresenceGuard.CHILD_PII_REFUSAL);
+            }
+
             new ContactUpdater().doUpdate(c);
 
             syncUserIdentityFields(contactId, fieldValues);

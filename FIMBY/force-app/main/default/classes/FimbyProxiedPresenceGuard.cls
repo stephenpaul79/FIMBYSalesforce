@@ -45,6 +45,11 @@ public without sharing class FimbyProxiedPresenceGuard {
     public static final String OUTBOUND_SHARE_INVARIANT =
         'A parent-managed profile can receive shared contact information but can never share any outward.';
 
+    /** Shown when a profile edit would put reachable contact details on a child. */
+    public static final String CHILD_PII_REFUSAL =
+        'A parent-managed profile does not store contact details. '
+        + 'Switch back to yourself to update your own contact information.';
+
     /**
      * Contact fields that must stay blank on a proxied child. A child profile carries
      * a first name and an optional photo; anything here is a route to reach them

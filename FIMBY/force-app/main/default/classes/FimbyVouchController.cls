@@ -114,6 +114,7 @@ public without sharing class FimbyVouchController {
               AND Vouched_Status__c = 'Vouched'
               AND Vouching_Disabled__c != TRUE
               AND Is_Organization_Contact__c != TRUE
+              AND Is_Parent_Proxied__c != TRUE
               AND Name LIKE :pattern
             ORDER BY Name ASC
             LIMIT :SEARCH_RESULT_LIMIT
@@ -281,6 +282,7 @@ public without sharing class FimbyVouchController {
               AND Vouched_Status__c = 'Vouched'
               AND Vouching_Disabled__c != TRUE
               AND Is_Organization_Contact__c != TRUE
+              AND Is_Parent_Proxied__c != TRUE
             LIMIT 1
         ]) {
             return c.Id;

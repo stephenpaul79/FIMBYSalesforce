@@ -11,7 +11,15 @@ private class FimbyProxiedPresenceGuardTest {
         FimbyTestDataFactory.createCommunityUser(peeps[0].Id, null, true);
         FimbyTestDataFactory.createCommunityUser(peeps[1].Id, null, true);
 
-        update new Contact(Id = peeps[2].Id, Is_Parent_Proxied__c = true);
+        // The factory seeds every Contact with an email. A real parent-managed profile
+        // is created without one, and clearing it here is what makes the PII assertions
+        // test the guard rather than the fixture.
+        update new Contact(
+            Id = peeps[2].Id,
+            Is_Parent_Proxied__c = true,
+            Email = null,
+            Phone = null
+        );
 
         insert new Support_Relationship__c(
             Contact__c = peeps[0].Id,
@@ -247,6 +255,99 @@ private class FimbyProxiedPresenceGuardTest {
             'Whitespace is not contact information'
         );
         System.assertEquals(false, FimbyProxiedPresenceGuard.hasProhibitedChildPii(null));
+    }
+
+    @IsTest
+    static void aProfileEditCannotPutContactDetailsOnAChild() {
+        Contact kid = child();
+        User guardianUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :guardian().Id AND IsActive = true LIMIT 1
+        ];
+        update new Contact(Id = guardian().Id, Logged_In_As_Contact__c = kid.Id);
+
+        Boolean refused = false;
+        Test.startTest();
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            try {
+                FimbyProfileController.updateProfileSection(
+                    new Map<String, String>{ 'Email' => 'maya@test.com' }
+                );
+            } catch (Exception e) {
+                // The controller rewraps everything as AuraHandledException, whose
+                // getMessage() is 'Script-thrown exception' in a test context, so the
+                // message text cannot identify the cause. The control edit below is
+                // what proves the refusal came from Is_Parent_Proxied__c.
+                refused = true;
+            }
+
+            // A non-contact field stays editable, or a guardian could not maintain the
+            // profile they are responsible for.
+            FimbyProfileController.updateProfileSection(
+                new Map<String, String>{ 'Pronouns__c' => 'she/her' }
+            );
+        }
+
+        Contact midway = [SELECT Email FROM Contact WHERE Id = :kid.Id WITH SYSTEM_MODE];
+
+        // Control: the identical edit succeeds the moment the profile is no longer
+        // parent-managed. Without this, the test would only prove that something threw.
+        update new Contact(Id = kid.Id, Is_Parent_Proxied__c = false);
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyProxiedPresenceGuard.clearCache();
+            FimbyProfileController.updateProfileSection(
+                new Map<String, String>{ 'Email' => 'maya@test.com' }
+            );
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused, 'A child profile must never hold a reachable email address');
+        System.assertEquals(null, midway.Email, 'The refused edit must not have been written');
+
+        Contact after = [SELECT Email, Pronouns__c FROM Contact WHERE Id = :kid.Id WITH SYSTEM_MODE];
+        System.assertEquals('she/her', after.Pronouns__c, 'A non-contact field must stay editable');
+        System.assertEquals(
+            'maya@test.com',
+            after.Email,
+            'The control edit must succeed, isolating the refusal to Is_Parent_Proxied__c'
+        );
+    }
+
+    @IsTest
+    static void aChildIsNeverOfferedAsAVoucher() {
+        Contact kid = child();
+        Contact grownUp = neighbour();
+        // Stamp the state that should be impossible. If the Track A attestation guard
+        // ever regressed, the voucher list must still refuse to offer a child.
+        update new List<Contact>{
+            new Contact(Id = kid.Id, Vouched_Status__c = 'Vouched'),
+            new Contact(Id = grownUp.Id, Vouched_Status__c = 'Vouched')
+        };
+
+        Contact kidNamed = [SELECT Id, Name FROM Contact WHERE Id = :kid.Id];
+        Contact adultNamed = [SELECT Id, Name FROM Contact WHERE Id = :grownUp.Id];
+        User guardianUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :guardian().Id AND IsActive = true LIMIT 1
+        ];
+
+        List<FimbyVouchController.VoucherOption> childHits;
+        List<FimbyVouchController.VoucherOption> adultHits;
+        Test.startTest();
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            childHits = FimbyVouchController.searchVouchers(kidNamed.Name, 'peer');
+            adultHits = FimbyVouchController.searchVouchers(adultNamed.Name, 'peer');
+        }
+        Test.stopTest();
+
+        System.assertEquals(0, childHits.size(), 'A parent-managed child is never an eligible voucher');
+        System.assertEquals(
+            1,
+            adultHits.size(),
+            'An ordinary vouched neighbour must still be offered, or the filter is too broad'
+        );
     }
 
     @IsTest
