@@ -28,6 +28,7 @@ public without sharing class FimbySharedContactInfoTriggerHandler {
      */
     public static void handleBeforeInsert(List<Shared_Contact_Info__c> newRows) {
         stampDerivedFields(newRows, null);
+        enforceProxiedChildNeverShares(newRows);
     }
 
     /**
@@ -75,6 +76,43 @@ public without sharing class FimbySharedContactInfoTriggerHandler {
         }
 
         stampDerivedFields(newRows, oldMap);
+        enforceProxiedChildNeverShares(newRows);
+    }
+
+    /**
+     * @description Defense in depth behind FimbySharedContactService: a parent-managed
+     *              child may appear on a share only as Shared_To__c, never as the
+     *              sharing Contact__c. Catches imports, admin edits, and any future
+     *              writer that does not route through the service.
+     *
+     *              Scoped to rows that end up OPEN rather than every save, for two
+     *              reasons: revoking a row that should never have existed must stay
+     *              possible, and neighbourhood restamps are applied to revoked history
+     *              long after an episode closes. Blocking those would trap a bad row
+     *              in place, which is the opposite of what this invariant is for.
+     * @param rows The rows being saved.
+     */
+    private static void enforceProxiedChildNeverShares(List<Shared_Contact_Info__c> rows) {
+        Set<Id> openSharers = new Set<Id>();
+        for (Shared_Contact_Info__c row : rows) {
+            if (row.Contact__c != null && isOpenStatus(row.Status__c)) {
+                openSharers.add(row.Contact__c);
+            }
+        }
+        if (openSharers.isEmpty()) {
+            return;
+        }
+
+        Set<Id> proxied = FimbyProxiedPresenceGuard.proxiedAmong(openSharers);
+        if (proxied.isEmpty()) {
+            return;
+        }
+
+        for (Shared_Contact_Info__c row : rows) {
+            if (isOpenStatus(row.Status__c) && proxied.contains(row.Contact__c)) {
+                row.addError(FimbyProxiedPresenceGuard.OUTBOUND_SHARE_INVARIANT);
+            }
+        }
     }
 
     /**

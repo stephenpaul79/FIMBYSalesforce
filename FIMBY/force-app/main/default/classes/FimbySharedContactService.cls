@@ -561,5 +561,11 @@ public without sharing class FimbySharedContactService {
                 && request.writeMode != MODE_MERGE) {
             throw new SharedContactException('Select at least one type of contact info to share.');
         }
+        // Every writer — direct share, response manual and auto share, lending share —
+        // reaches the object through this method, so refusing here covers them all
+        // without scattering the same check across four controllers.
+        if (FimbyProxiedPresenceGuard.isProxied(request.sharerContactId)) {
+            throw new SharedContactException(FimbyProxiedPresenceGuard.OUTBOUND_SHARE_REFUSAL);
+        }
     }
 }
