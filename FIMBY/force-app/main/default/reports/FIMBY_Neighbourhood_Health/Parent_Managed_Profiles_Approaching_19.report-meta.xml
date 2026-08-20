@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://soap.sforce.com/2006/04/metadata">
+    <columns>
+        <field>Contact.Full_Name__c</field>
+    </columns>
+    <columns>
+        <field>Contact.Age_Years__c</field>
+    </columns>
+    <columns>
+        <field>Contact.Birthdate</field>
+    </columns>
+    <columns>
+        <field>ACCOUNT.NAME</field>
+    </columns>
+    <columns>
+        <field>Contact.Proxied_By_Contact__c</field>
+    </columns>
+    <description>Parent-managed profiles at or approaching 19. Graduation is administrator-run in v1: each row is closed or manually graduated against the same Contact, never a replacement one. See docs/parent-managed-graduation-runbook.md.</description>
+    <filter>
+        <criteriaItems>
+            <column>Contact.Is_Parent_Proxied__c</column>
+            <columnToColumn>false</columnToColumn>
+            <isUnlocked>true</isUnlocked>
+            <operator>equals</operator>
+            <value>1</value>
+        </criteriaItems>
+        <criteriaItems>
+            <column>Contact.Age_Years__c</column>
+            <columnToColumn>false</columnToColumn>
+            <isUnlocked>true</isUnlocked>
+            <operator>greaterOrEqual</operator>
+            <value>18</value>
+        </criteriaItems>
+    </filter>
+    <format>Tabular</format>
+    <name>Parent-Managed Profiles Approaching 19</name>
+    <reportType>ContactList</reportType>
+    <scope>organization</scope>
+    <showDetails>true</showDetails>
+    <sortColumn>Contact.Age_Years__c</sortColumn>
+    <sortOrder>Desc</sortOrder>
+    <timeFrameFilter>
+        <dateColumn>CREATED_DATE</dateColumn>
+        <interval>INTERVAL_CUSTOM</interval>
+    </timeFrameFilter>
+</Report>
