@@ -9,6 +9,10 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
     private static final Integer SEND_CHUNK_SIZE = 100;
 
     private Map<Id, List<Notification__c>> notifsByContact;
+    // Row Id → the proxied inbox it belongs to. Present only for rows being
+    // delivered to a helper on someone else's behalf.
+    private Map<Id, Id> inboxByRow;
+    private Map<Id, String> inboxNameById;
 
     public class AlertCardEnrichment {
         public String actorImageUrl;
@@ -17,7 +21,106 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
     }
 
     public FimbyEmailAlertQueueable(Map<Id, List<Notification__c>> notifsByContact) {
+        this(notifsByContact, new Map<Id, Id>(), new Map<Id, String>());
+    }
+
+    public FimbyEmailAlertQueueable(
+        Map<Id, List<Notification__c>> notifsByContact,
+        Map<Id, Id> inboxByRow,
+        Map<Id, String> inboxNameById
+    ) {
         this.notifsByContact = notifsByContact;
+        this.inboxByRow = inboxByRow == null ? new Map<Id, Id>() : inboxByRow;
+        this.inboxNameById = inboxNameById == null ? new Map<Id, String>() : inboxNameById;
+    }
+
+    /**
+     * Collects per-recipient outcomes and flushes them as ONE update per
+     * notification row.
+     *
+     * A row fanned out to several helpers would otherwise produce several updates
+     * for the same Id — which DML rejects — and a blind last-writer-wins would let
+     * one guardian's suppression erase another's successful send. So each
+     * recipient's outcome lands in the row's delivery ledger and the row-level
+     * Email_Status__c is recomputed from the whole ledger at flush time.
+     */
+    private class OutcomeBuffer {
+        Map<Id, Notification__c> rowById = new Map<Id, Notification__c>();
+        Map<Id, FimbySupportedIdentityDelivery.Ledger> ledgerByRow =
+            new Map<Id, FimbySupportedIdentityDelivery.Ledger>();
+        Set<Id> touched = new Set<Id>();
+
+        void load(Set<Id> rowIds) {
+            if (rowIds == null || rowIds.isEmpty()) {
+                return;
+            }
+            for (Notification__c row : [
+                SELECT Id, Email_Status__c, Email_Error__c, Email_Sent_At__c,
+                       Email_Retry_Count__c, Delivery_State__c
+                FROM Notification__c
+                WHERE Id IN :rowIds
+                WITH SYSTEM_MODE
+            ]) {
+                rowById.put(row.Id, row);
+                FimbySupportedIdentityDelivery.Ledger ledger =
+                    FimbySupportedIdentityDelivery.parseLedger(row.Delivery_State__c);
+                if (ledger != null) {
+                    ledgerByRow.put(row.Id, ledger);
+                }
+            }
+        }
+
+        void record(Id rowId, Id userId, String status, String error, Datetime sentAt) {
+            Notification__c row = rowById.get(rowId);
+            if (row == null) {
+                return;
+            }
+            FimbySupportedIdentityDelivery.Ledger ledger = ledgerByRow.get(rowId);
+            if (ledger == null) {
+                row.Email_Status__c = status;
+                if (String.isNotBlank(error)) {
+                    row.Email_Error__c = error.abbreviate(255);
+                    row.Email_Retry_Count__c = retryOf(row) + 1;
+                }
+            } else {
+                FimbySupportedIdentityDelivery.Recipient rec = ledger.forUser(userId);
+                if (rec == null) {
+                    rec = new FimbySupportedIdentityDelivery.Recipient(userId, null, status);
+                    ledger.r.add(rec);
+                } else {
+                    rec.e = status;
+                }
+                if (String.isNotBlank(error)) {
+                    rec.x = error.abbreviate(255);
+                    row.Email_Retry_Count__c = retryOf(row) + 1;
+                }
+            }
+            if (sentAt != null) {
+                row.Email_Sent_At__c = sentAt;
+            }
+            touched.add(rowId);
+        }
+
+        private Integer retryOf(Notification__c row) {
+            return row.Email_Retry_Count__c == null ? 0 : (Integer) row.Email_Retry_Count__c;
+        }
+
+        void flush() {
+            List<Notification__c> toUpdate = new List<Notification__c>();
+            for (Id rowId : touched) {
+                Notification__c row = rowById.get(rowId);
+                FimbySupportedIdentityDelivery.Ledger ledger = ledgerByRow.get(rowId);
+                if (ledger != null) {
+                    row.Delivery_State__c =
+                        FimbySupportedIdentityDelivery.serializeLedger(ledger);
+                    row.Email_Status__c = ledger.emailAggregate();
+                }
+                toUpdate.add(row);
+            }
+            if (!toUpdate.isEmpty()) {
+                Database.update(toUpdate, false, AccessLevel.SYSTEM_MODE);
+            }
+        }
     }
 
     public void execute(QueueableContext ctx) {
@@ -59,27 +162,30 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             return;
         }
 
-        List<Notification__c> allUpdates = new List<Notification__c>();
+        OutcomeBuffer buffer = new OutcomeBuffer();
+        Set<Id> allRowIds = new Set<Id>();
+        for (Notification__c n : allNotifs) {
+            allRowIds.add(n.Id);
+        }
+        buffer.load(allRowIds);
+
         List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
         for (Id contactId : notifsByContact.keySet()) {
             User u = userByContactId.get(contactId);
             List<Notification__c> notifs = notifsByContact.get(contactId);
+            Id recipientUserId = u == null ? null : u.Id;
 
             if (!isEligibleAtSendTime(u)) {
                 for (Notification__c n : notifs) {
-                    allUpdates.add(new Notification__c(
-                        Id = n.Id, Email_Status__c = 'Suppressed'
-                    ));
+                    buffer.record(n.Id, recipientUserId, 'Suppressed', null, null);
                 }
                 continue;
             }
 
             if (FimbyPushBatchJob.isInQuietHours(u)) {
                 for (Notification__c n : notifs) {
-                    allUpdates.add(new Notification__c(
-                        Id = n.Id, Email_Status__c = 'Pending'
-                    ));
+                    buffer.record(n.Id, recipientUserId, 'Pending', null, null);
                 }
                 continue;
             }
@@ -93,9 +199,7 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
                 if (FimbyEmailAlertService.shouldSendEmail(n.Type__c, u) == 'Pending') {
                     eligibleNotifs.add(n);
                 } else {
-                    allUpdates.add(new Notification__c(
-                        Id = n.Id, Email_Status__c = 'Suppressed'
-                    ));
+                    buffer.record(n.Id, recipientUserId, 'Suppressed', null, null);
                 }
             }
             if (eligibleNotifs.isEmpty()) {
@@ -110,7 +214,7 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
                 // digest emails. See lending_email_fix_plan_b4b7029a Phase 2.
                 String intentLine = null;
                 String neighbourhoodName = u.Contact?.Account?.Name;
-                String subjectLine = buildSubject(notifs);
+                String subjectLine = applyInboxPrefix(buildSubject(notifs), notifs);
 
                 String html = buildAlertHtml(dynamicHtml, intentLine, neighbourhoodName, subjectLine, notifs.size());
 
@@ -126,19 +230,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
 
                 Datetime now = Datetime.now();
                 for (Notification__c n : notifs) {
-                    allUpdates.add(new Notification__c(
-                        Id = n.Id, Email_Status__c = 'Sent', Email_Sent_At__c = now
-                    ));
+                    buffer.record(n.Id, recipientUserId, 'Sent', null, now);
                 }
             } catch (Exception e) {
                 for (Notification__c n : notifs) {
-                    Integer retryCount = n.Email_Retry_Count__c != null ? (Integer) n.Email_Retry_Count__c : 0;
-                    allUpdates.add(new Notification__c(
-                        Id = n.Id,
-                        Email_Status__c = 'Failed',
-                        Email_Error__c = e.getMessage()?.abbreviate(255),
-                        Email_Retry_Count__c = retryCount + 1
-                    ));
+                    buffer.record(n.Id, recipientUserId, 'Failed', e.getMessage(), null);
                 }
             }
         }
@@ -151,9 +247,38 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             }
         }
 
-        if (!allUpdates.isEmpty()) {
-            Database.update(allUpdates, false);
+        buffer.flush();
+    }
+
+    /**
+     * Names whose inbox the email is about. Without this a guardian receives
+     * "Someone wants to borrow your item" for a request aimed at their child, which
+     * is both wrong and gives no clue which identity to open.
+     *
+     * Applied only when every row in the send belongs to a single proxied inbox, so
+     * the prefix can never mislabel a mixed batch.
+     */
+    @TestVisible
+    private String applyInboxPrefix(String subject, List<Notification__c> notifs) {
+        if (String.isBlank(subject) || inboxByRow == null || inboxByRow.isEmpty()) {
+            return subject;
         }
+        Set<Id> inboxes = new Set<Id>();
+        for (Notification__c n : notifs) {
+            Id inboxId = inboxByRow.get(n.Id);
+            if (inboxId == null) {
+                return subject;
+            }
+            inboxes.add(inboxId);
+        }
+        if (inboxes.size() != 1) {
+            return subject;
+        }
+        String name = inboxNameById.get(new List<Id>(inboxes)[0]);
+        if (String.isBlank(name)) {
+            return subject;
+        }
+        return truncateSubject('For ' + name + ' \u2014 ' + subject);
     }
 
     private String buildAlertHtml(String dynamicHtml, String intentLine, String neighbourhoodName, String subjectLine, Integer notifCount) {
@@ -252,17 +377,24 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
     }
 
     private void markAllFailed(Map<Id, List<Notification__c>> notifsMap, String errorMsg) {
-        List<Notification__c> updates = new List<Notification__c>();
+        Set<Id> rowIds = new Set<Id>();
         for (Id contactId : notifsMap.keySet()) {
             for (Notification__c n : notifsMap.get(contactId)) {
-                updates.add(new Notification__c(
-                    Id = n.Id, Email_Status__c = 'Failed', Email_Error__c = errorMsg
-                ));
+                rowIds.add(n.Id);
             }
         }
-        if (!updates.isEmpty()) {
-            Database.update(updates, false);
+        if (rowIds.isEmpty()) {
+            return;
         }
+        // A missing OWEA is an org-wide fault, not a per-recipient one, so the row
+        // fails outright rather than being recorded against one helper.
+        List<Notification__c> updates = new List<Notification__c>();
+        for (Id rowId : rowIds) {
+            updates.add(new Notification__c(
+                Id = rowId, Email_Status__c = 'Failed', Email_Error__c = errorMsg
+            ));
+        }
+        Database.update(updates, false, AccessLevel.SYSTEM_MODE);
     }
 
     @TestVisible
