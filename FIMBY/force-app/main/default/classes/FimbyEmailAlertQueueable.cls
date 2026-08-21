@@ -208,7 +208,8 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
             notifs = eligibleNotifs;
 
             try {
-                String dynamicHtml = FimbyEmailHtmlBuilder.buildAlertCards(notifs, enrichmentMap, u.FirstName);
+                String dynamicHtml = FimbyEmailHtmlBuilder.buildAlertCards(
+                    notifs, enrichmentMap, u.FirstName, contactId);
                 // Alert emails are direct-action: subject + card already carry the story
                 // for the recipient. The neighbourhood-summary intent lines belong to
                 // digest emails. See lending_email_fix_plan_b4b7029a Phase 2.

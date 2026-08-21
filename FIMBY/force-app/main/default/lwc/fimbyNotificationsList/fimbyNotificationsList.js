@@ -9,6 +9,7 @@ import deleteAllNotifications from '@salesforce/apex/FimbyNotificationController
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
 import { navigate, profilePathForContact } from 'c/fimbyNavigation';
+import { honourActAsThenNavigate, parseActAsFromUrl } from 'c/fimbyActAsNavigation';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
@@ -549,9 +550,20 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         }
 
         const target = this._resolveSafeUrl(notification);
-        if (target) {
-            navigate(this, target);
+        if (!target) {
+            return;
         }
+
+        const actAs = parseActAsFromUrl(target)
+            || (notification.isForSelf === false && notification.inboxContactId)
+            || null;
+
+        if (actAs) {
+            await honourActAsThenNavigate(target, { actAsContactId: actAs });
+            return;
+        }
+
+        navigate(this, target);
     }
 
     handleActorAvatarClick(event) {

@@ -15,7 +15,12 @@ import recordAppOpen from '@salesforce/apex/FimbyContactController.recordAppOpen
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import switchIdentity from '@salesforce/apex/FimbySupportRelationshipController.switchIdentity';
-import switchIdentityToContact from '@salesforce/apex/FimbySupportRelationshipController.switchIdentityToContact';
+import {
+    clearIdentitySwitchCaches,
+    honourActAsThenNavigate,
+    parseActAsFromUrl,
+    stripActAsFromUrl
+} from 'c/fimbyActAsNavigation';
 import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
 import endAllSessions from '@salesforce/apex/FimbySessionController.endAllSessions';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
@@ -527,9 +532,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         const raw = (identitiesResult || []).map(id => ({
             ...id,
             avatarUrl: avatarImageUrl(id.avatarUrl)
-                || (id.type === 'Support_Person'
-                    ? `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`
-                    : `${IMPACT_ICONS}/${NO_ORG_PHOTO}`)
+                || (id.type === 'Community_Group_Rep'
+                    ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
+                    : `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`)
         }));
 
         const actingAsContactId = this._actingAsContactId;
@@ -635,38 +640,25 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
      * link carries no identity, and so the reload cannot loop.
      */
     _honourActAsDeepLink() {
-        let actAs;
-        try {
-            actAs = new URLSearchParams(window.location.search).get('actAs');
-        } catch (error) {
+        const actAs = parseActAsFromUrl(window.location.href);
+        if (!actAs) {
             return;
         }
-        if (!actAs || !/^[a-zA-Z0-9]{15,18}$/.test(actAs)) return;
 
-        const cleanUrl = this._urlWithoutActAs();
+        const cleanUrl = stripActAsFromUrl(window.location.pathname + window.location.search + window.location.hash);
         window.history.replaceState({}, '', cleanUrl);
 
-        switchIdentityToContact({ actAsContactId: actAs })
-            .then(switched => {
-                if (!switched) return;
-                this._clearFeedCaches();
-                window.location.replace(cleanUrl);
-            })
-            .catch(error => {
+        honourActAsThenNavigate(cleanUrl, {
+            actAsContactId: actAs,
+            onError: (error) => {
                 fireToast({
                     title: 'Showing your own view',
                     message: error?.body?.message
                         || 'We could not open that on behalf of the person you support.',
                     variant: 'warning'
                 });
-            });
-    }
-
-    _urlWithoutActAs() {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('actAs');
-        const query = url.searchParams.toString();
-        return url.pathname + (query ? `?${query}` : '') + url.hash;
+            }
+        });
     }
 
     handleIdentitySwitch(event) {
@@ -762,11 +754,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     // so correctness never depends on this list being exhaustive — this is the
     // proactive belt to the feeds' suspenders.
     _clearFeedCaches() {
-        try {
-            sessionStorage.removeItem('fimby-home-feed-state');
-            sessionStorage.removeItem('fimby-library-browser-v3');
-            sessionStorage.removeItem(BADGE_CACHE_KEY);
-        } catch { /* ignore */ }
+        clearIdentitySwitchCaches();
     }
 
     /* ---------------------------------------------------------------

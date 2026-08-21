@@ -495,4 +495,78 @@ private class FimbyEmailAlertQueueableTest {
         Notification__c updated = [SELECT Email_Status__c FROM Notification__c WHERE Id = :notifs[0].Id];
         System.assertEquals('Suppressed', updated.Email_Status__c);
     }
+
+    @IsTest
+    static void applyInboxPrefix_singleProxiedInbox_prependsForName() {
+        Account nh = [SELECT Id FROM Account LIMIT 1];
+        Contact child = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        child.FirstName = 'Maya';
+        update child;
+
+        List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
+            child.Id, FimbyConstants.NOTIF_RESPONSE, 'Processing', 1, true);
+
+        Map<Id, Id> inboxByRow = new Map<Id, Id>{ notifs[0].Id => child.Id };
+        Map<Id, String> names = new Map<Id, String>{ child.Id => 'Maya' };
+        FimbyEmailAlertQueueable q = new FimbyEmailAlertQueueable(
+            new Map<Id, List<Notification__c>>(), inboxByRow, names);
+        String result = q.applyInboxPrefix('Marcus responded', notifs);
+        System.assert(result.contains('For Maya'), result);
+    }
+
+    @IsTest
+    static void applyInboxPrefix_mixedInboxes_leavesSubjectUnchanged() {
+        Account nh = [SELECT Id FROM Account LIMIT 1];
+        Contact child1 = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact child2 = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
+            child1.Id, FimbyConstants.NOTIF_RESPONSE, 'Processing', 1, true);
+        notifs.addAll(FimbyTestDataFactory.createNotifications(
+            child2.Id, FimbyConstants.NOTIF_RESPONSE, 'Processing', 1, true));
+
+        Map<Id, Id> inboxByRow = new Map<Id, Id>{
+            notifs[0].Id => child1.Id,
+            notifs[1].Id => child2.Id
+        };
+        FimbyEmailAlertQueueable q = new FimbyEmailAlertQueueable(
+            new Map<Id, List<Notification__c>>(), inboxByRow, new Map<Id, String>());
+        String subject = 'Two updates';
+        String result = q.applyInboxPrefix(subject, notifs);
+        System.assertEquals(subject, result);
+    }
+
+    @IsTest
+    static void execute_proxiedInbox_sendsForGuardian() {
+        Contact guardian = [SELECT Id, AccountId FROM Contact WHERE Email LIKE '%@fimby.test.com' LIMIT 1];
+        User u = getTestUser();
+        u.Email_Alerts_Enabled__c = true;
+        patchTestUser(u);
+
+        Contact child = FimbyTestDataFactory.createNeighbourhoodContact(guardian.AccountId, true);
+        child.Is_Parent_Proxied__c = true;
+        child.FirstName = 'Maya';
+        update child;
+
+        List<Notification__c> notifs = FimbyTestDataFactory.createNotifications(
+            child.Id, FimbyConstants.NOTIF_RESPONSE, 'Processing', 1, true);
+        notifs[0].Action_URL__c = '/response-reply?recordId=a0x000000000001AAA';
+        update notifs;
+
+        FimbyEmailAlertQueueable.oweaCached = u.Id;
+
+        Map<Id, Id> inboxByRow = new Map<Id, Id>{ notifs[0].Id => child.Id };
+        Map<Id, String> inboxNames = new Map<Id, String>{ child.Id => 'Maya' };
+        Map<Id, List<Notification__c>> byContact = new Map<Id, List<Notification__c>>{
+            guardian.Id => notifs
+        };
+
+        Test.startTest();
+        new FimbyEmailAlertQueueable(byContact, inboxByRow, inboxNames).execute(null);
+        Test.stopTest();
+
+        System.assertEquals(
+            'Sent',
+            [SELECT Email_Status__c FROM Notification__c WHERE Id = :notifs[0].Id].Email_Status__c
+        );
+    }
 }

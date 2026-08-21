@@ -1,5 +1,6 @@
 import { NavigationMixin } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
+import { honourActAsThenNavigate, parseActAsFromUrl } from 'c/fimbyActAsNavigation';
 
 /**
  * Shared navigation service for the FIMBY1 LWR Experience Cloud site.
@@ -268,6 +269,13 @@ function navigate(cmp, url) {
     if (!url || typeof url !== 'string') return;
     const target = url.trim();
     if (!target || target === '#') return;
+
+    // Proxied-inbox deep links must switch identity before the destination
+    // loads. Soft nav keeps the shell mounted so the header hook never re-runs.
+    if (parseActAsFromUrl(target)) {
+        honourActAsThenNavigate(target);
+        return;
+    }
 
     // External / scheme / Salesforce auth endpoints → full load.
     if (HARD_NAV_PATTERN.test(target) || target.startsWith('/secur/')) {

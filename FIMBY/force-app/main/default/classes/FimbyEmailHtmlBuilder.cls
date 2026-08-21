@@ -403,14 +403,18 @@ public without sharing class FimbyEmailHtmlBuilder {
      * --------------------------------------------------------------- */
 
     public static String buildAlertCards(List<Notification__c> notifications) {
-        return buildAlertCards(notifications, null, null);
+        return buildAlertCards(notifications, null, null, null);
     }
 
     public static String buildAlertCards(List<Notification__c> notifications, Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichmentMap) {
-        return buildAlertCards(notifications, enrichmentMap, null);
+        return buildAlertCards(notifications, enrichmentMap, null, null);
     }
 
     public static String buildAlertCards(List<Notification__c> notifications, Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichmentMap, String recipientFirstName) {
+        return buildAlertCards(notifications, enrichmentMap, recipientFirstName, null);
+    }
+
+    public static String buildAlertCards(List<Notification__c> notifications, Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichmentMap, String recipientFirstName, Id recipientContactId) {
         if (notifications == null || notifications.isEmpty()) {
             return '';
         }
@@ -425,7 +429,7 @@ public without sharing class FimbyEmailHtmlBuilder {
             FimbyEmailAlertQueueable.AlertCardEnrichment enrich = String.isNotBlank(n.Related_Record_Id__c)
                 ? safeMap.get(n.Related_Record_Id__c) : null;
             Boolean includeGreeting = (i == 0);
-            html += buildNotificationCard(n, enrich, includeGreeting ? recipientFirstName : null);
+            html += buildNotificationCard(n, enrich, includeGreeting ? recipientFirstName : null, recipientContactId);
         }
 
         if (notifications.size() > MAX_ALERT_CARDS) {
@@ -440,7 +444,11 @@ public without sharing class FimbyEmailHtmlBuilder {
     }
 
     private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich) {
-        return buildNotificationCard(n, enrich, null);
+        return buildNotificationCard(n, enrich, null, null);
+    }
+
+    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName) {
+        return buildNotificationCard(n, enrich, recipientFirstName, null);
     }
 
     /**
@@ -473,9 +481,9 @@ public without sharing class FimbyEmailHtmlBuilder {
         return String.isBlank(title) ? n.Actor_Name__c : n.Actor_Name__c + ' ' + title;
     }
 
-    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName) {
+    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName, Id recipientContactId) {
         String accentColor = getAccentColorForType(n.Type__c);
-        String ctaUrl = buildCtaUrl(n);
+        String ctaUrl = buildCtaUrl(n, recipientContactId);
         String notifType = n.Type__c != null ? n.Type__c : '';
         Boolean actorLed = isActorLedTitle(n);
         String headlineTitle = composeActorLedTitle(n);
@@ -1086,16 +1094,28 @@ public without sharing class FimbyEmailHtmlBuilder {
         return FIMBY_TEAL;
     }
 
-    private static String buildCtaUrl(Notification__c n) {
+    private static String buildCtaUrl(Notification__c n, Id recipientContactId) {
         if (String.isNotBlank(n.Action_URL__c)) {
             String raw = n.Action_URL__c;
             if (raw.startsWith('http://') || raw.startsWith('https://')) {
+                if (shouldDecorateActAs(n, recipientContactId)) {
+                    return FimbySupportedIdentityDelivery.withActingIdentity(raw, n.Contact__c);
+                }
                 return raw;
             }
             String path = raw.startsWith('/') ? raw : '/' + raw;
+            if (shouldDecorateActAs(n, recipientContactId)) {
+                path = FimbySupportedIdentityDelivery.withActingIdentity(path, n.Contact__c);
+            }
             return FIMBY_BASE_URL + path;
         }
         return FIMBY_BASE_URL + '/notifications';
+    }
+
+    private static Boolean shouldDecorateActAs(Notification__c n, Id recipientContactId) {
+        return recipientContactId != null
+            && n.Contact__c != null
+            && n.Contact__c != recipientContactId;
     }
 
     @TestVisible

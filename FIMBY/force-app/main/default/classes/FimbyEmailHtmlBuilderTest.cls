@@ -694,6 +694,38 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
+    static void buildAlertCards_proxiedInbox_ctaCarriesActAs() {
+        Id guardianContactId = Id.valueOf('003000000000001AAA');
+        Id childInboxId = Id.valueOf('003000000000002AAA');
+        Notification__c n = new Notification__c(
+            Title__c = 'Marcus responded to your offer',
+            Type__c = 'Response',
+            Action_URL__c = '/response-reply?recordId=a0x000000000001AAA',
+            Contact__c = childInboxId
+        );
+        String html = FimbyEmailHtmlBuilder.buildAlertCards(
+            new List<Notification__c>{ n }, null, 'Sarah', guardianContactId);
+        System.assert(
+            html.contains('actAs=' + childInboxId),
+            'Guardian email CTA should carry actAs for the proxied inbox'
+        );
+    }
+
+    @IsTest
+    static void buildAlertCards_ownInbox_omitsActAs() {
+        Id contactId = Id.valueOf('003000000000001AAA');
+        Notification__c n = new Notification__c(
+            Title__c = 'Marcus responded',
+            Type__c = 'Response',
+            Action_URL__c = '/response-reply?recordId=a0x000000000001AAA',
+            Contact__c = contactId
+        );
+        String html = FimbyEmailHtmlBuilder.buildAlertCards(
+            new List<Notification__c>{ n }, null, 'Sarah', contactId);
+        System.assert(!html.contains('actAs='), 'Own-inbox email should not decorate actAs');
+    }
+
+    @IsTest
     static void getSeasonalLine_returnsNullOrString() {
         String line = FimbyEmailHtmlBuilder.getSeasonalLine();
         // May be null if no active seasonal theme — that's fine
