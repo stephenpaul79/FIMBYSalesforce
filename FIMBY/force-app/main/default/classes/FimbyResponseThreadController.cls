@@ -23,6 +23,7 @@ public with sharing class FimbyResponseThreadController {
             }
 
             String myContactId = identity.actingAsContactId;
+            Id myRealContactId = identity.contact?.Id;
             ThreadHelper helper = new ThreadHelper();
             Response__c resp = helper.queryThread(responseId);
 
@@ -30,7 +31,8 @@ public with sharing class FimbyResponseThreadController {
                 return errorResult('notFound', 'Response not found.');
             }
 
-            Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+            Boolean isPoster = FimbyConstants.isPostOwner(
+                resp.Need_Offer_Responded_To__r, myContactId, myRealContactId);
             Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
 
             if (!isPoster && !isResponder) {
@@ -43,9 +45,9 @@ public with sharing class FimbyResponseThreadController {
 
             List<Map<String, Object>> messages = helper.queryMessages(responseId, FimbySettings.responseMessagesPageSize(), 0);
 
-            String otherParticipantId = isPoster
+            Id otherParticipantId = isPoster
                 ? (resp.On_Behalf_Of_Contact__c != null ? resp.On_Behalf_Of_Contact__c : resp.Contact__c)
-                : post.Posted_By__c;
+                : FimbyConstants.postOwnerContactId(post);
             Boolean contactShared = helper.hasSharedContactInfo(myContactId, otherParticipantId);
 
             return new Map<String, Object>{
@@ -80,7 +82,8 @@ public with sharing class FimbyResponseThreadController {
                 return errorResult('noRecordId', 'No response selected.');
             }
 
-            String myContactId = FimbyIdentityRepository.getActingAsContactId();
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            String myContactId = identity?.actingAsContactId;
             if (String.isBlank(myContactId)) {
                 return errorResult('noIdentity', 'Unable to determine your identity.');
             }
@@ -92,7 +95,8 @@ public with sharing class FimbyResponseThreadController {
                 return errorResult('notFound', 'Response not found.');
             }
 
-            Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+            Boolean isPoster = FimbyConstants.isPostOwner(
+                resp.Need_Offer_Responded_To__r, myContactId, identity.contact?.Id);
             helper.markRead(resp, myContactId, isPoster);
 
             Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.responseMessagesPageSize();
@@ -138,7 +142,8 @@ public with sharing class FimbyResponseThreadController {
                 return errorResult('notFound', 'Response not found.');
             }
 
-            Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+            Boolean isPoster = FimbyConstants.isPostOwner(
+                resp.Need_Offer_Responded_To__r, myContactId, realContactId);
             Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
             if (!isPoster && !isResponder) {
                 return errorResult('notAuthorized', 'You do not have access to this conversation.');
@@ -173,9 +178,9 @@ public with sharing class FimbyResponseThreadController {
             }
             helper.updateResponse(upd);
 
-            String recipientContactId = isPoster
+            Id recipientContactId = isPoster
                 ? (resp.On_Behalf_Of_Contact__c != null ? resp.On_Behalf_Of_Contact__c : resp.Contact__c)
-                : resp.Need_Offer_Responded_To__r?.Posted_By__c;
+                : FimbyConstants.postOwnerContactId(resp.Need_Offer_Responded_To__r);
 
             if (recipientContactId != null && recipientContactId != myContactId) {
                 String postName = resp.Need_Offer_Responded_To__r?.Name;
@@ -265,7 +270,7 @@ public with sharing class FimbyResponseThreadController {
             String sysBody = myName + ' updated their request from ' + oldAmount.intValue() + ' to ' + newAmount.intValue();
             helper.createSystemMessage(responseId, myContactId, sysBody, 'Amount_Change');
 
-            String posterContactId = post.Posted_By__c;
+            Id posterContactId = FimbyConstants.postOwnerContactId(post);
             if (posterContactId != null && posterContactId != myContactId) {
                 FimbyNotificationService.createNotification(
                     posterContactId,
@@ -456,11 +461,11 @@ public with sharing class FimbyResponseThreadController {
 
         helper.createSystemMessage(responseId, myContactId, sysBody, 'Status_Change');
 
-        String recipientContactId;
+        Id recipientContactId;
         if (isPoster) {
             recipientContactId = resp.On_Behalf_Of_Contact__c != null ? resp.On_Behalf_Of_Contact__c : resp.Contact__c;
         } else {
-            recipientContactId = resp.Need_Offer_Responded_To__r?.Posted_By__c;
+            recipientContactId = FimbyConstants.postOwnerContactId(resp.Need_Offer_Responded_To__r);
         }
 
         if (recipientContactId != null && recipientContactId != myContactId) {
@@ -628,6 +633,7 @@ public with sharing class FimbyResponseThreadController {
                        Need_Offer_Responded_To__r.Total_Available__c,
                        Need_Offer_Responded_To__r.Total_Reserved__c,
                        Need_Offer_Responded_To__r.Per_Response_Limit__c,
+                       Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Full_Name__c,
@@ -684,6 +690,7 @@ public with sharing class FimbyResponseThreadController {
                        Need_Offer_Responded_To__c,
                        Need_Offer_Responded_To__r.Total_Available__c,
                        Need_Offer_Responded_To__r.Per_Response_Limit__c,
+                       Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Name
                 FROM Response__c

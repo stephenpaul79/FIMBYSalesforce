@@ -79,7 +79,7 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             FimbyNotificationService.createNotification(
-                helper.getPostedByContactId(resp.Need_Offer_Responded_To__c),
+                helper.getPostOwnerContactId(resp.Need_Offer_Responded_To__c),
                 FimbyConstants.NOTIF_BULK_BUY_RESERVATION,
                 'cancelled their reservation',
                 '',
@@ -290,11 +290,11 @@ public with sharing class FimbyBulkBuyReservationController {
             ];
         }
 
-        public Id getPostedByContactId(Id postId) {
+        public Id getPostOwnerContactId(Id postId) {
             Needs_Offers__c post = [
-                SELECT Posted_By__c FROM Needs_Offers__c WHERE Id = :postId LIMIT 1
+                SELECT Contact__c, Posted_By__c FROM Needs_Offers__c WHERE Id = :postId LIMIT 1
             ];
-            return post.Posted_By__c;
+            return FimbyConstants.postOwnerContactId(post);
         }
 
         public Boolean isBulkBuyFullyReserved(Id postId) {
@@ -320,7 +320,7 @@ public with sharing class FimbyBulkBuyReservationController {
         public Map<String, Object> doCreateReservation(Id postId, Id realContactId, Id actingAsContactId, Integer amount) {
             Needs_Offers__c post = [
                 SELECT Id, Total_Quantity__c, Total_Reserved__c, Total_Available__c, Owner_Shares__c,
-                       Per_Response_Limit__c, Group_Conversation__c, Posted_By__c, Name, Status__c
+                       Per_Response_Limit__c, Group_Conversation__c, Contact__c, Posted_By__c, Name, Status__c
                 FROM Needs_Offers__c
                 WHERE Id = :postId
                 FOR UPDATE
@@ -380,7 +380,7 @@ public with sharing class FimbyBulkBuyReservationController {
 
             String shareLabel = amount + ' share' + (amount > 1 ? 's' : '');
             FimbyNotificationService.createNotification(
-                post.Posted_By__c,
+                FimbyConstants.postOwnerContactId(post),
                 FimbyConstants.NOTIF_BULK_BUY_RESERVATION,
                 'reserved ' + shareLabel,
                 post.Name,

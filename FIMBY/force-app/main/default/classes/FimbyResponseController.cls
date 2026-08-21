@@ -141,9 +141,7 @@ public with sharing class FimbyResponseController {
                 LIMIT 1
             ];
 
-            Id replyToContactId = needOffer.Contact__c != null
-                ? needOffer.Contact__c
-                : needOffer.Posted_By__c;
+            Id replyToContactId = FimbyConstants.postOwnerContactId(needOffer);
 
             Set<String> activeStatuses = new Set<String>{
                 FimbyConstants.NEEDS_OFFERS_POSTED,
@@ -216,11 +214,12 @@ public with sharing class FimbyResponseController {
 
             String responseUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + newResponse.Id);
 
-            // Create in-app notification for post owner
-            if (needOffer.Posted_By__c != null && needOffer.Posted_By__c != actingAsContactId) {
+            // Notify the inbox the post belongs to, not whoever typed it, so every
+            // guardian of a parent-managed poster sees the response.
+            if (replyToContactId != null && replyToContactId != actingAsContactId) {
                 String responderFullName = responder.FirstName + ' ' + responder.LastName;
                 FimbyNotificationService.createNotification(
-                    needOffer.Posted_By__c,
+                    replyToContactId,
                     FimbyConstants.NOTIF_RESPONSE,
                     'responded to your post',
                     subject,
@@ -363,7 +362,7 @@ public with sharing class FimbyResponseController {
                 recipientContactId = response.Contact__c;
             } else {
                 recipientUserId = String.valueOf(response.Need_Offer_Responded_To__r.OwnerId);
-                recipientContactId = response.Need_Offer_Responded_To__r.Posted_By__c;
+                recipientContactId = FimbyConstants.postOwnerContactId(response.Need_Offer_Responded_To__r);
             }
 
             String attentionName = isPoster
@@ -666,7 +665,7 @@ public with sharing class FimbyResponseController {
                 };
             }
 
-            Id replyToContactId = evt.Contact__c != null ? evt.Contact__c : evt.Posted_By__c;
+            Id replyToContactId = FimbyConstants.postOwnerContactId(evt);
 
             Response__c newResp = new Response__c(
                 Name = evt.Name,
@@ -687,7 +686,7 @@ public with sharing class FimbyResponseController {
                 FimbyConstants.RESPONSE_ACCEPTED
             );
 
-            if (evt.Posted_By__c != null && evt.Posted_By__c != actingAsContactId) {
+            if (replyToContactId != null && replyToContactId != actingAsContactId) {
                 Contact responder = [SELECT Id, Full_Name__c FROM Contact WHERE Id = :actingAsContactId LIMIT 1];
                 String responderName = responder.Full_Name__c;
                 String evtType = evt.Event_Type__c;
@@ -695,7 +694,7 @@ public with sharing class FimbyResponseController {
                     ? responderName + ' is interested in ' + evt.Name
                     : responderName + ' is going to ' + evt.Name;
                 FimbyNotificationService.createNotification(
-                    evt.Posted_By__c,
+                    replyToContactId,
                     FimbyConstants.NOTIF_RESPONSE,
                     (evtType == 'Community_Event' ? 'is interested' : 'is going'),
                     notifBody,
@@ -730,7 +729,8 @@ public with sharing class FimbyResponseController {
             resp.Status__c = FimbyConstants.RESPONSE_CANCELLED;
             update resp;
 
-            if (evt.Posted_By__c != null && evt.Posted_By__c != actingAsContactId) {
+            Id postOwnerId = FimbyConstants.postOwnerContactId(evt);
+            if (postOwnerId != null && postOwnerId != actingAsContactId) {
                 Contact responder = [SELECT Id, Full_Name__c FROM Contact WHERE Id = :actingAsContactId LIMIT 1];
                 String responderName = responder.Full_Name__c;
                 String evtType = evt.Event_Type__c;
@@ -738,7 +738,7 @@ public with sharing class FimbyResponseController {
                     ? responderName + ' is no longer interested in ' + evt.Name
                     : responderName + ' is no longer going to ' + evt.Name;
                 FimbyNotificationService.createNotification(
-                    evt.Posted_By__c,
+                    postOwnerId,
                     FimbyConstants.NOTIF_RESPONSE,
                     (evtType == 'Community_Event' ? 'is no longer interested' : 'is no longer going'),
                     notifBody,
@@ -791,13 +791,13 @@ public with sharing class FimbyResponseController {
          */
         public Map<String, Object> getOrCreate(String eventId, String actingAsContactId, String targetContactId) {
             Needs_Offers__c evt = [
-                SELECT Id, Posted_By__c
+                SELECT Id, Contact__c, Posted_By__c
                 FROM Needs_Offers__c
                 WHERE Id = :eventId
                 LIMIT 1
             ];
 
-            String posterContactId = evt.Posted_By__c;
+            String posterContactId = FimbyConstants.postOwnerContactId(evt);
             if (posterContactId == null) {
                 throw newAuraException('Event has no poster.');
             }
@@ -946,6 +946,7 @@ public with sharing class FimbyResponseController {
                 SELECT Id, Name, OwnerId, Contact__c, Contact__r.FirstName, Contact__r.LastName,
                        On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
                        Reply_To_Contact__c, Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.OwnerId,
+                       Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Posted_By__r.FirstName
                 FROM Response__c

@@ -86,6 +86,65 @@ public class FimbyResponseThreadControllerTest {
     }
 
     @isTest
+    static void testProxiedPost_PosterAccessAndReplyRouting() {
+        User guardianUser = getPosterUser();
+        Contact guardianContact = getPosterContact();
+        Contact responderContact = getResponderContact();
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Contact childContact = FimbyTestDataFactory.createNeighbourhoodContact(guardianContact.AccountId, true);
+
+        Needs_Offers__c proxiedPost;
+        System.runAs(guardianUser) {
+            proxiedPost = new Needs_Offers__c(
+                Name = 'Proxied Thread Post',
+                Details__c = 'Guardian typed it, child owns it',
+                Status__c = 'Posted',
+                Contact__c = childContact.Id,
+                Posted_By__c = guardianContact.Id,
+                Giver_Recipient_Type__c = 'Self',
+                Neighbourhood__c = guardianContact.AccountId,
+                Total_Quantity__c = 5,
+                Per_Response_Limit__c = 5,
+                Auto_Accept_Responses__c = false,
+                End_Date__c = Date.today().addDays(7)
+            );
+            insert proxiedPost;
+        }
+
+        Response__c resp = createTestResponse(proxiedPost, responderContact, childContact, guardianUser);
+
+        Test.startTest();
+        Map<String, Object> threadResult;
+        System.runAs(guardianUser) {
+            threadResult = FimbyResponseThreadController.getThread(resp.Id);
+        }
+        // Identity is cached per transaction; without this the responder inherits the guardian.
+        FimbyIdentityRepository.clearCache();
+        System.runAs(responderUser) {
+            FimbyResponseThreadController.sendMessage(resp.Id, 'Is this still going?');
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, threadResult.get('success'), 'Guardian can open the thread on a post they typed');
+        System.assertEquals(
+            true,
+            threadResult.get('isPoster'),
+            'Poster access holds via the real author even though the post belongs to the child'
+        );
+
+        List<Notification__c> notifs = [
+            SELECT Contact__c FROM Notification__c WHERE Type__c = :FimbyConstants.NOTIF_RESPONSE_REPLY
+        ];
+        System.assertEquals(1, notifs.size(), 'Reply creates one notification');
+        System.assertEquals(
+            childContact.Id,
+            notifs[0].Contact__c,
+            'Thread replies land in the child inbox so every guardian is reached'
+        );
+    }
+
+    @isTest
     static void testGetThread_Success() {
         User posterUser = getPosterUser();
         Contact posterContact = getPosterContact();

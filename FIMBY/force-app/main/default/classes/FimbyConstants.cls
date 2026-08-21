@@ -204,4 +204,48 @@ public class FimbyConstants {
     public static final Set<String> MESSAGE_STYLE_TYPES = new Set<String>{
         NOTIF_MESSAGE, NOTIF_EVENT_CHAT, NOTIF_THANKS_RECEIVED, NOTIF_RESPONSE_REPLY
     };
+
+    /**
+     * @description Direct and Skill threads are gated on a contact-sharing episode.
+     *              Contextual threads (lending, bulk buy, event, response, etc.) carry
+     *              their own authorization and must never inherit SCI read-only state.
+     */
+    public static Boolean isSharingGatedConversationContext(String contextType) {
+        return contextType == null
+            || contextType == CTX_DIRECT
+            || contextType == CTX_SKILL;
+    }
+
+    /**
+     * @description The inbox a post belongs to. On Needs_Offers__c, Contact__c is the
+     *              represented identity (Post Owner) and Posted_By__c is the real author —
+     *              the reverse of Story__c. Routing to Posted_By__c drops a parent-managed
+     *              child's mail into whichever guardian typed the post, so the child's other
+     *              guardians never see it. Falls back for legacy rows with no Contact__c.
+     * @param post Needs_Offers__c with Contact__c and Posted_By__c selected
+     * @return The Contact Id that owns the post, or null
+     */
+    public static Id postOwnerContactId(Needs_Offers__c post) {
+        if (post == null) {
+            return null;
+        }
+        return post.Contact__c != null ? post.Contact__c : post.Posted_By__c;
+    }
+
+    /**
+     * @description Poster access via either path — the real author submitted it, or the
+     *              running identity is the one it belongs to. Checking a single field
+     *              false-denies whoever is acting as the other identity.
+     * @param post Needs_Offers__c with Contact__c and Posted_By__c selected
+     * @param actingAsContactId The represented identity
+     * @param realContactId The Contact of the person at the keyboard
+     * @return True when the running user may act as the poster
+     */
+    public static Boolean isPostOwner(Needs_Offers__c post, String actingAsContactId, String realContactId) {
+        if (post == null) {
+            return false;
+        }
+        return (post.Posted_By__c != null && post.Posted_By__c == realContactId)
+            || (post.Contact__c != null && post.Contact__c == actingAsContactId);
+    }
 }

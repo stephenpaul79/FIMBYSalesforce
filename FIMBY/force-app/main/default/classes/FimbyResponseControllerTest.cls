@@ -1079,6 +1079,64 @@ public class FimbyResponseControllerTest {
     }
 
     @isTest
+    static void testCreateResponse_ProxiedPostNotifiesPostOwnerInbox() {
+        Contact guardianContact = getTestContact();
+        User guardianUser = getTestUser();
+        Contact childContact = FimbyTestDataFactory.createNeighbourhoodContact(guardianContact.AccountId, true);
+        Contact responderContact = FimbyTestDataFactory.createNeighbourhoodContact(guardianContact.AccountId, true);
+        User responderUser = FimbyTestDataFactory.createCommunityUser(responderContact.Id, null, true);
+
+        Needs_Offers__c proxiedPost;
+        System.runAs(guardianUser) {
+            proxiedPost = new Needs_Offers__c(
+                Name = 'Maya bake sale offer',
+                Details__c = 'Posted by a guardian on the child\'s behalf',
+                Status__c = 'Posted',
+                Contact__c = childContact.Id,
+                Posted_By__c = guardianContact.Id,
+                Giver_Recipient_Type__c = 'Self',
+                Neighbourhood__c = guardianContact.AccountId,
+                Total_Quantity__c = 3,
+                Per_Response_Limit__c = 3,
+                Auto_Accept_Responses__c = false,
+                End_Date__c = Date.today().addDays(7)
+            );
+            insert proxiedPost;
+        }
+
+        Map<String, Object> responseData = new Map<String, Object>{
+            'needOfferId' => proxiedPost.Id,
+            'subject' => 'I can help',
+            'responseDetails' => 'Happy to take one',
+            'amountRequested' => 1,
+            'decline' => false
+        };
+
+        Test.startTest();
+        System.runAs(responderUser) {
+            FimbyResponseController.createResponse(JSON.serialize(responseData));
+        }
+        Test.stopTest();
+
+        List<Notification__c> notifs = [
+            SELECT Id, Contact__c FROM Notification__c WHERE Type__c = :FimbyConstants.NOTIF_RESPONSE
+        ];
+        System.assertEquals(1, notifs.size(), 'Responding to a proxied post creates one notification');
+        System.assertEquals(
+            childContact.Id,
+            notifs[0].Contact__c,
+            'Notification belongs to the child inbox so every guardian sees it, not just the one who typed the post'
+        );
+
+        Response__c created = [SELECT Reply_To_Contact__c FROM Response__c LIMIT 1];
+        System.assertEquals(
+            childContact.Id,
+            created.Reply_To_Contact__c,
+            'Replies route to the represented identity'
+        );
+    }
+
+    @isTest
     static void testUpdateResponseStatus_AllStatuses() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();
