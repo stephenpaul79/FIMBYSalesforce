@@ -89,6 +89,10 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
     get contactId() { return this.profile?.contactId || null; }
     get vouchingIsPaused() { return this.profile?.vouchingDisabled === true; }
 
+    get isParentManaged() {
+        return this.profile?.isParentManaged === true;
+    }
+
     /* ---- Settling-in / Vouched chip ---------------------------- */
 
     get vouchedStatus() {
@@ -96,8 +100,22 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
     }
 
     get showVouchChip() {
-        // Show on any owner profile that has a known vouched status.
-        return !!this.profile?.contactId;
+        return !!this.profile?.contactId && !this.isParentManaged;
+    }
+
+    get showParentManagedStanding() {
+        return this.isParentManaged;
+    }
+
+    get parentManagedStandingMessage() {
+        if (this.profile?.libraryAccessViaGuardian === true) {
+            return 'The lending library is open through your guardian\'s standing in the neighbourhood.';
+        }
+        return 'The lending library opens once a guardian is vouched in the neighbourhood.';
+    }
+
+    get showTrustHistorySection() {
+        return !!this.profile?.contactId && !this.isParentManaged;
     }
 
     get vouchChipLabel() {
@@ -133,7 +151,9 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
     }
 
     get showVouchChipHelper() {
-        // Only show the actionable hint when they still need a vouch.
+        if (this.isParentManaged) {
+            return false;
+        }
         return this.vouchedStatus !== 'Vouched' && this.vouchedStatus !== 'Vouch_Requested';
     }
 

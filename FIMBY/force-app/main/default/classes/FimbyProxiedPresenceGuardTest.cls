@@ -129,6 +129,127 @@ private class FimbyProxiedPresenceGuardTest {
         System.assertEquals(0, FimbyProxiedPresenceGuard.proxiedAmong(null).size());
     }
 
+    /**
+     * The label a thread shows is the whole point of this resolver: calling a supported
+     * adult "parent-managed" would tell a neighbour with full agency that they are a
+     * child. Both branches are asserted together so one can never drift into the other.
+     */
+    @IsTest
+    static void proxyTypesDistinguishAManagedChildFromASupportedAdult() {
+        Contact kid = child();
+        Contact supportedAdult = neighbour();
+        Contact grownUp = guardian();
+
+        insert new Support_Relationship__c(
+            Contact__c = grownUp.Id,
+            Related_Contact__c = supportedAdult.Id,
+            Relationship_Type__c = 'Support_Person',
+            Neighbourhood__c = grownUp.AccountId,
+            Status__c = 'Approved',
+            Consent_Method__c = 'Verbal'
+        );
+        FimbyProxiedPresenceGuard.clearCache();
+
+        Test.startTest();
+        Map<Id, String> resolved = FimbyProxiedPresenceGuard.resolveProxyTypes(
+            new Set<Id>{ kid.Id, supportedAdult.Id, grownUp.Id }
+        );
+        Test.stopTest();
+
+        System.assertEquals(
+            FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+            resolved.get(kid.Id),
+            'A parent-managed child must never be labelled as merely supported'
+        );
+        System.assertEquals(
+            FimbyProxiedPresenceGuard.PROXY_TYPE_SUPPORTED,
+            resolved.get(supportedAdult.Id),
+            'An adult with an approved support person is supported, not parent-managed'
+        );
+        System.assertEquals(
+            false,
+            resolved.containsKey(grownUp.Id),
+            'A neighbour nobody speaks for must be absent, so containsKey is a safe test'
+        );
+    }
+
+    @IsTest
+    static void parentManagedOutranksSupportedForTheSameChild() {
+        Contact kid = child();
+        // A child may also have a support person. They are still a child, and that is
+        // the fact a reader needs — so the stronger label must win.
+        insert new Support_Relationship__c(
+            Contact__c = neighbour().Id,
+            Related_Contact__c = kid.Id,
+            Relationship_Type__c = 'Support_Person',
+            Neighbourhood__c = kid.AccountId,
+            Status__c = 'Approved',
+            Consent_Method__c = 'Verbal'
+        );
+        FimbyProxiedPresenceGuard.clearCache();
+
+        Test.startTest();
+        Map<Id, String> resolved =
+            FimbyProxiedPresenceGuard.resolveProxyTypes(new Set<Id>{ kid.Id });
+        Test.stopTest();
+
+        System.assertEquals(
+            FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+            resolved.get(kid.Id)
+        );
+    }
+
+    @IsTest
+    static void anUnapprovedSupportRelationshipDoesNotLabelAnyone() {
+        Contact supportedAdult = neighbour();
+        insert new Support_Relationship__c(
+            Contact__c = guardian().Id,
+            Related_Contact__c = supportedAdult.Id,
+            Relationship_Type__c = 'Support_Person',
+            Neighbourhood__c = supportedAdult.AccountId,
+            Status__c = 'Pending Verification',
+            Consent_Method__c = 'Verbal'
+        );
+        FimbyProxiedPresenceGuard.clearCache();
+
+        Test.startTest();
+        Map<Id, String> resolved =
+            FimbyProxiedPresenceGuard.resolveProxyTypes(new Set<Id>{ supportedAdult.Id });
+        Test.stopTest();
+
+        System.assertEquals(
+            false,
+            resolved.containsKey(supportedAdult.Id),
+            'A request nobody approved must not announce that someone speaks for them'
+        );
+    }
+
+    @IsTest
+    static void repeatedProxyTypeLookupsAreServedFromCache() {
+        Contact kid = child();
+        Contact grownUp = guardian();
+        FimbyProxiedPresenceGuard.clearCache();
+
+        Test.startTest();
+        Integer before = Limits.getQueries();
+        FimbyProxiedPresenceGuard.resolveProxyTypes(new Set<Id>{ kid.Id, grownUp.Id });
+        Integer firstPass = Limits.getQueries() - before;
+        FimbyProxiedPresenceGuard.resolveProxyTypes(new Set<Id>{ kid.Id, grownUp.Id });
+        Integer afterCache = Limits.getQueries() - before;
+        Test.stopTest();
+
+        System.assertEquals(
+            firstPass,
+            afterCache,
+            'A thread re-asking about the same senders on every page must cost nothing'
+        );
+        System.assertEquals(0, FimbyProxiedPresenceGuard.resolveProxyTypes(null).size());
+        System.assertEquals(
+            0,
+            FimbyProxiedPresenceGuard.resolveProxyTypes(new Set<Id>()).size()
+        );
+    }
+
     @IsTest
     static void theServiceRefusesAChildAsTheSharer() {
         String message;

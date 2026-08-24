@@ -116,6 +116,40 @@ public with sharing class FimbyMessageController {
                 OFFSET :offsetVal
             ];
 
+            // Who is spoken for, resolved once for every human sender on the page plus
+            // the other participant, so the per-message line and the header badge can
+            // never disagree about the same person.
+            Set<Id> proxyCandidates = new Set<Id>();
+            if (!otherIsOrg && result.otherParticipantId != null) {
+                proxyCandidates.add(result.otherParticipantId);
+            }
+            for (Message__c msg : messages) {
+                if (msg.Sender__r?.Is_Organization_Contact__c == true) {
+                    continue;
+                }
+                if (msg.Sender__c != null && msg.Sent_By__c != null && msg.Sender__c != msg.Sent_By__c) {
+                    proxyCandidates.add(msg.Sender__c);
+                }
+            }
+            Map<Id, String> proxyTypes = FimbyProxiedPresenceGuard.resolveProxyTypes(proxyCandidates);
+            result.otherParticipantProxyType = proxyTypes.get(result.otherParticipantId);
+
+            // Thread-scoped by design: a supported adult is not announced as spoken-for
+            // until a helper has actually spoken here. Both sides compare against a
+            // bound Id, which SOQL allows where a field-to-field comparison would not.
+            result.threadHasProxyMessages = false;
+            if (!otherIsOrg && result.otherParticipantId != null) {
+                Id otherId = result.otherParticipantId;
+                result.threadHasProxyMessages = [
+                    SELECT COUNT()
+                    FROM Message__c
+                    WHERE Conversation__c = :conversationId
+                      AND Sender__c = :otherId
+                      AND Sent_By__c != NULL
+                      AND Sent_By__c != :otherId
+                ] > 0;
+            }
+
             // Collect unread messages from the other participant to mark as read
             List<Message__c> toMarkRead = new List<Message__c>();
             Datetime now = Datetime.now();
@@ -143,6 +177,7 @@ public with sharing class FimbyMessageController {
                 w.sentByName = msg.Sent_By__r?.Full_Name__c;
                 w.sentByFirstName = msg.Sent_By__r?.FirstName;
                 w.isOnBehalfOf = (msg.Sender__c != msg.Sent_By__c);
+                w.senderProxyType = senderIsOrg ? null : proxyTypes.get(msg.Sender__c);
                 w.sentDate = msg.Sent_Date__c;
                 w.status = msg.Status__c;
                 w.isRead = (msg.Read_Date__c != null);
@@ -381,9 +416,7 @@ public with sharing class FimbyMessageController {
          * @return true when the thread is gated on a consent episode.
          */
         private Boolean isSharingGatedContext(String contextType) {
-            return contextType == null
-                || contextType == FimbyConstants.CTX_DIRECT
-                || contextType == FimbyConstants.CTX_SKILL;
+            return FimbyConstants.isSharingGatedConversationContext(contextType);
         }
 
     }
@@ -399,6 +432,8 @@ public with sharing class FimbyMessageController {
         @AuraEnabled public Id otherParticipantId { get; set; }
         @AuraEnabled public String otherParticipantImageUrl { get; set; }
         @AuraEnabled public Boolean isOtherParticipantOrg { get; set; }
+        @AuraEnabled public String otherParticipantProxyType { get; set; }
+        @AuraEnabled public Boolean threadHasProxyMessages { get; set; }
         @AuraEnabled public Boolean isActingAsSelf { get; set; }
         @AuraEnabled public String actingAsContactName { get; set; }
         @AuraEnabled public String myContactImageUrl { get; set; }
@@ -421,6 +456,7 @@ public with sharing class FimbyMessageController {
         @AuraEnabled public String sentByName { get; set; }
         @AuraEnabled public String sentByFirstName { get; set; }
         @AuraEnabled public Boolean isOnBehalfOf { get; set; }
+        @AuraEnabled public String senderProxyType { get; set; }
         @AuraEnabled public Datetime sentDate { get; set; }
         @AuraEnabled public String status { get; set; }
         @AuraEnabled public Boolean isRead { get; set; }

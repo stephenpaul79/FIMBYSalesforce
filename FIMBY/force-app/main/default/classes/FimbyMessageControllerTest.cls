@@ -126,6 +126,127 @@ public class FimbyMessageControllerTest {
         Test.stopTest();
     }
 
+    private static Contact createHelperContact(Id neighbourhoodId) {
+        return FimbyTestDataFactory.createNeighbourhoodContacts(neighbourhoodId, 1, true)[0];
+    }
+
+    @IsTest
+    static void aProxiedSenderIsLabelledAndTheThreadIsFlagged() {
+        User testUser = getTestUser();
+        Conversation__c conv = getTestConversation();
+        Contact other = [SELECT Id, AccountId FROM Contact WHERE Id = :conv.Participant_2__c];
+        Contact helper = createHelperContact(other.AccountId);
+
+        update new Contact(Id = other.Id, Is_Parent_Proxied__c = true);
+
+        insert new Message__c(
+            Conversation__c = conv.Id,
+            Sender__c = other.Id,
+            Sent_By__c = helper.Id,
+            Body__c = 'Mum is helping me type this.',
+            Sent_Date__c = Datetime.now(),
+            Status__c = 'Sent'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            FimbyMessageController.MessageListResult result =
+                FimbyMessageController.getMessages(conv.Id, 50, 0);
+
+            System.assertEquals(
+                FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+                result.otherParticipantProxyType,
+                'The thread header must name the child, not the guardian who typed'
+            );
+            System.assertEquals(
+                true,
+                result.threadHasProxyMessages,
+                'A guardian has spoken here, so the badge is earned'
+            );
+            System.assertEquals(
+                FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+                result.messages[0].senderProxyType,
+                'The per-message role word comes from the sender, not the typist'
+            );
+        }
+        Test.stopTest();
+    }
+
+    /**
+     * The privacy rule in one test: an adult who happens to have a support person is
+     * not announced as spoken-for in a thread they wrote themselves. The badge appears
+     * only once a helper actually speaks.
+     */
+    @IsTest
+    static void aSupportedAdultIsNotAnnouncedUntilAHelperSpeaks() {
+        User testUser = getTestUser();
+        Conversation__c conv = getTestConversation();
+        Contact other = [SELECT Id, AccountId FROM Contact WHERE Id = :conv.Participant_2__c];
+        Contact helper = createHelperContact(other.AccountId);
+
+        insert new Support_Relationship__c(
+            Contact__c = helper.Id,
+            Related_Contact__c = other.Id,
+            Relationship_Type__c = 'Support_Person',
+            Neighbourhood__c = other.AccountId,
+            Status__c = 'Approved',
+            Consent_Method__c = 'Verbal'
+        );
+
+        // Written by the supported adult themselves — nothing to disclose.
+        insert new Message__c(
+            Conversation__c = conv.Id,
+            Sender__c = other.Id,
+            Sent_By__c = other.Id,
+            Body__c = 'I typed this myself.',
+            Sent_Date__c = Datetime.now().addMinutes(-5),
+            Status__c = 'Sent'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            FimbyMessageController.MessageListResult before =
+                FimbyMessageController.getMessages(conv.Id, 50, 0);
+
+            System.assertEquals(
+                FimbyProxiedPresenceGuard.PROXY_TYPE_SUPPORTED,
+                before.otherParticipantProxyType,
+                'The relationship is known to the server either way'
+            );
+            System.assertEquals(
+                false,
+                before.threadHasProxyMessages,
+                'Nobody has spoken for them here, so the UI must stay quiet'
+            );
+        }
+
+        // Seeded as the admin rather than inside runAs: the community user cannot see
+        // the helper Contact, so inserting there would test record sharing instead of
+        // the flag this method is about.
+        insert new Message__c(
+            Conversation__c = conv.Id,
+            Sender__c = other.Id,
+            Sent_By__c = helper.Id,
+            Body__c = 'Passing on a message for them.',
+            Sent_Date__c = Datetime.now(),
+            Status__c = 'Sent'
+        );
+
+        System.runAs(testUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            FimbyMessageController.MessageListResult later =
+                FimbyMessageController.getMessages(conv.Id, 50, 0);
+            System.assertEquals(
+                true,
+                later.threadHasProxyMessages,
+                'Once a support person speaks, the reader is entitled to know'
+            );
+        }
+        Test.stopTest();
+    }
+
     @IsTest
     static void testGetMessagesMarksAsRead() {
         User testUser = getTestUser();

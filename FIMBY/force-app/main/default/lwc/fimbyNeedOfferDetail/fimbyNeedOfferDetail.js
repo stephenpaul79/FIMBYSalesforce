@@ -66,6 +66,7 @@ const FIELDS = [
     'Needs_Offers__c.Contact__r.Name',
     'Needs_Offers__c.Contact__r.Full_Name__c',
     'Needs_Offers__c.Contact__r.Image_URL__c',
+    'Needs_Offers__c.Contact__r.Display_Avatar_URL__c',
     'Needs_Offers__c.Contact__r.Is_Organization_Contact__c',
     'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c',
     'Needs_Offers__c.Contact__r.Organization_Account__c',
@@ -181,6 +182,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // until every layout-defining load resolves, then reveal in one fade so
     // sections don't pop in and shift the page ("chunk chunk chunk").
     @track _detailReady = false;
+    @track _posterParentManaged = false;
     _recordDone = false;
     _responsesDone = false;
     _bulkBuyDone = false;
@@ -403,6 +405,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 this.isRemoved = false;
                 this.removedMessage = '';
                 this._eventGroupConversationId = data.groupConversationId || null;
+                this._posterParentManaged = data.isPosterParentManaged === true;
             }
         } else if (error) {
             console.error('Error checking content visibility:', error);
@@ -905,9 +908,14 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get posterAvatar() {
         if (!this.record) return '';
-        const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
-        const baseUrl = contactImg || getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Image_URL__c') || '';
-        return avatarImageUrl(baseUrl);
+        const postOwnerId = getFieldValue(this.record, 'Needs_Offers__c.Contact__c');
+        if (postOwnerId) {
+            const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Display_Avatar_URL__c')
+                || getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
+            return contactImg ? avatarImageUrl(contactImg) : this.noProfilePhotoUrl;
+        }
+        const baseUrl = getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Image_URL__c') || '';
+        return baseUrl ? avatarImageUrl(baseUrl) : this.noProfilePhotoUrl;
     }
 
     get posterContactId() {
@@ -916,8 +924,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     get isPosterParentManaged() {
-        if (!this.record) return false;
-        return getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c') === true;
+        return this._posterParentManaged === true;
     }
 
     get posterProfilePath() {
@@ -1688,22 +1695,6 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     get showCompactMetaSecondary() { return this.compactMetaSecondaryItems.length > 0; }
-
-    // ============================================
-    // PERSONA: HEADER IDENTITY
-    // ============================================
-
-    get headerIdentityLabel() {
-        const cfg = this.eventTypeConfig;
-        if (cfg) return cfg.identityLabel;
-        const rt = this.postType;
-        if (rt && rt.toLowerCase().includes('offer')) return 'From';
-        return 'For';
-    }
-
-    get headerIdentityName() {
-        return this.posterName;
-    }
 
     // ============================================
     // PERSONA: CTA LABELS

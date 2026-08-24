@@ -191,6 +191,9 @@
                                         <div class="message-card-body">
                                             <p class="message-text">{firstMessage.body}</p>
                                         </div>
+                                        <template lwc:if={firstMessage.showViaLabel}>
+                                            <div class="via-label">{firstMessage.viaLabel}</div>
+                                        </template>
                                     </div>
                                 </template>
                                 <template lwc:else>
@@ -267,6 +270,9 @@
                                                         <div class="message-card-body">
                                                             <p class="message-text">{mid.body}</p>
                                                         </div>
+                                                        <template lwc:if={mid.showViaLabel}>
+                                                            <div class="via-label">{mid.viaLabel}</div>
+                                                        </template>
                                                     </div>
                                                 </template>
                                                 <template lwc:else>
@@ -380,6 +386,9 @@
                                             <div class="message-card-body">
                                                 <p class="message-text">{last.body}</p>
                                             </div>
+                                            <template lwc:if={last.showViaLabel}>
+                                                <div class="via-label">{last.viaLabel}</div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -411,6 +420,9 @@
                                             <div class="message-card-body">
                                                 <p class="message-text">{item.body}</p>
                                             </div>
+                                            <template lwc:if={item.showViaLabel}>
+                                                <div class="via-label">{item.viaLabel}</div>
+                                            </template>
                                         </div>
                                     </template>
                                     <template lwc:elseif={item.isSystemMessage}>
@@ -460,6 +472,9 @@
                                             <div class="message-card-body">
                                                 <p class="message-text">{item.body}</p>
                                             </div>
+                                            <template lwc:if={item.showViaLabel}>
+                                                <div class="via-label">{item.viaLabel}</div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>

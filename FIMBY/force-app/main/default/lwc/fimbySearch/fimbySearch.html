@@ -143,7 +143,7 @@
                                     <div class="person-info">
                                         <div class="person-name">{result.name}</div>
                                         <template lwc:if={result.isParentManaged}>
-                                            <c-fimby-parent-managed-badge parent-managed="true"></c-fimby-parent-managed-badge>
+                                            <c-fimby-proxy-badge parent-managed={result.isParentManaged}></c-fimby-proxy-badge>
                                         </template>
                                         <template lwc:if={result.subType}>
                                             <div class="person-neighbourhood">{result.subType}</div>

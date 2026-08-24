@@ -65,16 +65,9 @@
                                             </span>
                                         </div>
                                         <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
-                                            <template lwc:if={posterAvatar}>
-                                                <img src={posterAvatar} alt={posterName} class="poster-avatar">
-                                            </template>
-                                            <template lwc:else>
-                                                <div class="avatar-placeholder">
-                                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
-                                                </div>
-                                            </template>
+                                            <img src={posterAvatar} alt={posterName} class="poster-avatar">
                                             <span class="poster-name">{posterName}</span>
-                                            <c-fimby-parent-managed-badge lwc:if={isPosterParentManaged} parent-managed="true"></c-fimby-parent-managed-badge>
+                                            <c-fimby-proxy-badge lwc:if={isPosterParentManaged} parent-managed={isPosterParentManaged}></c-fimby-proxy-badge>
                                         </div>
                                     </div>
                                     <template lwc:if={hasPostDetails}>
@@ -224,17 +217,9 @@
                                             </template>
                                         </div>
                                         <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
-                                            <template lwc:if={posterAvatar}>
-                                                <img src={posterAvatar} alt={posterName} class="poster-avatar">
-                                            </template>
-                                            <template lwc:else>
-                                                <div class="avatar-placeholder">
-                                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
-                                                </div>
-                                            </template>
-                                            <span class="poster-identity-label">{headerIdentityLabel}</span>
-                                            <span class="poster-name">{headerIdentityName}</span>
-                                            <c-fimby-parent-managed-badge lwc:if={isPosterParentManaged} parent-managed="true"></c-fimby-parent-managed-badge>
+                                            <img src={posterAvatar} alt={posterName} class="poster-avatar">
+                                            <span class="poster-name">{posterName}</span>
+                                            <c-fimby-proxy-badge lwc:if={isPosterParentManaged} parent-managed={isPosterParentManaged}></c-fimby-proxy-badge>
                                         </div>
                                     </div>
 

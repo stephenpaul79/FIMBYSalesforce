@@ -16,6 +16,7 @@ import shareContactInfoApex from '@salesforce/apex/FimbyResponseThreadController
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
+import { buildSentByLabel } from 'c/fimbyProxyLabels';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -557,6 +558,15 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
                 })
                 : '';
 
+            const isProxiedSender = !isMe
+                && !msg.isSystemMessage
+                && !msg.senderIsOrg
+                && !!msg.sentById
+                && msg.senderId !== msg.sentById;
+            const proxyLabel = isProxiedSender
+                ? buildSentByLabel(msg.sentByFirstName, msg.senderProxyType)
+                : '';
+
             items.push({
                 id: msg.id,
                 isDateSeparator: false,
@@ -581,6 +591,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
                 profilePath: msgProfilePath,
                 avatarClickable: !!msgProfilePath,
                 avatarClass: 'card-avatar' + (msgProfilePath ? ' clickable-avatar' : ''),
+                showViaLabel: !!proxyLabel,
+                viaLabel: proxyLabel,
                 cardClass: msg.isSystemMessage
                     ? 'message-item system-message'
                     : 'message-card' + (isMe ? ' from-me' : ''),

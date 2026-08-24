@@ -243,6 +243,77 @@ public class FimbyResponseThreadControllerTest {
         System.assertNotEquals(null, result.get('messages'));
     }
 
+    /**
+     * Response threads returned no typist at all before this, so a guardian replying for
+     * a child was indistinguishable from the child replying. Asserting the plain message
+     * alongside the proxied one keeps the label from becoming unconditional.
+     */
+    @isTest
+    static void proxiedRepliesNameTheTypistAndTheirRole() {
+        User posterUser = getPosterUser();
+        Contact posterContact = getPosterContact();
+        Contact responderContact = getResponderContact();
+        Contact childContact = FimbyTestDataFactory.createNeighbourhoodContact(posterContact.AccountId, true);
+        update new Contact(Id = childContact.Id, Is_Parent_Proxied__c = true);
+
+        Needs_Offers__c post = createTestPost(posterUser, 5);
+        Response__c resp = createTestResponse(post, responderContact, posterContact, posterUser);
+
+        insert new List<Response_Message__c>{
+            new Response_Message__c(
+                Response__c = resp.Id,
+                Sender__c = childContact.Id,
+                Sent_By__c = responderContact.Id,
+                Body__c = 'Sent for the child by their guardian.',
+                Sent_Date__c = System.now().addMinutes(-1)
+            ),
+            new Response_Message__c(
+                Response__c = resp.Id,
+                Sender__c = responderContact.Id,
+                Sent_By__c = responderContact.Id,
+                Body__c = 'Sent by themselves.',
+                Sent_Date__c = System.now()
+            )
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(posterUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            result = FimbyResponseThreadController.getMessages(resp.Id, 20, 0);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'));
+        List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get('messages');
+        System.assertEquals(2, messages.size(), 'Both replies should load');
+
+        Boolean sawProxied = false;
+        Boolean sawPlain = false;
+        for (Map<String, Object> m : messages) {
+            if ((Id) m.get('senderId') == childContact.Id) {
+                sawProxied = true;
+                System.assertEquals(
+                    responderContact.Id,
+                    (Id) m.get('sentById'),
+                    'The thread must surface who physically typed the reply'
+                );
+                System.assertEquals(
+                    FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+                    m.get('senderProxyType')
+                );
+            } else {
+                sawPlain = true;
+                System.assertEquals(
+                    null,
+                    m.get('senderProxyType'),
+                    'A neighbour replying for themselves must carry no role word'
+                );
+            }
+        }
+        System.assert(sawProxied && sawPlain, 'Both branches must be exercised');
+    }
+
     @isTest
     static void testSendMessage_Success() {
         User posterUser = getPosterUser();

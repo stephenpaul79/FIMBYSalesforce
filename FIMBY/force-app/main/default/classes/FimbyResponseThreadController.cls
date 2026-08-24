@@ -724,6 +724,17 @@ public with sharing class FimbyResponseThreadController {
                 LIMIT :limitSize
                 OFFSET :offsetVal
             ];
+            Set<Id> proxyCandidates = new Set<Id>();
+            for (Response_Message__c m : msgs) {
+                if (m.Sender__r?.Is_Organization_Contact__c == true) {
+                    continue;
+                }
+                if (m.Sender__c != null && m.Sent_By__c != null && m.Sender__c != m.Sent_By__c) {
+                    proxyCandidates.add(m.Sender__c);
+                }
+            }
+            Map<Id, String> proxyTypes = FimbyProxiedPresenceGuard.resolveProxyTypes(proxyCandidates);
+
             for (Response_Message__c m : msgs) {
                 Boolean senderIsOrg = m.Sender__r?.Is_Organization_Contact__c == true;
                 String senderName;
@@ -747,6 +758,9 @@ public with sharing class FimbyResponseThreadController {
                     'senderImageUrl' => senderImageUrl,
                     'senderIsOrg' => senderIsOrg,
                     'senderOrgAccountId' => m.Sender__r?.Organization_Account__c,
+                    'sentById' => m.Sent_By__c,
+                    'sentByFirstName' => m.Sent_By__r?.FirstName,
+                    'senderProxyType' => senderIsOrg ? null : proxyTypes.get(m.Sender__c),
                     'sentDate' => m.Sent_Date__c,
                     'readDate' => m.Read_Date__c,
                     'isSystemMessage' => m.Is_System_Message__c,

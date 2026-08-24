@@ -14,6 +14,7 @@ import {
     getBadgeTypeFromContext,
     getThreadAvatarIcon
 } from 'c/fimbyThreadBadgeConfig';
+import { buildSentByLabel } from 'c/fimbyProxyLabels';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -267,8 +268,14 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
                 senderColorIndex = senderToColorIndex.get(msg.senderId);
             }
 
-            const viaLabel = isOrgSender && msg.sentByFirstName
-                ? `via ${msg.sentByFirstName}`
+            // Org senders already read "Org Name (Sarah)", so a second "via Sarah"
+            // line only repeated it. Human proxies had no attribution at all — this
+            // is where a guardian or support person now becomes visible.
+            const isProxiedSender = !isOrgSender
+                && !!msg.sentById
+                && msg.senderId !== msg.sentById;
+            const viaLabel = isProxiedSender
+                ? buildSentByLabel(msg.sentByFirstName, msg.senderProxyType)
                 : '';
 
             processed.push({
@@ -288,7 +295,7 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
                 senderAvatarUrl: avatarUrl,
                 hasAvatarImage: !!avatarUrl,
                 isOrgSender,
-                showViaLabel: isOrgSender && !!viaLabel && !isMine,
+                showViaLabel: !!viaLabel && !isMine,
                 viaLabel,
                 senderColorIndex,
                 snippetText: this._getSnippet(msg.body)

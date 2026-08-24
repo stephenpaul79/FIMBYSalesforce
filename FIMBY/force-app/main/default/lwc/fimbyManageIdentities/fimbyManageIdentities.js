@@ -70,17 +70,18 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
 
     get headerMenuItems() {
         return [
-            { key: 'setup', label: 'New', icon: ICONS.add, display: 'inline', variant: 'primary' },
-            { key: 'family', label: 'Family member', icon: ICONS.people, display: 'responsive' }
+            { key: 'setup', label: 'New', icon: ICONS.add, display: 'inline', variant: 'primary' }
         ];
     }
 
     handleHeaderMenuAction(event) {
         if (event.detail.key === 'setup') {
             this.handleSetupNew();
-        } else if (event.detail.key === 'family') {
-            this.template.querySelector('c-fimby-family-member-setup-modal')?.open();
         }
+    }
+
+    handleFamilyMemberFromSetup() {
+        this.template.querySelector('c-fimby-family-member-setup-modal')?.open();
     }
 
     get hasPeopleISupport() { return this.peopleISupport.length > 0; }
@@ -479,11 +480,14 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
             .catch(() => {});
     }
 
-    handleRemoveManagedProfile(event) {
+    handleRemoveProfileFromDetail() {
+        if (!this.detailRecord?.targetContactId) return;
         this._pendingRemoval = {
-            contactId: event.currentTarget.dataset.contactId,
-            name: event.currentTarget.dataset.name
+            contactId: this.detailRecord.targetContactId,
+            name: this.detailRecord.name
         };
+        this.showDetailModal = false;
+        this.detailRecord = null;
         this.showRemoveProfileModal = true;
     }
 

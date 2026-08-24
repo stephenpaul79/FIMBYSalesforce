@@ -689,6 +689,15 @@ button.avatar-wrapper {
     }
 }
 
+/* ---- Parent-managed standing (replaces personal vouch chip) ----- */
+
+.parent-managed-standing {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    line-height: 1.45;
+}
+
 /* ---- Vouch chip (Settling in / Vouch Pending / Vouched) -------- */
 
 .vouch-chip {

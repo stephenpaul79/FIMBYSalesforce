@@ -42,6 +42,19 @@ public with sharing class FimbyGroupConversationController {
             Integer total = helper.countMessages(conversationId);
             Conversation__c convMeta = helper.queryConversationMeta(conversationId);
 
+            // A group thread has no single "other participant" to badge in the header,
+            // so proxy status rides with each sender and with the member roster.
+            Set<Id> proxyCandidates = new Set<Id>();
+            for (Message__c m : messages) {
+                if (m.Sender__r?.Is_Organization_Contact__c == true) {
+                    continue;
+                }
+                if (m.Sender__c != null && m.Sent_By__c != null && m.Sender__c != m.Sent_By__c) {
+                    proxyCandidates.add(m.Sender__c);
+                }
+            }
+            Map<Id, String> proxyTypes = FimbyProxiedPresenceGuard.resolveProxyTypes(proxyCandidates);
+
             List<Map<String, Object>> messageList = new List<Map<String, Object>>();
             for (Message__c m : messages) {
                 Boolean senderIsOrg = m.Sender__r?.Is_Organization_Contact__c == true;
@@ -69,6 +82,7 @@ public with sharing class FimbyGroupConversationController {
                     'senderDisplayName' => senderDisplayName,
                     'sentByFirstName' => m.Sent_By__r?.FirstName,
                     'sentById' => m.Sent_By__c,
+                    'senderProxyType' => senderIsOrg ? null : proxyTypes.get(m.Sender__c),
                     'sentDate' => m.Sent_Date__c,
                     'isSystem' => m.Is_System_Message__c,
                     'systemType' => m.System_Message_Type__c,
@@ -154,6 +168,17 @@ public with sharing class FimbyGroupConversationController {
         try {
             List<Map<String, Object>> members = new List<Map<String, Object>>();
             List<Conversation_Member__c> cms = new GroupChatHelper().queryActiveMembers(conversationId);
+
+            // The roster is where "who is behind this name" belongs in a group: a badge
+            // on every message would fight the per-sender colour coding.
+            Set<Id> memberContactIds = new Set<Id>();
+            for (Conversation_Member__c cm : cms) {
+                if (cm.Contact__r?.Is_Organization_Contact__c != true && cm.Contact__c != null) {
+                    memberContactIds.add(cm.Contact__c);
+                }
+            }
+            Map<Id, String> proxyTypes = FimbyProxiedPresenceGuard.resolveProxyTypes(memberContactIds);
+
             for (Conversation_Member__c cm : cms) {
                 Boolean isOrg = cm.Contact__r?.Is_Organization_Contact__c == true;
                 String displayName = isOrg ? cm.Contact__r.Organization_Account__r?.Name : null;
@@ -169,6 +194,7 @@ public with sharing class FimbyGroupConversationController {
                     'displayName' => displayName,
                     'avatarUrl' => avatarUrl,
                     'isOrgContact' => isOrg,
+                    'proxyType' => isOrg ? null : proxyTypes.get(cm.Contact__c),
                     'role' => cm.Role__c,
                     'joinedDate' => cm.Joined_Date__c
                 });

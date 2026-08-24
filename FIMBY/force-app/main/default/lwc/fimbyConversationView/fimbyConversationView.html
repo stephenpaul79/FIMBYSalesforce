@@ -17,8 +17,10 @@
                 </div>
                 <div class="participant-details">
                     <h2 class="participant-name">{otherParticipantName}</h2>
-                    <template lwc:if={showOnBehalfHeader}>
-                        <div class="on-behalf-label">{onBehalfHeaderText}</div>
+                    <template lwc:if={showProxyBadge}>
+                        <div class="participant-proxy-row" title={proxyExplainer}>
+                            <c-fimby-proxy-badge proxy-type={otherParticipantProxyType}></c-fimby-proxy-badge>
+                        </div>
                     </template>
                     <template lwc:if={hasRelatedRecord}>
                         <div class="related-record-row">
@@ -277,6 +279,8 @@
             </div>
         </template>
 
+        <div class="thread-footer-column">
+
         <!-- Follow-Up Action Banner -->
         <template lwc:if={showFollowUpBanner}>
             <div class="follow-up-banner">
@@ -345,12 +349,10 @@
                     </template>
                     <div class="lending-banner-actions">
                         <template lwc:if={showLendingHandoffAction}>
-                            <button class="lending-btn lending-btn-primary" onclick={handleLendingHandoff}>
+                            <button class="lending-btn lending-btn-primary" onclick={handleLendingHandoff}
+                                    disabled={isLendingHandoffProcessing}>
                                 {lendingHandoffLabel}
                             </button>
-                        </template>
-                        <template lwc:if={showLendingCancelRequest}>
-                            <a href={lendingViewItemUrl} class="lending-link lending-link-muted" onclick={handleViewItemNav}>Cancel Request</a>
                         </template>
                         <template lwc:if={showLendingReturnAction}>
                             <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Return Item</button>
@@ -364,7 +366,13 @@
                         <template lwc:if={showLendingVerifyReturn}>
                             <button class="lending-btn lending-btn-primary" onclick={handleReturnNavigate}>Verify Return &amp; Condition</button>
                         </template>
-                        <a href={lendingViewItemUrl} class="lending-link" onclick={handleViewItemNav}>View Item</a>
+                        <template lwc:if={showLendingViewItemAction}>
+                            <button type="button" class="lending-btn lending-btn-secondary" onclick={handleViewItemNav}>View Item</button>
+                        </template>
+                        <template lwc:if={showLendingCancelRequest}>
+                            <button type="button" class="lending-btn lending-btn-danger" onclick={handleCancelRequest}
+                                    disabled={isLendingHandoffProcessing}>Cancel Request</button>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -407,6 +415,8 @@
                 </template>
             </div>
         </template>
+
+        </div>
         </div>
 
         <!-- Block/Report Modal -->

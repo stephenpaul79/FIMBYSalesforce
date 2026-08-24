@@ -26,7 +26,7 @@
                                 <img src={rel.avatarUrl} alt="" class="row-avatar" />
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
-                                    <c-fimby-parent-managed-badge parent-managed={rel.parentManaged}></c-fimby-parent-managed-badge>
+                                    <c-fimby-proxy-badge parent-managed={rel.parentManaged}></c-fimby-proxy-badge>
                                     <span class={rel.statusClass}>{rel.statusLabel}</span>
                                     <template lwc:if={rel.parentManaged}>
                                         <span class="helper-text">You post and reply as {rel.name}.</span>
@@ -45,9 +45,6 @@
                                     </template>
                                     <template lwc:if={rel.isInactive}>
                                         <button type="button" class="text-btn" data-id={rel.id} data-side="helper" onclick={handleDismiss}>Remove</button>
-                                    </template>
-                                    <template lwc:if={rel.canRemoveProfile}>
-                                        <button type="button" class="text-btn" data-contact-id={rel.targetContactId} data-name={rel.name} onclick={handleRemoveManagedProfile}>Remove profile</button>
                                     </template>
                                 </div>
                             </div>
@@ -207,6 +204,9 @@
                             <img src={detailRecord.avatarUrl} alt="" class="detail-avatar" />
                             <p class="detail-name">{detailRecord.name}</p>
                             <span class={detailRecord.statusClass}>{detailRecord.statusLabel}</span>
+                            <template lwc:if={detailRecord.parentManaged}>
+                                <c-fimby-proxy-badge parent-managed={detailRecord.parentManaged}></c-fimby-proxy-badge>
+                            </template>
                             <template lwc:if={detailRecord.organizationId}>
                                 <a href={detailProfileUrl} class="view-profile-link" onclick={handleNavLink}>View Profile</a>
                             </template>
@@ -253,6 +253,15 @@
                                             data-name={detailRecord.name}
                                             onclick={handleDeleteGroup}>
                                         Delete group
+                                    </button>
+                                </div>
+                            </template>
+                            <template lwc:elseif={detailRecord.canRemoveProfile}>
+                                <div class="modal-actions">
+                                    <button type="button"
+                                            class="pill-btn danger"
+                                            onclick={handleRemoveProfileFromDetail}>
+                                        Remove profile
                                     </button>
                                 </div>
                             </template>
@@ -398,7 +407,10 @@
             </div>
         </template>
 
-        <c-fimby-relationship-setup-modal onsetupcomplete={handleSetupComplete}></c-fimby-relationship-setup-modal>
+        <c-fimby-relationship-setup-modal
+            onsetupcomplete={handleSetupComplete}
+            onfamilymember={handleFamilyMemberFromSetup}>
+        </c-fimby-relationship-setup-modal>
         <c-fimby-family-member-setup-modal onfamilymembercreated={handleSetupComplete}></c-fimby-family-member-setup-modal>
     </div>
 </template>

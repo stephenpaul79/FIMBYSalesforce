@@ -14,10 +14,13 @@ import getFollowUpByConversation from '@salesforce/apex/FimbyFollowUpController.
 import resolveFollowUp from '@salesforce/apex/FimbyFollowUpController.resolveFollowUp';
 import escalateFollowUp from '@salesforce/apex/FimbyFollowUpController.escalateFollowUp';
 import getLendingConversationContext from '@salesforce/apex/FimbyLendingController.getLendingConversationContext';
+import cancelLendingRequest from '@salesforce/apex/FimbyLendingController.cancelLendingRequest';
+import { fireErrorToast } from 'c/fimbyToastHelper';
 import getVouchContextForConversation from '@salesforce/apex/FimbyVouchController.getVouchContextForConversation';
 import approveVouch from '@salesforce/apex/FimbyVouchController.approveVouch';
 import withdrawVouchRequest from '@salesforce/apex/FimbyVouchController.withdrawVouchRequest';
 import { getHeaderBadge } from 'c/fimbyThreadBadgeConfig';
+import { buildSentByLabel, buildProxyExplainer } from 'c/fimbyProxyLabels';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -64,6 +67,12 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     @track isOtherParticipantOrg = false;
 
+    // Proxy attribution: who is behind the profile, and whether a helper has actually
+    // spoken in this thread. The badge is gated on the latter so a supported adult is
+    // never announced as spoken-for in a thread they wrote themselves.
+    @track otherParticipantProxyType = null;
+    @track threadHasProxyMessages = false;
+
     @track isActingAsSelf = true;
     @track actingAsContactName = '';
     @track hasMultipleIdentities = false;
@@ -99,7 +108,9 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track consentClosedDate = null;
 
     get showConsentRevokedBanner() {
-        return this.isConversationRevoked && !this.isVouchContext;
+        return this.isConversationRevoked
+            && !this.isVouchContext
+            && !this.isLendingConversation;
     }
 
     get consentRevokedBannerText() {
@@ -156,14 +167,6 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     get isSendDisabled() {
         return !this.messageText || !this.messageText.trim() || this.isSending;
-    }
-
-    get showOnBehalfHeader() {
-        return !this.isActingAsSelf && this.actingAsContactName;
-    }
-
-    get onBehalfHeaderText() {
-        return `Messaging as: ${this.actingAsContactName}`;
     }
 
     // ── Related record header (badge + title link) ──────────────────
@@ -296,6 +299,23 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         return map[this.followUpStatus] || '';
     }
 
+    get showProxyBadge() {
+        return !!this.otherParticipantProxyType && this.threadHasProxyMessages;
+    }
+
+    get proxyExplainer() {
+        return this.showProxyBadge
+            ? buildProxyExplainer(this.otherParticipantFirstName, this.otherParticipantProxyType)
+            : '';
+    }
+
+    _buildSentByLabel(msg) {
+        if (!msg.isOnBehalfOf) {
+            return '';
+        }
+        return buildSentByLabel(msg.sentByFirstName || msg.sentByName, msg.senderProxyType);
+    }
+
     get participantInitials() {
         if (!this.otherParticipantName) return '?';
         return this.otherParticipantName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -362,6 +382,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             this.isActingAsSelf = result.isActingAsSelf;
             this.actingAsContactName = result.actingAsContactName;
             this.isOtherParticipantOrg = result.isOtherParticipantOrg || false;
+            this.otherParticipantProxyType = result.otherParticipantProxyType || null;
+            this.threadHasProxyMessages = result.threadHasProxyMessages === true;
             this.contextType = 'Direct';
             this.messages = [];
             this.totalCount = 0;
@@ -395,6 +417,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             this.isActingAsSelf = result.isActingAsSelf;
             this.actingAsContactName = result.actingAsContactName;
             this.isOtherParticipantOrg = result.isOtherParticipantOrg || false;
+            this.otherParticipantProxyType = result.otherParticipantProxyType || null;
+            this.threadHasProxyMessages = result.threadHasProxyMessages === true;
             this.totalCount = result.totalCount;
             this.contextType = result.contextType || '';
             this.relatedRecordId = result.relatedRecordId || '';
@@ -586,6 +610,10 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         return this.lendingPhase === 'approved' && !this.lendingIsOwner;
     }
 
+    get showLendingViewItemAction() {
+        return !!this.lendingContext?.libraryItemId;
+    }
+
     get showLendingReturnAction() {
         return !this.lendingIsOwner && (this.lendingPhase === 'onLoan' || this.lendingPhase === 'overdue');
     }
@@ -618,6 +646,20 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     handleViewItemNav(event) {
         if (event) event.preventDefault();
         navigate(this, this.lendingViewItemUrl);
+    }
+
+    async handleCancelRequest() {
+        const reqId = this.lendingContext?.requestId;
+        if (!reqId || this.isLendingHandoffProcessing) return;
+        this.isLendingHandoffProcessing = true;
+        try {
+            await cancelLendingRequest({ recordId: reqId });
+            await this.loadMessages();
+        } catch (error) {
+            fireErrorToast(error);
+        } finally {
+            this.isLendingHandoffProcessing = false;
+        }
     }
 
     handleRequestExtensionNav(event) {
@@ -758,7 +800,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
                 hasAvatarImage: !!avatarUrl,
                 senderIsOrg: !!msg.senderIsOrg,
                 showViaLabel: isOnBehalfOf && !isMine && !msg.senderIsOrg,
-                viaLabel: isOnBehalfOf ? `via ${msg.sentByFirstName || msg.sentByName}` : '',
+                viaLabel: this._buildSentByLabel(msg),
                 snippetText: this._getSnippet(msg.body)
             });
         });

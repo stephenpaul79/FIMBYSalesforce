@@ -188,6 +188,122 @@ public class FimbyGroupConversationControllerTest {
         System.assertEquals('Bulk_Buy', result.get('contextType'), 'Should return conversation context');
     }
 
+    /**
+     * A group thread has no single header to badge, so the attribution has to ride with
+     * each message. Before this, a guardian speaking for a child in a group chat was
+     * completely invisible — only organisation senders were ever labelled.
+     */
+    @isTest
+    static void aHumanProxyIsLabelledOnEachGroupMessage() {
+        User organiserUser = getOrganiserUser();
+        Contact organiserContact = getOrganiserContact();
+        Contact memberContact = getMemberContact();
+
+        update new Contact(Id = memberContact.Id, Is_Parent_Proxied__c = true);
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true, Group_Name__c = 'Proxy Test', Context_Type__c = 'Bulk_Buy',
+            Status__c = 'Active'
+        );
+        insert conv;
+
+        insert new List<Message__c>{
+            new Message__c(
+                Conversation__c = conv.Id, Body__c = 'Typed by their guardian.',
+                Sender__c = memberContact.Id, Sent_By__c = organiserContact.Id,
+                Sent_Date__c = System.now().addMinutes(-1),
+                Status__c = 'Sent', Is_System_Message__c = false
+            ),
+            new Message__c(
+                Conversation__c = conv.Id, Body__c = 'Typed by themselves.',
+                Sender__c = organiserContact.Id, Sent_By__c = organiserContact.Id,
+                Sent_Date__c = System.now(),
+                Status__c = 'Sent', Is_System_Message__c = false
+            )
+        };
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(organiserUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            result = FimbyGroupConversationController.getGroupMessages(conv.Id, 50, 0);
+        }
+        Test.stopTest();
+
+        List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get('messages');
+        System.assertEquals(2, messages.size(), 'Both messages should load');
+
+        Boolean sawProxied = false;
+        Boolean sawPlain = false;
+        for (Map<String, Object> m : messages) {
+            if ((Id) m.get('senderId') == memberContact.Id) {
+                sawProxied = true;
+                System.assertEquals(
+                    FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+                    m.get('senderProxyType'),
+                    'The proxied sender carries the role word'
+                );
+            } else {
+                sawPlain = true;
+                System.assertEquals(
+                    null,
+                    m.get('senderProxyType'),
+                    'A neighbour typing for themselves must never be labelled'
+                );
+            }
+        }
+        System.assert(sawProxied && sawPlain, 'Both branches must be exercised');
+    }
+
+    @isTest
+    static void theMemberRosterCarriesProxyBadges() {
+        User organiserUser = getOrganiserUser();
+        Contact organiserContact = getOrganiserContact();
+        Contact memberContact = getMemberContact();
+
+        update new Contact(Id = memberContact.Id, Is_Parent_Proxied__c = true);
+
+        Conversation__c conv = new Conversation__c(
+            Is_Group__c = true, Group_Name__c = 'Roster Test', Context_Type__c = 'Bulk_Buy',
+            Status__c = 'Active'
+        );
+        insert conv;
+
+        insert new List<Conversation_Member__c>{
+            new Conversation_Member__c(
+                Conversation__c = conv.Id, Contact__c = organiserContact.Id,
+                Role__c = 'Owner', Status__c = 'Active', Joined_Date__c = System.now()
+            ),
+            new Conversation_Member__c(
+                Conversation__c = conv.Id, Contact__c = memberContact.Id,
+                Role__c = 'Member', Status__c = 'Active', Joined_Date__c = System.now()
+            )
+        };
+
+        Test.startTest();
+        List<Map<String, Object>> members;
+        System.runAs(organiserUser) {
+            FimbyProxiedPresenceGuard.clearCache();
+            members = FimbyGroupConversationController.getGroupMembers(conv.Id);
+        }
+        Test.stopTest();
+
+        Boolean foundChild = false;
+        for (Map<String, Object> m : members) {
+            if ((Id) m.get('contactId') == memberContact.Id) {
+                foundChild = true;
+                System.assertEquals(
+                    FimbyProxiedPresenceGuard.PROXY_TYPE_PARENT_MANAGED,
+                    m.get('proxyType'),
+                    'The roster is where "who is behind this name" belongs in a group'
+                );
+            } else {
+                System.assertEquals(null, m.get('proxyType'));
+            }
+        }
+        System.assert(foundChild, 'The parent-managed member should be in the roster');
+    }
+
     @isTest
     static void testSendSystemMessage() {
         Contact organiserContact = getOrganiserContact();

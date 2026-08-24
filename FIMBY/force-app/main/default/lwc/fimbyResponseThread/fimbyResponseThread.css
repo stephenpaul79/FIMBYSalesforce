@@ -539,6 +539,15 @@
     padding-top: 2px;
 }
 
+/* Who physically typed the message, when a guardian or support person spoke for
+   the sender. Quiet — it disambiguates, it does not announce. */
+.via-label {
+    font-size: 11px;
+    color: var(--fimby-text-muted);
+    margin-top: 4px;
+    padding-left: 52px;
+}
+
 .system-bubble {
     display: flex;
     align-items: center;

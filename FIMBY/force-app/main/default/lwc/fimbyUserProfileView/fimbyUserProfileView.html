@@ -82,6 +82,10 @@
                             <template lwc:if={hasPronouns}>
                                 <p class="identity-pronouns">{displayPronouns}</p>
                             </template>
+                            <template lwc:if={showParentManagedStanding}>
+                                <c-fimby-proxy-badge parent-managed={isParentManaged}></c-fimby-proxy-badge>
+                                <p class="parent-managed-standing">{parentManagedStandingMessage}</p>
+                            </template>
                             <div class="identity-badges">
                                 <template lwc:if={isProfileModerator}>
                                     <span class="moderator-badge">
@@ -489,7 +493,7 @@
                 </div>
 
                 <!-- ========== 6. TRUST HISTORY (BULK BUY + VOUCHING) ========== -->
-                <template lwc:if={contactId}>
+                <template lwc:if={showTrustHistorySection}>
                     <div class="info-section">
                         <div class="section-header">
                             <h3 class="section-title">

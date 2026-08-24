@@ -1,0 +1,31 @@
+/* Tier 3 decorative badge: flat fill, no shadow, no hover, not interactive. */
+.proxy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: var(--fimby-badge-radius);
+    font-size: var(--fimby-badge-font-size);
+    font-weight: var(--fimby-badge-font-weight);
+    padding: var(--fimby-badge-padding);
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    color: #ffffff;
+}
+
+.proxy-badge.parent-managed {
+    background-color: var(--fimby-badge-parent-managed);
+}
+
+.proxy-badge.supported {
+    background-color: var(--fimby-badge-supported);
+}
+
+/* Decorative only — the label already carries the meaning for screen readers. */
+.proxy-badge-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    object-fit: contain;
+}

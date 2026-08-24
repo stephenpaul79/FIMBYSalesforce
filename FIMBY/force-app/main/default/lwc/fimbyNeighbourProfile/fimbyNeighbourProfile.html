@@ -32,7 +32,7 @@
                     <div class="identity-info">
                         <h1 class="identity-name">{profile.fullName}</h1>
                         <template lwc:if={profile.isParentManaged}>
-                            <c-fimby-parent-managed-badge parent-managed="true"></c-fimby-parent-managed-badge>
+                            <c-fimby-proxy-badge parent-managed={profile.isParentManaged}></c-fimby-proxy-badge>
                             <p class="identity-meta">{parentManagedExplainer}</p>
                         </template>
                         <template lwc:if={isProfileModerator}>

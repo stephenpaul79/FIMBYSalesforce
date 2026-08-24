@@ -81,8 +81,19 @@ public without sharing class FimbyProxiedPresenceGuard {
         'MailingPostalCode', 'MailingCountry'
     };
 
+    /**
+     * Proxy-type tokens handed to the UI so a thread can name who is speaking. Kept as
+     * constants because three controllers and three LWCs compare against them; a typo
+     * would silently degrade to "no badge" rather than raise.
+     */
+    public static final String PROXY_TYPE_PARENT_MANAGED = 'parent_managed';
+    public static final String PROXY_TYPE_SUPPORTED = 'supported';
+
     /** Transaction cache. Trigger and service paths both re-ask about the same Ids. */
     private static Map<Id, Boolean> proxiedCache = new Map<Id, Boolean>();
+
+    /** Separate cache: proxy type answers a broader question than proxiedAmong. */
+    private static Map<Id, String> proxyTypeCache = new Map<Id, String>();
 
     /**
      * @description Whether the supportee of this relationship type is a person rather
@@ -175,6 +186,77 @@ public without sharing class FimbyProxiedPresenceGuard {
     }
 
     /**
+     * @description Resolves how each Contact is represented when someone else speaks
+     *              for them, in at most two queries. Message threads use this to say
+     *              "you are talking to a proxied profile" without collapsing a
+     *              parent-managed child and a supported adult into one ambiguous label.
+     *
+     *              Parent-managed outranks supported. A child who also has a support
+     *              person is still a child, and that is the fact a reader needs.
+     *
+     * @param contactIds The Contacts to classify.
+     * @return Map of Contact Id to PROXY_TYPE_* token. Contacts with no proxy
+     *         relationship are absent from the map rather than mapped to null, so
+     *         callers can use containsKey as the test.
+     */
+    public static Map<Id, String> resolveProxyTypes(Set<Id> contactIds) {
+        Map<Id, String> resolved = new Map<Id, String>();
+        if (contactIds == null || contactIds.isEmpty()) {
+            return resolved;
+        }
+
+        Set<Id> unknown = new Set<Id>();
+        for (Id contactId : contactIds) {
+            if (contactId == null) {
+                continue;
+            }
+            if (proxyTypeCache.containsKey(contactId)) {
+                String cached = proxyTypeCache.get(contactId);
+                if (cached != null) {
+                    resolved.put(contactId, cached);
+                }
+            } else {
+                unknown.add(contactId);
+            }
+        }
+        if (unknown.isEmpty()) {
+            return resolved;
+        }
+
+        // Parent-managed first: it wins, and proxiedAmong already caches these Ids.
+        Set<Id> proxiedChildren = proxiedAmong(unknown);
+        for (Id childId : proxiedChildren) {
+            resolved.put(childId, PROXY_TYPE_PARENT_MANAGED);
+            proxyTypeCache.put(childId, PROXY_TYPE_PARENT_MANAGED);
+            unknown.remove(childId);
+        }
+        if (unknown.isEmpty()) {
+            return resolved;
+        }
+
+        // System mode for the same reason as proxiedAmong: whether a neighbour is
+        // spoken for must not depend on the viewer's field-level security.
+        for (Support_Relationship__c rel : [
+            SELECT Related_Contact__c
+            FROM Support_Relationship__c
+            WHERE Related_Contact__c IN :unknown
+              AND Relationship_Type__c = :TYPE_SUPPORT_PERSON
+              AND Status__c = 'Approved'
+            WITH SYSTEM_MODE
+        ]) {
+            resolved.put(rel.Related_Contact__c, PROXY_TYPE_SUPPORTED);
+            proxyTypeCache.put(rel.Related_Contact__c, PROXY_TYPE_SUPPORTED);
+            unknown.remove(rel.Related_Contact__c);
+        }
+
+        // Cache the negatives so a thread of ordinary neighbours re-queries nothing.
+        for (Id plain : unknown) {
+            proxyTypeCache.put(plain, null);
+        }
+        return resolved;
+    }
+
+    /**
      * @description Whether the running user is currently acting as a parent-managed
      *              child. Drives server-side refusals and the UI's decision to hide
      *              outbound share affordances.
@@ -219,5 +301,6 @@ public without sharing class FimbyProxiedPresenceGuard {
     @TestVisible
     private static void clearCache() {
         proxiedCache = new Map<Id, Boolean>();
+        proxyTypeCache = new Map<Id, String>();
     }
 }

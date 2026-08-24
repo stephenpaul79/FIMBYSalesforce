@@ -46,6 +46,9 @@
                             <template lwc:if={member.isOrgContact}>
                                 <span class="org-badge">Org</span>
                             </template>
+                            <template lwc:if={member.proxyType}>
+                                <c-fimby-proxy-badge proxy-type={member.proxyType}></c-fimby-proxy-badge>
+                            </template>
                         </div>
                     </template>
                 </div>
