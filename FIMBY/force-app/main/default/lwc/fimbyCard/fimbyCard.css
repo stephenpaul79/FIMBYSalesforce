@@ -981,26 +981,21 @@ button.action-button:focus-visible {
 }
 
 /* ----------------------------------------------------------
- * List Card Layout — content left, image center, actions right
- * Used by fimbyLibraryBrowser list view
+ * List Card Layout — content left, thumbnail + actions flush right
+ * Used by fimbyLibraryBrowser list view, search, profile activity
  * ---------------------------------------------------------- */
 .card-list {
     margin-bottom: 0;
 
     --fimby-card-list-row-height: 115px;
-    --fimby-card-list-row-min-height: var(--fimby-card-list-row-height, 115px);
-    --fimby-card-list-row-max-height: var(--fimby-card-list-row-height, 115px);
-    --fimby-card-list-title-lines: 1;
-    --fimby-card-list-description-lines: 2;
 }
 
 .card-list .card-body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--fimby-card-list-media-width, 200px) var(--fimby-card-list-actions-width, 168px);
+    grid-template-columns: minmax(0, 1fr) var(--fimby-card-list-media-width, 200px) max-content;
     align-items: stretch;
     height: var(--fimby-card-list-row-height, 115px);
-    min-height: var(--fimby-card-list-row-min-height, 115px);
-    max-height: var(--fimby-card-list-row-max-height, 115px);
+    max-height: var(--fimby-card-list-row-height, 115px);
     overflow: hidden;
 }
 
@@ -1009,7 +1004,7 @@ button.action-button:focus-visible {
 }
 
 .card-list:not(:has(.card-media)) .card-body {
-    grid-template-columns: minmax(0, 1fr) var(--fimby-card-list-actions-width, 168px);
+    grid-template-columns: minmax(0, 1fr) max-content;
 }
 
 .card-list:not(:has(.list-owner-row), :has(.card-media)) .card-body {
@@ -1031,13 +1026,11 @@ button.action-button:focus-visible {
 .card-list .card-media-placeholder {
     grid-column: 2;
     grid-row: 1;
-    justify-self: end;
     width: var(--fimby-card-list-media-width, 200px);
     min-width: var(--fimby-card-list-media-width, 200px);
     max-width: var(--fimby-card-list-media-width, 200px);
-    height: 100%;
-    min-height: var(--fimby-card-list-row-min-height, 115px);
-    max-height: var(--fimby-card-list-row-max-height, 115px);
+    height: var(--fimby-card-list-row-height, 115px);
+    max-height: var(--fimby-card-list-row-height, 115px);
     align-self: stretch;
     flex-shrink: 0;
     overflow: hidden;
@@ -1071,23 +1064,23 @@ button.action-button:focus-visible {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 6px;
-    width: var(--fimby-card-list-actions-width, 168px);
-    min-width: var(--fimby-card-list-actions-width, 168px);
+    width: max-content;
+    min-width: 44px;
     max-width: var(--fimby-card-list-actions-width, 168px);
-    height: var(--fimby-card-list-row-height);
-    max-height: var(--fimby-card-list-row-height);
+    height: var(--fimby-card-list-row-height, 115px);
+    max-height: var(--fimby-card-list-row-height, 115px);
     flex-shrink: 0;
-    padding: 10px 14px 10px 8px;
+    padding: 2px 8px 6px 4px;
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .card-list .list-card-menu {
-    position: absolute;
-    top: 2px;
-    right: 6px;
+    position: relative;
+    top: 0;
+    right: 0;
     z-index: 1;
 }
 
@@ -1096,7 +1089,8 @@ button.action-button:focus-visible {
     align-items: center;
     gap: 6px;
     max-width: 100%;
-    padding-top: 28px;
+    padding-top: 0;
+    margin-top: auto;
 }
 
 .card-list:not(:has(.list-owner-row)) .list-owner-row {
@@ -1122,7 +1116,7 @@ button.action-button:focus-visible {
     font-size: 16px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--fimby-card-list-title-lines, 1);
+    -webkit-line-clamp: 1;
     overflow: hidden;
     margin-bottom: 4px;
 }
@@ -1145,7 +1139,7 @@ button.action-button:focus-visible {
     color: var(--fimby-text-secondary);
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--fimby-card-list-description-lines, 2);
+    -webkit-line-clamp: 2;
     overflow: hidden;
     margin-bottom: 0;
 }
