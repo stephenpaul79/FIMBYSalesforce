@@ -160,6 +160,8 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
                 cardAccentColor = BADGE_BG_COLORS.library;
             }
 
+            const processedImageUrl = completeImageUrl(item.imageUrl);
+
             return {
                 ...item,
                 badgeLabel,
@@ -167,9 +169,43 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
                 badgeStyle,
                 cardAccentColor,
                 displayTimestamp: this.formatTimestamp(item.createdDate),
-                imageUrl: completeImageUrl(item.imageUrl)
+                imageUrl: processedImageUrl,
+                images: this._buildImagesArray(item, processedImageUrl)
             };
         });
+    }
+
+    _buildImagesArray(item, primaryImageUrl) {
+        const images = [];
+        const altText = item.name || '';
+
+        if (item.feedType === 'askOffer') {
+            if (primaryImageUrl) {
+                images.push({ url: primaryImageUrl, ratio: item.imageRatio || null, alt: altText });
+            }
+            if (item.image2Url) {
+                const url2 = completeImageUrl(item.image2Url);
+                if (url2) {
+                    images.push({ url: url2, ratio: item.image2Ratio || null, alt: altText });
+                }
+            }
+            if (item.image3Url) {
+                const url3 = completeImageUrl(item.image3Url);
+                if (url3) {
+                    images.push({ url: url3, ratio: item.image3Ratio || null, alt: altText });
+                }
+            }
+            if (item.image4Url) {
+                const url4 = completeImageUrl(item.image4Url);
+                if (url4) {
+                    images.push({ url: url4, ratio: item.image4Ratio || null, alt: altText });
+                }
+            }
+        } else if (primaryImageUrl) {
+            images.push({ url: primaryImageUrl, ratio: item.imageRatio || null, alt: altText });
+        }
+
+        return images;
     }
 
     formatTimestamp(timestamp) {
