@@ -80,7 +80,6 @@ export default class FimbyCard extends LightningElement {
 
     get showCategoryMediaPlaceholder() {
         return !this.suppressMediaPlaceholder
-            && this.cardType === 'library'
             && this.isCondensedLayout
             && !this.hasAnyImages
             && !!this.badgeIconUrl;

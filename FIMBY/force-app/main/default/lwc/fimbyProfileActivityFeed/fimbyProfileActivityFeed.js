@@ -161,51 +161,46 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
             }
 
             const processedImageUrl = completeImageUrl(item.imageUrl);
+            const hasVisibleImage = !!processedImageUrl && processedImageUrl.trim() !== '';
+
+            let cardType = 'default';
+            if (isLibrary) {
+                cardType = 'library';
+            } else if (isStory) {
+                cardType = 'story';
+            } else if (isAskOffer) {
+                cardType = 'askOffer';
+            }
+
+            let eventDateTime = '';
+            let eventLocation = '';
+            let eventLinkUrl = '';
+            if (isEvent && item.eventDetails) {
+                const atIdx = item.eventDetails.indexOf(' @ ');
+                eventDateTime = atIdx > -1 ? item.eventDetails.substring(0, atIdx) : item.eventDetails;
+                eventLocation = item.location || '';
+            }
+            if (isEvent && item.eventType === 'Community_Event' && item.eventLinkUrl) {
+                eventLinkUrl = item.eventLinkUrl;
+            }
 
             return {
                 ...item,
+                cardType,
                 badgeLabel,
                 badgeIconUrl,
                 badgeStyle,
                 cardAccentColor,
                 displayTimestamp: this.formatTimestamp(item.createdDate),
                 imageUrl: processedImageUrl,
-                images: this._buildImagesArray(item, processedImageUrl)
+                images: hasVisibleImage
+                    ? [{ url: processedImageUrl, ratio: item.imageRatio || '', alt: item.name || '' }]
+                    : [],
+                eventDateTime,
+                eventLocation,
+                eventLinkUrl
             };
         });
-    }
-
-    _buildImagesArray(item, primaryImageUrl) {
-        const images = [];
-        const altText = item.name || '';
-
-        if (item.feedType === 'askOffer') {
-            if (primaryImageUrl) {
-                images.push({ url: primaryImageUrl, ratio: item.imageRatio || null, alt: altText });
-            }
-            if (item.image2Url) {
-                const url2 = completeImageUrl(item.image2Url);
-                if (url2) {
-                    images.push({ url: url2, ratio: item.image2Ratio || null, alt: altText });
-                }
-            }
-            if (item.image3Url) {
-                const url3 = completeImageUrl(item.image3Url);
-                if (url3) {
-                    images.push({ url: url3, ratio: item.image3Ratio || null, alt: altText });
-                }
-            }
-            if (item.image4Url) {
-                const url4 = completeImageUrl(item.image4Url);
-                if (url4) {
-                    images.push({ url: url4, ratio: item.image4Ratio || null, alt: altText });
-                }
-            }
-        } else if (primaryImageUrl) {
-            images.push({ url: primaryImageUrl, ratio: item.imageRatio || null, alt: altText });
-        }
-
-        return images;
     }
 
     formatTimestamp(timestamp) {
@@ -248,6 +243,14 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
         if (item) {
             this.navigateToDetailPage(item);
         }
+    }
+
+    handleCardKeydown(event) {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+        event.preventDefault();
+        this.handleCardClick(event);
     }
 
     navigateToDetailPage(item) {

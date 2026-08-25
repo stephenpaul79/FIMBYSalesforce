@@ -23,20 +23,21 @@
     gap: 12px;
 }
 
-.activity-row-wrapper {
+.feed-card-wrapper {
     display: block;
     width: 100%;
-    padding: 0;
-    border: none;
-    background: transparent;
-    text-align: left;
     cursor: pointer;
 }
 
-.activity-row-wrapper:focus-visible {
+.feed-card-wrapper:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     border-radius: var(--fimby-radius-md);
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.activity-list c-fimby-card {
+    display: block;
 }
 
 .profile-activity-scroll {
