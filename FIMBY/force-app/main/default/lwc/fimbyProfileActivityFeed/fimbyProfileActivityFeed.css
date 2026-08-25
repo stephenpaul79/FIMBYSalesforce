@@ -38,6 +38,20 @@
 
 .activity-list c-fimby-card {
     display: block;
+    /* Text-first list rows: narrow right thumbnail, room for title + body */
+    --fimby-card-list-media-width: 96px;
+    --fimby-card-list-row-height: auto;
+    --fimby-card-list-row-min-height: 118px;
+    --fimby-card-list-row-max-height: none;
+    --fimby-card-list-title-lines: 2;
+    --fimby-card-list-description-lines: 3;
+}
+
+@media (min-width: 768px) {
+    .activity-list c-fimby-card {
+        --fimby-card-list-media-width: 112px;
+        --fimby-card-list-row-min-height: 124px;
+    }
 }
 
 .profile-activity-scroll {

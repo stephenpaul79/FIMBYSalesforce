@@ -988,14 +988,19 @@ button.action-button:focus-visible {
     margin-bottom: 0;
 
     --fimby-card-list-row-height: 115px;
+    --fimby-card-list-row-min-height: var(--fimby-card-list-row-height, 115px);
+    --fimby-card-list-row-max-height: var(--fimby-card-list-row-height, 115px);
+    --fimby-card-list-title-lines: 1;
+    --fimby-card-list-description-lines: 2;
 }
 
 .card-list .card-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--fimby-card-list-media-width, 200px) var(--fimby-card-list-actions-width, 168px);
     align-items: stretch;
-    height: var(--fimby-card-list-row-height);
-    max-height: var(--fimby-card-list-row-height);
+    height: var(--fimby-card-list-row-height, 115px);
+    min-height: var(--fimby-card-list-row-min-height, 115px);
+    max-height: var(--fimby-card-list-row-max-height, 115px);
     overflow: hidden;
 }
 
@@ -1026,11 +1031,13 @@ button.action-button:focus-visible {
 .card-list .card-media-placeholder {
     grid-column: 2;
     grid-row: 1;
+    justify-self: end;
     width: var(--fimby-card-list-media-width, 200px);
     min-width: var(--fimby-card-list-media-width, 200px);
     max-width: var(--fimby-card-list-media-width, 200px);
-    height: var(--fimby-card-list-row-height);
-    max-height: var(--fimby-card-list-row-height);
+    height: 100%;
+    min-height: var(--fimby-card-list-row-min-height, 115px);
+    max-height: var(--fimby-card-list-row-max-height, 115px);
     align-self: stretch;
     flex-shrink: 0;
     overflow: hidden;
@@ -1115,7 +1122,7 @@ button.action-button:focus-visible {
     font-size: 16px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: var(--fimby-card-list-title-lines, 1);
     overflow: hidden;
     margin-bottom: 4px;
 }
@@ -1138,7 +1145,7 @@ button.action-button:focus-visible {
     color: var(--fimby-text-secondary);
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: var(--fimby-card-list-description-lines, 2);
     overflow: hidden;
     margin-bottom: 0;
 }
