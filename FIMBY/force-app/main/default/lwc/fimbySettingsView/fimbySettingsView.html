@@ -502,6 +502,16 @@
                 <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onclick={stopPropagation}>
                     <h3 id="delete-modal-title" class="modal-title">{deleteConfirmTitle}</h3>
                     <p class="modal-message">{deleteConfirmBody}</p>
+                    <!-- Parent-managed profiles that would go with this account -->
+                    <template lwc:if={isCheckingManagedProfiles}>
+                        <p class="modal-message managed-profile-checking">
+                            Checking whether anyone&rsquo;s profile depends on your account&hellip;
+                        </p>
+                    </template>
+                    <c-fimby-inline-banner
+                        variant="warning"
+                        message={managedProfileWarning}>
+                    </c-fimby-inline-banner>
                     <label class="skip-grace-row">
                         <input type="checkbox"
                                checked={skipGrace}
@@ -513,7 +523,7 @@
                     </label>
                     <div class="modal-actions">
                         <button class="btn btn-neutral" onclick={handleDeleteCancel} disabled={isDeleting}>Cancel</button>
-                        <button class={deleteConfirmButtonClass} onclick={handleDeleteConfirm} disabled={isDeleting}>
+                        <button class={deleteConfirmButtonClass} onclick={handleDeleteConfirm} disabled={deleteConfirmDisabled}>
                             <template lwc:if={isDeleting}>Processing...</template>
                             <template lwc:else>{deleteConfirmButtonLabel}</template>
                         </button>

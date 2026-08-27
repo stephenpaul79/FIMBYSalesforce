@@ -1,6 +1,17 @@
 /**
  * @description Controller for the Support Relationship / Logged In As framework.
  * Handles identity switching, relationship management, and the management page.
+ *
+ * Erasure-flagged identities: a parent-managed profile removed by its guardian is
+ * flagged Deactivation_Requested__c and then waits for the nightly scrub batch. It
+ * must disappear from every list and refuse every switch straight away, because the
+ * notice sent to the other guardians says it is "no longer available to switch to"
+ * and because nobody should be able to post as a presence already being erased.
+ *
+ * Every identity read and every switch guard below filters on that flag. The filters
+ * are written null-tolerantly (Related_Contact__c = NULL OR ... = false) since
+ * organization-backed identities have no Related_Contact__c, and a null lookup fails
+ * a bare "= false" comparison — which would silently hide community-group identities.
  */
 public with sharing class FimbySupportRelationshipController {
 
@@ -22,6 +33,8 @@ public with sharing class FimbySupportRelationshipController {
                 FROM Support_Relationship__c
                 WHERE Contact__c = :myContactId
                   AND Status__c = 'Approved'
+                  AND (Related_Contact__c = NULL
+                       OR Related_Contact__r.Deactivation_Requested__c = false)
                 ORDER BY Approved_Date__c DESC
             ];
 
@@ -62,6 +75,7 @@ public with sharing class FimbySupportRelationshipController {
 
             Support_Relationship__c rel = [
                 SELECT Id, Status__c, Contact__c, Related_Contact__c,
+                       Related_Contact__r.Deactivation_Requested__c,
                        Related_Organization__c, Related_Organization__r.Organization_Contact__c,
                        Relationship_Type__c, Neighbourhood__c
                 FROM Support_Relationship__c
@@ -72,6 +86,13 @@ public with sharing class FimbySupportRelationshipController {
 
             if (rel.Status__c != 'Approved') {
                 throw new AuraHandledException('This connection is not currently active.');
+            }
+
+            // The mandate outlives the profile by up to a day, so an Approved status
+            // is not enough on its own to prove the identity is still there.
+            if (rel.Related_Contact__c != null
+                && rel.Related_Contact__r.Deactivation_Requested__c == true) {
+                throw new AuraHandledException('You no longer have access to that profile.');
             }
 
             Id targetContactId;
@@ -192,6 +213,8 @@ public with sharing class FimbySupportRelationshipController {
                 WHERE Contact__c = :myContactId
                   AND Relationship_Type__c IN :FimbyProxiedPresenceGuard.CONTACT_BACKED_TYPES
                   AND Dismissed_By_Helper__c = false
+                  AND (Related_Contact__c = NULL
+                       OR Related_Contact__r.Deactivation_Requested__c = false)
                 ORDER BY Status__c ASC, Approved_Date__c DESC
             ];
 
@@ -893,6 +916,12 @@ public with sharing class FimbySupportRelationshipController {
      * when the child record itself is not shared to them.
      */
     private without sharing class IdentityReader {
+        /**
+         * Backs the ?actAs= deep-link switch. The erasure filter belongs here rather
+         * than at the call site so a stale notification link cannot reopen a profile
+         * whose guardian already removed it; the caller's existing "You no longer have
+         * access to that profile." refusal then fires on an empty list.
+         */
         public List<Support_Relationship__c> approvedMandateFor(Id callerContactId, Id targetContactId) {
             return [
                 SELECT Id, Neighbourhood__c
@@ -901,6 +930,7 @@ public with sharing class FimbySupportRelationshipController {
                   AND Related_Contact__c = :targetContactId
                   AND Status__c = 'Approved'
                   AND Relationship_Type__c IN :FimbyProxiedPresenceGuard.CONTACT_BACKED_TYPES
+                  AND Related_Contact__r.Deactivation_Requested__c = false
                 LIMIT 1
             ];
         }

@@ -117,7 +117,8 @@ public with sharing class FimbyProfileController {
                 'careUpdatedDate' => c.Care_Updated_Date__c,
                 'vouchedStatus' => c.Vouched_Status__c,
                 'vouchingDisabled' => c.Vouching_Disabled__c,
-                'isParentManaged' => c.Is_Parent_Proxied__c == true
+                'isParentManaged' => FimbyProxiedPresenceGuard.isProxied(contactId),
+                'libraryAccessViaGuardian' => FimbyLibraryController.hasGuardianVouchStanding(contactId)
             };
         } catch (Exception e) {
             throw new AuraHandledException('Error loading profile: ' + e.getMessage());
@@ -495,6 +496,47 @@ public with sharing class FimbyProfileController {
             };
         } catch (Exception e) {
             throw new AuraHandledException('Error requesting account deletion: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Parent-managed profiles that would be erased along with this
+     * neighbour's own account, so the delete confirmation can name them.
+     *
+     * Not cacheable: another guardian may leave between two visits to the modal, and
+     * a stale "nothing at risk" answer is the one wrong answer that matters here.
+     *
+     * Takes no arguments on purpose. The guardian Contact is resolved server-side, so
+     * a crafted call cannot ask whose children are at risk for anyone but the caller.
+     *
+     * @return One entry per at-risk profile with contactId and firstName; empty when
+     *         the caller is the last guardian of nobody.
+     */
+    @AuraEnabled(cacheable=false)
+    public static List<FimbyManagedProfileCascadeService.ManagedProfileRisk> getManagedProfilesAtRisk() {
+        try {
+            Id realContactId = FimbyIdentityRepository.getCurrentUser().ContactId;
+            if (realContactId == null) {
+                throw new AuraHandledException('No contact associated with current user.');
+            }
+
+            // Same gate as requestAccountDeletion: if you cannot delete the account
+            // from here, you have no business enumerating its dependants either.
+            Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
+            if (actingAsContactId != null && actingAsContactId != realContactId) {
+                throw new AuraHandledException(
+                    'Switch back to your own identity to delete your account.'
+                );
+            }
+
+            // Guardian mandates are invisible to the running user under sharing, so
+            // the read belongs to the without-sharing cascade service.
+            return FimbyManagedProfileCascadeService.atRiskIfGuardianDeparts(realContactId);
+        } catch (AuraHandledException ae) {
+            throw ae;
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyProfileController', 'getManagedProfilesAtRisk', e);
+            throw new AuraHandledException('Error checking parent-managed profiles.');
         }
     }
 

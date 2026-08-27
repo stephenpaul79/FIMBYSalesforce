@@ -260,6 +260,53 @@ public with sharing class FimbyParentGuardianService {
     }
 
     /**
+     * @description Flags parent-managed profiles that have just lost their last
+     * Approved guardian, so the ordinary deactivation batch erases them.
+     *
+     * The bulk sibling of deleteManagedProfile's erasure step, minus the
+     * authorization and the other-guardian notice: there is no requesting guardian
+     * here and nobody left to tell. Called only by
+     * FimbyManagedProfileCascadeService, which has already established that no
+     * mandate survives.
+     *
+     * Not @AuraEnabled, and deliberately so. Nothing a browser sends should be able
+     * to erase a child profile without passing deleteManagedProfile's guardian check.
+     *
+     * Throws on DML failure so the caller's transaction rolls back rather than
+     * leaving a child with no guardian and no erasure flag.
+     *
+     * @param childContactIds Child Contacts believed to be orphaned.
+     */
+    public static void eraseOrphanedProfiles(Set<Id> childContactIds) {
+        if (childContactIds == null || childContactIds.isEmpty()) {
+            return;
+        }
+
+        ManagedProfileReader reader = new ManagedProfileReader();
+        Set<Id> proxiedIds = reader.stillProxiedAmong(childContactIds);
+
+        if (proxiedIds.size() != childContactIds.size()) {
+            Set<Id> skipped = new Set<Id>(childContactIds);
+            skipped.removeAll(proxiedIds);
+            // Refusing to flag a Contact that is not a managed profile is the
+            // fail-closed direction: the alternative is erasing an ordinary
+            // neighbour because a malformed relationship row pointed at them.
+            FimbyLogger.warn('FimbyParentGuardianService', 'eraseOrphanedProfiles',
+                'Skipping ' + skipped.size() + ' non parent-managed Contact(s): ' + skipped);
+        }
+        if (proxiedIds.isEmpty()) {
+            return;
+        }
+
+        FamilyMemberWriter writer = new FamilyMemberWriter();
+        writer.requestErasure(proxiedIds);
+
+        // Anyone still switched into one of these profiles would otherwise keep
+        // acting as a presence that is being erased.
+        writer.returnGuardiansToThemselves(proxiedIds);
+    }
+
+    /**
      * The other guardian loses access to a profile they also looked after and did not
      * ask to remove. Telling them is the minimum; the notice names who asked so it reads
      * as a household decision rather than something that broke.
@@ -391,6 +438,19 @@ public with sharing class FimbyParentGuardianService {
             ];
             return rows.isEmpty() ? null : rows[0];
         }
+
+        public Set<Id> stillProxiedAmong(Set<Id> contactIds) {
+            Set<Id> proxied = new Set<Id>();
+            for (Contact c : [
+                SELECT Id FROM Contact
+                WHERE Id IN :contactIds
+                  AND Is_Parent_Proxied__c = true
+                WITH SYSTEM_MODE
+            ]) {
+                proxied.add(c.Id);
+            }
+            return proxied;
+        }
     }
 
     /**
@@ -407,22 +467,37 @@ public with sharing class FimbyParentGuardianService {
         }
 
         public void requestErasure(Id childContactId) {
-            Database.update(
-                new Contact(
+            requestErasure(new Set<Id>{ childContactId });
+        }
+
+        public void requestErasure(Set<Id> childContactIds) {
+            if (childContactIds == null || childContactIds.isEmpty()) {
+                return;
+            }
+            List<Contact> flags = new List<Contact>();
+            for (Id childContactId : childContactIds) {
+                flags.add(new Contact(
                     Id = childContactId,
                     Deactivation_Requested__c = true,
                     // No grace window: the grace period exists so a person can log
                     // back in and change their mind, and this profile has no login.
                     Grace_Started_At__c = null
-                ),
-                AccessLevel.SYSTEM_MODE
-            );
+                ));
+            }
+            Database.update(flags, AccessLevel.SYSTEM_MODE);
         }
 
         public void returnGuardiansToThemselves(Id childContactId) {
+            returnGuardiansToThemselves(new Set<Id>{ childContactId });
+        }
+
+        public void returnGuardiansToThemselves(Set<Id> childContactIds) {
+            if (childContactIds == null || childContactIds.isEmpty()) {
+                return;
+            }
             List<Contact> switched = [
                 SELECT Id FROM Contact
-                WHERE Logged_In_As_Contact__c = :childContactId
+                WHERE Logged_In_As_Contact__c IN :childContactIds
                 WITH SYSTEM_MODE
             ];
             if (switched.isEmpty()) {

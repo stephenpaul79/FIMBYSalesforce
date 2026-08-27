@@ -8,9 +8,18 @@ private class FimbyProfileControllerTest {
         User communityUser = FimbyTestDataFactory.createCommunityUser(contact.Id, 'Customer Community User - Mobile App', true);
     }
 
+    /**
+     * Excludes parent-managed profiles: several tests add child Contacts to the same
+     * neighbourhood, and this unordered lookup would otherwise be able to return one.
+     */
     private static User getTestUser() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
-        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        Contact testContact = [
+            SELECT Id FROM Contact
+            WHERE AccountId = :testNeighbourhood.Id
+              AND Is_Parent_Proxied__c = false
+            LIMIT 1
+        ];
         return [SELECT Id, ContactId FROM User WHERE ContactId = :testContact.Id LIMIT 1];
     }
 
@@ -718,5 +727,223 @@ private class FimbyProfileControllerTest {
             'Supportee contact is not flagged either');
         System.assertEquals(null, supporteeContact.Grace_Started_At__c,
             'Supportee contact grace not started either');
+    }
+
+    @IsTest
+    static void testGetProfileDataForParentManagedChild() {
+        User testUser = getTestUser();
+        Account neighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+
+        Contact child = new Contact(
+            FirstName = 'Maya',
+            LastName = 'Test',
+            AccountId = neighbourhood.Id,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = testUser.ContactId
+        );
+        insert child;
+
+        update new Contact(
+            Id = testUser.ContactId,
+            Vouched_Status__c = 'Vouched'
+        );
+
+        insert new Support_Relationship__c(
+            Contact__c = testUser.ContactId,
+            Related_Contact__c = child.Id,
+            Status__c = 'Approved',
+            Relationship_Type__c = 'Parent_Guardian',
+            Consent_Method__c = 'Guardian',
+            Neighbourhood__c = neighbourhood.Id
+        );
+
+        update new Contact(Id = testUser.ContactId, Logged_In_As_Contact__c = child.Id);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Map<String, Object> result = FimbyProfileController.getProfileData();
+            System.assertEquals(true, result.get('isParentManaged'),
+                'Guardian viewing a child profile should see parent-managed flag');
+            System.assertEquals(true, result.get('libraryAccessViaGuardian'),
+                'Library access should follow a vouched guardian');
+        }
+        Test.stopTest();
+    }
+
+    // ============================================================
+    // getManagedProfilesAtRisk — names the child in the delete modal
+    // ============================================================
+
+    private static Contact makeManagedChild(Id nhId, Id displayParentId, String firstName) {
+        Contact child = new Contact(
+            FirstName = firstName,
+            LastName = 'Household',
+            AccountId = nhId,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = displayParentId
+        );
+        insert child;
+        return child;
+    }
+
+    private static void guardianMandate(Id nhId, Id guardianId, Id childId, String status) {
+        insert new Support_Relationship__c(
+            Contact__c = guardianId,
+            Related_Contact__c = childId,
+            Status__c = status,
+            Relationship_Type__c = 'Parent_Guardian',
+            Consent_Method__c = 'Guardian',
+            Neighbourhood__c = nhId
+        );
+    }
+
+    private static Id neighbourhoodId() {
+        return [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1].Id;
+    }
+
+    /**
+     * The published deletion policy promises we say this on screen before you confirm,
+     * so the endpoint has to name the young person rather than hint at a consequence.
+     */
+    @IsTest
+    static void managedProfilesAtRiskNamesTheChildForASoleGuardian() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact child = makeManagedChild(nhId, testUser.ContactId, 'Maya');
+        guardianMandate(nhId, testUser.ContactId, child.Id, 'Approved');
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            List<FimbyManagedProfileCascadeService.ManagedProfileRisk> risks =
+                FimbyProfileController.getManagedProfilesAtRisk();
+            System.assertEquals(1, risks.size());
+            System.assertEquals(child.Id, risks[0].contactId);
+            System.assertEquals('Maya', risks[0].firstName);
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void managedProfilesAtRiskIsEmptyWhenACoGuardianRemains() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact coGuardian = FimbyTestDataFactory.createNeighbourhoodContact(nhId, true);
+        Contact child = makeManagedChild(nhId, testUser.ContactId, 'Maya');
+        guardianMandate(nhId, testUser.ContactId, child.Id, 'Approved');
+        guardianMandate(nhId, coGuardian.Id, child.Id, 'Approved');
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            System.assertEquals(0, FimbyProfileController.getManagedProfilesAtRisk().size(),
+                'The profile carries on with the other guardian, so there is nothing to warn about');
+        }
+        Test.stopTest();
+    }
+
+    /**
+     * Deliberately pessimistic: a co-guardian already in their own grace window may yet
+     * restore, but warning and being wrong is far cheaper than staying silent.
+     */
+    @IsTest
+    static void managedProfilesAtRiskWarnsWhenTheCoGuardianIsAlreadyLeaving() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact inGrace = FimbyTestDataFactory.createNeighbourhoodContact(nhId, true);
+        Contact alreadyFlagged = FimbyTestDataFactory.createNeighbourhoodContact(nhId, true);
+        Contact child = makeManagedChild(nhId, testUser.ContactId, 'Maya');
+        guardianMandate(nhId, testUser.ContactId, child.Id, 'Approved');
+        guardianMandate(nhId, inGrace.Id, child.Id, 'Approved');
+        guardianMandate(nhId, alreadyFlagged.Id, child.Id, 'Approved');
+
+        update new List<Contact>{
+            new Contact(Id = inGrace.Id, Grace_Started_At__c = System.now()),
+            new Contact(Id = alreadyFlagged.Id, Deactivation_Requested__c = true)
+        };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            List<FimbyManagedProfileCascadeService.ManagedProfileRisk> risks =
+                FimbyProfileController.getManagedProfilesAtRisk();
+            System.assertEquals(1, risks.size(),
+                'Neither co-guardian can be relied on to keep the profile');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void managedProfilesAtRiskIgnoresSupportPersonRelationships() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact supportedAdult = FimbyTestDataFactory.createNeighbourhoodContact(nhId, true);
+        insert new Support_Relationship__c(
+            Contact__c = testUser.ContactId,
+            Related_Contact__c = supportedAdult.Id,
+            Status__c = 'Approved',
+            Relationship_Type__c = 'Support_Person',
+            Consent_Method__c = 'Written',
+            Neighbourhood__c = nhId
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            System.assertEquals(0, FimbyProfileController.getManagedProfilesAtRisk().size(),
+                'Supporting an adult who speaks for themselves is not a managed profile');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void managedProfilesAtRiskReturnsEveryChildWhenThereAreSeveral() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact maya = makeManagedChild(nhId, testUser.ContactId, 'Maya');
+        Contact liam = makeManagedChild(nhId, testUser.ContactId, 'Liam');
+        guardianMandate(nhId, testUser.ContactId, maya.Id, 'Approved');
+        guardianMandate(nhId, testUser.ContactId, liam.Id, 'Approved');
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            List<FimbyManagedProfileCascadeService.ManagedProfileRisk> risks =
+                FimbyProfileController.getManagedProfilesAtRisk();
+            System.assertEquals(2, risks.size(),
+                'Every profile that would go must be named, not just the first');
+        }
+        Test.stopTest();
+    }
+
+    /**
+     * Same gate as requestAccountDeletion: if you cannot delete the account from here,
+     * you have no business enumerating its dependants either.
+     */
+    @IsTest
+    static void managedProfilesAtRiskRefusesSomeoneActingAsAnotherIdentity() {
+        User testUser = getTestUser();
+        Id nhId = neighbourhoodId();
+        Contact child = makeManagedChild(nhId, testUser.ContactId, 'Maya');
+        guardianMandate(nhId, testUser.ContactId, child.Id, 'Approved');
+        update new Contact(Id = testUser.ContactId, Logged_In_As_Contact__c = child.Id);
+
+        Boolean refused = false;
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            try {
+                FimbyProfileController.getManagedProfilesAtRisk();
+            } catch (Exception e) {
+                refused = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused,
+            'Acting as someone else must not expose whose profiles depend on this account');
     }
 }

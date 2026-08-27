@@ -1080,6 +1080,12 @@ button.block-result-item:focus-visible {
     text-align: left;
 }
 
+.managed-profile-checking {
+    font-size: 0.875rem;
+    color: var(--fimby-text-secondary);
+    margin: 0 0 16px;
+}
+
 .skip-grace-row {
     display: flex;
     align-items: flex-start;

@@ -33,8 +33,15 @@ private class FimbyDeletionControllerTest {
             contact.Id, 'Customer Community User - Mobile App', true);
     }
 
+    /**
+     * Excludes parent-managed profiles so the verification-email tests below, which add
+     * child Contacts, cannot change what this unordered lookup returns.
+     */
     private static Contact getContact() {
-        return [SELECT Id, Email FROM Contact LIMIT 1];
+        return [
+            SELECT Id, Email, AccountId FROM Contact
+            WHERE Is_Parent_Proxied__c = false LIMIT 1
+        ];
     }
 
     private static User getCommunityUser() {
@@ -377,6 +384,131 @@ private class FimbyDeletionControllerTest {
         FimbyDeletionEmailService.sendCancellation(null, null);
         FimbyDeletionEmailService.sendCompletion(null, null);
         FimbyDeletionEmailService.sendNoActiveAccount(null, null);
+    }
+
+    /* ---------- Verification email: parent-managed profile warning ---------- */
+
+    private static Contact makeManagedChild(Id nhId, Id displayParentId, String firstName) {
+        Contact child = new Contact(
+            FirstName = firstName,
+            LastName = 'Household',
+            AccountId = nhId,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = displayParentId
+        );
+        insert child;
+        return child;
+    }
+
+    private static void guardianMandate(Id nhId, Id guardianId, Id childId) {
+        insert new Support_Relationship__c(
+            Contact__c = guardianId,
+            Related_Contact__c = childId,
+            Status__c = 'Approved',
+            Relationship_Type__c = 'Parent_Guardian',
+            Consent_Method__c = 'Guardian',
+            Neighbourhood__c = nhId
+        );
+    }
+
+    private static String capturedVerificationBody() {
+        System.assert(!FimbyDeletionEmailService.testCapturedEmails.isEmpty(),
+            'The verification email should have been captured');
+        return FimbyDeletionEmailService.testCapturedEmails[0].getPlainTextBody();
+    }
+
+    private static void resetEmailCapture() {
+        FimbyDeletionEmailService.testEmailsSent = 0;
+        FimbyDeletionEmailService.testCapturedEmails =
+            new List<Messaging.SingleEmailMessage>();
+    }
+
+    /**
+     * The Settings flow warns on screen before you confirm. This path has no screen at
+     * all, so the verification email is the last moment a last guardian can still reply
+     * CANCEL and keep both profiles.
+     */
+    @IsTest
+    static void verificationEmailNamesAnAtRiskManagedProfile() {
+        Contact contact = getContact();
+        User u = getCommunityUser();
+        Account nh = [SELECT Id FROM Account WHERE Id = :contact.AccountId LIMIT 1];
+        // The mandate must hang off the User's own Contact: that is the Contact the
+        // email service resolves from userId.
+        Contact child = makeManagedChild(nh.Id, u.ContactId, 'Maya');
+        guardianMandate(nh.Id, u.ContactId, child.Id);
+
+        System.assertEquals(1,
+            FimbyManagedProfileCascadeService.atRiskIfGuardianDeparts(u.ContactId).size(),
+            'Fixture check: the User\u2019s Contact must be the last guardian');
+
+        // Case insert fires its own intake verification; reset after it so the capture
+        // below holds only the email this test asked for.
+        Case c = insertDeletionCase(contact.Id, contact.Email, 'Delete my account');
+        resetEmailCapture();
+
+        Test.startTest();
+        FimbyDeletionEmailService.sendVerification(c.Id, u.Id);
+        Test.stopTest();
+
+        String body = capturedVerificationBody();
+        System.assert(body.contains('Maya'),
+            'The warning must name the young person, not hint at a consequence');
+        System.assert(body.contains('last'),
+            'The email should say the neighbour is the last approved guardian');
+        System.assert(body.contains('CONFIRM DELETE'),
+            'The protocol tokens must survive the insertion');
+        System.assert(body.contains('CANCEL'),
+            'The way out has to stay visible alongside the new warning');
+    }
+
+    @IsTest
+    static void verificationEmailStaysSilentWhenACoGuardianRemains() {
+        Contact contact = getContact();
+        User u = getCommunityUser();
+        Account nh = [SELECT Id FROM Account WHERE Id = :contact.AccountId LIMIT 1];
+        Contact coGuardian = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact child = makeManagedChild(nh.Id, u.ContactId, 'Maya');
+        guardianMandate(nh.Id, u.ContactId, child.Id);
+        guardianMandate(nh.Id, coGuardian.Id, child.Id);
+
+        Case c = insertDeletionCase(contact.Id, contact.Email, 'Delete my account');
+        resetEmailCapture();
+
+        Test.startTest();
+        FimbyDeletionEmailService.sendVerification(c.Id, u.Id);
+        Test.stopTest();
+
+        System.assert(!capturedVerificationBody().contains('Maya'),
+            'The profile carries on with the other guardian, so there is nothing to say');
+    }
+
+    /**
+     * Confirmation parsing depends on this body, so a neighbour who looks after nobody
+     * must receive it byte-for-byte unchanged.
+     */
+    @IsTest
+    static void verificationEmailIsUnchangedForANonGuardian() {
+        Contact contact = getContact();
+        User u = getCommunityUser();
+
+        Case c = insertDeletionCase(contact.Id, contact.Email, 'Delete my account');
+        resetEmailCapture();
+
+        Test.startTest();
+        FimbyDeletionEmailService.sendVerification(c.Id, u.Id);
+        Test.stopTest();
+
+        String body = capturedVerificationBody();
+        System.assert(
+            body.contains('Either way, nothing will change unless we hear '
+                + '"CONFIRM DELETE" from this address.\n\nOnce you confirm, we wait '
+                + '24 more hours'),
+            'With nothing at risk the two paragraphs must remain adjacent and unreflowed'
+        );
+        System.assert(!body.contains('parent-managed'),
+            'No warning for someone who looks after nobody');
     }
 
     @IsTest

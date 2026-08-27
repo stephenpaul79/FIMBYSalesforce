@@ -1461,4 +1461,196 @@ static void testDeactivateRelationship_CommunityGroupRep() {
         System.assertEquals(before.Organization_Contact__c, after.Organization_Contact__c,
             'LWC path must not relink the organization contact');
     }
+
+    // ============================================================
+    // Erasure-flagged identities disappear immediately
+    //
+    // A guardian removing a child profile flags it and leaves the scrub to the nightly
+    // batch. The notice sent to the other guardians says the profile is "no longer
+    // available to switch to", so it has to stop being listed and switchable now, not
+    // up to a day later.
+    // ============================================================
+
+    private static Contact createManagedChild(String firstName, Boolean flaggedForErasure) {
+        Account nh = getNeighbourhood();
+        User helperUser = getHelperUser();
+
+        Contact child = new Contact(
+            FirstName = firstName,
+            LastName = 'ManagedProfile',
+            AccountId = nh.Id,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = helperUser.ContactId
+        );
+        insert child;
+
+        insert new Support_Relationship__c(
+            Contact__c = helperUser.ContactId,
+            Related_Contact__c = child.Id,
+            Relationship_Type__c = 'Parent_Guardian',
+            Consent_Method__c = 'Guardian',
+            Status__c = 'Approved',
+            Neighbourhood__c = nh.Id
+        );
+
+        if (flaggedForErasure) {
+            update new Contact(
+                Id = child.Id,
+                Deactivation_Requested__c = true,
+                Grace_Started_At__c = null
+            );
+        }
+        return child;
+    }
+
+    private static Support_Relationship__c mandateFor(Id childId) {
+        return [
+            SELECT Id FROM Support_Relationship__c
+            WHERE Related_Contact__c = :childId LIMIT 1
+        ];
+    }
+
+    @IsTest
+    static void aRemovedProfileIsGoneFromTheIdentitySwitcher() {
+        Contact flagged = createManagedChild('Removed', true);
+        Contact kept = createManagedChild('Staying', false);
+        User testUser = getHelperUser();
+
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            List<Map<String, Object>> identities =
+                FimbySupportRelationshipController.getAvailableIdentities();
+            Test.stopTest();
+
+            Set<Id> offered = new Set<Id>();
+            for (Map<String, Object> identity : identities) {
+                offered.add((Id) identity.get('targetContactId'));
+            }
+            System.assertEquals(false, offered.contains(flagged.Id),
+                'A profile queued for erasure must stop being offered straight away');
+            System.assertEquals(true, offered.contains(kept.Id),
+                'An unflagged profile is unaffected by the filter');
+        }
+    }
+
+    /**
+     * The null-lookup trap: organization-backed identities have no Related_Contact__c,
+     * and a bare "= false" on that lookup would silently hide every community group.
+     */
+    @IsTest
+    static void anOrganizationIdentityStillAppearsAfterTheErasureFilter() {
+        createCommunityGroupRelationship('Approved');
+        createManagedChild('Removed', true);
+        User testUser = getHelperUser();
+
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            List<Map<String, Object>> identities =
+                FimbySupportRelationshipController.getAvailableIdentities();
+            Test.stopTest();
+
+            System.assertEquals(1, identities.size(),
+                'The community-group identity survives; only the erased child is filtered');
+        }
+    }
+
+    @IsTest
+    static void aRemovedProfileIsGoneFromManageIdentities() {
+        Contact flagged = createManagedChild('Removed', true);
+        Contact kept = createManagedChild('Staying', false);
+        User testUser = getHelperUser();
+
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            Map<String, Object> result =
+                FimbySupportRelationshipController.getManagedRelationships();
+            Test.stopTest();
+
+            List<Support_Relationship__c> iSupport =
+                (List<Support_Relationship__c>) result.get('peopleISupport');
+            Set<Id> listed = new Set<Id>();
+            for (Support_Relationship__c row : iSupport) {
+                listed.add(row.Related_Contact__c);
+            }
+            System.assertEquals(false, listed.contains(flagged.Id),
+                'A removed profile must leave the Manage Identities list immediately');
+            System.assertEquals(true, listed.contains(kept.Id));
+        }
+    }
+
+    @IsTest
+    static void switchingIntoARemovedProfileIsRefused() {
+        Contact flagged = createManagedChild('Removed', true);
+        Support_Relationship__c rel = mandateFor(flagged.Id);
+        User testUser = getHelperUser();
+
+        Boolean refused = false;
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            try {
+                FimbySupportRelationshipController.switchIdentity(rel.Id);
+            } catch (Exception e) {
+                refused = true;
+            }
+            Test.stopTest();
+        }
+
+        System.assertEquals(true, refused,
+            'An Approved mandate is not enough when the profile itself is being erased');
+        System.assertEquals(null,
+            [SELECT Logged_In_As_Contact__c FROM Contact WHERE Id = :testUser.ContactId]
+                .Logged_In_As_Contact__c,
+            'A refused switch must leave the guardian as themselves');
+    }
+
+    /**
+     * The deep-link path. A stale notification tap must not reopen a profile whose
+     * guardian already removed it.
+     */
+    @IsTest
+    static void deepLinkingIntoARemovedProfileIsRefused() {
+        Contact flagged = createManagedChild('Removed', true);
+        User testUser = getHelperUser();
+
+        Boolean refused = false;
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            try {
+                FimbySupportRelationshipController.switchIdentityToContact(flagged.Id);
+            } catch (Exception e) {
+                refused = true;
+            }
+            Test.stopTest();
+        }
+
+        System.assertEquals(true, refused,
+            'The existing "no longer have access" refusal should fire on its own');
+    }
+
+    /**
+     * The banner gate reads off the same list, so a guardian whose only other identity
+     * was just removed goes back to being a single-identity neighbour.
+     */
+    @IsTest
+    static void aGuardianWhoseOnlyChildWasRemovedHasNoSecondIdentity() {
+        createManagedChild('Removed', true);
+        User testUser = getHelperUser();
+
+        System.runAs(testUser) {
+            FimbyIdentityRepository.clearCache();
+            Test.startTest();
+            List<Map<String, Object>> identities =
+                FimbySupportRelationshipController.getAvailableIdentities();
+            Test.stopTest();
+
+            System.assertEquals(0, identities.size(),
+                'With the only switchable profile removed there are no extra identities');
+        }
+    }
 }

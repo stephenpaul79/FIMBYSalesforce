@@ -369,4 +369,121 @@ private class FimbyParentGuardianServiceTest {
         System.assertEquals(true, refused,
             'An adult neighbour speaks for themselves and is not removable this way');
     }
+
+    // ============================================================
+    // eraseOrphanedProfiles — the bulk seam used by the deletion cascade
+    // ============================================================
+
+    private static Contact makeChild(Id nhId, Id displayParentId, String firstName) {
+        Contact child = new Contact(
+            FirstName = firstName,
+            LastName = 'Household',
+            AccountId = nhId,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = displayParentId
+        );
+        insert child;
+        return child;
+    }
+
+    private static Boolean isFlagged(Id contactId) {
+        return [SELECT Deactivation_Requested__c FROM Contact WHERE Id = :contactId]
+            .Deactivation_Requested__c;
+    }
+
+    /**
+     * The cascade can hand over several children at once when a guardian who looked
+     * after siblings leaves, so this has to be one DML rather than a loop.
+     */
+    @isTest
+    static void erasingOrphanedProfilesFlagsEveryChildWithNoGraceWindow() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        Contact maya = makeChild(nh.Id, parent.Id, 'Maya');
+        Contact liam = makeChild(nh.Id, parent.Id, 'Liam');
+
+        Test.startTest();
+        FimbyParentGuardianService.eraseOrphanedProfiles(
+            new Set<Id>{ maya.Id, liam.Id }
+        );
+        Test.stopTest();
+
+        for (Contact child : [
+            SELECT Deactivation_Requested__c, Grace_Started_At__c
+            FROM Contact WHERE Id IN (:maya.Id, :liam.Id)
+        ]) {
+            System.assertEquals(true, child.Deactivation_Requested__c);
+            System.assertEquals(null, child.Grace_Started_At__c,
+                'A profile with no login has no use for a change-of-mind window');
+        }
+    }
+
+    @isTest
+    static void erasingOrphanedProfilesReturnsEveryoneSwitchedIntoThemToThemselves() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        List<Contact> others = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 1, true);
+        Contact child = makeChild(nh.Id, parent.Id, 'Maya');
+
+        update new List<Contact>{
+            new Contact(Id = parent.Id, Logged_In_As_Contact__c = child.Id,
+                        Logged_In_As_Neighbourhood__c = nh.Id),
+            new Contact(Id = others[0].Id, Logged_In_As_Contact__c = child.Id,
+                        Logged_In_As_Neighbourhood__c = nh.Id)
+        };
+
+        Test.startTest();
+        FimbyParentGuardianService.eraseOrphanedProfiles(new Set<Id>{ child.Id });
+        Test.stopTest();
+
+        for (Contact adult : [
+            SELECT Logged_In_As_Contact__c, Logged_In_As_Neighbourhood__c
+            FROM Contact WHERE Id IN (:parent.Id, :others[0].Id)
+        ]) {
+            System.assertEquals(null, adult.Logged_In_As_Contact__c,
+                'Nobody may be left acting as a profile being erased');
+            System.assertEquals(null, adult.Logged_In_As_Neighbourhood__c);
+        }
+    }
+
+    /**
+     * Fails closed. A malformed relationship row pointing at an ordinary neighbour must
+     * never be able to queue that neighbour's account for erasure.
+     */
+    @isTest
+    static void erasingOrphanedProfilesRefusesContactsThatAreNotManagedProfiles() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        List<Contact> others = FimbyTestDataFactory.createNeighbourhoodContacts(nh.Id, 1, true);
+        Contact child = makeChild(nh.Id, parent.Id, 'Maya');
+
+        Test.startTest();
+        FimbyParentGuardianService.eraseOrphanedProfiles(
+            new Set<Id>{ child.Id, others[0].Id }
+        );
+        Test.stopTest();
+
+        System.assertEquals(true, isFlagged(child.Id),
+            'The real managed profile is still erased');
+        System.assertEquals(false, isFlagged(others[0].Id),
+            'An adult neighbour is never erased through the family path');
+    }
+
+    @isTest
+    static void erasingOrphanedProfilesIgnoresEmptyInputAndRepeats() {
+        Contact parent = guardian();
+        Account nh = [SELECT Id FROM Account WHERE Id = :parent.AccountId];
+        Contact child = makeChild(nh.Id, parent.Id, 'Maya');
+
+        Test.startTest();
+        FimbyParentGuardianService.eraseOrphanedProfiles(null);
+        FimbyParentGuardianService.eraseOrphanedProfiles(new Set<Id>());
+        FimbyParentGuardianService.eraseOrphanedProfiles(new Set<Id>{ child.Id });
+        FimbyParentGuardianService.eraseOrphanedProfiles(new Set<Id>{ child.Id });
+        Test.stopTest();
+
+        System.assertEquals(true, isFlagged(child.Id),
+            'A nightly job must be safe to run twice over the same child');
+    }
 }

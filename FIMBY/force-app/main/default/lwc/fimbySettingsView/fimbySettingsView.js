@@ -14,6 +14,7 @@ import updateSettingsToggle from '@salesforce/apex/FimbyProfileController.update
 import updatePrivacyPreference from '@salesforce/apex/FimbyProfileController.updatePrivacyPreference';
 import triggerPasswordReset from '@salesforce/apex/FimbyProfileController.triggerPasswordReset';
 import requestAccountDeletion from '@salesforce/apex/FimbyProfileController.requestAccountDeletion';
+import getManagedProfilesAtRisk from '@salesforce/apex/FimbyProfileController.getManagedProfilesAtRisk';
 import getBlockedContacts from '@salesforce/apex/FimbyConversationController.getBlockedContacts';
 import unblockContact from '@salesforce/apex/FimbyConversationController.unblockContact';
 import searchNeighboursForBlock from '@salesforce/apex/FimbyConversationController.searchNeighboursForBlock';
@@ -41,6 +42,14 @@ function isNotificationToggleEnabled(value) {
 /** Include Sundays is opt-in at the gate (FimbyPushBatchJob / FimbyEmailAlertBatchJob). */
 function isOptInToggleEnabled(value) {
     return value === true;
+}
+
+/** Joins first names for confirmation copy without assuming anyone's pronouns. */
+function joinFirstNames(names) {
+    if (names.length === 1) {
+        return names[0];
+    }
+    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 const QUIET_HOURS_VALUES = [
@@ -103,6 +112,9 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     // Account deletion (graceful default, opt-in immediate)
     @track showDeleteConfirm = false;
     @track skipGrace = false;
+    @track managedProfilesAtRisk = [];
+    @track isCheckingManagedProfiles = false;
+    @track managedProfileCheckFailed = false;
     @track isDeleting = false;
 
     // Password reset
@@ -282,6 +294,59 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
               'posts, library items, messages, and personal data are permanently ' +
               'removed. You can restore your account anytime in those 30 days using ' +
               'the link we\u2019ll email you.';
+    }
+
+    /**
+     * Confirm stays disabled until the dependants check settles, so nobody can
+     * confirm a deletion a half-second before being told a child profile goes too.
+     */
+    get deleteConfirmDisabled() {
+        return this.isDeleting || this.isCheckingManagedProfiles;
+    }
+
+    /**
+     * Names the parent-managed profiles that go with this account.
+     *
+     * The banner renders nothing on an empty string, so a neighbour who looks after
+     * nobody sees no extra warning. A failed check falls back to the generic version
+     * rather than staying silent: the consequence is too large to omit just because
+     * we could not enumerate it.
+     */
+    get managedProfileWarning() {
+        if (this.isCheckingManagedProfiles) {
+            return '';
+        }
+        if (this.managedProfileCheckFailed) {
+            return 'We could not check whether any parent-managed profiles depend on ' +
+                'your account. If you are the last guardian of a young person\u2019s ' +
+                'profile, it is removed along with your account.';
+        }
+
+        const names = this.managedProfilesAtRisk
+            .map(profile => profile.firstName)
+            .filter(name => !!name);
+        if (!names.length) {
+            return '';
+        }
+
+        const joined = joinFirstNames(names);
+        const isSingle = names.length === 1;
+        const subject = isSingle
+            ? `${joined}\u2019s parent-managed profile`
+            : `The parent-managed profiles for ${joined}`;
+
+        if (this.skipGrace) {
+            return `${subject} will be removed during tonight\u2019s cleanup with ` +
+                'yours. This cannot be undone.';
+        }
+
+        const keepClause = isSingle
+            ? `Restoring a guardian account keeps ${joined}\u2019s profile.`
+            : 'Restoring a guardian account keeps them.';
+        const removalClause = isSingle
+            ? 'If no guardian remains, both profiles are permanently removed together.'
+            : 'If no guardian remains, they are permanently removed along with yours.';
+        return `${subject} will stay for the same 30 days. ${keepClause} ${removalClause}`;
     }
 
     get hasBlockedContacts() { return this.blockedContacts.length > 0; }
@@ -948,14 +1013,35 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     // ============================================
     // ACCOUNT DELETION (graceful default + skip-grace escape valve)
     // ============================================
-    handleDeleteClick() {
+    /**
+     * Opens the modal straight away and loads the dependants check behind it, so the
+     * dialog never appears to hang. Re-checked on every open rather than cached: a
+     * co-guardian may have started their own deletion since the last look.
+     */
+    async handleDeleteClick() {
         this.skipGrace = false;
+        this.managedProfilesAtRisk = [];
+        this.managedProfileCheckFailed = false;
+        this.isCheckingManagedProfiles = true;
         this.showDeleteConfirm = true;
+
+        try {
+            const risks = await getManagedProfilesAtRisk();
+            this.managedProfilesAtRisk = risks || [];
+        } catch (error) {
+            // Never block the deletion on this check; fall back to generic copy.
+            this.managedProfileCheckFailed = true;
+        } finally {
+            this.isCheckingManagedProfiles = false;
+        }
     }
 
     handleDeleteCancel() {
         this.showDeleteConfirm = false;
         this.skipGrace = false;
+        this.managedProfilesAtRisk = [];
+        this.managedProfileCheckFailed = false;
+        this.isCheckingManagedProfiles = false;
     }
 
     handleSkipGraceToggle(event) {

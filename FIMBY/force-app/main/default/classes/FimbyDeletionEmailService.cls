@@ -54,6 +54,7 @@ public without sharing class FimbyDeletionEmailService {
             '  - Reply with the word CANCEL, or\n' +
             '  - Just ignore this email.\n\n' +
             'Either way, nothing will change unless we hear "CONFIRM DELETE" from this address.\n\n' +
+            managedProfileNotice(userId) +
             'Once you confirm, we wait 24 more hours before doing anything irreversible. If you change your mind, write back to us in that window and we can usually pull the request.\n\n' +
             'For more on what happens when you delete your account, see ' + FimbyPublicWebsiteLinks.getUrl('Delete_Account_Docs') + '.\n\n' +
             'With care,\n' +
@@ -195,6 +196,74 @@ public without sharing class FimbyDeletionEmailService {
         }
         List<User> users = [SELECT FirstName FROM User WHERE Id = :userId LIMIT 1];
         return users.isEmpty() ? null : users[0].FirstName;
+    }
+
+    /**
+     * @description Warns a last guardian that a young person's parent-managed profile
+     * is deleted along with their own account.
+     *
+     * The in-app Settings flow says this on screen before you confirm. This path has
+     * no screen at all, so the verification email is the last point at which someone
+     * can still reply CANCEL and keep both profiles — which makes it the right place
+     * for the notice rather than the completion email that arrives too late to act on.
+     *
+     * Fails soft on purpose, unlike the batch cascade. Someone is entitled to request
+     * deletion of their own account, so a failure to enumerate their dependants must
+     * not block the request; it degrades to the unchanged body and logs.
+     *
+     * @param userId The User asking to be deleted.
+     * @return A paragraph ending in a blank line, or '' when nothing is at risk.
+     */
+    private static String managedProfileNotice(Id userId) {
+        try {
+            List<User> users = [
+                SELECT ContactId FROM User WHERE Id = :userId LIMIT 1
+            ];
+            if (users.isEmpty() || users[0].ContactId == null) {
+                return '';
+            }
+
+            List<FimbyManagedProfileCascadeService.ManagedProfileRisk> risks =
+                FimbyManagedProfileCascadeService.atRiskIfGuardianDeparts(users[0].ContactId);
+            if (risks.isEmpty()) {
+                return '';
+            }
+
+            List<String> names = new List<String>();
+            for (FimbyManagedProfileCascadeService.ManagedProfileRisk risk : risks) {
+                names.add(risk.firstName);
+            }
+            String joined = joinNames(names);
+
+            Boolean isSingle = names.size() == 1;
+            String clause = isSingle
+                ? joined + '\'s parent-managed profile is removed'
+                : 'The parent-managed profiles for ' + joined + ' are removed';
+            String cancelTail = isSingle
+                ? 'that profile stays too'
+                : 'those profiles stay too';
+
+            return 'One more thing you should know before you confirm: you are the last '
+                + 'approved guardian of a parent-managed profile on FIMBY. ' + clause
+                + ' together with your account, because a young person\'s profile is '
+                + 'never left without an adult responsible for it. If you reply CANCEL '
+                + 'instead, ' + cancelTail + '.\n\n';
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyDeletionEmailService', 'managedProfileNotice', e);
+            return '';
+        }
+    }
+
+    /** Joins first names for email copy without assuming anyone's pronouns. */
+    private static String joinNames(List<String> names) {
+        if (names.size() == 1) {
+            return names[0];
+        }
+        List<String> leading = new List<String>();
+        for (Integer i = 0; i < names.size() - 1; i++) {
+            leading.add(names[i]);
+        }
+        return String.join(leading, ', ') + ' and ' + names[names.size() - 1];
     }
 
     @TestVisible
