@@ -240,6 +240,63 @@ After this the neighbour can submit `/account-paused` again and a fresh link wil
 
 ---
 
+## Parent-managed profiles and the no-orphan cascade
+
+A parent-managed (proxied) child profile is a Contact with a presence and no login. It exists only because an adult is approved to look after it, so it must never outlive its last approved guardian. `FIMBY Website/delete-account.html` states this publicly; the behaviour below is what makes those sentences true.
+
+### What happens when a guardian's account is scrubbed
+
+`FimbyAccountDeactivationBatch.cascadeManagedProfiles` runs per chunk, before any content cleanup:
+
+1. **Capture first.** `FimbyManagedProfileCascadeService.candidateChildrenOf` records the children held up by this chunk's adults *while the mandates still exist*. A pre-delete check cannot work: Salesforce may hand two guardians of the same child to different chunks, and each would see the other still standing.
+2. **Split the relationship cleanup.** Rows where the departing adult is a party (`Contact__c` / `Related_Contact__c`) are deleted. Rows where they only appear in `Approved_By__c` / `Ended_By__c` belong to other people — those lookups are nulled and the row survives. The old single-query delete could destroy a surviving co-guardian's mandate simply because the departing adult had approved it.
+3. **Resolve after removal.** `resolveAfterGuardianRemoval` re-queries remaining Approved `Parent_Guardian` mandates. Whichever chunk removed the final one sees zero survivors and flags the child through `FimbyParentGuardianService.eraseOrphanedProfiles` (no grace window — there is no login to change its mind with).
+4. **Same-run scrub.** Orphans with no active lending are merged into this `execute()`'s cleanup set, so the adult and the child are anonymized on the same nightly cleanup. Restoring the adult inside their 30 days brings the child back with them, because nothing touches the child during grace.
+
+Only an **Approved `Parent_Guardian`** mandate keeps a profile alive. `Support_Person`, Pending, Inactive, Revoked, and rows pointing at a Contact that is not `Is_Parent_Proxied__c` do not, and a malformed row can never erase an ordinary adult.
+
+### Child lending deferral
+
+An orphaned child holding a borrowed item is flagged but skipped, exactly as an adult with an open loan would be. Their remaining relationship rows are left in place until the run that actually scrubs them. Once the loan is returned, the next nightly run finishes the job.
+
+### Silent display-parent repair
+
+When another approved guardian survives, the child keeps their profile and `Proxied_By_Contact__c` is repointed to the oldest surviving mandate (by `CreatedDate`, then lowest Id, so a re-run cannot pick a different adult). **No notification is sent.** Telling the surviving guardian would disclose that another adult deleted their account, which is safety-sensitive; the profile simply carries on unchanged, which is what the published copy promises.
+
+### Log and rollback expectations — do not read silence as success
+
+The cascade is deliberately fail-closed. If it throws, the exception escapes `execute()` so Salesforce rolls the whole chunk back, including the mandate deletion: a guardian must never disappear while their child stays behind unflagged.
+
+The consequence is that **a deterministic cascade bug rolls the same chunk back every night, forever, and the batch looks healthy from the outside** — the adults stay flagged, no job shows as failed. When investigating, check `Error_Log__c` for a repeating `Class_Name__c = 'FimbyAccountDeactivationBatch'` signature rather than assuming quiet Apex Jobs means everything ran.
+
+Each `execute()` also logs one summary line (`cascadeManagedProfiles`) carrying candidate, orphan, repaired, and lending-deferred counts.
+
+Merging unheld orphans widens the cleanup set beyond the batch size of 10, so the DML row ceiling now depends on child content volume as well as adult content volume. If that ever proves too large, **reduce the batch size in the scheduler** — do not defer children to a later night, which would break the same-nightly-cleanup promise.
+
+### Warning the guardian before they confirm
+
+Both deletion entry points name the children at risk:
+
+- **Settings modal** — `FimbyProfileController.getManagedProfilesAtRisk` (non-cacheable, refreshed each time the modal opens, acting-as-self only) drives a warning banner above the skip-grace checkbox. Confirm stays disabled until the check settles; if the check fails, generic parent-managed copy is shown rather than nothing.
+- **Email-to-Case verification email** — `FimbyDeletionEmailService.sendVerification` inserts the same warning, because that path has no screen anywhere in the journey and the verification email is the last moment a guardian can still reply CANCEL. This lookup **fails soft**: if it throws, it logs to `Error_Log__c` and sends the unchanged body rather than blocking a deletion the neighbour is entitled to request. When nothing is at risk the body is byte-for-byte unchanged, because confirmation parsing depends on it.
+
+The warning is intentionally more pessimistic than the batch: a co-guardian already in their own grace window does not count as dependable, so a guardian may be warned about a child who ultimately survives. Over-warning is the correct direction — a surprise warning costs a moment of concern, a missing one costs a child's profile with no notice.
+
+### The inverse path: removing a child while the guardian stays
+
+`FimbyParentGuardianService.deleteManagedProfile`, reached through **Manage Identities**, lets any one approved guardian remove a child profile without deleting their own account. It flags the child with no grace, returns switched guardians to themselves, and notifies the other guardians.
+
+The **scrub still waits for the nightly batch**, but the profile is hidden from the identity layer immediately, which is what the co-guardian notice already claims. `FimbySupportRelationshipController` filters or refuses on `Deactivation_Requested__c` at four surfaces: `getAvailableIdentities` (header switcher and the `hasMultipleIdentities` banner gate), `getManagedRelationships` (the Manage Identities list), `switchIdentity`, and `IdentityReader.approvedMandateFor` (the `?actAs=` notification deep link).
+
+Those filters are written null-tolerantly (`Related_Contact__c = NULL OR Related_Contact__r.Deactivation_Requested__c = false`) because organization-backed identities have no `Related_Contact__c`, and a bare `= false` on a null lookup would silently hide every community-group identity. If community-group identities ever vanish from the switcher, that predicate is the first place to look.
+
+### Not covered by this release
+
+- **No historical-orphan backfill and no nightly integrity sweep.** Scope is future account deletions only; there were no non-test child profiles in the org at the time of the change.
+- **A moderator or admin directly revoking or deleting the last guardian relationship can still orphan a child.** That broader invariant is a separate follow-up.
+
+---
+
 ## Profile permissions to apply
 
 The deployment created new components. The sys admin should add these to the relevant profiles:
