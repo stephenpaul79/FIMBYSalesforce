@@ -110,14 +110,6 @@
             <!-- Greeting (scrolls with feed content) -->
             <template lwc:if={greetingText}>
                 <div class="greeting-section">
-                    <template lwc:if={showWelcomeBack}>
-                        <div class="welcome-back-banner">
-                            <span class="welcome-back-text">{welcomeBackText}</span>
-                            <button class="welcome-back-dismiss" onclick={dismissWelcomeBack} aria-label="Dismiss">
-                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
-                            </button>
-                        </div>
-                    </template>
                     <h2 class="greeting-text">{greetingText}</h2>
                     <template lwc:if={greetingSubtext}>
                         <p class="greeting-subtext">{greetingSubtext}</p>
@@ -279,6 +271,7 @@
                                                 loading="lazy"
                                                 decoding="async"
                                                 onload={handleThumbLoad}
+                                                onerror={handleLibraryThumbError}
                                                 data-original={feedItem.imageUrl} />
                                         </div>
                                     </template>

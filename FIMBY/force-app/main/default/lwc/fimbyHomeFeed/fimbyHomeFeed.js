@@ -7,7 +7,7 @@ import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 
 import getUnifiedFeed from '@salesforce/apex/FimbyHomeController.getUnifiedFeed';
-import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, SIZES } from 'c/fimbyImageUrl';
+import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, fallbackThumbnailToOriginal, SIZES } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getActiveSeasonalTheme from '@salesforce/apex/FimbyProfileController.getActiveSeasonalTheme';
 import updateLastAppVisit from '@salesforce/apex/FimbyProfileController.updateLastAppVisit';
@@ -136,11 +136,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     actingAsContactId = null;
 
     @track _userFirstName = '';
-    @track _showWelcomeBack = false;
     @track _showBioBanner = false;
     @track _showTourBanner = false;
     @track _showIntroPostModal = false;
-    @track _welcomeBackText = '';
     @track _seasonalTitle = '';
     @track _memesEnabled = false;
     _greetingInitialized = false;
@@ -1464,6 +1462,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         event.target.classList.add('is-loaded');
     }
 
+    handleLibraryThumbError(event) {
+        if (fallbackThumbnailToOriginal(event)) {
+            event.target.classList.add('is-loaded');
+        }
+    }
+
     /* ===============================================================
      * Greeting + Welcome-Back
      * =============================================================== */
@@ -1479,18 +1483,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get greetingSubtext() {
         if (this._seasonalTitle) return this._seasonalTitle;
         return '';
-    }
-
-    get showWelcomeBack() {
-        return this._showWelcomeBack;
-    }
-
-    get welcomeBackText() {
-        return this._welcomeBackText;
-    }
-
-    dismissWelcomeBack() {
-        this._showWelcomeBack = false;
     }
 
     async _initGreeting() {
@@ -1516,18 +1508,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
             this._memesEnabled = celebCtx?.memesEnabled !== false;
 
-            const lastVisitStr = localStorage.getItem('fimby-last-visit');
-            if (lastVisitStr) {
-                const lastVisit = new Date(lastVisitStr);
-                const now = new Date();
-                const daysSince = Math.floor((now - lastVisit) / (1000 * 60 * 60 * 24));
-                if (daysSince >= 3) {
-                    this._showWelcomeBack = true;
-                    this._welcomeBackText = `Welcome back! Your neighbours have been busy since you were last here.`;
-                }
-            }
-
-            try { localStorage.setItem('fimby-last-visit', new Date().toISOString()); } catch { /* storage unavailable */ }
             this._throttledUpdateLastAppVisit();
 
             if (seasonalTheme?.fireOnLogin && celebCtx?.confettiEnabled !== false) {
