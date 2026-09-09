@@ -221,6 +221,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         if (this._badgeCountHandler) window.removeEventListener('fimbybadgecounts', this._badgeCountHandler);
         if (this._windowScrollHandler) window.removeEventListener('scroll', this._windowScrollHandler);
         if (this._escapeHandler) window.removeEventListener('keydown', this._escapeHandler);
+        if (this._swipeHideTimer) clearTimeout(this._swipeHideTimer);
     }
 
     _measureHeaderHeight() {
@@ -442,6 +443,21 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     // ── Mobile swipe-to-reveal ────────────────────────
 
+    _revealSwipeActions(wrapper) {
+        if (wrapper) wrapper.classList.add('is-revealing');
+    }
+
+    _concealSwipeActions(wrapper, delayMs = 200) {
+        if (!wrapper) return;
+        const id = wrapper.dataset.threadId;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        const timer = setTimeout(() => {
+            if (this._openSwipeThreadId === id || (this._swiping && this._swipeThreadId === id)) return;
+            wrapper.classList.remove('is-revealing');
+        }, delayMs);
+        this._swipeHideTimer = timer;
+    }
+
     handleSwipeStart(event) {
         if (!event.touches || event.touches.length !== 1) return;
         if (event.target.closest('.swipe-action')) return;
@@ -468,6 +484,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         if (!this._swiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
             this._swiping = true;
+            this._revealSwipeActions(event.currentTarget);
         }
         if (!this._swiping) return;
 
@@ -490,7 +507,8 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     handleSwipeEnd(event) {
         if (!this._swipeThreadId) return;
-        if (this._swiping) {
+        const didSwipe = this._swiping;
+        if (didSwipe) {
             event.preventDefault();
         }
 
@@ -502,7 +520,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         this._swipeThreadId = null;
         this._swiping = false;
 
-        if (!fg) return;
+        if (!didSwipe || !fg) return;
 
         fg.style.transition = 'transform 0.2s ease';
 
@@ -510,7 +528,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
         if (wasOpen) {
             if (delta > -SWIPE_ACTION_WIDTH / 2) {
-                this._closeSwipeElement(fg, threadId);
+                this._closeSwipeElement(fg, threadId, wrapper);
                 return;
             }
             fg.style.transform = `translateX(-${SWIPE_ACTION_WIDTH}px)`;
@@ -528,6 +546,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             setTimeout(() => {
                 fg.style.transition = 'transform 0.2s ease';
                 fg.style.transform = 'translateX(0)';
+                this._concealSwipeActions(wrapper);
             }, 200);
 
             if (action && threadType) {
@@ -539,7 +558,33 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             this._openSwipeThreadId = threadId;
         } else {
             fg.style.transform = 'translateX(0)';
+            this._concealSwipeActions(wrapper);
         }
+    }
+
+    handleSwipeCancel(event) {
+        if (!this._swipeThreadId) return;
+        const wrapper = event.currentTarget;
+        const threadId = this._swipeThreadId;
+        const didSwipe = this._swiping;
+        const wasOpen = this._openSwipeThreadId === threadId;
+        this._swipeThreadId = null;
+        this._swiping = false;
+        if (!didSwipe) return;
+
+        const fg = wrapper.querySelector('.swipe-foreground');
+        if (wasOpen) {
+            if (fg) {
+                fg.style.transition = 'transform 0.2s ease';
+                fg.style.transform = `translateX(-${SWIPE_ACTION_WIDTH}px)`;
+            }
+            return;
+        }
+        if (fg) {
+            fg.style.transition = 'transform 0.2s ease';
+            fg.style.transform = 'translateX(0)';
+        }
+        this._concealSwipeActions(wrapper);
     }
 
     _closeSwipe() {
@@ -551,15 +596,17 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
                 fg.style.transition = 'transform 0.2s ease';
                 fg.style.transform = 'translateX(0)';
             }
+            this._concealSwipeActions(wrapper);
         }
         this._openSwipeThreadId = null;
     }
 
-    _closeSwipeElement(fg, threadId) {
+    _closeSwipeElement(fg, threadId, wrapper) {
         fg.style.transform = 'translateX(0)';
         if (this._openSwipeThreadId === threadId) {
             this._openSwipeThreadId = null;
         }
+        this._concealSwipeActions(wrapper);
     }
 
     handleSwipeActionClick(event) {

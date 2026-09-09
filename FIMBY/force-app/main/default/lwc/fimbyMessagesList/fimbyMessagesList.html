@@ -64,7 +64,8 @@
                          data-thread-id={thread.threadId}
                          ontouchstart={handleSwipeStart}
                          ontouchmove={handleSwipeMove}
-                         ontouchend={handleSwipeEnd}>
+                         ontouchend={handleSwipeEnd}
+                         ontouchcancel={handleSwipeCancel}>
 
                         <!-- Left action (read/unread toggle) — revealed on swipe right, auto-commits -->
                         <button type="button"

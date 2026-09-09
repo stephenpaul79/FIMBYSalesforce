@@ -267,8 +267,19 @@
     cursor: pointer;
     padding: 0;
     z-index: 1;
+    visibility: hidden;
+    pointer-events: none;
     -webkit-appearance: none;
     appearance: none;
+}
+
+.swipe-wrapper.is-revealing .swipe-action {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.swipe-wrapper.is-revealing .swipe-foreground {
+    will-change: transform;
 }
 
 .swipe-action-left {
@@ -312,7 +323,6 @@
 .swipe-foreground {
     position: relative;
     z-index: 2;
-    will-change: transform;
     background-color: var(--fimby-surface-page);
     border-radius: inherit;
 }
