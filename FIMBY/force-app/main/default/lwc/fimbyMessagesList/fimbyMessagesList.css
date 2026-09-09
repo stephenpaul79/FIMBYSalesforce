@@ -59,75 +59,101 @@
     flex-shrink: 0;
     z-index: 500;
     padding: 10px 16px;
+    box-sizing: border-box;
+}
+
+.filter-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
 .filter-chips {
     display: flex;
+    align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
 }
 
 .filter-chip {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    box-sizing: border-box;
+    flex: 1 0 auto;
+    min-width: 44px;
+    min-height: 44px;
     padding: 6px 14px;
     border: 1px solid var(--fimby-border-default, #D6CFC5);
-    border-radius: var(--fimby-radius-xl, 9999px);
-    background: var(--fimby-surface-card, #FAF7F2);
+    border-radius: var(--fimby-radius-full);
+    background-color: var(--fimby-surface-card, #FAF7F2);
     color: var(--fimby-text-secondary, #8B7355);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     white-space: nowrap;
 }
 
 .filter-chip:hover {
     border-color: var(--fimby-text-secondary, #8B7355);
     color: var(--fimby-text-primary, #4A3526);
-    background: var(--fimby-hover-bg);
+    background-color: var(--fimby-hover-bg);
 }
 
 .filter-chip.active {
-    background: var(--fimby-btn-primary-bg);
+    background-color: var(--fimby-btn-primary-bg);
     border-color: var(--fimby-btn-primary-bg);
     color: #ffffff;
     font-weight: 600;
 }
 
 .filter-chip.active:hover {
-    background: var(--fimby-btn-primary-bg-hover);
+    background-color: var(--fimby-btn-primary-bg-hover);
     border-color: var(--fimby-btn-primary-bg-hover);
     color: #ffffff;
 }
 
-/* Mobile "New" compose button — inline with filter pills */
+/* Mobile Compose CTA — rounded rectangle, not a filter pill */
 .filter-new-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
-    margin-left: auto;
-    padding: 6px 14px;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    min-height: 44px;
     border: none;
-    border-radius: var(--fimby-radius-xl, 9999px);
+    border-radius: var(--fimby-btn-radius);
     background-color: var(--fimby-btn-primary-bg, #3A7D8C);
     color: #ffffff;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.15s ease;
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .filter-new-btn:hover {
     background-color: var(--fimby-btn-primary-bg-hover, #336F7D);
 }
 
+.filter-new-btn:active {
+    background-color: var(--fimby-btn-primary-bg-active);
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
 .filter-new-icon {
     width: 16px;
     height: 16px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 /* Scroll container — page fill below the thread list (end message, disclaimer) */
@@ -442,20 +468,30 @@
     font-weight: 400;
 }
 
+.inbox-badge-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
 .inbox-readonly-badge {
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
-    border-radius: var(--fimby-badge-radius);
-    font-size: var(--fimby-badge-font-size, 0.75rem);
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: 0.6rem;
     font-weight: var(--fimby-badge-font-weight, 600);
-    padding: var(--fimby-badge-padding, 2px 8px);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding: 1px 6px;
     line-height: 1;
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
-    background-color: var(--fimby-warning-tint);
-    color: var(--fimby-warning);
+    background-color: var(--fimby-badge-readonly-bg);
+    color: var(--fimby-badge-readonly-text);
 }
 
 .inbox-date {
@@ -791,7 +827,7 @@ button.contact-item {
         grid-column: 2;
     }
 
-    .inbox-badge {
+    .inbox-badge-stack {
         grid-column: 3;
     }
 
@@ -828,6 +864,7 @@ button.contact-item {
 .modal-close:focus-visible,
 .contact-item:focus-visible,
 .filter-chip:focus-visible,
+.filter-new-btn:focus-visible,
 .inbox-row:focus-visible,
 .thread-kebab:focus-visible,
 .kebab-menu-item:focus-visible {
@@ -839,7 +876,9 @@ button.contact-item {
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
     .filter-chip,
+    .filter-new-btn,
     .inbox-row {
         transition: none;
+        transform: none;
     }
 }

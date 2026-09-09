@@ -21,17 +21,19 @@
             </div>
         </template>
 
-        <!-- Type Filter Chips -->
+        <!-- Type Filter Chips + mobile Compose -->
         <div class="message-filters">
-            <div class="filter-chips">
-                <template for:each={typeFilters} for:item="filter">
-                    <button key={filter.key}
-                            class={filter.cssClass}
-                            data-filter-key={filter.key}
-                            onclick={handleFilterChange}>
-                        {filter.label}
-                    </button>
-                </template>
+            <div class="filter-toolbar">
+                <div class="filter-chips">
+                    <template for:each={typeFilters} for:item="filter">
+                        <button key={filter.key}
+                                class={filter.cssClass}
+                                data-filter-key={filter.key}
+                                onclick={handleFilterChange}>
+                            {filter.label}
+                        </button>
+                    </template>
+                </div>
                 <button type="button" class="filter-new-btn" onclick={handleNewMessage}>
                     <img src={chatIconUrl} alt="" class="filter-new-icon" />
                     New
@@ -125,10 +127,12 @@
                                                 <span class="inbox-count">({thread.messageCountDisplay})</span>
                                             </template>
                                         </span>
-                                        <template lwc:if={thread.isReadOnly}>
-                                            <span class="inbox-readonly-badge">Read-only</span>
-                                        </template>
-                                        <span class={thread.badgeCssClass}>{thread.badgeLabel}</span>
+                                        <div class="inbox-badge-stack">
+                                            <span class={thread.badgeCssClass}>{thread.badgeLabel}</span>
+                                            <template lwc:if={thread.isReadOnly}>
+                                                <span class="inbox-readonly-badge">READ-ONLY</span>
+                                            </template>
+                                        </div>
                                         <span class="inbox-date">{thread.formattedDate}</span>
                                     </div>
                                     <template lwc:if={thread.hasSecondLine}>
