@@ -409,7 +409,11 @@ section[role="dialog"].slds-modal {
 }
 ```
 
-**Mobile bottom sheets** (`max-width: 480px`): reset `top: 0`, `align-items: flex-end`. Use `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header.
+**Mobile bottom sheets** (`max-width: 480px`): `align-items: flex-end`, keep `padding: 16px` (and `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header). Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom and never `padding: 0` flush to the viewport.
+
+## Form Controls — Never Below 16px
+
+iOS WKWebView auto-zooms the page when a focused `input`/`textarea`/`select` is under 16px. `.fimby-zoom-locked` blocks pinch-out, so that zoom sticks. Use `font-size: 16px` (or `var(--fimby-input-font-size)`) on native fields. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens.
 
 **Anti-patterns:**
 

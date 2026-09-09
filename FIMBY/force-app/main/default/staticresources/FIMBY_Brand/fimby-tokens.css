@@ -438,6 +438,20 @@ html {
 :root {
   --dxp-c-section-image-overlay-color: transparent;
   --dxp-c-section-background-color: var(--fimby-surface-page, #F0EBE3);
+  /* iOS WKWebView zooms the page when a focused form control is < 16px.
+     That zoom never resets under .fimby-zoom-locked (no pinch-out). */
+  --fimby-input-font-size: 16px;
+  --dxp-c-input-text-font-size: 16px;
+  --dxp-s-form-element-text-font-size: 16px;
+  --slds-c-input-text-font-size: 16px;
+  --slds-c-textarea-text-font-size: 16px;
+}
+
+/* Light-DOM fields (login, VF). LWC shadow inputs still need ≥16px in their own CSS. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]),
+textarea,
+select {
+  font-size: var(--fimby-input-font-size, 16px);
 }
 
 

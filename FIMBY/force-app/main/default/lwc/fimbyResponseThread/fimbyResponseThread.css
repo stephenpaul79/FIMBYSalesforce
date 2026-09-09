@@ -1328,7 +1328,7 @@
     padding: 10px 14px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-md);
-    font-size: 14px;
+    font-size: 16px;
     font-family: inherit;
     color: var(--fimby-text-primary);
     background-color: var(--fimby-surface-input, var(--fimby-surface-card));
@@ -1415,5 +1415,6 @@ section[role="dialog"].slds-modal {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: var(--fimby-modal-inset-top, 86px);
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    box-sizing: border-box;
 }

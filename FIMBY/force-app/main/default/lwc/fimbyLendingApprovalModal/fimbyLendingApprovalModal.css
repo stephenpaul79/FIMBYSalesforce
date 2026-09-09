@@ -364,7 +364,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default, #D4CCBF);
     border-radius: var(--fimby-radius-sm, 8px);
-    font-size: 14px;
+    font-size: 16px;
     color: var(--fimby-text-primary, #3D3833);
     background-color: var(--fimby-surface-card, #FAF7F2);
     font-family: inherit;
@@ -595,12 +595,13 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         top: 0;
-        padding: 0;
+        padding: 16px;
+        padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
 
     .modal-container {
-        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        border-radius: var(--fimby-radius-lg, 16px);
         max-height: 90vh;
         max-height: 90dvh;
         animation: slideUpMobile 0.3s ease;

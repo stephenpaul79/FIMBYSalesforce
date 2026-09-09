@@ -145,7 +145,10 @@ Narrow form pages: same, plus `max-width: 640px; margin: 0 auto;`.
 .modal-backdrop { position: fixed; top: var(--fimby-modal-inset-top, 86px); left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
 .modal-container { max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px); }
 ```
-Full-viewport scrim variant (delete/cancel, SLDS sections): `padding: var(--fimby-modal-inset-top, 86px) 24px 24px;` + flex center. Mobile bottom sheets (≤480px): reset `top: 0`, `align-items: flex-end`, `padding-top: var(--fimby-header-height, 70px)` when it must not cover the header. **Anti-patterns:** `inset: 0` + `align-items: center` without `--fimby-modal-inset-top`; `top: 50%; transform: translate(-50%,-50%)`; SLDS `.slds-modal` without `padding-top: var(--fimby-modal-inset-top)`.
+Full-viewport scrim variant (delete/cancel, SLDS sections): `padding: var(--fimby-modal-inset-top, 86px) 16px 16px;` + flex center. Mobile bottom sheets (≤480px): `align-items: flex-end`, keep `padding: 16px` (and `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header). Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom (`16px 16px 0 0`) and never `padding: 0` flush to the viewport (that hides the radius). **Anti-patterns:** `inset: 0` + `align-items: center` without `--fimby-modal-inset-top`; `top: 50%; transform: translate(-50%,-50%)`; SLDS `.slds-modal` without `--fimby-modal-inset-top` padding.
+
+## Form controls — never below 16px
+iOS WKWebView auto-zooms the whole page when a focused `input`/`textarea`/`select` is under 16px. With `.fimby-zoom-locked` the user cannot pinch back out, and SPA navigation does not reset scale. Native fields in LWC CSS must use `font-size: 16px` (or `var(--fimby-input-font-size)`). Do not use `14px` / `0.875rem` on form controls. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens (`16px`).
 
 ## Full-viewport height
 ```css
@@ -171,7 +174,7 @@ Every distinct section uses `--fimby-radius-md` (12px) or `-lg` (16px). `overflo
     -webkit-appearance: none; appearance: none;
     width: 100%; min-width: 0; max-width: 100%; margin: 0;
     padding: 3px 12px 2px; min-height: 1.75rem;
-    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, .875rem)));
+    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, 16px)));
     line-height: 1.5;
     font-family: var(--dxp-s-form-element-text-font-family, var(--dxp-s-body-font-family, inherit));
     background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));

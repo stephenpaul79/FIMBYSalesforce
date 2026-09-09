@@ -138,6 +138,16 @@
     flex-shrink: 0;
 }
 
+.clickable-avatar {
+    cursor: pointer;
+}
+
+.clickable-avatar:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .poster-avatar {
     width: 40px;
     height: 40px;
@@ -468,7 +478,7 @@ button.item-image-container {
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding-top: var(--fimby-modal-inset-top, 86px);
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
 .delete-modal {

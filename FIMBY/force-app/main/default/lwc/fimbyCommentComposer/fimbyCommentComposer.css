@@ -156,6 +156,7 @@
 .comment-textarea {
     width: 100%;
     min-height: 80px;
+    font-size: 16px;
     /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
 }
@@ -525,10 +526,11 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         top: 0;
-        padding: 0;
+        padding: 16px;
+        padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }    .modal-container {
-        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        border-radius: var(--fimby-radius-lg);
         max-height: 85vh;
         animation: slideUpMobile 0.3s ease;
     }    @keyframes slideUpMobile {

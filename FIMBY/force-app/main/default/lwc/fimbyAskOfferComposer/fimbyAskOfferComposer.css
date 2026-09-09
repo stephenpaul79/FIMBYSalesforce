@@ -473,7 +473,7 @@
     margin: 0;
     padding: 3px 12px 2px;
     min-height: 1.75rem;
-    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, 0.875rem)));
+    font-size: var(--dxp-c-input-text-font-size, var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size, 16px)));
     line-height: 1.5;
     font-family: var(--dxp-s-form-element-text-font-family, var(--dxp-s-body-font-family, inherit));
     background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));

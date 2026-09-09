@@ -154,7 +154,7 @@
     padding: 10px 4px;
     border: none;
     background: none;
-    font-size: 0.9rem;
+    font-size: 16px;
     color: var(--fimby-text-strong);
     box-sizing: border-box;
 }

@@ -286,7 +286,7 @@
 /* Mobile — full-width modal */
 @media (max-width: 480px) {
     .modal-backdrop {
-        padding: 0;
+        padding: 16px;
         padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
@@ -295,7 +295,7 @@
         max-width: 100%;
         max-height: calc(100vh - var(--fimby-header-height, 70px));
         max-height: calc(100dvh - var(--fimby-header-height, 70px));
-        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        border-radius: var(--fimby-radius-lg);
         animation: slideUpMobile 0.3s ease-out;
     }
 

@@ -77,7 +77,7 @@
     padding: 12px;
     border: 2px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 20px;
     /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
     resize: vertical;
@@ -261,12 +261,13 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         top: 0;
-        padding: 0;
+        padding: 16px;
+        padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
 
     .modal-container {
-        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        border-radius: var(--fimby-radius-lg);
         max-height: 85vh;
     }
 }

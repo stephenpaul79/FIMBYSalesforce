@@ -259,7 +259,7 @@
     appearance: none;
     width: 100%;
     box-sizing: border-box;
-    font-size: var(--dxp-c-input-text-font-size, 0.875rem);
+    font-size: var(--dxp-c-input-text-font-size, 16px);
     font-family: inherit;
     color: var(--dxp-s-form-element-text-color, var(--fimby-text-primary));
     background-color: var(--dxp-s-form-element-color-background, var(--fimby-surface-input));
@@ -482,7 +482,7 @@
 
 @media (max-width: 480px) {
     .modal-backdrop {
-        padding: 0;
+        padding: 16px;
         padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
@@ -490,7 +490,7 @@
     .modal-container {
         max-width: 100%;
         max-height: calc(100dvh - var(--fimby-header-height, 70px));
-        border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+        border-radius: var(--fimby-radius-lg);
     }
 
     .modal-footer {

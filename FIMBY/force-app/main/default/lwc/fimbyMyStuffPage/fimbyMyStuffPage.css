@@ -650,7 +650,8 @@ button.contact-card-header {
    Share Contact Modal
    ================================================================ */
 .share-contact-modal {
-    padding-top: var(--fimby-modal-inset-top, 86px);
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    box-sizing: border-box;
 }
 
 .share-contact-modal .slds-modal__container {
@@ -661,6 +662,8 @@ button.contact-card-header {
     flex-direction: column;
     padding: 0;
     min-height: 0;
+    border-radius: var(--fimby-radius-lg);
+    box-shadow: var(--fimby-shadow-modal);
 }
 
 .share-contact-modal .slds-modal__content {

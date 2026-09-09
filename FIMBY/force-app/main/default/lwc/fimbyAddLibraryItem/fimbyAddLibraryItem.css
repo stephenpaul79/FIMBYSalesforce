@@ -116,7 +116,7 @@
     padding: 12px;
     border: 2px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 14px;
+    font-size: 16px;
     font-family: inherit;
     transition: border-color 0.2s ease;
     background: var(--fimby-surface-card);

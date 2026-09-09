@@ -15,6 +15,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    padding: 16px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -26,7 +27,7 @@
 /* Modal Container */
 .modal-container {
     background: var(--fimby-surface-card);
-    border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+    border-radius: var(--fimby-radius-lg);
     width: 100%;
     max-width: 480px;
     max-height: 90vh;

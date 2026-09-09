@@ -255,12 +255,13 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         top: 0;
-        padding: 0;
+        padding: 16px;
+        padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
 
     .modal-container {
-        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        border-radius: var(--fimby-radius-lg, 16px);
         max-height: 90vh;
         max-height: 90dvh;
         animation: slideUpMobile 0.3s ease;

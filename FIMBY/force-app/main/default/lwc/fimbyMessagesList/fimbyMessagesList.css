@@ -636,13 +636,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: var(--fimby-modal-inset-top, 86px);
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    box-sizing: border-box;
 }
 
 .compose-modal-container {
     max-width: 400px;
     width: 90%;
-    margin: 16px;
+    margin: 0 auto;
     border-radius: var(--fimby-radius-lg, 16px);
     overflow: hidden;
     background-color: var(--fimby-surface-card, #FAF7F2);
@@ -706,7 +707,7 @@
     padding: 10px 14px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md);
-    font-size: 14px;
+    font-size: 16px;
     outline: none;
 }
 
@@ -805,7 +806,7 @@ button.contact-item {
     .compose-modal-container {
         width: 100%;
         margin: 0;
-        border-radius: var(--fimby-radius-lg, 16px) var(--fimby-radius-lg, 16px) 0 0;
+        border-radius: var(--fimby-radius-lg, 16px);
     }
 }
 

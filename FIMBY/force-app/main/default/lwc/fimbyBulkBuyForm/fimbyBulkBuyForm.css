@@ -193,7 +193,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-md);
-    font-size: 14px;
+    font-size: 16px;
     color: var(--fimby-text-primary);
     background: var(--fimby-surface-input);
     box-sizing: border-box;

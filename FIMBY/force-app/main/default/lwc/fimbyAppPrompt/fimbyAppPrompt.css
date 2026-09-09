@@ -12,7 +12,7 @@
     align-items: flex-end;
     justify-content: center;
     z-index: 10001;
-    padding: 0;
+    padding: 16px;
     animation: appPromptFadeIn 0.2s ease-out;
 }
 
@@ -28,7 +28,7 @@
     width: 100%;
     max-width: 100%;
     background-color: var(--fimby-surface-card);
-    border-radius: var(--fimby-radius-lg) var(--fimby-radius-lg) 0 0;
+    border-radius: var(--fimby-radius-lg);
     box-shadow: var(--fimby-shadow-modal);
     padding: 1.5rem 1.25rem 1.25rem;
     box-sizing: border-box;
