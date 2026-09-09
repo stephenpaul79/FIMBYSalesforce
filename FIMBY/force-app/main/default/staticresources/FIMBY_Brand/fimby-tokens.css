@@ -142,6 +142,9 @@
 @property --fimby-badge-direct        { syntax: '<color>'; inherits: true; initial-value: rgba(94, 123, 146, 0.85); }
 @property --fimby-badge-parent-managed { syntax: '<color>'; inherits: true; initial-value: rgba(140, 106, 133, 0.90); }
 @property --fimby-badge-supported      { syntax: '<color>'; inherits: true; initial-value: rgba( 58, 110, 106, 0.90); }
+@property --fimby-badge-readonly-bg    { syntax: '<color>'; inherits: true; initial-value: #EDE8E3; }
+@property --fimby-badge-readonly-text  { syntax: '<color>'; inherits: true; initial-value: #5A4E45; }
+@property --fimby-badge-readonly-border { syntax: '<color>'; inherits: true; initial-value: rgba(90, 78, 69, 0.20); }
 
 /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
 @property --fimby-vouch-solid   { syntax: '<color>'; inherits: true; initial-value: #925930; }
@@ -315,6 +318,11 @@
      ~5.8:1 with white. */
   --fimby-badge-supported:  rgba( 58, 110, 106, 0.90);
 
+  /* Read-only inbox badge — driftwood wash, not warning yellow (~6.1:1 AA) */
+  --fimby-badge-readonly-bg:     #EDE8E3;
+  --fimby-badge-readonly-text:   #5A4E45;
+  --fimby-badge-readonly-border: rgba(90, 78, 69, 0.20);
+
   /* ── Vouch / Settling-in (WCAG AA verified) ──────────────────── */
   --fimby-vouch-solid:    #925930;                       /* Copper — solid accent           */
   --fimby-vouch-text:     #925930;                       /* Copper — text emphasis          */
@@ -405,6 +413,7 @@
 html,
 body {
   background: var(--fimby-surface-page, #F0EBE3) !important;
+  overscroll-behavior-y: none;
 }
 
 /* Global zoom lock. fimbyUniversalHeader adds .fimby-zoom-locked to <html> on
@@ -574,6 +583,10 @@ flowruntime-lwc-body .slds-button_brand {
     --fimby-vouch-tint:     rgba(176, 115, 71, 0.18);      /* Boosted alpha for dark surfaces */
     --fimby-vouch-border:   rgba(176, 115, 71, 0.40);      /* Boosted alpha for dark surfaces */
 
+    --fimby-badge-readonly-bg:     #3D3530;
+    --fimby-badge-readonly-text:   #C4B8AE;                  /* 6.18:1 on bg                    */
+    --fimby-badge-readonly-border: rgba(196, 184, 174, 0.15);
+
     /* ── Status Chips (darker bg, lighter text for dark mode) ──── */
     --fimby-chip-active-bg:    rgba(39, 174,  96, 0.18);  --fimby-chip-active-text:    #6ee7b7;
     --fimby-chip-expired-bg:   rgba(231,  76, 60, 0.18);  --fimby-chip-expired-text:   #fca5a5;
@@ -732,6 +745,10 @@ flowruntime-lwc-body .slds-button_brand {
   --fimby-badge-vouch:    rgba(176, 115, 71, 0.90);      /* Brighter base for dark, 4.64:1  */
   --fimby-vouch-tint:     rgba(176, 115, 71, 0.18);      /* Boosted alpha for dark surfaces */
   --fimby-vouch-border:   rgba(176, 115, 71, 0.40);      /* Boosted alpha for dark surfaces */
+
+  --fimby-badge-readonly-bg:     #3D3530;
+  --fimby-badge-readonly-text:   #C4B8AE;
+  --fimby-badge-readonly-border: rgba(196, 184, 174, 0.15);
 
   /* ── Status Chips (darker bg, lighter text for dark mode) ──── */
   --fimby-chip-active-bg:    rgba(39, 174,  96, 0.18);  --fimby-chip-active-text:    #6ee7b7;

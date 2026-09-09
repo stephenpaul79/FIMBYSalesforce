@@ -9,6 +9,7 @@
     width: 100%;
     position: relative;
     overflow: hidden;
+    overscroll-behavior-y: none;
 }
 
 .pull-refresh-indicator {
@@ -49,8 +50,8 @@
     width: 100%;
     overflow: hidden auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
     scroll-behavior: smooth;
-    transition: transform 0.2s ease;
     background: var(--fimby-infinite-scroll-surface, transparent);
 }
 

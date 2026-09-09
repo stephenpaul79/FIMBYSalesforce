@@ -5,8 +5,10 @@ import { LightningElement, api, track } from 'lwc';
 // killing). Content paints underneath at opacity 0 and reveals together.
 const MIN_CURTAIN_MS = 350;
 
-// Finger travel before pull-to-refresh hijacks the gesture (preventDefault + indicator).
-const PULL_ARM_THRESHOLD = 40;
+// Ignore tiny jitter before showing the refresh indicator / translating the list.
+const PULL_ARM_THRESHOLD = 8;
+// Visual rubber-band ceiling (px). Finger can travel further; the list eases toward this.
+const PULL_MAX_VISUAL = 56;
 
 const END_MESSAGE_BASE = "You're all caught up!";
 const END_MESSAGE_VARIANTS = [
@@ -169,6 +171,26 @@ export default class FimbyInfiniteScroll extends LightningElement {
         if (this.showEndMessage && !this._endMessageText) {
             this._ensureEndMessage();
         }
+
+        this._bindPullToRefresh();
+    }
+
+    _bindPullToRefresh() {
+        if (!this.enablePullToRefresh || this._ptrMoveBound) return;
+        const container = this._getScrollContainer();
+        if (!container) return;
+        this._onPtrMove = (event) => this.handleTouchMove(event);
+        container.addEventListener('touchmove', this._onPtrMove, { passive: false });
+        this._ptrMoveBound = true;
+    }
+
+    _unbindPullToRefresh() {
+        const container = this._getScrollContainer();
+        if (container && this._onPtrMove) {
+            container.removeEventListener('touchmove', this._onPtrMove);
+        }
+        this._onPtrMove = null;
+        this._ptrMoveBound = false;
     }
 
     disconnectedCallback() {
@@ -181,6 +203,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
             window.removeEventListener('scroll', this.windowScrollHandler);
             console.log('📜 Infinite scroll: Removed window scroll listener');
         }
+        this._unbindPullToRefresh();
         // Tear down the curtain reveal timer (persistent shell no longer GCs it)
         if (this._revealTimer) {
             clearTimeout(this._revealTimer);
@@ -316,18 +339,20 @@ export default class FimbyInfiniteScroll extends LightningElement {
         const currentY = event.touches[0].clientY;
         const pullDistance = currentY - this.touchStartY;
 
-        if (pullDistance <= PULL_ARM_THRESHOLD) {
+        if (pullDistance <= 0) {
             return;
         }
 
+        // Non-passive listener: stop iOS rubber-banding the page (header) at the
+        // first downward pixel. Visual pull still waits for PULL_ARM_THRESHOLD.
         event.preventDefault();
 
-        // Raw finger travel — refresh fires at refreshThreshold of total pull.
         this.currentPullDistance = Math.min(pullDistance, this.refreshThreshold * 1.5);
-        this.showPullRefresh = true;
+        this.showPullRefresh = pullDistance > PULL_ARM_THRESHOLD;
 
-        const visualPull = pullDistance - PULL_ARM_THRESHOLD;
-        const translateY = Math.min(visualPull * 0.5, this.refreshThreshold);
+        const visualPull = Math.max(0, pullDistance - PULL_ARM_THRESHOLD);
+        const translateY = PULL_MAX_VISUAL * (1 - Math.exp(-visualPull / 70));
+        container.style.transition = 'none';
         container.style.transform = `translateY(${translateY}px)`;
     }
 

@@ -6,6 +6,7 @@
     flex-direction: column;
     background: var(--fimby-surface-page);
     overflow: hidden;
+    overscroll-behavior-y: none;
 }
 
 .fimby-messages-list {
