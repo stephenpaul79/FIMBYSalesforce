@@ -395,6 +395,7 @@ export default class FimbyInfiniteScroll extends LightningElement {
 
     @api
     reset() {
+        const wasLoading = this._isLoading;
         this.hasInitialLoadChecked = false;
         this._hasMoreData = true;
         this.isLoadingMore = false;
@@ -403,6 +404,12 @@ export default class FimbyInfiniteScroll extends LightningElement {
         // (filter switch / full reload behave like a fresh cold load).
         this._armCurtain();
         this._isLoading = false;
+        // A load was already in flight when the consumer reset us. Its isLoading=true
+        // won't be pushed again (unchanged prop), so raise the curtain here instead of
+        // leaving a blank gap until it resolves.
+        if (wasLoading) {
+            this._updateLoading(true);
+        }
     }
 
     @api
@@ -447,6 +454,11 @@ export default class FimbyInfiniteScroll extends LightningElement {
             }
         } else if (this._curtainActive && !this._revealTimer) {
             this._scheduleReveal();
+        } else {
+            // A load resolved without a curtain up (e.g. reset() re-armed while the
+            // consumer's isLoading was already true, so the setter never re-fired).
+            // Still mark the feed resolved or the empty state can never render.
+            this._hasRevealedOnce = true;
         }
     }
 
