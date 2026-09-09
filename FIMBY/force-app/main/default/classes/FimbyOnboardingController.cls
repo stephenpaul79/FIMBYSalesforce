@@ -43,13 +43,14 @@ public with sharing class FimbyOnboardingController {
                     'profileCompleted' => true,
                     'walkthroughStatus' => FimbyConstants.ONBOARDING_COMPLETED,
                     'bioPostCompleted' => true,
+                    'bioBannerDismissed' => true,
                     'showWalkthrough' => false
                 };
             }
 
             Contact c = [
                 SELECT Id, Onboarding_Profile_Completed__c, Bio_Post_Completed__c,
-                       Is_Organization_Contact__c
+                       Bio_Banner_Dismissed__c, Is_Organization_Contact__c
                 FROM Contact
                 WHERE Id = :contactId
                 WITH SECURITY_ENFORCED
@@ -91,6 +92,7 @@ public with sharing class FimbyOnboardingController {
                 'profileCompleted' => profileCompleted,
                 'walkthroughStatus' => walkthroughStatus,
                 'bioPostCompleted' => bioPostCompleted,
+                'bioBannerDismissed' => c.Bio_Banner_Dismissed__c == true,
                 'showWalkthrough' => showWalkthrough
             };
         } catch (Exception e) {
@@ -170,6 +172,32 @@ public with sharing class FimbyOnboardingController {
     }
 
     /**
+     * @description Retires the home-feed Say-hi banner for good, when the neighbour ticks
+     * "Don't show this again" before closing it. Deliberately separate from
+     * Bio_Post_Completed__c: the intro post is still outstanding (the Ask/Offer soft gate
+     * and the onboarding modal still nudge), only the banner stops asking.
+     * @return Map with success status
+     */
+    @AuraEnabled
+    public static Map<String, Object> dismissBioBanner() {
+        try {
+            String contactId = FimbyIdentityRepository.getActingAsContactId();
+            if (contactId == null) {
+                throw new AuraHandledException('No contact associated with current user.');
+            }
+
+            new ContactUpdater().doUpdate(new Contact(
+                Id = contactId,
+                Bio_Banner_Dismissed__c = true
+            ));
+
+            return new Map<String, Object>{ 'success' => true };
+        } catch (Exception e) {
+            throw new AuraHandledException('Error dismissing bio banner: ' + e.getMessage());
+        }
+    }
+
+    /**
      * @description LWC-callable method that completes profile setup by updating allowed Contact fields and setting Onboarding_Profile_Completed__c.
      * @param fieldValues Map of field names to values (only ALLOWED_PROFILE_FIELDS accepted)
      * @return Map with success status
@@ -210,7 +238,11 @@ public with sharing class FimbyOnboardingController {
             new ContactUpdater().doUpdate(c);
 
             Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
-            if (neighbourhoodId != null) {
+            // Parent-managed profiles have no User of their own; the guardian already
+            // received a welcome when they joined. Completing the child's onboarding
+            // helps neighbours learn who they are — it must not re-send "Welcome to FIMBY"
+            // to the guardian's inbox.
+            if (neighbourhoodId != null && !FimbyProxiedPresenceGuard.isProxied(contactId)) {
                 System.enqueueJob(new FimbyOnboardingWelcomeEmailQueueable(
                     contactId, UserInfo.getUserId(), neighbourhoodId
                 ));
@@ -291,6 +323,7 @@ public with sharing class FimbyOnboardingController {
             'profileCompleted' => true,
             'walkthroughStatus' => FimbyConstants.ONBOARDING_COMPLETED,
             'bioPostCompleted' => true,
+            'bioBannerDismissed' => true,
             'showWalkthrough' => false
         };
     }

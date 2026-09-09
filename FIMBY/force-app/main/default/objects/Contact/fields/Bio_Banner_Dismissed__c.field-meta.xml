@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Bio_Banner_Dismissed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Set true when the contact permanently dismisses the home-feed "Say hi to your neighbours" banner. Distinct from Bio_Post_Completed__c: the intro post is still outstanding, the nudge is simply retired. Persists across devices, unlike the hide-for-today stamp held in browser storage.</description>
+    <externalId>false</externalId>
+    <label>Bio Banner Dismissed</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

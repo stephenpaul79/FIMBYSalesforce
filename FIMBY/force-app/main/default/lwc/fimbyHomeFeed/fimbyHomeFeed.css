@@ -71,6 +71,7 @@
    ============================================================ */
 
 .say-hi-banner {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -79,7 +80,7 @@
     border: 1px solid var(--fimby-info-border);
     border-radius: var(--fimby-radius-md);
     box-shadow: var(--fimby-shadow-card);
-    padding: 16px 20px;
+    padding: 16px 56px 16px 20px;
     margin: 12px 0;
     box-sizing: border-box;
 }
@@ -103,6 +104,55 @@
     color: var(--fimby-text-primary);
     font-size: 0.9rem;
     line-height: 1.4;
+}
+
+.say-hi-forever {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    min-height: 44px;
+    font-size: 0.85rem;
+    color: var(--fimby-text-secondary);
+    cursor: pointer;
+}
+
+.say-hi-forever input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--fimby-btn-primary-bg);
+    cursor: pointer;
+}
+
+.say-hi-forever input:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+}
+
+.say-hi-dismiss {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--fimby-text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.say-hi-dismiss:hover {
+    background-color: var(--fimby-hover-bg);
+}
+
+.say-hi-dismiss:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
 }
 
 .say-hi-cta.btn-primary {

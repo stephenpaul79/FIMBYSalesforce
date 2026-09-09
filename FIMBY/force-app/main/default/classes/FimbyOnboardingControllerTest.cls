@@ -76,6 +76,59 @@ private class FimbyOnboardingControllerTest {
     }
 
     @IsTest
+    static void completeProfileSetup_skipsWelcomeEmailForParentManagedChild() {
+        Contact parent = [
+            SELECT Id FROM Contact WHERE AccountId != null LIMIT 1
+        ];
+        User parentUser = [
+            SELECT Id, ContactId FROM User WHERE ContactId = :parent.Id AND IsActive = true LIMIT 1
+        ];
+
+        FimbyParentGuardianService.FamilyMemberResult created;
+        System.runAs(parentUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyParentGuardianService.FamilyMemberInput req =
+                new FimbyParentGuardianService.FamilyMemberInput();
+            req.firstName = 'Maya';
+            req.birthdate = Date.today().addYears(-12);
+            req.attested = true;
+            created = FimbyParentGuardianService.createFamilyMember(req);
+        }
+
+        update new Contact(
+            Id = parent.Id,
+            Logged_In_As_Contact__c = created.contactId
+        );
+
+        FimbyTransactionalEmailService.testSendInvocationCount = 0;
+
+        Test.startTest();
+        System.runAs(parentUser) {
+            FimbyIdentityRepository.clearCache();
+            FimbyOnboardingController.completeProfileSetup(new Map<String, String>{
+                'FirstName' => 'Maya',
+                'About_Enjoys_Doing__c' => 'Soccer and reading'
+            });
+        }
+        Test.stopTest();
+
+        System.assertEquals(0, FimbyTransactionalEmailService.testSendInvocationCount,
+            'Parent-managed onboarding must not send the join welcome to the guardian.');
+
+        Contact child = [
+            SELECT Onboarding_Profile_Completed__c, Welcome_Email_Sent_Date__c, About_Enjoys_Doing__c
+            FROM Contact
+            WHERE Id = :created.contactId
+        ];
+        System.assertEquals(true, child.Onboarding_Profile_Completed__c,
+            'Onboarding profile setup should still complete for the child.');
+        System.assertEquals(null, child.Welcome_Email_Sent_Date__c,
+            'Welcome email guard must not stamp a sent date on a proxied child.');
+        System.assertEquals('Soccer and reading', child.About_Enjoys_Doing__c,
+            'Profile fields should still save while acting as the child.');
+    }
+
+    @IsTest
     static void testCompleteProfileBlockedField() {
         User testUser = getTestUser();
         Boolean caughtError = false;
@@ -253,6 +306,41 @@ private class FimbyOnboardingControllerTest {
         System.runAs(testUser) {
             Map<String, Object> result = FimbyOnboardingController.getOnboardingStatus();
             System.assertEquals(true, result.get('bioPostCompleted'), 'Status should expose bioPostCompleted for replay/skip routing');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testDismissBioBannerRetiresTheNudge() {
+        User testUser = getTestUser();
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyOnboardingController.dismissBioBanner();
+            System.assertEquals(true, result.get('success'));
+        }
+        Test.stopTest();
+
+        Contact updated = [SELECT Bio_Banner_Dismissed__c, Bio_Post_Completed__c
+                           FROM Contact WHERE Id = :testUser.ContactId];
+        System.assertEquals(true, updated.Bio_Banner_Dismissed__c, 'Dismiss should stamp the banner flag');
+        System.assertEquals(false, updated.Bio_Post_Completed__c,
+            'Retiring the banner must not pretend the intro post happened');
+    }
+
+    @IsTest
+    static void testGetOnboardingStatusIncludesBioBannerDismissed() {
+        User testUser = getTestUser();
+
+        Contact c = [SELECT Id FROM Contact WHERE Id = :testUser.ContactId];
+        c.Bio_Banner_Dismissed__c = true;
+        update c;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> result = FimbyOnboardingController.getOnboardingStatus();
+            System.assertEquals(true, result.get('bioBannerDismissed'),
+                'Status should expose bioBannerDismissed so the feed can suppress the banner');
         }
         Test.stopTest();
     }

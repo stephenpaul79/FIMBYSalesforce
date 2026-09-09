@@ -17,6 +17,7 @@ import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVou
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
+import dismissBioBanner from '@salesforce/apex/FimbyOnboardingController.dismissBioBanner';
 import getLiveTourState from '@salesforce/apex/FimbyGuidedTourController.getLiveTourState';
 import setLiveTourStatus from '@salesforce/apex/FimbyGuidedTourController.setLiveTourStatus';
 import { requestGuidedTour } from 'c/fimbyGuidedTourLauncher';
@@ -96,6 +97,9 @@ const ASK_OFFER_SUB_FILTERS = [
 const INITIAL_FETCH_SIZE = 100;
 const SCROLL_BATCH_SIZE = 50;
 const CACHE_KEY = 'fimby-home-feed-state';
+// Holds the date the say-hi banner was rested. Per-device on purpose — "not today"
+// is a local mood; "don't show this again" is the one that persists server-side.
+const BIO_BANNER_SNOOZE_KEY = 'fimby-say-hi-snoozed-on';
 const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 
 /** Matches fimbyCard.formattedTimestamp for consistent feed card headers */
@@ -137,6 +141,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     @track _userFirstName = '';
     @track _showBioBanner = false;
+    @track _bioBannerDismissForever = false;
     @track _showTourBanner = false;
     @track _showIntroPostModal = false;
     @track _seasonalTitle = '';
@@ -203,6 +208,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get refreshIconUrl()      { return `${IMPACT_ICONS}/refresh.png`; }
     get bioBannerIconUrl()    { return `${IMPACT_ICONS}/Wave.png`; }
     get showBioBanner()       { return this._showBioBanner; }
+    get bioBannerDismissForever() { return this._bioBannerDismissForever; }
+    get bioBannerDismissLabel() {
+        return this._bioBannerDismissForever
+            ? 'Hide this for good'
+            : 'Hide this for today';
+    }
     get tourBannerIconUrl()   { return `${IMPACT_ICONS}/NeighborhoodActive.png`; }
     get showTourBanner()      { return this._showTourBanner; }
     get showIntroPostModal()  { return this._showIntroPostModal; }
@@ -226,6 +237,37 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     handleBioSkipped() {
         this._showIntroPostModal = false;
         this._showBioBanner = false;
+    }
+
+    handleBioBannerForeverChange(event) {
+        this._bioBannerDismissForever = event.target.checked;
+    }
+
+    // The X honours the checkbox: ticked means retire the nudge for good (server-side,
+    // so it stays gone on every device); unticked just rests it until tomorrow.
+    handleDismissBioBanner() {
+        this._showBioBanner = false;
+        if (this._bioBannerDismissForever) {
+            dismissBioBanner().catch((err) => {
+                console.error('fimbyHomeFeed: bio banner permanent dismiss failed', err);
+            });
+            return;
+        }
+        try {
+            localStorage.setItem(BIO_BANNER_SNOOZE_KEY, this._todayStamp());
+        } catch { /* storage unavailable — banner simply returns next load */ }
+    }
+
+    _todayStamp() {
+        return new Date().toDateString();
+    }
+
+    _isBioBannerSnoozedToday() {
+        try {
+            return localStorage.getItem(BIO_BANNER_SNOOZE_KEY) === this._todayStamp();
+        } catch {
+            return false;
+        }
     }
 
     handleTakeTour() {
@@ -354,7 +396,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 window.location.replace('/onboarding');
                 return;
             }
-            this._showBioBanner = onboardingStatus && onboardingStatus.bioPostCompleted === false;
+            this._showBioBanner = onboardingStatus
+                && onboardingStatus.bioPostCompleted === false
+                && onboardingStatus.bioBannerDismissed !== true
+                && !this._isBioBannerSnoozedToday();
         } catch (err) {
             // Non-fatal: if onboarding status fails, render the home feed normally rather
             // than blocking on the redirect check. The banner just won't appear.

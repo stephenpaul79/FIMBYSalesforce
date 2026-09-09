@@ -55,9 +55,16 @@
                 <div class="say-hi-content">
                     <p class="say-hi-title">Say hi to your neighbours</p>
                     <p class="say-hi-text">A quick intro post helps people know who's new to FIMBY. We'll draft one from your profile.</p>
+                    <label class="say-hi-forever">
+                        <input type="checkbox" checked={bioBannerDismissForever} onchange={handleBioBannerForeverChange}>
+                        <span>Don't show this again</span>
+                    </label>
                 </div>
                 <button type="button" class="say-hi-cta btn-primary" onclick={handleOpenBioModal}>
                     Post my intro
+                </button>
+                <button type="button" class="say-hi-dismiss" onclick={handleDismissBioBanner} aria-label={bioBannerDismissLabel}>
+                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
                 </button>
             </div>
         </template>
