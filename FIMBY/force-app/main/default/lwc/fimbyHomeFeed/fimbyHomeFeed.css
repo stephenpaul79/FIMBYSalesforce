@@ -422,6 +422,27 @@
     color: #ffffff;
 }
 
+/* Level 1: three chips share the row (iPhone 13 mini+). Sub-filters keep horizontal scroll. */
+.feed-filters .filters-scroll {
+    flex: 1;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.feed-filters .filter-button {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    min-height: 44px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.feed-filters .filter-button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ================================================================
    Level 2 Sub-filter Pills
    ================================================================ */
@@ -904,6 +925,7 @@ button.feed-card-wrapper {
     .feed-filters { padding: 10px 12px; }
     .feed-sub-filters { padding: 6px 12px; }
     .filter-button { padding: 6px 12px; font-size: 0.8rem; }
+    .feed-filters .filter-button { padding: 8px 4px; font-size: 0.75rem; }
     .feed-filter-header { border-radius: 0; }
     .feed-filter-header > :first-child,
     .feed-filter-header > :last-child { border-radius: 0; }
@@ -916,6 +938,23 @@ button.feed-card-wrapper {
 
 @media (max-width: 480px) {
     .card-type-badge { padding: 3px 8px; font-size: 0.65rem; }
+
+    .feed-filters {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+    .feed-filters .filters-scroll {
+        gap: 6px;
+    }
+    .feed-filters .filter-button {
+        padding: 8px 6px;
+        gap: 4px;
+        font-size: 0.8rem;
+    }
+    .feed-filters .filter-icon {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -997,4 +1036,26 @@ button.feed-card-wrapper {
     .library-listed-thumb:not(.is-loaded) {
         opacity: 1;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }
