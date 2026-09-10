@@ -422,8 +422,7 @@
     color: #ffffff;
 }
 
-/* Level 1: three chips share the row (iPhone 13 mini+). Sub-filters keep horizontal scroll.
-   All stays content-sized so Shared Life / Ask & Offer get the leftover width. */
+/* Level 1 mobile: three chips share the row. Desktop (≥768px) uses content-sized pills. */
 .feed-filters .filters-scroll {
     flex: 1;
     min-width: 0;
@@ -971,6 +970,33 @@ button.feed-card-wrapper {
     .feed-section { width: 100%; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
     .feed-section { padding: 24px 0; }
     .feed-card-wrapper { margin-bottom: 20px; }
+
+    /* Desktop: content-sized pills, not stretched to fill the column. */
+    .feed-filters .filters-scroll {
+        display: flex;
+        overflow-x: visible;
+        grid-template-columns: none;
+    }
+    .feed-filters .filter-button {
+        width: auto;
+        flex: 0 0 auto;
+        overflow: visible;
+        padding: 8px 14px;
+        gap: 6px;
+        font-size: 0.85rem;
+    }
+    .feed-filters .filter-button:first-child {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    .feed-filters .filter-button span {
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .feed-filters .filter-icon {
+        width: 18px;
+        height: 18px;
+    }
 
     .library-listed-header { padding: 14px 20px; }
     .library-listed-footer { padding: 10px 20px; }
