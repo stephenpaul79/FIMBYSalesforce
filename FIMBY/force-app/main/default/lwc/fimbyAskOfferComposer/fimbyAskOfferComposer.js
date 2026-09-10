@@ -1,5 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
@@ -63,29 +63,31 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     @track _showBioGate = false;
     @track _showIntroPostModal = false;
 
+    _quickPostOptionHandler;
+
     connectedCallback() {
         this._checkBioGate();
+        this._applyTypeFromParam(new URLSearchParams(window.location.search).get('type'));
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const typeParam = urlParams.get('type');
+        // Soft-nav to the same named page often does not remount this LWC.
+        // The plus-menu event is the reliable signal when ?type= changes in place.
+        this._quickPostOptionHandler = (event) => {
+            this._applyTypeFromParam(event.detail?.type);
+        };
+        window.addEventListener('fimbyquickpostoptionselected', this._quickPostOptionHandler);
+    }
 
+    disconnectedCallback() {
+        if (this._quickPostOptionHandler) {
+            window.removeEventListener('fimbyquickpostoptionselected', this._quickPostOptionHandler);
+        }
+    }
+
+    @wire(CurrentPageReference)
+    handlePageRef(pageRef) {
+        const typeParam = pageRef?.state?.type || pageRef?.state?.c__type;
         if (typeParam) {
-            const normalized = typeParam.charAt(0).toUpperCase() + typeParam.slice(1).toLowerCase();
-
-            if (normalized === 'Bulkbuy') {
-                this.selectedType = 'BulkBuy';
-            } else if (normalized === 'Event') {
-                this.selectedType = 'Offer';
-                this.selectedTypeValue = 'Event';
-                this.endDate = this._endDateOffset(21);
-            } else if (normalized === 'Need' || normalized === 'Offer') {
-                this.selectedType = normalized;
-                this.selectedTypeValue = normalized === 'Need' ? 'Need' : '';
-                this.endDate = this._endDateOffset(normalized === 'Need' ? 7 : 21);
-            }
-
-            this.preselectedFromUrl = true;
-            this.currentStep = STEP_FORM;
+            this._applyTypeFromParam(typeParam);
         }
     }
 
@@ -620,6 +622,67 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
     // ============================================
     // PRIVATE HELPERS
     // ============================================
+
+    _normalizeComposeType(raw) {
+        if (!raw || typeof raw !== 'string') return null;
+        const key = raw.toLowerCase().replace(/[\s_-]/g, '');
+        if (key === 'need') return 'Need';
+        if (key === 'offer') return 'Offer';
+        if (key === 'event') return 'Event';
+        if (key === 'bulkbuy') return 'BulkBuy';
+        return null;
+    }
+
+    _currentComposeType() {
+        if (this.selectedType === 'BulkBuy') return 'BulkBuy';
+        if (this.selectedTypeValue === 'Event') return 'Event';
+        if (this.selectedType === 'Need') return 'Need';
+        if (this.selectedType === 'Offer') return 'Offer';
+        return '';
+    }
+
+    _setComposeType(normalized) {
+        if (normalized === 'BulkBuy') {
+            this.selectedType = 'BulkBuy';
+            this.selectedTypeValue = '';
+            return;
+        }
+        if (normalized === 'Event') {
+            this.selectedType = 'Offer';
+            this.selectedTypeValue = 'Event';
+            this.endDate = this._endDateOffset(21);
+            return;
+        }
+        if (normalized === 'Need') {
+            this.selectedType = 'Need';
+            this.selectedTypeValue = 'Need';
+            this.endDate = this._endDateOffset(7);
+            return;
+        }
+        this.selectedType = 'Offer';
+        this.selectedTypeValue = '';
+        this.endDate = this._endDateOffset(21);
+    }
+
+    _applyTypeFromParam(raw) {
+        const normalized = this._normalizeComposeType(raw);
+        if (!normalized) return;
+
+        const sameType = normalized === this._currentComposeType();
+        if (sameType && this.currentStep !== STEP_TYPE_SELECTION) {
+            return;
+        }
+
+        this.resetForm();
+        this._setComposeType(normalized);
+        this.preselectedFromUrl = true;
+        this.createdRecordId = null;
+        this.confirmationTitle = '';
+        this.isPosting = false;
+        this.showDiscardConfirm = false;
+        this.currentStep = STEP_FORM;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     resetForm() {
         this.postTitle = '';

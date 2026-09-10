@@ -141,7 +141,7 @@
     font-family: inherit;
 }
 
-/* Post Settings: compact nav — no divider, minimal gap */
+/* Post Settings: compact nav â€” no divider, minimal gap */
 .form-section-with-nav .form-navigation {
     margin-top: 4px;
     padding-top: 0;
@@ -430,7 +430,7 @@
     border: 1px solid var(--fimby-border-default);
 }
 
-/* Posting As — identity display (matches fimbyResponseReply .replying-as) */
+/* Posting As â€” identity display (matches fimbyResponseReply .replying-as) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -462,7 +462,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* Native Date & Datetime-Local Inputs — DXP tokens for visuals, explicit sizing */
+/* Native Date & Datetime-Local Inputs â€” DXP tokens for visuals, explicit sizing */
 .date-input,
 .datetime-input {
     -webkit-appearance: none;
@@ -550,7 +550,7 @@
     font-weight: 600;
 }
 
-/* Quantity Grid — align to top so field-level-help on Per Response Limit doesn't stretch the row */
+/* Quantity Grid â€” align to top so field-level-help on Per Response Limit doesn't stretch the row */
 .quantity-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -586,7 +586,7 @@
     grid-column: 1 / -1;
 }
 
-/* lightning-input is a custom element — constrain the element itself */
+/* lightning-input is a custom element â€” constrain the element itself */
 .form-field lightning-input {
     display: block;
     width: 100%;
@@ -917,7 +917,7 @@
     min-height: 1.75rem;
     border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
     border-radius: var(--dxp-s-form-element-radius-border, 4px);
-    font-size: 0.875rem;
+    font-size: var(--fimby-input-font-size, 16px);
     box-sizing: border-box;
 }
 
@@ -928,7 +928,7 @@
     padding: 3px 8px 2px;
     border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
     border-radius: var(--dxp-s-form-element-radius-border, 4px);
-    font-size: 0.875rem;
+    font-size: var(--fimby-input-font-size, 16px);
     background-color: var(--dxp-s-form-element-color-background, var(--dxp-g-root));
     color: var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast));
 }
@@ -985,4 +985,26 @@
     .datetime-input {
         transition: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }
