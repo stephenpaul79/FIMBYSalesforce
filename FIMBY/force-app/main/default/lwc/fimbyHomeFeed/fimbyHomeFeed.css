@@ -422,15 +422,18 @@
     color: #ffffff;
 }
 
-/* Level 1: three chips share the row (iPhone 13 mini+). Sub-filters keep horizontal scroll. */
+/* Level 1: three chips share the row (iPhone 13 mini+). Sub-filters keep horizontal scroll.
+   All stays content-sized so Shared Life / Ask & Offer get the leftover width. */
 .feed-filters .filters-scroll {
     flex: 1;
     min-width: 0;
     overflow-x: hidden;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .feed-filters .filter-button {
-    flex: 1 1 0;
+    width: 100%;
     min-width: 0;
     justify-content: center;
     min-height: 44px;
