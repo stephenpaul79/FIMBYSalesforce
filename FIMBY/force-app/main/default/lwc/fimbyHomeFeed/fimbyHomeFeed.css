@@ -441,6 +441,11 @@
     overflow: hidden;
 }
 
+.feed-filters .filter-button:first-child {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
 .feed-filters .filter-button span {
     overflow: hidden;
     text-overflow: ellipsis;
