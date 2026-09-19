@@ -207,4 +207,97 @@ private class FimbyPostalResolverTest {
         System.assertEquals(null, FimbyPostalResolver.resolveSingle(null));
         System.assertEquals(null, FimbyPostalResolver.resolveSingle(''));
     }
+
+    @isTest
+    static void derives_province_and_country_for_canadian_codes() {
+        Map<String, String> expectedByPostal = new Map<String, String>{
+            'V6A 1A1' => 'BC', 'T2P 1J9' => 'AB', 'S7K 1J5' => 'SK',
+            'R3C 4T3' => 'MB', 'M5V 2T6' => 'ON', 'H2Y 1C6' => 'QC',
+            'E1C 1E1' => 'NB', 'B3H 4R2' => 'NS', 'C1A 4K7' => 'PE',
+            'A1C 5H7' => 'NL', 'Y1A 2C6' => 'YT'
+        };
+
+        Test.startTest();
+        for (String postal : expectedByPostal.keySet()) {
+            FimbyPostalResolver.Result r = FimbyPostalResolver.resolveSingle(postal);
+            System.assertEquals(expectedByPostal.get(postal), r.province,
+                'wrong province derived for ' + postal);
+            System.assertEquals('CA', r.country, 'Canadian shape should resolve country CA');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void distinguishes_nunavut_from_northwest_territories() {
+        Test.startTest();
+        FimbyPostalResolver.Result nunavut = FimbyPostalResolver.resolveSingle('X0A 0H0');
+        FimbyPostalResolver.Result northwest = FimbyPostalResolver.resolveSingle('X1A 1A1');
+        Test.stopTest();
+
+        System.assertEquals('NU', nunavut.province, 'X0A belongs to Nunavut');
+        System.assertEquals('NT', northwest.province, 'other X codes belong to NWT');
+    }
+
+    @isTest
+    static void derives_state_and_country_for_us_zips() {
+        Map<String, String> expectedByZip = new Map<String, String>{
+            '98104' => 'WA', '97201' => 'OR', '90001' => 'CA', '10001' => 'NY',
+            '60601' => 'IL', '73301' => 'TX', '73101' => 'OK', '88901' => 'NV',
+            '88001' => 'NM', '79901' => 'TX', '96801' => 'HI', '99501' => 'AK',
+            '02101' => 'MA', '33101' => 'FL', '00501' => 'NY'
+        };
+
+        Test.startTest();
+        for (String zip : expectedByZip.keySet()) {
+            FimbyPostalResolver.Result r = FimbyPostalResolver.resolveSingle(zip);
+            System.assertEquals(expectedByZip.get(zip), r.province,
+                'wrong state derived for ' + zip);
+            System.assertEquals('US', r.country, 'five-digit shape should resolve country US');
+            System.assertEquals(zip, r.formattedPostalCode, 'five-digit ZIP formats unchanged');
+        }
+        Test.stopTest();
+    }
+
+    /**
+     * Postal_Codes__c has a validation rule restricting Name to the Canadian
+     * "X1X 1X1" shape, so no US row can exist to match against yet. Until that
+     * is relaxed, a US ZIP derives country/state/format but never matches.
+     */
+    @isTest
+    static void zip_plus_four_derives_without_matching_a_neighbourhood() {
+        Test.startTest();
+        FimbyPostalResolver.Result r = FimbyPostalResolver.resolveSingle('98104-1234');
+        Test.stopTest();
+
+        System.assertEquals('98104-1234', r.formattedPostalCode, 'ZIP+4 keeps its hyphen for display');
+        System.assertEquals('981041234', r.normalizedPostalCode, 'lookup key strips the hyphen');
+        System.assertEquals('WA', r.province, 'state derives from the five-digit base');
+        System.assertEquals('US', r.country);
+        System.assertEquals(false, r.isMatchFound, 'no US row can exist while the format rule stands');
+        System.assertEquals(false, r.isActiveNeighbourhood);
+    }
+
+    @isTest
+    static void unmapped_canadian_letter_has_country_but_no_province() {
+        Test.startTest();
+        FimbyPostalResolver.Result r = FimbyPostalResolver.resolveSingle('Z9Z 9Z9');
+        Test.stopTest();
+
+        System.assertEquals('CA', r.country, 'shape is Canadian even though Z is unassigned');
+        System.assertEquals(null, r.province, 'unassigned letter should not guess a province');
+    }
+
+    @isTest
+    static void unrecognized_shape_derives_nothing() {
+        Test.startTest();
+        FimbyPostalResolver.Result garbage = FimbyPostalResolver.resolveSingle('NOT A CODE');
+        FimbyPostalResolver.Result shortZip = FimbyPostalResolver.resolveSingle('1234');
+        Test.stopTest();
+
+        System.assertEquals(null, garbage.country, 'unrecognized shape has no country');
+        System.assertEquals(null, garbage.province, 'unrecognized shape has no province');
+        System.assertEquals(null, garbage.formattedPostalCode, 'unrecognized shape has no display format');
+        System.assertEquals(null, shortZip.country, 'four digits is not a ZIP');
+        System.assertEquals(null, shortZip.formattedPostalCode);
+    }
 }

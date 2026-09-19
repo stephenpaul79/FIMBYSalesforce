@@ -166,9 +166,19 @@
 )</expression>
     </formulas>
     <formulas>
+        <name>Lead_Phone</name>
+        <dataType>String</dataType>
+        <expression>BLANKVALUE({!Phone.value}, {!Launch_Phone})</expression>
+    </formulas>
+    <formulas>
         <name>LNfix</name>
         <dataType>String</dataType>
         <expression>SUBSTITUTE({!ln}, &quot;%20&quot;, &quot; &quot;)</expression>
+    </formulas>
+    <formulas>
+        <name>Phone_Missing</name>
+        <dataType>Boolean</dataType>
+        <expression>ISBLANK({!Phone.value})</expression>
     </formulas>
     <interviewLabel>FIMBY Sign Up {!$Flow.CurrentDateTime}</interviewLabel>
     <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
@@ -255,6 +265,12 @@
             </value>
         </inputAssignments>
         <inputAssignments>
+            <field>MailingCountry</field>
+            <value>
+                <elementReference>Resolve_Postal_Code.country</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
             <field>MailingPostalCode</field>
             <value>
                 <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
@@ -263,7 +279,7 @@
         <inputAssignments>
             <field>MailingState</field>
             <value>
-                <elementReference>Province_State</elementReference>
+                <elementReference>Resolve_Postal_Code.province</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -364,7 +380,7 @@
         <inputAssignments>
             <field>Phone</field>
             <value>
-                <elementReference>Phone.value</elementReference>
+                <elementReference>Lead_Phone</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -504,6 +520,12 @@
             </value>
         </inputAssignments>
         <inputAssignments>
+            <field>MailingCountry</field>
+            <value>
+                <elementReference>Resolve_Postal_Code.country</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
             <field>MailingPostalCode</field>
             <value>
                 <elementReference>Resolve_Postal_Code.formattedPostalCode</elementReference>
@@ -512,7 +534,7 @@
         <inputAssignments>
             <field>MailingState</field>
             <value>
-                <elementReference>Province_State</elementReference>
+                <elementReference>Resolve_Postal_Code.province</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -770,6 +792,46 @@
                     <stringValue>12</stringValue>
                 </width>
             </styleProperties>
+        </fields>
+        <fields>
+            <name>Launch_Phone</name>
+            <dataType>String</dataType>
+            <fieldText>What number should we use?</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+            <visibilityRule>
+                <conditionLogic>1 AND (2 OR 3)</conditionLogic>
+                <conditions>
+                    <leftValueReference>Phone_Missing</leftValueReference>
+                    <operator>EqualTo</operator>
+                    <rightValue>
+                        <booleanValue>true</booleanValue>
+                    </rightValue>
+                </conditions>
+                <conditions>
+                    <leftValueReference>Best_Contact_Method</leftValueReference>
+                    <operator>EqualTo</operator>
+                    <rightValue>
+                        <stringValue>Phone</stringValue>
+                    </rightValue>
+                </conditions>
+                <conditions>
+                    <leftValueReference>Best_Contact_Method</leftValueReference>
+                    <operator>EqualTo</operator>
+                    <rightValue>
+                        <stringValue>Either</stringValue>
+                    </rightValue>
+                </conditions>
+            </visibilityRule>
         </fields>
         <fields>
             <name>Launch_Notes</name>
@@ -1214,12 +1276,25 @@
                     <inputParameters>
                         <name>required</name>
                         <value>
-                            <booleanValue>true</booleanValue>
+                            <booleanValue>false</booleanValue>
                         </value>
                     </inputParameters>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>true</isRequired>
+                    <isRequired>false</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
+                    <styleProperties>
+                        <verticalAlignment>
+                            <stringValue>top</stringValue>
+                        </verticalAlignment>
+                        <width>
+                            <stringValue>12</stringValue>
+                        </width>
+                    </styleProperties>
+                </fields>
+                <fields>
+                    <name>Phone_Optional_Note</name>
+                    <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 12px; color: rgb(115, 115, 115);&quot;&gt;Optional. Neighbours only see your number if you choose to share it with them.&lt;/span&gt;&lt;/p&gt;</fieldText>
+                    <fieldType>DisplayText</fieldType>
                     <styleProperties>
                         <verticalAlignment>
                             <stringValue>top</stringValue>
@@ -1323,11 +1398,11 @@
                 <name>Signup_for_FIMBY_Section4_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
-                    <name>Province_State</name>
+                    <name>Postal_COde</name>
                     <dataType>String</dataType>
-                    <fieldText>Province</fieldText>
+                    <fieldText>Postal Code</fieldText>
                     <fieldType>InputField</fieldType>
-                    <helpText>&lt;p&gt;AKA &quot;State&quot; for you Americans.&lt;/p&gt;</helpText>
+                    <helpText>&lt;p&gt;This is how we find your neighbourhood.&lt;/p&gt;</helpText>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <styleProperties>
@@ -1342,40 +1417,13 @@
                 <inputParameters>
                     <name>width</name>
                     <value>
-                        <stringValue>3</stringValue>
+                        <stringValue>4</stringValue>
                     </value>
                 </inputParameters>
                 <isRequired>false</isRequired>
             </fields>
             <fields>
                 <name>Signup_for_FIMBY_Section4_Column2</name>
-                <fieldType>Region</fieldType>
-                <fields>
-                    <name>Postal_COde</name>
-                    <dataType>String</dataType>
-                    <fieldText>Postal Code</fieldText>
-                    <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>true</isRequired>
-                    <styleProperties>
-                        <verticalAlignment>
-                            <stringValue>top</stringValue>
-                        </verticalAlignment>
-                        <width>
-                            <stringValue>12</stringValue>
-                        </width>
-                    </styleProperties>
-                </fields>
-                <inputParameters>
-                    <name>width</name>
-                    <value>
-                        <stringValue>3</stringValue>
-                    </value>
-                </inputParameters>
-                <isRequired>false</isRequired>
-            </fields>
-            <fields>
-                <name>Signup_for_FIMBY_Section4_Column3</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Household_Nickname_Username</name>
@@ -1397,7 +1445,7 @@
                 <inputParameters>
                     <name>width</name>
                     <value>
-                        <stringValue>6</stringValue>
+                        <stringValue>8</stringValue>
                     </value>
                 </inputParameters>
                 <isRequired>false</isRequired>
