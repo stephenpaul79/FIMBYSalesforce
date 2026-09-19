@@ -247,12 +247,6 @@
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Household_Nickname__c</field>
-            <value>
-                <elementReference>Household_Nickname_Username</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
             <field>LastName</field>
             <value>
                 <elementReference>Last_Name</elementReference>
@@ -499,12 +493,6 @@
             <field>FirstName</field>
             <value>
                 <elementReference>First_Name</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Household_Nickname__c</field>
-            <value>
-                <elementReference>Household_Nickname_Username</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -1143,6 +1131,19 @@
             </styleProperties>
         </fields>
         <fields>
+            <name>Phone_Optional_Note</name>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;font-size: 16px;&quot;&gt;All contact info beyond your name is completely private unless explicitly shared with a specific neighbour.&lt;/em&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
             <name>Signup_for_FIMBY_Section1</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
@@ -1279,22 +1280,15 @@
                             <booleanValue>false</booleanValue>
                         </value>
                     </inputParameters>
+                    <inputParameters>
+                        <name>label</name>
+                        <value>
+                            <stringValue>Phone (Optional)</stringValue>
+                        </value>
+                    </inputParameters>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>false</isRequired>
+                    <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
-                    <styleProperties>
-                        <verticalAlignment>
-                            <stringValue>top</stringValue>
-                        </verticalAlignment>
-                        <width>
-                            <stringValue>12</stringValue>
-                        </width>
-                    </styleProperties>
-                </fields>
-                <fields>
-                    <name>Phone_Optional_Note</name>
-                    <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 12px; color: rgb(115, 115, 115);&quot;&gt;Optional. Neighbours only see your number if you choose to share it with them.&lt;/span&gt;&lt;/p&gt;</fieldText>
-                    <fieldType>DisplayText</fieldType>
                     <styleProperties>
                         <verticalAlignment>
                             <stringValue>top</stringValue>
@@ -1375,27 +1369,13 @@
                 <inputParameters>
                     <name>width</name>
                     <value>
-                        <stringValue>6</stringValue>
+                        <stringValue>3</stringValue>
                     </value>
                 </inputParameters>
                 <isRequired>false</isRequired>
             </fields>
-            <isRequired>false</isRequired>
-            <regionContainerType>SectionWithoutHeader</regionContainerType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
-            <name>Signup_for_FIMBY_Section4</name>
-            <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Signup_for_FIMBY_Section4_Column1</name>
+                <name>Signup_for_FIMBY_Section3_Column3</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Postal_COde</name>
@@ -1417,35 +1397,7 @@
                 <inputParameters>
                     <name>width</name>
                     <value>
-                        <stringValue>4</stringValue>
-                    </value>
-                </inputParameters>
-                <isRequired>false</isRequired>
-            </fields>
-            <fields>
-                <name>Signup_for_FIMBY_Section4_Column2</name>
-                <fieldType>Region</fieldType>
-                <fields>
-                    <name>Household_Nickname_Username</name>
-                    <dataType>String</dataType>
-                    <fieldText>Household Nickname</fieldText>
-                    <fieldType>InputField</fieldType>
-                    <helpText>&lt;p&gt;&amp;nbsp;e.g. Smith Household, Blue House, &lt;/p&gt;</helpText>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>true</isRequired>
-                    <styleProperties>
-                        <verticalAlignment>
-                            <stringValue>top</stringValue>
-                        </verticalAlignment>
-                        <width>
-                            <stringValue>12</stringValue>
-                        </width>
-                    </styleProperties>
-                </fields>
-                <inputParameters>
-                    <name>width</name>
-                    <value>
-                        <stringValue>8</stringValue>
+                        <stringValue>3</stringValue>
                     </value>
                 </inputParameters>
                 <isRequired>false</isRequired>
@@ -1478,10 +1430,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>Signup_for_FIMBY_Section5</name>
+            <name>Signup_for_FIMBY_Section4</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Signup_for_FIMBY_Section5_Column1</name>
+                <name>Signup_for_FIMBY_Section4_Column1</name>
                 <fieldType>Region</fieldType>
                 <inputParameters>
                     <name>width</name>
@@ -1492,7 +1444,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>Signup_for_FIMBY_Section5_Column2</name>
+                <name>Signup_for_FIMBY_Section4_Column2</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>privacydisclaimer</name>
@@ -1536,7 +1488,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>Signup_for_FIMBY_Section5_Column3</name>
+                <name>Signup_for_FIMBY_Section4_Column3</name>
                 <fieldType>Region</fieldType>
                 <inputParameters>
                     <name>width</name>
@@ -1604,10 +1556,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>Signup_for_FIMBY_Section6</name>
+            <name>Signup_for_FIMBY_Section5</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Signup_for_FIMBY_Section6_Column1</name>
+                <name>Signup_for_FIMBY_Section5_Column1</name>
                 <fieldType>Region</fieldType>
                 <inputParameters>
                     <name>width</name>
