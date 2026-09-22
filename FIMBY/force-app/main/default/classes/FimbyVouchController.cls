@@ -592,7 +592,9 @@ public without sharing class FimbyVouchController {
      * @description Loads vouching context for a Contact — used by the moderator welcome panel.
      *              Returns current state plus the active pending Vouch_Record__c (if any).
      */
-    @AuraEnabled(cacheable=true)
+    // Not cacheable: the moderator welcome panel re-reads this immediately after an
+    // override-vouch write, and a cached response would hand back the pre-write state.
+    @AuraEnabled
     public static VouchingPanelContext getVouchingContextForContact(Id contactId) {
         if (contactId == null) return null;
         VouchingPanelContext out = new VouchingPanelContext();

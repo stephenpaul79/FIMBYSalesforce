@@ -35,18 +35,20 @@
             <template lwc:if={hasPendingVouchRequest}>
                 <p class="vouching-detail">{pendingVouchSummary}</p>
             </template>
-            <template lwc:if={canOverrideVouch}>
-                <div class="vouching-actions">
-                    <button type="button"
-                            class="btn-action btn-secondary"
-                            onclick={handleOverrideVouchClick}>
-                        Override-vouch
-                    </button>
-                </div>
-            </template>
-            <template lwc:if={vouchingError}>
-                <p class="vouching-error" role="alert">{vouchingError}</p>
-            </template>
+            <div class="vouching-actions">
+                <button type="button"
+                        class="btn-action btn-secondary"
+                        disabled={overrideVouchDisabled}
+                        title={overrideVouchHint}
+                        onclick={handleOverrideVouchClick}>
+                    Override-vouch
+                </button>
+                <template lwc:if={isAlreadyVouched}>
+                    <span class="vouching-hint">{overrideVouchHint}</span>
+                </template>
+            </div>
+            <c-fimby-inline-banner variant="success" message={vouchingSuccess}></c-fimby-inline-banner>
+            <c-fimby-inline-banner variant="error" message={vouchingError}></c-fimby-inline-banner>
         </div>
 
         <!-- Welcome message textarea -->

@@ -256,6 +256,20 @@
     transform: scale(0.97);
 }
 
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary:disabled:hover {
+    background-color: var(--fimby-surface-card);
+    border-color: var(--fimby-border-default);
+}
+
+.btn-secondary:disabled:active {
+    transform: none;
+}
+
 .btn-link {
     background-color: transparent;
     color: var(--fimby-btn-primary-bg);
@@ -296,14 +310,18 @@
 
 .vouching-actions {
     display: flex;
+    align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-.vouching-error {
-    margin: 4px 0 0;
-    color: var(--fimby-error);
+.vouching-hint {
+    color: var(--fimby-text-secondary);
     font-size: 0.85rem;
+}
+
+.vouching-status c-fimby-inline-banner {
+    display: block;
 }
 
 /* â”€â”€ Reduced Motion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

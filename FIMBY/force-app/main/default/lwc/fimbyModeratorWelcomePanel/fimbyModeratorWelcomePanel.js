@@ -21,6 +21,7 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     @track _vouchingLoading = false;
     @track _vouchingActionInFlight = false;
     @track _vouchingError = '';
+    @track _vouchingSuccess = '';
     @track _showOverrideConfirm = false;
 
     @api
@@ -53,11 +54,10 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
         return VOUCHING_LABELS[status] || VOUCHING_LABELS.New;
     }
 
+    // Same source of truth as overrideVouchDisabled: green pill and dead button
+    // always arrive together.
     get vouchingBadgeClass() {
-        const status = this._vouchingCtx?.vouchedStatus;
-        if (status === 'Vouched') return 'onboarding-badge complete';
-        if (status === 'Vouch_Requested') return 'onboarding-badge pending';
-        return 'onboarding-badge pending';
+        return this.isAlreadyVouched ? 'onboarding-badge complete' : 'onboarding-badge pending';
     }
 
     get hasPendingVouchRequest() {
@@ -80,9 +80,22 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
         return `Requested${datePart} from ${name}${org}`;
     }
 
-    get canOverrideVouch() {
-        const status = this._vouchingCtx?.vouchedStatus;
-        return status !== 'Vouched';
+    get isAlreadyVouched() {
+        return this._vouchingCtx?.vouchedStatus === 'Vouched';
+    }
+
+    // The button stays on screen once they're vouched — a neighbour can be vouched
+    // by someone else before the welcome goes out, and a vanishing control reads as
+    // a glitch rather than an answer.
+    get overrideVouchDisabled() {
+        return this.isAlreadyVouched || this._vouchingActionInFlight || this._vouchingLoading;
+    }
+
+    get overrideVouchHint() {
+        if (!this.isAlreadyVouched) return 'Vouch for them yourself, without waiting for a neighbour';
+        const by = this._vouchingCtx?.vouchedByContactName
+            || this._vouchingCtx?.vouchedByOrganizationName;
+        return by ? `Already vouched by ${by}` : 'Already vouched';
     }
 
     get contactPhoto() {
@@ -141,7 +154,7 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     handleViewProfile() { this._dispatch('viewProfile', { contactId: this._panelData?.contactId }); }
 
     handleOverrideVouchClick() {
-        if (this._vouchingActionInFlight) return;
+        if (this.overrideVouchDisabled) return;
         if (!this._panelData?.contactId) return;
         this._showOverrideConfirm = true;
     }
@@ -158,9 +171,11 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
         if (!contactId) return;
         this._vouchingActionInFlight = true;
         this._vouchingError = '';
+        this._vouchingSuccess = '';
         try {
             await overrideVouch({ vouchedContactId: contactId });
             await this._loadVouchingContext(contactId);
+            this._vouchingSuccess = `${this.firstName} is vouched. They can borrow from the lending library now.`;
         } catch (error) {
             console.error('Override vouch error', error);
             this._vouchingError = error?.body?.message || error?.message
@@ -172,7 +187,13 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     }
 
     get vouchingError() { return this._vouchingError; }
+    get vouchingSuccess() { return this._vouchingSuccess; }
     get vouchingActionInFlight() { return this._vouchingActionInFlight; }
+
+    get firstName() {
+        const name = (this._panelData?.contactName || '').trim();
+        return name ? name.split(/\s+/)[0] : 'This neighbour';
+    }
 
     _dispatch(action, payload) {
         this.dispatchEvent(new CustomEvent('modalaction', {
