@@ -116,16 +116,28 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
 
     handleMessageChange(event) {
         this._welcomeMessage = event.target.value;
+        this._notifyDirty();
+    }
+
+    // An untouched prefilled template is not worth protecting; only edits are.
+    _notifyDirty(forceClean) {
+        const baseline = this._panelData?.welcomeTemplate || '';
+        this.dispatchEvent(new CustomEvent('dirtychange', {
+            detail: { isDirty: !forceClean && this._welcomeMessage !== baseline },
+            bubbles: true,
+            composed: true
+        }));
     }
 
     handleSendWelcome() {
+        this._notifyDirty(true);
         this._dispatch('sendWelcome', {
             contactId: this._panelData?.contactId,
             message: this._welcomeMessage
         });
     }
 
-    handleMarkWelcomed() { this._dispatch('markWelcomed'); }
+    handleMarkWelcomed() { this._notifyDirty(true); this._dispatch('markWelcomed'); }
     handleViewProfile() { this._dispatch('viewProfile', { contactId: this._panelData?.contactId }); }
 
     handleOverrideVouchClick() {

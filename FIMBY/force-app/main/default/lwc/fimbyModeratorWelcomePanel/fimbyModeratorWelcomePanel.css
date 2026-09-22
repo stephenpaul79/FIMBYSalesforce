@@ -2,7 +2,7 @@
     display: block;
 }
 
-/* ── Panel Body ──────────────────────────────── */
+/* â”€â”€ Panel Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .panel-body {
     display: flex;
@@ -10,7 +10,7 @@
     gap: 16px;
 }
 
-/* ── Member Card ─────────────────────────────── */
+/* â”€â”€ Member Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .member-card {
     display: flex;
@@ -53,7 +53,7 @@
     color: var(--fimby-text-secondary);
 }
 
-/* ── Reason Card ─────────────────────────────── */
+/* â”€â”€ Reason Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .reason-card {
     background-color: var(--fimby-surface-card);
@@ -79,7 +79,7 @@
     overflow-wrap: break-word;
 }
 
-/* ── Onboarding Status ───────────────────────── */
+/* â”€â”€ Onboarding Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .onboarding-status {
     display: flex;
@@ -118,7 +118,7 @@
     border: 1px solid var(--fimby-warning-border);
 }
 
-/* ── Welcome Message Field ───────────────────── */
+/* â”€â”€ Welcome Message Field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .welcome-field {
     display: flex;
@@ -163,7 +163,7 @@
     border-radius: var(--fimby-radius-sm);
     background-color: var(--fimby-surface-input);
     color: var(--fimby-text-primary);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     font-family: inherit;
     line-height: 1.5;
     /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
@@ -184,7 +184,7 @@
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
-/* ── Panel Footer ────────────────────────────── */
+/* â”€â”€ Panel Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .panel-footer {
     display: flex;
@@ -201,7 +201,7 @@
     flex-wrap: wrap;
 }
 
-/* ── Buttons (Tier 1 — Action) ───────────────── */
+/* â”€â”€ Buttons (Tier 1 â€” Action) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .btn-action {
     display: inline-flex;
@@ -268,7 +268,7 @@
     color: var(--fimby-btn-primary-bg-hover);
 }
 
-/* ── Vouching status ─────────────────────────── */
+/* â”€â”€ Vouching status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .vouching-status {
     padding: 12px 14px;
@@ -306,11 +306,33 @@
     font-size: 0.85rem;
 }
 
-/* ── Reduced Motion ──────────────────────────── */
+/* â”€â”€ Reduced Motion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @media (prefers-reduced-motion: reduce) {
     .btn-action,
     .welcome-textarea {
         transition: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

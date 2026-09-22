@@ -15,15 +15,26 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
     @track _isVisible = false;
     @track _taskData = {};
     @track _viewState = 'loading'; // loading | ready | error
+    @track _showDiscardConfirm = false;
 
     _previousActiveElement = null;
     _savedBodyOverflow = '';
+    _isDirty = false;
+
+    constructor() {
+        super();
+        // Slotted panels are light-DOM children of this host, so their composed
+        // 'dirtychange' events bubble here.
+        this.addEventListener('dirtychange', this.handleDirtyChange.bind(this));
+    }
 
     // ── Public API ──────────────────────────────────────────────────
 
     @api
     show(taskData) {
         this._previousActiveElement = document.activeElement;
+        this._isDirty = false;
+        this._showDiscardConfirm = false;
         this._taskData = taskData || {};
         this._viewState = 'ready';
         this._isVisible = true;
@@ -42,6 +53,8 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
     hide() {
         this._unlockBodyScroll();
         this._isVisible = false;
+        this._isDirty = false;
+        this._showDiscardConfirm = false;
         this.dispatchEvent(new CustomEvent('close'));
 
         if (this._previousActiveElement) {
@@ -87,20 +100,33 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     // ── Event handlers ──────────────────────────────────────────────
 
-    handleBackdropClick(event) {
-        if (event.target === event.currentTarget) {
-            this.hide();
-        }
-    }
+    // Clicking the backdrop deliberately does NOT dismiss. Moderators type long
+    // welcome messages and notes in here, and a mouse-up that lands outside the
+    // container — including one that ends a text drag-selection — counts as a
+    // backdrop click and used to throw the work away.
 
-    handleModalClick(event) {
-        event.stopPropagation();
+    handleDirtyChange(event) {
+        this._isDirty = !!event.detail?.isDirty;
     }
 
     handleKeyDown(event) {
-        if (event.key === 'Escape') {
-            this.hide();
+        if (event.key !== 'Escape') return;
+        if (this._showDiscardConfirm) return;
+        if (this._isDirty) {
+            this._showDiscardConfirm = true;
+            return;
         }
+        this.hide();
+    }
+
+    get showDiscardConfirm() { return this._showDiscardConfirm; }
+
+    handleDiscardConfirmed() {
+        this.hide();
+    }
+
+    handleDiscardCancelled() {
+        this._showDiscardConfirm = false;
     }
 
     handleClose() {

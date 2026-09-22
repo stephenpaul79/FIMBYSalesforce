@@ -1,8 +1,8 @@
 <template>
     <template lwc:if={_isVisible}>
-        <div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleKeyDown}
+        <div class="modal-backdrop" onkeydown={handleKeyDown}
              role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div class="modal-container" onclick={handleModalClick}>
+            <div class="modal-container" tabindex="-1">
                 <!-- Header -->
                 <div class="modal-header">
                     <div class="modal-title-area">
@@ -37,5 +37,16 @@
 
             </div>
         </div>
+
+        <c-fimby-confirm-modal
+            is-open={showDiscardConfirm}
+            title="Leave without sending?"
+            message="You've started writing. If you close now, what you typed won't be saved."
+            confirm-label="Discard it"
+            cancel-label="Keep writing"
+            variant="danger"
+            onconfirm={handleDiscardConfirmed}
+            oncancel={handleDiscardCancelled}>
+        </c-fimby-confirm-modal>
     </template>
 </template>

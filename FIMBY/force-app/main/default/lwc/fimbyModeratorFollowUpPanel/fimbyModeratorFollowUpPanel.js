@@ -79,8 +79,16 @@ export default class FimbyModeratorFollowUpPanel extends LightningElement {
 
     handleCheckIn() { this._activeForm = 'checkIn'; this._formNote = ''; }
     handleRecordConcern() { this._activeForm = 'recordConcern'; this._formNote = ''; }
-    handleFormNoteChange(event) { this._formNote = event.target.value; }
-    handleFormCancel() { this._activeForm = null; this._formNote = ''; }
+    handleFormNoteChange(event) { this._formNote = event.target.value; this._notifyDirty(); }
+    handleFormCancel() { this._activeForm = null; this._formNote = ''; this._notifyDirty(); }
+
+    _notifyDirty() {
+        this.dispatchEvent(new CustomEvent('dirtychange', {
+            detail: { isDirty: this._formNote.length > 0 },
+            bubbles: true,
+            composed: true
+        }));
+    }
 
     handleFormConfirm() {
         const subjectContactId = this.panelData?.reportedUserId;
@@ -99,6 +107,7 @@ export default class FimbyModeratorFollowUpPanel extends LightningElement {
         }
         this._activeForm = null;
         this._formNote = '';
+        this._notifyDirty();
     }
 
     handleContactReported() {
