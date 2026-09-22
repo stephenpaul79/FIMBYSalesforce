@@ -853,7 +853,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
         const removed = this._removeTaskAndCounts(task);
         try {
             await resolveTask({ taskId: task.Id, resolution, notes: '' });
-            invalidateModeratorContext();
+            this._signalModeratorTasksChanged();
             this._loadSummary();
         } catch (error) {
             this._showError('Failed to resolve task', error);
@@ -866,7 +866,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
         try {
             const contactId = task.Subject_Contact__c || task.Related_Record_Id__c;
             await markWelcomed({ contactId, taskId: task.Id, notes: '' });
-            invalidateModeratorContext();
+            this._signalModeratorTasksChanged();
             this._loadSummary();
         } catch (error) {
             this._showError('Failed to mark welcomed', error);
@@ -988,7 +988,6 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
                     });
                     const conversationId = await getOrCreateModeratorConversation({ targetContactId: contactId });
                     this._closeModal();
-                    invalidateModeratorContext();
                     this._refreshAfterAction();
                     navigate(this, `/conversation?id=${conversationId}`);
                     break;
@@ -1174,12 +1173,19 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
     _closeModalAndRemoveTask(task) {
         if (task) this._removeTaskAndCounts(task);
         this._closeModal();
-        invalidateModeratorContext();
+        this._signalModeratorTasksChanged();
         this._loadSummary();
     }
 
-    async _refreshAfterAction() {
+    // Dropping the shared memo only clears it locally; the header has to be told
+    // to read again or its task badge keeps the count from page load.
+    _signalModeratorTasksChanged() {
         invalidateModeratorContext();
+        window.dispatchEvent(new CustomEvent('fimbyrequestbadgerefresh'));
+    }
+
+    async _refreshAfterAction() {
+        this._signalModeratorTasksChanged();
         this._sectionTasks = {};
         this._sectionOffsets = {};
         await this._loadSummary();

@@ -1,8 +1,8 @@
 /* ================================================================
-   FIMBY Universal Header — 5-tab navigation
+   FIMBY Universal Header â€” 5-tab navigation
    Layout:
      Mobile  (<892px): [Logo] ................ [Bell] [+New] [Search] [Menu]
-     Desktop (≥892px): [Logo] [Home Library [+] Messages Mine] [Bell Search Menu]
+     Desktop (â‰¥892px): [Logo] [Home Library [+] Messages Mine] [Bell Search Menu]
    ================================================================ */
 
 .fimby-universal-header {
@@ -24,7 +24,7 @@
     background-color: var(--fimby-surface-card, #FAF7F2);
 }
 
-/* Zone 1 — Brand / Logo + Acting-as chip */
+/* Zone 1 â€” Brand / Logo + Acting-as chip */
 .brand-zone {
     flex: 0 0 auto;
     display: flex;
@@ -60,12 +60,12 @@
     opacity: 0.85;
 }
 
-/* Zone 2 — Desktop Navigation (hidden on mobile) */
+/* Zone 2 â€” Desktop Navigation (hidden on mobile) */
 .desktop-nav {
     display: none;
 }
 
-/* Zone 3 — Action buttons */
+/* Zone 3 â€” Action buttons */
 .action-section {
     flex: 0 0 auto;
     display: flex;
@@ -214,7 +214,7 @@
 }
 
 /* ================================================================
-   Desktop Navigation — 5-tab layout (≥892px)
+   Desktop Navigation â€” 5-tab layout (â‰¥892px)
    ================================================================ */
 @media (min-width: 892px) {
     .header-row-one {
@@ -1023,4 +1023,26 @@ button.identity-row:focus-visible {
         font-size: 0.875rem;
         margin-bottom: 0.875rem;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

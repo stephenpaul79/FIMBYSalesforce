@@ -1,6 +1,9 @@
 public with sharing class FimbyModeratorDashboardController {
 
-    @AuraEnabled(cacheable=true)
+    // Not cacheable: c/fimbyModeratorContext memoizes this and drops the memo
+    // whenever a task is resolved. An LDS cache on top would just re-serve the
+    // count that invalidation was meant to discard.
+    @AuraEnabled
     public static Map<String, Object> getModeratorHeaderData() {
         Id contactId = FimbyIdentityRepository.getActingAsContactId();
         if (contactId == null) return new Map<String, Object>{ 'isModerator' => false, 'taskCount' => 0 };

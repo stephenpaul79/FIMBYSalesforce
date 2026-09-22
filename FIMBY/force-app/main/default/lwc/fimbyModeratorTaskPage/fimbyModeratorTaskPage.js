@@ -1188,6 +1188,7 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
 
     _navigateBack() {
         invalidateModeratorContext();
+        window.dispatchEvent(new CustomEvent('fimbyrequestbadgerefresh'));
         let fallback = '/moderator-dashboard';
         try {
             const params = new URLSearchParams(window.location.search);

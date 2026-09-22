@@ -24,7 +24,7 @@ import {
 import switchToSelf from '@salesforce/apex/FimbySupportRelationshipController.switchToSelf';
 import endAllSessions from '@salesforce/apex/FimbySessionController.endAllSessions';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
-import { getModeratorContext } from 'c/fimbyModeratorContext';
+import { getModeratorContext, invalidateModeratorContext } from 'c/fimbyModeratorContext';
 
 const LOGO_FILE = 'FIMBYwGrass.png';
 const LOGO_SQUARE = 'FwithGrass.png';
@@ -154,7 +154,6 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         // Lock scroll immediately: _tosGatePending is true until the check above
         // resolves, so the opaque cover is already holding the screen.
         this._applyScrollLock();
-        this._loadModeratorContext();
 
         // Global zoom lock. The header is mounted once in the persistent shell,
         // so this single attach covers every surface. The class drives the
@@ -362,6 +361,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     _pollBadgeCounts() {
         this._lastBadgeFetch = Date.now();
+        this._refreshModeratorContext();
         getBadgeCounts()
             .then(result => {
                 this.notificationCount = result.notifications || 0;
@@ -713,6 +713,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     /* --- Moderator context ----------------------------------------- */
+
+    // Rides every badge-refresh trigger (explicit event, tab re-focus, app resume).
+    // The shared memo has to be dropped first or we re-read the same frozen count.
+    _refreshModeratorContext() {
+        invalidateModeratorContext();
+        this._loadModeratorContext();
+    }
 
     _loadModeratorContext() {
         getModeratorContext()
