@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>Valentine&apos;s Day</label>
+    <label>Good Neighbour Day</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Animation_Style__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:type="xsd:string">Cannon</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -16,15 +16,19 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">14.0</value>
+        <value xsi:type="xsd:double">28.0</value>
     </values>
     <values>
         <field>Duration_Days__c</field>
         <value xsi:type="xsd:double">1.0</value>
     </values>
     <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
         <field>Emoji_List__c</field>
-        <value xsi:type="xsd:string">❤️,💛,🏡,🍫,✨</value>
+        <value xsi:type="xsd:string">👋,🏡,🧁,💛,✨</value>
     </values>
     <values>
         <field>Fire_On_Login__c</field>
@@ -32,7 +36,7 @@
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:type="xsd:double">2.0</value>
+        <value xsi:type="xsd:double">9.0</value>
     </values>
     <values>
         <field>Priority__c</field>
@@ -40,6 +44,18 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">happy valentine&apos;s. loving your neighbours counts too.</value>
+        <value xsi:type="xsd:string">good neighbour day. one hello is enough to start.</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>
