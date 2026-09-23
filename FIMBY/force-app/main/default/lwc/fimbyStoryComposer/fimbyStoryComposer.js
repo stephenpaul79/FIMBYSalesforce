@@ -25,6 +25,9 @@ const MEME_GIFS = [
     { resource: 'MEMES2', file: 'Superstar.gif' }
 ];
 
+// Prayer and Lament are deliberately excluded — too private to ask about resharing.
+const SOCIAL_SHARE_ELIGIBLE_TYPES = ['Thank You', 'Neighbourhood Moment', 'God Story'];
+
 export default class FimbyStoryComposer extends NavigationMixin(LightningElement) {
     // Form state
     @track selectedStoryType = '';
@@ -153,6 +156,10 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
         return 'character-count';
     }
 
+    get showPostingOptions() {
+        return SOCIAL_SHARE_ELIGIBLE_TYPES.includes(this.selectedStoryType);
+    }
+
     get isPostDisabled() {
         return !this.selectedStoryType || !this.storyTitle.trim() ||
                !this.storyMessage.trim() || this.isPosting;
@@ -168,6 +175,9 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
 
     handleTypeSelection(event) {
         this.selectedStoryType = event.currentTarget.dataset.type;
+        if (!this.showPostingOptions) {
+            this.shareOnSocial = false;
+        }
         this._preloadMemeGif();
     }
 

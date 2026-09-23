@@ -86,21 +86,23 @@
                 </div>
 
                 <!-- Posting Options Section -->
-                <div class="form-section">
-                    <h3 class="section-title">
-                        <img src={optionsIconUrl} alt="Options" class="section-icon">
-                        Posting Options
-                    </h3>
+                <template lwc:if={showPostingOptions}>
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <img src={optionsIconUrl} alt="Options" class="section-icon">
+                            Posting Options
+                        </h3>
 
-                    <div class="form-field">
-                        <lightning-input
-                            type="checkbox"
-                            label="I'm okay with FIMBY reposting this on their social media (Facebook &amp; Instagram) to help spread the word about our neighbourhood."
-                            checked={shareOnSocial}
-                            onchange={handleShareOnSocialChange}>
-                        </lightning-input>
+                        <div class="form-field">
+                            <lightning-input
+                                type="checkbox"
+                                label="I'm okay with FIMBY reposting this on their social media (Facebook &amp; Instagram) to help spread the word about our neighbourhood."
+                                checked={shareOnSocial}
+                                onchange={handleShareOnSocialChange}>
+                            </lightning-input>
+                        </div>
                     </div>
-                </div>
+                </template>
 
                 <!-- Submit Button -->
                 <div class="submit-section">
