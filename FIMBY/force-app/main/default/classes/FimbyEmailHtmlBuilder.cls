@@ -234,14 +234,6 @@ public without sharing class FimbyEmailHtmlBuilder {
         String greetingHtml = String.isNotBlank(recipientFirstName)
             ? buildHeaderGreetingLine(recipientFirstName) : '';
 
-        String seasonalLine = getSeasonalLine();
-        String seasonalHtml = '';
-        if (String.isNotBlank(seasonalLine)) {
-            seasonalHtml = '<tr><td style="padding:12px 24px 0;text-align:center;">'
-                + '<p style="' + F + 'color:' + TEXT_SECONDARY + ';font-size:14px;font-style:italic;margin:0;">'
-                + escapeHtml(seasonalLine) + '</p></td></tr>';
-        }
-
         String headerRightHtml = minimal
             ? ''
             : '<td align="right" style="vertical-align:middle;">'
@@ -302,9 +294,6 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<tr><td style="padding:16px 0 20px;">'
             + (String.isNotBlank(innerHtml) ? innerHtml : '')
             + '</td></tr>'
-
-            // Seasonal line
-            + seasonalHtml
 
             // Footer (BG_SURFACE) — brand link left, optional secondary links right
             + '<tr><td style="background-color:' + BG_SURFACE + ';padding:16px 24px;border-radius:8px;border-top:1px solid ' + BORDER_LIGHT + ';">'
@@ -371,17 +360,6 @@ public without sharing class FimbyEmailHtmlBuilder {
         return '<tr><td style="background-color:' + BG_SURFACE + ';padding:12px 24px 12px;border-radius:0 0 8px 8px;">'
             + '<p style="margin:0;' + F + 'font-size:13px;color:' + TEXT_SECONDARY + ';">' + nhDisplay + '</p>'
             + '</td></tr>';
-    }
-
-    @TestVisible
-    static String getSeasonalLine() {
-        try {
-            FimbySeasonalThemeResolver.ActiveTheme theme = FimbySeasonalThemeResolver.getActiveTheme();
-            return theme == null ? null : theme.title;
-        } catch (Exception e) {
-            // Seasonal greeting is non-critical
-            return null;
-        }
     }
 
     /* ---------------------------------------------------------------

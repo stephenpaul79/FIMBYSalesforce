@@ -726,10 +726,17 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
-    static void getSeasonalLine_returnsNullOrString() {
-        String line = FimbyEmailHtmlBuilder.getSeasonalLine();
-        // May be null if no active seasonal theme — that's fine
-        System.assert(true, 'Should not throw');
+    static void brandedShell_omitsSeasonalLine() {
+        // Seasonal themes belong to the login celebration and home feed. The digest closes
+        // with the FIMBY_Digest_Anchor__mdt card, so the shell must not append a second one.
+        FimbySeasonalThemeResolver.ActiveTheme theme = FimbySeasonalThemeResolver.getActiveTheme();
+        String html = FimbyEmailHtmlBuilder.wrapInBrandedShell('<p>Hi</p>', 'Test', 'NH');
+        if (theme != null && String.isNotBlank(theme.title)) {
+            System.assert(
+                !html.contains(theme.title),
+                'Branded shell must not render the seasonal theme line: ' + theme.title
+            );
+        }
     }
 
     @IsTest
