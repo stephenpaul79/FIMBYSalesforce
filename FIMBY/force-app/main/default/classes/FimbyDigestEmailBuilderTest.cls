@@ -270,6 +270,32 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void pickAnchorRecord_fixedDateIsDeterministic() {
+        // Two records may share a Month/Day. Selection must not depend on row order.
+        FIMBY_Digest_Anchor__mdt first = FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 4, 22));
+        FIMBY_Digest_Anchor__mdt second = FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 4, 22));
+        System.assertNotEquals(null, first, 'April 22 has at least one dated anchor');
+        System.assertEquals(
+            first.DeveloperName, second.DeveloperName,
+            'Repeated picks for the same date must return the same record'
+        );
+    }
+
+    @IsTest
+    static void pickAnchorRecord_everyDayOfYearResolvesABody() {
+        Date cursor = Date.newInstance(2026, 1, 1);
+        for (Integer i = 0; i < 365; i++) {
+            FIMBY_Digest_Anchor__mdt record = FimbyDigestEmailBuilder.pickAnchorRecord(cursor);
+            System.assertNotEquals(null, record, 'Every day must resolve an anchor: ' + cursor);
+            System.assert(
+                String.isNotBlank(record.Body__c),
+                'Anchor body must be populated for ' + cursor + ' (' + record.DeveloperName + ')'
+            );
+            cursor = cursor.addDays(1);
+        }
+    }
+
+    @IsTest
     static void buildEventsSection_recurringSeries_showsOnlyLiveOccurrence() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
         Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];

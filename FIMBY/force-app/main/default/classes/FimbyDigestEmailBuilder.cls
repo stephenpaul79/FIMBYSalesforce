@@ -307,31 +307,48 @@ public without sharing class FimbyDigestEmailBuilder {
         }
     }
 
+    /**
+     * @description Every active anchor, fetched once per transaction. SOQL against a custom
+     * metadata type still counts toward the 100-query limit, and the batch calls the anchor
+     * picker once per neighbourhood plus once per blocked-author cohort, so the whole set is
+     * held in memory and partitioned in Apex instead of re-queried per call.
+     */
+    private static List<FIMBY_Digest_Anchor__mdt> cachedAnchors;
+
+    private static List<FIMBY_Digest_Anchor__mdt> getActiveAnchors() {
+        if (cachedAnchors == null) {
+            cachedAnchors = [
+                SELECT DeveloperName, Title__c, Subtitle__c, Body__c, Type__c, Month__c, Day__c,
+                       Sort_Order__c, Date_Rule__c, Easter_Offset_Days__c, Weekday__c,
+                       Week_Ordinal__c, Year_Dates__c
+                FROM FIMBY_Digest_Anchor__mdt
+                WHERE Active__c = true
+                ORDER BY Sort_Order__c ASC NULLS LAST, DeveloperName ASC
+            ];
+        }
+        return cachedAnchors;
+    }
+
     @TestVisible
     private static FIMBY_Digest_Anchor__mdt pickAnchorRecord(Date today) {
-        Integer todayMonth = today.month();
-        Integer todayDay = today.day();
+        List<FIMBY_Digest_Anchor__mdt> anchors = getActiveAnchors();
 
-        List<FIMBY_Digest_Anchor__mdt> dated = [
-            SELECT Title__c, Subtitle__c, Body__c, Type__c, Month__c, Day__c, Sort_Order__c
-            FROM FIMBY_Digest_Anchor__mdt
-            WHERE Active__c = true
-              AND Month__c = :todayMonth
-              AND Day__c = :todayDay
-            LIMIT 1
-        ];
-        if (!dated.isEmpty()) {
-            return dated[0];
+        FIMBY_Digest_Anchor__mdt ruleMatch = pickRuleAnchor(anchors, today);
+        if (ruleMatch != null) {
+            return ruleMatch;
         }
 
-        List<FIMBY_Digest_Anchor__mdt> evergreen = [
-            SELECT Title__c, Subtitle__c, Body__c, Type__c, Month__c, Day__c, Sort_Order__c
-            FROM FIMBY_Digest_Anchor__mdt
-            WHERE Active__c = true
-              AND Month__c = null
-              AND Day__c = null
-            ORDER BY Sort_Order__c ASC NULLS LAST
-        ];
+        List<FIMBY_Digest_Anchor__mdt> evergreen = new List<FIMBY_Digest_Anchor__mdt>();
+        for (FIMBY_Digest_Anchor__mdt record : anchors) {
+            if (isRuleResolved(record)) { continue; }
+            if (record.Month__c == null && record.Day__c == null) {
+                evergreen.add(record);
+            } else if (record.Month__c == today.month() && record.Day__c == today.day()) {
+                // Already ordered by Sort_Order then DeveloperName, so the first match on a
+                // date shared by two records is deterministic.
+                return record;
+            }
+        }
         if (evergreen.isEmpty()) {
             return null;
         }
@@ -339,6 +356,38 @@ public without sharing class FimbyDigestEmailBuilder {
         // so Jan 1 maps to evergreen[0] (the record with Sort_Order__c = 1).
         Integer index = Math.mod(today.dayOfYear() - 1, evergreen.size());
         return evergreen[index];
+    }
+
+    private static Boolean isRuleResolved(FIMBY_Digest_Anchor__mdt record) {
+        return String.isNotBlank(record.Date_Rule__c) && record.Date_Rule__c != 'Fixed';
+    }
+
+    /**
+     * @description Moveable observances (Ramadan, Diwali, Pentecost) cannot be filtered in
+     * SOQL, so every rule-based record is resolved in Apex. A window opened late in December
+     * can still land in January, hence the previous-year check.
+     */
+    private static FIMBY_Digest_Anchor__mdt pickRuleAnchor(List<FIMBY_Digest_Anchor__mdt> anchors, Date today) {
+        for (FIMBY_Digest_Anchor__mdt record : anchors) {
+            if (!isRuleResolved(record)) { continue; }
+
+            FimbySeasonalThemeResolver.RuleSpec spec = new FimbySeasonalThemeResolver.RuleSpec();
+            spec.rule = record.Date_Rule__c;
+            spec.month = record.Month__c == null ? null : Integer.valueOf(record.Month__c);
+            spec.day = record.Day__c == null ? null : Integer.valueOf(record.Day__c);
+            spec.easterOffsetDays = record.Easter_Offset_Days__c == null
+                ? null : Integer.valueOf(record.Easter_Offset_Days__c);
+            spec.weekday = record.Weekday__c;
+            spec.weekOrdinal = record.Week_Ordinal__c == null
+                ? null : Integer.valueOf(record.Week_Ordinal__c);
+            spec.yearDates = record.Year_Dates__c;
+
+            if (today == FimbySeasonalThemeResolver.resolveStartDate(spec, today.year())
+                || today == FimbySeasonalThemeResolver.resolveStartDate(spec, today.year() - 1)) {
+                return record;
+            }
+        }
+        return null;
     }
 
     private static String renderAnchorCard(FIMBY_Digest_Anchor__mdt record) {
