@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Easter_Offset_Days__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Easter Offset Days</label>
+    <precision>3</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <description>Days from Easter Sunday when Date Rule is Easter Offset. 0 = Easter Sunday, -2 = Good Friday, -46 = Ash Wednesday, 49 = Pentecost.</description>
+</CustomField>

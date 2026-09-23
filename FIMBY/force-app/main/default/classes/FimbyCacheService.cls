@@ -80,34 +80,16 @@ public with sharing class FimbyCacheService {
     // ─── Query implementations ──────────────────────────────────────
 
     private static Map<String, Object> querySeasonalTheme() {
-        Integer todayMonth = Date.today().month();
-        Integer todayDay = Date.today().day();
-        Date today = Date.today();
+        FimbySeasonalThemeResolver.ActiveTheme theme = FimbySeasonalThemeResolver.getActiveTheme();
+        if (theme == null) return null;
 
-        for (FIMBY_Seasonal_Theme__mdt theme : [
-            SELECT DeveloperName, Month__c, Day__c, Duration_Days__c,
-                   Emoji_List__c, Title__c, Fire_On_Login__c, Animation_Style__c, Active__c
-            FROM FIMBY_Seasonal_Theme__mdt
-            WHERE Active__c = true
-        ]) {
-            Integer startMonth = Integer.valueOf(theme.Month__c);
-            Integer startDay = Integer.valueOf(theme.Day__c);
-            Integer duration = theme.Duration_Days__c != null ? Integer.valueOf(theme.Duration_Days__c) : 1;
-
-            Date startDate = Date.newInstance(today.year(), startMonth, startDay);
-            Date endDate = startDate.addDays(duration - 1);
-
-            if (today >= startDate && today <= endDate) {
-                return new Map<String, Object>{
-                    'name' => theme.DeveloperName,
-                    'emojiList' => theme.Emoji_List__c,
-                    'title' => theme.Title__c,
-                    'fireOnLogin' => theme.Fire_On_Login__c,
-                    'animationStyle' => theme.Animation_Style__c
-                };
-            }
-        }
-        return null;
+        return new Map<String, Object>{
+            'name' => theme.name,
+            'emojiList' => theme.emojiList,
+            'title' => theme.title,
+            'fireOnLogin' => theme.fireOnLogin,
+            'animationStyle' => theme.animationStyle
+        };
     }
 
     private static List<Map<String, String>> queryCelebrationActions() {

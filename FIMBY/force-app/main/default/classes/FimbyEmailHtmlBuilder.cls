@@ -376,26 +376,12 @@ public without sharing class FimbyEmailHtmlBuilder {
     @TestVisible
     static String getSeasonalLine() {
         try {
-            Date today = Date.today();
-            Integer todayMonth = today.month();
-            Integer todayDay = today.day();
-            for (FIMBY_Seasonal_Theme__mdt theme : [
-                SELECT Title__c, Month__c, Day__c, Duration_Days__c
-                FROM FIMBY_Seasonal_Theme__mdt
-                WHERE Active__c = true
-            ]) {
-                Integer startMonth = (Integer) theme.Month__c;
-                Integer startDay = (Integer) theme.Day__c;
-                Integer duration = theme.Duration_Days__c != null ? (Integer) theme.Duration_Days__c : 1;
-                Date startDate = Date.newInstance(today.year(), startMonth, startDay);
-                if (today >= startDate && today <= startDate.addDays(duration - 1)) {
-                    return theme.Title__c;
-                }
-            }
+            FimbySeasonalThemeResolver.ActiveTheme theme = FimbySeasonalThemeResolver.getActiveTheme();
+            return theme == null ? null : theme.title;
         } catch (Exception e) {
             // Seasonal greeting is non-critical
+            return null;
         }
-        return null;
     }
 
     /* ---------------------------------------------------------------

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Week_Ordinal__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Week Ordinal</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <description>Which occurrence of Weekday to take. 1-5 counts forward; -1 takes the last occurrence in the month (Nth Weekday rule only). For Weekday Before Anchor, counts backwards from the anchor (Advent = 4).</description>
+</CustomField>

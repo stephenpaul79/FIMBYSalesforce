@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Year_Dates__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Year Dates</label>
+    <length>2000</length>
+    <required>false</required>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+    <description>One YYYY-MM-DD per line, used when Date Rule is Year Table (e.g. Lunar New Year). The line matching the current year wins; if no line matches, the theme is skipped. Top up before the last listed year passes.</description>
+</CustomField>
