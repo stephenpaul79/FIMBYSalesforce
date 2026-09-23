@@ -34,6 +34,20 @@ public with sharing class FimbySeasonalThemeResolver {
     }
 
     /**
+     * @description Date-rule inputs decoupled from any one CMDT, so the same maths
+     * serves FIMBY_Seasonal_Theme__mdt and FIMBY_Digest_Anchor__mdt.
+     */
+    public class RuleSpec {
+        public String rule;
+        public Integer month;
+        public Integer day;
+        public Integer easterOffsetDays;
+        public String weekday;
+        public Integer weekOrdinal;
+        public String yearDates;
+    }
+
+    /**
      * @description Highest-priority active theme covering today, or null.
      */
     public static ActiveTheme getActiveTheme() {
@@ -91,33 +105,47 @@ public with sharing class FimbySeasonalThemeResolver {
         return duration < 1 ? 1 : duration;
     }
 
-    /**
-     * @description Start date for the given year, or null when the record is
-     * misconfigured or a Year Table has no row for that year. A null skips the
-     * theme rather than throwing — a wrong greeting is bad, a broken home feed
-     * is worse.
-     */
+    /** Adapter onto the RuleSpec overload, which carries the branch logic. */
     @TestVisible
     private static Date resolveStartDate(FIMBY_Seasonal_Theme__mdt theme, Integer year) {
-        String rule = String.isBlank(theme.Date_Rule__c) ? 'Fixed' : theme.Date_Rule__c;
+        RuleSpec spec = new RuleSpec();
+        spec.rule = theme.Date_Rule__c;
+        spec.month = intOf(theme.Month__c);
+        spec.day = intOf(theme.Day__c);
+        spec.easterOffsetDays = intOf(theme.Easter_Offset_Days__c);
+        spec.weekday = theme.Weekday__c;
+        spec.weekOrdinal = intOf(theme.Week_Ordinal__c);
+        spec.yearDates = theme.Year_Dates__c;
+        return resolveStartDate(spec, year);
+    }
+
+    /**
+     * @description Start date for the given year, or null when the spec is
+     * misconfigured or a Year Table has no row for that year. A null skips the
+     * record rather than throwing — a wrong greeting is bad, a broken home feed
+     * is worse.
+     */
+    public static Date resolveStartDate(RuleSpec spec, Integer year) {
+        if (spec == null) return null;
+        String rule = String.isBlank(spec.rule) ? 'Fixed' : spec.rule;
 
         if (rule == 'Easter_Offset') {
-            Integer offset = theme.Easter_Offset_Days__c == null ? 0 : Integer.valueOf(theme.Easter_Offset_Days__c);
+            Integer offset = spec.easterOffsetDays == null ? 0 : spec.easterOffsetDays;
             return easterSunday(year).addDays(offset);
         }
         if (rule == 'Nth_Weekday') {
-            return nthWeekdayOfMonth(year, intOf(theme.Month__c), theme.Weekday__c, intOf(theme.Week_Ordinal__c));
+            return nthWeekdayOfMonth(year, spec.month, spec.weekday, spec.weekOrdinal);
         }
         if (rule == 'Weekday_Before_Anchor') {
-            Date anchor = fixedDate(year, intOf(theme.Month__c), intOf(theme.Day__c));
+            Date anchor = fixedDate(year, spec.month, spec.day);
             return anchor == null
                 ? null
-                : nthWeekdayBefore(anchor, theme.Weekday__c, intOf(theme.Week_Ordinal__c));
+                : nthWeekdayBefore(anchor, spec.weekday, spec.weekOrdinal);
         }
         if (rule == 'Year_Table') {
-            return dateForYear(theme.Year_Dates__c, year);
+            return dateForYear(spec.yearDates, year);
         }
-        return fixedDate(year, intOf(theme.Month__c), intOf(theme.Day__c));
+        return fixedDate(year, spec.month, spec.day);
     }
 
     private static Integer intOf(Decimal value) {

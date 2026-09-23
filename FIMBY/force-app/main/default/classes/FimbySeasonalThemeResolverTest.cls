@@ -181,6 +181,53 @@ private class FimbySeasonalThemeResolverTest {
     }
 
     @IsTest
+    static void ruleSpec_resolvesSameDatesAsRecordOverload() {
+        FimbySeasonalThemeResolver.RuleSpec easter = new FimbySeasonalThemeResolver.RuleSpec();
+        easter.rule = 'Easter_Offset';
+        easter.easterOffsetDays = 49;
+        System.assertEquals(
+            Date.newInstance(2026, 5, 24),
+            FimbySeasonalThemeResolver.resolveStartDate(easter, 2026),
+            'Pentecost is 49 days after Easter Sunday 2026-04-05'
+        );
+
+        FimbySeasonalThemeResolver.RuleSpec thirdThursday = new FimbySeasonalThemeResolver.RuleSpec();
+        thirdThursday.rule = 'Nth_Weekday';
+        thirdThursday.month = 10;
+        thirdThursday.weekday = 'Thursday';
+        thirdThursday.weekOrdinal = 3;
+        System.assertEquals(
+            Date.newInstance(2026, 10, 15),
+            FimbySeasonalThemeResolver.resolveStartDate(thirdThursday, 2026),
+            'Third Thursday of October 2026 is the 15th'
+        );
+
+        FimbySeasonalThemeResolver.RuleSpec table = new FimbySeasonalThemeResolver.RuleSpec();
+        table.rule = 'Year_Table';
+        table.yearDates = '2026-10-06\n2027-09-25';
+        System.assertEquals(
+            Date.newInstance(2027, 9, 25),
+            FimbySeasonalThemeResolver.resolveStartDate(table, 2027),
+            'Year table picks the row matching the requested year'
+        );
+
+        FimbySeasonalThemeResolver.RuleSpec blankRule = new FimbySeasonalThemeResolver.RuleSpec();
+        blankRule.month = 4;
+        blankRule.day = 14;
+        System.assertEquals(
+            Date.newInstance(2026, 4, 14),
+            FimbySeasonalThemeResolver.resolveStartDate(blankRule, 2026),
+            'Blank rule behaves as Fixed'
+        );
+
+        System.assertEquals(
+            null,
+            FimbySeasonalThemeResolver.resolveStartDate((FimbySeasonalThemeResolver.RuleSpec) null, 2026),
+            'A null spec resolves to null rather than throwing'
+        );
+    }
+
+    @IsTest
     static void getActiveThemeRunsAgainstOrgMetadata() {
         Test.startTest();
         FimbySeasonalThemeResolver.ActiveTheme today = FimbySeasonalThemeResolver.getActiveTheme();
