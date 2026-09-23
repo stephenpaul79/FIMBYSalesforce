@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">is there a name on your street you still don't know? what would it cost to learn it?</value>
+        <value xsi:type="xsd:string">is there a name on your street you still don't know? what would it take to learn it?</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">8.0</value>
+        <value xsi:type="xsd:double">5.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

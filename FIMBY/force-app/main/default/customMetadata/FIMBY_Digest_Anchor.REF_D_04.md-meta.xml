@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">&quot;bear one another's burdens, and so fulfill the law of christ.&quot; this is what your asks and offers are doing.</value>
+        <value xsi:type="xsd:string">&quot;bear one another's burdens.&quot; paul, writing to a struggling young community in galatia about two thousand years ago. it is roughly what an ask and an offer are doing.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">23.0</value>
+        <value xsi:type="xsd:double">14.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

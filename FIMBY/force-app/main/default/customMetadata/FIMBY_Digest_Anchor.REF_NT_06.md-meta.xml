@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF NT-6 dont owe a reason</label>
+    <label>REF NT-6 the honest no</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">you don't owe anyone a reason for every no. when you can, a simple &quot;not this week&quot; keeps the door kind.</value>
+        <value xsi:type="xsd:string">&quot;not this week&quot; is a complete answer, and you don't owe a reason. &quot;i can't, but i hope someone can&quot; is a real reply too. a kind no keeps the door open better than silence does.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">6.0</value>
+        <value xsi:type="xsd:double">23.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

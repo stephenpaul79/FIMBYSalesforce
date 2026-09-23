@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF R-5 lonelier than they let on</label>
+    <label>REF R-5 who would know</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">who, near you, might be lonelier than they let on?</value>
+        <value xsi:type="xsd:string">when you're the one having a hard week, who near you would know?</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">11.0</value>
+        <value xsi:type="xsd:double">17.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

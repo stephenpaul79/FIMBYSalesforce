@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF NT-5 offers are not only objects</label>
+    <label>REF NT-7 the awkward middle</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,10 +8,18 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">an offer doesn't have to be an object. company on a hard afternoon, a lift to an appointment, twenty minutes and a phone number. some of the most useful things here aren't things.</value>
+        <value xsi:type="xsd:string">the awkward middle, between meeting someone and trusting them, is where most neighbouring actually lives. it is not a sign you are doing it wrong.</value>
+    </values>
+    <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Fixed</value>
     </values>
     <values>
         <field>Day__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
         <value xsi:nil="true"/>
     </values>
     <values>
@@ -20,7 +28,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">19.0</value>
+        <value xsi:type="xsd:double">26.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -33,5 +41,17 @@
     <values>
         <field>Type__c</field>
         <value xsi:type="xsd:string">Neighbouring_Tip</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>

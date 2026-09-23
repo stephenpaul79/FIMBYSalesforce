@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF NT-4 offer is not always a thing</label>
+    <label>REF NT-4 nobody stays the helper</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">an offer doesn't have to be a thing. it can be company, time, or a phone number.</value>
+        <value xsi:type="xsd:string">the one who lent the ladder in june is the one asking for a ride in november. nobody stays the helper. nobody stays the helped.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">4.0</value>
+        <value xsi:type="xsd:double">15.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

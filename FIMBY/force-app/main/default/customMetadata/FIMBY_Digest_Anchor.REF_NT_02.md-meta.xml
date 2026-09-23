@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF NT-2 small offers</label>
+    <label>REF NT-2 start small</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">small offers age better than big ones. a casserole today beats a kitchen renovation someday.</value>
+        <value xsi:type="xsd:string">make your first ask a small one. a ladder, a bike pump, a big pot, a suitcase. something you could borrow and hand back. small asks get answered, and that is the whole point.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">2.0</value>
+        <value xsi:type="xsd:double">7.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF NT-3 awkward middle</label>
+    <label>REF NT-3 the return trip</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the awkward middle, between meeting someone and trusting them, is normal. it's where most neighbouring lives.</value>
+        <value xsi:type="xsd:string">a gift needs one meeting. a loan needs two. the trip back is where the second conversation happens, which is the part you don't get from a handover.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">3.0</value>
+        <value xsi:type="xsd:double">11.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>

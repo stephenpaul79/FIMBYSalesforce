@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>REF HT-5 quiet neighbourhood</label>
+    <label>REF HT-5 taking part for someone else</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">if your neighbourhood feels quiet, posting an offer is a faster path to connection than waiting for an ask.</value>
+        <value xsi:type="xsd:string">not everyone can work an app. manage identities, in the header menu, lets you act for someone who can't. add a family member, including a child too young for their own account. ask to become an adult's support person. connect a local group you represent. their name goes on the post and yours is recorded beside it, so nobody has to log in to take part.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:type="xsd:double">18.0</value>
+        <value xsi:type="xsd:double">16.0</value>
     </values>
     <values>
         <field>Subtitle__c</field>
