@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>OTD Apr 14 Mondragon Founded</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Body__c</field>
+        <value xsi:type="xsd:string">a basque priest blessed the foundation stone of a small workshop in mondragon, spain, started by five of his former students who believed workers should own the company they work for. it grew into a federation of cooperatives employing over 80,000 people, still owned by the people who work there.</value>
+    </values>
+    <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Fixed</value>
+    </values>
+    <values>
+        <field>Day__c</field>
+        <value xsi:type="xsd:double">14.0</value>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Month__c</field>
+        <value xsi:type="xsd:double">4.0</value>
+    </values>
+    <values>
+        <field>Sort_Order__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Subtitle__c</field>
+        <value xsi:type="xsd:string">1956</value>
+    </values>
+    <values>
+        <field>Title__c</field>
+        <value xsi:type="xsd:string">the first Mondragon cooperative broke ground</value>
+    </values>
+    <values>
+        <field>Type__c</field>
+        <value xsi:type="xsd:string">Event</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
+    </values>
+</CustomMetadata>
