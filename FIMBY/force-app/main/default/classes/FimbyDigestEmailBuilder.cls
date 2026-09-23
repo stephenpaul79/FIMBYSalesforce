@@ -479,6 +479,11 @@ public without sharing class FimbyDigestEmailBuilder {
         return null;
     }
 
+    /**
+     * @description An RSVP moves an event to Reply Received / Reply Accepted (one-click
+     * "I'm Going" on an Open Event auto-accepts), so those statuses must stay in scope or a
+     * single attendee would hide the event from the digest. Matches FimbyEventReminderJob.
+     */
     private static TieredDigestResult queryTieredEvents(
         Id nhId,
         Datetime startDt,
@@ -495,7 +500,7 @@ public without sharing class FimbyDigestEmailBuilder {
             'WHERE Neighbourhood__c = :nhId ' +
             'AND Type__c = \'Event\' ' +
             'AND CreatedDate >= :startDt AND CreatedDate <= :endDt ' +
-            'AND Status__c IN (\'Posted\', \'Available\') ' +
+            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
             'AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today)) ' +
             'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ' +
             'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
@@ -982,7 +987,7 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND Type__c = 'Event'
-              AND Status__c IN ('Posted', 'Available')
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
               AND Start_Date__c >= :today
               AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded

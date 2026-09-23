@@ -364,6 +364,59 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildEventsSection_includesEventsWithRsvpStatuses() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        insert new List<Needs_Offers__c>{
+            new Needs_Offers__c(
+                Name = 'Digest Soup Sunday Accepted',
+                RecordTypeId = offerRt,
+                Neighbourhood__c = nh.Id,
+                Contact__c = c.Id,
+                Posted_By__c = c.Id,
+                Type__c = 'Event',
+                Event_Type__c = 'Open_Event',
+                Status__c = 'Reply Accepted',
+                Start_Date__c = Date.today().addDays(4),
+                End_Date__c = Date.today().addDays(4),
+                Location__c = 'Community Kitchen'
+            ),
+            new Needs_Offers__c(
+                Name = 'Digest Soup Sunday Received',
+                RecordTypeId = offerRt,
+                Neighbourhood__c = nh.Id,
+                Contact__c = c.Id,
+                Posted_By__c = c.Id,
+                Type__c = 'Event',
+                Event_Type__c = 'Gathering',
+                Status__c = 'Reply Received',
+                Start_Date__c = Date.today().addDays(5),
+                End_Date__c = Date.today().addDays(5),
+                Location__c = 'Corner Park'
+            )
+        };
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Daily', Date.today(), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(
+            result.html.contains('Digest Soup Sunday Accepted'),
+            'An RSVP (Reply Accepted) must not hide an upcoming event from the digest'
+        );
+        System.assert(
+            result.html.contains('Digest Soup Sunday Received'),
+            'Reply Received events must still appear in the digest'
+        );
+    }
+
+    @IsTest
     static void buildEventsSection_excludesPastRecurringParentBeforeSpawn() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
         Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
