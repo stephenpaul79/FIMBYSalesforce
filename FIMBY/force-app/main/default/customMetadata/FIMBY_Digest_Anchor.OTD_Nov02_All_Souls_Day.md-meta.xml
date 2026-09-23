@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">today the church remembers everyone who has died. not just the saints, but the ordinary people. the ones who cooked, cleaned, showed up, and loved without being noticed.</value>
+        <value xsi:type="xsd:string">in many christian traditions, today is for remembering everyone who has died. not just the saints, but the ordinary people. the ones who cooked, cleaned, showed up, and loved without being noticed.</value>
     </values>
     <values>
         <field>Day__c</field>
