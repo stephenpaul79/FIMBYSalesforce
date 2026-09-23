@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>OBS Diwali</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Body__c</field>
+        <value xsi:type="xsd:string">the hindu, sikh and jain festival of lights. people clean and decorate their homes, set rows of small oil lamps along windows and doorsteps, and carry sweets to their neighbours' doors. the doorstep part is the oldest bit of it.</value>
+    </values>
+    <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Year_Table</value>
+    </values>
+    <values>
+        <field>Day__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Month__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Sort_Order__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Subtitle__c</field>
+        <value xsi:type="xsd:string">festival of lights</value>
+    </values>
+    <values>
+        <field>Title__c</field>
+        <value xsi:type="xsd:string">Diwali</value>
+    </values>
+    <values>
+        <field>Type__c</field>
+        <value xsi:type="xsd:string">Feast_Day</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:type="xsd:string">2027-10-29
+2028-10-17
+2029-11-05
+2030-10-26
+2031-11-14
+2032-11-02
+2033-10-22
+2034-11-10
+2035-10-30</value>
+    </values>
+</CustomMetadata>

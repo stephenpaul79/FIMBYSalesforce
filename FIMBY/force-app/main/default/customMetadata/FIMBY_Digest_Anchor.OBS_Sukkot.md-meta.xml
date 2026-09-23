@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>OBS Sukkot</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Body__c</field>
+        <value xsi:type="xsd:string">a week-long harvest festival. families build a sukkah, a small temporary shelter with a roof left open to the sky, and eat their meals inside it for the week. the tradition is to invite guests in, including strangers. the point is remembering that shelter is fragile, and that hospitality matters most to people who do not have a roof of their own.</value>
+    </values>
+    <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Year_Table</value>
+    </values>
+    <values>
+        <field>Day__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Month__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Sort_Order__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Subtitle__c</field>
+        <value xsi:type="xsd:string">jewish harvest festival</value>
+    </values>
+    <values>
+        <field>Title__c</field>
+        <value xsi:type="xsd:string">Sukkot</value>
+    </values>
+    <values>
+        <field>Type__c</field>
+        <value xsi:type="xsd:string">Feast_Day</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:type="xsd:string">2027-10-16
+2028-10-05
+2029-09-24
+2030-10-12
+2031-10-02
+2032-09-20
+2033-10-08
+2034-09-28
+2035-10-18</value>
+    </values>
+</CustomMetadata>
