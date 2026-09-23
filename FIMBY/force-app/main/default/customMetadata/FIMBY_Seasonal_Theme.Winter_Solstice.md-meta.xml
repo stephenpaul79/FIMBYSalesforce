@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>All Saints Day</label>
+    <label>Winter Solstice</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -16,11 +16,15 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">1.0</value>
+        <value xsi:type="xsd:double">21.0</value>
     </values>
     <values>
         <field>Duration_Days__c</field>
         <value xsi:type="xsd:double">1.0</value>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Emoji_List__c</field>
@@ -32,14 +36,26 @@
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:type="xsd:double">11.0</value>
+        <value xsi:type="xsd:double">12.0</value>
     </values>
     <values>
         <field>Priority__c</field>
-        <value xsi:type="xsd:double">0.0</value>
+        <value xsi:type="xsd:double">10.0</value>
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">today we remember the saints who showed us how.</value>
+        <value xsi:type="xsd:string">the longest night of the year. from here, the light starts coming back.</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>

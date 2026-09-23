@@ -11,12 +11,20 @@
         <value xsi:nil="true"/>
     </values>
     <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Easter_Offset</value>
+    </values>
+    <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">20.0</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Duration_Days__c</field>
         <value xsi:type="xsd:double">1.0</value>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:type="xsd:double">0.0</value>
     </values>
     <values>
         <field>Emoji_List__c</field>
@@ -28,10 +36,26 @@
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:type="xsd:double">4.0</value>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Priority__c</field>
+        <value xsi:type="xsd:double">10.0</value>
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">he is risen. peace to your block.</value>
+        <value xsi:type="xsd:string">happy easter. peace to our neighbourhood.</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>

@@ -4,8 +4,8 @@
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Month</label>
     <precision>2</precision>
-    <required>true</required>
+    <required>false</required>
     <scale>0</scale>
     <type>Number</type>
-    <description>Start month (1-12)</description>
+    <description>Start month (1-12). Required for the Fixed and Nth Weekday rules, and as the anchor month for Weekday Before Anchor. Leave blank for Easter Offset and Year Table, which compute the month themselves.</description>
 </CustomField>

@@ -11,12 +11,20 @@
         <value xsi:nil="true"/>
     </values>
     <values>
+        <field>Date_Rule__c</field>
+        <value xsi:type="xsd:string">Fixed</value>
+    </values>
+    <values>
         <field>Day__c</field>
         <value xsi:type="xsd:double">25.0</value>
     </values>
     <values>
         <field>Duration_Days__c</field>
         <value xsi:type="xsd:double">3.0</value>
+    </values>
+    <values>
+        <field>Easter_Offset_Days__c</field>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Emoji_List__c</field>
@@ -31,7 +39,23 @@
         <value xsi:type="xsd:double">12.0</value>
     </values>
     <values>
+        <field>Priority__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
         <field>Title__c</field>
         <value xsi:type="xsd:string">merry christmas. peace where you are.</value>
+    </values>
+    <values>
+        <field>Week_Ordinal__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Weekday__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Year_Dates__c</field>
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>
