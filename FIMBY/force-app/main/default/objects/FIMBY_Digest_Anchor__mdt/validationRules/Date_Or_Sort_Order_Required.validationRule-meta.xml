@@ -2,22 +2,32 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Date_Or_Sort_Order_Required</fullName>
     <active>true</active>
-    <description>Anchor records must be either date-anchored (Month + Day populated, Sort Order blank) OR evergreen (Sort Order populated, Month + Day blank). Partial dates, double-anchored records, and orphan records are not allowed.</description>
+    <description>Exactly one shape per record: date-anchored (Month + Day, no Sort Order), evergreen (Sort Order, no Month/Day), or rule-resolved (Date Rule other than Fixed, no Sort Order, Month/Day as that rule needs). No partial dates or double-anchored records.</description>
     <errorConditionFormula>OR(
   AND(
-    OR(ISBLANK(Month__c), ISBLANK(Day__c)),
-    NOT(AND(ISBLANK(Month__c), ISBLANK(Day__c)))
+    OR(ISBLANK(TEXT(Date_Rule__c)), TEXT(Date_Rule__c) = "Fixed"),
+    OR(
+      AND(
+        OR(ISBLANK(Month__c), ISBLANK(Day__c)),
+        NOT(AND(ISBLANK(Month__c), ISBLANK(Day__c)))
+      ),
+      AND(
+        NOT(ISBLANK(Month__c)),
+        NOT(ISBLANK(Day__c)),
+        NOT(ISBLANK(Sort_Order__c))
+      ),
+      AND(
+        ISBLANK(Month__c),
+        ISBLANK(Day__c),
+        ISBLANK(Sort_Order__c)
+      )
+    )
   ),
   AND(
-    NOT(ISBLANK(Month__c)),
-    NOT(ISBLANK(Day__c)),
+    NOT(ISBLANK(TEXT(Date_Rule__c))),
+    TEXT(Date_Rule__c) &lt;&gt; "Fixed",
     NOT(ISBLANK(Sort_Order__c))
-  ),
-  AND(
-    ISBLANK(Month__c),
-    ISBLANK(Day__c),
-    ISBLANK(Sort_Order__c)
   )
 )</errorConditionFormula>
-    <errorMessage>Anchor records must be either date-anchored (Month + Day populated, Sort Order blank) OR evergreen (Sort Order populated, Month + Day blank). Partial dates, double-anchored records, and orphan records are not allowed.</errorMessage>
+    <errorMessage>Use exactly one shape: date-anchored (Month + Day, no Sort Order), evergreen (Sort Order, no Month/Day), or rule-resolved (Date Rule other than Fixed, no Sort Order). No partial dates or double-anchored records.</errorMessage>
 </ValidationRule>

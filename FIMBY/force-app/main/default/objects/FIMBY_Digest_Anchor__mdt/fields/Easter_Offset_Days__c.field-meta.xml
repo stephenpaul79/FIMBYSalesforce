@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Easter_Offset_Days__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Easter Offset Days</label>
+    <type>Number</type>
+    <precision>4</precision>
+    <scale>0</scale>
+    <description>Days from Easter Sunday. Negative counts backwards (Maundy Thursday -3, Ash Wednesday -46). Used when Date Rule is Easter Offset.</description>
+</CustomField>

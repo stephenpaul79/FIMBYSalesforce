@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Date_Rule__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Date Rule</label>
+    <type>Picklist</type>
+    <description>How the card's date is resolved each year. Fixed (default) uses Month/Day as-is. Easter Offset adds Easter Offset Days to computed Easter Sunday. Nth Weekday uses Month + Weekday + Week Ordinal (-1 = last). Weekday Before Anchor counts Week Ordinal occurrences of Weekday strictly before the Month/Day anchor. Year Table reads the matching year from Year Dates. Blank behaves as Fixed.</description>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Fixed</fullName>
+                <default>true</default>
+                <label>Fixed</label>
+            </value>
+            <value>
+                <fullName>Easter_Offset</fullName>
+                <default>false</default>
+                <label>Easter Offset</label>
+            </value>
+            <value>
+                <fullName>Nth_Weekday</fullName>
+                <default>false</default>
+                <label>Nth Weekday</label>
+            </value>
+            <value>
+                <fullName>Weekday_Before_Anchor</fullName>
+                <default>false</default>
+                <label>Weekday Before Anchor</label>
+            </value>
+            <value>
+                <fullName>Year_Table</fullName>
+                <default>false</default>
+                <label>Year Table</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

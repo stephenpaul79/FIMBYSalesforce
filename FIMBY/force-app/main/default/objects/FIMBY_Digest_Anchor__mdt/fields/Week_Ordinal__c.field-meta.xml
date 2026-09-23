@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Week_Ordinal__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Week Ordinal</label>
+    <type>Number</type>
+    <precision>2</precision>
+    <scale>0</scale>
+    <description>Which occurrence of Weekday. 1 = first, -1 = last. For Weekday Before Anchor, how many occurrences back from the anchor.</description>
+</CustomField>
