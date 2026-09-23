@@ -20,7 +20,7 @@
     }
 }
 
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -52,7 +52,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* Composer Form — horizontal padding lives on the outer wrapper per LWC CSS foundations */
+/* Composer Form â€” horizontal padding lives on the outer wrapper per LWC CSS foundations */
 
 /* Form Sections (Card Style) */
 .form-section {
@@ -131,7 +131,7 @@
     font-weight: 600;
 }
 
-/* Story Type Selection — 2 rows of 3 on all viewports */
+/* Story Type Selection â€” 2 rows of 3 on all viewports */
 .story-types-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -406,4 +406,26 @@
     .back-button {
         transition: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

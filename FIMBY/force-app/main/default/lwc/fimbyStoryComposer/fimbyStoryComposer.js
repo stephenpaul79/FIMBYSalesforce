@@ -97,11 +97,11 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
     get storyTypesList() {
         const types = [
             { value: 'Thank You',            label: 'Thank You',            description: 'Express gratitude to someone',   icon: 'ThankYouActive.png' },
-            { value: 'God Story',            label: 'God Story',            description: 'Share a faith experience',       icon: 'GodStoryActive.png' },
+            { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Share a moment you noticed',     icon: 'tulips.png' },
             { value: 'Prayer',               label: 'Prayer Request',       description: 'Ask for prayers and support',    icon: 'PrayActive.png' },
-            { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbors',icon: 'BioActive.png' },
             { value: 'Lament',               label: 'Support Needed',       description: 'Share struggles, seek comfort',  icon: 'LamentActive.png' },
-            { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Share a moment you noticed',     icon: 'tulips.png' }
+            { value: 'God Story',            label: 'God Story',            description: 'Share a faith experience',       icon: 'GodStoryActive.png' },
+            { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbors',icon: 'BioActive.png' }
         ];
         return types.map((t) => {
             const selected = this.selectedStoryType === t.value;
