@@ -16,7 +16,9 @@
 public without sharing class FimbyDigestEmailBuilder {
 
     private static final Integer MAX_CARDS_PER_SECTION = 5;
-    private static final Integer SNIPPET_LENGTH = 140;
+    private static final Integer POST_SNIPPET_LENGTH = 800;
+    private static final Integer STORY_SNIPPET_LENGTH = 1000;
+    private static final Integer LIBRARY_SNIPPET_LENGTH = 255;
 
     // Compact card layout (email real-estate efficiency): the badge + linked title and the body
     // snippet sit in the left column; a fixed 140x120 cropped thumbnail sits in the right column
@@ -439,7 +441,7 @@ public without sharing class FimbyDigestEmailBuilder {
             SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c,
                    Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
-                   Message_Preview__c, CreatedDate
+                   CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
               AND CreatedDate >= :startDt AND CreatedDate <= :endDt
@@ -471,7 +473,7 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
-        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
+        String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
             'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
         String baseWhere = 'FROM Needs_Offers__c ' +
@@ -541,7 +543,7 @@ public without sharing class FimbyDigestEmailBuilder {
         Date today,
         Set<Id> excluded
     ) {
-        String selectClause = 'SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
+        String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
             'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
             'Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
             'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
@@ -638,7 +640,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static String buildBulkBuysSection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         List<Needs_Offers__c> bulkBuys = [
-            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
@@ -704,7 +706,7 @@ public without sharing class FimbyDigestEmailBuilder {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
 
         String leftBody = badgeTitleRow(badgeLabel, rt, post.Name, ctaUrl)
-            + snippetRow(post.Details__c);
+            + snippetRow(post.Full_Details__c, POST_SNIPPET_LENGTH);
         return buildCard(post.Image_1_URL__c, leftBody, post.Contact__r, ctaUrl);
     }
 
@@ -727,7 +729,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
         String leftBody = badgeTitleRow(badgeLabel, evtType, evt.Name, ctaUrl)
             + eventMetaLine(evt.Start_Date__c, evt.Location__c, recurrenceWord)
-            + snippetRow(evt.Details__c);
+            + snippetRow(evt.Full_Details__c, POST_SNIPPET_LENGTH);
         return buildCard(evt.Image_1_URL__c, leftBody, evt.Contact__r, ctaUrl);
     }
 
@@ -735,7 +737,7 @@ public without sharing class FimbyDigestEmailBuilder {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
         String leftBody = badgeTitleRow('BULK BUY', 'Bulk_Buy', bb.Name, ctaUrl)
-            + snippetRow(bb.Details__c)
+            + snippetRow(bb.Full_Details__c, POST_SNIPPET_LENGTH)
             + FimbyEmailHtmlBuilder.buildThermometer(
                 bb.Total_Reserved__c, bb.Total_Quantity__c,
                 bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
@@ -747,10 +749,8 @@ public without sharing class FimbyDigestEmailBuilder {
         String storyType = String.isNotBlank(story.Type__c) ? story.Type__c : 'Story';
         String badgeLabel = storyType == 'Neighbourhood Moment' ? 'NEIGHBOURHOOD' : storyType.toUpperCase();
         String ctaUrl = FimbySettings.getUrl('Story', story.Id);
-        String body = String.isNotBlank(story.Message_Preview__c) ? story.Message_Preview__c : story.Message__c;
-
         String leftBody = badgeTitleRow(badgeLabel, storyType, story.Name, ctaUrl)
-            + snippetRow(body);
+            + snippetRow(story.Message__c, STORY_SNIPPET_LENGTH);
         return buildCard(story.Image_URL__c, leftBody, story.Posted_By__r, ctaUrl);
     }
 
@@ -761,7 +761,7 @@ public without sharing class FimbyDigestEmailBuilder {
         // falling back to LIBRARY only when the item has no category.
         String badgeLabel = String.isNotBlank(item.Category__c) ? item.Category__c : 'LIBRARY';
         String leftBody = badgeTitleRow(badgeLabel, 'Library', item.Name, ctaUrl)
-            + snippetRow(item.Description__c);
+            + snippetRow(item.Description__c, LIBRARY_SNIPPET_LENGTH);
         return buildCard(item.Image_URL__c, leftBody, item.Owner_Contact__r, ctaUrl);
     }
 
@@ -867,11 +867,13 @@ public without sharing class FimbyDigestEmailBuilder {
             + String.join(parts, ' &middot; ') + '</p>';
     }
 
-    private static String snippetRow(String description) {
-        String snippet = truncate(description, SNIPPET_LENGTH);
+    @TestVisible
+    private static String snippetRow(String description, Integer maxLen) {
+        String snippet = truncate(description, maxLen);
         if (String.isBlank(snippet)) { return ''; }
+        String bodyHtml = escHtml(snippet.trim().replace('\r\n', '\n')).replace('\n', '<br>');
         return '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:14px;color:' + TEXT_BODY + ';line-height:1.5;">'
-            + escHtml(snippet) + '</p>';
+            + bodyHtml + '</p>';
     }
 
     private static String buildSectionHeader(String title, String accentColor) {
@@ -997,7 +999,7 @@ public without sharing class FimbyDigestEmailBuilder {
     ) {
         List<MixedPreviewItem> items = new List<MixedPreviewItem>();
         for (Needs_Offers__c post : [
-            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    RecordType.DeveloperName, Posted_Date__c, CreatedDate
@@ -1028,7 +1030,7 @@ public without sharing class FimbyDigestEmailBuilder {
         Set<Id> liveRecurringOccurrenceIds = resolveLiveRecurringOccurrenceIds(nhId);
         List<MixedPreviewItem> items = new List<MixedPreviewItem>();
         for (Needs_Offers__c evt : [
-            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
@@ -1057,7 +1059,7 @@ public without sharing class FimbyDigestEmailBuilder {
     ) {
         List<MixedPreviewItem> items = new List<MixedPreviewItem>();
         for (Needs_Offers__c bb : [
-            SELECT Id, Name, Details__c, Image_1_URL__c, Image_1_Ratio__c,
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
@@ -1086,7 +1088,7 @@ public without sharing class FimbyDigestEmailBuilder {
     ) {
         List<MixedPreviewItem> items = new List<MixedPreviewItem>();
         for (Story__c story : [
-            SELECT Id, Name, Type__c, Message__c, Message_Preview__c, Image_URL__c,
+            SELECT Id, Name, Type__c, Message__c, Image_URL__c,
                    Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    CreatedDate

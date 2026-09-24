@@ -620,6 +620,63 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildDigestContent_askCard_showsFullDetailsAndStoryFullMessage() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact author = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Id needRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+        String askBody = 'Ask start ' + 'a'.repeat(400) + ' ask tail marker';
+        String storyBody = 'Story start ' + 'b'.repeat(600) + ' story tail marker';
+
+        insert new Needs_Offers__c(
+            Name = 'Long Body Ask', Details__c = askBody.left(255), Full_Details__c = askBody,
+            Type__c = 'Goods - Unperishable', Status__c = 'Posted',
+            Neighbourhood__c = nh.Id, Contact__c = author.Id, Posted_By__c = author.Id,
+            RecordTypeId = needRt, Posted_Date__c = Datetime.now(),
+            End_Date__c = Date.today().addDays(7)
+        );
+        insert new Story__c(
+            Name = 'Long Body Story', Message__c = storyBody, Message_Preview__c = storyBody.left(255),
+            Type__c = 'Thank You', Neighbourhood__c = nh.Id, Posted_By__c = author.Id
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+        );
+        Test.stopTest();
+
+        System.assert(result.html.contains('ask tail marker'),
+            'Ask cards should render Full_Details__c past the old 255-char copy.');
+        System.assert(result.html.contains('story tail marker'),
+            'Story cards should render the full Message__c, not the 255-char preview.');
+    }
+
+    @IsTest
+    static void snippetRow_keepsTextUnderLimitAndPreservesLineBreaks() {
+        String html = FimbyDigestEmailBuilder.snippetRow('First line\r\nSecond <line>', 800);
+
+        System.assert(html.contains('First line<br>Second &lt;line&gt;'),
+            'Line breaks should become <br> after escaping: ' + html);
+        System.assert(!html.contains('&hellip;'), 'Short bodies must not be truncated.');
+    }
+
+    @IsTest
+    static void snippetRow_truncatesOnlyPastLimit() {
+        String atLimit = 'word '.repeat(200).trim();
+        String overLimit = atLimit + ' overflow tail';
+
+        System.assert(!FimbyDigestEmailBuilder.snippetRow(atLimit, 1000).contains('&hellip;'),
+            'Text within the limit should render whole.');
+        String cut = FimbyDigestEmailBuilder.snippetRow('word '.repeat(170), 800);
+        System.assert(cut.contains('&hellip;'), 'Text past the limit should end with an ellipsis.');
+        System.assert(!FimbyDigestEmailBuilder.snippetRow(overLimit, 1000).contains('overflow tail'),
+            'Text past the limit should be cut.');
+        System.assertEquals('', FimbyDigestEmailBuilder.snippetRow(null, 800),
+            'Blank bodies render nothing.');
+    }
+
+    @IsTest
     static void buildDigestContent_excludedAuthor_dropsAndNMoreCount() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact authorA = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
