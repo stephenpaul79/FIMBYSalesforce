@@ -988,10 +988,12 @@ button.identity-row:focus-visible {
     font-weight: 600;
     color: var(--fimby-text-strong, #261A11);
     letter-spacing: -0.01em;
+    text-align: center;
 }
 
 .fimby-tos-modal-intro {
     margin: 0 0 1rem;
+    text-align: center;
     color: var(--fimby-text-primary, #4A3526);
     font-size: 0.9375rem;
     line-height: 1.45;
