@@ -621,13 +621,13 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     get tosModalTitle() {
         return this.hasPriorTosAcceptance
             ? 'A quick check-in before you continue'
-            : 'Welcome — one step before you join in';
+            : 'Welcome! One step before you join in';
     }
 
     get tosModalIntro() {
         return this.hasPriorTosAcceptance
             ? 'Our Terms of Service have changed since you last agreed. Please take a look and confirm you\'re 19 or older.'
-            : 'Please read our Terms of Service and confirm you\'re 19 or older.';
+            : 'Please read our Terms of Service and confirm your age.';
     }
 
     /**
