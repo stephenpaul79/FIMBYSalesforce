@@ -626,8 +626,8 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
 
     get tosModalIntro() {
         return this.hasPriorTosAcceptance
-            ? 'Our Terms of Service have changed since you last agreed. Please read the current version and confirm you\'re 19 or older to continue.'
-            : 'To be part of your neighbourhood on FIMBY, please read our Terms of Service and confirm you\'re 19 or older.';
+            ? 'Our Terms of Service have changed since you last agreed. Please take a look and confirm you\'re 19 or older.'
+            : 'Please read our Terms of Service and confirm you\'re 19 or older.';
     }
 
     /**

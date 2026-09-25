@@ -1,11 +1,5 @@
 <template>
     <div class="fimby-tos-screen">
-        <p class="fimby-tos-screen__lead">
-            <template lwc:if={tosVersion}>
-                Current version <strong>{tosVersion}</strong><template lwc:if={effectiveDateLabel}>, effective {effectiveDateLabel}</template>.
-            </template>
-        </p>
-
         <p class="fimby-tos-screen__link-row">
             <a href={tosUrl} target="_blank" rel="noopener noreferrer"
                class="fimby-tos-screen__link">
@@ -14,16 +8,12 @@
             </a>
         </p>
 
-        <p class="fimby-tos-screen__muted">
-            You can also review our <a href={privacyUrl} target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href={guidelinesUrl} target="_blank" rel="noopener noreferrer">Community Guidelines</a>.
-        </p>
-
         <label class="fimby-tos-screen__checkbox">
             <input type="checkbox"
                    checked={checkboxChecked}
                    onchange={handleCheckboxChange} />
             <span>
-                I have read and agree to the FIMBY Terms of Service<template lwc:if={tosVersion}> (version {tosVersion})</template>, and I am 19 or older.
+                I've read and agree to the Terms of Service, and I'm 19 or older.
             </span>
         </label>
 
@@ -39,16 +29,23 @@
             <button class="fimby-tos-screen__decline"
                     type="button"
                     onclick={handleDeclineLogout}>
-                I can't agree yet — log me out
+                Not right now, log me out
             </button>
         </div>
-
-        <p class="fimby-tos-screen__help">
-            Questions about these terms? Email&nbsp;<a href={helpEmailUrl}>{helpEmailLabel}</a>.
-        </p>
 
         <template lwc:if={errorMessage}>
             <p class="fimby-tos-screen__error">{errorMessage}</p>
         </template>
+
+        <div class="fimby-tos-screen__footer">
+            <p class="fimby-tos-screen__footer-links">
+                <a href={privacyUrl} target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                <span aria-hidden="true" class="fimby-tos-screen__dot">·</span>
+                <a href={guidelinesUrl} target="_blank" rel="noopener noreferrer">Community Guidelines</a>
+            </p>
+            <p class="fimby-tos-screen__help">
+                Questions? <a href={helpEmailUrl}>{helpEmailLabel}</a>
+            </p>
+        </div>
     </div>
 </template>
