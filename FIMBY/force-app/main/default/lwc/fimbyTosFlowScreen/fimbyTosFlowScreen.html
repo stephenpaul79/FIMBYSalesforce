@@ -8,19 +8,15 @@
             </a>
         </p>
 
-        <label class="fimby-tos-screen__checkbox">
-            <input type="checkbox"
-                   checked={checkboxChecked}
-                   onchange={handleCheckboxChange} />
-            <span>
-                I've read and agree to the TOS, and I'm 19+.
-            </span>
-        </label>
+        <p class="fimby-tos-screen__consent" id="tos-consent-text">
+            By tapping <strong>I agree</strong>, you confirm you've read the TOS and you're 19+.
+        </p>
 
         <div class="fimby-tos-screen__actions">
             <button class="fimby-tos-screen__agree"
                     type="button"
                     disabled={agreeDisabled}
+                    aria-describedby="tos-consent-text"
                     onclick={handleAgree}>
                 <template lwc:if={submitting}>Recording…</template>
                 <template lwc:elseif={acceptanceCompleted}>Recorded</template>

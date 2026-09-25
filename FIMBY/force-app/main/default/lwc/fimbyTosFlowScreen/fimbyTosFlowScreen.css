@@ -47,44 +47,15 @@
     font-size: 0.85em;
 }
 
-.fimby-tos-screen__checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin: 0.25rem 0 0;
-    padding: 0.75rem 0.875rem;
-    border: 1px solid var(--fimby-border-subtle, #E0D9CF);
-    border-radius: var(--fimby-radius-md, 12px);
-    background: var(--fimby-surface-input, #F7F3EB);
+.fimby-tos-screen__consent {
+    margin: 0.5rem 0 0;
     color: var(--fimby-text-primary, #4A3526);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    text-align: center;
 }
 
-.fimby-tos-screen__checkbox:hover {
-    border-color: var(--fimby-border-default, #D6CFC5);
-}
-
-.fimby-tos-screen__checkbox:has(input:focus-visible) {
-    border-color: var(--fimby-btn-primary-bg);
-    box-shadow: 0 0 0 3px var(--fimby-focus-glow, rgba(58, 125, 140, 0.25));
-}
-
-.fimby-tos-screen__checkbox input[type='checkbox'] {
-    flex: 0 0 auto;
-    margin: 1px 0 0;
-    width: 22px;
-    height: 22px;
-    accent-color: var(--fimby-btn-primary-bg, #3A7D8C);
-    cursor: pointer;
-}
-
-.fimby-tos-screen__checkbox input[type='checkbox']:disabled {
-    cursor: not-allowed;
-}
-
-.fimby-tos-screen__checkbox input[type='checkbox']:disabled + span {
-    color: var(--fimby-text-muted, #B5A088);
+.fimby-tos-screen__consent strong {
+    color: var(--fimby-text-strong, #261A11);
+    font-weight: 600;
 }
 
 .fimby-tos-screen__actions {

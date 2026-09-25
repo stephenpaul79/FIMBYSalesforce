@@ -18,7 +18,6 @@ export default class FimbyTosFlowScreen extends LightningElement {
 
     @api source = 'Login Flow';
 
-    checkboxChecked = false;
     submitting = false;
     errorMessage = '';
     tosVersion;
@@ -68,11 +67,7 @@ export default class FimbyTosFlowScreen extends LightningElement {
     }
 
     get agreeDisabled() {
-        return !this.checkboxChecked || this.submitting || this.acceptanceCompleted;
-    }
-
-    handleCheckboxChange(event) {
-        this.checkboxChecked = event.target.checked;
+        return this.submitting || this.acceptanceCompleted;
     }
 
     handleDeclineLogout() {
