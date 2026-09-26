@@ -9,7 +9,6 @@
     width: 100%;
     position: relative;
     overflow: hidden;
-    overscroll-behavior-y: none;
 }
 
 .pull-refresh-indicator {
@@ -50,9 +49,18 @@
     width: 100%;
     overflow: hidden auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
     scroll-behavior: smooth;
     background: var(--fimby-infinite-scroll-surface, transparent);
+}
+
+/* Touch-only: stops iOS rubber-banding the header during pull-to-refresh.
+   On mouse/trackpad devices this would block wheel scroll from chaining to
+   the document (the real scroller), freezing the feed. */
+@media (hover: none) and (pointer: coarse) {
+    .fimby-infinite-scroll,
+    .scroll-container {
+        overscroll-behavior-y: none;
+    }
 }
 
 .scroll-content {
