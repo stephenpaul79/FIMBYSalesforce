@@ -26,12 +26,17 @@ public class FimbyStoryCommentControllerTest {
     }
 
     private static Story__c createTestStory(Contact postedBy) {
+        return createTestStory(postedBy, null);
+    }
+
+    private static Story__c createTestStory(Contact postedBy, String storyType) {
         Story__c story = new Story__c(
             Name = 'Test Story Title',
             Message__c = 'This is a test story message for comment testing.',
             Posted_By__c = postedBy.Id,
             Contact__c = postedBy.Id,
-            Neighbourhood__c = postedBy.AccountId
+            Neighbourhood__c = postedBy.AccountId,
+            Type__c = storyType
         );
         insert story;
         return story;
@@ -44,7 +49,7 @@ public class FimbyStoryCommentControllerTest {
     @isTest
     static void testGetStoryForComment_Success() {
         Contact testContact = getTestContact();
-        Story__c testStory = createTestStory(testContact);
+        Story__c testStory = createTestStory(testContact, 'Bio');
 
         Test.startTest();
         Map<String, Object> result = FimbyStoryCommentController.getStoryForComment(testStory.Id);
@@ -55,6 +60,16 @@ public class FimbyStoryCommentControllerTest {
         System.assertEquals(testStory.Id, story.get('id'));
         System.assertEquals('Test Story Title', story.get('name'));
         System.assertEquals(testContact.Id, story.get('ownerContactId'));
+        System.assertEquals('Bio', story.get('type'));
+        System.assertEquals('On the bio', story.get('commentContextLabel'));
+    }
+
+    @isTest
+    static void testBuildCommentContextLabel_PrayerRequest() {
+        System.assertEquals(
+            'On the prayer request',
+            FimbyStoryCommentController.buildCommentContextLabel('Prayer')
+        );
     }
 
     @isTest

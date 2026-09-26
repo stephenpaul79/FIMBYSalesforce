@@ -27,6 +27,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     @track storyMessage = '';
     @track storyOwnerId = '';
     @track storyOwnerName = '';
+    @track storyCommentContextLabel = 'On the shared life post';
 
     // Acting as contact data
     @track actingAsContactId = '';
@@ -144,6 +145,8 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
                 this.storyMessage = storyResult.story.message || '';
                 this.storyOwnerId = storyResult.story.ownerId || '';
                 this.storyOwnerName = storyResult.story.ownerName || '';
+                this.storyCommentContextLabel = storyResult.story.commentContextLabel
+                    || 'On the shared life post';
             } else {
                 this.errorMessage = 'Could not load story details.';
                 this.isLoading = false;

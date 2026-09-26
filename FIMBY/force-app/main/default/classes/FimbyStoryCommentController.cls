@@ -54,7 +54,9 @@ public with sharing class FimbyStoryCommentController {
                     'imageUrl' => story.Image_URL__c,
                     'ownerId' => story.OwnerId,
                     'ownerContactId' => story.Posted_By__c,
-                    'ownerName' => story.Posted_By__r?.Full_Name__c
+                    'ownerName' => story.Posted_By__r?.Full_Name__c,
+                    'type' => story.Type__c,
+                    'commentContextLabel' => buildCommentContextLabel(story.Type__c)
                 }
             };
         } catch (AuraHandledException e) {
@@ -64,6 +66,33 @@ public with sharing class FimbyStoryCommentController {
             ex.setMessage('Error getting story: ' + e.getMessage());
             throw ex;
         }
+    }
+
+    /**
+     * @description Phrase for the comment composer context line (CSS uppercases).
+     *              Maps Story__c.Type__c to neighbour-facing Shared Life labels.
+     */
+    @TestVisible
+    private static String buildCommentContextLabel(String storyType) {
+        String phrase;
+        if (String.isBlank(storyType)) {
+            phrase = 'shared life post';
+        } else if (storyType == 'Prayer') {
+            phrase = 'prayer request';
+        } else if (storyType == 'Neighbourhood Moment') {
+            phrase = 'neighbourhood';
+        } else if (storyType == 'Thank You') {
+            phrase = 'thank you';
+        } else if (storyType == 'Bio') {
+            phrase = 'bio';
+        } else if (storyType == 'God Story') {
+            phrase = 'god story';
+        } else if (storyType == 'Lament') {
+            phrase = 'lament';
+        } else {
+            phrase = storyType.toLowerCase();
+        }
+        return 'On the ' + phrase;
     }
 
     /**
@@ -552,7 +581,7 @@ public with sharing class FimbyStoryCommentController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String query = 'SELECT Id, Name, Message__c, Image_URL__c, OwnerId, Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c FROM Story__c WHERE Id = :storyId '
+            String query = 'SELECT Id, Name, Message__c, Image_URL__c, Type__c, OwnerId, Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c FROM Story__c WHERE Id = :storyId '
                 + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
 
             if (String.isNotBlank(neighbourhoodAccountId)) {
