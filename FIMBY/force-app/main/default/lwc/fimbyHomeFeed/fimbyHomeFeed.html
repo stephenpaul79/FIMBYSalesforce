@@ -69,22 +69,24 @@
             </div>
         </template>
 
-        <!-- Tour retry banner: shown when user skipped the walkthrough -->
+        <!-- Tour banner: offered once the say-hi banner is retired, until taken or hidden for good -->
         <template lwc:if={showTourBanner}>
-            <div class="tour-banner" role="status">
-                <img src={tourBannerIconUrl} alt="" class="tour-banner-icon">
-                <div class="tour-banner-content">
-                    <p class="tour-banner-title">Quick tour of your neighbourhood?</p>
-                    <p class="tour-banner-text">Two minutes — feed, sharing, library, messages.</p>
+            <div class="say-hi-banner" role="status">
+                <img src={tourBannerIconUrl} alt="" class="say-hi-icon">
+                <div class="say-hi-content">
+                    <p class="say-hi-title">Quick tour of your neighbourhood?</p>
+                    <p class="say-hi-text">Two minutes to see the feed, sharing, the library, and messages.</p>
+                    <label class="say-hi-forever">
+                        <input type="checkbox" checked={tourBannerDismissForever} onchange={handleTourBannerForeverChange}>
+                        <span>Don't show this again</span>
+                    </label>
                 </div>
-                <div class="tour-banner-actions">
-                    <button type="button" class="tour-banner-secondary" onclick={handleTourExploreOnOwn}>
-                        I'll explore on my own
-                    </button>
-                    <button type="button" class="tour-banner-cta btn-primary" onclick={handleTakeTour}>
-                        Take the tour
-                    </button>
-                </div>
+                <button type="button" class="say-hi-cta btn-primary" onclick={handleTakeTour}>
+                    Take the tour
+                </button>
+                <button type="button" class="say-hi-dismiss" onclick={handleDismissTourBanner} aria-label={tourBannerDismissLabel}>
+                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                </button>
             </div>
         </template>
 
@@ -137,7 +139,8 @@
                                 title={feedItem.name}
                                 description={feedItem.description}
                                 truncate-description="true"
-                                description-max-lines="3"
+                                description-max-lines="20"
+                                description-max-chars="2000"
                                 show-header="true"
                                 show-avatar="true"
                                 show-menu={feedItem.showCardMenu}

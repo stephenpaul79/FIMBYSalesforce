@@ -100,6 +100,10 @@ const CACHE_KEY = 'fimby-home-feed-state';
 // Holds the date the say-hi banner was rested. Per-device on purpose — "not today"
 // is a local mood; "don't show this again" is the one that persists server-side.
 const BIO_BANNER_SNOOZE_KEY = 'fimby-say-hi-snoozed-on';
+// Date the say-hi banner was retired on this device, so the tour banner never
+// appears the same day and neighbours don't meet one nudge right after another.
+const BIO_BANNER_RETIRED_KEY = 'fimby-say-hi-retired-on';
+const TOUR_BANNER_SNOOZE_KEY = 'fimby-tour-banner-snoozed-on';
 const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 
 /** Matches fimbyCard.formattedTimestamp for consistent feed card headers */
@@ -143,6 +147,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     @track _showBioBanner = false;
     @track _bioBannerDismissForever = false;
     @track _showTourBanner = false;
+    @track _tourBannerDismissForever = false;
     @track _showIntroPostModal = false;
     @track _seasonalTitle = '';
     @track _memesEnabled = false;
@@ -216,6 +221,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
     get tourBannerIconUrl()   { return `${IMPACT_ICONS}/NeighborhoodActive.png`; }
     get showTourBanner()      { return this._showTourBanner; }
+    get tourBannerDismissForever() { return this._tourBannerDismissForever; }
+    get tourBannerDismissLabel() {
+        return this._tourBannerDismissForever
+            ? 'Hide this for good'
+            : 'Hide this for today';
+    }
     get showIntroPostModal()  { return this._showIntroPostModal; }
 
     handleOpenBioModal() {
@@ -232,11 +243,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     handleBioPosted() {
         this._showIntroPostModal = false;
         this._showBioBanner = false;
+        this._stampToday(BIO_BANNER_RETIRED_KEY);
     }
 
     handleBioSkipped() {
         this._showIntroPostModal = false;
         this._showBioBanner = false;
+        this._stampToday(BIO_BANNER_RETIRED_KEY);
     }
 
     handleBioBannerForeverChange(event) {
@@ -248,23 +261,28 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     handleDismissBioBanner() {
         this._showBioBanner = false;
         if (this._bioBannerDismissForever) {
+            this._stampToday(BIO_BANNER_RETIRED_KEY);
             dismissBioBanner().catch((err) => {
                 console.error('fimbyHomeFeed: bio banner permanent dismiss failed', err);
             });
             return;
         }
-        try {
-            localStorage.setItem(BIO_BANNER_SNOOZE_KEY, this._todayStamp());
-        } catch { /* storage unavailable — banner simply returns next load */ }
+        this._stampToday(BIO_BANNER_SNOOZE_KEY);
     }
 
     _todayStamp() {
         return new Date().toDateString();
     }
 
-    _isBioBannerSnoozedToday() {
+    _stampToday(key) {
         try {
-            return localStorage.getItem(BIO_BANNER_SNOOZE_KEY) === this._todayStamp();
+            localStorage.setItem(key, this._todayStamp());
+        } catch { /* storage unavailable — banner simply returns next load */ }
+    }
+
+    _isStampedToday(key) {
+        try {
+            return localStorage.getItem(key) === this._todayStamp();
         } catch {
             return false;
         }
@@ -275,11 +293,21 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         requestGuidedTour({ replay: false });
     }
 
-    handleTourExploreOnOwn() {
+    handleTourBannerForeverChange(event) {
+        this._tourBannerDismissForever = event.target.checked;
+    }
+
+    // Mirrors the say-hi banner: ticked retires the offer server-side (Dismissed),
+    // unticked rests it on this device until tomorrow.
+    handleDismissTourBanner() {
         this._showTourBanner = false;
-        setLiveTourStatus({ status: 'Completed', extendedCompleted: false }).catch((err) => {
-            console.error('fimbyHomeFeed: tour banner dismiss', err);
-        });
+        if (this._tourBannerDismissForever) {
+            setLiveTourStatus({ status: 'Dismissed', extendedCompleted: false }).catch((err) => {
+                console.error('fimbyHomeFeed: tour banner permanent dismiss failed', err);
+            });
+            return;
+        }
+        this._stampToday(TOUR_BANNER_SNOOZE_KEY);
     }
 
     get refreshButtonClass()  { return this.isLoading ? 'refresh-button refreshing' : 'refresh-button'; }
@@ -399,7 +427,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             this._showBioBanner = onboardingStatus
                 && onboardingStatus.bioPostCompleted === false
                 && onboardingStatus.bioBannerDismissed !== true
-                && !this._isBioBannerSnoozedToday();
+                && !this._isStampedToday(BIO_BANNER_SNOOZE_KEY);
         } catch (err) {
             // Non-fatal: if onboarding status fails, render the home feed normally rather
             // than blocking on the redirect check. The banner just won't appear.
@@ -408,7 +436,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
         try {
             const tourState = await getLiveTourState();
-            this._showTourBanner = !!tourState?.bannerEligible;
+            this._showTourBanner = !!tourState?.bannerEligible
+                && !this._showBioBanner
+                && !this._isStampedToday(BIO_BANNER_RETIRED_KEY)
+                && !this._isStampedToday(TOUR_BANNER_SNOOZE_KEY);
         } catch (err) {
             console.error('fimbyHomeFeed: live tour state check failed', err);
         }
