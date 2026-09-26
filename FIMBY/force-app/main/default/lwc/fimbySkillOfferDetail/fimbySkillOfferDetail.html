@@ -50,6 +50,7 @@
             </template>
 
             <!-- Collapsible details -->
+            <template lwc:if={showDetailsSection}>
             <div class="info-section collapsible-section">
                 <button type="button" class="section-toggle" onclick={handleToggleDetails} aria-expanded={detailsExpanded}>
                     <span class="section-toggle-label">
@@ -79,6 +80,7 @@
                     </div>
                 </template>
             </div>
+            </template>
             </div>
         </template>
 

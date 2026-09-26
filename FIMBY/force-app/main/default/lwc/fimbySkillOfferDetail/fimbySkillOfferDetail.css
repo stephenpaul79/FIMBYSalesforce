@@ -291,14 +291,12 @@
 }
 
 .confirm-overlay {
-    position: fixed;
-    inset: 0;
-    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+    position: fixed; inset: 0; background: transparent; background-color: transparent; padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
     background-color: rgba(0, 0, 0, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
+    z-index: 9999;
 }
 
 .confirm-dialog {
@@ -355,4 +353,15 @@
     background-color: var(--fimby-btn-danger-bg);
     color: #ffffff;
     border: none;
+}
+
+/* Shell chrome zones ï¿½ content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

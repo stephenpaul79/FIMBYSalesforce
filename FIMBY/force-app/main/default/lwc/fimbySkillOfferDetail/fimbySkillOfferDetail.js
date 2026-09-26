@@ -135,6 +135,10 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
         return decodeHtmlEntities(this.skill?.availabilityNote || '');
     }
 
+    get showDetailsSection() {
+        return this.isPosterPersona || !!(this.decodedDescription || this.decodedAvailability);
+    }
+
     get descriptionDisplay() {
         return this.decodedDescription || 'Not provided';
     }
