@@ -45,16 +45,61 @@ private class FimbyGuidedTourControllerTest {
     }
 
     @IsTest
-    static void testBannerEligibleWhenDismissed() {
+    static void testBannerHiddenWhileBioBannerActive() {
         User testUser = getTestUser();
-        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Live_Tour_Enabled__c = true));
+        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Live_Tour_Enabled__c = false));
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
+            System.assertEquals(false, state.get('bannerEligible'),
+                'Tour banner must wait until the say-hi banner is retired');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testBannerEligibleAfterBioBannerDismissed() {
+        User testUser = getTestUser();
+        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Live_Tour_Enabled__c = false));
+        update new Contact(Id = testUser.ContactId, Bio_Banner_Dismissed__c = true);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
+            System.assertEquals(true, state.get('bannerEligible'),
+                'Tour banner is offered regardless of the autostart flag');
+            System.assertEquals(false, state.get('autostartEligible'));
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testBannerEligibleAfterBioPosted() {
+        User testUser = getTestUser();
+        update new Contact(Id = testUser.ContactId, Bio_Post_Completed__c = true);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
+            System.assertEquals(true, state.get('bannerEligible'));
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testBannerHiddenOnceTourDismissedOrCompleted() {
+        User testUser = getTestUser();
+        update new Contact(Id = testUser.ContactId, Bio_Post_Completed__c = true);
 
         Test.startTest();
         System.runAs(testUser) {
             FimbyGuidedTourController.setLiveTourStatus(FimbyConstants.ONBOARDING_DISMISSED, false);
-            Map<String, Object> state = FimbyGuidedTourController.getLiveTourState();
-            System.assertEquals(false, state.get('autostartEligible'));
-            System.assertEquals(true, state.get('bannerEligible'));
+            System.assertEquals(false, FimbyGuidedTourController.getLiveTourState().get('bannerEligible'),
+                'Hard dismiss retires the tour banner for good');
+
+            FimbyGuidedTourController.setLiveTourStatus(FimbyConstants.ONBOARDING_COMPLETED, false);
+            System.assertEquals(false, FimbyGuidedTourController.getLiveTourState().get('bannerEligible'));
         }
         Test.stopTest();
     }

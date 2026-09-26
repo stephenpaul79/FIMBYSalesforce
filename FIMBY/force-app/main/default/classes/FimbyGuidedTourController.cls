@@ -5,7 +5,7 @@ public with sharing class FimbyGuidedTourController {
 
     /**
      * @description Returns live tour eligibility and bio-post gating for the acting Contact.
-     * @return Map with liveTourStatus, bioPostCompleted, autostartEligible, liveTourEnabled
+     * @return Map with liveTourStatus, bioPostCompleted, autostartEligible, bannerEligible, liveTourEnabled
      */
     @AuraEnabled(cacheable=false)
     public static Map<String, Object> getLiveTourState() {
@@ -39,6 +39,7 @@ public with sharing class FimbyGuidedTourController {
             ? c.Live_Tour_Status__c
             : FimbyConstants.ONBOARDING_NOT_STARTED;
         Boolean bioDone = c.Bio_Post_Completed__c == true;
+        Boolean bioBannerRetired = bioDone || c.Bio_Banner_Dismissed__c == true;
         Boolean flagOn = FimbySettings.liveTourEnabled();
 
         result.put('liveTourStatus', status);
@@ -49,9 +50,11 @@ public with sharing class FimbyGuidedTourController {
             'autostartEligible',
             flagOn && status == FimbyConstants.ONBOARDING_NOT_STARTED
         );
+        // Offered independently of the autostart flag, and only once the say-hi banner
+        // is retired so neighbours never face two onboarding nudges at once.
         result.put(
             'bannerEligible',
-            flagOn && status == FimbyConstants.ONBOARDING_DISMISSED
+            bioBannerRetired && status == FimbyConstants.ONBOARDING_NOT_STARTED
         );
         return result;
     }
@@ -96,7 +99,8 @@ public with sharing class FimbyGuidedTourController {
         public Contact read(Id contactId) {
             List<Contact> contacts = [
                 SELECT Id, FirstName, Live_Tour_Status__c, Bio_Post_Completed__c,
-                       Live_Tour_Extended_Completed__c, Is_Organization_Contact__c
+                       Bio_Banner_Dismissed__c, Live_Tour_Extended_Completed__c,
+                       Is_Organization_Contact__c
                 FROM Contact
                 WHERE Id = :contactId
                 LIMIT 1
