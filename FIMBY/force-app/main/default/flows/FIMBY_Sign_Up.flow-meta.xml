@@ -294,6 +294,12 @@
                 <stringValue>New</stringValue>
             </value>
         </inputAssignments>
+        <inputAssignments>
+            <field>Live_Tour_Status__c</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
         <object>Contact</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
@@ -543,6 +549,12 @@
                 <stringValue>New Public Signup</stringValue>
             </value>
         </inputAssignments>
+        <inputAssignments>
+            <field>Live_Tour_Status__c</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
         <object>Contact</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
@@ -612,7 +624,7 @@
         </connector>
         <fields>
             <name>Disclaimer</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Welcome, neighbour.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;FIMBY is a small, practical way to share life with the people on your street — to ask for help, offer what you have, borrow a drill, split a Costco run, or just learn a few names.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;We’ll start with a few basics: your name, address, and a way for us to reach you. If your postal code is in a FIMBY neighbourhood, you’ll be in. If we’re not there yet, we’ll add you to the waitlist and let you know when we arrive.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Click &lt;/span&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Next&lt;/strong&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt; to get started.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Welcome, neighbour.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;FIMBY is a small, practical way to share life with the people on your block: ask for help, offer what you have, borrow a drill, split a Costco run, or just learn a few names.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;First, a few basics: your name, postal code, and an email so we can reach you. A local volunteer moderator will then confirm you&apos;re connected to the neighbourhood and open the door.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Not in a FIMBY neighbourhood yet? We&apos;ll add you to the waitlist and let you know when we arrive.&lt;/span&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -671,7 +683,7 @@
         </fields>
         <fields>
             <name>ChristianDIsclaimer</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;font-size: 12px; color: rgb(115, 115, 115);&quot;&gt;FIMBY is inspired by the way of Jesus, especially his call to love our neighbours in ordinary, practical ways. Neighbours of any faith or no faith are welcome.&lt;/em&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;font-size: 12px; color: rgb(115, 115, 115);&quot;&gt;FIMBY is inspired by the way of Jesus, especially his call to love our neighbours in ordinary, practical ways.  Neighbours of any faith or no faith are welcome.&lt;/em&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -889,7 +901,7 @@
         <allowPause>false</allowPause>
         <fields>
             <name>Launch_Thank_You_Display</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Thank you.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Helping launch a new FIMBY neighbourhood takes a small spark of leadership. We&apos;ll be in touch soon with what comes next.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Thank you.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Helping launch a new FIMBY neighbourhood takes a small spark of leadership. We&apos;ll be in touch soon with what comes next.&lt;/span&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -1131,19 +1143,6 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>Phone_Optional_Note</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;em style=&quot;font-size: 16px;&quot;&gt;All contact info beyond your name is completely private unless explicitly shared with a specific neighbour.&lt;/em&gt;&lt;/p&gt;</fieldText>
-            <fieldType>DisplayText</fieldType>
-            <styleProperties>
-                <verticalAlignment>
-                    <stringValue>top</stringValue>
-                </verticalAlignment>
-                <width>
-                    <stringValue>12</stringValue>
-                </width>
-            </styleProperties>
-        </fields>
-        <fields>
             <name>Signup_for_FIMBY_Section1</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
@@ -1283,7 +1282,7 @@
                     <inputParameters>
                         <name>label</name>
                         <value>
-                            <stringValue>Phone (Optional)</stringValue>
+                            <stringValue>Phone (optional)</stringValue>
                         </value>
                     </inputParameters>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
@@ -1326,10 +1325,10 @@
                 <fields>
                     <name>Mailing_Street</name>
                     <dataType>String</dataType>
-                    <fieldText>Mailing Street</fieldText>
+                    <fieldText>Mailing Street (optional)</fieldText>
                     <fieldType>InputField</fieldType>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>true</isRequired>
+                    <isRequired>false</isRequired>
                     <styleProperties>
                         <verticalAlignment>
                             <stringValue>top</stringValue>
@@ -1382,7 +1381,6 @@
                     <dataType>String</dataType>
                     <fieldText>Postal Code</fieldText>
                     <fieldType>InputField</fieldType>
-                    <helpText>&lt;p&gt;This is how we find your neighbourhood.&lt;/p&gt;</helpText>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <styleProperties>
@@ -1416,7 +1414,7 @@
         <fields>
             <name>Is_Community_Group_Signup</name>
             <dataType>Boolean</dataType>
-            <fieldText>I&apos;m signing up on behalf of a community group or organization.</fieldText>
+            <fieldText>I&apos;m signing up on behalf of a community group or nonprofit.</fieldText>
             <fieldType>InputField</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
@@ -1430,76 +1428,9 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>Signup_for_FIMBY_Section4</name>
-            <fieldType>RegionContainer</fieldType>
-            <fields>
-                <name>Signup_for_FIMBY_Section4_Column1</name>
-                <fieldType>Region</fieldType>
-                <inputParameters>
-                    <name>width</name>
-                    <value>
-                        <stringValue>1</stringValue>
-                    </value>
-                </inputParameters>
-                <isRequired>false</isRequired>
-            </fields>
-            <fields>
-                <name>Signup_for_FIMBY_Section4_Column2</name>
-                <fieldType>Region</fieldType>
-                <fields>
-                    <name>privacydisclaimer</name>
-                    <fieldText>&lt;p&gt;{!Privacy}&lt;/p&gt;</fieldText>
-                    <fieldType>DisplayText</fieldType>
-                    <styleProperties>
-                        <verticalAlignment>
-                            <stringValue>top</stringValue>
-                        </verticalAlignment>
-                        <width>
-                            <stringValue>12</stringValue>
-                        </width>
-                    </styleProperties>
-                </fields>
-                <fields>
-                    <name>Age_Attestation</name>
-                    <dataType>Boolean</dataType>
-                    <fieldText>I&apos;m 19 or older and able to agree to the FIMBY Terms.</fieldText>
-                    <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-                    <isRequired>true</isRequired>
-                    <styleProperties>
-                        <verticalAlignment>
-                            <stringValue>top</stringValue>
-                        </verticalAlignment>
-                        <width>
-                            <stringValue>12</stringValue>
-                        </width>
-                    </styleProperties>
-                    <validationRule>
-                        <errorMessage>&lt;p&gt;You must be 19 years of age or older to use FIMBY.&lt;/p&gt;</errorMessage>
-                        <formulaExpression>{!Age_Attestation} = TRUE</formulaExpression>
-                    </validationRule>
-                </fields>
-                <inputParameters>
-                    <name>width</name>
-                    <value>
-                        <stringValue>10</stringValue>
-                    </value>
-                </inputParameters>
-                <isRequired>false</isRequired>
-            </fields>
-            <fields>
-                <name>Signup_for_FIMBY_Section4_Column3</name>
-                <fieldType>Region</fieldType>
-                <inputParameters>
-                    <name>width</name>
-                    <value>
-                        <stringValue>1</stringValue>
-                    </value>
-                </inputParameters>
-                <isRequired>false</isRequired>
-            </fields>
-            <isRequired>false</isRequired>
-            <regionContainerType>SectionWithoutHeader</regionContainerType>
+            <name>privacydisclaimer</name>
+            <fieldText>&lt;p&gt;{!Privacy}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -1508,6 +1439,26 @@
                     <stringValue>12</stringValue>
                 </width>
             </styleProperties>
+        </fields>
+        <fields>
+            <name>Age_Attestation</name>
+            <dataType>Boolean</dataType>
+            <fieldText>I&apos;m 19 or older and agree to the FIMBY Terms.</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+            <validationRule>
+                <errorMessage>&lt;p&gt;You must be 19 years of age or older to use FIMBY.&lt;/p&gt;</errorMessage>
+                <formulaExpression>{!Age_Attestation} = TRUE</formulaExpression>
+            </validationRule>
         </fields>
         <fields>
             <name>FinishButton</name>
@@ -1556,10 +1507,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>Signup_for_FIMBY_Section5</name>
+            <name>Signup_for_FIMBY_Section4</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Signup_for_FIMBY_Section5_Column1</name>
+                <name>Signup_for_FIMBY_Section4_Column1</name>
                 <fieldType>Region</fieldType>
                 <inputParameters>
                     <name>width</name>
@@ -1617,7 +1568,7 @@
         <allowPause>false</allowPause>
         <fields>
             <name>Waitlist_Thank_You_Display</name>
-            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;You&apos;re on the waitlist.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Thanks for letting us know. We&apos;ll be in touch when FIMBY arrives in your neighbourhood.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;You&apos;re on the waitlist.&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Thanks for letting us know. We&apos;ll be in touch when FIMBY arrives in your neighbourhood.&lt;/span&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -1638,7 +1589,7 @@
             <targetReference>DisclaimerScreen</targetReference>
         </connector>
     </start>
-    <status>Draft</status>
+    <status>Active</status>
     <textTemplates>
         <name>Privacy</name>
         <isViewedAsPlainText>false</isViewedAsPlainText>

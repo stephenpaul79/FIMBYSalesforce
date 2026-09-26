@@ -165,6 +165,12 @@
                 <stringValue>New</stringValue>
             </value>
         </inputAssignments>
+        <inputAssignments>
+            <field>Live_Tour_Status__c</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
         <object>Contact</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
