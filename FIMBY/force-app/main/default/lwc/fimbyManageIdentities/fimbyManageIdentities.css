@@ -19,7 +19,7 @@
     .manage-identities-page { max-width: 800px; margin: 0 auto; }
 }
 
-/* Page header styles removed — using c-fimby-page-header with menuItems */
+/* Page header styles removed â€” using c-fimby-page-header with menuItems */
 
 .identity-section {
     background-color: var(--fimby-surface-card);
@@ -100,7 +100,7 @@
     flex-shrink: 0;
 }
 
-/* Tint badges — same pattern as library detail / responsive list */
+/* Tint badges â€” same pattern as library detail / responsive list */
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -242,13 +242,13 @@
 
 .modal-overlay {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
+    inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 .modal-card {
     background-color: var(--fimby-surface-card);
@@ -361,12 +361,12 @@
     }
 }
 
-/* ──────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    A2: Community Group lifecycle modal additions.
    Stacked-action layout for the Detail Modal when the user is
    a Community Group rep, plus textarea/input styling for the
    Close/Delete request modals.
-   ────────────────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal-actions-stacked {
     flex-direction: column;
     align-items: stretch;
@@ -401,7 +401,7 @@
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-md);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background-color: var(--fimby-surface-input, var(--fimby-surface-card));
     box-sizing: border-box;
@@ -421,3 +421,25 @@
     box-shadow: 0 0 0 3px var(--fimby-focus-glow);
 }
 
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
+}

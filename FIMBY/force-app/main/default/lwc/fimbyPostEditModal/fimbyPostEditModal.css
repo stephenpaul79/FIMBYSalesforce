@@ -372,7 +372,7 @@
     padding: 3px 8px 2px;
     border: 1px solid var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
     border-radius: var(--dxp-s-form-element-radius-border, 4px);
-    font-size: 0.875rem;
+    font-size: var(--fimby-input-font-size, 16px);
     box-sizing: border-box;
 }
 
@@ -519,4 +519,26 @@
     .modal-container {
         animation: none !important;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

@@ -139,16 +139,37 @@ No `min-height`/`max-width`/`padding` on `:host`. Surface mapping: inner wrapper
 Narrow form pages: same, plus `max-width: 640px; margin: 0 auto;`.
 
 ## Modal positioning (desktop)
-`fimbyUniversalHeader` is sticky at `--fimby-header-height: 70px`. Modals use `position: fixed`, z-index 9999+, and must **not** vertically center in the full viewport. Layout tokens: `--fimby-header-height: 70px`, `--fimby-modal-top-gap: 16px`, `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` (86px). Layout tokens don't need `@property`.
+`fimbyUniversalHeader` is sticky at `--fimby-header-height: 70px`. Modals use `position: fixed`, z-index 9999+. The **scrim** must cover the full viewport (including the header) so only the dialog card stays bright; **dialog placement** clears the sticky header via padding/max-height — never by shortening the scrim.
+
+Layout tokens: `--fimby-header-height: 70px`, `--fimby-modal-top-gap: 16px`, `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` (86px), `--fimby-bottom-nav-height: 70px`. Layout tokens don't need `@property`.
+
+**Canonical modal backdrop** (all new modals; reference: `fimbyQuickPostForm`, `fimbyNotRespondingModal`):
 
 ```css
-.modal-backdrop { position: fixed; top: var(--fimby-modal-inset-top, 86px); left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
-.modal-container { max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px); }
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+}
+.modal-container {
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+}
 ```
-Full-viewport scrim variant (delete/cancel, SLDS sections): `padding: var(--fimby-modal-inset-top, 86px) 16px 16px;` + flex center. Mobile bottom sheets (≤480px): `align-items: flex-end`, keep `padding: 16px` (and `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header). Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom (`16px 16px 0 0`) and never `padding: 0` flush to the viewport (that hides the radius). **Anti-patterns:** `inset: 0` + `align-items: center` without `--fimby-modal-inset-top`; `top: 50%; transform: translate(-50%,-50%)`; SLDS `.slds-modal` without `--fimby-modal-inset-top` padding.
 
-## Form controls — never below 16px
-iOS WKWebView auto-zooms the whole page when a focused `input`/`textarea`/`select` is under 16px. With `.fimby-zoom-locked` the user cannot pinch back out, and SPA navigation does not reset scale. Native fields in LWC CSS must use `font-size: 16px` (or `var(--fimby-input-font-size)`). Do not use `14px` / `0.875rem` on form controls. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens (`16px`).
+Mobile bottom sheets (≤480px): `align-items: flex-end`; `padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px`. Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom and never `padding: 0` flush to the viewport.
+
+SLDS / inline confirm overlays: same rule — `inset: 0` scrim + `padding: var(--fimby-modal-inset-top, 86px) 16px 16px` on the flex wrapper.
+
+**Anti-patterns:** `inset: var(--fimby-modal-inset-top) 0 0 0` or `top: var(--fimby-modal-inset-top)` on the scrim (leaves header undimmed); `top: 50%; transform: translate(-50%,-50%)`; `inset: 0` + `align-items: center` with uniform `padding: 16px` only (dialog can sit under the header).
+
+## Form controls — never smaller than 16px
+iOS WKWebView auto-zooms the whole page when a focused `input`/`textarea`/`select` is smaller than 16px. With `.fimby-zoom-locked` the user cannot pinch back out, and SPA navigation does not reset scale. Native fields in LWC CSS must use `font-size: 16px` or larger (or `var(--fimby-input-font-size)`). Do not use `14px` / `0.875rem` / `0.9rem` / `0.9375rem` on form controls — `html` is 17px, so those rem values compute under 16px and still zoom. Checkboxes, radios, and file inputs do not trigger this. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens (`16px`). Each LWC bundle also has a `:host input/textarea/select` floor so unclassed fields cannot inherit a smaller size.
 
 ## Full-viewport height
 ```css

@@ -3,7 +3,7 @@
     display: contents;
 }
 
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -40,22 +40,21 @@
    never a fullscreen sheet. */
 .intro-modal-backdrop {
     position: fixed;
-    inset: 0 0 var(--fimby-bottom-nav-height, 70px) 0;
-    background: rgba(28, 32, 36, 0.55);
+    inset: 0;
+    box-sizing: border-box;
+    background: var(--fimby-scrim, rgba(28, 32, 36, 0.55));
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9000;
-    /* Native SafeAreaView owns top inset; env() is a no-op on iOS and a
-       double-count band on Android. Use the plain 16px gutter. */
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px
+        calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
 }
 
 @media (min-width: 481px) {
     .intro-modal-backdrop {
-        top: var(--fimby-modal-inset-top, 86px);
-        bottom: 0;
-        padding: 16px;
+        inset: 0;
+        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
     }
 }
 
@@ -267,4 +266,26 @@
     font-size: 0.9rem;
     color: var(--fimby-text-muted, #7a715a);
     font-style: italic;
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

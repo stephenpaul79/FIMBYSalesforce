@@ -1,4 +1,4 @@
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -30,7 +30,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* Modal Backdrop — starts below universal header */
+/* Modal Backdrop â€” starts below universal header */
 .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -73,7 +73,7 @@
     }
 }
 
-/* Modal Header — warm surface tone */
+/* Modal Header â€” warm surface tone */
 .modal-header {
     display: flex;
     align-items: center;
@@ -179,7 +179,7 @@
     background: var(--fimby-btn-primary-bg-hover);
 }
 
-/* Form Fields — single column mobile, two columns desktop */
+/* Form Fields â€” single column mobile, two columns desktop */
 .form-fields {
     display: grid;
     grid-template-columns: 1fr;
@@ -314,7 +314,7 @@
     }
 }
 
-/* Mobile Responsive — bottom sheet */
+/* Mobile Responsive â€” bottom sheet */
 @media (max-width: 480px) {
     .modal-backdrop {
         padding: 16px;
@@ -384,4 +384,26 @@
         transition: none !important;
         animation: none !important;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

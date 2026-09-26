@@ -1,4 +1,4 @@
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -32,13 +32,13 @@
 
 .modal-backdrop {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
+    inset: 0;
     background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
     animation: fadeIn 0.2s ease;
 }
 
@@ -268,7 +268,7 @@
 .submit-btn:focus-visible { outline: 2px solid var(--fimby-focus-ring); outline-offset: 2px; }
 
 @media (max-width: 480px) {
-    .modal-backdrop { top: 0; padding: 16px; padding-top: var(--fimby-header-height, 70px); align-items: flex-end; }
+    .modal-backdrop { padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px; align-items: flex-end; }
     .modal-container {
         border-radius: var(--fimby-radius-lg, 16px);
         max-height: 90vh; max-height: 90dvh;
@@ -281,4 +281,26 @@
     .modal-backdrop, .modal-container, .close-button, .submit-btn, .cancel-btn, .secondary-btn, .radio-option {
         transition: none; animation: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

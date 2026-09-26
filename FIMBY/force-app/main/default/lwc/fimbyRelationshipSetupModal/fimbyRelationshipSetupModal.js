@@ -108,6 +108,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
     }
     get communityIconUrl() { return `${IMPACT_ICONS}/CommunityReps.png`; }
     get trustIconUrl() { return `${IMPACT_ICONS}/trust.png`; }
+    get familyIconUrl() { return `${IMPACT_ICONS}/youth.png`; }
 
     get careIconUrl() { return `${IMPACT_ICONS}/care.png`; }
     get stepName() { return this.activeStepList[this.currentStep]; }
@@ -142,6 +143,9 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
     }
     get groupTypeClass() {
         return this.selectedType === 'Community_Group_Rep' ? 'type-card selected' : 'type-card';
+    }
+    get familyTypeClass() {
+        return this.selectedType === 'Parent_Guardian' ? 'type-card selected' : 'type-card';
     }
 
     get documentUploadEnabled() {
@@ -331,7 +335,13 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
     }
 
     handleSelectType(event) {
-        this.selectedType = event.currentTarget.dataset.type;
+        const type = event.currentTarget.dataset.type;
+        if (type === 'Parent_Guardian') {
+            this.isOpen = false;
+            this.dispatchEvent(new CustomEvent('familymember'));
+            return;
+        }
+        this.selectedType = type;
     }
 
     handleSearchInput(event) {

@@ -115,6 +115,16 @@
     min-width: 0;
 }
 
+.clickable-avatar {
+    cursor: pointer;
+}
+
+.clickable-avatar:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -599,13 +609,14 @@ button.story-image-container {
 .photo-uploader-overlay,
 .delete-overlay {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1100;
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
 .photo-uploader-card,

@@ -1,11 +1,11 @@
 <template>
     <template lwc:if={isOpen}>
-        <div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Set up a new connection" onkeydown={handleKeydown}>
+        <div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Set up an identity" onkeydown={handleKeydown}>
             <div class="modal-card">
                 <div class="modal-header">
                     <h2 class="modal-title">
                         <template lwc:if={resumeMode}>Upload signed form</template>
-                        <template lwc:else>Set Up Connection</template>
+                        <template lwc:else>Set Up An Identity</template>
                     </h2>
                     <button type="button" class="close-x" onclick={close} aria-label="Close">&times;</button>
                 </div>
@@ -45,7 +45,7 @@
                 <!-- Step 1: Type Selection -->
                 <template lwc:if={isTypeStep}>
                     <div class="step-content">
-                        <p class="step-label">What kind of connection?</p>
+                        <p class="step-label">What would you like to do?</p>
                         <div class="type-cards">
                             <button type="button" class={supportTypeClass} data-type="Support_Person" onclick={handleSelectType}>
                                 <img src={careIconUrl} alt="" class="type-icon" />
@@ -54,6 +54,10 @@
                             <button type="button" class={groupTypeClass} data-type="Community_Group_Rep" onclick={handleSelectType}>
                                 <img src={communityIconUrl} alt="" class="type-icon" />
                                 <span class="type-label">Represent a community group</span>
+                            </button>
+                            <button type="button" class={familyTypeClass} data-type="Parent_Guardian" onclick={handleSelectType}>
+                                <img src={familyIconUrl} alt="" class="type-icon" />
+                                <span class="type-label">Set up a parent-managed profile</span>
                             </button>
                         </div>
 

@@ -3,7 +3,7 @@
     display: contents;
 }
 
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -35,7 +35,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* Modal Backdrop — fixed overlay with blur */
+/* Modal Backdrop â€” fixed overlay with blur */
 .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -55,7 +55,7 @@
     to { opacity: 1; }
 }
 
-/* Modal Container — FIMBY branded */
+/* Modal Container â€” FIMBY branded */
 .modal-container {
     background: var(--fimby-surface-card);
     border-radius: var(--fimby-radius-lg);
@@ -163,7 +163,7 @@
     width: 100%;
     min-height: 120px;
     padding: 0.75rem 1rem;
-    font-size: 0.95rem;
+    font-size: var(--fimby-input-font-size, 16px);
     font-family: inherit;
     border: 1px solid var(--fimby-border-subtle);
     border-radius: var(--fimby-radius-sm);
@@ -204,7 +204,7 @@
     background: var(--fimby-surface-section, var(--fimby-surface-card));
 }
 
-/* Button styling — FIMBY patterns */
+/* Button styling â€” FIMBY patterns */
 .btn-secondary {
     background-color: transparent;
     color: var(--fimby-text-primary);
@@ -283,7 +283,7 @@
     --lwc-colorBackground: transparent;
 }
 
-/* Mobile — full-width modal */
+/* Mobile â€” full-width modal */
 @media (max-width: 480px) {
     .modal-backdrop {
         padding: 16px;
@@ -351,4 +351,26 @@
         transition: none !important;
         animation: none !important;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

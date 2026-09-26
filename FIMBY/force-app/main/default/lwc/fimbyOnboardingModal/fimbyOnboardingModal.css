@@ -36,7 +36,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ========== DISMISS X — WCAG 44x44 ========== */
+/* ========== DISMISS X â€” WCAG 44x44 ========== */
 
 .dismiss-x {
     position: absolute;
@@ -245,7 +245,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -263,7 +263,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -888,7 +888,7 @@
     background-color: var(--fimby-surface-input);
     color: var(--fimby-text-primary);
     padding: 10px 12px;
-    font-size: 0.95rem;
+    font-size: var(--fimby-input-font-size, 16px);
     font-family: inherit;
     box-sizing: border-box;
     min-height: 44px;
@@ -1002,4 +1002,26 @@
 .pill-clear:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

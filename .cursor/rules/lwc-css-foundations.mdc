@@ -367,41 +367,44 @@ Where `<bottom>` is typically `80px` (bottom-nav clearance), reduced to `24px` a
 
 ## Modal Positioning (Desktop)
 
-`fimbyUniversalHeader` is **sticky** at a fixed single-row height (`--fimby-header-height: 70px`). Modals use `position: fixed` at z-index 9999+ and must **not** vertically center in the full viewport — that places tall dialogs under the header.
+`fimbyUniversalHeader` is **sticky** at `--fimby-header-height: 70px`. Modals use `position: fixed` at z-index 9999+. The **scrim** covers the full viewport (header included); **dialog placement** uses `--fimby-modal-inset-top` in padding and `max-height` — never by inset-shortening the scrim.
 
 **Required layout tokens** (in `fimby-tokens.css`):
 
 - `--fimby-header-height: 70px` — page layout + mobile bottom-sheet clearance
 - `--fimby-modal-top-gap: 16px` — visible breathing room below header
-- `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` — desktop modal top offset (86px)
+- `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` — dialog top offset (86px)
+- `--fimby-bottom-nav-height: 70px` — mobile bottom-sheet padding
 
 Layout tokens do **not** need `@property` registration (color tokens only).
 
-**Canonical desktop backdrop** — reference: `fimbyQuickResponseModal.css`:
+**Canonical modal backdrop** — reference: `fimbyQuickPostForm.css`, `fimbyNotRespondingModal.css`:
 
 ```css
 .modal-backdrop {
     position: fixed;
-    top: var(--fimby-modal-inset-top, 86px);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
     z-index: 9999;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 .modal-container {
     max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
 }
 ```
 
-**Full-viewport scrim variant** (delete/cancel overlays, SLDS sections):
+**Confirm / SLDS overlays** — same scrim rule on the flex wrapper:
 
 ```css
 .confirm-overlay,
 section[role="dialog"].slds-modal {
+    position: fixed;
+    inset: 0;
+    background-color: var(--fimby-scrim);
     padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
     display: flex;
     align-items: center;
@@ -409,17 +412,18 @@ section[role="dialog"].slds-modal {
 }
 ```
 
-**Mobile bottom sheets** (`max-width: 480px`): `align-items: flex-end`, keep `padding: 16px` (and `padding-top: var(--fimby-header-height, 70px)` when the sheet must not cover the header). Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom and never `padding: 0` flush to the viewport.
+**Mobile bottom sheets** (`max-width: 480px`): `align-items: flex-end`; `padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px`. Always `border-radius: var(--fimby-radius-lg)` on all four corners.
 
-## Form Controls — Never Below 16px
+## Form Controls — Never Smaller Than 16px
 
-iOS WKWebView auto-zooms the page when a focused `input`/`textarea`/`select` is under 16px. `.fimby-zoom-locked` blocks pinch-out, so that zoom sticks. Use `font-size: 16px` (or `var(--fimby-input-font-size)`) on native fields. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens.
+iOS WKWebView auto-zooms the page when a focused `input`/`textarea`/`select` is smaller than 16px. `.fimby-zoom-locked` blocks pinch-out, so that zoom sticks. Use `font-size: 16px` or larger (or `var(--fimby-input-font-size)`) on native fields. Do not use `14px` / `0.875rem` / `0.9rem` / `0.9375rem` — `html` is 17px, so those rem values compute under 16px. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens.
 
 **Anti-patterns:**
 
-- `inset: 0` + `align-items: center` on desktop without `--fimby-modal-inset-top`
+- `inset: var(--fimby-modal-inset-top) 0 0 0` or `top: var(--fimby-modal-inset-top)` on the scrim (bright header band)
+- `inset: 0` + uniform `padding: 16px` only (dialog under sticky header)
 - `top: 50%; transform: translate(-50%, -50%)` for dialogs
-- SLDS `<section class="slds-modal">` without `padding-top: var(--fimby-modal-inset-top)`
+- SLDS `<section class="slds-modal">` without full scrim + `--fimby-modal-inset-top` padding
 
 ## Full-Viewport Height Components
 

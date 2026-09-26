@@ -1,13 +1,13 @@
 /* Modal Shell */
 .modal-backdrop {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
+    inset: 0;
     background-color: var(--fimby-scrim, rgba(0,0,0,0.5));
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
     animation: fadeIn 0.2s ease;
 }
 
@@ -254,9 +254,7 @@
 
 @media (max-width: 480px) {
     .modal-backdrop {
-        top: 0;
-        padding: 16px;
-        padding-top: var(--fimby-header-height, 70px);
+        padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
         align-items: flex-end;
     }
 

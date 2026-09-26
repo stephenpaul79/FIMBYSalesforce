@@ -11,14 +11,13 @@
     align-items: flex-end;
     justify-content: center;
     z-index: 9000;
-    padding: 16px;
+    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
 @media (min-width: 768px) {
     .modal-backdrop {
-        top: var(--fimby-modal-inset-top, 86px);
         align-items: center;
-        padding: 16px;
+        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
     }
 }
 

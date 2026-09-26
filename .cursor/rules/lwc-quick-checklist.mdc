@@ -19,7 +19,7 @@ Consider these rules if they affect your changes.
 - [ ] Outer wrapper uses `box-sizing: border-box`
 - [ ] Page header and body share same width — no independent `max-width` on `c-fimby-page-header`
 - [ ] Full-viewport components subtract `--fimby-header-height` + `--fimby-bottom-nav-height` on mobile, header-only on desktop (≥ 892px)
-- [ ] Desktop modal backdrop uses `--fimby-modal-inset-top` (not bare viewport centering with `inset: 0`)
+- [ ] Modal scrim uses full viewport (`inset: 0` + `--fimby-scrim`); dialog clearance via `padding` / `max-height` with `--fimby-modal-inset-top` (never inset-shortened scrim)
 - [ ] Brand/nav/content icons from `Impact_Icons` — `lightning-icon` only for generic UI (arrows, close, chevrons)
 - [ ] `utility:image` and `utility:delete` never used — replaced with `photo.png` and `trash.png`
 - [ ] `utility:edit` only for subtle inline edit pencils; pill buttons use `edit.png`
