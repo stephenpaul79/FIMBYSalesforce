@@ -107,7 +107,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     }
 
     renderedCallback() {
-        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm());
+        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm(), this.template.host);
     }
 
     _dismissInlineConfirm() {
@@ -378,6 +378,11 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
         return this.comments.length > 0;
     }
 
+    get storyBodyClass() {
+        const base = 'story-body';
+        return this.hasImage ? `${base} story-body--has-image` : base;
+    }
+
     get storyName() {
         const raw = this.record ? this.record.Name : '';
         return decodeHtmlEntities(raw);
@@ -442,30 +447,6 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     get hasImage() {
         const baseUrl = this.record ? this.record.Image_URL__c : '';
         return !!baseUrl && baseUrl.trim() !== '';
-    }
-
-    // Get image aspect ratio from Image_Ratio__c (format: "WIDTHxHEIGHT")
-    get imageAspectRatio() {
-        const ratioString = this.record ? this.record.Image_Ratio__c : '';
-        if (!ratioString) return '16 / 9'; // Default
-
-        try {
-            const parts = ratioString.toUpperCase().split('X');
-            const width = parseInt(parts[0], 10);
-            const height = parseInt(parts[1], 10);
-
-            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
-                return '16 / 9';
-            }
-            return `${width} / ${height}`;
-        } catch {
-            return '16 / 9';
-        }
-    }
-
-    // Style for image container with dynamic aspect ratio
-    get imageContainerStyle() {
-        return `aspect-ratio: ${this.imageAspectRatio}; max-height: 500px;`;
     }
 
     get detailPageTitle() {

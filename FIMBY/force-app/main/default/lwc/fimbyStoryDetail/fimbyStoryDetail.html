@@ -61,46 +61,48 @@
                         </div>
                     </div>
 
-                    <!-- Story Title -->
-                    <div class="story-content">
-                        <h1 class="story-title">{storyName}</h1>
+                    <div class={storyBodyClass}>
+                        <div class="story-main">
+                            <div class="story-content">
+                                <h1 class="story-title">{storyName}</h1>
 
-                        <!-- Truncated/Expandable Message -->
-                        <p class="story-message">{displayMessage}</p>
+                                <p class="story-message">{displayMessage}</p>
 
-                        <!-- Read More / Show Less Toggle -->
-                        <template lwc:if={showReadMore}>
-                            <button class="read-more-btn" onclick={handleToggleContent}>Read more</button>
-                        </template>
-                        <template lwc:if={showReadLess}>
-                            <button class="read-more-btn" onclick={handleToggleContent}>Show less</button>
-                        </template>
-                    </div>
-
-                    <!-- Story Image - Clickable for modal (positioned after truncated content) -->
-                    <template lwc:if={hasImage}>
-                        <button type="button" class="story-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                            <img
-                                src={imageDisplayUrl}
-                                srcset={imageSrcset}
-                                sizes={detailImageSizes}
-                                alt={storyName}
-                                class="story-image"
-                                loading="lazy"
-                                decoding="async"
-                                data-original={imageUrl}>
-                            <div class="image-overlay">
-                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                <template lwc:if={showReadMore}>
+                                    <button class="read-more-btn" onclick={handleToggleContent}>Read more</button>
+                                </template>
+                                <template lwc:if={showReadLess}>
+                                    <button class="read-more-btn" onclick={handleToggleContent}>Show less</button>
+                                </template>
                             </div>
-                        </button>
-                    </template>
 
-                    <!-- Comment Action Button - Always visible -->
-                    <div class="story-actions">
-                        <button class="action-btn comment-btn" onclick={handleComment}>
-                            <img src={commentIconUrl} alt="" class="comment-icon">
-                            <span>Comment</span>
-                        </button>
+                            <div class="story-actions">
+                                <button class="action-btn comment-btn" onclick={handleComment}>
+                                    <img src={commentIconUrl} alt="" class="comment-icon">
+                                    <span>Comment</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <template lwc:if={hasImage}>
+                            <div class="story-media">
+                                <button
+                                    type="button"
+                                    class="story-image-container"
+                                    aria-label="View full image"
+                                    onclick={handleImageClick}>
+                                    <img
+                                        src={imageDisplayUrl}
+                                        srcset={imageSrcset}
+                                        sizes={detailImageSizes}
+                                        alt={storyName}
+                                        class="story-image"
+                                        loading="lazy"
+                                        decoding="async"
+                                        data-original={imageUrl}>
+                                </button>
+                            </div>
+                        </template>
                     </div>
                 </article>
 
