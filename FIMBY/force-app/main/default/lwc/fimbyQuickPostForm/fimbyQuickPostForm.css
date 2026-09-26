@@ -9,13 +9,14 @@
    =========================================== */
 .modal-overlay {
     position: fixed;
-    inset: var(--fimby-modal-inset-top, 86px) 0 0 0;
+    inset: 0;
     background: var(--fimby-scrim);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    box-sizing: border-box;
+    padding: var(--fimby-modal-inset-top, 86px) 20px 20px;
     animation: fadeIn 0.2s ease-out;
     overscroll-behavior: contain;
 }
@@ -31,7 +32,8 @@
     box-shadow: var(--fimby-shadow-modal);
     max-width: 420px;
     width: 100%;
-    max-height: 90vh;
+    max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 40px);
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 40px);
     overflow: hidden;
     animation: slideUp 0.3s ease-out;
 }
@@ -71,7 +73,7 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    max-height: calc(90vh - 70px);
+    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 110px);
 }
 
 /* ===========================================
@@ -296,7 +298,8 @@
 @media (max-width: 480px) {
     /* Modal adjustments */
     .modal-overlay {
-        padding: 16px;
+        padding: var(--fimby-modal-inset-top, 86px) 16px
+            calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
     }
 
     .modal-container {
