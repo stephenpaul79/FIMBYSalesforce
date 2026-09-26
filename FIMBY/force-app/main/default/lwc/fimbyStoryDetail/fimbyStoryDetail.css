@@ -68,7 +68,7 @@
     position: relative;
 }
 
-/* Type badge pill â sits in-flow in the header (header-right), beside the author name */
+/* Type badge pill Ã¢ÂÂ sits in-flow in the header (header-right), beside the author name */
 .card-type-badge {
     display: flex;
     align-items: center;
@@ -84,7 +84,7 @@
     user-select: none;
 }
 
-/* Per-type badge fills â matches fimbyHomeFeed.css badge tokens */
+/* Per-type badge fills Ã¢ÂÂ matches fimbyHomeFeed.css badge tokens */
 .story-badge         { background-color: var(--fimby-badge-story,         rgba(163, 128,  69, 0.90)); }
 .godstory-badge      { background-color: var(--fimby-badge-god-story,     rgba(163, 128,  69, 0.90)); }
 .thankyou-badge      { background-color: var(--fimby-badge-thank-you,     rgba(176, 114,  72, 0.90)); }
@@ -241,6 +241,8 @@
     width: auto;
     height: auto;
     object-fit: contain;
+    border-radius: var(--fimby-radius-sm);
+    margin-inline: auto;
 }
 
 /* Story Content */
@@ -303,9 +305,7 @@
 .story-actions {
     display: flex;
     justify-content: stretch;
-    padding: 4px 16px 12px;
-    border-top: 1px solid var(--fimby-border-subtle);
-    margin-top: 4px;
+    padding: 8px 16px 12px;
 }
 
 .action-btn {
@@ -313,7 +313,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: var(--fimby-scrim);
+    background: transparent;
     border: 1px solid var(--fimby-border-subtle);
     border-radius: var(--fimby-radius-sm);
     cursor: pointer;
@@ -477,7 +477,7 @@
 }
 
 .comment-menu-trigger {
-    background: var(--fimby-scrim);
+    background: transparent;
     border: none;
     padding: 6px;
     border-radius: var(--fimby-radius-sm);
@@ -517,7 +517,7 @@
 }
 
 .comment-menu-item {
-    background: var(--fimby-scrim);
+    background: transparent;
     border: none;
     text-align: left;
     padding: 10px 16px;
@@ -538,23 +538,41 @@
     color: var(--fimby-error);
 }
 
-/* Photo viewing now goes through the universal c-fimby-lightbox â the bespoke
+/* Photo viewing now goes through the universal c-fimby-lightbox Ã¢ÂÂ the bespoke
    image modal styles were removed during the photo-viewer consolidation. */
 
-/* Button reset for semantic story-image-container button */
+/* Button reset — keep flex centering from .story-image-container (display:block broke both) */
 button.story-image-container {
-    background: none;
+    background-color: var(--fimby-surface-input, var(--fimby-surface-page));
     border: none;
     padding: 0;
     font: inherit;
     color: inherit;
     cursor: pointer;
-    text-align: inherit;
     width: 100%;
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: var(--fimby-radius-sm);
+    box-sizing: border-box;
 }
 
 /* Mobile */
+@media (max-width: 767px) {
+    .story-media {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .story-image-container {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
 @media (max-width: 480px) {
     .story-actions {
         flex-wrap: wrap;
@@ -607,9 +625,7 @@ button.story-image-container {
 
     .story-body--has-image .story-actions {
         justify-content: flex-start;
-        border-top: none;
         padding: 8px 16px 0;
-        margin-top: 0;
     }
 
     .story-body--has-image .comment-btn {
@@ -648,12 +664,9 @@ button.story-image-container {
 .photo-uploader-overlay,
 .delete-overlay {
     position: fixed;
-            top: var(--fimby-modal-scrim-content-top, var(--fimby-header-height, 70px));
-            right: 0;
-            bottom: var(--fimby-modal-scrim-content-bottom, 0px);
-            left: 0;
-    box-sizing: border-box;
+    inset: 0;
     background-color: var(--fimby-scrim);
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -686,7 +699,7 @@ button.story-image-container {
 }
 
 .close-btn {
-    background-color: var(--fimby-scrim);
+    background-color: transparent;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
@@ -777,7 +790,7 @@ button.story-image-container {
         animation: none !important;
     }
 }
-/* Shell chrome zones  content scrim stops above bottom nav (mobile) */
+/* Shell chrome zones Â content scrim stops above bottom nav (mobile) */
 @media (max-width: 891px) {
     .modal-backdrop,
     .modal-overlay,
