@@ -378,20 +378,20 @@ Where `<bottom>` is typically `80px` (bottom-nav clearance), reduced to `24px` a
 
 Layout tokens do **not** need `@property` registration (color tokens only).
 
-**Shell scrim (LWR)** — Content-region modals cannot dim the sticky header alone. `c/fimbyModalShell` ref-counts a full-viewport scrim in `fimbyUniversalHeader` (z-index **10050**). Each modal calls `createShellScrimHandle().bind(() => hide)` on open and `.clear()` on close; shell backdrop tap dispatches dismiss.
+**Three-zone modal dim (LWR)** — Header, content, and footer are separate stacking contexts. (1) `fimbyUniversalHeader` `.fimby-header-modal-scrim` on the header bar. (2) Each modal opaque `.modal-backdrop` at **9999**. (3) `fimbyBottomNavigation` `.fimby-footer-modal-scrim` on mobile footer. Modals bind `createShellScrimHandle()` so zones 1+3 sync with 2; header/footer scrim tap dispatches dismiss.
 
-**Canonical modal backdrop** — reference: `fimbyQuickPostForm.css`, `fimbyQuickResponseModal.css`:
+**Canonical modal backdrop** — reference: `fimbyQuickResponseModal.css`, `fimbyCommentComposer.css`:
 
 ```css
 .modal-backdrop {
     position: fixed;
     inset: 0;
     box-sizing: border-box;
-    background: transparent; /* dimming from .fimby-shell-modal-scrim in header */
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
+    z-index: 9999;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 .modal-container {

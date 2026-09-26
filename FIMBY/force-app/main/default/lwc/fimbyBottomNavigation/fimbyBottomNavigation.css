@@ -23,6 +23,7 @@
     background-color: var(--fimby-surface-card, #FAF7F2);
     border-top: 1px solid var(--fimby-border-subtle, #E0D9CF);
     z-index: 1000;
+    isolation: isolate;
     /* Bottom safe-area inset is owned by the native app's SafeAreaView
        (edges includes "bottom" on Android). env(safe-area-inset-bottom)
        here would double-count: it reports 0 in the release WebView but the
@@ -243,6 +244,20 @@
         justify-content: center;
         gap: 4px 12px;
     }
+}
+
+/* Dims the fixed footer while a content-region modal is open */
+.fimby-footer-modal-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    background-color: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    animation: fimbyFooterScrimFadeIn 0.2s ease-out;
+}
+
+@keyframes fimbyFooterScrimFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* Desktop — hide footer; navigation lives in the header on ≥892px */

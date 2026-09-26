@@ -1,6 +1,7 @@
 /**
- * Site-wide modal scrim mounted in fimbyUniversalHeader so fixed overlays
- * in the content region can dim the sticky header (LWR theme stacking).
+ * Three-zone dim (LWR): header bar + content modal backdrop + footer bar,
+ * synced via ref-counted open/close events. No full-viewport layer in the
+ * header — that stacking context would cover content modals.
  */
 export const SHELL_SCRIM_OPEN = 'fimbyshellscrimopen';
 export const SHELL_SCRIM_CLOSE = 'fimbyshellscrimclose';

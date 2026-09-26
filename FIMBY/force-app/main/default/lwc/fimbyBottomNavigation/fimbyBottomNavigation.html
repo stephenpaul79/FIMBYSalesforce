@@ -48,6 +48,14 @@
             </button>
         </div>
 
+        <!-- Mobile footer dim while a content-region modal is open (see c/fimbyModalShell) -->
+        <div
+            lwc:if={showShellModalScrim}
+            class="fimby-footer-modal-scrim"
+            onclick={handleFooterScrimClick}
+            role="presentation">
+        </div>
+
         <!-- Quick Post Modal -->
         <c-fimby-quick-post-form
             is-modal="true"

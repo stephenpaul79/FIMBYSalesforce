@@ -13,6 +13,8 @@
     top: 0;
     z-index: 1000;
     width: 100%;
+    /* Anchor for header-only modal scrim (must not cover the content region) */
+    isolation: isolate;
 }
 
 /* --- Header Row: three-zone flex layout --- */
@@ -381,11 +383,11 @@
     }
 }
 
-/* Shell modal scrim — dims header + content; modals sit at z-index 10051 in page LWCs */
-.fimby-shell-modal-scrim {
-    position: fixed;
+/* Dims the sticky header bar while a content-region modal is open (see fimbyModalShell) */
+.fimby-header-modal-scrim {
+    position: absolute;
     inset: 0;
-    z-index: 10050;
+    z-index: 500;
     background-color: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
     animation: fadeIn 0.2s ease-out;
 }

@@ -4,6 +4,11 @@ import basePath from '@salesforce/community/basePath';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getPageReference, getUrl, resolveTabFromPath, startNavTiming, endNavTiming } from 'c/fimbyNavigation';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
+import {
+    SHELL_SCRIM_OPEN,
+    SHELL_SCRIM_CLOSE,
+    dispatchShellScrimDismiss
+} from 'c/fimbyModalShell';
 
 const FOOTER_HEIGHT_PX = 72;
 
@@ -24,6 +29,7 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
     @track _activeTab = 'home';
     @track hasUnread = false;
     @track messageCount = 0;
+    @track showShellModalScrim = false;
 
     /* ---------------------------------------------------------------
      * Lifecycle
@@ -31,6 +37,8 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
     _resizeHandler;
     _badgeCountHandler;
     _unregisterTourAnchors;
+    _shellScrimOpenHandler;
+    _shellScrimCloseHandler;
 
     // Reactive active-tab highlight under the persistent shell (the footer no
     // longer remounts per navigation, so the tab must recompute on page change).
@@ -52,6 +60,15 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
         };
         window.addEventListener('fimbybadgecounts', this._badgeCountHandler);
         this._unregisterTourAnchors = registerTourAnchorProvider(this);
+
+        this._shellScrimOpenHandler = () => {
+            this.showShellModalScrim = true;
+        };
+        this._shellScrimCloseHandler = () => {
+            this.showShellModalScrim = false;
+        };
+        window.addEventListener(SHELL_SCRIM_OPEN, this._shellScrimOpenHandler);
+        window.addEventListener(SHELL_SCRIM_CLOSE, this._shellScrimCloseHandler);
     }
 
     disconnectedCallback() {
@@ -61,12 +78,22 @@ export default class FimbyBottomNavigation extends NavigationMixin(LightningElem
             if (this._badgeCountHandler) {
                 window.removeEventListener('fimbybadgecounts', this._badgeCountHandler);
             }
+            if (this._shellScrimOpenHandler) {
+                window.removeEventListener(SHELL_SCRIM_OPEN, this._shellScrimOpenHandler);
+            }
+            if (this._shellScrimCloseHandler) {
+                window.removeEventListener(SHELL_SCRIM_CLOSE, this._shellScrimCloseHandler);
+            }
             if (this._unregisterTourAnchors) {
                 this._unregisterTourAnchors();
             }
         } catch {
             // Fail silently
         }
+    }
+
+    handleFooterScrimClick() {
+        dispatchShellScrimDismiss();
     }
 
     @api

@@ -74,10 +74,10 @@
             </div>
         </div>
 
-        <!-- Full-viewport dim (above sticky header); content-region modals acquire via c/fimbyModalShell -->
+        <!-- Header-bar dim only (LWR: a full-viewport layer in the header stacks above content modals) -->
         <div
             lwc:if={showShellModalScrim}
-            class="fimby-shell-modal-scrim"
+            class="fimby-header-modal-scrim"
             onclick={handleShellScrimClick}
             role="presentation">
         </div>

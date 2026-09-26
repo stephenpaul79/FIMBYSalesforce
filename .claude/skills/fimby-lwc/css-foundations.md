@@ -143,20 +143,20 @@ Narrow form pages: same, plus `max-width: 640px; margin: 0 auto;`.
 
 Layout tokens: `--fimby-header-height: 70px`, `--fimby-modal-top-gap: 16px`, `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` (86px), `--fimby-bottom-nav-height: 70px`. Layout tokens don't need `@property`.
 
-**Shell scrim (LWR):** Content-region modals use `c/fimbyModalShell` (`createShellScrimHandle`) so `fimbyUniversalHeader` mounts `.fimby-shell-modal-scrim` at z-index **10050**. Local `.modal-backdrop` is **transparent** at **10051**; bind on open, clear on close.
+**Three-zone modal dim (LWR):** Header `.fimby-header-modal-scrim`, content `.modal-backdrop` at **9999**, footer `.fimby-footer-modal-scrim` — synced via `createShellScrimHandle()`.
 
-**Canonical modal backdrop** (reference: `fimbyQuickPostForm`, `fimbyQuickResponseModal`):
+**Canonical modal backdrop** (reference: `fimbyQuickResponseModal`, `fimbyCommentComposer`):
 
 ```css
 .modal-backdrop {
     position: fixed;
     inset: 0;
     box-sizing: border-box;
-    background: transparent;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
+    z-index: 9999;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 .modal-container {
