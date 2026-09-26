@@ -6,8 +6,10 @@ import submitOwnerReturn from '@salesforce/apex/FimbyLendingController.submitOwn
 import getConditionPicklistValues from '@salesforce/apex/FimbyLendingController.getConditionPicklistValues';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyItemReturnModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track _isVisible = false;
     @track _viewState = 'loading';
@@ -82,6 +84,7 @@ export default class FimbyItemReturnModal extends LightningElement {
     show(recordId) {
         this._recordId = recordId;
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadData();
@@ -89,6 +92,7 @@ export default class FimbyItemReturnModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.dispatchEvent(new CustomEvent('returnmodalclosed', {
             bubbles: true,
             composed: true
@@ -100,6 +104,7 @@ export default class FimbyItemReturnModal extends LightningElement {
     // ── Lifecycle ───────────────────────────────────────────────────
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         this._isVisible = false;
     }
 

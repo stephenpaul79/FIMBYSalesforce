@@ -6,8 +6,10 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { fireToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyRecordEditModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @api recordId;
     @api objectApiName;
     @api fieldSetName = 'FIMBY_Editable_Fields';
@@ -92,6 +94,8 @@ export default class FimbyRecordEditModal extends LightningElement {
         if (fieldSetName) this._fieldSetName = fieldSetName;
 
         this.isVisible = true;
+
+        this._shellScrim.bind(() => this.hide());
         this.hasError = false;
         this.errorMessage = '';
         this.loadFieldSet();
@@ -100,6 +104,7 @@ export default class FimbyRecordEditModal extends LightningElement {
     // Public API to hide the modal
     @api
     hide() {
+        this._shellScrim.clear();
         this.isVisible = false;
         this.isSaving = false;
     }

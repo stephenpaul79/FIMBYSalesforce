@@ -8,11 +8,13 @@ import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileDa
 import createStory from '@salesforce/apex/FimbyStoriesController.createStory';
 import useProfilePhotoForStory from '@salesforce/apex/FimbyStoriesController.useProfilePhotoForStory';
 import markBioPostCompleted from '@salesforce/apex/FimbyOnboardingController.markBioPostCompleted';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const DEFAULT_TITLE = 'Say hi to your neighbours';
 const STORY_TITLE = "Hi neighbours";
 
 export default class FimbyIntroPostModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @track _isVisible = false;
     @track _isLoading = false;
     @track _isPosting = false;
@@ -57,6 +59,7 @@ export default class FimbyIntroPostModal extends LightningElement {
     @api
     show() {
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._showPhotoStep = false;
         this._showCelebration = false;
         this._createdStoryId = null;
@@ -68,6 +71,7 @@ export default class FimbyIntroPostModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this._isVisible = false;
         document.body.classList.remove('fimby-modal-open');
     }

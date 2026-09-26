@@ -611,7 +611,7 @@ button.story-image-container {
     position: fixed;
     inset: 0;
     box-sizing: border-box;
-    background-color: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;

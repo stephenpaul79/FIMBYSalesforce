@@ -15,6 +15,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer';
 
 import saveSkillOffers from '@salesforce/apex/FimbySkillsController.saveSkillOffers';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 
 
@@ -27,6 +28,7 @@ const AVAILABILITY_MAX = 255;
 
 
 export default class FimbySkillEditModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track isVisible = false;
 
@@ -154,6 +156,8 @@ export default class FimbySkillEditModal extends LightningElement {
 
         this.isVisible = true;
 
+        this._shellScrim.bind(() => this.hide());
+
         this.loadError = '';
 
         this.saveError = '';
@@ -177,6 +181,7 @@ export default class FimbySkillEditModal extends LightningElement {
     @api
 
     hide() {
+        this._shellScrim.clear();
 
         this.isVisible = false;
 

@@ -4,8 +4,10 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { fireErrorToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyBulkBuyPickupModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @api postId;
     @api postTitle;
 
@@ -71,12 +73,14 @@ export default class FimbyBulkBuyPickupModal extends LightningElement {
     @api
     show() {
         this.isOpen = true;
+        this._shellScrim.bind(() => this.hide());
         this.message = '';
         this.receiptImageUrl = '';
     }
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.isOpen = false;
         this.isLoading = false;
     }

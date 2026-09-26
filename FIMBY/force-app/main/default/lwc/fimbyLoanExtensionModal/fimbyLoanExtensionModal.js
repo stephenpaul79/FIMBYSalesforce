@@ -5,10 +5,12 @@ import getLoanedItemForExtension from '@salesforce/apex/FimbyLendingController.g
 import requestLoanExtension from '@salesforce/apex/FimbyLendingController.requestLoanExtension';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export default class FimbyLoanExtensionModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track _isVisible = false;
     @track _viewState = 'loading';
@@ -71,6 +73,7 @@ export default class FimbyLoanExtensionModal extends LightningElement {
     show(loanId) {
         this._recordId = loanId;
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadLoanedItem();
@@ -78,6 +81,7 @@ export default class FimbyLoanExtensionModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.dispatchEvent(new CustomEvent('extensionmodalclosed', {
             bubbles: true,
             composed: true
@@ -89,6 +93,7 @@ export default class FimbyLoanExtensionModal extends LightningElement {
     // ── Lifecycle ───────────────────────────────────────────────────
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         this._isVisible = false;
     }
 

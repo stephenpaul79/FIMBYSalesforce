@@ -381,6 +381,15 @@
     }
 }
 
+/* Shell modal scrim — dims header + content; modals sit at z-index 10051 in page LWCs */
+.fimby-shell-modal-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    background-color: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    animation: fadeIn 0.2s ease-out;
+}
+
 /* Menu Overlay Styles */
 .menu-overlay {
     position: fixed;

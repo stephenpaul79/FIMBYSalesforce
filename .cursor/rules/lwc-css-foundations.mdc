@@ -378,18 +378,20 @@ Where `<bottom>` is typically `80px` (bottom-nav clearance), reduced to `24px` a
 
 Layout tokens do **not** need `@property` registration (color tokens only).
 
-**Canonical modal backdrop** — reference: `fimbyQuickPostForm.css`, `fimbyNotRespondingModal.css`:
+**Shell scrim (LWR)** — Content-region modals cannot dim the sticky header alone. `c/fimbyModalShell` ref-counts a full-viewport scrim in `fimbyUniversalHeader` (z-index **10050**). Each modal calls `createShellScrimHandle().bind(() => hide)` on open and `.clear()` on close; shell backdrop tap dispatches dismiss.
+
+**Canonical modal backdrop** — reference: `fimbyQuickPostForm.css`, `fimbyQuickResponseModal.css`:
 
 ```css
 .modal-backdrop {
     position: fixed;
     inset: 0;
     box-sizing: border-box;
-    background-color: var(--fimby-scrim);
+    background: transparent; /* dimming from .fimby-shell-modal-scrim in header */
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 .modal-container {

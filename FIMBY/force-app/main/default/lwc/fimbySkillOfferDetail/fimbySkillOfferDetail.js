@@ -1,14 +1,15 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbySkillCategoryConfig';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
-import { getPageReference, navigate } from 'c/fimbyNavigation';
+import { getPageReference, navigate, profilePathForContact } from 'c/fimbyNavigation';
 
 import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer';
 import setSkillStatus from '@salesforce/apex/FimbySkillsController.setSkillStatus';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 export default class FimbySkillOfferDetail extends NavigationMixin(LightningElement) {
     _recordId;
@@ -21,6 +22,14 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
     @track isUpdatingStatus = false;
     @track detailsExpanded = true;
     _pendingEditOpen = false;
+    @track realContactId = null;
+
+    @wire(getActingAsContact)
+    wiredActingAs({ data }) {
+        if (data?.success) {
+            this.realContactId = data.contactId || null;
+        }
+    }
 
     @api
     get recordId() {
@@ -305,8 +314,12 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
     }
 
     handleOwnerClick() {
-        if (this.skill?.ownerContactId) {
-            this._softNav('neighbour', this.skill.ownerContactId, `/neighbour?id=${this.skill.ownerContactId}`);
-        }
+        const path = profilePathForContact({
+            contactId: this.skill?.ownerContactId,
+            isOrgContact: this.skill?.isOrganization === true,
+            orgAccountId: this.skill?.orgAccountId,
+            currentContactId: this.realContactId
+        });
+        if (path) navigate(this, path);
     }
 }

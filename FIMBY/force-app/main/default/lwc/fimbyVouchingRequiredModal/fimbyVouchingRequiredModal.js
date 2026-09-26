@@ -4,6 +4,7 @@ import searchVouchers from '@salesforce/apex/FimbyVouchController.searchVouchers
 import submitVoucherRequest from '@salesforce/apex/FimbyVouchController.submitVoucherRequest';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const STATE_EXPLAINER = 'explainer';
 const STATE_FORM = 'form';
@@ -15,6 +16,8 @@ const SEARCH_DEBOUNCE_MS = 250;
 const SEARCH_MIN_CHARS = 2;
 
 export default class FimbyVouchingRequiredModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @track isOpen = false;
     @track state = STATE_EXPLAINER;
 
@@ -64,10 +67,12 @@ export default class FimbyVouchingRequiredModal extends LightningElement {
         this.resetForm();
         this.submitMessage = '';
         this.isOpen = true;
+        this._shellScrim.bind(() => this.close());
     }
 
     @api
     close() {
+        this._shellScrim.clear();
         this.isOpen = false;
         this.dispatchEvent(new CustomEvent('close'));
     }

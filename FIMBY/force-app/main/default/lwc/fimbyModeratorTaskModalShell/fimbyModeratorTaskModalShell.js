@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const CATEGORY_BADGE_MAP = {
     Content_Report:                  'category-badge error',
@@ -11,6 +12,7 @@ const CATEGORY_BADGE_MAP = {
 };
 
 export default class FimbyModeratorTaskModalShell extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track _isVisible = false;
     @track _taskData = {};
@@ -38,6 +40,7 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
         this._taskData = taskData || {};
         this._viewState = 'ready';
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._lockBodyScroll();
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -51,6 +54,7 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this._unlockBodyScroll();
         this._isVisible = false;
         this._isDirty = false;

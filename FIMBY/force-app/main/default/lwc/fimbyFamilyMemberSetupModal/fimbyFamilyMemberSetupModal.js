@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import createFamilyMember from '@salesforce/apex/FimbyParentGuardianService.createFamilyMember';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const FIRST_NAME_MAX = 40;
 
@@ -13,6 +14,8 @@ const FIRST_NAME_MAX = 40;
  * version points at wording nobody was ever shown.
  */
 export default class FimbyFamilyMemberSetupModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @track isOpen = false;
     @track isSubmitting = false;
     @track error = '';
@@ -34,10 +37,12 @@ export default class FimbyFamilyMemberSetupModal extends LightningElement {
         this.createdContactId = '';
         this.createdName = '';
         this.isOpen = true;
+        this._shellScrim.bind(() => this.close());
     }
 
     @api
     close() {
+        this._shellScrim.clear();
         this.isOpen = false;
     }
 

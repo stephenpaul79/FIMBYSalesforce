@@ -2,8 +2,10 @@ import { LightningElement, api, track } from 'lwc';
 import recordHandoff from '@salesforce/apex/FimbyLendingController.recordHandoff';
 import getLendingRequestForHandoff from '@salesforce/apex/FimbyLendingController.getLendingRequestForHandoff';
 import { formatLocalDate } from 'c/fimbyDateUtils';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyPickupConfirmationModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track _isVisible = false;
     @track _viewState = 'loading'; // loading | form | submitting | success | error
@@ -22,6 +24,7 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
     show(requestId) {
         this._recordId = requestId;
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._errorMessage = '';
         this._loadRequest();
@@ -29,6 +32,7 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         // Parent must refresh lending UI whenever this modal closes (including "already handled"
         // dismiss) — composed + bubbles so the event crosses the child component shadow boundary.
         this.dispatchEvent(new CustomEvent('pickupmodalclosed', {
@@ -42,6 +46,7 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
     // ── Lifecycle ───────────────────────────────────────────────────
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         this._isVisible = false;
     }
 

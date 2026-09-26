@@ -74,6 +74,14 @@
             </div>
         </div>
 
+        <!-- Full-viewport dim (above sticky header); content-region modals acquire via c/fimbyModalShell -->
+        <div
+            lwc:if={showShellModalScrim}
+            class="fimby-shell-modal-scrim"
+            onclick={handleShellScrimClick}
+            role="presentation">
+        </div>
+
         <!-- Menu Overlay (hidden by default) -->
         <div lwc:if={showMenuOverlay} class="menu-overlay" onclick={handleOverlayClick}>
             <div class="menu-content" onclick={handleMenuContentClick}>

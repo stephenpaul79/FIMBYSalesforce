@@ -6,6 +6,7 @@ import submitContentReport from '@salesforce/apex/FimbyContentReportController.s
 import checkExistingReport from '@salesforce/apex/FimbyContentReportController.checkExistingReport';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 /**
  * Confidential content report modal. Embedded by detail/card LWCs to surface
@@ -14,6 +15,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
  * promise this UI implements (24h SLA, plain-English reasons).
  */
 export default class FimbyReportContent extends NavigationMixin(LightningElement) {
+    _shellScrim = createShellScrimHandle();
     @api contentId = '';
     @api contentType = ''; // 'Story', 'Need_Offer', 'Library_Item', 'Response', etc.
     _contentId = '';
@@ -101,12 +103,14 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
         if (contentId) this._contentId = contentId;
         if (contentType) this._contentType = contentType;
         this.showModal = true;
+        this._shellScrim.bind(() => this.hide());
         this.resetForm();
         await this.loadExistingReportState();
     }
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
     }

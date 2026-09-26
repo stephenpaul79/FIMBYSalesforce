@@ -16,6 +16,7 @@ import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer'
 import requestSkillHelp from '@salesforce/apex/FimbySkillsController.requestSkillHelp';
 import searchContactsForMention from '@salesforce/apex/FimbyStoryCommentController.searchContactsForMention';
 import { getCategoryIconUrl, getCategoryColor } from 'c/fimbySkillCategoryConfig';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const TYPE_CONFIG = {
     story: {
@@ -84,6 +85,7 @@ const TYPE_CONFIG = {
 };
 
 export default class FimbyQuickResponseModal extends NavigationMixin(LightningElement) {
+    _shellScrim = createShellScrimHandle();
 
     /* ================================================================
      * Modal State
@@ -167,6 +169,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._responseType = responseType;
         this._isItemAvailable = options?.isItemAvailable !== false;
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadContext();
@@ -174,6 +177,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
     @api
     hide() {
+        this._shellScrim.clear();
         this._isVisible = false;
         this._resetForm();
         this.dispatchEvent(new CustomEvent('modalclosed', {
@@ -197,6 +201,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
     }
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         this._isVisible = false;
     }
 

@@ -1,4 +1,4 @@
-/* FIMBY Inbox — Gmail-style single-column */
+/* FIMBY Inbox â€” Gmail-style single-column */
 .messages-page {
     height: calc(100vh - var(--fimby-header-height, 78px) - var(--fimby-bottom-nav-height, 70px));
     height: calc(100dvh - var(--fimby-header-height, 78px) - var(--fimby-bottom-nav-height, 70px));
@@ -22,7 +22,7 @@
 }
 
 /* Acting As Banner */
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -52,7 +52,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* Filter chips — flex-shrink: 0 keeps them pinned above the scroll area */
+/* Filter chips â€” flex-shrink: 0 keeps them pinned above the scroll area */
 .message-filters {
     background-color: var(--fimby-surface-card);
     border-bottom: 1px solid var(--fimby-divider-default);
@@ -119,7 +119,7 @@
     color: #ffffff;
 }
 
-/* Mobile Compose CTA — rounded rectangle, not a filter pill */
+/* Mobile Compose CTA â€” rounded rectangle, not a filter pill */
 .filter-new-btn {
     display: inline-flex;
     align-items: center;
@@ -157,7 +157,7 @@
     flex-shrink: 0;
 }
 
-/* Scroll container — page fill below the thread list (end message, disclaimer) */
+/* Scroll container â€” page fill below the thread list (end message, disclaimer) */
 .messages-scroll-container {
     flex: 1;
     overflow: hidden;
@@ -166,7 +166,7 @@
     --fimby-infinite-scroll-surface: var(--fimby-surface-page);
 }
 
-/* Retention disclaimer — same surface as page, not a card footer */
+/* Retention disclaimer â€” same surface as page, not a card footer */
 .inbox-disclaimer {
     display: flex;
     align-items: flex-start;
@@ -183,7 +183,7 @@
     margin-top: 2px;
 }
 
-/* ── Inbox rows ─────────────────────────────────── */
+/* â”€â”€ Inbox rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .inbox-list {
     background: var(--fimby-surface-card);
     border-radius: 0 0 var(--fimby-radius-md, 12px) var(--fimby-radius-md, 12px);
@@ -201,7 +201,7 @@
     background-color: var(--fimby-surface-card);
 }
 
-/* ── Swipe action buttons ──────────────────────── */
+/* â”€â”€ Swipe action buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .swipe-action {
     position: absolute;
     top: 0;
@@ -276,7 +276,7 @@
     }
 }
 
-/* ── Desktop kebab ─────────────────────────────── */
+/* â”€â”€ Desktop kebab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .thread-kebab-container {
     position: absolute;
     top: 0;
@@ -320,7 +320,7 @@
     }
 }
 
-/* ── Thread row avatars ───────────────────────── */
+/* â”€â”€ Thread row avatars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .thread-avatar {
     width: 36px;
     height: 36px;
@@ -356,7 +356,7 @@
     pointer-events: none;
 }
 
-/* ── Acting-as banner avatar ──────────────────── */
+/* â”€â”€ Acting-as banner avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner-avatar {
     width: 24px;
     height: 24px;
@@ -382,7 +382,7 @@
     line-height: 1;
 }
 
-/* ── Compose picker avatar (org variant) ──────── */
+/* â”€â”€ Compose picker avatar (org variant) â”€â”€â”€â”€â”€â”€â”€â”€ */
 .contact-avatar-img {
     width: 100%;
     height: 100%;
@@ -395,7 +395,7 @@
     background: var(--fimby-surface-page, #F0EBE3);
 }
 
-/* ── Desktop kebab dropdown (rendered outside scroll container) ── */
+/* â”€â”€ Desktop kebab dropdown (rendered outside scroll container) â”€â”€ */
 .kebab-menu-backdrop {
     position: fixed;
     inset: 0;
@@ -440,7 +440,7 @@
     opacity: 0.7;
 }
 
-/* ── Inbox row — two-row layout (mobile-first) ──── */
+/* â”€â”€ Inbox row â€” two-row layout (mobile-first) â”€â”€â”€â”€ */
 .inbox-row {
     display: grid;
     grid-template-columns: 36px 1fr;
@@ -562,7 +562,7 @@
     color: inherit;
 }
 
-/* Type badge — compact inline pill */
+/* Type badge â€” compact inline pill */
 .inbox-badge {
     display: inline-flex;
     align-items: center;
@@ -594,7 +594,7 @@
 }
 .badge-vouch    { background-color: rgba(178, 110, 128, 0.80); }
 
-/* Group row — post image or type-icon circle */
+/* Group row â€” post image or type-icon circle */
 .thread-avatar-group .thread-avatar-img {
     object-fit: cover;
 }
@@ -631,7 +631,7 @@
 .group-avatar-direct  { background-color: rgba(94, 123, 146, 0.75); }
 .group-avatar-response { background-color: rgba(91, 135, 96, 0.75); }
 
-/* ── New-Message modal ──────────────────────────── */
+/* â”€â”€ New-Message modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .new-message-modal {
     display: flex;
     align-items: center;
@@ -787,7 +787,7 @@ button.contact-item {
     }
 }
 
-/* ── Responsive ─────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /* Narrow screens: tighter padding */
 @media (max-width: 480px) {
@@ -893,4 +893,26 @@ button.contact-item {
         transition: none;
         transform: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

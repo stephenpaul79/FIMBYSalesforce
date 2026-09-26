@@ -7,8 +7,10 @@ import declineLendingRequest from '@salesforce/apex/FimbyLendingController.decli
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { formatLocalDate } from 'c/fimbyDateUtils';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyLendingApprovalModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
 
     @track _isVisible = false;
     @track _viewState = 'loading'; // loading | form | shareContact | submitting | success | error
@@ -85,6 +87,7 @@ export default class FimbyLendingApprovalModal extends LightningElement {
     show(recordId) {
         this._recordId = recordId;
         this._isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadRequest();
@@ -92,6 +95,7 @@ export default class FimbyLendingApprovalModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.dispatchEvent(new CustomEvent('approvalmodalclosed', {
             bubbles: true,
             composed: true
@@ -103,6 +107,7 @@ export default class FimbyLendingApprovalModal extends LightningElement {
     // ── Lifecycle ───────────────────────────────────────────────────
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         this._isVisible = false;
     }
 

@@ -1,4 +1,4 @@
-/* ── Host ───────────────────────────────────────────────────────── */
+/* â”€â”€ Host â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :host {
     display: block;
     width: 100%;
@@ -20,7 +20,7 @@
     min-height: 300px;
 }
 
-/* ── Detail Content ─────────────────────────────────────────────── */
+/* â”€â”€ Detail Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .detail-content {
     display: flex;
     flex-direction: column;
@@ -62,7 +62,7 @@
     line-height: 1.5;
 }
 
-/* ── Item Card ──────────────────────────────────────────────────── */
+/* â”€â”€ Item Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .item-card {
     background-color: var(--fimby-surface-card);
     box-shadow: var(--fimby-shadow-card);
@@ -70,7 +70,7 @@
     overflow: hidden;
 }
 
-/* ── Card Layout (Quick Response 2-column pattern) ───────────── */
+/* â”€â”€ Card Layout (Quick Response 2-column pattern) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .card-layout {
     display: flex;
     flex-direction: column;
@@ -105,7 +105,7 @@
     flex-wrap: wrap;
 }
 
-/* ── Compact Header: title+meta left, owner right ────────────── */
+/* â”€â”€ Compact Header: title+meta left, owner right â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .post-header-compact {
     display: flex;
     justify-content: space-between;
@@ -196,7 +196,7 @@
     white-space: pre-wrap;
 }
 
-/* ── Item Image ─────────────────────────────────────────────────── */
+/* â”€â”€ Item Image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .item-image-container {
     width: 100%;
     position: relative;
@@ -289,7 +289,7 @@ button.item-image-container {
     color: var(--fimby-text-secondary);
 }
 
-/* ── Action Buttons ─────────────────────────────────────────────── */
+/* â”€â”€ Action Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .item-actions {
     display: flex;
     justify-content: space-between;
@@ -371,7 +371,7 @@ button.item-image-container {
     flex-shrink: 0;
 }
 
-/* ── Info Sections ──────────────────────────────────────────────── */
+/* â”€â”€ Info Sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .info-section {
     background-color: var(--fimby-surface-card);
     padding: 16px;
@@ -439,7 +439,7 @@ button.item-image-container {
     flex-shrink: 0;
 }
 
-/* ── Field Grid ────────────────────────────────────────────────── */
+/* â”€â”€ Field Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .field-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -469,15 +469,15 @@ button.item-image-container {
     color: var(--fimby-text-strong);
 }
 
-/* ── Delete Confirmation Modal ─────────────────────────────────── */
+/* â”€â”€ Delete Confirmation Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .delete-overlay {
     position: fixed;
     inset: 0;
-    background-color: var(--fimby-scrim);
+    background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
@@ -563,10 +563,10 @@ button.item-image-container {
     cursor: not-allowed;
 }
 
-/* Photo viewing now goes through the universal c-fimby-lightbox — the bespoke
+/* Photo viewing now goes through the universal c-fimby-lightbox â€” the bespoke
    image modal styles were removed during the photo-viewer consolidation. */
 
-/* ── Breakpoints (mobile-first) ─────────────────────────────────── */
+/* â”€â”€ Breakpoints (mobile-first) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (min-width: 480px) {
     .info-section {
         padding: 20px;
@@ -684,7 +684,7 @@ button.item-image-container {
     }
 }
 
-/* ── Keyboard focus visibility ─────────────────────────────────── */
+/* â”€â”€ Keyboard focus visibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .item-image-container:focus-visible,
 .action-btn:focus-visible,
 .btn-neutral:focus-visible,
@@ -694,12 +694,12 @@ button.item-image-container {
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
-/* ── Requester Section (info-section card variant) ───────────── */
+/* â”€â”€ Requester Section (info-section card variant) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .requester-section-warning {
     background-color: var(--fimby-error-tint, #FDECEA);
 }
 
-/* ── CTA Attention Strip tiers ───────────────────────────────── */
+/* â”€â”€ CTA Attention Strip tiers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cta-strip-urgent {
     box-shadow: var(--fimby-shadow-card),
                 inset var(--fimby-cta-strip-border-width, 4px) 0 0 0 var(--fimby-cta-strip-accent-urgent, #E74C3C);
@@ -745,7 +745,7 @@ button.item-image-container {
     min-height: 44px;
 }
 
-/* ── Removal Modal ─────────────────────────────────────────────── */
+/* â”€â”€ Removal Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .remove-reason-input {
     width: 100%;
     min-height: 80px;
@@ -753,7 +753,7 @@ button.item-image-container {
     border: 1px solid var(--fimby-border-subtle, #E0D9CF);
     border-radius: var(--fimby-radius-sm, 8px);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- resize improves UX on desktop */
     resize: vertical;
     margin-bottom: 12px;
@@ -777,14 +777,14 @@ button.item-image-container {
     cursor: not-allowed;
 }
 
-/* ── Banner Cancel Button ──────────────────────────────────────── */
+/* â”€â”€ Banner Cancel Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .action-btn-muted {
     color: var(--fimby-text-secondary, #8B7355);
     background: none;
     border: 1px solid var(--fimby-border-subtle, #E0D9CF);
 }
 
-/* ── Borrower History ───────────────────────────────────────────── */
+/* â”€â”€ Borrower History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .borrower-history-list {
     list-style: none;
     padding: 0;
@@ -894,7 +894,7 @@ button.item-image-container {
     }
 }
 
-/* ── Reduced Motion ─────────────────────────────────────────────── */
+/* â”€â”€ Reduced Motion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (prefers-reduced-motion: reduce) {
     .action-btn,
     .btn,
@@ -905,4 +905,26 @@ button.item-image-container {
     .detail-content {
         animation: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

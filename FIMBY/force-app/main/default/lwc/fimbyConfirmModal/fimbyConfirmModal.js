@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 /**
  * Branded confirmation dialog, replacing window.confirm. A native dialog shows
@@ -22,6 +23,8 @@ import { LightningElement, api } from 'lwc';
  *   </c-fimby-confirm-modal>
  */
 export default class FimbyConfirmModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @api isOpen = false;
     @api title = 'Are you sure?';
     @api message = '';
@@ -49,15 +52,21 @@ export default class FimbyConfirmModal extends LightningElement {
 
     renderedCallback() {
         if (this.isOpen && !this._wasOpen) {
+            this._shellScrim.bind(() => this.handleCancel());
             this._wasOpen = true;
             // Cancel takes focus rather than the confirm button: a stray Enter on a
             // destructive dialog should back out, not go through with it.
             this._previouslyFocused = document.activeElement;
             this.template.querySelector('.nav-back')?.focus();
         } else if (!this.isOpen && this._wasOpen) {
+            this._shellScrim.clear();
             this._wasOpen = false;
             this._restoreFocus();
         }
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     handleConfirm() {

@@ -24,7 +24,7 @@
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: var(--fimby-scrim);
+    background-color: transparent;
     display: flex;
     align-items: flex-end;
     justify-content: center;

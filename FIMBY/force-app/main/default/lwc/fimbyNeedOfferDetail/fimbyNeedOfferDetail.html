@@ -35,24 +35,26 @@
                     <div class="post-card">
                         <div class={cardLayoutClass}>
                             <template lwc:if={showCardLeft}>
-                                <div class="card-left">
+                                <div class={cardLeftClass}>
                                     <div class="card-left-header">
                                         <div class={bulkBuyStatusBadgeClass} data-status={bulkBuyDisplayStatus}>{bulkBuyStatusBadgeText}</div>
                                     </div>
-                                    <button type="button" class="post-image-container bulk-buy-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                                        <img
-                                            src={imageDisplayUrl}
-                                            srcset={imageSrcset}
-                                            sizes={detailImageSizes}
-                                            alt={postTitle}
-                                            class="post-image"
-                                            loading="lazy"
-                                            decoding="async"
-                                            data-original={imageUrl}>
-                                        <div class="image-overlay">
-                                            <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
-                                        </div>
-                                    </button>
+                                    <div class="card-left-media">
+                                        <button type="button" class="post-image-container bulk-buy-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
+                                            <img
+                                                src={imageDisplayUrl}
+                                                srcset={imageSrcset}
+                                                sizes={detailImageSizes}
+                                                alt={postTitle}
+                                                class="post-image"
+                                                loading="lazy"
+                                                decoding="async"
+                                                data-original={imageUrl}>
+                                            <div class="image-overlay">
+                                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </template>
                             <div class="card-right">
@@ -154,33 +156,36 @@
                     <div class="post-card">
                         <div class={cardLayoutClass}>
                             <template lwc:if={showCardLeft}>
-                                <div class="card-left">
+                                <div class={cardLeftClass}>
                                     <div class="card-left-header">
                                         <div class="status-badge" data-status={status}>{status}</div>
                                     </div>
-                                    <template lwc:if={hasMultipleImages}>
-                                        <c-fimby-image-grid
-                                            images={allImages}
-                                            include-original
-                                            onimageclick={handleImageGridClick}>
-                                        </c-fimby-image-grid>
-                                    </template>
-                                    <template lwc:else>
-                                        <button type="button" class="post-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
-                                            <img
-                                            src={imageDisplayUrl}
-                                            srcset={imageSrcset}
-                                            sizes={detailImageSizes}
-                                            alt={postTitle}
-                                            class="post-image"
-                                            loading="lazy"
-                                            decoding="async"
-                                            data-original={imageUrl}>
-                                            <div class="image-overlay">
-                                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
-                                            </div>
-                                        </button>
-                                    </template>
+                                    <div class="card-left-media">
+                                        <template lwc:if={hasMultipleImages}>
+                                            <c-fimby-image-grid
+                                                layout="detail"
+                                                images={allImages}
+                                                include-original
+                                                onimageclick={handleImageGridClick}>
+                                            </c-fimby-image-grid>
+                                        </template>
+                                        <template lwc:else>
+                                            <button type="button" class="post-image-container" style={imageContainerStyle} aria-label="View full image" onclick={handleImageClick}>
+                                                <img
+                                                src={imageDisplayUrl}
+                                                srcset={imageSrcset}
+                                                sizes={detailImageSizes}
+                                                alt={postTitle}
+                                                class="post-image"
+                                                loading="lazy"
+                                                decoding="async"
+                                                data-original={imageUrl}>
+                                                <div class="image-overlay">
+                                                    <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                                </div>
+                                            </button>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
 

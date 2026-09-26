@@ -3,6 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { navigate } from 'c/fimbyNavigation';
 import getResponseForStatusUpdate from '@salesforce/apex/FimbyResponseController.getResponseForStatusUpdate';
 import updateResponseStatus from '@salesforce/apex/FimbyResponseController.updateResponseStatus';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 /**
  * Response Status Update component - matches Response_Status_Update.flow
@@ -12,6 +13,7 @@ import updateResponseStatus from '@salesforce/apex/FimbyResponseController.updat
  * - Provides dropdown of status options
  */
 export default class FimbyResponseStatusUpdate extends NavigationMixin(LightningElement) {
+    _shellScrim = createShellScrimHandle();
     @api recordId = ''; // Response__c ID
 
     // State
@@ -111,6 +113,7 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
     @api
     show() {
         this.showModal = true;
+        this._shellScrim.bind(() => this.hide());
         if (this.recordId && !this.response) {
             this.loadData();
         }
@@ -118,6 +121,7 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
     }

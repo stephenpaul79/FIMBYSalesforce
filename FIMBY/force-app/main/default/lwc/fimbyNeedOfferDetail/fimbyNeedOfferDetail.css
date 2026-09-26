@@ -1009,11 +1009,11 @@
 .delete-overlay {
     position: fixed;
     inset: 0;
-    background: var(--fimby-scrim);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
@@ -1143,6 +1143,31 @@ button.post-image-container.bulk-buy-image-container .post-image {
     display: block;
 }
 
+/* Inset photo area — side padding on wrapper; ::after spacer for bottom (margin-bottom clips under overflow:hidden) */
+.card-left-media {
+    box-sizing: border-box;
+    padding: 0 12px;
+    min-width: 0;
+}
+
+.card-left-media::after {
+    content: '';
+    display: block;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.card-left-media c-fimby-image-grid {
+    display: block;
+    width: 100%;
+}
+
+.card-left-media .post-image-container {
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
     .info-section {
@@ -1230,17 +1255,32 @@ button.post-image-container.bulk-buy-image-container .post-image {
         max-height: 320px;
     }
 
+    .card-layout-horizontal .card-left--multi-photo {
+        max-height: none;
+        align-self: flex-start;
+    }
+
     .card-layout-horizontal .card-right {
         flex: 2;
         align-self: stretch;
     }
 
-    .card-layout-horizontal .post-image-container {
+    .card-layout-horizontal .card-left-media {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-layout-horizontal .card-left--multi-photo .card-left-media {
+        flex: 0 1 auto;
+    }
+
+    .card-layout-horizontal .card-left-media .post-image-container:not(.bulk-buy-image-container) {
         flex: 1;
         min-height: 0;
         position: relative;
         padding: 0;
-        margin: 0 12px 12px;
     }
 
     .card-layout-horizontal .post-image {

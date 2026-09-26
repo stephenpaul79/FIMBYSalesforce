@@ -13,6 +13,7 @@ import confirmRelationship from '@salesforce/apex/FimbySupportRelationshipContro
 import requestCommunityGroupLifecycleAction from '@salesforce/apex/FimbySupportRelationshipController.requestCommunityGroupLifecycleAction';
 import deleteManagedProfile from '@salesforce/apex/FimbyParentGuardianService.deleteManagedProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const ICONS = {
     care: 'care.png',
@@ -61,6 +62,39 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
     @track _lifecycleGroupName = '';
     orgAvatarUrls = {};
     orgNames = {};
+    _shellScrim = createShellScrimHandle();
+
+    get _identityModalOpen() {
+        return (
+            this.showConfirmModal ||
+            this.showDetailModal ||
+            this.showRemoveProfileModal ||
+            this.showCloseGroupModal ||
+            this.showDeleteGroupModal
+        );
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._identityModalOpen, () => this._dismissIdentityModal());
+    }
+
+    _dismissIdentityModal() {
+        if (this.showDeleteGroupModal) {
+            this.handleDeleteGroupCancel();
+        } else if (this.showCloseGroupModal) {
+            this.handleCloseGroupCancel();
+        } else if (this.showRemoveProfileModal) {
+            this.handleCancelRemoveProfile();
+        } else if (this.showConfirmModal) {
+            this.handleCancelConfirm();
+        } else if (this.showDetailModal) {
+            this.showDetailModal = false;
+        }
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
 
     get careIconUrl() { return `${IMPACT_ICONS}/${ICONS.care}`; }
     get peopleIconUrl() { return `${IMPACT_ICONS}/${ICONS.people}`; }

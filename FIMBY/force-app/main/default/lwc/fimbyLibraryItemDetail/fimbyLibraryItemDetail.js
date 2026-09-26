@@ -18,9 +18,10 @@ import cancelLendingRequest from '@salesforce/apex/FimbyLendingController.cancel
 import declineLendingRequest from '@salesforce/apex/FimbyLendingController.declineLendingRequest';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
-import { getPageReference, navigate } from 'c/fimbyNavigation';
+import { getPageReference, navigate, profilePathForContact } from 'c/fimbyNavigation';
 import flagContent from '@salesforce/apex/FimbyModeratorDashboardController.flagContent';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const FIELDS = [
     'Library_Item__c.Id',
@@ -34,6 +35,8 @@ const FIELDS = [
     'Library_Item__c.Owner_Contact__r.Name',
     'Library_Item__c.Owner_Contact__r.Full_Name__c',
     'Library_Item__c.Owner_Contact__r.Image_URL__c',
+    'Library_Item__c.Owner_Contact__r.Is_Organization_Contact__c',
+    'Library_Item__c.Owner_Contact__r.Organization_Account__c',
     'Library_Item__c.Owner_Organization__c',
     'Library_Item__c.Owner_Organization__r.Name',
     'Library_Item__c.OwnerId',
@@ -87,6 +90,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     error;
     currentUserId = Id;
     @track actingAsContactId = null;
+    @track realContactId = null;
     @track _isModeratorForNeighbourhood = false;
     @track isRemoved = false;
     @track removedMessage = '';
@@ -106,9 +110,15 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     // LIFECYCLE
     // ============================================
 
+    _shellScrim = createShellScrimHandle();
+
     _pendingAction = null;
     _pendingActionId = null;
     _lastAutoOpenedActionKey = null;
+
+    get _inlineConfirmOpen() {
+        return this.showDeleteConfirm || this.showRemoveConfirm;
+    }
 
     @wire(CurrentPageReference)
     handlePageRef(pageRef) {
@@ -136,6 +146,19 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     renderedCallback() {
         this._tryAutoOpenActionModal();
+        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm());
+    }
+
+    _dismissInlineConfirm() {
+        if (this.showDeleteConfirm) {
+            this.handleDeleteCancel();
+        } else if (this.showRemoveConfirm) {
+            this.handleRemoveCancel();
+        }
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get effectiveRecordId() {
@@ -239,6 +262,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     wiredActingAs({ data }) {
         if (data?.success) {
             this.actingAsContactId = data.actingAsContactId || data.contactId;
+            this.realContactId = data.contactId || null;
             if (this.record && !this.adminDataLoaded) {
                 this.loadAdminDataIfOwner();
             }
@@ -491,6 +515,36 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
         return avatarImageUrl(baseUrl);
     }
 
+    get ownerContactId() {
+        return this.record ? getFieldValue(this.record, 'Library_Item__c.Owner_Contact__c') : null;
+    }
+
+    get ownerProfilePath() {
+        if (!this.record) return '';
+        return profilePathForContact({
+            contactId: this.ownerContactId,
+            isOrgContact: getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Is_Organization_Contact__c') === true,
+            orgAccountId: getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Organization_Account__c'),
+            currentContactId: this.realContactId
+        });
+    }
+
+    get ownerInfoClass() {
+        return 'poster-info-compact' + (this.ownerProfilePath ? ' clickable-avatar' : '');
+    }
+
+    handleOwnerAvatarClick() {
+        if (this.ownerProfilePath) {
+            navigate(this, this.ownerProfilePath);
+        }
+    }
+
+    handleLenderAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) navigate(this, path);
+    }
+
     get ownerOrganizationName() {
         return this.record ? getFieldValue(this.record, 'Library_Item__c.Owner_Organization__r.Name') : '';
     }
@@ -725,14 +779,24 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     get borrowerHistory() {
         const hist = this.userContext?.borrowerHistory;
         if (!Array.isArray(hist)) return [];
-        return hist.map(h => ({
-            ...h,
-            lenderAvatar: avatarImageUrl(h.lenderAvatar),
-            displayStartDate: formatLocalDate(h.startDate),
-            displayEndDate: h.endDate ? formatLocalDate(h.endDate) : 'Ongoing',
-            hasConversation: !!h.conversationId,
-            conversationUrl: h.conversationId ? `/conversation?id=${h.conversationId}` : ''
-        }));
+        return hist.map(h => {
+            const profilePath = profilePathForContact({
+                contactId: h.lenderContactId,
+                isOrgContact: h.lenderIsOrgContact === true,
+                orgAccountId: h.lenderOrgAccountId,
+                currentContactId: this.realContactId
+            });
+            return {
+                ...h,
+                lenderAvatar: avatarImageUrl(h.lenderAvatar),
+                displayStartDate: formatLocalDate(h.startDate),
+                displayEndDate: h.endDate ? formatLocalDate(h.endDate) : 'Ongoing',
+                hasConversation: !!h.conversationId,
+                conversationUrl: h.conversationId ? `/conversation?id=${h.conversationId}` : '',
+                profilePath,
+                lenderAvatarClass: 'borrower-history-user' + (profilePath ? ' clickable-avatar' : '')
+            };
+        });
     }
 
     // ============================================

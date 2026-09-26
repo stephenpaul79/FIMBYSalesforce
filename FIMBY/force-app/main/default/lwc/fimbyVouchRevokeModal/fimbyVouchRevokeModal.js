@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import revokeVouch from '@salesforce/apex/FimbyVouchController.revokeVouch';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const COUNTING_CATEGORIES = [
     { value: 'Safety_Trust_Concern',       label: 'Safety / Trust Concern' },
@@ -24,6 +25,7 @@ const NON_COUNTING_CATEGORIES = [
 const DETAILS_MAX = 1000;
 
 export default class FimbyVouchRevokeModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @api vouchRecordId = '';
     _vouchRecordId = '';
 
@@ -64,10 +66,12 @@ export default class FimbyVouchRevokeModal extends LightningElement {
         this.selectedCategory = '';
         this.details = '';
         this.isOpen = true;
+        this._shellScrim.bind(() => this.close());
     }
 
     @api
     close() {
+        this._shellScrim.clear();
         this.isOpen = false;
         this.dispatchEvent(new CustomEvent('close'));
     }

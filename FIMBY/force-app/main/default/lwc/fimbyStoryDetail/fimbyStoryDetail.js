@@ -15,6 +15,7 @@ import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 import flagContent from '@salesforce/apex/FimbyModeratorDashboardController.flagContent';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const STORY_SUB_ICONS = {
     'Thank You': 'ThankYouActive.png',
@@ -99,6 +100,27 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     _wiredStoryDetailResult;
 
     contentCharLimit = 300;
+    _shellScrim = createShellScrimHandle();
+
+    get _inlineConfirmOpen() {
+        return this.showDeleteConfirm || this.showCommentDeleteConfirm;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm());
+    }
+
+    _dismissInlineConfirm() {
+        if (this.showDeleteConfirm) {
+            this.handleDeleteCancel();
+        } else if (this.showCommentDeleteConfirm) {
+            this.handleCommentDeleteCancel();
+        }
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
 
     get commentIconUrl() {
         return `${IMPACT_ICONS}/comment.png`;

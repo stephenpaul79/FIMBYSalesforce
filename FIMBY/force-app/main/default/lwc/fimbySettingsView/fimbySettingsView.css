@@ -189,7 +189,7 @@
     padding: 8px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.875rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -388,7 +388,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -931,7 +931,7 @@ button.block-result-item:focus-visible {
     background: var(--fimby-selected-bg);
 }
 
-/* After .btn — must override border: none; WCAG text/border use validation-text-error (light/dark) */
+/* After .btn â€” must override border: none; WCAG text/border use validation-text-error (light/dark) */
 .btn.btn-block-outline {
     box-sizing: border-box;
     border: 2px solid var(--fimby-validation-text-error, var(--fimby-btn-danger-bg, #C0392B));
@@ -1054,11 +1054,11 @@ button.block-result-item:focus-visible {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
 }
 
@@ -1231,4 +1231,26 @@ button.block-result-item:focus-visible,
     font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

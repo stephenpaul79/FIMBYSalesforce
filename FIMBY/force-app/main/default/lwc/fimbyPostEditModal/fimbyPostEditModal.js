@@ -9,6 +9,7 @@ import updateNeedsOffersPost from '@salesforce/apex/FimbyAskOfferController.upda
 import updateBulkBuyPost from '@salesforce/apex/FimbyBulkBuyController.updateBulkBuyPost';
 import updateStory from '@salesforce/apex/FimbyStoriesController.updateStory';
 import updateLibraryItem from '@salesforce/apex/FimbyLibraryController.updateLibraryItem';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const NEEDS_OFFERS_FIELDS = [
     'Needs_Offers__c.Name',
@@ -75,6 +76,7 @@ const STORY_TYPE_OPTIONS = [
 ];
 
 export default class FimbyPostEditModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @api recordId;
     _recordId = '';
 
@@ -410,6 +412,7 @@ export default class FimbyPostEditModal extends LightningElement {
         this._resetFormState();
         this._formPopulated = false;
         this.isVisible = true;
+        this._shellScrim.bind(() => this.hide());
         this.isLoading = true;
         this.errorMessage = '';
         this.isSaving = false;
@@ -417,6 +420,7 @@ export default class FimbyPostEditModal extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.isVisible = false;
         this.isSaving = false;
     }

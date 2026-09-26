@@ -5,8 +5,10 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getFeedbackTypePicklist from '@salesforce/apex/FimbyFeedbackController.getFeedbackTypePicklist';
 import submitFeedback from '@salesforce/apex/FimbyFeedbackController.submitFeedback';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbySubmitFeedback extends NavigationMixin(LightningElement) {
+    _shellScrim = createShellScrimHandle();
     @api recordId;
     @api isModalMode = false;
     _recordIdFromState = '';
@@ -58,6 +60,7 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
     show(relatedRecordId) {
         this._modalTrigger = document.activeElement;
         this.isModalVisible = true;
+        this._shellScrim.bind(() => this.hide());
         if (relatedRecordId) {
             this._recordIdFromState = relatedRecordId;
         }
@@ -71,6 +74,7 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.isModalVisible = false;
         this.resetForm();
         if (this._modalTrigger && typeof this._modalTrigger.focus === 'function') {

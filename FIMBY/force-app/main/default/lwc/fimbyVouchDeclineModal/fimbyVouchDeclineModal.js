@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import declineVouch from '@salesforce/apex/FimbyVouchController.declineVouch';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import { fireErrorToast, fireToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const REASONS = [
     { value: 'Do_Not_Know_Person', label: "I don't know this person" },
@@ -14,6 +15,8 @@ const REASONS = [
 const DETAILS_MAX = 500;
 
 export default class FimbyVouchDeclineModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @api vouchRecordId = '';
     _vouchRecordId = '';
 
@@ -54,6 +57,7 @@ export default class FimbyVouchDeclineModal extends LightningElement {
         this.selectedReason = '';
         this.details = '';
         this.isOpen = true;
+        this._shellScrim.bind(() => this.close());
         Promise.resolve().then(() => {
             const first = this.template.querySelector('input[type="radio"]');
             if (first) first.focus();
@@ -62,6 +66,7 @@ export default class FimbyVouchDeclineModal extends LightningElement {
 
     @api
     close() {
+        this._shellScrim.clear();
         this.isOpen = false;
         this.dispatchEvent(new CustomEvent('close'));
     }

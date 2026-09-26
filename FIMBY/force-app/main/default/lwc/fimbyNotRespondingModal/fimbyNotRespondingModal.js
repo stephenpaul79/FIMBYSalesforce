@@ -4,6 +4,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { fireErrorToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const REASON_OPTIONS = [
     { label: 'Missed pickup', value: 'Missed_Pickup_Window' },
@@ -13,6 +14,8 @@ const REASON_OPTIONS = [
 ];
 
 export default class FimbyNotRespondingModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @track reservationId;
     @track reserverName;
     @track bulkBuyTitle;
@@ -97,12 +100,14 @@ export default class FimbyNotRespondingModal extends LightningElement {
         if (reservationId) this.reservationId = reservationId;
         if (reserverName) this.reserverName = reserverName;
         this.isOpen = true;
+        this._shellScrim.bind(() => this.hide());
         this.message = '';
         this.reasonSubtype = '';
     }
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.isOpen = false;
         this.isSubmitting = false;
     }

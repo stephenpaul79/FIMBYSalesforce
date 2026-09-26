@@ -3,11 +3,11 @@
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: var(--fimby-scrim);
+    background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
     animation: fadeIn 0.2s ease-out;
 }

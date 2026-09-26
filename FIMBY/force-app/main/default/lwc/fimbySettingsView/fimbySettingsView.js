@@ -19,6 +19,7 @@ import getBlockedContacts from '@salesforce/apex/FimbyConversationController.get
 import unblockContact from '@salesforce/apex/FimbyConversationController.unblockContact';
 import searchNeighboursForBlock from '@salesforce/apex/FimbyConversationController.searchNeighboursForBlock';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const EMAIL_FREQUENCY_VALUES = [
     { label: 'Daily', value: 'Daily' },
@@ -116,6 +117,29 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     @track isCheckingManagedProfiles = false;
     @track managedProfileCheckFailed = false;
     @track isDeleting = false;
+    _shellScrim = createShellScrimHandle();
+
+    get _settingsModalOpen() {
+        return (
+            this.showDeleteConfirm ||
+            this.showBlockModal ||
+            this.showPushPermissionModal
+        );
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._settingsModalOpen, () => this._dismissSettingsModal());
+    }
+
+    _dismissSettingsModal() {
+        if (this.showDeleteConfirm) {
+            this.handleDeleteCancel();
+        } else if (this.showBlockModal) {
+            this.handleCloseBlockModal();
+        } else if (this.showPushPermissionModal) {
+            this.handleClosePushPermissionModal();
+        }
+    }
 
     // Password reset
     @track isResettingPassword = false;
@@ -374,6 +398,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     }
 
     disconnectedCallback() {
+        this._shellScrim.clear();
         if (this._pushResultHandler && window.__fimbyPushResult === this._pushResultHandler) {
             delete window.__fimbyPushResult;
         }

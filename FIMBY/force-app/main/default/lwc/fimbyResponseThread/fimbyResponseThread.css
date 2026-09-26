@@ -1,4 +1,4 @@
-/* fimbyResponseThread — Gmail-style thread */
+/* fimbyResponseThread â€” Gmail-style thread */
 .fimby-response-thread {
     display: flex;
     flex-direction: column;
@@ -98,7 +98,7 @@
     box-shadow: var(--fimby-shadow-card);
 }
 
-/* ── Thread Body ─────────────────────────────────── */
+/* â”€â”€ Thread Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .thread-body {
     background-color: var(--fimby-surface-card, #FAF7F2);
     border-radius: var(--fimby-radius-lg);
@@ -299,7 +299,7 @@
 .status-expired { background: var(--fimby-hover-bg, #f5f5f5); color: var(--fimby-text-secondary, #666); }
 .status-completed { background: var(--fimby-success-tint, #e8f5e9); color: var(--fimby-success, #2e7d32); }
 
-/* Messages Container — scrollable middle */
+/* Messages Container â€” scrollable middle */
 .messages-container {
     padding: 16px 24px;
     background-color: var(--fimby-surface-card, #FAF7F2);
@@ -540,7 +540,7 @@
 }
 
 /* Who physically typed the message, when a guardian or support person spoke for
-   the sender. Quiet — it disambiguates, it does not announce. */
+   the sender. Quiet â€” it disambiguates, it does not announce. */
 .via-label {
     font-size: 11px;
     color: var(--fimby-text-muted);
@@ -610,7 +610,7 @@
     white-space: nowrap;
 }
 
-/* Thanks system message — celebratory terracotta card */
+/* Thanks system message â€” celebratory terracotta card */
 .thanks-message {
     padding: 8px 0;
     border-bottom: 1px solid var(--fimby-divider-default, rgba(0,0,0,0.06));
@@ -667,7 +667,7 @@
     margin-top: 8px;
 }
 
-/* Confetti — opt-in only when the user has not requested reduced motion. */
+/* Confetti â€” opt-in only when the user has not requested reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
     .thanks-card-inline::after {
         content: '';
@@ -701,7 +701,7 @@
     color: var(--fimby-text-primary);
 }
 
-/* ── Collapsed pill with double-line extending right ── */
+/* â”€â”€ Collapsed pill with double-line extending right â”€â”€ */
 /* Remove border from first message when pill is shown (avoids extra line above pill) */
 .messages-list:has(.collapsed-pill-line) .msg-collapsed.zone-first {
     border-bottom: none;
@@ -742,7 +742,7 @@
     color: var(--fimby-text-primary, #4A3526);
 }
 
-/* ── Collapsed message row ──────────────────────── */
+/* â”€â”€ Collapsed message row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .msg-collapsed {
     display: flex;
     align-items: center;
@@ -855,7 +855,7 @@
     color: var(--fimby-btn-primary-bg);
 }
 
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -1008,7 +1008,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
 }
 
@@ -1132,7 +1132,7 @@
     padding: 8px 12px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md, 8px);
-    font-size: 14px;
+    font-size: var(--fimby-input-font-size, 16px);
     font-family: inherit;
     margin-bottom: 6px;
 }
@@ -1218,11 +1218,11 @@
     }
 }
 
-/* ──────────────────────────────────────────────────────────
-   A3: Block / Report — header kebab + combined modal.
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   A3: Block / Report â€” header kebab + combined modal.
    Mirrors the fimbyConversationView pattern so DM and response
    thread moderation surfaces look and feel identical.
-   ────────────────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .menu-button {
     width: 36px;
     height: 36px;
@@ -1417,4 +1417,26 @@ section[role="dialog"].slds-modal {
     justify-content: center;
     padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
     box-sizing: border-box;
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

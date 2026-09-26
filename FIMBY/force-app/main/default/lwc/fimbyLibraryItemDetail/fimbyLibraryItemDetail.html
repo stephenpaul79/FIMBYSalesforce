@@ -86,7 +86,7 @@
                                             </template>
                                         </span>
                                     </div>
-                                    <div class="poster-info-compact">
+                                    <div class={ownerInfoClass} onclick={handleOwnerAvatarClick}>
                                         <template lwc:if={ownerAvatar}>
                                             <img src={ownerAvatar} alt={ownerName} class="poster-avatar">
                                         </template>
@@ -209,7 +209,9 @@
                             <template for:each={borrowerHistory} for:item="bh">
                                 <li key={bh.id} class="borrower-history-item">
                                     <div class="borrower-history-row">
-                                        <div class="borrower-history-user">
+                                        <div class={bh.lenderAvatarClass}
+                                             data-profile-path={bh.profilePath}
+                                             onclick={handleLenderAvatarClick}>
                                             <template lwc:if={bh.lenderAvatar}>
                                                 <img src={bh.lenderAvatar} alt="" class="avatar-sm">
                                             </template>

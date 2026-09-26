@@ -1,7 +1,8 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { navigate } from 'c/fimbyNavigation';
+import { navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
+import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationController.cancelReservation';
 
@@ -19,6 +20,14 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     @track cancelConfirmVisible = false;
     @track isCancelling = false;
     @track cancelPostConfirmVisible = false;
+    @track realContactId = null;
+
+    @wire(getActingAsContact)
+    wiredActingAs({ data }) {
+        if (data?.success) {
+            this.realContactId = data.contactId || null;
+        }
+    }
 
     get displayStatus() {
         const display = this.post?.Display_Status__c;
@@ -393,8 +402,27 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
             const fn = r.firstName || '';
             const avatarInitial = fn ? fn.charAt(0).toUpperCase() : (r.lastName ? String(r.lastName).charAt(0).toUpperCase() : '?');
             const displayName = [fn, r.lastName || ''].filter(Boolean).join(' ') || 'Reserver';
-            return { ...r, buttonLabel: label, buttonClass, buttonDisabled: disabled, avatarInitial, displayName };
+            const profilePath = profilePathForContact({
+                contactId: r.contactId,
+                currentContactId: this.realContactId
+            });
+            return {
+                ...r,
+                buttonLabel: label,
+                buttonClass,
+                buttonDisabled: disabled,
+                avatarInitial,
+                displayName,
+                profilePath,
+                avatarClass: 'reservation-avatar' + (profilePath ? ' clickable-avatar' : '')
+            };
         });
+    }
+
+    handleReservationAvatarClick(event) {
+        event.stopPropagation();
+        const path = event.currentTarget.dataset.profilePath;
+        if (path) navigate(this, path);
     }
 
     getButtonStateForReserver(reservationId) {

@@ -4,8 +4,10 @@ import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyThanksGiving extends LightningElement {
+    _shellScrim = createShellScrimHandle();
     @api recordId = ''; // Response__c or other record ID
     @api recipientId = ''; // Contact ID to thank
     @api recipientName = '';
@@ -73,6 +75,7 @@ export default class FimbyThanksGiving extends LightningElement {
     @api
     show(recipientId, recipientName, relatedRecordId) {
         this.isModalVisible = true;
+        this._shellScrim.bind(() => this.hide());
         if (recipientId) this._recipientId = recipientId;
         if (recipientName) this._recipientName = recipientName;
         if (relatedRecordId) this._recordId = relatedRecordId;
@@ -81,6 +84,7 @@ export default class FimbyThanksGiving extends LightningElement {
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.isModalVisible = false;
         this.resetForm();
         this.dispatchEvent(new CustomEvent('close'));

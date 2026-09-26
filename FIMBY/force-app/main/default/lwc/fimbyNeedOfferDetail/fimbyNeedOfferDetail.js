@@ -23,6 +23,7 @@ import cancelBulkBuy from '@salesforce/apex/FimbyBulkBuyController.cancelBulkBuy
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import createEventGroupChat from '@salesforce/apex/FimbyGroupConversationController.createEventGroupChat';
 import declineResponseApex from '@salesforce/apex/FimbyResponseThreadController.declineResponse';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 import { formatShortDate, formatLocalDate } from 'c/fimbyDateUtils';
@@ -70,6 +71,8 @@ const FIELDS = [
     'Needs_Offers__c.Contact__r.Is_Organization_Contact__c',
     'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c',
     'Needs_Offers__c.Contact__r.Organization_Account__c',
+    'Needs_Offers__c.Contact__r.Organization_Account__r.Name',
+    'Needs_Offers__c.Contact__r.Organization_Account__r.Logo_URL__c',
     // Quantity
     'Needs_Offers__c.Total_Quantity__c',
     'Needs_Offers__c.Total_Available__c',
@@ -276,8 +279,15 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         }
     }
 
+    _shellScrim = createShellScrimHandle();
+
     renderedCallback() {
         this._tryAutoOpenActionModal();
+        this._shellScrim.sync(this.showDeleteConfirm, () => this.handleDeleteCancel());
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get effectiveRecordId() {
@@ -711,6 +721,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
     get trashIconUrl() { return `${IMPACT_ICONS}/trash.png`; }
     get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
+    get noOrgPhotoUrl() { return `${IMPACT_ICONS}/NoOrgPhoto.png`; }
 
     resolveContactAvatarUrl(rawUrl) {
         if (!rawUrl || typeof rawUrl !== 'string') return '';
@@ -823,6 +834,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return this.showCardLeft ? 'card-layout card-layout-horizontal' : 'card-layout';
     }
 
+    get cardLeftClass() {
+        return this.hasMultipleImages ? 'card-left card-left--multi-photo' : 'card-left';
+    }
+
     get imageUrl() {
         const baseUrl = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Image_1_URL__c') : '';
         return completeImageUrl(baseUrl);
@@ -899,6 +914,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get posterName() {
         if (!this.record) return '';
+        const isOrg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Organization_Contact__c') === true;
+        if (isOrg) {
+            const orgName = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__r.Name');
+            if (orgName) return orgName;
+        }
         const contactName = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Full_Name__c')
             || getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Name');
         if (contactName) return contactName;
@@ -908,8 +928,14 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get posterAvatar() {
         if (!this.record) return '';
+        const isOrg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Organization_Contact__c') === true;
         const postOwnerId = getFieldValue(this.record, 'Needs_Offers__c.Contact__c');
         if (postOwnerId) {
+            if (isOrg) {
+                const logoUrl = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__r.Logo_URL__c');
+                if (logoUrl) return avatarImageUrl(logoUrl);
+                return this.noOrgPhotoUrl;
+            }
             const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Display_Avatar_URL__c')
                 || getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
             return contactImg ? avatarImageUrl(contactImg) : this.noProfilePhotoUrl;
@@ -2121,8 +2147,14 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         window.location.reload();
     }
 
-    handleImagesChanged() {
-        window.location.reload();
+    async handleImagesChanged() {
+        const keepEditorOpen = this.showPhotoUploader;
+        if (this._wiredRecordResult) {
+            await refreshApex(this._wiredRecordResult);
+        }
+        if (keepEditorOpen) {
+            this.showPhotoUploader = true;
+        }
     }
 
     async handleRefreshPost() {

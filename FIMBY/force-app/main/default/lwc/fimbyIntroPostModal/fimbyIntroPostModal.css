@@ -42,11 +42,11 @@
     position: fixed;
     inset: 0;
     box-sizing: border-box;
-    background: var(--fimby-scrim, rgba(28, 32, 36, 0.55));
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9000;
+    z-index: 10051;
     padding: var(--fimby-modal-inset-top, 86px) 16px
         calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
 }

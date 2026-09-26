@@ -12,6 +12,7 @@ import getCurrentCgaEffectiveDate from '@salesforce/apex/FimbyTosController.getC
 
 import createOrganizationRequest from '@salesforce/apex/FimbyOrganizationRequestService.createOrganizationRequest';
 import { fireErrorToast } from 'c/fimbyToastHelper';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const STEPS = ['type', 'identity', 'neighbourhood', 'authorization', 'notes', 'review'];
 const CG_CREATE_STEPS = ['type', 'identity', 'createOrg', 'authorization', 'notes', 'review'];
@@ -21,6 +22,8 @@ const TOS_URL = 'https://fimby.com/terms-of-service';
 const CGA_URL = 'https://fimby.com/terms-of-service#community-group-agreement';
 
 export default class FimbyRelationshipSetupModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @track isOpen = false;
     @track currentStep = 0;
     @track selectedType = '';
@@ -277,6 +280,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
     @api
     open() {
         this.isOpen = true;
+        this._shellScrim.bind(() => this.close());
         this.currentStep = 0;
         this.selectedType = '';
         this.selectedIdentity = null;
@@ -331,6 +335,7 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             this.handleSuccessDoneClose();
             return;
         }
+        this._shellScrim.clear();
         this.isOpen = false;
     }
 

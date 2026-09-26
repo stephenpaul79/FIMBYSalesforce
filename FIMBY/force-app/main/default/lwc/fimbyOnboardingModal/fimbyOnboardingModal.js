@@ -10,6 +10,7 @@ import completeWalkthrough from '@salesforce/apex/FimbyOnboardingController.comp
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
 import searchVouchers from '@salesforce/apex/FimbyVouchController.searchVouchers';
 import submitVoucherRequest from '@salesforce/apex/FimbyVouchController.submitVoucherRequest';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const TOTAL_PROFILE_STEPS = 7;
 const VOUCH_TYPE_PEER = 'peer';
@@ -51,6 +52,8 @@ const CARE_UNHELPFUL_VALUES = [
 ];
 
 export default class FimbyOnboardingModal extends LightningElement {
+    _shellScrim = createShellScrimHandle();
+
     @track isVisible = false;
     @track currentPhase = 1;
     @track currentStep = 1;
@@ -655,6 +658,7 @@ export default class FimbyOnboardingModal extends LightningElement {
                 this.currentStep = 1;
                 this.showCelebration = false;
                 this.isVisible = true;
+                this._openShellScrim();
                 this._addKeyboardListener();
                 return;
             }
@@ -662,6 +666,7 @@ export default class FimbyOnboardingModal extends LightningElement {
             if (status.showWalkthrough) {
                 this.currentPhase = 2;
                 this.isVisible = true;
+                this._openShellScrim();
                 this._addKeyboardListener();
                 this._loadWalkthroughContent();
                 return;
@@ -680,6 +685,7 @@ export default class FimbyOnboardingModal extends LightningElement {
         this.currentSlideIndex = 0;
         this.dontShowAgain = false;
         this.isVisible = true;
+        this._openShellScrim();
         this._addKeyboardListener();
         this._loadWalkthroughContent();
     }
@@ -719,7 +725,12 @@ export default class FimbyOnboardingModal extends LightningElement {
         }
     }
 
+    _openShellScrim() {
+        this._shellScrim.bind(() => this.hide());
+    }
+
     _close() {
+        this._shellScrim.clear();
         this.isVisible = false;
         this._removeKeyboardListener();
         this.dispatchEvent(new CustomEvent('onboardingcomplete'));

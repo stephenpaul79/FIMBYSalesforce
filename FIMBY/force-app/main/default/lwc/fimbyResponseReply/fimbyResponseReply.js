@@ -7,6 +7,7 @@ import getResponseForReply from '@salesforce/apex/FimbyResponseController.getRes
 import submitResponseReply from '@salesforce/apex/FimbyResponseController.submitResponseReply';
 import markResponseViewed from '@salesforce/apex/FimbyCommunicationController.markResponseViewed';
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 /**
  * Response Reply component - matches Response_Reply.flow
@@ -19,6 +20,7 @@ import blockContactApex from '@salesforce/apex/FimbyConversationController.block
  * - Option to share contact info
  */
 export default class FimbyResponseReply extends NavigationMixin(LightningElement) {
+    _shellScrim = createShellScrimHandle();
     @api recordId = ''; // Response__c ID
     _recordIdFromUrl = '';
 
@@ -269,6 +271,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     @api
     show() {
         this.showModal = true;
+        this._shellScrim.bind(() => this.hide());
         if (this.activeRecordId && !this.response) {
             this.loadData();
         }
@@ -276,6 +279,7 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
 
     @api
     hide() {
+        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
     }

@@ -173,7 +173,9 @@
                         <div class="reservations-list">
                             <template for:each={reservationsWithButtonState} for:item="r">
                                 <div key={r.id} class="reservation-row">
-                                    <div class="reservation-avatar">
+                                    <div class={r.avatarClass}
+                                         data-profile-path={r.profilePath}
+                                         onclick={handleReservationAvatarClick}>
                                         <div class="avatar-placeholder" title={r.firstName}>
                                             <span class="avatar-initial">{r.avatarInitial}</span>
                                         </div>
