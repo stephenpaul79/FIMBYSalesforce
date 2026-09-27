@@ -53,13 +53,20 @@
     background: var(--fimby-infinite-scroll-surface, transparent);
 }
 
-/* Touch-only: stops iOS rubber-banding the header during pull-to-refresh.
-   On mouse/trackpad devices this would block wheel scroll from chaining to
-   the document (the real scroller), freezing the feed. */
-@media (hover: none) and (pointer: coarse) {
+/* Stops iOS/Android rubber-banding the fixed header and footer during
+   pull-to-refresh. Default-on because app WebViews don't reliably report
+   (hover: none) / (pointer: coarse). */
+.fimby-infinite-scroll,
+.scroll-container {
+    overscroll-behavior-y: none;
+}
+
+/* Mouse/trackpad only: `none` blocks wheel scroll from chaining to the
+   document (the real scroller), freezing the feed. */
+@media (hover: hover) and (pointer: fine) {
     .fimby-infinite-scroll,
     .scroll-container {
-        overscroll-behavior-y: none;
+        overscroll-behavior-y: auto;
     }
 }
 
