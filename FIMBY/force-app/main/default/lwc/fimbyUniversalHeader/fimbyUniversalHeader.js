@@ -30,6 +30,7 @@ import {
     SHELL_SCRIM_CLOSE,
     dispatchShellScrimDismiss
 } from 'c/fimbyModalShell';
+import { publishPageHeaderLayoutMetrics } from 'c/fimbyDomUtils';
 
 const LOGO_FILE = 'FIMBYwGrass.png';
 const LOGO_SQUARE = 'FwithGrass.png';
@@ -152,6 +153,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     connectedCallback() {
+        publishPageHeaderLayoutMetrics();
+        this._layoutMetricsHandler = () => publishPageHeaderLayoutMetrics();
+        window.addEventListener('resize', this._layoutMetricsHandler);
+
         this._honourActAsDeepLink();
         this._activeTab = this._detectActiveTab();
         this._hydrateBadgeCountsFromCache();
@@ -195,6 +200,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         window.addEventListener('fimbyquickpostclosed', this._quickPostCloseHandler);
 
         this._shellScrimOpenHandler = () => {
+            publishPageHeaderLayoutMetrics();
             this.showShellModalScrim = true;
             this._applyScrollLock();
         };
@@ -246,6 +252,9 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     disconnectedCallback() {
+        if (this._layoutMetricsHandler) {
+            window.removeEventListener('resize', this._layoutMetricsHandler);
+        }
         if (this._blockPinch) {
             document.removeEventListener('gesturestart', this._blockPinch, { passive: false });
             document.removeEventListener('gesturechange', this._blockPinch, { passive: false });
