@@ -221,12 +221,12 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         align-items: flex-end;
-        padding: var(--fimby-modal-top-gap, 16px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     }
 
     .modal-container {
         border-radius: var(--fimby-radius-lg);
-        max-height: 85dvh;
+        max-height: 100%;
     }
 }
 
