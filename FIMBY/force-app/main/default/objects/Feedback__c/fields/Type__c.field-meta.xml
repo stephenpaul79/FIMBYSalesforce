@@ -40,6 +40,16 @@
                 <default>false</default>
                 <label>Content Report</label>
             </value>
+            <value>
+                <fullName>Safety Concern</fullName>
+                <default>false</default>
+                <label>Safety Concern</label>
+            </value>
+            <value>
+                <fullName>Help Request</fullName>
+                <default>false</default>
+                <label>Help Request</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

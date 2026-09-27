@@ -120,6 +120,17 @@
     border-radius: var(--fimby-radius-sm);
 }
 
+button.inline-link {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    color: var(--fimby-btn-primary-bg);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
 /* ========== BUTTONS ========== */
 
 .btn {
@@ -152,6 +163,12 @@
     width: 20px;
     height: 20px;
     object-fit: contain;
+}
+
+.safety-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 /* ========== RESPONSIVE ========== */

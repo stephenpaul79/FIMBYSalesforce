@@ -27,6 +27,8 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
     @track isLoadingFaq = true;
     _cmsLoaded = false;
     @track _moderatorData = null;
+    @track isSupportModalOpen = false;
+    @track supportKind = 'help';
 
     // FAQ content comes from the fimby_faq_item CMS type via Apex
     // (FimbyFaqController), which queries getManagedContentsForSite in site
@@ -183,6 +185,20 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
         } catch {
             // No moderator — section won't show
         }
+    }
+
+    handleEmailSafety() {
+        this.supportKind = 'safety';
+        this.isSupportModalOpen = true;
+    }
+
+    handleContactSupport() {
+        this.supportKind = 'help';
+        this.isSupportModalOpen = true;
+    }
+
+    handleSupportModalClose() {
+        this.isSupportModalOpen = false;
     }
 
     async handleMessageModerator() {

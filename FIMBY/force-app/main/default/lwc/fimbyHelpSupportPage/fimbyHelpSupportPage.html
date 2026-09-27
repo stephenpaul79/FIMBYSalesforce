@@ -116,10 +116,10 @@
                         <img src={careIconUrl} alt="" class="btn-icon">
                         Read the Guidelines
                     </a>
-                    <a href="mailto:safety@fimby.ca" class="btn btn-neutral">
+                    <button type="button" class="btn btn-neutral" onclick={handleEmailSafety}>
                         <img src={emailIconUrl} alt="" class="btn-icon">
                         Email Safety Team
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -127,13 +127,19 @@
             <div class="help-section">
                 <h2 class="section-title">Need More Help?</h2>
                 <p class="section-description">If you can't find what you're looking for, reach out to the FIMBY team.</p>
-                <a href="mailto:support@fimby.ca" class="btn btn-neutral">
+                <button type="button" class="btn btn-neutral" onclick={handleContactSupport}>
                     <img src={emailIconUrl} alt="" class="btn-icon">
                     Contact Support
-                </a>
+                </button>
             </div>
 
         </div>
+
+        <c-fimby-support-request-modal
+            is-open={isSupportModalOpen}
+            kind={supportKind}
+            onclose={handleSupportModalClose}>
+        </c-fimby-support-request-modal>
 
         <c-fimby-bottom-navigation
             active-tab="mine"

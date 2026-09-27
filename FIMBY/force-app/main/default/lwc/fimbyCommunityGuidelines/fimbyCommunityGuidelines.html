@@ -89,7 +89,7 @@
                     On any post, story, library item, or response, tap the menu (the three dots) and choose <strong>Report</strong>. Tell us briefly what concerned you. Reports are confidential &mdash; the person you reported is not told who flagged the content.
                 </p>
                 <p class="section-body">
-                    For urgent safety concerns, or if something feels too sensitive for the in-app form, email <a href="mailto:safety@fimby.ca" class="inline-link">safety@fimby.ca</a> directly.
+                    For urgent safety concerns, or if something feels too sensitive for the in-app form, <button type="button" class="inline-link" onclick={handleEmailSafety}>message the safety team</button>. That note goes to the FIMBY team, not your neighbourhood moderator.
                 </p>
             </div>
 
@@ -113,16 +113,27 @@
             <div class="guidelines-section contact-section">
                 <h2 class="section-title">Get in touch</h2>
                 <p class="section-body">
-                    Safety concerns: <a href="mailto:safety@fimby.ca" class="inline-link">safety@fimby.ca</a><br>
-                    General support: <a href="mailto:support@fimby.ca" class="inline-link">support@fimby.ca</a>
+                    Safety concerns go to the FIMBY team. Other questions go to your neighbourhood moderator.
                 </p>
-                <a href="mailto:safety@fimby.ca" class="btn btn-neutral">
-                    <img src={emailIconUrl} alt="" class="btn-icon">
-                    Email Safety Team
-                </a>
+                <div class="safety-actions">
+                    <button type="button" class="btn btn-neutral" onclick={handleEmailSafety}>
+                        <img src={emailIconUrl} alt="" class="btn-icon">
+                        Email Safety Team
+                    </button>
+                    <button type="button" class="btn btn-neutral" onclick={handleContactSupport}>
+                        <img src={emailIconUrl} alt="" class="btn-icon">
+                        Contact Support
+                    </button>
+                </div>
             </div>
 
         </div>
+
+        <c-fimby-support-request-modal
+            is-open={isSupportModalOpen}
+            kind={supportKind}
+            onclose={handleSupportModalClose}>
+        </c-fimby-support-request-modal>
 
         <c-fimby-bottom-navigation
             active-tab="mine"

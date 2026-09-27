@@ -1,0 +1,70 @@
+<template>
+    <template lwc:if={isOpen}>
+        <div class="modal-backdrop"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="support-modal-title"
+             onclick={handleBackdrop}
+             onkeydown={handleKeydown}>
+            <div class="modal-container" onclick={handleContainerClick}>
+                <div class="modal-header">
+                    <h2 id="support-modal-title" class="modal-title">{modalTitle}</h2>
+                    <button type="button" class="close-btn" aria-label="Close" onclick={handleClose} disabled={isSubmitting}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <template lwc:if={showForm}>
+                        <p class="intro">{intro}</p>
+                        <template lwc:if={showIdentityBanner}>
+                            <div class="posting-as">
+                                <img src={posterIconUrl} alt="" class="posting-as-icon">
+                                <span class="posting-as-label">Messaging as:</span>
+                                <span class="posting-as-value">{postingAsDisplayName}</span>
+                            </div>
+                        </template>
+                        <c-fimby-inline-banner variant="error" message={validationMessage}></c-fimby-inline-banner>
+                        <div class="field">
+                            <div class="field-label-row">
+                                <label class="field-label" for="support-subject">Subject</label>
+                                <span class={subjectCountClass}>{subjectCount}</span>
+                            </div>
+                            <input id="support-subject" class="form-input" type="text" maxlength="80"
+                                   value={subject} oninput={handleSubjectChange} onkeydown={handleSubjectKeydown}
+                                   disabled={isSubmitting}>
+                        </div>
+                        <div class="field">
+                            <div class="field-label-row">
+                                <label class="field-label" for="support-message">Message</label>
+                                <span class={messageCountClass}>{messageCount}</span>
+                            </div>
+                            <textarea id="support-message" class="form-textarea" maxlength="2000"
+                                      value={message} oninput={handleMessageChange}
+                                      disabled={isSubmitting}></textarea>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
+                    </template>
+                </div>
+
+                <div class="modal-footer">
+                    <template lwc:if={showForm}>
+                        <button type="button" class="nav-btn nav-back" onclick={handleClose} disabled={isSubmitting}>
+                            Cancel
+                        </button>
+                        <button type="button" class="nav-btn nav-next" onclick={handleSubmit} disabled={isSubmitting}>
+                            {submitLabel}
+                        </button>
+                    </template>
+                    <template lwc:else>
+                        <button type="button" class="nav-btn nav-next" onclick={handleClose}>
+                            Done
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

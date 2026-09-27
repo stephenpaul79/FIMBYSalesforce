@@ -9,7 +9,15 @@ public class FimbyFeedbackControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Email LIKE '%@testorg.com' AND IsActive = true LIMIT 1];
+        Contact testContact = getTestContact();
+        List<User> users = [
+            SELECT Id, ContactId
+            FROM User
+            WHERE ContactId = :testContact.Id AND IsActive = true
+            LIMIT 1
+        ];
+        System.assert(!users.isEmpty(), 'TestSetup must create a community User for the test Contact.');
+        return users[0];
     }
 
     private static Contact getTestContact() {
@@ -42,6 +50,8 @@ public class FimbyFeedbackControllerTest {
         System.assertNotEquals(null, values, 'Should return picklist values');
         System.assert(values.size() >= 0, 'Should return a list');
         System.assert(!values.contains('Content Report'), 'Content Report is report-flow only');
+        System.assert(!values.contains('Safety Concern'), 'Safety Concern is help-page only');
+        System.assert(!values.contains('Help Request'), 'Help Request is help-page only');
     }
 
     @isTest
@@ -650,5 +660,184 @@ public class FimbyFeedbackControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, result.get('success'), 'Acting-as submitter should upload screenshot');
+    }
+
+    @isTest
+    static void testSubmitSupportRequest_SafetySkipsModeratorTask() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyFeedbackController.submitSupportRequest(
+                'safety',
+                'Someone at the park',
+                'I need the safety team to know about this.'
+            );
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Safety note should save');
+        System.assertEquals('admins', result.get('routedTo'), 'Safety goes to admins');
+
+        Feedback__c fb = [
+            SELECT Type__c, Name, Details__c, Contact__c, Posted_By__c, Neighbourhood__c
+            FROM Feedback__c
+            WHERE Id = :(Id) result.get('feedbackId')
+        ];
+        System.assertEquals('Safety Concern', fb.Type__c);
+        System.assertEquals('Someone at the park', fb.Name);
+        System.assertEquals(testContact.Id, fb.Contact__c);
+        System.assertEquals(testContact.Id, fb.Posted_By__c);
+        System.assertEquals(testContact.AccountId, fb.Neighbourhood__c);
+        System.assertEquals(
+            0,
+            [SELECT COUNT() FROM Moderator_Task__c WHERE Related_Record_Id__c = :fb.Id],
+            'Safety must not create a moderator task'
+        );
+    }
+
+    @isTest
+    static void testSubmitSupportRequest_EachHelpNoteIsItsOwnTask() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        insert new Moderator_Assignment__c(
+            Contact__c = testContact.Id,
+            Neighbourhood__c = testContact.AccountId,
+            Status__c = 'Active',
+            Role__c = 'Primary',
+            Assigned_Date__c = Datetime.now()
+        );
+
+        Test.startTest();
+        Map<String, Object> firstResult;
+        Map<String, Object> secondResult;
+        System.runAs(testUser) {
+            firstResult = FimbyFeedbackController.submitSupportRequest('help', 'First note', 'The door code changed.');
+            secondResult = FimbyFeedbackController.submitSupportRequest('help', 'Second note', 'Still locked out.');
+        }
+        Test.stopTest();
+
+        System.assertEquals('moderators', firstResult.get('routedTo'));
+        System.assertEquals('moderators', secondResult.get('routedTo'));
+
+        List<Moderator_Task__c> tasks = [
+            SELECT Id, Summary__c, Priority__c, Category__c
+            FROM Moderator_Task__c
+            WHERE Related_Record_Id__c IN :new Set<String>{
+                String.valueOf(firstResult.get('feedbackId')),
+                String.valueOf(secondResult.get('feedbackId'))
+            }
+        ];
+        System.assertEquals(2, tasks.size(), 'Each help note gets its own task');
+        System.assertEquals('Standard', tasks[0].Priority__c);
+        System.assertEquals('Feedback_Triage', tasks[0].Category__c);
+
+        List<Moderator_Task_Evidence__c> evidence = [
+            SELECT Details__c
+            FROM Moderator_Task_Evidence__c
+            WHERE Moderator_Task__c IN :tasks
+        ];
+        System.assertEquals(2, evidence.size(), 'Each task keeps the message');
+    }
+
+    @isTest
+    static void testSubmitSupportRequest_HelpWithoutModeratorRoutesToAdmins() {
+        User testUser = getTestUser();
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyFeedbackController.submitSupportRequest(
+                'help',
+                'No moderator here',
+                'Please pass this to the FIMBY team.'
+            );
+        }
+        Test.stopTest();
+
+        System.assertEquals('admins', result.get('routedTo'));
+        System.assertEquals(
+            1,
+            [SELECT COUNT() FROM Moderator_Task__c WHERE Related_Record_Id__c = :(String) result.get('feedbackId')],
+            'The note still waits on the moderator queue'
+        );
+    }
+
+    @isTest
+    static void testSubmitSupportRequest_ActingOnBehalf() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Account neighbourhood = [SELECT Id FROM Account WHERE RecordType.DeveloperName = 'Boundary_Account' LIMIT 1];
+        Contact onBehalfContact = FimbyTestDataFactory.createNeighbourhoodContact(neighbourhood.Id, true);
+        insert new Support_Relationship__c(
+            Contact__c = testContact.Id,
+            Related_Contact__c = onBehalfContact.Id,
+            Relationship_Type__c = 'Support_Person',
+            Status__c = 'Approved',
+            Neighbourhood__c = neighbourhood.Id
+        );
+        testContact.Logged_In_As_Contact__c = onBehalfContact.Id;
+        testContact.Logged_In_As_Neighbourhood__c = neighbourhood.Id;
+        update testContact;
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyFeedbackController.submitSupportRequest('safety', 'On behalf', 'Writing for someone I support.');
+        }
+        Test.stopTest();
+
+        Feedback__c fb = [
+            SELECT Contact__c, Posted_By__c
+            FROM Feedback__c
+            WHERE Id = :(Id) result.get('feedbackId')
+        ];
+        System.assertEquals(testContact.Id, fb.Contact__c, 'Real person at the keyboard');
+        System.assertEquals(onBehalfContact.Id, fb.Posted_By__c, 'Represented identity');
+    }
+
+    @isTest
+    static void testSubmitSupportRequest_RejectsBadInput() {
+        User testUser = getTestUser();
+        System.runAs(testUser) {
+            assertSupportRejected(null, 'Subject', 'Message');
+            assertSupportRejected('help', '   ', 'Message');
+            assertSupportRejected('safety', 'Subject', '');
+            assertSupportRejected('other', 'Subject', 'Message');
+            assertSupportRejected('help', 'x'.repeat(81), 'Message');
+            assertSupportRejected('help', 'Subject', 'x'.repeat(2001));
+        }
+    }
+
+    private static void assertSupportRejected(String kind, String subject, String message) {
+        try {
+            FimbyFeedbackController.submitSupportRequest(kind, subject, message);
+            System.assert(false, 'Should have rejected ' + kind);
+        } catch (AuraHandledException e) {
+            System.assert(String.isNotBlank(e.getMessage()), 'Rejection should explain what to fix');
+        }
+    }
+
+    @isTest
+    static void testSubmitFeedback_RejectsSupportTypes() {
+        User testUser = getTestUser();
+        System.runAs(testUser) {
+            for (String feedbackType : new List<String>{ 'Safety Concern', 'Help Request' }) {
+                Map<String, Object> feedbackData = new Map<String, Object>{
+                    'feedbackType' => feedbackType,
+                    'title' => 'Should fail',
+                    'details' => 'Use the help page.',
+                    'relatedRecordId' => null
+                };
+                try {
+                    FimbyFeedbackController.submitFeedback(JSON.serialize(feedbackData));
+                    System.assert(false, 'Public feedback must not accept ' + feedbackType);
+                } catch (AuraHandledException e) {
+                    System.assert(true, 'Exception thrown as expected');
+                }
+            }
+        }
     }
 }

@@ -6,6 +6,16 @@ public with sharing class FimbyFeedbackController {
     @TestVisible
     private static String testScreenshotUrlOverride;
 
+    @TestVisible
+    private static final String TYPE_SAFETY = 'Safety Concern';
+    @TestVisible
+    private static final String TYPE_HELP = 'Help Request';
+    private static final Integer SUBJECT_MAX = 80;
+    private static final Integer MESSAGE_MAX = 2000;
+    private static final Set<String> HIDDEN_FEEDBACK_TYPES = new Set<String>{
+        'Content Report', TYPE_SAFETY, TYPE_HELP
+    };
+
     /**
      * Get Feedback Type picklist values
      */
@@ -15,7 +25,7 @@ public with sharing class FimbyFeedbackController {
         Schema.DescribeFieldResult fieldResult = Feedback__c.Type__c.getDescribe();
         List<Schema.PicklistEntry> entries = fieldResult.getPicklistValues();
         for (Schema.PicklistEntry entry : entries) {
-            if (entry.isActive() && entry.getValue() != 'Content Report') {
+            if (entry.isActive() && !HIDDEN_FEEDBACK_TYPES.contains(entry.getValue())) {
                 picklistValues.add(entry.getValue());
             }
         }
@@ -34,6 +44,23 @@ public with sharing class FimbyFeedbackController {
         } catch (Exception e) {
             AuraHandledException ex = new AuraHandledException('Error submitting feedback: ' + e.getMessage());
             ex.setMessage('Error submitting feedback: ' + e.getMessage());
+            throw ex;
+        }
+    }
+
+    /**
+     * @description Help or safety note from Help &amp; Support. Safety never creates a
+     *              moderator task. Help does, one task per note.
+     */
+    @AuraEnabled
+    public static Map<String, Object> submitSupportRequest(String kind, String subject, String message) {
+        try {
+            return new FeedbackHelper().submitSupportRequestInternal(kind, subject, message);
+        } catch (AuraHandledException ae) {
+            throw ae;
+        } catch (Exception e) {
+            AuraHandledException ex = new AuraHandledException('Error sending your note: ' + e.getMessage());
+            ex.setMessage('Error sending your note: ' + e.getMessage());
             throw ex;
         }
     }
@@ -116,6 +143,11 @@ public with sharing class FimbyFeedbackController {
                     'Content reports must be submitted using the report option on the content itself.'
                 );
             }
+            if (HIDDEN_FEEDBACK_TYPES.contains(feedbackType)) {
+                throw new AuraHandledException(
+                    'Use Help & Support to reach the safety team or your moderator.'
+                );
+            }
 
             FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
             Id realContactId = identity.contact.Id;
@@ -154,6 +186,103 @@ public with sharing class FimbyFeedbackController {
                 'feedbackId' => feedback.Id,
                 'message' => 'Feedback submitted successfully'
             };
+        }
+
+        /**
+         * @description Help goes to neighbourhood moderators. Safety, and help when
+         *              nobody is moderating, is emailed by Email_for_safety_and_help.
+         */
+        public Map<String, Object> submitSupportRequestInternal(String kind, String subject, String message) {
+            String feedbackType = feedbackTypeForKind(kind);
+            String cleanSubject = subject == null ? '' : subject.trim();
+            String cleanMessage = message == null ? '' : message.trim();
+            if (String.isBlank(cleanSubject)) {
+                throw supportException('Add a subject so we know what this is about.');
+            }
+            if (cleanSubject.length() > SUBJECT_MAX) {
+                throw supportException('Keep the subject under 80 characters.');
+            }
+            if (String.isBlank(cleanMessage)) {
+                throw supportException('Write a short message so we know how to help.');
+            }
+            if (cleanMessage.length() > MESSAGE_MAX) {
+                throw supportException('Keep the message under 2000 characters.');
+            }
+
+            FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+            Id realContactId = identity.contact.Id;
+            Id actingAsContactId = identity.actingAsContactId;
+            Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
+
+            Feedback__c feedback = new Feedback__c(
+                Name = cleanSubject,
+                Type__c = feedbackType,
+                Details__c = cleanMessage,
+                Contact__c = realContactId,
+                Posted_By__c = actingAsContactId,
+                Neighbourhood__c = neighbourhoodId
+            );
+            insert feedback;
+
+            String routedTo = 'admins';
+            if (feedbackType == TYPE_HELP && neighbourhoodId != null) {
+                Boolean hasModerator = ![
+                    SELECT Id
+                    FROM Moderator_Assignment__c
+                    WHERE Neighbourhood__c = :neighbourhoodId
+                    AND Status__c = 'Active'
+                    LIMIT 1
+                ].isEmpty();
+                createHelpTask(feedback, cleanSubject, cleanMessage, neighbourhoodId, actingAsContactId, realContactId);
+                if (hasModerator) {
+                    routedTo = 'moderators';
+                }
+            }
+
+            return new Map<String, Object>{
+                'success' => true,
+                'feedbackId' => feedback.Id,
+                'routedTo' => routedTo
+            };
+        }
+
+        private String feedbackTypeForKind(String kind) {
+            if (kind == 'safety') {
+                return TYPE_SAFETY;
+            }
+            if (kind == 'help') {
+                return TYPE_HELP;
+            }
+            throw supportException('Choose safety or support.');
+        }
+
+        private void createHelpTask(
+            Feedback__c feedback,
+            String subject,
+            String message,
+            Id neighbourhoodId,
+            Id actingAsContactId,
+            Id realContactId
+        ) {
+            FimbyModeratorTaskService.TaskRequest taskReq = new FimbyModeratorTaskService.TaskRequest();
+            taskReq.neighbourhoodId = neighbourhoodId;
+            taskReq.category = 'Feedback_Triage';
+            taskReq.priority = 'Standard';
+            taskReq.subjectContactId = actingAsContactId;
+            taskReq.relatedRecordId = String.valueOf(feedback.Id);
+            taskReq.relatedRecordType = 'Feedback__c';
+            taskReq.summary = 'Help: ' + subject;
+            taskReq.sourceType = 'Manual_Note';
+            taskReq.sourceRecordId = String.valueOf(feedback.Id);
+            taskReq.reporterContactId = realContactId;
+            taskReq.details = message;
+            FimbyModeratorTaskService.createOrUpdateTask(taskReq);
+        }
+
+        private AuraHandledException supportException(String message) {
+            AuraHandledException ex = new AuraHandledException(message);
+            ex.setMessage(message);
+            return ex;
         }
     }
 
