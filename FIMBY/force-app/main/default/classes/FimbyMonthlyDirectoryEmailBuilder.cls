@@ -470,7 +470,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         return '<table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;'
             + 'background-color:#FFFFFF;border:1px solid ' + BORDER_LIGHT + ';border-radius:8px;">'
             + '<tr><td style="padding:16px;' + F + 'font-size:14px;line-height:1.5;color:' + TEXT_BODY + ';">'
-            + '<p style="margin:0 0 10px;">Here&rsquo;s everything your neighbours are sharing this month, '
+            + '<p style="margin:0 0 10px;">Here&rsquo;s everything your neighbours are sharing at this time, '
             + 'from ladders to lessons. If something catches your eye, tap it and ask. Borrowing is one of '
             + 'the easiest ways to get to know the people on your street.</p>'
             + '<p style="margin:0 0 14px;">Got something tucked away in a closet, or a skill you&rsquo;d '
