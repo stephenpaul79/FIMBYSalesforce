@@ -24,9 +24,9 @@ public without sharing class FimbyDigestEmailBuilder {
         'Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name, '
         + 'Contact__r.Organization_Account__r.Logo_URL__c, ';
 
-    // Compact card layout: with an image, badge + title (+ event meta) share row one with a fixed
-    // 140x120 thumbnail; the body snippet runs full width on row two
-    // (see FimbyEmailHtmlBuilder.buildDigestImageCell). A shared footer row carries the avatar +
+    // Compact card layout: a 140x120 thumbnail floats right inside the text cell so badge, title
+    // and body wrap beside and then under it
+    // (see FimbyEmailHtmlBuilder.buildDigestFloatImage). A shared footer row carries the avatar +
     // first-name byline (left) and a single quiet "open ›" link (right) — the title, thumbnail
     // and open link all point at the record, so there is no per-type CTA button. Cards with no
     // image collapse to a single column with the same footer.
@@ -901,35 +901,22 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Assembles a compact feed card. With an image: row one is badge + title (+ any
-     * type meta) beside the fixed 140x120 thumbnail; row two is the body snippet at full card
-     * width. Without an image, header and body share one column. Footer is always full width.
+     * @description Assembles a compact feed card. Badge + title (+ any type meta) and the body
+     * snippet share one cell; when there is an image, the 140x120 thumbnail floats right at the
+     * top of that cell so short text sits beside it and longer text wraps underneath at full
+     * width. The table cell contains the float, so the footer row always starts below it.
      */
     private static String buildCard(
         String imageUrl, String headerHtml, String bodyHtml, SObject contactRef, String ctaUrl
     ) {
-        String imageCell = FimbyEmailHtmlBuilder.buildDigestImageCell(imageUrl, ctaUrl);
+        String floatImage = FimbyEmailHtmlBuilder.buildDigestFloatImage(imageUrl, ctaUrl);
         String footer = bylineOpenFooter(contactRef, ctaUrl);
         String combinedBody = (headerHtml != null ? headerHtml : '') + (bodyHtml != null ? bodyHtml : '');
 
-        if (String.isBlank(imageCell)) {
-            return openCard()
-                + '<tr><td style="padding:12px 16px 2px;">' + combinedBody + '</td></tr>'
-                + '<tr><td style="padding:0 16px 10px;">' + footer + '</td></tr>'
-                + '</table>';
-        }
-
-        String html = openCard()
-            + '<tr>'
-            + '<td valign="top" style="padding:12px 6px 4px 16px;">' + headerHtml + '</td>'
-            + imageCell
-            + '</tr>';
-        if (String.isNotBlank(bodyHtml)) {
-            html += '<tr><td colspan="2" style="padding:0 16px 8px;">' + bodyHtml + '</td></tr>';
-        }
-        html += '<tr><td colspan="2" style="padding:0 16px 10px;">' + footer + '</td></tr>'
+        return openCard()
+            + '<tr><td valign="top" style="padding:12px 16px 2px;">' + floatImage + combinedBody + '</td></tr>'
+            + '<tr><td style="padding:0 16px 10px;">' + footer + '</td></tr>'
             + '</table>';
-        return html;
     }
 
     /**

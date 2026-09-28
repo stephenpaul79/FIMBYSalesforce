@@ -13,7 +13,7 @@
 //          window, OR  `sf apex run --file scripts/apex/send-digest-email-manually.apex`
 // ============================================================================
 
-String targetUsername = 'stephen@strathconavineyard.com';   // <-- set the exact Username (Setup > Users)
+String targetUsername = 'stephen@fimby.com';   // <-- set the exact Username (Setup > Users)
 String frequency      = 'Weekly';                            // 'Daily' or 'Weekly'
 Date windowStart      = Date.today().addDays(-8);            // widen if the window had no posts
 Date windowEnd        = Date.today().addDays(-1);

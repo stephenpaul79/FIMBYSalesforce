@@ -689,7 +689,7 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void buildCard_withImage_usesFixedThumbnailCell() {
+    static void buildCard_withImage_floatsThumbnailSoTextWraps() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
         List<Story__c> stories = FimbyTestDataFactory.createStories(nh.Id, c.Id, 1, false);
@@ -704,19 +704,20 @@ private class FimbyDigestEmailBuilderTest {
             );
         Test.stopTest();
 
-        // Fixed 140x120 cropped thumbnail cell, responsive down to 100px via .dg-* classes.
+        // Fixed 140x120 cropped thumbnail, responsive down to 100px via .dg-img.
+        System.assert(result.html.contains('class="dg-img"'), 'Card should render the thumbnail. HTML: ' + result.html);
         System.assert(
-            result.html.contains('class="dg-imgcell"') && result.html.contains('class="dg-img"'),
-            'Card should use the fixed thumbnail cell. HTML: ' + result.html
+            result.html.contains('align="right"') && result.html.contains('float:right'),
+            'Thumbnail should float right (align for Outlook, float for others) so text wraps.'
         );
-        System.assert(
-            result.html.contains('object-fit:cover'),
-            'Thumbnail should crop with object-fit:cover. HTML: ' + result.html
-        );
-        System.assert(
-            result.html.contains('colspan="2" style="padding:0 16px 8px;"'),
-            'Body snippet should sit on a full-width row below the header + image row.'
-        );
+        System.assert(result.html.contains('object-fit:cover'), 'Thumbnail should crop with object-fit:cover.');
+        System.assert(!result.html.contains('dg-imgcell'), 'The separate image column is gone.');
+        System.assert(!result.html.contains('colspan="2"'), 'Body no longer sits on its own row below the image.');
+
+        Integer imgAt = result.html.indexOf('class="dg-img"');
+        Integer titleAt = result.html.indexOf(stories[0].Name);
+        System.assert(imgAt > -1 && imgAt < titleAt,
+            'The floated image must precede the badge/title inside the same cell.');
     }
 
     @IsTest
