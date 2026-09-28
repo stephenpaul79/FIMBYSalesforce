@@ -87,7 +87,7 @@
     height: 32px;
     border: none;
     border-radius: 50%;
-    background: transparent;
+    background-color: transparent;
     cursor: pointer;
     color: var(--fimby-btn-primary-bg);
     transition: background 0.2s ease;
@@ -571,7 +571,7 @@
     min-width: 44px;
     min-height: 44px;
     border: none;
-    background: transparent;
+    background-color: transparent;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -916,7 +916,7 @@ button.block-result-item:focus-visible {
 }
 
 .btn-outline {
-    background: transparent;
+    background-color: transparent;
     color: var(--fimby-btn-primary-bg);
     border: 1px solid var(--fimby-btn-primary-bg);
 }
@@ -1052,14 +1052,12 @@ button.block-result-item:focus-visible {
 
 /* ========== DEACTIVATION MODAL ========== */
 .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: transparent;
+    position: fixed; inset: 0; background: transparent; background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: 9999;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 .modal-content {
@@ -1253,4 +1251,15 @@ button.block-result-item:focus-visible,
     --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
     --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
     font-size: var(--fimby-input-font-size, 16px);
+}
+
+/* Shell chrome zones � content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

@@ -97,10 +97,14 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         } catch (e) {
             console.error('Init error', e);
         }
+        const urlContentFilter = this._readUrlContentFilter();
+        if (urlContentFilter) {
+            this.viewContentMode = urlContentFilter;
+        }
         this._restoreViewPreference();
         this.loadCategories();
 
-        if (this._restoreLibraryState()) {
+        if (this._restoreLibraryState(urlContentFilter)) {
             this.isLoading = false;
             // Cache resume: hide the feed from the first paint so the upcoming
             // scroll-position restore happens while invisible (no top→saved
@@ -519,7 +523,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
     }
 
     get showSettlingInBanner() {
-        return this.isSettlingIn && this.isItemsMode;
+        return this.isSettlingIn && !this.isSkillsMode;
     }
 
     get emptyStateTitle() {
@@ -693,6 +697,16 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
 
     _saveViewPreference() {
         try { localStorage.setItem('fimby-library-view', this.viewMode); } catch { /* ignore */ }
+    }
+
+    /** `?filter=items|skills` (e.g. from the monthly Library email) picks the chip. */
+    _readUrlContentFilter() {
+        try {
+            const value = new URLSearchParams(window.location.search).get('filter');
+            return value === 'items' || value === 'skills' ? value : null;
+        } catch {
+            return null;
+        }
     }
 
     _restoreViewPreference() {
@@ -919,7 +933,7 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
         }, 2000);
     }
 
-    _restoreLibraryState() {
+    _restoreLibraryState(urlContentFilter) {
         try {
             const raw = sessionStorage.getItem(LIB_CACHE_KEY);
             if (!raw) return false;
@@ -936,6 +950,12 @@ export default class FimbyLibraryBrowser extends NavigationMixin(LightningElemen
             // cached row renders. Missing/mismatched stamp (incl. legacy caches
             // written before this stamp existed) -> discard and fetch fresh.
             if ((state.ownerContactId || null) !== (this.currentContactId || null)) {
+                sessionStorage.removeItem(LIB_CACHE_KEY);
+                return false;
+            }
+
+            // A filter in the URL is a promise about which chip the page opens on.
+            if (urlContentFilter && (state.viewContentMode || 'all') !== urlContentFilter) {
                 sessionStorage.removeItem(LIB_CACHE_KEY);
                 return false;
             }

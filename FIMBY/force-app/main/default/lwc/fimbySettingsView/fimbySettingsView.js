@@ -128,7 +128,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     }
 
     renderedCallback() {
-        this._shellScrim.sync(this._settingsModalOpen, () => this._dismissSettingsModal());
+        this._shellScrim.sync(this._settingsModalOpen, () => this._dismissSettingsModal(), this.template.host);
     }
 
     _dismissSettingsModal() {
