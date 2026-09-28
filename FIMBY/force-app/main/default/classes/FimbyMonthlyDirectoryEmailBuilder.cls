@@ -33,8 +33,8 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
     private static final String BORDER_LIGHT = '#E8E0D6';
     private static final String ROW_RULE = '#F0EBE3';
     // Light tints of each section's heading colour (ITEMS_ACCENT / SKILLS_ACCENT).
-    private static final String ITEMS_CATEGORY_FILL = '#ECE6DF';
-    private static final String SKILLS_CATEGORY_FILL = '#E3ECE3';
+    private static final String ITEMS_CATEGORY_FILL = '#F4F0EB';
+    private static final String SKILLS_CATEGORY_FILL = '#EEF3EE';
     private static final String ON_LOAN_COLOR = '#7D6234';
     private static final String ITEMS_ACCENT = '#6B5E50';
     private static final String SKILLS_ACCENT = '#476B4C';
@@ -482,7 +482,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             + '<p style="margin:0 0 14px;">Got something tucked away in a closet, or a skill you&rsquo;d '
             + 'happily share for an hour? Adding it takes a minute, and it might be exactly what someone '
             + 'nearby needs.</p>'
-            + '<table cellpadding="0" cellspacing="0" border="0"><tr>'
+            + '<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>'
             + buildButtonCell('Add an item', addItemUrl)
             + '<td width="10" style="width:10px;">&nbsp;</td>'
             + buildButtonCell('Offer a skill', addItemUrl + '?type=skill')
