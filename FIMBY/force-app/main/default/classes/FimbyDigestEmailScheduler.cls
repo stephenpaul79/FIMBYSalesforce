@@ -60,7 +60,9 @@ global without sharing class FimbyDigestEmailScheduler implements Schedulable {
 
 
 
-        Database.executeBatch(new FimbyDigestEmailBatch(frequency), 5);
+        // Scope 1: an async batch execute may enqueue only one queueable, and each
+        // neighbourhood dispatches one sender chain.
+        Database.executeBatch(new FimbyDigestEmailBatch(frequency), 1);
 
     }
 

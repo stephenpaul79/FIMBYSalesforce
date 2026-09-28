@@ -2,6 +2,42 @@
 private class FimbyDigestEmailSendQueueableTest {
 
     @IsTest
+    static void resolveDigestHeaderTitle_daily_scalesWithItemCount() {
+        System.assertEquals(
+            'Something your neighbour shared yesterday',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 1)
+        );
+        System.assertEquals(
+            'A couple things your neighbours shared yesterday',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 2)
+        );
+        System.assertEquals(
+            'A few things your neighbours shared yesterday',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 3)
+        );
+        System.assertEquals(
+            'A few things your neighbours shared yesterday',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 10)
+        );
+    }
+
+    @IsTest
+    static void resolveDigestHeaderTitle_weekly_scalesWithItemCount() {
+        System.assertEquals(
+            'Something your neighbour shared this week',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Weekly', 1)
+        );
+        System.assertEquals(
+            'A couple things your neighbours shared this week',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Weekly', 2)
+        );
+        System.assertEquals(
+            'A few things your neighbours shared this week',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Weekly', 5)
+        );
+    }
+
+    @IsTest
     static void execute_emptyUserIds_exitsCleanly() {
         Date window = Date.today();
         Test.startTest();
@@ -278,5 +314,160 @@ private class FimbyDigestEmailSendQueueableTest {
         ];
         System.assertEquals(1, logs.size(),
             'Resume after Partial reuses the same row, never duplicates.');
+    }
+
+    private static Digest_Email_Log__c logWith(String recipients, String failures) {
+        return new Digest_Email_Log__c(Recipients__c = recipients, Failed_Recipients__c = failures);
+    }
+
+    @IsTest
+    static void computeStatus_nonFinalSuccess_isPartialNotSent() {
+        System.assertEquals('Partial',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith('A - 005', null), false, null),
+            'A successful mid-run chunk must stay Partial so the next chunk still sends.');
+        System.assertEquals('Partial',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith(null, 'A - 005'), false, null));
+    }
+
+    @IsTest
+    static void computeStatus_finalChunk_resolvesOutcome() {
+        System.assertEquals('Sent',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith('A - 005', null), true, null));
+        System.assertEquals('Partial',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith('A - 005', 'B - 005'), true, null));
+        System.assertEquals('Failed',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith(null, 'B - 005'), true, null));
+        System.assertEquals('Failed',
+            FimbyDigestEmailSendQueueable.computeStatus(logWith(null, null), true, 'OWEA not found'));
+    }
+
+    private static List<Id> repeatedUserIds(Integer count) {
+        List<Id> ids = new List<Id>();
+        for (Integer i = 0; i < count; i++) {
+            ids.add(UserInfo.getUserId());
+        }
+        return ids;
+    }
+
+    @IsTest
+    static void processStep_moreThanOneChunk_continuesWithRemainder() {
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
+        Date window = Date.today().addDays(-1);
+
+        FimbyDigestEmailSendQueueable first = new FimbyDigestEmailSendQueueable(
+            null, 'BigNH', 'Daily', window, window, '<p>Content</p>', 3, repeatedUserIds(51)
+        );
+
+        Test.startTest();
+        FimbyDigestEmailSendQueueable second = first.processStep();
+        System.assertNotEquals(null, second, '51 recipients need a second chunk.');
+        Integer secondIndex = second.cohortIndexForTest();
+        Integer remainingAfterFirst = second.cohortsForTest()[0].userIds.size();
+        String midStatus = [SELECT Status__c FROM Digest_Email_Log__c LIMIT 1].Status__c;
+        FimbyDigestEmailSendQueueable third = second.processStep();
+        Test.stopTest();
+
+        System.assertEquals(0, secondIndex, 'Second chunk stays on the same cohort.');
+        System.assertEquals(1, remainingAfterFirst,
+            'Only the 51st recipient remains after the first chunk.');
+        System.assertEquals('Partial', midStatus, 'Mid-run row must not be marked Sent or Failed.');
+        System.assertEquals(null, third, 'The final chunk ends the chain.');
+        System.assertEquals('Failed', [SELECT Status__c FROM Digest_Email_Log__c LIMIT 1].Status__c,
+            'Final chunk resolves the status (every send failed pre-flight here).');
+    }
+
+    @IsTest
+    static void execute_withRemainingRecipients_enqueuesExactlyOneSuccessor() {
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
+        Date window = Date.today().addDays(-1);
+
+        Test.startTest();
+        new FimbyDigestEmailSendQueueable(
+            null, 'ChainNH', 'Daily', window, window, '<p>Content</p>', 3, repeatedUserIds(51)
+        ).execute(null);
+        Integer enqueued = Limits.getQueueableJobs();
+        Test.stopTest();
+
+        System.assertEquals(1, enqueued, 'A step must chain at most one successor.');
+    }
+
+    @IsTest
+    static void processStep_emptyVariant_writesSkippedAndAdvances() {
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
+        Account emptyNh = new Account(Name = 'Empty Variant NH');
+        insert emptyNh;
+        Date window = Date.today().addDays(-1);
+        String signature = 'blockedSignature';
+
+        List<FimbyDigestEmailSendQueueable.DispatchCohort> cohorts =
+            new List<FimbyDigestEmailSendQueueable.DispatchCohort>{
+                new FimbyDigestEmailSendQueueable.DispatchCohort(
+                    new List<Id>{ UserInfo.getUserId() }, new Set<Id>(), signature, null, null
+                ),
+                new FimbyDigestEmailSendQueueable.DispatchCohort(
+                    new List<Id>{ UserInfo.getUserId() }, null, 'otherSignature', '<p>Filtered</p>', 1
+                )
+            };
+
+        Test.startTest();
+        FimbyDigestEmailSendQueueable next = new FimbyDigestEmailSendQueueable(
+            emptyNh.Id, emptyNh.Name, 'Daily', window, window, cohorts
+        ).processStep();
+        Test.stopTest();
+
+        String variantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            emptyNh.Id, 'Daily', window, window, signature
+        );
+        Digest_Email_Log__c skipped = [
+            SELECT Status__c, Error_Message__c, Recipient_Count__c
+            FROM Digest_Email_Log__c WHERE Idempotency_Key__c = :variantKey
+        ];
+        System.assertEquals('Skipped', skipped.Status__c);
+        System.assertEquals(FimbyDigestEmailBatch.SKIP_REASON_NO_CONTENT, skipped.Error_Message__c);
+        System.assertEquals(0, skipped.Recipient_Count__c);
+        System.assertNotEquals(null, next, 'An empty variant hands off to the next cohort.');
+        System.assertEquals(1, next.cohortIndexForTest());
+    }
+
+    @IsTest
+    static void processStep_completedCohortOnRetry_skipsToNextCohort() {
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
+        Date window = Date.today().addDays(-1);
+        String sentKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(null, 'Daily', window, window);
+        insert new Digest_Email_Log__c(
+            Cadence__c = 'Daily', Window_Date__c = window, Status__c = 'Sent',
+            Recipient_Count__c = 1, Recipients__c = 'Existing User - ' + UserInfo.getUserId(),
+            Template_Version__c = 'FimbyEmailHtmlBuilder', Idempotency_Key__c = sentKey
+        );
+
+        List<FimbyDigestEmailSendQueueable.DispatchCohort> cohorts =
+            new List<FimbyDigestEmailSendQueueable.DispatchCohort>{
+                new FimbyDigestEmailSendQueueable.DispatchCohort(
+                    new List<Id>{ UserInfo.getUserId() }, null, null, '<p>Clean</p>', 1
+                ),
+                new FimbyDigestEmailSendQueueable.DispatchCohort(
+                    new List<Id>{ UserInfo.getUserId() }, null, 'variantSig', '<p>Variant</p>', 1
+                )
+            };
+
+        Test.startTest();
+        FimbyDigestEmailSendQueueable next = new FimbyDigestEmailSendQueueable(
+            null, 'RetryNH', 'Daily', window, window, cohorts
+        ).processStep();
+        Integer nextIndex = next.cohortIndexForTest();
+        FimbyDigestEmailSendQueueable last = next.processStep();
+        Test.stopTest();
+
+        System.assertEquals(1, nextIndex, 'A Sent cohort is skipped on retry.');
+        System.assertEquals(null, last, 'Chain ends after the last cohort.');
+        System.assertEquals('Sent',
+            [SELECT Status__c FROM Digest_Email_Log__c WHERE Idempotency_Key__c = :sentKey].Status__c,
+            'Completed cohort row is left untouched.');
+        String variantKey = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            null, 'Daily', window, window, 'variantSig'
+        );
+        System.assertEquals(1,
+            [SELECT COUNT() FROM Digest_Email_Log__c WHERE Idempotency_Key__c = :variantKey],
+            'The next cohort still processes.');
     }
 }

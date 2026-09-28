@@ -298,6 +298,7 @@ private class FimbyDigestEmailBatchTest {
         Date we = batch.getWindowEndForTest();
         Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
         FimbyDigestEmailBatch.enforceLastLoginDate = false;
+        FimbyDigestEmailSendQueueable.runInlineForTest = true;
 
         Test.startTest();
         batch.execute(null, new List<Account>{ nh });
@@ -372,6 +373,7 @@ private class FimbyDigestEmailBatchTest {
         Date we = batch.getWindowEndForTest();
         Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
         FimbyDigestEmailBatch.enforceLastLoginDate = false;
+        FimbyDigestEmailSendQueueable.runInlineForTest = true;
 
         Test.startTest();
         batch.execute(null, new List<Account>{ nh });
@@ -410,6 +412,52 @@ private class FimbyDigestEmailBatchTest {
     }
 
     @IsTest
+    static void batchExecute_cleanPlusMultipleBlockCohorts_enqueuesExactlyOneSender() {
+        FimbyDigestEmailSendQueueable.testOweaUnavailable = true;
+
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact a = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact b = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        makeWeeklyRecipient(a.Id);
+        makeWeeklyRecipient(b.Id);
+        makeWeeklyRecipient(c.Id);
+        makeWindowedAsk(nh.Id, a.Id, 'Alpha Ask');
+        makeWindowedAsk(nh.Id, c.Id, 'Gamma Ask');
+
+        // A blocks B -> two block signatures (A hides B, B hides A) plus clean C.
+        insert new Blocked_Contact__c(Blocker__c = a.Id, Blocked__c = b.Id);
+
+        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
+        Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
+        FimbyDigestEmailBatch.enforceLastLoginDate = false;
+
+        Test.startTest();
+        batch.execute(null, new List<Account>{ nh });
+        Integer enqueued = Limits.getQueueableJobs();
+        List<FimbyDigestEmailSendQueueable.DispatchCohort> cohorts =
+            FimbyDigestEmailBatch.lastDispatched.cohortsForTest();
+        Integer cohortCount = cohorts.size();
+        String firstVariant = cohorts[0].variantKey;
+        String secondVariant = cohorts[1].variantKey;
+        String thirdVariant = cohorts[2].variantKey;
+        Boolean cleanPrebuilt = cohorts[0].contentHtml != null;
+        Boolean variantsLazy = cohorts[1].contentHtml == null && cohorts[2].contentHtml == null;
+        Test.stopTest();
+
+        FimbyDigestEmailBatch.enforceLastLoginDate = priorLoginFilter;
+
+        System.assertEquals(1, enqueued,
+            'One neighbourhood with several cohorts must enqueue exactly one sender.');
+        System.assertEquals(3, cohortCount, 'Clean cohort plus two block signatures.');
+        System.assertEquals(null, firstVariant, 'Clean cohort is dispatched first.');
+        System.assert(secondVariant < thirdVariant,
+            'Block signatures are dispatched in sorted order so retries are deterministic.');
+        System.assert(cleanPrebuilt, 'Clean cohort reuses the shared build.');
+        System.assert(variantsLazy, 'Filtered cohorts are built only when the sender reaches them.');
+    }
+
+    @IsTest
     static void batchFinish_logsCleanly() {
         Test.startTest();
         new FimbyDigestEmailBatch('Daily').finish(null);
@@ -425,7 +473,7 @@ private class FimbyDigestEmailBatchTest {
         FimbySettings.setMock(mock);
 
         Test.startTest();
-        Database.executeBatch(new FimbyDigestEmailBatch('Daily'), 5);
+        Database.executeBatch(new FimbyDigestEmailBatch('Daily'), 1);
         Test.stopTest();
     }
 

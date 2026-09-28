@@ -1,37 +1,66 @@
 /**
- * @description Sends digest emails in recipient chunks for one neighbourhood-build per
- * cadence per window date. Receives pre-built neighbourhood content HTML from
- * FimbyDigestEmailBatch, wraps content in the Apex branded shell per user, and sends.
- * Chains to process remaining recipients.
+ * @description Sends one neighbourhood's digest to every recipient cohort, one step per
+ * queueable execution. FimbyDigestEmailBatch hands over an ordered list of cohorts (the
+ * clean cohort with its pre-built HTML first, then blocked-author variants that are built
+ * lazily when reached). Each execution handles a single step — one chunk of up to 50
+ * recipients, one empty-variant skip, or one already-sent cohort — then enqueues at most
+ * one successor. That keeps every async transaction inside Salesforce's one-enqueue limit.
  *
- * Per-build logging (one Digest_Email_Log__c per neighbourhood + cadence + window):
- *   - Idempotency_Key__c is {NeighbourhoodId}_{Cadence}_{WindowDate} (no user component).
+ * Per-cohort logging (one Digest_Email_Log__c per neighbourhood + cadence + window + variant):
+ *   - Idempotency_Key__c is {NeighbourhoodId}_{Cadence}_{WindowDate}, plus a _v{hash}
+ *     suffix for filtered cohorts.
  *   - On the first chunk we initialize the row with Email_Body_Preview__c, Recipient_Count__c
  *     and a base Status__c.
  *   - Each subsequent chunk appends successful recipient lines to Recipients__c, failed
- *     recipient lines to Failed_Recipients__c, and updates Status__c provisionally.
- *   - The final Status__c (Sent / Partial / Failed) resolves on the last chunk.
+ *     recipient lines to Failed_Recipients__c, and keeps Status__c at Partial.
+ *   - The final Status__c (Sent / Partial / Failed) resolves on the cohort's last chunk.
  *
- * Skip-already-sent: if the build's row already exists with Status='Sent', the queueable
- * exits immediately. If it exists with Status='Partial' or 'Failed' a manual rerun appends
- * to the existing row, and per-chunk we skip users already listed in Recipients__c.
+ * Skip-already-sent: a cohort whose row already has Status='Sent' is skipped. A row with
+ * Status='Partial' or 'Failed' is resumed on a rerun, and per-chunk we skip users already
+ * listed in Recipients__c.
  */
 public without sharing class FimbyDigestEmailSendQueueable implements Queueable {
 
     private static final Integer CHUNK_SIZE = 50;
     private static final Integer MAX_HTML_PREVIEW_CHARS = 130000;
     private static final String HTML_TRUNCATION_MARKER = '\n\n[truncated for storage]';
+
+    // Tests can drain the whole chain synchronously, because Apex tests cannot run
+    // chained queueables.
+    @TestVisible
+    private static Boolean runInlineForTest = false;
+
     private Id neighbourhoodId;
     private String neighbourhoodName;
     private String frequency;
     private Date windowStart;
     private Date windowEnd;
-    private String contentHtml;
-    private Integer contentItemCount;
-    private List<Id> userIds;
-    // Non-null only for filtered (blocked-author) cohorts. Distinguishes a variant build's
-    // idempotency key from the shared/base build so the two never collide on upsert.
-    private String variantKey;
+    private List<DispatchCohort> cohorts;
+    private Integer cohortIndex = 0;
+
+    /**
+     * @description One group of recipients who receive the same digest HTML.
+     * variantKey is null for the clean cohort and the exclusion signature for filtered
+     * cohorts. contentHtml is null until the sender builds it on reaching the cohort.
+     */
+    public class DispatchCohort {
+        public List<Id> userIds;
+        public Set<Id> excludedContactIds;
+        public String variantKey;
+        public String contentHtml;
+        public Integer contentItemCount;
+
+        public DispatchCohort(
+            List<Id> userIds, Set<Id> excludedContactIds, String variantKey,
+            String contentHtml, Integer contentItemCount
+        ) {
+            this.userIds = userIds;
+            this.excludedContactIds = excludedContactIds;
+            this.variantKey = variantKey;
+            this.contentHtml = contentHtml;
+            this.contentItemCount = contentItemCount;
+        }
+    }
 
     public FimbyDigestEmailSendQueueable(
         Id neighbourhoodId, String neighbourhoodName, String frequency,
@@ -49,51 +78,139 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         Date windowStart, Date windowEnd, String contentHtml, Integer contentItemCount,
         List<Id> userIds, String variantKey
     ) {
+        this(
+            neighbourhoodId, neighbourhoodName, frequency, windowStart, windowEnd,
+            new List<DispatchCohort>{
+                new DispatchCohort(userIds, null, variantKey, contentHtml, contentItemCount)
+            }
+        );
+    }
+
+    public FimbyDigestEmailSendQueueable(
+        Id neighbourhoodId, String neighbourhoodName, String frequency,
+        Date windowStart, Date windowEnd, List<DispatchCohort> cohorts
+    ) {
         this.neighbourhoodId = neighbourhoodId;
         this.neighbourhoodName = neighbourhoodName;
         this.frequency = frequency;
         this.windowStart = windowStart;
         this.windowEnd = windowEnd != null ? windowEnd : windowStart;
-        this.contentHtml = contentHtml;
-        this.contentItemCount = contentItemCount;
-        this.userIds = userIds;
-        this.variantKey = variantKey;
+        this.cohorts = cohorts != null ? cohorts : new List<DispatchCohort>();
+    }
+
+    /**
+     * @description Starts a sender chain. In production this is one System.enqueueJob call.
+     */
+    public static void dispatch(FimbyDigestEmailSendQueueable job) {
+        if (job == null) {
+            return;
+        }
+        if (Test.isRunningTest() && runInlineForTest) {
+            FimbyDigestEmailSendQueueable next = job;
+            while (next != null) {
+                next = next.processStep();
+            }
+            return;
+        }
+        System.enqueueJob(job);
     }
 
     public void execute(QueueableContext ctx) {
-        if (userIds == null || userIds.isEmpty()) {
+        FimbyDigestEmailSendQueueable next = processStep();
+        if (next == null) {
             return;
         }
+        try {
+            System.enqueueJob(next);
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyDigestEmailSendQueueable', 'chain', e);
+        }
+    }
 
-        String idempotencyKey = buildIdempotencyKey(neighbourhoodId, frequency, windowStart, windowEnd, variantKey);
+    /**
+     * @description Performs one step for the current cohort and returns the successor that
+     * should run next, or null when every cohort is done.
+     */
+    @TestVisible
+    private FimbyDigestEmailSendQueueable processStep() {
+        if (cohortIndex >= cohorts.size()) {
+            return null;
+        }
+
+        DispatchCohort cohort = cohorts[cohortIndex];
+        if (cohort == null || cohort.userIds == null || cohort.userIds.isEmpty()) {
+            return advance();
+        }
+
+        String idempotencyKey = buildIdempotencyKey(
+            neighbourhoodId, frequency, windowStart, windowEnd, cohort.variantKey
+        );
         Digest_Email_Log__c existingLog = loadExistingLog(idempotencyKey);
 
-        // Build-level early exit: a fully successful build never reruns.
         if (existingLog != null && existingLog.Status__c == 'Sent') {
-            return;
+            return advance();
         }
 
+        if (cohort.contentHtml == null) {
+            FimbyDigestEmailBuilder.DigestResult built = FimbyDigestEmailBuilder.buildDigestContent(
+                neighbourhoodId, neighbourhoodName,
+                FimbyDigestEmailBatch.resolveBuilderCadence(frequency),
+                windowStart, windowEnd, cohort.excludedContactIds
+            );
+            if (built.isEmpty) {
+                writeSkippedLog(idempotencyKey, existingLog, built.itemCount);
+                return advance();
+            }
+            cohort.contentHtml = built.html;
+            cohort.contentItemCount = built.itemCount;
+        }
+
+        sendChunk(cohort, idempotencyKey, existingLog);
+
+        return cohort.userIds.isEmpty() ? advance() : successor();
+    }
+
+    private FimbyDigestEmailSendQueueable advance() {
+        if (cohortIndex < cohorts.size() && cohorts[cohortIndex] != null) {
+            cohorts[cohortIndex].contentHtml = null;
+        }
+        cohortIndex++;
+        return cohortIndex < cohorts.size() ? successor() : null;
+    }
+
+    private FimbyDigestEmailSendQueueable successor() {
+        FimbyDigestEmailSendQueueable next = new FimbyDigestEmailSendQueueable(
+            neighbourhoodId, neighbourhoodName, frequency, windowStart, windowEnd, cohorts
+        );
+        next.cohortIndex = cohortIndex;
+        return next;
+    }
+
+    /**
+     * @description Sends the next chunk of the cohort and removes it from cohort.userIds.
+     */
+    private void sendChunk(DispatchCohort cohort, String idempotencyKey, Digest_Email_Log__c existingLog) {
         Set<Id> alreadyDeliveredIds = parseUserIds(existingLog != null ? existingLog.Recipients__c : null);
 
-        Integer chunkEnd = Math.min(CHUNK_SIZE, userIds.size());
-        List<Id> currentChunkAll = new List<Id>();
-        for (Integer i = 0; i < chunkEnd; i++) {
-            currentChunkAll.add(userIds[i]);
-        }
-
-        // Drop users already delivered in this build (resume after Partial / Failed).
+        Integer chunkEnd = Math.min(CHUNK_SIZE, cohort.userIds.size());
         List<Id> currentChunk = new List<Id>();
-        for (Id uid : currentChunkAll) {
-            if (!alreadyDeliveredIds.contains(uid)) {
+        List<Id> remaining = new List<Id>();
+        for (Integer i = 0; i < cohort.userIds.size(); i++) {
+            Id uid = cohort.userIds[i];
+            if (i >= chunkEnd) {
+                remaining.add(uid);
+            } else if (!alreadyDeliveredIds.contains(uid)) {
+                // Drop users already delivered in this build (resume after Partial / Failed).
                 currentChunk.add(uid);
             }
         }
+        cohort.userIds = remaining;
+        Boolean isFinalChunk = remaining.isEmpty();
+        Boolean isFirstWrite = (existingLog == null);
 
         Id oweaId = getOweaId();
-
-        Boolean isFirstWrite = (existingLog == null);
         if (oweaId == null) {
-            // Pre-flight failure: log all chunk users as failures and bail.
+            // Pre-flight failure: log all chunk users as failures.
             Map<Id, String> firstNameByUser = new Map<Id, String>();
             Map<Id, String> lastNameByUser = new Map<Id, String>();
             loadUserNames(currentChunk, firstNameByUser, lastNameByUser);
@@ -101,18 +218,14 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             for (Id uid : currentChunk) {
                 failureLines.add(buildRecipientLine(uid, firstNameByUser.get(uid), lastNameByUser.get(uid)));
             }
-            persistChunkResult(idempotencyKey, isFirstWrite, new List<String>(), failureLines, 'OWEA not found', false);
-            chainIfNeeded(chunkEnd);
+            persistChunkResult(idempotencyKey, cohort, isFirstWrite, new List<String>(), failureLines, 'OWEA not found', isFinalChunk);
             return;
         }
 
         if (currentChunk.isEmpty()) {
-            // Everyone in this chunk was already delivered in a prior run; nothing to do
-            // beyond resolving the final status on the final chunk.
-            chainIfNeeded(chunkEnd);
-            // If this was the final chunk, run a no-op persist so the row reflects an
-            // unchanged state but the Sent/Partial/Failed status is finalized correctly.
-            if (chunkEnd >= userIds.size()) {
+            // Everyone in this chunk was already delivered in a prior run. On the final
+            // chunk, close out the row so a Partial row becomes Sent.
+            if (isFinalChunk) {
                 finalizeStatus(idempotencyKey);
             }
             return;
@@ -134,11 +247,9 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         for (Id userId : currentChunk) {
             try {
                 String digestSubject = 'From the neighbourhood';
-                String headerTitle = (resolveDisplayFrequency(frequency) == 'weekly')
-                    ? 'A few things your neighbours shared this week'
-                    : 'A few things your neighbours shared yesterday';
+                String headerTitle = resolveDigestHeaderTitle(frequency, cohort.contentItemCount);
                 String firstName = firstNameByUser.get(userId);
-                String fullContent = contentHtml + saturdayFooter;
+                String fullContent = cohort.contentHtml + saturdayFooter;
 
                 String html = buildDigestHtml(fullContent, digestSubject, headerTitle, firstName);
 
@@ -180,10 +291,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             }
         }
 
-        Boolean isFinalChunk = (chunkEnd >= userIds.size());
-        persistChunkResult(idempotencyKey, isFirstWrite, successLines, failureLines, null, isFinalChunk);
-
-        chainIfNeeded(chunkEnd);
+        persistChunkResult(idempotencyKey, cohort, isFirstWrite, successLines, failureLines, null, isFinalChunk);
     }
 
     /* ---------------------------------------------------------------
@@ -191,7 +299,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
      * --------------------------------------------------------------- */
 
     private void persistChunkResult(
-        String idempotencyKey, Boolean isFirstWrite,
+        String idempotencyKey, DispatchCohort cohort, Boolean isFirstWrite,
         List<String> successLines, List<String> failureLines,
         String preFlightError, Boolean isFinalChunk
     ) {
@@ -214,9 +322,9 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             log.Neighbourhood__c = neighbourhoodId;
             log.Cadence__c = resolveLogCadence(frequency);
             log.Window_Date__c = windowStart;
-            log.Content_Item_Count__c = contentItemCount;
+            log.Content_Item_Count__c = cohort.contentItemCount;
             log.Template_Version__c = 'FimbyEmailHtmlBuilder';
-            log.Email_Body_Preview__c = truncateHtml(contentHtml);
+            log.Email_Body_Preview__c = truncateHtml(cohort.contentHtml);
         }
 
         if (!successLines.isEmpty()) {
@@ -240,6 +348,28 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     }
 
     /**
+     * @description Skipped row for a filtered cohort whose build came back empty (everything
+     * was hidden by blocks). Never overwrites a row that already recorded sends.
+     */
+    private void writeSkippedLog(String idempotencyKey, Digest_Email_Log__c existingLog, Integer itemCount) {
+        if (existingLog != null && existingLog.Status__c != 'Skipped') {
+            return;
+        }
+        Digest_Email_Log__c log = new Digest_Email_Log__c(
+            Neighbourhood__c = neighbourhoodId,
+            Cadence__c = resolveLogCadence(frequency),
+            Window_Date__c = windowStart,
+            Status__c = 'Skipped',
+            Recipient_Count__c = 0,
+            Content_Item_Count__c = itemCount,
+            Template_Version__c = 'FimbyEmailHtmlBuilder',
+            Error_Message__c = FimbyDigestEmailBatch.SKIP_REASON_NO_CONTENT.abbreviate(255),
+            Idempotency_Key__c = idempotencyKey
+        );
+        Database.upsert(log, Digest_Email_Log__c.Idempotency_Key__c, false);
+    }
+
+    /**
      * @description Recompute and persist the final status when the final chunk had nothing
      * new to send (everyone was already delivered in a prior run). No new lines, just
      * close out the row so a Partial row becomes Sent.
@@ -256,17 +386,17 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         Database.update(existing, false);
     }
 
-    private String computeStatus(Digest_Email_Log__c log, Boolean isFinalChunk, String preFlightError) {
+    /**
+     * @description Only a cohort's final chunk can resolve to Sent. A mid-run row stays
+     * Partial so the successor chunk does not mistake it for a finished build and exit.
+     */
+    @TestVisible
+    private static String computeStatus(Digest_Email_Log__c log, Boolean isFinalChunk, String preFlightError) {
         Boolean hasSuccess = String.isNotBlank(log.Recipients__c);
         Boolean hasFailure = String.isNotBlank(log.Failed_Recipients__c);
 
         if (!isFinalChunk) {
-            // Mid-run: optimistic "Partial" until proven otherwise. Failed recipients alone with no
-            // successes yet still reads as "Partial" until the final chunk; if the build ends with
-            // zero successes the final chunk demotes it to Failed.
-            if (hasSuccess && !hasFailure) { return 'Sent'; }
-            if (hasSuccess && hasFailure) { return 'Partial'; }
-            if (!hasSuccess && hasFailure) { return 'Failed'; }
+            if (hasSuccess || hasFailure) { return 'Partial'; }
             return 'Skipped';
         }
         if (String.isNotBlank(preFlightError) && !hasSuccess) {
@@ -293,6 +423,16 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     /* ---------------------------------------------------------------
      * Helpers
      * --------------------------------------------------------------- */
+
+    @TestVisible
+    private Integer cohortIndexForTest() {
+        return cohortIndex;
+    }
+
+    @TestVisible
+    private List<DispatchCohort> cohortsForTest() {
+        return cohorts;
+    }
 
     private String appendLines(String existing, List<String> newLines, Integer maxLength) {
         String existingSafe = existing != null ? existing : '';
@@ -363,23 +503,6 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         );
     }
 
-    private void chainIfNeeded(Integer processedCount) {
-        if (processedCount < userIds.size()) {
-            List<Id> remaining = new List<Id>();
-            for (Integer i = processedCount; i < userIds.size(); i++) {
-                remaining.add(userIds[i]);
-            }
-            try {
-                System.enqueueJob(new FimbyDigestEmailSendQueueable(
-                    neighbourhoodId, neighbourhoodName, frequency,
-                    windowStart, windowEnd, contentHtml, contentItemCount, remaining, variantKey
-                ));
-            } catch (Exception e) {
-                FimbyLogger.error('FimbyDigestEmailSendQueueable', 'chainIfNeeded', e);
-            }
-        }
-    }
-
     public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt) {
         return buildIdempotencyKey(nhId, freq, windowStartDt, windowStartDt);
     }
@@ -395,8 +518,8 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
      * @description Variant-aware idempotency key. For the shared/base cohort (variantKey blank)
      * this is identical to the 4-arg base key. For a filtered cohort it appends a deterministic
      * _v{hash} suffix so the variant's log row never collides with the base row or another
-     * variant. The same suffix must be used for that cohort's Skipped log, send, and chain
-     * re-enqueue, or skip-already-sent / resume would re-resolve under the wrong key.
+     * variant. The same suffix must be used for that cohort's Skipped log, sends, and resume,
+     * or skip-already-sent / resume would re-resolve under the wrong key.
      */
     public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt, Date windowEndDt, String variantKey) {
         String base = buildIdempotencyKey(nhId, freq, windowStartDt, windowEndDt);
@@ -412,6 +535,24 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             return 'daily';
         }
         return freq != null ? freq.toLowerCase() : 'daily';
+    }
+
+    /**
+     * @description In-body H1 scales with feed-card count so a single-post digest does not read
+     * like a roundup. Daily and weekly cadences use the same 1 / 2 / 3+ pattern.
+     */
+    @TestVisible
+    private static String resolveDigestHeaderTitle(String frequency, Integer itemCount) {
+        Integer n = itemCount != null && itemCount > 0 ? itemCount : 3;
+        Boolean weekly = resolveDisplayFrequency(frequency) == 'weekly';
+        String timePhrase = weekly ? 'this week' : 'yesterday';
+        if (n == 1) {
+            return 'Something your neighbour shared ' + timePhrase;
+        }
+        if (n == 2) {
+            return 'A couple things your neighbours shared ' + timePhrase;
+        }
+        return 'A few things your neighbours shared ' + timePhrase;
     }
 
     @TestVisible

@@ -11,6 +11,10 @@
  * there are eligible recipients. When neither is true, write a Skipped log row so ops can
  * confirm the batch ran (the presence of one row per active neighbourhood per cadence per
  * day is the proof of life).
+ *
+ * Run with scope 1. An async batch execute may enqueue only one queueable, so each
+ * neighbourhood hands all of its recipient cohorts to a single sender that works through
+ * them serially.
  */
 global without sharing class FimbyDigestEmailBatch implements Database.Batchable<SObject>, Database.Stateful {
 
@@ -25,8 +29,11 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
     public static final String CADENCE_WEEKLY = 'Weekly';
     public static final String CADENCE_DAILY_SUNDAY_REST = 'DailySundayRestCatchUp';
 
-    @TestVisible static final String SKIP_REASON_NO_CONTENT = 'No feed-card content for this window';
+    public static final String SKIP_REASON_NO_CONTENT = 'No feed-card content for this window';
     @TestVisible static final String SKIP_REASON_NO_RECIPIENTS = 'No eligible recipients (FIMBY_Summary_Emails__c)';
+
+    @TestVisible
+    private static FimbyDigestEmailSendQueueable lastDispatched;
 
     global FimbyDigestEmailBatch(String frequency) {
         this.frequency = frequency;
@@ -79,7 +86,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                     continue;
                 }
 
-                dispatchRecipients(nh, builderCadence, content, recipients, skippedLogs);
+                dispatchRecipients(nh, content, recipients);
             } catch (Exception e) {
                 FimbyLogger.error('FimbyDigestEmailBatch', 'execute', e, nh.Id);
             }
@@ -100,12 +107,15 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
      * Recipients on either side of a block get a per-cohort filtered build that hides the
      * blocked author's cards. Cohorts with identical exclusion sets share one filtered build
      * (de-duped by a sorted-Id signature), and that signature is the variant key threaded
-     * into the queueable + any Skipped log so variant rows never collide with the base row.
+     * into the sender so variant rows never collide with the base row.
+     *
+     * Every cohort goes to one sender (clean first, then signatures in sorted order); the
+     * sender builds each filtered cohort's HTML only when it reaches that cohort.
      */
     private void dispatchRecipients(
-        Account nh, String builderCadence,
+        Account nh,
         FimbyDigestEmailBuilder.DigestResult sharedContent,
-        List<User> recipients, List<Digest_Email_Log__c> skippedLogs
+        List<User> recipients
     ) {
         Map<Id, Set<Id>> exclusionByContact = buildBidirectionalExclusionMap(recipients);
 
@@ -127,32 +137,35 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
             userIdsBySignature.get(signature).add(u.Id);
         }
 
+        List<FimbyDigestEmailSendQueueable.DispatchCohort> cohorts =
+            new List<FimbyDigestEmailSendQueueable.DispatchCohort>();
+
         if (!cleanUserIds.isEmpty()) {
-            System.enqueueJob(new FimbyDigestEmailSendQueueable(
-                nh.Id, nh.Name, frequency, windowStart, windowEnd,
-                sharedContent.html, sharedContent.itemCount, cleanUserIds
+            cleanUserIds.sort();
+            cohorts.add(new FimbyDigestEmailSendQueueable.DispatchCohort(
+                cleanUserIds, null, null, sharedContent.html, sharedContent.itemCount
             ));
         }
 
-        for (String signature : userIdsBySignature.keySet()) {
-            FimbyDigestEmailBuilder.DigestResult filtered =
-                FimbyDigestEmailBuilder.buildDigestContent(
-                    nh.Id, nh.Name, builderCadence, windowStart, windowEnd,
-                    exclusionBySignature.get(signature)
-                );
-
-            if (filtered.isEmpty) {
-                skippedLogs.add(buildSkippedLog(
-                    nh.Id, filtered.itemCount, SKIP_REASON_NO_CONTENT, signature
-                ));
-                continue;
-            }
-
-            System.enqueueJob(new FimbyDigestEmailSendQueueable(
-                nh.Id, nh.Name, frequency, windowStart, windowEnd,
-                filtered.html, filtered.itemCount, userIdsBySignature.get(signature), signature
+        List<String> signatures = new List<String>(userIdsBySignature.keySet());
+        signatures.sort();
+        for (String signature : signatures) {
+            List<Id> cohortUserIds = userIdsBySignature.get(signature);
+            cohortUserIds.sort();
+            cohorts.add(new FimbyDigestEmailSendQueueable.DispatchCohort(
+                cohortUserIds, exclusionBySignature.get(signature), signature, null, null
             ));
         }
+
+        if (cohorts.isEmpty()) {
+            return;
+        }
+
+        FimbyDigestEmailSendQueueable sender = new FimbyDigestEmailSendQueueable(
+            nh.Id, nh.Name, frequency, windowStart, windowEnd, cohorts
+        );
+        lastDispatched = sender;
+        FimbyDigestEmailSendQueueable.dispatch(sender);
     }
 
     /**
@@ -246,8 +259,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
         return Database.query(soql);
     }
 
-    @TestVisible
-    private static String resolveBuilderCadence(String freq) {
+    public static String resolveBuilderCadence(String freq) {
         if (freq == CADENCE_DAILY_SUNDAY_REST) {
             return CADENCE_DAILY;
         }
@@ -269,17 +281,11 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
         return freq;
     }
 
-    private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason) {
-        return buildSkippedLog(nhId, itemCount, reason, null);
-    }
-
     /**
-     * @description Skipped log row. variantKey is null for the base no-content / no-recipients
-     * skips and set (to the cohort's exclusion signature) for an empty-filtered variant cohort,
-     * so a variant's Skipped row keys on the variant idempotency key and never overwrites the
-     * clean cohort's base row for the same neighbourhood + cadence + window.
+     * @description Base Skipped log row for a neighbourhood with no content or no recipients.
+     * Empty-filtered variant cohorts are logged by the sender under their variant key.
      */
-    private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason, String variantKey) {
+    private Digest_Email_Log__c buildSkippedLog(Id nhId, Integer itemCount, String reason) {
         return new Digest_Email_Log__c(
             Neighbourhood__c = nhId,
             Cadence__c = resolveLogCadence(frequency),
@@ -290,7 +296,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
             Template_Version__c = 'FimbyEmailHtmlBuilder',
             Error_Message__c = reason?.abbreviate(255),
             Idempotency_Key__c = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
-                nhId, frequency, windowStart, windowEnd, variantKey
+                nhId, frequency, windowStart, windowEnd
             )
         );
     }
