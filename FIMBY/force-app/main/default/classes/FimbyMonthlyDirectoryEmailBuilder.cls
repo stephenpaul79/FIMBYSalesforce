@@ -29,6 +29,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
     private static final String TEXT_BODY = '#4A4A4A';
     private static final String TEXT_SECONDARY = '#6B6B6B';
     private static final String LINK_COLOR = '#3A7D8C';
+    private static final String ROW_LINK_COLOR = '#2F6B78';
     private static final String BORDER_LIGHT = '#E8E0D6';
     private static final String ROW_RULE = '#F0EBE3';
     private static final String CATEGORY_FILL = '#F5F0E8';
@@ -489,12 +490,16 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
     }
 
     private static String buildRowHtml(DirectoryRow row, Boolean withInitials) {
-        String cell = 'padding:5px 12px;border-top:1px solid ' + ROW_RULE + ';';
+        String rule = 'border-top:1px solid ' + ROW_RULE + ';';
+        String cell = 'padding:5px 12px;' + rule;
+        // inline-block keeps the tag out of the parent link's underline.
         String onLoan = row.isOnLoan
-            ? ' <span style="font-size:11px;color:' + ON_LOAN_COLOR + ';">on loan</span>'
+            ? ' <span style="display:inline-block;font-size:11px;color:' + ON_LOAN_COLOR + ';">on loan</span>'
             : '';
-        return '<tr><td width="67%" style="' + cell + '"><a href="' + row.url + '" style="color:' + LINK_COLOR + ';">'
-            + escape(row.name) + '</a>' + onLoan + '</td>'
+        // The link fills the cell so the whole name column is the tap target.
+        return '<tr><td width="67%" style="' + rule + '"><a href="' + row.url
+            + '" style="display:block;padding:5px 12px;color:' + ROW_LINK_COLOR + ';">'
+            + escape(row.name) + onLoan + '</a></td>'
             + '<td width="33%" style="' + cell + 'font-size:13px;color:' + TEXT_SECONDARY + ';">'
             + (withInitials ? buildInitial(row) : '') + escape(row.ownerName) + '</td></tr>';
     }

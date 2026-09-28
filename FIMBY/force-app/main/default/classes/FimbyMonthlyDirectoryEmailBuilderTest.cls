@@ -78,8 +78,10 @@ private class FimbyMonthlyDirectoryEmailBuilderTest {
         String html = result.html;
         System.assert(html.contains('Items To Borrow') && html.contains('Skills On Offer'));
         System.assert(html.contains('Cordless Drill'));
-        System.assert(html.contains('Tent</a> <span') && html.contains('on loan'),
+        System.assert(html.contains('Tent <span') && html.contains('on loan'),
             'Lent-out items carry the on-loan tag');
+        System.assert(html.contains('display:block;padding:5px 12px'),
+            'The whole name cell is the tap target');
         System.assert(html.contains('Shared Scope Wheelbarrow'),
             'Adjacent items scoped Adjacent are visible');
         System.assert(!html.contains('Private Kayak'),
