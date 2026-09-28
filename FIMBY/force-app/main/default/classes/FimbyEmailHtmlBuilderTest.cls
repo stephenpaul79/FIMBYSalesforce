@@ -651,6 +651,17 @@ private class FimbyEmailHtmlBuilderTest {
     }
 
     @IsTest
+    static void wrapInBrandedShell_hideHeaderActions_keepsPreferencesLink() {
+        String result = FimbyEmailHtmlBuilder.wrapInBrandedShell(
+            '<p>Body</p>', 'Subject', 'NH', null, false, false, 'Rosa', true, 'Heading', true);
+        System.assert(!result.contains('BellActive.png'), 'Header bell should be hidden');
+        System.assert(!result.contains('enter.png'), 'Header door icon should be hidden');
+        System.assert(result.contains('Email preferences'),
+            'Recurring emails must keep the footer email-preferences link');
+        System.assert(result.contains('FIMBYwGrass.png'), 'Logo still renders');
+    }
+
+    @IsTest
     static void wrapInBrandedShell_skipSubjectBlock_omitsVisibleHeading() {
         String result = FimbyEmailHtmlBuilder.wrapInBrandedShell(
             '<p>Card only</p>', 'Desktop reserved 1 share', 'Kensington', null, true, false);

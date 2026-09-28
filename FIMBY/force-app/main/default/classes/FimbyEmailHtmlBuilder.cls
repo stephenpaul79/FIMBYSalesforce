@@ -213,6 +213,14 @@ public without sharing class FimbyEmailHtmlBuilder {
      * When headerTitle is blank, H1 falls back to subject (existing email behaviour).
      */
     public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName, Boolean neighbourhoodAsBadge, String headerTitle) {
+        return wrapInBrandedShell(innerHtml, subject, neighbourhoodName, intentLine, skipSubjectBlock, minimalChrome, recipientFirstName, neighbourhoodAsBadge, headerTitle, false);
+    }
+
+    /**
+     * @description hideHeaderActions drops only the bell + door header icons and keeps the
+     * footer "Email preferences" link, which recurring emails must always carry.
+     */
+    public static String wrapInBrandedShell(String innerHtml, String subject, String neighbourhoodName, String intentLine, Boolean skipSubjectBlock, Boolean minimalChrome, String recipientFirstName, Boolean neighbourhoodAsBadge, String headerTitle, Boolean hideHeaderActions) {
         String nhDisplay = String.isNotBlank(neighbourhoodName) ? escapeHtml(neighbourhoodName) : 'your neighbourhood';
         String nhBadgeHtml = buildBadgePill(
             String.isNotBlank(neighbourhoodName) ? neighbourhoodName : 'your neighbourhood',
@@ -234,7 +242,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         String greetingHtml = String.isNotBlank(recipientFirstName)
             ? buildHeaderGreetingLine(recipientFirstName) : '';
 
-        String headerRightHtml = minimal
+        String headerRightHtml = (minimal || hideHeaderActions == true)
             ? ''
             : '<td align="right" style="vertical-align:middle;">'
                 + '<table cellpadding="0" cellspacing="0" border="0"><tr>'
@@ -909,6 +917,17 @@ public without sharing class FimbyEmailHtmlBuilder {
         }
         html += '</tr></table></td></tr></table>';
         return html;
+    }
+
+    /**
+     * @description Small inline Impact Icon for digest card meta rows (schedule, etc.).
+     */
+    public static String buildDigestMetaIcon(String iconFilename) {
+        if (String.isBlank(iconFilename)) {
+            return '';
+        }
+        return '<img src="' + ICON_BASE_URL + iconFilename + '" width="14" height="14" alt="" '
+            + 'style="vertical-align:middle;margin-right:4px;border:0;" />';
     }
 
     public static String buildDateLocationLine(Date startDate, String location) {

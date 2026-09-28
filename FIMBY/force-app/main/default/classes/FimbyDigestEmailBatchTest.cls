@@ -78,6 +78,20 @@ private class FimbyDigestEmailBatchTest {
     }
 
     @IsTest
+    static void scheduler_monthly_launchesMonthlyDirectoryBatch() {
+        FimbySettings.setMock(new FIMBY_App_Settings__mdt(Digest_Email_Global_Enabled__c = true));
+
+        Test.startTest();
+        new FimbyDigestEmailScheduler(FimbyMonthlyDirectoryBatch.CADENCE_MONTHLY).execute(null);
+        Test.stopTest();
+
+        System.assertEquals(1, [
+            SELECT COUNT() FROM AsyncApexJob
+            WHERE ApexClass.Name = 'FimbyMonthlyDirectoryBatch' AND JobType = 'BatchApex'
+        ], 'Monthly cadence should launch the monthly directory batch');
+    }
+
+    @IsTest
     static void scheduler_catchUpEnabled_launchesOnMondayOrExitsOtherwise() {
         FIMBY_App_Settings__mdt mock = new FIMBY_App_Settings__mdt(
             Digest_Email_Global_Enabled__c = true

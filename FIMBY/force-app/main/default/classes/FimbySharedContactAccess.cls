@@ -129,6 +129,42 @@ public without sharing class FimbySharedContactAccess {
     }
 
     /**
+     * @description Bulk form of getActiveIncomingSharerIds for many recipients in one
+     *              query, with the same newest-row-wins rule per exact direction.
+     * @param recipientContactIds The recipients' Contact Ids.
+     * @return Recipient Contact Id to the set of sharers with an open episode to them.
+     *         Recipients with no open inbound shares are absent from the map.
+     */
+    public static Map<Id, Set<Id>> getActiveIncomingSharerIdsByRecipient(Set<Id> recipientContactIds) {
+        Map<Id, Set<Id>> sharersByRecipient = new Map<Id, Set<Id>>();
+        if (recipientContactIds == null || recipientContactIds.isEmpty()) {
+            return sharersByRecipient;
+        }
+        Set<String> seenPairs = new Set<String>();
+        for (Shared_Contact_Info__c sci : [
+            SELECT Contact__c, Shared_To__c, Status__c
+            FROM Shared_Contact_Info__c
+            WHERE Shared_To__c IN :recipientContactIds
+            AND Contact__c != null
+            ORDER BY CreatedDate DESC, Id DESC
+        ]) {
+            String pair = String.valueOf(sci.Shared_To__c) + ':' + String.valueOf(sci.Contact__c);
+            if (seenPairs.contains(pair)) {
+                continue;
+            }
+            seenPairs.add(pair);
+            if (!isOpenStatus(sci.Status__c)) {
+                continue;
+            }
+            if (!sharersByRecipient.containsKey(sci.Shared_To__c)) {
+                sharersByRecipient.put(sci.Shared_To__c, new Set<Id>());
+            }
+            sharersByRecipient.get(sci.Shared_To__c).add(sci.Contact__c);
+        }
+        return sharersByRecipient;
+    }
+
+    /**
      * @description The snapshot a recipient is currently entitled to see. Returns
      *              null once the episode is revoked, so a closed share can never
      *              keep rendering an email, phone, or address.

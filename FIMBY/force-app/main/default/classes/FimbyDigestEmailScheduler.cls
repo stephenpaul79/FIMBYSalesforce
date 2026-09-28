@@ -10,6 +10,9 @@
 
  * - Weekly Saturday 6 AM: new FimbyDigestEmailScheduler('Weekly')
 
+ * - Monthly first Tuesday 7 AM: new FimbyDigestEmailScheduler('Monthly') — Library email
+ *   (Items To Borrow + Skills On Offer) via FimbyMonthlyDirectoryBatch
+
  *
 
  * Checks the global feature flag before launching.
@@ -23,6 +26,8 @@
  *   System.schedule('FIMBY Monday Sunday-Rest Digest', '0 0 6 ? * MON', new FimbyDigestEmailScheduler('DailySundayRestCatchUp'));
 
  *   System.schedule('FIMBY Weekly Digest', '0 0 6 ? * SAT', new FimbyDigestEmailScheduler('Weekly'));
+
+ *   System.schedule('FIMBY Monthly Library & Skills', '0 0 7 ? * 3#1', new FimbyDigestEmailScheduler('Monthly'));
 
  */
 
@@ -51,6 +56,11 @@ global without sharing class FimbyDigestEmailScheduler implements Schedulable {
         }
 
 
+
+        if (frequency == FimbyMonthlyDirectoryBatch.CADENCE_MONTHLY) {
+            Database.executeBatch(new FimbyMonthlyDirectoryBatch(), 1);
+            return;
+        }
 
         if (frequency == FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST && !isMondayNow()) {
 

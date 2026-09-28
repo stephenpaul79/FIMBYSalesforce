@@ -107,4 +107,38 @@ private class FimbySharedContactAccessTest {
         System.assertEquals(null, FimbySharedContactAccess.findCurrentEpisode(null, peeps[1].Id));
         System.assertEquals(0, FimbySharedContactAccess.getActiveIncomingSharerIds(null).size());
     }
+
+    @IsTest
+    static void bulkIncomingSharers_newestRowWinsPerRecipient() {
+        List<Contact> peeps = getContacts();
+        insert new Shared_Contact_Info__c(
+            Contact__c = peeps[0].Id, Shared_To__c = peeps[1].Id,
+            Email__c = 'open@test.com', Status__c = 'Active'
+        );
+        insert new Shared_Contact_Info__c(
+            Contact__c = peeps[2].Id, Shared_To__c = peeps[1].Id,
+            Email__c = 'old@test.com', Status__c = 'Active'
+        );
+        insert new Shared_Contact_Info__c(
+            Contact__c = peeps[2].Id, Shared_To__c = peeps[1].Id,
+            Email__c = 'revoked@test.com', Status__c = 'Revoked'
+        );
+        insert new Shared_Contact_Info__c(
+            Contact__c = peeps[1].Id, Shared_To__c = peeps[2].Id,
+            Email__c = 'other@test.com', Status__c = 'Active'
+        );
+
+        Test.startTest();
+        Map<Id, Set<Id>> byRecipient = FimbySharedContactAccess.getActiveIncomingSharerIdsByRecipient(
+            new Set<Id>{ peeps[1].Id, peeps[2].Id, peeps[0].Id }
+        );
+        Test.stopTest();
+
+        System.assertEquals(new Set<Id>{ peeps[0].Id }, byRecipient.get(peeps[1].Id),
+            'A newer Revoked row closes the pair even when an older Active row exists');
+        System.assertEquals(new Set<Id>{ peeps[1].Id }, byRecipient.get(peeps[2].Id));
+        System.assert(!byRecipient.containsKey(peeps[0].Id), 'No inbound shares, no entry');
+        System.assertEquals(0,
+            FimbySharedContactAccess.getActiveIncomingSharerIdsByRecipient(null).size());
+    }
 }
