@@ -3,7 +3,9 @@
  * can see (Items To Borrow) and every active skill offer in their neighbourhood (Skills On
  * Offer), grouped by category and then sorted by name.
  *
- * Rows are compact and image-free so the whole list fits under Gmail's clipping threshold.
+ * A short opening invites neighbours to add items and skills. Rows are compact and
+ * image-free (only category lines carry an Impact icon) so the whole list fits under
+ * Gmail's clipping threshold.
  * When it does not fit, the owner initials are dropped first, then rows are trimmed
  * round-robin across categories so every category keeps some rows. Each section ends with
  * one link to the Library tab pre-filtered to that section; when rows were left out, that
@@ -36,6 +38,39 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         '#476B4C', '#357280', '#6B5E50', '#7D6234', '#8A5936', '#5E7B92'
     };
 
+    // Mirrors c/fimbyLibraryCategoryConfig and c/fimbySkillCategoryConfig so category
+    // lines match the Library tab.
+    private static final String ITEM_DEFAULT_ICON = 'unknown.png';
+    private static final String SKILL_DEFAULT_ICON = 'help.png';
+    private static final Map<String, String> ITEM_CATEGORY_ICONS = new Map<String, String>{
+        'Art & Craft Supplies' => 'palette.png', 'Baby & Children' => 'onesie.png',
+        'Bikes' => 'bicycle.png', 'Books' => 'stack-of-books.png',
+        'Camping Gear' => 'camping.png', 'Clothing' => 'male-clothes.png',
+        'Electronics' => 'electronic-devices.png', 'Fitness & Wellness' => 'sport.png',
+        'Games & Toys' => 'toys.png', 'Gardening' => 'gardening.png',
+        'Home Improvement & DIY' => 'remodeling.png', 'Household Items' => 'house-cleaning.png',
+        'Kitchen Supplies' => 'cookware.png', 'Music Instruments' => 'music-instrument.png',
+        'Office Supplies' => 'stapler.png', 'Outdoors & Recreation (non-camping)' => 'deck-chair.png',
+        'Party & Events' => 'party.png', 'Pet Supplies' => 'pets.png',
+        'Photography & AV' => 'music.png', 'Sports Equipment' => 'sports.png',
+        'Tools' => 'tools.png', 'Travel & Luggage' => 'luggage.png', 'Other' => 'unknown.png'
+    };
+    private static final Map<String, String> SKILL_CATEGORY_ICONS = new Map<String, String>{
+        'Tutoring & Lessons' => 'lessons.png', 'Language & Translation' => 'language.png',
+        'Tech Help' => 'tech.png', 'Skilled Trades' => 'trades.png',
+        'Home Repairs & Handywork' => 'handywork.png', 'Cleaning & Organizing' => 'cleaning.png',
+        'Yard & Outdoor Work' => 'yardwork.png', 'Moving & Heavy Lifting' => 'moving.png',
+        'Rides & Transportation' => 'driving.png', 'Errands & Shopping' => 'shopping.png',
+        'Cooking & Baking' => 'cooking.png', 'Sewing & Mending' => 'sewing.png',
+        'Childcare & Babysitting' => 'childcare.png', 'Eldercare & Companionship' => 'eldercare.png',
+        'Pet Care' => 'petcare.png', 'Fitness & Wellness' => 'fitness.png',
+        'Hair & Beauty' => 'hair.png', 'Arts & Crafts' => 'crafts.png',
+        'Music & Performance' => 'musicperformance.png', 'Event Help' => 'admin.png',
+        'Admin & Paperwork' => 'paperwork.png', 'Financial & Tax Help' => 'finances.png',
+        'Legal Guidance' => 'legal.png', 'Business & Career' => 'career.png',
+        'Auto & Bike Repair' => 'mechanic.png', 'Other / General Help' => 'help.png'
+    };
+
     public class DirectoryRow implements Comparable {
         public Id recordId;
         public String name;
@@ -47,6 +82,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         public Id neighbourhoodId;
         public Boolean isAdjacentScoped = false;
         public String url;
+        public String iconFile;
 
         public Integer compareTo(Object other) {
             DirectoryRow that = (DirectoryRow) other;
@@ -198,6 +234,8 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         row.neighbourhoodId = item.Neighbourhood__c;
         row.isAdjacentScoped = ADJACENT_SCOPES.contains(item.Visibility_Scope__c);
         row.url = FimbySettings.getUrl('Library_Item', item.Id);
+        row.iconFile = ITEM_CATEGORY_ICONS.containsKey(row.category)
+            ? ITEM_CATEGORY_ICONS.get(row.category) : ITEM_DEFAULT_ICON;
         return row;
     }
 
@@ -211,6 +249,8 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         row.ownerName = resolveOwnerName(skill.Owner_Contact__r?.Full_Name__c);
         row.neighbourhoodId = skill.Neighbourhood__c;
         row.url = FimbySettings.getUrl('Skill_Offer', skill.Id);
+        row.iconFile = SKILL_CATEGORY_ICONS.containsKey(row.category)
+            ? SKILL_CATEGORY_ICONS.get(row.category) : SKILL_DEFAULT_ICON;
         return row;
     }
 
@@ -323,7 +363,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
                 }
                 Integer cost = byteSize(buildRowHtml(categoryRows[idx], false));
                 if (idx == 0) {
-                    cost += byteSize(buildCategoryHtml(category));
+                    cost += byteSize(buildCategoryHtml(categoryRows[idx]));
                 }
                 if (pick.usedBytes + cost > budget) {
                     stopped.add(category);
@@ -355,7 +395,8 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         result.itemsOmitted = allItems.size() - shownItems.size();
         result.skillsShown = shownSkills.size();
         result.skillsOmitted = allSkills.size() - shownSkills.size();
-        result.html = buildSection('Items To Borrow', ITEMS_ACCENT, 'Item', ITEMS_FILTER,
+        result.html = buildIntroHtml()
+            + buildSection('Items To Borrow', ITEMS_ACCENT, 'Item', ITEMS_FILTER,
                 allItems.size(), shownItems, withInitials)
             + buildSection('Skills On Offer', SKILLS_ACCENT, 'Skill', SKILLS_FILTER,
                 allSkills.size(), shownSkills, withInitials);
@@ -385,7 +426,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             for (DirectoryRow row : shownRows) {
                 if (row.category != currentCategory) {
                     currentCategory = row.category;
-                    html += buildCategoryHtml(currentCategory);
+                    html += buildCategoryHtml(row);
                 }
                 html += buildRowHtml(row, withInitials);
             }
@@ -413,9 +454,36 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             + '</td></tr></table>';
     }
 
-    private static String buildCategoryHtml(String category) {
+    private static String buildCategoryHtml(DirectoryRow firstRow) {
         return '<tr><td colspan="2" style="padding:12px 12px 4px;font-size:12px;font-weight:bold;color:'
-            + TEXT_SECONDARY + ';text-transform:uppercase;">' + escape(category) + '</td></tr>';
+            + TEXT_SECONDARY + ';text-transform:uppercase;">'
+            + '<img src="' + FimbyEmailHtmlBuilder.ICON_BASE_URL + firstRow.iconFile
+            + '" width="20" height="20" alt="" style="border:0;vertical-align:middle;margin-right:6px;" />'
+            + '<span style="vertical-align:middle;">' + escape(firstRow.category) + '</span></td></tr>';
+    }
+
+    private static String buildIntroHtml() {
+        String addItemUrl = FimbySettings.getUrl('Add_Library_Item');
+        return '<table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;'
+            + 'background-color:#FFFFFF;border:1px solid ' + BORDER_LIGHT + ';border-radius:8px;">'
+            + '<tr><td style="padding:16px;' + F + 'font-size:14px;line-height:1.5;color:' + TEXT_BODY + ';">'
+            + '<p style="margin:0 0 10px;">Here&rsquo;s everything your neighbours are sharing this month, '
+            + 'from ladders to lessons. If something catches your eye, tap it and ask. Borrowing is one of '
+            + 'the easiest ways to get to know the people on your street.</p>'
+            + '<p style="margin:0 0 14px;">Got something tucked away in a closet, or a skill you&rsquo;d '
+            + 'happily share for an hour? Adding it takes a minute, and it might be exactly what someone '
+            + 'nearby needs.</p>'
+            + '<table cellpadding="0" cellspacing="0" border="0"><tr>'
+            + buildButtonCell('Add an item', addItemUrl)
+            + '<td width="10" style="width:10px;">&nbsp;</td>'
+            + buildButtonCell('Offer a skill', addItemUrl + '?type=skill')
+            + '</tr></table></td></tr></table>';
+    }
+
+    private static String buildButtonCell(String label, String url) {
+        return '<td style="background-color:' + LINK_COLOR + ';border-radius:6px;">'
+            + '<a href="' + url + '" style="display:inline-block;padding:10px 16px;' + F
+            + 'font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;">' + label + '</a></td>';
     }
 
     private static String buildRowHtml(DirectoryRow row, Boolean withInitials) {

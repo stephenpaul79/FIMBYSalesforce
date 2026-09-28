@@ -99,6 +99,14 @@ private class FimbyMonthlyDirectoryEmailBuilderTest {
         System.assert(html.contains('/library-list?filter=items'));
         System.assert(html.contains('/library-list?filter=skills'));
         System.assert(html.contains('/library-item/') && html.contains('/skill-offer/'));
+        System.assert(html.contains('Add an item') && html.contains('Offer a skill'),
+            'Opening invites neighbours to add to the Library');
+        System.assert(html.contains('/library-item-post?type=skill'), 'Offer a skill opens the skill composer');
+        System.assert(html.contains('Impact_Icons/tools.png'), 'Item categories use the Library tab icon');
+        System.assert(html.contains('Impact_Icons/mechanic.png'), 'Skill categories use the skill icon');
+        System.assert(html.contains('Impact_Icons/unknown.png'), 'Other falls back to the default icon');
+        System.assert(html.indexOf('Add an item') < html.indexOf('Items To Borrow'),
+            'The invitation opens the email');
         System.assertEquals(0, result.itemsOmitted);
         System.assertEquals(false, result.droppedInitials);
         System.assertEquals(false, result.isEmpty);

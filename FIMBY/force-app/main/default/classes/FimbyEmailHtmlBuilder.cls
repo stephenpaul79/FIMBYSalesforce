@@ -32,8 +32,7 @@ public without sharing class FimbyEmailHtmlBuilder {
     private static final String FIMBY_BASE_URL = stripTrailingSlash(FimbySettings.getUrl('Site_Base'));
     private static final String MARKETING_SITE_URL = resolveMarketingUrl();
     private static final String EXPERIENCE_ASSET_HOST = resolveExperienceAssetHost();
-    @TestVisible
-    static final String ICON_BASE_URL = EXPERIENCE_ASSET_HOST + '/sfsites/c/resource/Impact_Icons/';
+    public static final String ICON_BASE_URL = EXPERIENCE_ASSET_HOST + '/sfsites/c/resource/Impact_Icons/';
     private static final String LOGO_ICON_URL = ICON_BASE_URL + 'FIMBYwGrass.png';
     private static final String ICON_BELL_URL = ICON_BASE_URL + 'BellActive.png';
     private static final String ICON_ENTER_URL = ICON_BASE_URL + 'enter.png';
