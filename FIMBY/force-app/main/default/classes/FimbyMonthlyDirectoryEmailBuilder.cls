@@ -31,6 +31,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
     private static final String LINK_COLOR = '#3A7D8C';
     private static final String BORDER_LIGHT = '#E8E0D6';
     private static final String ROW_RULE = '#F0EBE3';
+    private static final String CATEGORY_FILL = '#F5F0E8';
     private static final String ON_LOAN_COLOR = '#7D6234';
     private static final String ITEMS_ACCENT = '#6B5E50';
     private static final String SKILLS_ACCENT = '#476B4C';
@@ -363,7 +364,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
                 }
                 Integer cost = byteSize(buildRowHtml(categoryRows[idx], false));
                 if (idx == 0) {
-                    cost += byteSize(buildCategoryHtml(categoryRows[idx]));
+                    cost += byteSize(buildCategoryHtml(categoryRows[idx], false));
                 }
                 if (pick.usedBytes + cost > budget) {
                     stopped.add(category);
@@ -425,8 +426,8 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             String currentCategory = null;
             for (DirectoryRow row : shownRows) {
                 if (row.category != currentCategory) {
+                    html += buildCategoryHtml(row, currentCategory == null);
                     currentCategory = row.category;
-                    html += buildCategoryHtml(row);
                 }
                 html += buildRowHtml(row, withInitials);
             }
@@ -454,9 +455,10 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             + '</td></tr></table>';
     }
 
-    private static String buildCategoryHtml(DirectoryRow firstRow) {
-        return '<tr><td colspan="2" style="padding:12px 12px 4px;font-size:12px;font-weight:bold;color:'
-            + TEXT_SECONDARY + ';text-transform:uppercase;">'
+    private static String buildCategoryHtml(DirectoryRow firstRow, Boolean isFirstCategory) {
+        String rule = isFirstCategory ? '' : 'border-top:1px solid ' + BORDER_LIGHT + ';';
+        return '<tr><td colspan="2" style="padding:8px 12px;background-color:' + CATEGORY_FILL + ';' + rule
+            + 'font-size:12px;font-weight:bold;color:' + TEXT_SECONDARY + ';text-transform:uppercase;">'
             + '<img src="' + FimbyEmailHtmlBuilder.ICON_BASE_URL + firstRow.iconFile
             + '" width="20" height="20" alt="" style="border:0;vertical-align:middle;margin-right:6px;" />'
             + '<span style="vertical-align:middle;">' + escape(firstRow.category) + '</span></td></tr>';
@@ -491,9 +493,9 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         String onLoan = row.isOnLoan
             ? ' <span style="font-size:11px;color:' + ON_LOAN_COLOR + ';">on loan</span>'
             : '';
-        return '<tr><td style="' + cell + '"><a href="' + row.url + '" style="color:' + LINK_COLOR + ';">'
+        return '<tr><td width="67%" style="' + cell + '"><a href="' + row.url + '" style="color:' + LINK_COLOR + ';">'
             + escape(row.name) + '</a>' + onLoan + '</td>'
-            + '<td align="right" style="' + cell + 'font-size:13px;color:' + TEXT_SECONDARY + ';">'
+            + '<td width="33%" style="' + cell + 'font-size:13px;color:' + TEXT_SECONDARY + ';">'
             + (withInitials ? buildInitial(row) : '') + escape(row.ownerName) + '</td></tr>';
     }
 
