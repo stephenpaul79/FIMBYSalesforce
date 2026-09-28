@@ -19,6 +19,11 @@
                 <default>false</default>
                 <label>Weekly</label>
             </value>
+            <value>
+                <fullName>Monthly</fullName>
+                <default>false</default>
+                <label>Monthly</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

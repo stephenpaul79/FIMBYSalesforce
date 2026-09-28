@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Email_Alert_Library__c</fullName>
     <defaultValue>true</defaultValue>
-    <description>Email me on lending lifecycle events (borrow requests, approvals, returns).</description>
+    <description>Email me on lending lifecycle events (borrow requests, approvals, returns). Also gates the monthly Library email listing Items To Borrow and Skills On Offer (FimbyMonthlyDirectoryBatch).</description>
     <externalId>false</externalId>
     <label>Email Alert - Library</label>
     <trackFeedHistory>false</trackFeedHistory>
