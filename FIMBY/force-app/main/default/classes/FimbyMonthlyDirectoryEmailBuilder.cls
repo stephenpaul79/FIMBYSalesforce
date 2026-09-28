@@ -32,7 +32,9 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
     private static final String ROW_LINK_COLOR = '#2F6B78';
     private static final String BORDER_LIGHT = '#E8E0D6';
     private static final String ROW_RULE = '#F0EBE3';
-    private static final String CATEGORY_FILL = '#F5F0E8';
+    // Light tints of each section's heading colour (ITEMS_ACCENT / SKILLS_ACCENT).
+    private static final String ITEMS_CATEGORY_FILL = '#ECE6DF';
+    private static final String SKILLS_CATEGORY_FILL = '#E3ECE3';
     private static final String ON_LOAN_COLOR = '#7D6234';
     private static final String ITEMS_ACCENT = '#6B5E50';
     private static final String SKILLS_ACCENT = '#476B4C';
@@ -365,7 +367,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
                 }
                 Integer cost = byteSize(buildRowHtml(categoryRows[idx], false));
                 if (idx == 0) {
-                    cost += byteSize(buildCategoryHtml(categoryRows[idx], false));
+                    cost += byteSize(buildCategoryHtml(categoryRows[idx], false, ITEMS_CATEGORY_FILL));
                 }
                 if (pick.usedBytes + cost > budget) {
                     stopped.add(category);
@@ -410,6 +412,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         Integer totalRows, List<DirectoryRow> shownRows, Boolean withInitials
     ) {
         String listUrl = FimbySettings.getUrl('Library_List') + '?filter=' + filter;
+        String categoryFill = noun == 'Item' ? ITEMS_CATEGORY_FILL : SKILLS_CATEGORY_FILL;
         String html = buildSectionHeader(title, accent);
 
         if (totalRows == 0) {
@@ -427,7 +430,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             String currentCategory = null;
             for (DirectoryRow row : shownRows) {
                 if (row.category != currentCategory) {
-                    html += buildCategoryHtml(row, currentCategory == null);
+                    html += buildCategoryHtml(row, currentCategory == null, categoryFill);
                     currentCategory = row.category;
                 }
                 html += buildRowHtml(row, withInitials);
@@ -456,9 +459,12 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
             + '</td></tr></table>';
     }
 
-    private static String buildCategoryHtml(DirectoryRow firstRow, Boolean isFirstCategory) {
-        String rule = isFirstCategory ? '' : 'border-top:1px solid ' + BORDER_LIGHT + ';';
-        return '<tr><td colspan="2" style="padding:8px 12px;background-color:' + CATEGORY_FILL + ';' + rule
+    private static String buildCategoryHtml(DirectoryRow firstRow, Boolean isFirstCategory, String fill) {
+        // The first category sits under the card's rounded top edge; later ones get a rule.
+        String edge = isFirstCategory
+            ? 'border-radius:7px 7px 0 0;'
+            : 'border-top:1px solid ' + BORDER_LIGHT + ';';
+        return '<tr><td colspan="2" style="padding:8px 12px;background-color:' + fill + ';' + edge
             + 'font-size:12px;font-weight:bold;color:' + TEXT_SECONDARY + ';text-transform:uppercase;">'
             + '<img src="' + FimbyEmailHtmlBuilder.ICON_BASE_URL + firstRow.iconFile
             + '" width="20" height="20" alt="" style="border:0;vertical-align:middle;margin-right:6px;" />'
