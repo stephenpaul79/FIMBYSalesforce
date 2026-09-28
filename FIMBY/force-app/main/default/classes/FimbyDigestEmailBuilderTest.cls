@@ -443,6 +443,163 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildEventsSection_rendersEventDetailsWithStartAndEndTimes() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+        Date eventDay = Date.today().addDays(4);
+
+        insert new Needs_Offers__c(
+            Name = 'Digest Timed Picnic',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = c.Id,
+            Posted_By__c = c.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Gathering',
+            Status__c = 'Posted',
+            Start_Date__c = eventDay,
+            End_Date__c = eventDay,
+            Start_Time_Text__c = '6:00 pm',
+            End_Time_Text__c = '9:00 pm',
+            Location__c = 'Oppenheimer Park',
+            Posted_Date__c = Datetime.now()
+        );
+
+        Needs_Offers__c evt = [
+            SELECT Event_Details__c FROM Needs_Offers__c WHERE Name = 'Digest Timed Picnic' LIMIT 1
+        ];
+        System.assert(String.isNotBlank(evt.Event_Details__c),
+            'Event_Details__c should format same-day start/end times.');
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Daily', Date.today(), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(
+            result.html.contains(evt.Event_Details__c.escapeHtml4()),
+            'Digest event cards should show Event_Details__c (date, times, location).'
+        );
+        System.assert(
+            result.html.contains('6:00pm') && result.html.contains('9:00pm'),
+            'Same-day events should show compact start and end times.'
+        );
+    }
+
+    @IsTest
+    static void buildDigestContent_orgEventBylineUsesOrgNameAndLogo() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact human = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
+        Id offerRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Offer').getRecordTypeId();
+
+        Account orgAccount = new Account(
+            Name = 'Strathcona Vineyard',
+            Logo_URL__c = 'https://example.com/strathcona-logo.jpg'
+        );
+        try {
+            orgAccount.RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+                .get('Organization').getRecordTypeId();
+        } catch (Exception e) { /* RT may not exist in test org */ }
+        insert orgAccount;
+
+        Contact orgContact = new Contact(
+            FirstName = 'Strathcona',
+            LastName = 'Vineyard',
+            AccountId = nh.Id,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccount.Id
+        );
+        insert orgContact;
+
+        insert new Needs_Offers__c(
+            Name = 'Org Hosted Event',
+            RecordTypeId = offerRt,
+            Neighbourhood__c = nh.Id,
+            Contact__c = orgContact.Id,
+            Posted_By__c = human.Id,
+            Type__c = 'Event',
+            Event_Type__c = 'Open_Event',
+            Status__c = 'Posted',
+            Start_Date__c = Date.today().addDays(3),
+            End_Date__c = Date.today().addDays(3),
+            Start_Time_Text__c = '6:00 pm',
+            End_Time_Text__c = '8:00 pm',
+            Location__c = 'Community Hall',
+            Posted_Date__c = Datetime.now()
+        );
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Daily', Date.today(), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(
+            result.html.contains('Strathcona Vineyard'),
+            'Org event footer should show organization account name, not contact first name only.'
+        );
+        System.assert(
+            result.html.contains('strathcona-logo.jpg'),
+            'Org event footer should use organization logo URL for avatar.'
+        );
+    }
+
+    @IsTest
+    static void resolveBylineDisplayName_orgContactUsesAccountName() {
+        Account orgAccount = new Account(Name = 'Garden Club Co-op');
+        insert orgAccount;
+        Contact orgContact = new Contact(
+            FirstName = 'Garden',
+            LastName = 'Club',
+            AccountId = orgAccount.Id,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccount.Id
+        );
+        insert orgContact;
+
+        orgContact = [
+            SELECT FirstName, Full_Name__c, Is_Organization_Contact__c,
+                   Organization_Account__r.Name, Organization_Account__r.Logo_URL__c,
+                   Display_Avatar_URL__c
+            FROM Contact WHERE Id = :orgContact.Id
+        ];
+
+        System.assertEquals(
+            'Garden Club Co-op',
+            FimbyDigestEmailBuilder.resolveBylineDisplayName(orgContact)
+        );
+        System.assertEquals(
+            null,
+            FimbyDigestEmailBuilder.resolveBylineAvatarUrl(orgContact)
+        );
+    }
+
+    @IsTest
+    static void eventMetaLine_prefersEventDetails_overDateOnlyFallback() {
+        String line = FimbyDigestEmailBuilder.eventMetaLine(
+            'Sep 24/26 6:00pm to 9:00pm @ The Hall',
+            Date.today(),
+            'The Hall',
+            'weekly'
+        );
+        System.assert(line.contains('admin.png'),
+            'Event schedule meta should use Impact_Icons admin.png instead of calendar emoji.');
+        System.assert(line.contains('6:00pm to 9:00pm @ The Hall'),
+            'Should render formula schedule on one calendar line.');
+        System.assert(!line.contains('&#128197;'),
+            'Calendar emoji should not appear on digest event meta lines.');
+        System.assert(!line.contains('&#128205;'),
+            'Location pin is omitted when Event_Details__c already includes @ location.');
+        System.assert(line.contains('weekly'), 'Recurrence still appends on the meta line.');
+    }
+
+    @IsTest
     static void buildEventsSection_excludesPastRecurringParentBeforeSpawn() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
         Contact c = [SELECT Id FROM Contact WHERE AccountId = :nh.Id LIMIT 1];
@@ -555,6 +712,10 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(
             result.html.contains('object-fit:cover'),
             'Thumbnail should crop with object-fit:cover. HTML: ' + result.html
+        );
+        System.assert(
+            result.html.contains('colspan="2" style="padding:0 16px 8px;"'),
+            'Body snippet should sit on a full-width row below the header + image row.'
         );
     }
 
@@ -799,5 +960,137 @@ private class FimbyDigestEmailBuilderTest {
         System.assert(!result.isEmpty);
         System.assert(result.selectedItemSummaries.size() == result.itemCount);
         System.assert(result.html.contains('A peek at the last week on your street'));
+    }
+
+    private static Skill_Offer__c newSkill(Id nhId, Id ownerId, String name, String category) {
+        return new Skill_Offer__c(
+            Name = name, Skill_Category__c = category,
+            Description__c = name + ' description',
+            Owner_Contact__c = ownerId, Listed_By__c = ownerId,
+            Neighbourhood__c = nhId,
+            Status__c = FimbyConstants.SKILL_ACTIVE,
+            Moderation_Status__c = 'Visible'
+        );
+    }
+
+    @IsTest
+    static void buildDigestContent_skillOnly_rendersSkillsOnOfferSubsection() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact owner = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Skill_Offer__c skill = newSkill(nh.Id, owner.Id, 'Hemming Trousers', 'Sewing & Mending');
+        skill.Availability_Note__c = 'Weekday evenings';
+        insert skill;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Daily', Date.today().addDays(-1), Date.today()
+        );
+        Test.stopTest();
+
+        System.assert(!result.isEmpty, 'A new skill alone should justify a send.');
+        System.assertEquals(1, result.itemCount);
+        System.assert(result.html.contains('Skills On Offer'), 'Skills sub-label expected: ' + result.html);
+        System.assert(!result.html.contains('Items To Borrow'), 'Empty sub-sections must not render.');
+        System.assert(result.html.contains('Hemming Trousers'));
+        System.assert(result.html.contains('SKILL'), 'Skill cards use the SKILL badge.');
+        System.assert(result.html.contains('sewing.png'), 'Badge should carry the skill category icon.');
+        System.assert(result.html.contains('#6A5278'), 'Badge should use the skill category colour.');
+        System.assert(result.html.contains('Weekday evenings'), 'Availability note should render.');
+        System.assert(!result.html.contains('class="dg-img"'), 'Skills have no photo thumbnail.');
+    }
+
+    @IsTest
+    static void buildDigestContent_itemsAndSkills_splitIntoSubsectionsInOrder() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact owner = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        FimbyTestDataFactory.createLibraryItems(nh.Id, owner.Id, 1, true);
+        insert newSkill(nh.Id, owner.Id, 'Bread Baking', 'Cooking & Baking');
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+        );
+        Test.stopTest();
+
+        Integer itemsAt = result.html.indexOf('Items To Borrow');
+        Integer skillsAt = result.html.indexOf('Skills On Offer');
+        System.assert(itemsAt > -1 && skillsAt > itemsAt, 'Items sub-section should precede skills.');
+        System.assert(result.html.contains('stack-of-books.png'), 'Item badge should carry its category icon.');
+        System.assert(result.html.contains('#2E4466'), 'Item badge should use its category colour.');
+        System.assertEquals(2, result.itemCount);
+    }
+
+    @IsTest
+    static void buildDigestContent_libraryCap_alternatesItemsAndSkills() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact owner = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        FimbyTestDataFactory.createLibraryItems(nh.Id, owner.Id, 6, true);
+        List<Skill_Offer__c> skills = new List<Skill_Offer__c>();
+        for (Integer i = 0; i < 2; i++) {
+            skills.add(newSkill(nh.Id, owner.Id, 'Skill ' + i, 'Tech Help'));
+        }
+        insert skills;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+        );
+        Test.stopTest();
+
+        System.assertEquals(5, result.itemCount, 'Library section caps at five cards.');
+        System.assert(result.html.contains('Skill 0') && result.html.contains('Skill 1'),
+            'Both skills should survive the cap despite six items.');
+        System.assert(result.html.contains('and 3 more'), 'Remaining items feed the more link: ' + result.html);
+    }
+
+    @IsTest
+    static void buildDigestContent_hiddenPausedAndBlocked_excludedFromLibrary() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact owner = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact blocked = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+
+        List<Library_Item__c> items = FimbyTestDataFactory.createLibraryItems(nh.Id, owner.Id, 1, false);
+        items[0].Name = 'Hidden Item';
+        items[0].Moderation_Status__c = 'Hidden_By_Moderator';
+        insert items;
+
+        Skill_Offer__c hiddenSkill = newSkill(nh.Id, owner.Id, 'Hidden Skill', 'Tech Help');
+        hiddenSkill.Moderation_Status__c = 'Hidden_By_Moderator';
+        Skill_Offer__c pausedSkill = newSkill(nh.Id, owner.Id, 'Paused Skill', 'Tech Help');
+        pausedSkill.Status__c = FimbyConstants.SKILL_PAUSED;
+        Skill_Offer__c blockedSkill = newSkill(nh.Id, blocked.Id, 'Blocked Skill', 'Tech Help');
+        Skill_Offer__c keptSkill = newSkill(nh.Id, owner.Id, 'Kept Skill', 'Tech Help');
+        insert new List<Skill_Offer__c>{ hiddenSkill, pausedSkill, blockedSkill, keptSkill };
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today(),
+            new Set<Id>{ blocked.Id }
+        );
+        Test.stopTest();
+
+        System.assert(result.html.contains('Kept Skill'));
+        System.assert(!result.html.contains('Hidden Item'), 'Moderator-hidden items must not be emailed.');
+        System.assert(!result.html.contains('Hidden Skill'), 'Moderator-hidden skills must not be emailed.');
+        System.assert(!result.html.contains('Paused Skill'), 'Paused skills must not be emailed.');
+        System.assert(!result.html.contains('Blocked Skill'), 'Blocked owners\' skills must not be emailed.');
+        System.assertEquals(1, result.itemCount);
+    }
+
+    @IsTest
+    static void buildCappedMixedPreview_includesSkills() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact owner = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        insert newSkill(nh.Id, owner.Id, 'Welcome Skill', 'Pet Care');
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildCappedMixedPreview(
+            nh.Id, Date.today().addDays(-7), Date.today(), 5, new Set<Id>()
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.itemCount);
+        System.assertEquals('Skill: Welcome Skill', result.selectedItemSummaries[0]);
+        System.assert(result.html.contains('petcare.png'));
     }
 }

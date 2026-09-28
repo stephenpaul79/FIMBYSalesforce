@@ -42,39 +42,6 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         '#476B4C', '#357280', '#6B5E50', '#7D6234', '#8A5936', '#5E7B92'
     };
 
-    // Mirrors c/fimbyLibraryCategoryConfig and c/fimbySkillCategoryConfig so category
-    // lines match the Library tab.
-    private static final String ITEM_DEFAULT_ICON = 'unknown.png';
-    private static final String SKILL_DEFAULT_ICON = 'help.png';
-    private static final Map<String, String> ITEM_CATEGORY_ICONS = new Map<String, String>{
-        'Art & Craft Supplies' => 'palette.png', 'Baby & Children' => 'onesie.png',
-        'Bikes' => 'bicycle.png', 'Books' => 'stack-of-books.png',
-        'Camping Gear' => 'camping.png', 'Clothing' => 'male-clothes.png',
-        'Electronics' => 'electronic-devices.png', 'Fitness & Wellness' => 'sport.png',
-        'Games & Toys' => 'toys.png', 'Gardening' => 'gardening.png',
-        'Home Improvement & DIY' => 'remodeling.png', 'Household Items' => 'house-cleaning.png',
-        'Kitchen Supplies' => 'cookware.png', 'Music Instruments' => 'music-instrument.png',
-        'Office Supplies' => 'stapler.png', 'Outdoors & Recreation (non-camping)' => 'deck-chair.png',
-        'Party & Events' => 'party.png', 'Pet Supplies' => 'pets.png',
-        'Photography & AV' => 'music.png', 'Sports Equipment' => 'sports.png',
-        'Tools' => 'tools.png', 'Travel & Luggage' => 'luggage.png', 'Other' => 'unknown.png'
-    };
-    private static final Map<String, String> SKILL_CATEGORY_ICONS = new Map<String, String>{
-        'Tutoring & Lessons' => 'lessons.png', 'Language & Translation' => 'language.png',
-        'Tech Help' => 'tech.png', 'Skilled Trades' => 'trades.png',
-        'Home Repairs & Handywork' => 'handywork.png', 'Cleaning & Organizing' => 'cleaning.png',
-        'Yard & Outdoor Work' => 'yardwork.png', 'Moving & Heavy Lifting' => 'moving.png',
-        'Rides & Transportation' => 'driving.png', 'Errands & Shopping' => 'shopping.png',
-        'Cooking & Baking' => 'cooking.png', 'Sewing & Mending' => 'sewing.png',
-        'Childcare & Babysitting' => 'childcare.png', 'Eldercare & Companionship' => 'eldercare.png',
-        'Pet Care' => 'petcare.png', 'Fitness & Wellness' => 'fitness.png',
-        'Hair & Beauty' => 'hair.png', 'Arts & Crafts' => 'crafts.png',
-        'Music & Performance' => 'musicperformance.png', 'Event Help' => 'admin.png',
-        'Admin & Paperwork' => 'paperwork.png', 'Financial & Tax Help' => 'finances.png',
-        'Legal Guidance' => 'legal.png', 'Business & Career' => 'career.png',
-        'Auto & Bike Repair' => 'mechanic.png', 'Other / General Help' => 'help.png'
-    };
-
     public class DirectoryRow implements Comparable {
         public Id recordId;
         public String name;
@@ -238,8 +205,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         row.neighbourhoodId = item.Neighbourhood__c;
         row.isAdjacentScoped = ADJACENT_SCOPES.contains(item.Visibility_Scope__c);
         row.url = FimbySettings.getUrl('Library_Item', item.Id);
-        row.iconFile = ITEM_CATEGORY_ICONS.containsKey(row.category)
-            ? ITEM_CATEGORY_ICONS.get(row.category) : ITEM_DEFAULT_ICON;
+        row.iconFile = FimbyLibraryCategoryStyle.itemIcon(row.category);
         return row;
     }
 
@@ -253,8 +219,7 @@ public without sharing class FimbyMonthlyDirectoryEmailBuilder {
         row.ownerName = resolveOwnerName(skill.Owner_Contact__r?.Full_Name__c);
         row.neighbourhoodId = skill.Neighbourhood__c;
         row.url = FimbySettings.getUrl('Skill_Offer', skill.Id);
-        row.iconFile = SKILL_CATEGORY_ICONS.containsKey(row.category)
-            ? SKILL_CATEGORY_ICONS.get(row.category) : SKILL_DEFAULT_ICON;
+        row.iconFile = FimbyLibraryCategoryStyle.skillIcon(row.category);
         return row;
     }
 

@@ -4,7 +4,7 @@
  *
  * Structure (top to bottom):
  *   1. By the numbers (resolution + cross-FIMBY encouragement line)
- *   2. Feed cards (stories / asks / offers / events / bulk buys / library)
+ *   2. Feed cards (stories / asks / offers / events / bulk buys / library items + skills)
  *   3. Anchor card (single slot — OTD record when today matches, otherwise an
  *      evergreen reflection record cycled deterministically by dayOfYear)
  *
@@ -20,8 +20,12 @@ public without sharing class FimbyDigestEmailBuilder {
     private static final Integer STORY_SNIPPET_LENGTH = 1000;
     private static final Integer LIBRARY_SNIPPET_LENGTH = 255;
 
-    // Compact card layout (email real-estate efficiency): the badge + linked title and the body
-    // snippet sit in the left column; a fixed 140x120 cropped thumbnail sits in the right column
+    private static final String CONTACT_BYLINE_FIELDS =
+        'Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name, '
+        + 'Contact__r.Organization_Account__r.Logo_URL__c, ';
+
+    // Compact card layout: with an image, badge + title (+ event meta) share row one with a fixed
+    // 140x120 thumbnail; the body snippet runs full width on row two
     // (see FimbyEmailHtmlBuilder.buildDigestImageCell). A shared footer row carries the avatar +
     // first-name byline (left) and a single quiet "open ›" link (right) — the title, thumbnail
     // and open link all point at the record, so there is no per-type CTA button. Cards with no
@@ -440,6 +444,8 @@ public without sharing class FimbyDigestEmailBuilder {
         List<Story__c> stories = [
             SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c,
                    Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
+                   Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__r.Name,
+                   Posted_By__r.Organization_Account__r.Logo_URL__c,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    CreatedDate
             FROM Story__c
@@ -474,7 +480,8 @@ public without sharing class FimbyDigestEmailBuilder {
 
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
-            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
+            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
+            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
         String baseWhere = 'FROM Needs_Offers__c ' +
             'WHERE Neighbourhood__c = :nhId ' +
@@ -544,8 +551,9 @@ public without sharing class FimbyDigestEmailBuilder {
         Set<Id> excluded
     ) {
         String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
-            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
-            'Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
+            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
+            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
+            'Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
             'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
         String baseWhere = 'FROM Needs_Offers__c ' +
             'WHERE Neighbourhood__c = :nhId ' +
@@ -642,6 +650,8 @@ public without sharing class FimbyDigestEmailBuilder {
         List<Needs_Offers__c> bulkBuys = [
             SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
@@ -669,31 +679,97 @@ public without sharing class FimbyDigestEmailBuilder {
         return html;
     }
 
+    /**
+     * @description Library items and skill offers share one section with "Items To Borrow" /
+     * "Skills On Offer" sub-labels (same wording as the monthly Library email). The card cap
+     * is filled alternately so a busy week of one kind never crowds out the other.
+     */
     private static String buildLibrarySection(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
-        List<Library_Item__c> items = [
+        List<Library_Item__c> items = queryLibraryItems(nhId, startDt, endDt, excluded);
+        List<Skill_Offer__c> skills = querySkillOffers(nhId, startDt, endDt, excluded);
+        if (items.isEmpty() && skills.isEmpty()) { return ''; }
+
+        Integer itemsShown = 0;
+        Integer skillsShown = 0;
+        while (itemsShown + skillsShown < MAX_CARDS_PER_SECTION
+            && (itemsShown < items.size() || skillsShown < skills.size())) {
+            if (itemsShown < items.size()) { itemsShown++; }
+            if (skillsShown < skills.size() && itemsShown + skillsShown < MAX_CARDS_PER_SECTION) {
+                skillsShown++;
+            }
+        }
+
+        String html = buildSectionHeader('Library', EARTH_DRIFTWOOD);
+        if (itemsShown > 0) {
+            html += buildSubsectionLabel('Items To Borrow');
+            for (Integer i = 0; i < itemsShown; i++) {
+                html += buildLibraryCard(items[i]);
+            }
+        }
+        if (skillsShown > 0) {
+            html += buildSubsectionLabel('Skills On Offer');
+            for (Integer i = 0; i < skillsShown; i++) {
+                html += buildSkillCard(skills[i]);
+            }
+        }
+        Integer remaining = items.size() + skills.size() - itemsShown - skillsShown;
+        if (remaining > 0) {
+            html += buildMoreLink(remaining, FimbySettings.getUrl('Library_List'));
+        }
+        return html;
+    }
+
+    private static String buildSubsectionLabel(String label) {
+        return '<p style="margin:10px 0 6px 4px;' + FimbyEmailHtmlBuilder.F
+            + 'font-size:13px;font-weight:700;letter-spacing:0.3px;color:' + EARTH_DRIFTWOOD + ';">'
+            + escHtml(label) + '</p>';
+    }
+
+    private static List<Library_Item__c> queryLibraryItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<String> statuses = new List<String>{
+            FimbyConstants.LIBRARY_AVAILABLE, FimbyConstants.LIBRARY_LENT_OUT
+        };
+        return [
             SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
                    Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c, Owner_Contact__r.FirstName,
+                   Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__r.Name,
+                   Owner_Contact__r.Organization_Account__r.Logo_URL__c,
                    Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
                    CreatedDate
             FROM Library_Item__c
             WHERE Neighbourhood__c = :nhId
               AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Status__c IN :statuses
+              AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
             ORDER BY CreatedDate DESC
             LIMIT 10
         ];
-        if (items.isEmpty()) { return ''; }
+    }
 
-        String html = buildSectionHeader('Library', EARTH_DRIFTWOOD);
-        Integer count = Math.min(items.size(), MAX_CARDS_PER_SECTION);
-        for (Integer i = 0; i < count; i++) {
-            html += buildLibraryCard(items[i]);
-        }
-        if (items.size() > MAX_CARDS_PER_SECTION) {
-            html += buildMoreLink(items.size() - MAX_CARDS_PER_SECTION, FimbySettings.getUrl('Library_List'));
-        }
-        return html;
+    private static List<Skill_Offer__c> querySkillOffers(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        return [
+            SELECT Id, Name, Description__c, Availability_Note__c, Skill_Category__c,
+                   Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c, Owner_Contact__r.FirstName,
+                   Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__r.Name,
+                   Owner_Contact__r.Organization_Account__r.Logo_URL__c,
+                   Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
+                   CreatedDate
+            FROM Skill_Offer__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND Status__c = :FimbyConstants.SKILL_ACTIVE
+              AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+              AND Owner_Contact__c NOT IN :excluded
+              AND Listed_By__c NOT IN :excluded
+            ORDER BY CreatedDate DESC
+            LIMIT 10
+        ];
     }
 
     /* ---------------------------------------------------------------
@@ -705,9 +781,13 @@ public without sharing class FimbyDigestEmailBuilder {
         String badgeLabel = rt == 'Need' ? 'ASK' : 'OFFER';
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', post.Id);
 
-        String leftBody = badgeTitleRow(badgeLabel, rt, post.Name, ctaUrl)
-            + snippetRow(post.Full_Details__c, POST_SNIPPET_LENGTH);
-        return buildCard(post.Image_1_URL__c, leftBody, post.Contact__r, ctaUrl);
+        return buildCard(
+            post.Image_1_URL__c,
+            badgeTitleRow(badgeLabel, rt, post.Name, ctaUrl),
+            snippetRow(post.Full_Details__c, POST_SNIPPET_LENGTH),
+            post.Contact__r,
+            ctaUrl
+        );
     }
 
     private static String buildEventCard(Needs_Offers__c evt) {
@@ -727,31 +807,43 @@ public without sharing class FimbyDigestEmailBuilder {
         );
         String recurrenceWord = String.isNotBlank(freqBadge) ? freqBadge.toLowerCase() : null;
 
-        String leftBody = badgeTitleRow(badgeLabel, evtType, evt.Name, ctaUrl)
-            + eventMetaLine(evt.Start_Date__c, evt.Location__c, recurrenceWord)
-            + snippetRow(evt.Full_Details__c, POST_SNIPPET_LENGTH);
-        return buildCard(evt.Image_1_URL__c, leftBody, evt.Contact__r, ctaUrl);
+        return buildCard(
+            evt.Image_1_URL__c,
+            badgeTitleRow(badgeLabel, evtType, evt.Name, ctaUrl)
+                + eventMetaLine(evt.Event_Details__c, evt.Start_Date__c, evt.Location__c, recurrenceWord),
+            snippetRow(evt.Full_Details__c, POST_SNIPPET_LENGTH),
+            evt.Contact__r,
+            ctaUrl
+        );
     }
 
     private static String buildBulkBuyCard(Needs_Offers__c bb) {
         String ctaUrl = FimbySettings.getUrl('Asks_Offers', bb.Id);
 
-        String leftBody = badgeTitleRow('BULK BUY', 'Bulk_Buy', bb.Name, ctaUrl)
-            + snippetRow(bb.Full_Details__c, POST_SNIPPET_LENGTH)
-            + FimbyEmailHtmlBuilder.buildThermometer(
-                bb.Total_Reserved__c, bb.Total_Quantity__c,
-                bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
-            );
-        return buildCard(bb.Image_1_URL__c, leftBody, bb.Contact__r, ctaUrl);
+        return buildCard(
+            bb.Image_1_URL__c,
+            badgeTitleRow('BULK BUY', 'Bulk_Buy', bb.Name, ctaUrl),
+            snippetRow(bb.Full_Details__c, POST_SNIPPET_LENGTH)
+                + FimbyEmailHtmlBuilder.buildThermometer(
+                    bb.Total_Reserved__c, bb.Total_Quantity__c,
+                    bb.Allocation_Unit_Label__c, bb.Estimated_Cost_Per_Share__c
+                ),
+            bb.Contact__r,
+            ctaUrl
+        );
     }
 
     private static String buildStoryCard(Story__c story) {
         String storyType = String.isNotBlank(story.Type__c) ? story.Type__c : 'Story';
         String badgeLabel = storyType == 'Neighbourhood Moment' ? 'NEIGHBOURHOOD' : storyType.toUpperCase();
         String ctaUrl = FimbySettings.getUrl('Story', story.Id);
-        String leftBody = badgeTitleRow(badgeLabel, storyType, story.Name, ctaUrl)
-            + snippetRow(story.Message__c, STORY_SNIPPET_LENGTH);
-        return buildCard(story.Image_URL__c, leftBody, story.Posted_By__r, ctaUrl);
+        return buildCard(
+            story.Image_URL__c,
+            badgeTitleRow(badgeLabel, storyType, story.Name, ctaUrl),
+            snippetRow(story.Message__c, STORY_SNIPPET_LENGTH),
+            story.Posted_By__r,
+            ctaUrl
+        );
     }
 
     private static String buildLibraryCard(Library_Item__c item) {
@@ -760,9 +852,43 @@ public without sharing class FimbyDigestEmailBuilder {
         // Section heading already says "Library"; show the category as the single badge,
         // falling back to LIBRARY only when the item has no category.
         String badgeLabel = String.isNotBlank(item.Category__c) ? item.Category__c : 'LIBRARY';
-        String leftBody = badgeTitleRow(badgeLabel, 'Library', item.Name, ctaUrl)
-            + snippetRow(item.Description__c, LIBRARY_SNIPPET_LENGTH);
-        return buildCard(item.Image_URL__c, leftBody, item.Owner_Contact__r, ctaUrl);
+        return buildCard(
+            item.Image_URL__c,
+            badgeTitleRow(
+                badgeLabel,
+                FimbyLibraryCategoryStyle.itemColor(item.Category__c),
+                FimbyLibraryCategoryStyle.itemIcon(item.Category__c),
+                item.Name, ctaUrl
+            ),
+            snippetRow(item.Description__c, LIBRARY_SNIPPET_LENGTH),
+            item.Owner_Contact__r,
+            ctaUrl
+        );
+    }
+
+    /**
+     * @description Skills carry no photo, so they use the compact single-column card. The badge
+     * reads SKILL (titles often repeat the category name) in the category's colour and icon.
+     */
+    private static String buildSkillCard(Skill_Offer__c skill) {
+        String ctaUrl = FimbySettings.getUrl('Skill_Offer', skill.Id);
+        String header = badgeTitleRow(
+            'SKILL',
+            FimbyLibraryCategoryStyle.skillColor(skill.Skill_Category__c),
+            FimbyLibraryCategoryStyle.skillIcon(skill.Skill_Category__c),
+            skill.Name, ctaUrl
+        );
+        if (String.isNotBlank(skill.Availability_Note__c)) {
+            header += '<p style="margin:0 0 6px;' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:'
+                + TEXT_SECONDARY + ';">' + escHtml(skill.Availability_Note__c.trim()) + '</p>';
+        }
+        return buildCard(
+            null,
+            header,
+            snippetRow(skill.Description__c, LIBRARY_SNIPPET_LENGTH),
+            skill.Owner_Contact__r,
+            ctaUrl
+        );
     }
 
     /* ---------------------------------------------------------------
@@ -775,31 +901,35 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Assembles a compact feed card. The left column carries the badge + linked
-     * title and the body snippet; the right column carries a fixed 140x120 cropped thumbnail
-     * (both title and thumbnail link to the record). A shared full-width footer row carries the
-     * avatar + first-name byline (left) and a single quiet "open ›" link (right) on one baseline,
-     * so there is no per-type CTA button. Cards with no image collapse to a single column with
-     * the same footer.
+     * @description Assembles a compact feed card. With an image: row one is badge + title (+ any
+     * type meta) beside the fixed 140x120 thumbnail; row two is the body snippet at full card
+     * width. Without an image, header and body share one column. Footer is always full width.
      */
-    private static String buildCard(String imageUrl, String leftBodyHtml, SObject contactRef, String ctaUrl) {
+    private static String buildCard(
+        String imageUrl, String headerHtml, String bodyHtml, SObject contactRef, String ctaUrl
+    ) {
         String imageCell = FimbyEmailHtmlBuilder.buildDigestImageCell(imageUrl, ctaUrl);
         String footer = bylineOpenFooter(contactRef, ctaUrl);
+        String combinedBody = (headerHtml != null ? headerHtml : '') + (bodyHtml != null ? bodyHtml : '');
 
         if (String.isBlank(imageCell)) {
             return openCard()
-                + '<tr><td style="padding:12px 16px 2px;">' + leftBodyHtml + '</td></tr>'
+                + '<tr><td style="padding:12px 16px 2px;">' + combinedBody + '</td></tr>'
                 + '<tr><td style="padding:0 16px 10px;">' + footer + '</td></tr>'
                 + '</table>';
         }
 
-        return openCard()
+        String html = openCard()
             + '<tr>'
-            + '<td valign="top" style="padding:12px 6px 2px 16px;">' + leftBodyHtml + '</td>'
+            + '<td valign="top" style="padding:12px 6px 4px 16px;">' + headerHtml + '</td>'
             + imageCell
-            + '</tr>'
-            + '<tr><td colspan="2" style="padding:0 16px 10px;">' + footer + '</td></tr>'
+            + '</tr>';
+        if (String.isNotBlank(bodyHtml)) {
+            html += '<tr><td colspan="2" style="padding:0 16px 8px;">' + bodyHtml + '</td></tr>';
+        }
+        html += '<tr><td colspan="2" style="padding:0 16px 10px;">' + footer + '</td></tr>'
             + '</table>';
+        return html;
     }
 
     /**
@@ -807,9 +937,16 @@ public without sharing class FimbyDigestEmailBuilder {
      * title and never wraps; the title is a link to the record (large, honest tap target).
      */
     private static String badgeTitleRow(String label, String typeKey, String title, String ctaUrl) {
-        String badge = FimbyEmailHtmlBuilder.buildBadgePill(label,
+        return badgeTitleRow(label,
             FimbyEmailHtmlBuilder.getBadgeColor(typeKey),
-            FimbyEmailHtmlBuilder.getBadgeIcon(typeKey));
+            FimbyEmailHtmlBuilder.getBadgeIcon(typeKey),
+            title, ctaUrl);
+    }
+
+    private static String badgeTitleRow(
+        String label, String badgeColor, String badgeIcon, String title, String ctaUrl
+    ) {
+        String badge = FimbyEmailHtmlBuilder.buildBadgePill(label, badgeColor, badgeIcon);
         String titleHtml = '';
         if (String.isNotBlank(title)) {
             titleHtml = '<a href="' + ctaUrl + '" style="' + FimbyEmailHtmlBuilder.F
@@ -822,18 +959,18 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Shared card footer: avatar + first-name byline on the left, a single quiet
-     * "open ›" link on the right, both pointing at the record. First name only (per design) so
-     * long full names never wrap the footer.
+     * @description Shared card footer: avatar + byline on the left, quiet "open ›" on the right.
+     * Organization posts use org account name + logo (same rules as home feed / FimbyFeedItem).
      */
     private static String bylineOpenFooter(SObject contactRef, String ctaUrl) {
         String leftHtml = '&nbsp;';
         if (contactRef != null) {
-            String imageUrl = (String) contactRef.get('Display_Avatar_URL__c');
-            String firstName = (String) contactRef.get('FirstName');
-            leftHtml = FimbyEmailHtmlBuilder.buildAvatar(imageUrl, firstName, null)
+            String displayName = resolveBylineDisplayName(contactRef);
+            String avatarUrl = resolveBylineAvatarUrl(contactRef);
+            String avatarInitial = String.isNotBlank(displayName) ? displayName : (String) contactRef.get('FirstName');
+            leftHtml = FimbyEmailHtmlBuilder.buildAvatar(avatarUrl, avatarInitial, null)
                 + '<span style="' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:' + TEXT_SECONDARY
-                + ';vertical-align:middle;">' + escHtml(firstName) + '</span>';
+                + ';vertical-align:middle;">' + escHtml(displayName) + '</span>';
         }
         String openHtml = '<a href="' + ctaUrl + '" style="' + FimbyEmailHtmlBuilder.F
             + 'font-size:13px;font-weight:700;letter-spacing:0.3px;color:' + CTA_BG
@@ -846,18 +983,58 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     /**
-     * @description Single event meta line: date · location · recurrence, in whatever combination
-     * is present. Recurrence folds in here (lowercase) rather than a second badge so it never
-     * stacks the header row on narrow phones.
+     * @description Single event meta line: schedule · recurrence. Prefers Event_Details__c (same
+     * human-readable start/end/location string as the feed and legacy digest flow). Falls back to
+     * date-only + separate location pin when the formula is blank.
      */
-    private static String eventMetaLine(Date startDate, String location, String recurrenceWord) {
-        List<String> parts = new List<String>();
-        if (startDate != null) {
-            Datetime dt = Datetime.newInstance(startDate, Time.newInstance(0, 0, 0, 0));
-            parts.add('&#128197; ' + dt.format('EEE, MMM d'));
+    @TestVisible
+    private static String resolveBylineDisplayName(SObject contactRef) {
+        if (contactRef == null) {
+            return '';
         }
-        if (String.isNotBlank(location)) {
-            parts.add('&#128205; ' + escHtml(location));
+        if (contactRef.get('Is_Organization_Contact__c') == true) {
+            SObject orgAccount = contactRef.getSObject('Organization_Account__r');
+            if (orgAccount != null && String.isNotBlank((String) orgAccount.get('Name'))) {
+                return (String) orgAccount.get('Name');
+            }
+        }
+        String fullName = (String) contactRef.get('Full_Name__c');
+        if (String.isNotBlank(fullName)) {
+            return fullName;
+        }
+        return (String) contactRef.get('FirstName');
+    }
+
+    @TestVisible
+    private static String resolveBylineAvatarUrl(SObject contactRef) {
+        if (contactRef == null) {
+            return null;
+        }
+        if (contactRef.get('Is_Organization_Contact__c') == true) {
+            SObject orgAccount = contactRef.getSObject('Organization_Account__r');
+            if (orgAccount != null && String.isNotBlank((String) orgAccount.get('Logo_URL__c'))) {
+                return (String) orgAccount.get('Logo_URL__c');
+            }
+        }
+        return (String) contactRef.get('Display_Avatar_URL__c');
+    }
+
+    @TestVisible
+    private static String eventMetaLine(
+        String eventDetails, Date startDateFallback, String location, String recurrenceWord
+    ) {
+        List<String> parts = new List<String>();
+        String scheduleIcon = FimbyEmailHtmlBuilder.buildDigestMetaIcon('admin.png');
+        if (String.isNotBlank(eventDetails)) {
+            parts.add(scheduleIcon + escHtml(eventDetails.trim()));
+        } else {
+            if (startDateFallback != null) {
+                Datetime dt = Datetime.newInstance(startDateFallback, Time.newInstance(0, 0, 0, 0));
+                parts.add(scheduleIcon + dt.format('EEE, MMM d'));
+            }
+            if (String.isNotBlank(location)) {
+                parts.add('&#128205; ' + escHtml(location));
+            }
         }
         if (String.isNotBlank(recurrenceWord)) {
             parts.add(escHtml(recurrenceWord));
@@ -912,7 +1089,7 @@ public without sharing class FimbyDigestEmailBuilder {
 
     /**
      * @description Capped mixed-type preview for the post-onboarding welcome email.
-     * Round-robins across content types (asks/offers, events, bulk buys, stories, library)
+     * Round-robins across content types (asks/offers, events, bulk buys, stories, library, skills)
      * so type diversity is prioritized when more than maxItems candidates exist.
      */
     public static DigestResult buildCappedMixedPreview(
@@ -954,6 +1131,7 @@ public without sharing class FimbyDigestEmailBuilder {
         Needs_Offers__c needsOffer;
         Story__c story;
         Library_Item__c libraryItem;
+        Skill_Offer__c skill;
     }
 
     private static List<MixedPreviewItem> selectMixedPreviewItems(
@@ -964,13 +1142,14 @@ public without sharing class FimbyDigestEmailBuilder {
             'event' => loadEventPreviewItems(nhId, startDt, endDt, excluded),
             'bulkBuy' => loadBulkBuyPreviewItems(nhId, startDt, endDt, excluded),
             'story' => loadStoryPreviewItems(nhId, startDt, endDt, excluded),
-            'library' => loadLibraryPreviewItems(nhId, startDt, endDt, excluded)
+            'library' => loadLibraryPreviewItems(nhId, startDt, endDt, excluded),
+            'skill' => loadSkillPreviewItems(nhId, startDt, endDt, excluded)
         };
         List<String> typeOrder = new List<String>{
-            'askOffer', 'event', 'bulkBuy', 'story', 'library'
+            'askOffer', 'event', 'bulkBuy', 'story', 'library', 'skill'
         };
         Map<String, Integer> indices = new Map<String, Integer>{
-            'askOffer' => 0, 'event' => 0, 'bulkBuy' => 0, 'story' => 0, 'library' => 0
+            'askOffer' => 0, 'event' => 0, 'bulkBuy' => 0, 'story' => 0, 'library' => 0, 'skill' => 0
         };
 
         List<MixedPreviewItem> selected = new List<MixedPreviewItem>();
@@ -1001,6 +1180,8 @@ public without sharing class FimbyDigestEmailBuilder {
         for (Needs_Offers__c post : [
             SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    RecordType.DeveloperName, Posted_Date__c, CreatedDate
             FROM Needs_Offers__c
@@ -1032,8 +1213,10 @@ public without sharing class FimbyDigestEmailBuilder {
         for (Needs_Offers__c evt : [
             SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
-                   Event_Type__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
+                   Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
                    Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
@@ -1061,6 +1244,8 @@ public without sharing class FimbyDigestEmailBuilder {
         for (Needs_Offers__c bb : [
             SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
                    Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
@@ -1090,6 +1275,8 @@ public without sharing class FimbyDigestEmailBuilder {
         for (Story__c story : [
             SELECT Id, Name, Type__c, Message__c, Image_URL__c,
                    Posted_By__r.Name, Posted_By__r.Full_Name__c, Posted_By__r.FirstName,
+                   Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__r.Name,
+                   Posted_By__r.Organization_Account__r.Logo_URL__c,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    CreatedDate
             FROM Story__c
@@ -1113,23 +1300,25 @@ public without sharing class FimbyDigestEmailBuilder {
         Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
     ) {
         List<MixedPreviewItem> items = new List<MixedPreviewItem>();
-        for (Library_Item__c lib : [
-            SELECT Id, Name, Description__c, Image_URL__c, Image_Ratio__c, Category__c,
-                   Owner_Contact__r.Name, Owner_Contact__r.Full_Name__c, Owner_Contact__r.FirstName,
-                   Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
-                   CreatedDate
-            FROM Library_Item__c
-            WHERE Neighbourhood__c = :nhId
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
-              AND Owner_Contact__c NOT IN :excluded
-              AND Listed_By__c NOT IN :excluded
-            ORDER BY CreatedDate DESC
-            LIMIT 10
-        ]) {
+        for (Library_Item__c lib : queryLibraryItems(nhId, startDt, endDt, excluded)) {
             MixedPreviewItem item = new MixedPreviewItem();
             item.typeKey = 'library';
             item.libraryItem = lib;
             item.summaryLine = 'Library: ' + lib.Name;
+            items.add(item);
+        }
+        return items;
+    }
+
+    private static List<MixedPreviewItem> loadSkillPreviewItems(
+        Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded
+    ) {
+        List<MixedPreviewItem> items = new List<MixedPreviewItem>();
+        for (Skill_Offer__c skill : querySkillOffers(nhId, startDt, endDt, excluded)) {
+            MixedPreviewItem item = new MixedPreviewItem();
+            item.typeKey = 'skill';
+            item.skill = skill;
+            item.summaryLine = 'Skill: ' + skill.Name;
             items.add(item);
         }
         return items;
@@ -1144,6 +1333,9 @@ public without sharing class FimbyDigestEmailBuilder {
         }
         if (item.typeKey == 'library' && item.libraryItem != null) {
             return buildLibraryCard(item.libraryItem);
+        }
+        if (item.typeKey == 'skill' && item.skill != null) {
+            return buildSkillCard(item.skill);
         }
         if (item.needsOffer == null) {
             return '';
