@@ -67,7 +67,7 @@ private class FimbyMonthlyDirectorySendQueueableTest {
         System.assertEquals(monthStart, log.Window_Date__c);
         System.assert(log.Email_Body_Preview__c.contains('Cordless Drill'),
             'Preview stores the full representative email');
-        System.assert(log.Email_Body_Preview__c.contains('your monthly Library update'));
+        System.assert(log.Email_Body_Preview__c.contains('your monthly library update'));
     }
 
     @IsTest

@@ -14,8 +14,8 @@
  */
 public without sharing class FimbyMonthlyDirectorySendQueueable implements Queueable {
 
-    public static final String SUBJECT = 'Your neighbourhood Library';
-    public static final String HEADER_TITLE = 'Here\'s your monthly Library update';
+    public static final String SUBJECT = 'Your neighbourhood library';
+    public static final String HEADER_TITLE = 'Here\'s your monthly library update';
     public static final Integer EMAIL_BYTE_CAP = 95 * 1024;
 
     private static final Integer CHUNK_SIZE = 50;
