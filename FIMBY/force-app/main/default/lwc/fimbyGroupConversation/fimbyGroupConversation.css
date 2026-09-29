@@ -14,9 +14,14 @@
     overflow: hidden;
 }
 
+/* Desktop: thread grows with the page and uses the main scrollbar. */
 @media (min-width: 892px) {
     .fimby-group-conversation {
-        max-height: calc(100dvh - var(--fimby-header-height, 78px) - 24px);
+        max-height: none;
+        overflow: visible;
+    }
+    .messages-container {
+        overflow-y: visible;
     }
 }
 

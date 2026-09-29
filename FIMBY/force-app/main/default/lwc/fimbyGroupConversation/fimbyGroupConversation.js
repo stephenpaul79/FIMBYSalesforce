@@ -419,8 +419,11 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
         // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
         setTimeout(() => {
             const container = this.template.querySelector('.messages-container');
-            if (container) {
+            if (!container) return;
+            if (container.scrollHeight > container.clientHeight) {
                 container.scrollTop = container.scrollHeight;
+            } else {
+                this.template.querySelector('.thread-body')?.scrollIntoView({ block: 'end' });
             }
         }, 100);
     }

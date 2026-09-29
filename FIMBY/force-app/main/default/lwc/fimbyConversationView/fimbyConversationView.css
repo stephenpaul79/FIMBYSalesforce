@@ -851,7 +851,15 @@ section[role="dialog"] {
     }
 }
 
+/* Desktop: thread grows with the page and uses the main scrollbar. */
 @media (min-width: 892px) {
+    .fimby-conversation-view {
+        max-height: none;
+        overflow: visible;
+    }
+    .messages-container {
+        overflow-y: visible;
+    }
     .conversation-revoked-banner {
         /* Desktop has no bottom nav; sit flush at the bottom. */
         bottom: 0;
