@@ -269,7 +269,12 @@ public without sharing class FimbyEmailHtmlBuilder {
             + '<meta name="viewport" content="width=device-width,initial-scale=1.0"/>'
             + '<title>' + safeDocumentTitle + '</title>'
             + '<style>@media only screen and (max-width:480px){'
-            + '.dg-img{width:100px!important;height:92px!important;}'
+            + '.dg-img{width:100px!important;height:92px!important;margin-left:10px!important;}'
+            + '.dg-pill{font-size:11px!important;letter-spacing:0!important;padding:3px 7px!important;}'
+            + '.dg-pill-ico{width:12px!important;height:12px!important;margin-right:3px!important;}'
+            + '.nh-greet,.nh-badge{display:block!important;width:100%!important;text-align:left!important;padding:0!important;}'
+            + '.nh-badge{padding-top:4px!important;}'
+            + '.dir-name,.dir-owner{width:50%!important;}'
             + '}</style>'
             + '</head>'
             + '<body style="margin:0;padding:0;background-color:' + BG_PAGE + ';font-family:' + FONT_STACK + ';">'
@@ -334,8 +339,8 @@ public without sharing class FimbyEmailHtmlBuilder {
         if (neighbourhoodAsBadge) {
             return '<tr><td style="background-color:' + BG_SURFACE + ';padding:20px 24px 16px;border-radius:0 0 8px 8px;">'
                 + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>'
-                + '<td style="vertical-align:middle;">' + greetingHtml + '</td>'
-                + '<td align="right" style="vertical-align:middle;">' + nhBadgeHtml + '</td>'
+                + '<td class="nh-greet" style="vertical-align:middle;white-space:nowrap;padding-right:12px;">' + greetingHtml + '</td>'
+                + '<td class="nh-badge" align="right" style="vertical-align:middle;white-space:nowrap;">' + nhBadgeHtml + '</td>'
                 + '</tr></table>'
                 + '<p style="margin:12px 0 0;' + F + 'font-size:20px;font-weight:600;color:' + TEXT_HEADING + ';">'
                 + safeHeaderTitle + '</p>'
@@ -856,11 +861,11 @@ public without sharing class FimbyEmailHtmlBuilder {
 
     public static String buildBadgePill(String label, String bgColor, String iconFilename) {
         String bg = String.isNotBlank(bgColor) ? bgColor : CTA_BG;
-        String html = '<span style="display:inline-block;background:' + bg
+        String html = '<span class="dg-pill" style="display:inline-block;background:' + bg
             + ';color:#FFFFFF;' + F + 'font-size:12px;font-weight:700;letter-spacing:0.5px;'
             + 'padding:4px 10px;border-radius:10px;line-height:1.2;vertical-align:middle;">';
         if (String.isNotBlank(iconFilename)) {
-            html += '<img src="' + ICON_BASE_URL + iconFilename + '" width="14" height="14" alt="" '
+            html += '<img class="dg-pill-ico" src="' + ICON_BASE_URL + iconFilename + '" width="14" height="14" alt="" '
                 + 'style="vertical-align:middle;margin-right:4px;border:0;" />';
         }
         html += escapeHtml(label) + '</span>';
