@@ -61,7 +61,7 @@ private class FimbyCommunityUserProvisionHandlerTest {
     }
 
     @IsTest
-    static void duplicateContactEmailSkipsUserAndAlerts() {
+    static void duplicateContactEmailStillCreatesUser() {
         String email = uniqueEmail();
         insertContact(email);
         Contact second = insertContact(email);
@@ -70,9 +70,100 @@ private class FimbyCommunityUserProvisionHandlerTest {
         FimbyCommunityUserProvisionHandler.handle(new List<Community_User_Provision_Event__e>{ eventFor(second.Id) });
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM User WHERE ContactId = :second.Id], 'No User when the email is shared.');
-        Assert.areEqual(1, FimbyCommunityUserProvisionHandler.alertsQueued, 'Admins should be alerted.');
-        Assert.areEqual(1, [SELECT COUNT() FROM Contact WHERE Id = :second.Id], 'Contact must remain.');
+        Assert.areEqual(1, [SELECT COUNT() FROM User WHERE ContactId = :second.Id], 'Shared Contact email must not block.');
+        Assert.areEqual(0, FimbyCommunityUserProvisionHandler.alertsQueued);
+    }
+
+    private static User insertHolderUser(Id contactId, String username, String nickname, Boolean isActive) {
+        User holder = FimbyTestDataFactory.createCommunityUser(contactId, null, false);
+        if (username != null) {
+            holder.Username = username;
+        }
+        if (nickname != null) {
+            holder.CommunityNickname = nickname;
+        }
+        insert holder;
+        if (!isActive) {
+            update new User(Id = holder.Id, IsActive = false);
+        }
+        return holder;
+    }
+
+    private static void runHandler(Id contactId) {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            FimbyCommunityUserProvisionHandler.handle(new List<Community_User_Provision_Event__e>{ eventFor(contactId) });
+        }
+    }
+
+    @IsTest
+    static void inactiveUsernameHolderIsRenamed() {
+        String email = uniqueEmail();
+        Contact oldContact = insertContact(uniqueEmail());
+        Contact newContact = insertContact(email);
+        User holder;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            holder = insertHolderUser(oldContact.Id, email, null, false);
+        }
+
+        Test.startTest();
+        runHandler(newContact.Id);
+        Test.stopTest();
+
+        Assert.areEqual(email + '.inactive', [SELECT Username FROM User WHERE Id = :holder.Id].Username);
+        Assert.areEqual(email, [SELECT Username FROM User WHERE ContactId = :newContact.Id].Username);
+        Assert.areEqual(0, FimbyCommunityUserProvisionHandler.alertsQueued);
+    }
+
+    @IsTest
+    static void activeUsernameHolderBlocksAndAlerts() {
+        String email = uniqueEmail();
+        Contact oldContact = insertContact(uniqueEmail());
+        Contact newContact = insertContact(email);
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            insertHolderUser(oldContact.Id, email, null, true);
+        }
+
+        Test.startTest();
+        runHandler(newContact.Id);
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM User WHERE ContactId = :newContact.Id]);
+        Assert.areEqual(1, FimbyCommunityUserProvisionHandler.alertsQueued);
+    }
+
+    @IsTest
+    static void inactiveNicknameHolderIsRenamed() {
+        FimbyCommunityUserProvisionHandler.nicknameSuffixOverride = '7777';
+        Contact oldContact = insertContact(uniqueEmail());
+        Contact newContact = insertContact(uniqueEmail());
+        User holder;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            holder = insertHolderUser(oldContact.Id, null, 'Priya N7777', false);
+        }
+
+        Test.startTest();
+        runHandler(newContact.Id);
+        Test.stopTest();
+
+        Assert.areEqual('Priya N7777_inactive', [SELECT CommunityNickname FROM User WHERE Id = :holder.Id].CommunityNickname);
+        Assert.areEqual('Priya N7777', [SELECT CommunityNickname FROM User WHERE ContactId = :newContact.Id].CommunityNickname);
+    }
+
+    @IsTest
+    static void activeNicknameHolderBlocksAndAlerts() {
+        FimbyCommunityUserProvisionHandler.nicknameSuffixOverride = '8888';
+        Contact oldContact = insertContact(uniqueEmail());
+        Contact newContact = insertContact(uniqueEmail());
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            insertHolderUser(oldContact.Id, null, 'Priya N8888', true);
+        }
+
+        Test.startTest();
+        runHandler(newContact.Id);
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM User WHERE ContactId = :newContact.Id]);
+        Assert.areEqual(1, FimbyCommunityUserProvisionHandler.alertsQueued);
     }
 
     @IsTest

@@ -8,6 +8,10 @@
  * trips MIXED_DML_OPERATION. The event publishes after the Contact commits and
  * this handler runs as the admin in CommunityUserProvisionEventTriggerConfig.
  *
+ * Only an ACTIVE User holding the same Username or CommunityNickname blocks
+ * creation. An inactive holder is renamed (".inactive" / "_inactive") to free
+ * the value. Duplicate Contact emails are allowed.
+ *
  * Failures never touch the Contact. Each one is logged via FimbyLogger and all
  * active System Administrators get a single summary email per batch.
  */
@@ -16,6 +20,11 @@ public without sharing class FimbyCommunityUserProvisionHandler {
     private static final String PROFILE_NAME = 'Customer Community User - Mobile App';
     private static final String ADMIN_PROFILE_NAME = 'System Administrator';
     private static final String CLASS_NAME = 'FimbyCommunityUserProvisionHandler';
+    private static final String INACTIVE_USERNAME_SUFFIX = '.inactive';
+    private static final String INACTIVE_NICKNAME_SUFFIX = '_inactive';
+
+    @TestVisible
+    private static String nicknameSuffixOverride;
 
     @TestVisible
     private static Integer alertsQueued = 0;
@@ -83,21 +92,7 @@ public without sharing class FimbyCommunityUserProvisionHandler {
             }
         }
 
-        Set<String> takenUsernames = new Set<String>();
-        for (User existing : [SELECT Username FROM User WHERE Username IN :emails]) {
-            takenUsernames.add(existing.Username.toLowerCase());
-        }
-
-        Map<String, Id> emailToOtherContactId = new Map<String, Id>();
-        for (Contact other : [
-            SELECT Id, Email
-            FROM Contact
-            WHERE Email IN :emails AND Id NOT IN :contacts.keySet()
-        ]) {
-            emailToOtherContactId.put(other.Email.toLowerCase(), other.Id);
-        }
-
-        List<User> usersToInsert = new List<User>();
+        List<User> candidates = new List<User>();
         for (Contact c : contacts.values()) {
             if (contactsWithUser.contains(c.Id)) {
                 FimbyLogger.info(CLASS_NAME, 'provision', 'Contact ' + c.Id + ' already has a User; skipped.');
@@ -107,17 +102,87 @@ public without sharing class FimbyCommunityUserProvisionHandler {
                 failures.add(describe(c) + ' has no email, so no User was created.');
                 continue;
             }
-            String email = c.Email.trim().toLowerCase();
-            if (takenUsernames.contains(email)) {
-                failures.add(describe(c) + ': a User with username ' + email + ' already exists, so no User was created.');
+            candidates.add(buildUser(c, c.Email.trim().toLowerCase(), profiles[0].Id));
+        }
+        if (candidates.isEmpty()) {
+            return failures;
+        }
+
+        Set<String> nicknames = new Set<String>();
+        for (User candidate : candidates) {
+            nicknames.add(candidate.CommunityNickname.toLowerCase());
+        }
+        Map<String, User> usernameToExisting = new Map<String, User>();
+        Map<String, User> nicknameToExisting = new Map<String, User>();
+        for (User existing : [
+            SELECT Id, Username, CommunityNickname, IsActive
+            FROM User
+            WHERE Username IN :emails OR CommunityNickname IN :nicknames
+        ]) {
+            usernameToExisting.put(existing.Username.toLowerCase(), existing);
+            if (String.isNotBlank(existing.CommunityNickname)) {
+                nicknameToExisting.put(existing.CommunityNickname.toLowerCase(), existing);
+            }
+        }
+
+        Map<Id, User> inactiveRenames = new Map<Id, User>();
+        Map<Id, Set<Id>> contactIdToRenamedUserIds = new Map<Id, Set<Id>>();
+        List<User> usersToInsert = new List<User>();
+        for (User candidate : candidates) {
+            Contact c = contacts.get(candidate.ContactId);
+            User usernameHolder = usernameToExisting.get(candidate.Username);
+            User nicknameHolder = nicknameToExisting.get(candidate.CommunityNickname.toLowerCase());
+
+            if (usernameHolder != null && usernameHolder.IsActive) {
+                failures.add(describe(c) + ': an active User (' + recordLink(usernameHolder.Id) + ') already has username '
+                    + candidate.Username + ', so no User was created.');
                 continue;
             }
-            if (emailToOtherContactId.containsKey(email)) {
-                failures.add(describe(c) + ': email ' + email + ' is already used by Contact '
-                    + recordLink(emailToOtherContactId.get(email)) + ', so no User was created.');
+            if (nicknameHolder != null && nicknameHolder.IsActive) {
+                failures.add(describe(c) + ': an active User (' + recordLink(nicknameHolder.Id) + ') already has nickname '
+                    + candidate.CommunityNickname + ', so no User was created.');
                 continue;
             }
-            usersToInsert.add(buildUser(c, email, profiles[0].Id));
+
+            Set<Id> renamedIds = new Set<Id>();
+            if (usernameHolder != null) {
+                User rename = inactiveRenames.containsKey(usernameHolder.Id)
+                    ? inactiveRenames.get(usernameHolder.Id)
+                    : new User(Id = usernameHolder.Id);
+                rename.Username = retiredUsername(usernameHolder.Username);
+                inactiveRenames.put(usernameHolder.Id, rename);
+                renamedIds.add(usernameHolder.Id);
+            }
+            if (nicknameHolder != null) {
+                User rename = inactiveRenames.containsKey(nicknameHolder.Id)
+                    ? inactiveRenames.get(nicknameHolder.Id)
+                    : new User(Id = nicknameHolder.Id);
+                rename.CommunityNickname = retiredNickname(nicknameHolder.CommunityNickname);
+                inactiveRenames.put(nicknameHolder.Id, rename);
+                renamedIds.add(nicknameHolder.Id);
+            }
+            contactIdToRenamedUserIds.put(c.Id, renamedIds);
+            usersToInsert.add(candidate);
+        }
+
+        Map<Id, String> failedRenameToMessage = retireInactiveUsers(inactiveRenames.values());
+        if (!failedRenameToMessage.isEmpty()) {
+            List<User> stillInsertable = new List<User>();
+            for (User candidate : usersToInsert) {
+                String blocker;
+                for (Id renamedId : contactIdToRenamedUserIds.get(candidate.ContactId)) {
+                    if (failedRenameToMessage.containsKey(renamedId)) {
+                        blocker = 'renaming inactive User ' + recordLink(renamedId) + ' failed - '
+                            + failedRenameToMessage.get(renamedId);
+                    }
+                }
+                if (blocker == null) {
+                    stillInsertable.add(candidate);
+                } else {
+                    failures.add(describe(contacts.get(candidate.ContactId)) + ': ' + blocker + ', so no User was created.');
+                }
+            }
+            usersToInsert = stillInsertable;
         }
 
         if (usersToInsert.isEmpty()) {
@@ -143,10 +208,89 @@ public without sharing class FimbyCommunityUserProvisionHandler {
         return failures;
     }
 
+    private static String retiredUsername(String username) {
+        return username + INACTIVE_USERNAME_SUFFIX;
+    }
+
+    private static String retiredNickname(String nickname) {
+        return nickname.left(40 - INACTIVE_NICKNAME_SUFFIX.length() - 2) + INACTIVE_NICKNAME_SUFFIX;
+    }
+
+    /**
+     * @description Frees a username/nickname held by an inactive User by renaming
+     * it (e.g. jane@x.ca -> jane@x.ca.inactive). Appends 2, 3, ... when an
+     * earlier retirement already took the base name.
+     * @return failed User Id -> error message
+     */
+    private static Map<Id, String> retireInactiveUsers(List<User> renames) {
+        Map<Id, String> failedIdToMessage = new Map<Id, String>();
+        if (renames.isEmpty()) {
+            return failedIdToMessage;
+        }
+
+        List<String> usernamePatterns = new List<String>();
+        List<String> nicknamePatterns = new List<String>();
+        for (User rename : renames) {
+            if (rename.Username != null) {
+                usernamePatterns.add(rename.Username + '%');
+            }
+            if (rename.CommunityNickname != null) {
+                nicknamePatterns.add(rename.CommunityNickname + '%');
+            }
+        }
+        Set<String> takenUsernames = new Set<String>();
+        Set<String> takenNicknames = new Set<String>();
+        for (User existing : [
+            SELECT Username, CommunityNickname
+            FROM User
+            WHERE Username LIKE :usernamePatterns OR CommunityNickname LIKE :nicknamePatterns
+        ]) {
+            takenUsernames.add(existing.Username.toLowerCase());
+            if (existing.CommunityNickname != null) {
+                takenNicknames.add(existing.CommunityNickname.toLowerCase());
+            }
+        }
+
+        for (User rename : renames) {
+            if (rename.Username != null) {
+                rename.Username = nextFree(rename.Username, takenUsernames);
+            }
+            if (rename.CommunityNickname != null) {
+                rename.CommunityNickname = nextFree(rename.CommunityNickname, takenNicknames);
+            }
+        }
+
+        List<Database.SaveResult> results = Database.update(renames, false);
+        for (Integer i = 0; i < results.size(); i++) {
+            if (results[i].isSuccess()) {
+                continue;
+            }
+            List<String> messages = new List<String>();
+            for (Database.Error err : results[i].getErrors()) {
+                messages.add(err.getStatusCode() + ': ' + err.getMessage());
+            }
+            failedIdToMessage.put(renames[i].Id, String.join(messages, '; '));
+        }
+        return failedIdToMessage;
+    }
+
+    private static String nextFree(String base, Set<String> taken) {
+        String candidate = base;
+        Integer n = 2;
+        while (taken.contains(candidate.toLowerCase())) {
+            candidate = base + n;
+            n++;
+        }
+        taken.add(candidate.toLowerCase());
+        return candidate;
+    }
+
     private static User buildUser(Contact c, String email, Id profileId) {
         String first = String.isBlank(c.FirstName) ? '' : c.FirstName.trim();
         String last = c.LastName.trim();
-        String suffix = String.valueOf(Math.mod(Math.abs(Crypto.getRandomInteger()), 10000));
+        String suffix = nicknameSuffixOverride != null
+            ? nicknameSuffixOverride
+            : String.valueOf(Math.mod(Math.abs(Crypto.getRandomInteger()), 10000));
 
         String alias = (first.left(1) + last).replaceAll('[^A-Za-z0-9]', '').toLowerCase().left(8);
         if (String.isBlank(alias)) {
