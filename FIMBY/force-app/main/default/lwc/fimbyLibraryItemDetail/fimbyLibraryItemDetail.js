@@ -146,7 +146,7 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
 
     renderedCallback() {
         this._tryAutoOpenActionModal();
-        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm());
+        this._shellScrim.sync(this._inlineConfirmOpen, () => this._dismissInlineConfirm(), this.template.host);
     }
 
     _dismissInlineConfirm() {

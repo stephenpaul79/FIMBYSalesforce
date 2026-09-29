@@ -103,7 +103,7 @@
                                         <span class="card-timestamp">{firstMessage.formattedTime}</span>
                                     </div>
                                     <div class="message-card-body">
-                                        <p class="message-text">{firstMessage.body}</p>
+                                        <p class="message-text"><lightning-formatted-text value={firstMessage.body} linkify></lightning-formatted-text></p>
                                     </div>
                                     <template lwc:if={firstMessage.showViaLabel}>
                                         <div class="via-label">{firstMessage.viaLabel}</div>
@@ -160,7 +160,7 @@
                                                         <span class="card-timestamp">{mid.formattedTime}</span>
                                                     </div>
                                                     <div class="message-card-body">
-                                                        <p class="message-text">{mid.body}</p>
+                                                        <p class="message-text"><lightning-formatted-text value={mid.body} linkify></lightning-formatted-text></p>
                                                     </div>
                                                     <template lwc:if={mid.showViaLabel}>
                                                         <div class="via-label">{mid.viaLabel}</div>
@@ -223,7 +223,7 @@
                                     <span class="card-timestamp">{last.formattedTime}</span>
                                 </div>
                                 <div class="message-card-body">
-                                    <p class="message-text">{last.body}</p>
+                                    <p class="message-text"><lightning-formatted-text value={last.body} linkify></lightning-formatted-text></p>
                                 </div>
                                 <template lwc:if={last.showViaLabel}>
                                     <div class="via-label">{last.viaLabel}</div>
@@ -264,7 +264,7 @@
                                                 <span class="card-timestamp">{item.formattedTime}</span>
                                             </div>
                                             <div class="message-card-body">
-                                                <p class="message-text">{item.body}</p>
+                                                <p class="message-text"><lightning-formatted-text value={item.body} linkify></lightning-formatted-text></p>
                                             </div>
                                             <template lwc:if={item.showViaLabel}>
                                                 <div class="via-label">{item.viaLabel}</div>
@@ -378,12 +378,6 @@
             </template>
         </template>
 
-        <template lwc:if={showConsentRevokedBanner}>
-            <div class="conversation-revoked-banner" role="status">
-                <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
-                <span>{consentRevokedBannerText}</span>
-            </div>
-        </template>
         <template lwc:if={canReply}>
             <div class="reply-container">
                 <template lwc:if={showCompose}>
@@ -398,8 +392,8 @@
                         <textarea class="compose-input" placeholder="Write a reply..."
                                   oninput={handleMessageInput} rows="3">{messageText}</textarea>
                         <div class="compose-actions">
-                            <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
-                            <button class="compose-send" onclick={handleSendMessage}
+                            <button type="button" class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
+                            <button type="button" class="compose-send" onclick={handleSendMessage}
                                     disabled={isSendDisabled}>
                                 <template lwc:if={isSending}>Sending…</template>
                                 <template lwc:else>Send</template>
@@ -408,7 +402,7 @@
                     </div>
                 </template>
                 <template lwc:else>
-                    <button class="reply-trigger" onclick={handleShowCompose}>
+                    <button type="button" class="reply-trigger" onclick={handleShowCompose}>
                         <img src={replyIconUrl} alt="" class="reply-trigger-icon">
                         <span>Reply</span>
                     </button>

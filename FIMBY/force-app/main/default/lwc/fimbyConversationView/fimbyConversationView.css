@@ -1,4 +1,4 @@
-/* Posting As — identity display (matches fimbyAskOfferComposer) */
+/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -32,7 +32,7 @@
     color: var(--fimby-text-strong);
 }
 
-/* FIMBY Conversation View — Gmail-style thread */
+/* FIMBY Conversation View â€” Gmail-style thread */
 .fimby-conversation-view {
     display: flex;
     flex-direction: column;
@@ -52,7 +52,7 @@
     }
 }
 
-/* ── Header ──────────────────────────────────────── */
+/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .conversation-header {
     display: flex;
     align-items: center;
@@ -124,14 +124,14 @@
     margin: 0;
 }
 
-/* ── Proxy badge (who is behind this profile) ────── */
+/* â”€â”€ Proxy badge (who is behind this profile) â”€â”€â”€â”€â”€â”€ */
 .participant-proxy-row {
     display: flex;
     align-items: center;
     margin-top: 3px;
 }
 
-/* ── Related Record Row (badge + title link) ─────── */
+/* â”€â”€ Related Record Row (badge + title link) â”€â”€â”€â”€â”€â”€â”€ */
 .related-record-row {
     display: flex;
     align-items: center;
@@ -216,7 +216,7 @@
     color: var(--fimby-text-primary);
 }
 
-/* ── Neighbourly Banner ──────────────────────────── */
+/* â”€â”€ Neighbourly Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .neighbourly-banner {
     display: flex;
     align-items: center;
@@ -252,7 +252,7 @@
     background: var(--fimby-hover-bg);
 }
 
-/* ── Thread Body ─────────────────────────────────── */
+/* â”€â”€ Thread Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .thread-body {
     background-color: var(--fimby-surface-card, #FAF7F2);
     border-radius: var(--fimby-radius-lg);
@@ -266,7 +266,7 @@
     flex-direction: column;
 }
 
-/* ── Loading ─────────────────────────────────────── */
+/* â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .loading-container {
     flex: 1 1 0;
     min-height: 200px;
@@ -276,7 +276,7 @@
     position: relative;
 }
 
-/* ── Messages Container ──────────────────────────── */
+/* â”€â”€ Messages Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .messages-container {
     padding: 16px 24px;
     background-color: var(--fimby-surface-card, #FAF7F2);
@@ -327,19 +327,19 @@
     40% { opacity: 1; }
 }
 
-/* ── Date Separator — hidden (timestamps on each message) ── */
+/* â”€â”€ Date Separator â€” hidden (timestamps on each message) â”€â”€ */
 .date-separator {
     display: none;
 }
 
-/* ── Messages List ───────────────────────────────── */
+/* â”€â”€ Messages List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .messages-list {
     display: flex;
     flex-direction: column;
     gap: 0;
 }
 
-/* ── Expanded message (Gmail flat style) ─────────── */
+/* â”€â”€ Expanded message (Gmail flat style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .message-card {
     background: transparent;
     border: none;
@@ -411,7 +411,7 @@
     color: var(--fimby-text-primary, #4A3526);
 }
 
-/* Who physically typed the message. Quiet by design — the header badge carries
+/* Who physically typed the message. Quiet by design â€” the header badge carries
    the standing fact; this line only disambiguates which helper spoke. */
 .via-label {
     font-size: 11px;
@@ -420,7 +420,7 @@
     padding-left: 52px;
 }
 
-/* ── Collapsed pill with double-line extending right ─ */
+/* â”€â”€ Collapsed pill with double-line extending right â”€ */
 /* Remove border from first message when pill is shown (avoids extra line above pill) */
 .messages-list:has(.collapsed-pill-line) .msg-collapsed.zone-first {
     border-bottom: none;
@@ -461,7 +461,7 @@
     color: var(--fimby-text-primary, #4A3526);
 }
 
-/* ── Collapsed message row (Gmail single-line) ───── */
+/* â”€â”€ Collapsed message row (Gmail single-line) â”€â”€â”€â”€â”€ */
 .msg-collapsed {
     display: flex;
     align-items: center;
@@ -567,11 +567,13 @@
     flex-shrink: 0;
 }
 
-/* ── Reply compose area ──────────────────────────── */
+/* â”€â”€ Reply compose area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .reply-container {
     border-top: none;
     padding: 4px 0 0;
     flex-shrink: 0;
+    position: relative;
+    z-index: 2;
 }
 
 .reply-trigger {
@@ -670,7 +672,7 @@
     cursor: not-allowed;
 }
 
-/* ── Block/Report Modal ──────────────────────────── */
+/* â”€â”€ Block/Report Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 section[role="dialog"].slds-modal {
     display: flex;
     align-items: center;
@@ -818,7 +820,7 @@ section[role="dialog"] {
     justify-content: center;
 }
 
-/* ── Revoked banner ──────────────────────────────── */
+/* â”€â”€ Revoked banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .conversation-revoked-banner {
     position: fixed;
     /* 56px clears the always-present bottom nav. Native SafeAreaView owns the
@@ -841,7 +843,7 @@ section[role="dialog"] {
     margin: 0 auto;
 }
 
-/* ── Responsive ──────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (min-width: 768px) {
     .fimby-conversation-view {
         max-width: 600px;
@@ -862,7 +864,7 @@ section[role="dialog"] {
     }
 }
 
-/* ── Focus ───────────────────────────────────────── */
+/* â”€â”€ Focus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .back-button:focus-visible,
 .banner-dismiss:focus-visible,
 .reply-trigger:focus-visible,
@@ -943,7 +945,7 @@ section[role="dialog"] {
     padding-bottom: 16px;
 }
 
-/* ── Lending Action Banner ──────────────────────────────────────── */
+/* â”€â”€ Lending Action Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .lending-action-banner {
     padding: 14px 16px;
     margin: 0 auto 8px;
@@ -1115,4 +1117,26 @@ section[role="dialog"] {
         transition: none !important;
         animation: none !important;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

@@ -146,7 +146,7 @@
                                                 <span class="thanks-sender">Thanks from {hsm.senderDisplayName}</span>
                                             </div>
                                             <template lwc:if={hsm.body}>
-                                                <p class="thanks-body">{hsm.body}</p>
+                                                <p class="thanks-body"><lightning-formatted-text value={hsm.body} linkify></lightning-formatted-text></p>
                                             </template>
                                             <span class="thanks-time">{hsm.formattedTimeShort}</span>
                                         </div>
@@ -189,7 +189,7 @@
                                             <span class="card-timestamp">{firstMessage.formattedTime}</span>
                                         </div>
                                         <div class="message-card-body">
-                                            <p class="message-text">{firstMessage.body}</p>
+                                            <p class="message-text"><lightning-formatted-text value={firstMessage.body} linkify></lightning-formatted-text></p>
                                         </div>
                                         <template lwc:if={firstMessage.showViaLabel}>
                                             <div class="via-label">{firstMessage.viaLabel}</div>
@@ -226,7 +226,7 @@
                                                             <span class="thanks-sender">Thanks from {mid.senderDisplayName}</span>
                                                         </div>
                                                         <template lwc:if={mid.body}>
-                                                            <p class="thanks-body">{mid.body}</p>
+                                                            <p class="thanks-body"><lightning-formatted-text value={mid.body} linkify></lightning-formatted-text></p>
                                                         </template>
                                                         <span class="thanks-time">{mid.formattedTimeShort}</span>
                                                     </div>
@@ -268,7 +268,7 @@
                                                             <span class="card-timestamp">{mid.formattedTime}</span>
                                                         </div>
                                                         <div class="message-card-body">
-                                                            <p class="message-text">{mid.body}</p>
+                                                            <p class="message-text"><lightning-formatted-text value={mid.body} linkify></lightning-formatted-text></p>
                                                         </div>
                                                         <template lwc:if={mid.showViaLabel}>
                                                             <div class="via-label">{mid.viaLabel}</div>
@@ -313,7 +313,7 @@
                                                         <span class="thanks-sender">Thanks from {msm.senderDisplayName}</span>
                                                     </div>
                                                     <template lwc:if={msm.body}>
-                                                        <p class="thanks-body">{msm.body}</p>
+                                                        <p class="thanks-body"><lightning-formatted-text value={msm.body} linkify></lightning-formatted-text></p>
                                                     </template>
                                                     <span class="thanks-time">{msm.formattedTimeShort}</span>
                                                 </div>
@@ -348,7 +348,7 @@
                                                         <span class="thanks-sender">Thanks from {last.senderDisplayName}</span>
                                                     </div>
                                                     <template lwc:if={last.body}>
-                                                        <p class="thanks-body">{last.body}</p>
+                                                        <p class="thanks-body"><lightning-formatted-text value={last.body} linkify></lightning-formatted-text></p>
                                                     </template>
                                                     <span class="thanks-time">{last.formattedTimeShort}</span>
                                                 </div>
@@ -384,7 +384,7 @@
                                                 <span class="card-timestamp">{last.formattedTime}</span>
                                             </div>
                                             <div class="message-card-body">
-                                                <p class="message-text">{last.body}</p>
+                                                <p class="message-text"><lightning-formatted-text value={last.body} linkify></lightning-formatted-text></p>
                                             </div>
                                             <template lwc:if={last.showViaLabel}>
                                                 <div class="via-label">{last.viaLabel}</div>
@@ -418,7 +418,7 @@
                                                 <span class="card-timestamp">{item.formattedTime}</span>
                                             </div>
                                             <div class="message-card-body">
-                                                <p class="message-text">{item.body}</p>
+                                                <p class="message-text"><lightning-formatted-text value={item.body} linkify></lightning-formatted-text></p>
                                             </div>
                                             <template lwc:if={item.showViaLabel}>
                                                 <div class="via-label">{item.viaLabel}</div>
@@ -434,7 +434,7 @@
                                                         <span class="thanks-sender">Thanks from {item.senderDisplayName}</span>
                                                     </div>
                                                     <template lwc:if={item.body}>
-                                                        <p class="thanks-body">{item.body}</p>
+                                                        <p class="thanks-body"><lightning-formatted-text value={item.body} linkify></lightning-formatted-text></p>
                                                     </template>
                                                     <span class="thanks-time">{item.formattedTimeShort}</span>
                                                 </div>
@@ -470,7 +470,7 @@
                                                 <span class="card-timestamp">{item.formattedTime}</span>
                                             </div>
                                             <div class="message-card-body">
-                                                <p class="message-text">{item.body}</p>
+                                                <p class="message-text"><lightning-formatted-text value={item.body} linkify></lightning-formatted-text></p>
                                             </div>
                                             <template lwc:if={item.showViaLabel}>
                                                 <div class="via-label">{item.viaLabel}</div>

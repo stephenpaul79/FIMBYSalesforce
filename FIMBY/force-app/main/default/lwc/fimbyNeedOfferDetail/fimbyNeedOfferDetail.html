@@ -74,7 +74,7 @@
                                     </div>
                                     <template lwc:if={hasPostDetails}>
                                         <div class="post-content">
-                                            <p class="post-details">{postDetails}</p>
+                                            <p class="post-details"><lightning-formatted-text value={postDetails} linkify></lightning-formatted-text></p>
                                         </div>
                                     </template>
                                 </div>
@@ -230,7 +230,7 @@
 
                                     <template lwc:if={hasPostDetails}>
                                         <div class="post-content">
-                                            <p class="post-details">{postDetails}</p>
+                                            <p class="post-details"><lightning-formatted-text value={postDetails} linkify></lightning-formatted-text></p>
                                             <template lwc:if={hasCategory}>
                                                 <div class="category-tag">
                                                     <lightning-icon icon-name="utility:bookmark" size="xx-small"></lightning-icon>

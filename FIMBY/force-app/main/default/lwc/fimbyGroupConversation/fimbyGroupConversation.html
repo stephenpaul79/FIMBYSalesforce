@@ -124,7 +124,7 @@
                                         <span class="card-timestamp">{firstMessage.formattedTime}</span>
                                     </div>
                                     <div class="message-card-body">
-                                        <p class="message-text">{firstMessage.body}</p>
+                                        <p class="message-text"><lightning-formatted-text value={firstMessage.body} linkify></lightning-formatted-text></p>
                                     </div>
                                 </div>
                             </template>
@@ -184,7 +184,7 @@
                                                         <span class="card-timestamp">{mid.formattedTime}</span>
                                                     </div>
                                                     <div class="message-card-body">
-                                                        <p class="message-text">{mid.body}</p>
+                                                        <p class="message-text"><lightning-formatted-text value={mid.body} linkify></lightning-formatted-text></p>
                                                     </div>
                                                 </div>
                                             </template>
@@ -258,7 +258,7 @@
                                             <span class="card-timestamp">{last.formattedTime}</span>
                                         </div>
                                         <div class="message-card-body">
-                                            <p class="message-text">{last.body}</p>
+                                            <p class="message-text"><lightning-formatted-text value={last.body} linkify></lightning-formatted-text></p>
                                         </div>
                                     </div>
                                 </template>
@@ -302,7 +302,7 @@
                                             <span class="card-timestamp">{item.formattedTime}</span>
                                         </div>
                                         <div class="message-card-body">
-                                            <p class="message-text">{item.body}</p>
+                                            <p class="message-text"><lightning-formatted-text value={item.body} linkify></lightning-formatted-text></p>
                                         </div>
                                     </div>
                                 </template>

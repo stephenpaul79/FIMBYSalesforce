@@ -105,23 +105,6 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     @track showNeighbourlyBanner = true;
     @track isConversationRevoked = false;
     @track isConversationLocked = false;
-    @track consentClosedDate = null;
-
-    get showConsentRevokedBanner() {
-        return this.isConversationRevoked
-            && !this.isVouchContext
-            && !this.isLendingConversation;
-    }
-
-    get consentRevokedBannerText() {
-        if (this.consentClosedDate) {
-            const when = new Date(this.consentClosedDate).toLocaleDateString('en-AU', {
-                day: 'numeric', month: 'short', year: 'numeric'
-            });
-            return `Contact sharing changed on ${when}, so this conversation is now read-only.`;
-        }
-        return 'Contact sharing changed, so this conversation is now read-only.';
-    }
 
     get canReply() {
         return !this.isConversationRevoked && !this.isConversationLocked && !this.isVouchContext;
@@ -432,7 +415,6 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             try {
                 const access = await getConversationAccessState({ conversationId: this.activeConversationId });
                 this.isConversationRevoked = access?.isConsentRevoked === true;
-                this.consentClosedDate = access?.consentClosedDate || null;
                 if (access?.isLocked === true) {
                     this.isConversationLocked = true;
                 }
@@ -457,7 +439,11 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         if (this.isConversationRevoked) return;
         if (this.isVouchContext) return;
         if (this.isConversationLocked) return;
-        if (this.messages && this.messages.length > 0) return;
+        const isWelcomeThread = this.contextType === 'Moderator'
+            || (this.messages || []).some(
+                (m) => m.isSystemMessage && (m.body || '').toLowerCase().includes('moderator welcome')
+            );
+        if (this.messages && this.messages.length > 0 && !isWelcomeThread) return;
         this._composeAutoOpened = true;
         this.handleShowCompose();
     }
@@ -1006,6 +992,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             }
         } catch (error) {
             console.error('Error sending message:', error);
+            fireErrorToast(error, 'Could not send that message. Please try again.');
         } finally {
             this.isSending = false;
         }

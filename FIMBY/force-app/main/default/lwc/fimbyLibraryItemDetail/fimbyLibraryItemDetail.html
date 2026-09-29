@@ -38,28 +38,30 @@
                                 <div class="card-left-header">
                                     <div class="status-badge" data-status={status}>{status}</div>
                                 </div>
-                                <template lwc:if={hasImage}>
-                                    <button type="button" class="item-image-container" style={imageContainerStyle}
-                                            aria-label="View full image" onclick={handleImageClick}>
-                                        <img
-                                            src={imageDisplayUrl}
-                                            srcset={imageSrcset}
-                                            sizes={detailImageSizes}
-                                            alt={itemName}
-                                            class="item-image"
-                                            loading="lazy"
-                                            decoding="async"
-                                            data-original={imageUrl}>
-                                        <div class="image-overlay">
-                                            <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                <div class="card-left-media">
+                                    <template lwc:if={hasImage}>
+                                        <button type="button" class="item-image-container" style={imageContainerStyle}
+                                                aria-label="View full image" onclick={handleImageClick}>
+                                            <img
+                                                src={imageDisplayUrl}
+                                                srcset={imageSrcset}
+                                                sizes={detailImageSizes}
+                                                alt={itemName}
+                                                class="item-image"
+                                                loading="lazy"
+                                                decoding="async"
+                                                data-original={imageUrl}>
+                                            <div class="image-overlay">
+                                                <lightning-icon icon-name="utility:zoomin" size="small"></lightning-icon>
+                                            </div>
+                                        </button>
+                                    </template>
+                                    <template lwc:elseif={isOwner}>
+                                        <div class="item-placeholder">
+                                            <img src={noPhotoUrl} alt="" class="placeholder-icon">
                                         </div>
-                                    </button>
-                                </template>
-                                <template lwc:elseif={isOwner}>
-                                    <div class="item-placeholder">
-                                        <img src={noPhotoUrl} alt="" class="placeholder-icon">
-                                    </div>
-                                </template>
+                                    </template>
+                                </div>
                             </div>
                         </template>
 
@@ -99,7 +101,7 @@
 
                                 <template lwc:if={hasDescription}>
                                     <div class="item-content">
-                                        <p class="item-description">{description}</p>
+                                        <p class="item-description"><lightning-formatted-text value={description} linkify></lightning-formatted-text></p>
                                     </div>
                                 </template>
                             </div>

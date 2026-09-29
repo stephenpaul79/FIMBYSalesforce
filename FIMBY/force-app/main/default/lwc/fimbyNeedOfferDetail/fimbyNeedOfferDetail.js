@@ -283,7 +283,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     renderedCallback() {
         this._tryAutoOpenActionModal();
-        this._shellScrim.sync(this.showDeleteConfirm, () => this.handleDeleteCancel());
+        this._shellScrim.sync(this.showDeleteConfirm, () => this.handleDeleteCancel(), this.template.host);
     }
 
     disconnectedCallback() {

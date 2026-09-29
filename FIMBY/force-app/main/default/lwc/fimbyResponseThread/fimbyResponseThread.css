@@ -171,7 +171,7 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: transparent;
+    background-color: transparent;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -428,7 +428,7 @@
 }
 
 .load-more-button {
-    background: transparent;
+    background-color: transparent;
     border: 1px solid var(--fimby-border-subtle, #E0D9CF);
     border-radius: 20px;
     padding: 6px 16px;
@@ -473,11 +473,9 @@
     border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
     margin: 0;
     box-sizing: border-box;
-}
-
-/* Gmail-style flat messages */
+}/* Gmail-style flat messages */
 .message-card {
-    background: transparent;
+    background-color: transparent;
     border: none;
     border-bottom: 1px solid var(--fimby-border-subtle, #E0D9CF);
     border-radius: 0;
@@ -485,7 +483,7 @@
 }
 
 .message-card.from-me {
-    background: transparent;
+    background-color: transparent;
 }
 
 .message-card.zone-first {
@@ -582,7 +580,7 @@
     min-height: 44px;
     padding: 0;
     border: none;
-    background: transparent;
+    background-color: transparent;
     border-radius: 50%;
     cursor: pointer;
     color: var(--fimby-btn-primary-bg);
@@ -830,7 +828,7 @@
     padding: 8px 20px;
     border: 1px solid var(--fimby-border-strong, #CCC5BB);
     border-radius: 20px;
-    background: transparent;
+    background-color: transparent;
     color: var(--fimby-text-primary);
     font-size: 14px;
     font-weight: 500;
@@ -924,7 +922,7 @@
     padding: 8px 16px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md);
-    background: transparent;
+    background-color: transparent;
     color: var(--fimby-text-primary);
     font-size: 14px;
     cursor: pointer;
@@ -1002,14 +1000,12 @@
 
 /* Confirmation Dialog */
 .confirm-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    position: fixed; inset: 0; background: transparent; background-color: transparent; background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+    z-index: 9999;
+    padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
 }
 
 .confirm-dialog,
@@ -1052,7 +1048,7 @@
     padding: 8px 20px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md, 8px);
-    background: transparent;
+    background-color: transparent;
     color: var(--fimby-text-primary);
     font-size: 14px;
     cursor: pointer;
@@ -1216,9 +1212,7 @@
         transition: none !important;
         animation: none !important;
     }
-}
-
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+}/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    A3: Block / Report â€” header kebab + combined modal.
    Mirrors the fimbyConversationView pattern so DM and response
    thread moderation surfaces look and feel identical.
@@ -1228,7 +1222,7 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: transparent;
+    background-color: transparent;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1292,7 +1286,7 @@
     min-width: 44px;
     min-height: 44px;
     border: none;
-    background: transparent;
+    background-color: transparent;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -1372,7 +1366,7 @@
     min-height: 44px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-md);
-    background: transparent;
+    background-color: transparent;
     color: var(--fimby-text-primary);
     font-size: 14px;
     font-weight: 600;
@@ -1415,7 +1409,7 @@ section[role="dialog"].slds-modal {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     box-sizing: border-box;
 }
 
@@ -1439,4 +1433,15 @@ section[role="dialog"].slds-modal {
     --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
     --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
     font-size: var(--fimby-input-font-size, 16px);
+}
+
+/* Shell chrome zones � content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

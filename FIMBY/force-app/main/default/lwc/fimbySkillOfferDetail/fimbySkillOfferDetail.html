@@ -64,7 +64,7 @@
                         <div class="field-grid">
                             <div class="field-item full-width">
                                 <span class="field-label">Description</span>
-                                <span class="field-value field-value-multiline">{descriptionDisplay}</span>
+                                <span class="field-value field-value-multiline"><lightning-formatted-text value={descriptionDisplay} linkify></lightning-formatted-text></span>
                             </div>
                             <template lwc:if={isPosterPersona}>
                                 <div class="field-item">

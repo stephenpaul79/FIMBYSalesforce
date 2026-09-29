@@ -1007,14 +1007,12 @@
 
 /* Delete Confirmation */
 .delete-overlay {
-    position: fixed;
-    inset: 0;
-    background: transparent;
+    position: fixed; inset: 0; background: transparent; background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: 9999;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 .delete-modal {
@@ -1143,7 +1141,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
     display: block;
 }
 
-/* Inset photo area — side padding on wrapper; ::after spacer for bottom (margin-bottom clips under overflow:hidden) */
+/* Inset photo area â side padding on wrapper; ::after spacer for bottom (margin-bottom clips under overflow:hidden) */
 .card-left-media {
     box-sizing: border-box;
     padding: 0 12px;
@@ -1341,7 +1339,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
    OPEN EVENT CONTEXT STRIP
    ============================================ */
 
-/* event-context-strip removed — planning context now lives in Details section only */
+/* event-context-strip removed â planning context now lives in Details section only */
 
 /* ============================================
    QUICK RESPONSE (Open Event / Community Event)
@@ -1511,7 +1509,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
     color: var(--fimby-text-primary, #3D3629);
 }
 
-/* Attendee List — align with .info-section (full width, spaced from block above) */
+/* Attendee List â align with .info-section (full width, spaced from block above) */
 .attendee-section {
     margin: 12px 0 0;
 }
@@ -1614,7 +1612,7 @@ button.post-image-container.bulk-buy-image-container .post-image {
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: transparent;
+    background-color: transparent;
     cursor: pointer;
     transition: background 0.15s ease;
 }
@@ -1706,4 +1704,15 @@ button.post-image-container.bulk-buy-image-container .post-image {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+/* Shell chrome zones ï¿½ content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

@@ -66,7 +66,7 @@
                             <div class="story-content">
                                 <h1 class="story-title">{storyName}</h1>
 
-                                <p class="story-message">{displayMessage}</p>
+                                <p class="story-message"><lightning-formatted-text value={displayMessage} linkify></lightning-formatted-text></p>
 
                                 <template lwc:if={showReadMore}>
                                     <button class="read-more-btn" onclick={handleToggleContent}>Read more</button>
@@ -133,7 +133,7 @@
                                             <span class="comment-author">{comment.authorName}</span>
                                             <span class="comment-date">{comment.formattedDate}{comment.editedSuffix}</span>
                                         </div>
-                                        <p class="comment-body">{comment.body}</p>
+                                        <p class="comment-body"><lightning-formatted-text value={comment.body} linkify></lightning-formatted-text></p>
                                     </div>
                                     <div class={comment.menuContainerClass}>
                                         <button
