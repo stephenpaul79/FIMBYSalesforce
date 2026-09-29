@@ -90,6 +90,13 @@
     margin-bottom: 0;
 }
 
+.story-message-input {
+    display: block;
+    width: 100%;
+    --slds-c-textarea-sizing-min-height: 8.5rem;
+    --sds-c-textarea-sizing-min-height: 8.5rem;
+}
+
 .field-label {
     font-size: 0.875rem;
     font-weight: 600;

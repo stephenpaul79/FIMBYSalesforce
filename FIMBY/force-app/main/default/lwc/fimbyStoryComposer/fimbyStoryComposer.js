@@ -99,10 +99,10 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
 
     get storyTypesList() {
         const types = [
-            { value: 'Thank You',            label: 'Thank You',            description: 'Express gratitude to someone',   icon: 'ThankYouActive.png' },
+            { value: 'Thank You',            label: 'Thank You',            description: 'Express gratitude',              icon: 'ThankYouActive.png' },
             { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Share a moment you noticed',     icon: 'tulips.png' },
             { value: 'Prayer',               label: 'Prayer Request',       description: 'Ask for prayers and support',    icon: 'PrayActive.png' },
-            { value: 'Lament',               label: 'Support Needed',       description: 'Share struggles, seek comfort',  icon: 'LamentActive.png' },
+            { value: 'Lament',               label: 'Lament',               description: "Share what's hard",             icon: 'LamentActive.png' },
             { value: 'God Story',            label: 'God Story',            description: 'Share a faith experience',       icon: 'GodStoryActive.png' },
             { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbors',icon: 'BioActive.png' }
         ];
