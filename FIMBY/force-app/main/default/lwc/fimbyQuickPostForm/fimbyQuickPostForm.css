@@ -270,7 +270,7 @@
 .type-selection-grid.modal-grid .type-option {
     container-type: size;
     display: grid;
-    grid-template-rows: 50% 25% 25%;
+    grid-template-rows: 50% 50%;
     align-items: stretch;
     justify-items: center;
     text-align: center;
@@ -281,7 +281,13 @@
 }
 
 .type-selection-grid.modal-grid .type-text {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-height: 0;
 }
 
 .type-selection-grid.modal-grid .type-icon {
@@ -300,9 +306,6 @@
 
 .type-selection-grid.modal-grid .type-label {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: clamp(1rem, 10cqh, 1.3rem);
     font-weight: 600;
     margin-bottom: 0;
@@ -312,7 +315,6 @@
 
 .type-selection-grid.modal-grid .type-description {
     width: 100%;
-    align-self: center;
     font-size: clamp(0.75rem, 6cqh, 0.9rem);
     line-height: 1.25;
     padding: 0 4px;
