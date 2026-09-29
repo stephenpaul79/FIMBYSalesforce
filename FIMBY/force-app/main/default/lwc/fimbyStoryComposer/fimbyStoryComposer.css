@@ -140,13 +140,14 @@
 }
 
 .story-type {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px 6px;
-    min-height: 44px;
+    container-type: size;
+    display: grid;
+    grid-template-rows: 50% 50%;
+    align-items: stretch;
+    justify-items: center;
+    padding: 10px 8px;
+    gap: 0;
+    min-height: clamp(132px, 22dvh, 176px);
     border: 2px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-sm);
     background-color: var(--fimby-surface-card);
@@ -168,29 +169,41 @@
 }
 
 .story-type-icon {
-    width: 26px;
-    height: 26px;
+    width: auto;
+    height: 70%;
+    max-width: 56%;
+    aspect-ratio: 1;
     object-fit: contain;
-    flex-shrink: 0;
+    align-self: center;
 }
 
 .story-type-details {
-    flex: 1;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
     width: 100%;
+    min-width: 0;
+    min-height: 0;
 }
 
 .story-type-name {
-    font-size: 11px;
+    font-size: clamp(0.95rem, 9cqh, 1.15rem);
     font-weight: 600;
     color: var(--fimby-text-primary);
-    margin-bottom: 1px;
+    margin-bottom: 0;
+    line-height: 1.15;
 }
 
 .story-type-desc {
-    font-size: 10px;
+    font-size: clamp(0.75rem, 5.5cqh, 0.85rem);
     color: var(--fimby-text-secondary);
-    line-height: 1.2;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 /* Submit Section */
@@ -373,21 +386,8 @@
     }
 
     .story-type {
-        gap: 8px;
-        padding: 14px 12px;
-    }
-
-    .story-type-icon {
-        width: 32px;
-        height: 32px;
-    }
-
-    .story-type-name {
-        font-size: 13px;
-    }
-
-    .story-type-desc {
-        font-size: 11px;
+        padding: 12px 10px;
+        min-height: clamp(140px, 20dvh, 168px);
     }
 }
 
