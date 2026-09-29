@@ -4,7 +4,6 @@ import { navigate } from 'c/fimbyNavigation';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { isActingAsProxiedChild as loadIsActingAsProxiedChild } from 'c/fimbyProxiedIdentity';
-import { bindShellScrimDismiss } from 'c/fimbyModalShell';
 
 export default class FimbyQuickPostForm extends NavigationMixin(LightningElement) {
     @api selectedType = ''; // Can be passed from parent component
@@ -31,7 +30,6 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
 
     _unregisterTourAnchors;
     _forceHideHandler;
-    _releaseShellScrim = null;
 
     /**
      * Asks and offers stay available to a parent-managed child — only owner listings
@@ -50,7 +48,6 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
             this._unregisterTourAnchors = registerTourAnchorProvider(this);
             this._forceHideHandler = () => {
                 if (this.isVisible) {
-                    this._clearShellScrim();
                     this.isVisible = false;
                 }
             };
@@ -106,8 +103,7 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
         window.dispatchEvent(new CustomEvent('fimbyquickpostforcehide'));
         this.isVisible = true;
         if (this.isModal) {
-            this._clearShellScrim();
-            this._releaseShellScrim = bindShellScrimDismiss(() => this.hide());
+            // Single full-viewport scrim — no shell header/footer (would double-dim)
             // eslint-disable-next-line @lwc/lwc/no-async-operation
             requestAnimationFrame(() => {
                 window.dispatchEvent(new CustomEvent('fimbyquickpostopened'));
@@ -118,9 +114,6 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
     @api
     hide(options = {}) {
         const wasVisible = this.isVisible;
-        if (this.isModal) {
-            this._clearShellScrim();
-        }
         this.isVisible = false;
         if (!wasVisible) {
             return;
@@ -135,13 +128,6 @@ export default class FimbyQuickPostForm extends NavigationMixin(LightningElement
                     detail: { selected: !!options.selected }
                 })
             );
-        }
-    }
-
-    _clearShellScrim() {
-        if (this._releaseShellScrim) {
-            this._releaseShellScrim();
-            this._releaseShellScrim = null;
         }
     }
 
