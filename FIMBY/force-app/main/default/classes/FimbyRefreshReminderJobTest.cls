@@ -198,4 +198,52 @@ private class FimbyRefreshReminderJobTest {
         post.Last_Refresh_Reminder_Date__c = Date.today();
         System.assertEquals(false, FimbyRefreshReminderJob.isEligibleForReminderCycle(post));
     }
+
+    @isTest
+    static void reminderBody_branchesOnEngagement() {
+        FimbyPostEngagementService.Summary accepted = new FimbyPostEngagementService.Summary();
+        accepted.hasAcceptedResponse = true;
+        FimbyPostEngagementService.Summary talking = new FimbyPostEngagementService.Summary();
+        talking.hasPosterConversation = true;
+
+        System.assert(FimbyRefreshReminderJob.reminderBody(true, accepted).startsWith('You’ve found someone to help.'));
+        System.assert(FimbyRefreshReminderJob.reminderBody(true, talking).startsWith('You’ve heard from a neighbour about your ask.'));
+        System.assert(FimbyRefreshReminderJob.reminderBody(true, null).contains('still needed'));
+        System.assert(FimbyRefreshReminderJob.reminderBody(false, accepted).startsWith('A neighbour is interested in your offer.'));
+        System.assert(FimbyRefreshReminderJob.reminderBody(false, talking).startsWith('You’ve heard from a neighbour about your offer.'));
+        System.assert(FimbyRefreshReminderJob.reminderBody(false, new FimbyPostEngagementService.Summary()).contains('still available'));
+        for (String body : new List<String>{
+            FimbyRefreshReminderJob.reminderBody(true, accepted), FimbyRefreshReminderJob.reminderBody(true, talking),
+            FimbyRefreshReminderJob.reminderBody(false, accepted), FimbyRefreshReminderJob.reminderBody(false, talking)
+        }) {
+            System.assert(body.length() <= 140, body);
+        }
+    }
+
+    @isTest
+    static void execute_skipsPostThatIsDueForAReplyNudge() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact author = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Contact responder = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Id needRt = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Waiting Need', Details__c = 'Waiting', Status__c = FimbyConstants.NEEDS_OFFERS_POSTED,
+            RecordTypeId = needRt, Contact__c = author.Id, Posted_By__c = author.Id, Neighbourhood__c = nh.Id,
+            End_Date__c = Date.today().addDays(1), Posted_Date__c = Datetime.now().addDays(-8), Refresh_Count__c = 0
+        );
+        insert post;
+        Test.setCreatedDate(post.Id, Datetime.now().addDays(-8));
+        Response__c resp = new Response__c(Name = 'Waiting', Need_Offer_Responded_To__c = post.Id, Contact__c = responder.Id,
+            On_Behalf_Of_Contact__c = responder.Id, Status__c = FimbyConstants.RESPONSE_NEW, Amount_Requested__c = 1);
+        insert resp;
+        Test.setCreatedDate(resp.Id, Datetime.now().addDays(-3));
+        FimbyRefreshReminderJob.testMaxRows = 50;
+
+        Test.startTest();
+        new FimbyRefreshReminderJob().execute(null);
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT COUNT() FROM Notification__c WHERE Type__c = :FimbyConstants.NOTIF_REFRESH_REMINDER],
+            'The reply nudge owns this post today; no double reminder');
+    }
 }

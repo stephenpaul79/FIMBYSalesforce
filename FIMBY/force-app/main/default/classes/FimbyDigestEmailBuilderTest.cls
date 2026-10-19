@@ -113,6 +113,32 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildDigestContent_countsAsksByClosedDateIncludingAutoClosures() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        Contact c = [SELECT Id FROM Contact WHERE AccountId != null LIMIT 1];
+        List<Needs_Offers__c> closed = FimbyTestDataFactory.createNeedsOffers(nh.Id, c.Id, 'Need', 2, false);
+        for (Needs_Offers__c n : closed) {
+            n.Status__c = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+        }
+        closed[0].Closed_By__c = FimbyConstants.CLOSED_BY_AUTO;
+        closed[0].Closed_Date__c = Datetime.now();
+        closed[1].Closed_By__c = FimbyConstants.CLOSED_BY_POSTER;
+        closed[1].Closed_Date__c = Datetime.now().addDays(-30);
+        insert closed;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result =
+            FimbyDigestEmailBuilder.buildDigestContent(
+                nh.Id, nh.Name, 'Weekly',
+                Date.today().addDays(-7), Date.today()
+            );
+        Test.stopTest();
+
+        System.assert(result.html.contains('1 ask was answered by a neighbour.'),
+            'Only the ask closed inside the window counts, whether the poster or FIMBY closed it.');
+    }
+
+    @IsTest
     static void digestResult_defaultValues() {
         FimbyDigestEmailBuilder.DigestResult r = new FimbyDigestEmailBuilder.DigestResult();
         System.assertEquals('', r.html);

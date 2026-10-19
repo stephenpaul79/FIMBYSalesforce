@@ -128,7 +128,7 @@ public without sharing class FimbyDigestEmailBuilder {
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Need'
               AND Status__c = 'Completed (Offer Accepted / Need Met)'
-              AND LastModifiedDate >= :startDt AND LastModifiedDate <= :endDt
+              AND Closed_Date__c >= :startDt AND Closed_Date__c <= :endDt
         ];
         Integer completedLoans = [
             SELECT COUNT() FROM Loaned_Item__c
@@ -233,7 +233,7 @@ public without sharing class FimbyDigestEmailBuilder {
                     SELECT COUNT() FROM Needs_Offers__c
                     WHERE RecordType.DeveloperName = 'Need'
                       AND Status__c = 'Completed (Offer Accepted / Need Met)'
-                      AND LastModifiedDate >= :startDt AND LastModifiedDate <= :endDt
+                      AND Closed_Date__c >= :startDt AND Closed_Date__c <= :endDt
                 ];
             } else if (variant == 2) {
                 count = [
@@ -488,7 +488,7 @@ public without sharing class FimbyDigestEmailBuilder {
             'AND RecordType.DeveloperName IN (\'Need\', \'Offer\') ' +
             'AND Type__c != \'Event\' ' +
             'AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt ' +
-            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\') ' +
+            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
             'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
 
         Integer max = MAX_CARDS_PER_SECTION;
@@ -1176,7 +1176,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND RecordType.DeveloperName IN ('Need', 'Offer')
               AND Type__c != 'Event'
               AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
-              AND Status__c IN ('Posted', 'Available', 'Reply Received')
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
             ORDER BY Posted_Date__c DESC
             LIMIT 10

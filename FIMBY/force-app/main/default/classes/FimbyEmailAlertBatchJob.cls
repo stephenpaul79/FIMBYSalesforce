@@ -61,8 +61,13 @@ global without sharing class FimbyEmailAlertBatchJob implements Schedulable {
             if (targets == null || targets.isEmpty()) {
                 continue;
             }
+            FimbySupportedIdentityDelivery.Ledger ledger =
+                FimbySupportedIdentityDelivery.parseLedger(n.Delivery_State__c);
             for (FimbySupportedIdentityDelivery.Target t : targets) {
                 if (t.u == null) {
+                    continue;
+                }
+                if (!isEmailOwed(ledger, t.u.Id)) {
                     continue;
                 }
                 if (FimbyPushBatchJob.isInQuietHours(t.u)) {
@@ -151,6 +156,19 @@ global without sharing class FimbyEmailAlertBatchJob implements Schedulable {
         if (!updates.isEmpty()) {
             Database.update(updates, false, AccessLevel.SYSTEM_MODE);
         }
+    }
+
+    /**
+     * A helper already emailed, or one whose own preferences suppressed this type at
+     * creation time, must not be emailed again while another helper keeps the row queued.
+     */
+    @TestVisible
+    static Boolean isEmailOwed(FimbySupportedIdentityDelivery.Ledger ledger, Id userId) {
+        if (ledger == null) {
+            return true;
+        }
+        FimbySupportedIdentityDelivery.Recipient rec = ledger.forUser(userId);
+        return rec == null || rec.e == null || rec.e == FimbySupportedIdentityDelivery.PENDING;
     }
 
     private Map<Id, List<FimbySupportedIdentityDelivery.Target>> resolveTargets(Set<Id> inboxIds) {

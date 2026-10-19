@@ -7,7 +7,7 @@ public with sharing class FimbyNotificationController {
 
     private static final Map<String, List<String>> FILTER_TYPE_MAP = new Map<String, List<String>>{
         'Comments'  => new List<String>{ FimbyConstants.NOTIF_COMMENT },
-        'Responses' => new List<String>{ FimbyConstants.NOTIF_RESPONSE },
+        'Responses' => new List<String>{ FimbyConstants.NOTIF_RESPONSE, FimbyConstants.NOTIF_RESPONSE_REMINDER, FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED },
         'Library'   => new List<String>{ FimbyConstants.NOTIF_LENDING_REQUEST, FimbyConstants.NOTIF_LOAN_APPROVED, FimbyConstants.NOTIF_EXTENSION_REQUEST, FimbyConstants.NOTIF_EXTENSION_APPROVED, FimbyConstants.NOTIF_ITEM_RETURNED },
         'Reminders' => new List<String>{ FimbyConstants.NOTIF_OVERDUE_REMINDER }
     };

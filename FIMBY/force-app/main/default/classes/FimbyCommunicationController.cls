@@ -561,13 +561,14 @@ public with sharing class FimbyCommunicationController {
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Logo_URL__c,
                        Poster_Last_Viewed__c, Responder_Last_Viewed__c,
-                       Poster_Archived__c, Responder_Archived__c,
+                       Poster_Archived__c, Responder_Archived__c, Poster_Unread_Count__c, Responder_Unread_Count__c,
                        CreatedDate
                 FROM Response__c
                 WHERE (
                     Contact__c = :myContactId
                     OR On_Behalf_Of_Contact__c = :myContactId
                     OR Need_Offer_Responded_To__r.Posted_By__c = :myContactId
+                    OR Need_Offer_Responded_To__r.Contact__c = :myContactId
                 )
                 AND Status__c NOT IN ('Declined', 'Cancelled', 'Expired')
                 AND (
@@ -593,7 +594,7 @@ public with sharing class FimbyCommunicationController {
             }
 
             for (Response__c resp : responses) {
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+                Boolean isPoster = isPosterOf(resp, myContactId);
                 Boolean isArchived = isPoster
                     ? (resp.Poster_Archived__c == true)
                     : (resp.Responder_Archived__c == true);
@@ -648,18 +649,8 @@ public with sharing class FimbyCommunicationController {
                     ? Datetime.newInstance(resp.Last_Reply_Date__c, Time.newInstance(0, 0, 0, 0))
                     : resp.CreatedDate;
 
-                Boolean isUnread = false;
-                if (isPoster) {
-                    isUnread = resp.Last_Reply_Date__c != null
-                        && resp.Last_Reply_Contact_Lookup__c != myContactId
-                        && (resp.Poster_Last_Viewed__c == null
-                            || resp.Poster_Last_Viewed__c < lastActivity);
-                } else {
-                    isUnread = resp.Last_Reply_Date__c != null
-                        && resp.Last_Reply_Contact_Lookup__c != myContactId
-                        && (resp.Responder_Last_Viewed__c == null
-                            || resp.Responder_Last_Viewed__c < lastActivity);
-                }
+                Integer unread = viewerUnreadCount(resp, isPoster);
+                Boolean isUnread = unread > 0;
 
                 String parentRt = resp.Need_Offer_Responded_To__r?.RecordType?.DeveloperName;
                 String parentType = resp.Need_Offer_Responded_To__r?.Type__c;
@@ -680,7 +671,7 @@ public with sharing class FimbyCommunicationController {
                 t.lastMessagePreview = preview;
                 t.lastActivityDate = lastActivity;
                 t.isUnread = isUnread;
-                t.unreadCount = isUnread ? 1 : 0;
+                t.unreadCount = unread;
                 t.messageCount = (respMsgCounts.containsKey(resp.Id) ? respMsgCounts.get(resp.Id) : 0) + 1;
                 t.statusBadge = resp.Status__c;
                 t.actionUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + resp.Id);
@@ -688,6 +679,17 @@ public with sharing class FimbyCommunicationController {
             }
 
             return threads;
+        }
+
+        /** Represented owner (Contact__c) or real author (Posted_By__c) of the parent post. */
+        private Boolean isPosterOf(Response__c resp, String myContactId) {
+            Needs_Offers__c post = resp.Need_Offer_Responded_To__r;
+            return post != null && (post.Contact__c == myContactId || post.Posted_By__c == myContactId);
+        }
+
+        private Integer viewerUnreadCount(Response__c resp, Boolean isPoster) {
+            Decimal counter = isPoster ? resp.Poster_Unread_Count__c : resp.Responder_Unread_Count__c;
+            return counter != null ? counter.intValue() : 0;
         }
 
         private String buildInitials(String firstName, String lastName) {
@@ -751,21 +753,21 @@ public with sharing class FimbyCommunicationController {
                        Need_Offer_Responded_To__r.Posted_By__c,
                        Need_Offer_Responded_To__r.Contact__c,
                        Poster_Last_Viewed__c, Responder_Last_Viewed__c,
-                       Poster_Archived__c, Responder_Archived__c
+                       Poster_Archived__c, Responder_Archived__c, Poster_Unread_Count__c, Responder_Unread_Count__c
                 FROM Response__c
                 WHERE (
                     Contact__c = :myContactId
                     OR On_Behalf_Of_Contact__c = :myContactId
                     OR Need_Offer_Responded_To__r.Posted_By__c = :myContactId
+                    OR Need_Offer_Responded_To__r.Contact__c = :myContactId
                 )
                 AND Status__c NOT IN ('Declined', 'Cancelled', 'Expired')
-                AND Last_Reply_Date__c != null
-                AND Last_Reply_Contact_Lookup__c != :myContactId
+                AND (Poster_Unread_Count__c > 0 OR Responder_Unread_Count__c > 0)
                 LIMIT :unreadLim
             ];
 
             for (Response__c resp : responses) {
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+                Boolean isPoster = isPosterOf(resp, myContactId);
                 Boolean isArchived = isPoster
                     ? (resp.Poster_Archived__c == true)
                     : (resp.Responder_Archived__c == true);
@@ -789,18 +791,8 @@ public with sharing class FimbyCommunicationController {
                     continue;
                 }
 
-                Datetime lastActivity = Datetime.newInstance(
-                    resp.Last_Reply_Date__c, Time.newInstance(0, 0, 0, 0)
-                );
-
-                if (isPoster) {
-                    if (resp.Poster_Last_Viewed__c == null || resp.Poster_Last_Viewed__c < lastActivity) {
-                        responseUnread++;
-                    }
-                } else {
-                    if (resp.Responder_Last_Viewed__c == null || resp.Responder_Last_Viewed__c < lastActivity) {
-                        responseUnread++;
-                    }
+                if (viewerUnreadCount(resp, isPoster) > 0) {
+                    responseUnread++;
                 }
             }
 
@@ -841,20 +833,22 @@ public with sharing class FimbyCommunicationController {
 
             Response__c resp = [
                 SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                       Need_Offer_Responded_To__r.Posted_By__c
+                       Need_Offer_Responded_To__r.Posted_By__c, Need_Offer_Responded_To__r.Contact__c
                 FROM Response__c
                 WHERE Id = :responseId
                 LIMIT 1
             ];
 
-            Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+            Boolean isPoster = isPosterOf(resp, myContactId);
             Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
 
             Response__c updateResp = new Response__c(Id = responseId);
             if (isPoster) {
                 updateResp.Poster_Last_Viewed__c = Datetime.now();
+                updateResp.Poster_Unread_Count__c = 0;
             } else if (isResponder) {
                 updateResp.Responder_Last_Viewed__c = Datetime.now();
+                updateResp.Responder_Unread_Count__c = 0;
             } else {
                 return;
             }
@@ -884,16 +878,18 @@ public with sharing class FimbyCommunicationController {
             if (typeVal == 'response') {
                 Response__c resp = [
                     SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                           Need_Offer_Responded_To__r.Posted_By__c
+                           Need_Offer_Responded_To__r.Posted_By__c, Need_Offer_Responded_To__r.Contact__c
                     FROM Response__c WHERE Id = :threadId LIMIT 1
                 ];
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+                Boolean isPoster = isPosterOf(resp, myContactId);
                 Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
                 Response__c upd = new Response__c(Id = threadId);
                 if (isPoster) {
                     upd.Poster_Last_Viewed__c = null;
+                    upd.Poster_Unread_Count__c = 1;
                 } else if (isResponder) {
                     upd.Responder_Last_Viewed__c = null;
+                    upd.Responder_Unread_Count__c = 1;
                 } else {
                     return;
                 }
@@ -955,10 +951,10 @@ public with sharing class FimbyCommunicationController {
 
                 Response__c resp = [
                     SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                           Need_Offer_Responded_To__r.Posted_By__c
+                           Need_Offer_Responded_To__r.Posted_By__c, Need_Offer_Responded_To__r.Contact__c
                     FROM Response__c WHERE Id = :threadId LIMIT 1
                 ];
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+                Boolean isPoster = isPosterOf(resp, myContactId);
                 Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
                 Response__c upd = new Response__c(Id = threadId);
                 if (isPoster) {
@@ -995,10 +991,10 @@ public with sharing class FimbyCommunicationController {
 
                 Response__c resp = [
                     SELECT Id, Contact__c, On_Behalf_Of_Contact__c,
-                           Need_Offer_Responded_To__r.Posted_By__c
+                           Need_Offer_Responded_To__r.Posted_By__c, Need_Offer_Responded_To__r.Contact__c
                     FROM Response__c WHERE Id = :threadId LIMIT 1
                 ];
-                Boolean isPoster = (resp.Need_Offer_Responded_To__r?.Posted_By__c == myContactId);
+                Boolean isPoster = isPosterOf(resp, myContactId);
                 Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
                 Response__c upd = new Response__c(Id = threadId);
                 if (isPoster) {

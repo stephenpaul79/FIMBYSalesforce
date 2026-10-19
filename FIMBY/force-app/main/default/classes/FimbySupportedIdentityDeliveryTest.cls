@@ -499,4 +499,96 @@ private class FimbySupportedIdentityDeliveryTest {
             FimbySupportedIdentityDelivery.withActingIdentity('/notifications', null),
             'No acting identity means the URL is untouched');
     }
+
+    /* =================================================================
+     * Creation-time stamping — a login-less inbox must enter the queues
+     * ================================================================= */
+
+    @IsTest
+    static void notificationForLoginlessContactSeedsHelperLedger() {
+        Account nh = getNeighbourhood();
+        User helperUser = getHelperUser();
+        Contact child = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        insert new Support_Relationship__c(
+            Contact__c = helperUser.ContactId,
+            Related_Contact__c = child.Id,
+            Relationship_Type__c = 'Parent_Guardian',
+            Status__c = 'Approved',
+            Neighbourhood__c = nh.Id,
+            Consent_Method__c = 'Written'
+        );
+
+        Test.startTest();
+        FimbyNotificationService.NotificationRequest req = new FimbyNotificationService.NotificationRequest(
+            child.Id, FimbyConstants.NOTIF_RESPONSE_REMINDER, 'has replied to your ask', 'Body',
+            null, 'Needs_Offers__c', '/asks-offers', 'Ravi');
+        FimbyNotificationService.createNotificationsFromRequests(
+            new List<FimbyNotificationService.NotificationRequest>{ req }, true);
+        Test.stopTest();
+
+        Notification__c n = [
+            SELECT Push_Status__c, Email_Status__c, Delivery_State__c
+            FROM Notification__c WHERE Contact__c = :child.Id
+            WITH SYSTEM_MODE LIMIT 1
+        ];
+        System.assertNotEquals(null, n.Delivery_State__c,
+            'The represented inbox carries a per-helper ledger so batch jobs pick it up');
+        FimbySupportedIdentityDelivery.Ledger ledger = FimbySupportedIdentityDelivery.parseLedger(n.Delivery_State__c);
+        System.assertNotEquals(null, ledger.forUser(helperUser.Id), 'The guardian is a recipient');
+        System.assert(n.Push_Status__c != null || n.Email_Status__c != null,
+            'At least one channel is queued for the guardian');
+    }
+
+    @IsTest
+    static void skipPushKeepsLoginlessNotificationInAppOnly() {
+        Account nh = getNeighbourhood();
+        User helperUser = getHelperUser();
+        Contact child = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        insert new Support_Relationship__c(
+            Contact__c = helperUser.ContactId,
+            Related_Contact__c = child.Id,
+            Relationship_Type__c = 'Parent_Guardian',
+            Status__c = 'Approved',
+            Neighbourhood__c = nh.Id,
+            Consent_Method__c = 'Written'
+        );
+
+        Test.startTest();
+        FimbyNotificationService.createNotification(child.Id, FimbyConstants.NOTIF_RESPONSE, 'is no longer going',
+            'Body', null, 'Response__c', '/x', 'Ravi', true, null);
+        Test.stopTest();
+
+        Notification__c n = [SELECT Push_Status__c, Email_Status__c, Delivery_State__c FROM Notification__c WHERE Contact__c = :child.Id WITH SYSTEM_MODE];
+        System.assertEquals(null, n.Push_Status__c);
+        System.assertEquals(null, n.Email_Status__c);
+        System.assertEquals(null, n.Delivery_State__c);
+    }
+
+    @IsTest
+    static void emailOwedFollowsTheHelperLedger() {
+        User helperUser = getHelperUser();
+        Id otherUser = UserInfo.getUserId();
+        FimbySupportedIdentityDelivery.Ledger ledger = new FimbySupportedIdentityDelivery.Ledger(helperUser.ContactId);
+        ledger.r.add(new FimbySupportedIdentityDelivery.Recipient(helperUser.Id, PENDING, SUPPRESSED));
+
+        System.assertEquals(true, FimbyEmailAlertBatchJob.isEmailOwed(null, helperUser.Id), 'No ledger means legacy behaviour');
+        System.assertEquals(false, FimbyEmailAlertBatchJob.isEmailOwed(ledger, helperUser.Id), 'A suppressed helper is not emailed');
+        System.assertEquals(true, FimbyEmailAlertBatchJob.isEmailOwed(ledger, otherUser), 'A helper missing from the ledger is owed');
+
+        ledger.r[0].e = PENDING;
+        System.assertEquals(true, FimbyEmailAlertBatchJob.isEmailOwed(ledger, helperUser.Id));
+        ledger.r[0].e = SENT;
+        System.assertEquals(false, FimbyEmailAlertBatchJob.isEmailOwed(ledger, helperUser.Id), 'Never re-email a sent helper');
+    }
+
+    @IsTest
+    static void lifecycleTypesUseTheActivityLaneAndNeedsOffersEmailToggle() {
+        System.assertEquals(false, FimbyEmailAlertService.isDirectActionType(FimbyConstants.NOTIF_RESPONSE_REMINDER),
+            'Reminders batch with the regular alert cadence');
+        System.assertEquals(false, FimbyEmailAlertService.isDirectActionType(FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED));
+        User u = [SELECT Id, Email_Alerts_Enabled__c, Email_Alert_Needs_Offers__c FROM User WHERE Id = :getHelperUser().Id];
+        u.Email_Alert_Needs_Offers__c = false;
+        System.assertEquals(null, FimbyEmailAlertService.shouldSendEmail(FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED, u),
+            'Opt-in close-outs respect the asks and offers email toggle');
+    }
 }

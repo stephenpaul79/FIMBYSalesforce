@@ -178,6 +178,9 @@
                         <!-- ===== ASK / OFFER / GATHERING FORM ===== -->
                         <template lwc:if={isAskOfferType}>
                             <div class="form-section">
+                                <template lwc:if={showMatchedNotice}>
+                                    <p class="matched-notice" role="note">Someone’s already been matched. You can still reply in case plans change.</p>
+                                </template>
                                 <div class="field-group">
                                     <div class="field-label-row">
                                         <label class="field-label" for="qr-subject">Subject</label>
@@ -219,17 +222,10 @@
                                                 max={maxAmount}
                                                 class="amount-input">
                                             </lightning-input>
-                                            <span class="amount-hint">of {maxAmount} available</span>
+                                            <span class="amount-hint">{amountHint}</span>
                                         </div>
                                     </div>
                                 </template>
-
-                                <div class="field-group">
-                                    <label class="decline-label">
-                                        <input type="checkbox" checked={_decline} onchange={handleDeclineChange}>
-                                        <span>Decline — send a message without accepting</span>
-                                    </label>
-                                </div>
                             </div>
                         </template>
 

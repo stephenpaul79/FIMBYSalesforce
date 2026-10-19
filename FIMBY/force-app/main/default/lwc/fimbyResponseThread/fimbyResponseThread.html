@@ -496,14 +496,38 @@
                                 </template>
                                 <div class="compose-area">
                                     <textarea class="compose-input" placeholder="Write a reply..."
+                                              aria-label={composeLabel}
                                               oninput={handleMessageInput} rows="3">{messageText}</textarea>
+                                    <template lwc:if={showSendAndAccept}>
+                                        <div class="compose-accept-note">
+                                            <p class="compose-accept-caption">{sendAndAcceptCaption}</p>
+                                            <template lwc:if={showAutoShareDisclosure}>
+                                                <p class="compose-accept-disclosure">{autoShareDisclosure}</p>
+                                            </template>
+                                        </div>
+                                    </template>
                                     <div class="compose-actions">
-                                        <button class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
-                                        <button class="compose-send" onclick={handleSendMessage}
-                                                disabled={isSendDisabled}>
-                                            <template lwc:if={isSending}>Sending…</template>
-                                            <template lwc:else>Send</template>
-                                        </button>
+                                        <button type="button" class="compose-cancel" onclick={handleCancelCompose}>Cancel</button>
+                                        <template lwc:if={showSendAndAccept}>
+                                            <button type="button" class="compose-send compose-send-outline"
+                                                    onclick={handleSendMessage}
+                                                    disabled={isSendDisabled}>
+                                                Send
+                                            </button>
+                                            <button type="button" class="compose-send compose-send-accept"
+                                                    onclick={handleSendAndAccept}
+                                                    disabled={isSendDisabled}>
+                                                <template lwc:if={isSending}>Sending…</template>
+                                                <template lwc:else>Send &amp; Accept</template>
+                                            </button>
+                                        </template>
+                                        <template lwc:else>
+                                            <button type="button" class="compose-send" onclick={handleSendMessage}
+                                                    disabled={isSendDisabled}>
+                                                <template lwc:if={isSending}>Sending…</template>
+                                                <template lwc:else>Send</template>
+                                            </button>
+                                        </template>
                                     </div>
                                 </div>
                             </template>
@@ -530,9 +554,9 @@
 
         <!-- Confirmation Dialog -->
         <template lwc:if={showConfirmDialog}>
-            <section class="confirm-overlay" role="dialog" aria-modal="true">
+            <section class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="thread-confirm-title">
                 <div class="confirm-dialog">
-                    <h3 class="confirm-title">{confirmTitle}</h3>
+                    <h3 class="confirm-title" id="thread-confirm-title">{confirmTitle}</h3>
                     <p class="confirm-message">{confirmMessage}</p>
                     <div class="confirm-actions">
                         <button class="confirm-btn-secondary" onclick={handleConfirmDialogClose}>Go Back</button>

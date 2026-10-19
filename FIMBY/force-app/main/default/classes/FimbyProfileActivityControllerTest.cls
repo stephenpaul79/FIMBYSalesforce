@@ -97,6 +97,35 @@ private class FimbyProfileActivityControllerTest {
     }
 
     @IsTest
+    static void testGetProfileActivity_completedPostLingersThenLeaves() {
+        Contact owner = getOwnerContact();
+        Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Needs_Offers__c recent = new Needs_Offers__c(
+            Name = 'Recently received', Details__c = 'Done', Type__c = 'Goods - Unperishable',
+            Status__c = FimbyConstants.NEEDS_OFFERS_COMPLETED, Closed_Date__c = Datetime.now().addDays(-1),
+            Neighbourhood__c = nh.Id, Posted_By__c = owner.Id, Contact__c = owner.Id
+        );
+        Needs_Offers__c stale = recent.clone(false, true);
+        stale.Name = 'Received long ago';
+        stale.Closed_Date__c = Datetime.now().addDays(-30);
+        insert new List<Needs_Offers__c>{ recent, stale };
+
+        User viewerUser = getCommunityUser();
+
+        Test.startTest();
+        Set<String> shownIds = new Set<String>();
+        System.runAs(viewerUser) {
+            for (FimbyFeedItem item : FimbyProfileActivityController.getProfileActivity(owner.Id, 0, 50).items) {
+                shownIds.add(item.recordId);
+            }
+        }
+        Test.stopTest();
+
+        System.assert(shownIds.contains(recent.Id), 'A completed post lingers on the profile.');
+        System.assert(!shownIds.contains(stale.Id), 'It leaves once the linger window passes.');
+    }
+
+    @IsTest
     static void testGetProfileActivity_excludesModeratedAndInactive() {
         Contact owner = getOwnerContact();
         Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];

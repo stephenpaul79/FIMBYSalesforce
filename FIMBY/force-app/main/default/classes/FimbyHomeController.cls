@@ -3,6 +3,38 @@
  */
 public with sharing class FimbyHomeController {
 
+    @TestVisible
+    private static final Set<String> ACTIVE_FEED_STATUSES = new Set<String>{
+        'Posted', 'Available', 'Reply Received', 'Reply Accepted', FimbyConstants.NEEDS_OFFERS_PICKUP_READY
+    };
+
+    /**
+     * Active posts stay visible regardless of remaining quantity; completed posts linger for
+     * Finished_Post_Linger_Days__c. Recurring series only surface their current occurrence while
+     * active. Binds: activeFeedStatuses, liveRecurringOccurrenceIds, completedStatus, lingerCutoff.
+     */
+    private static final String FEED_VISIBILITY_PREDICATE =
+        '((Status__c IN :activeFeedStatuses' +
+        ' AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds))' +
+        ' OR (Status__c = :completedStatus AND Closed_Date__c >= :lingerCutoff))';
+
+    private static Datetime lingerCutoff() {
+        return Datetime.now().addDays(-FimbySettings.finishedPostLingerDays());
+    }
+
+    private static Set<Id> liveRecurringOccurrenceIds(String neighbourhoodAccountId) {
+        Set<Id> ids = new Set<Id>();
+        String seriesParentQuery = 'SELECT Id, Current_Occurrence__c FROM Needs_Offers__c ' +
+            'WHERE Recurrence_Frequency__c != null AND Series_Parent__c = null';
+        if (String.isNotBlank(neighbourhoodAccountId)) {
+            seriesParentQuery += ' AND Neighbourhood__c = :neighbourhoodAccountId';
+        }
+        for (Needs_Offers__c seriesParent : Database.query(seriesParentQuery)) {
+            ids.add(seriesParent.Current_Occurrence__c != null ? seriesParent.Current_Occurrence__c : seriesParent.Id);
+        }
+        return ids;
+    }
+
     /**
      * @description LWC-callable method that fetches stories for the home feed, scoped to user's neighbourhood.
      * Stories-only surface, so full history is returned — Story_Feed_TTL_Days__c governs the combined feed only.
@@ -108,19 +140,22 @@ public with sharing class FimbyHomeController {
             Set<Id> adjacentIds = FimbyNeighbourhoodService.getAdjacentNeighbourhoodIds();
             Set<Id> sharedContactIds = FimbyNeighbourhoodService.getAdjacentSharedContactIds();
 
-            String askOfferQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
+            String askOfferQuery = 'SELECT Id, Name, Details__c, Full_Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
                           'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                           'Posted_By__r.Is_Parent_Proxied__c, Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                           'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
                           'Contact__r.Full_Name__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
                           'Contact__r.Is_Parent_Proxied__c, Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__c, ' +
                           'Contact__r.Organization_Account__r.Logo_URL__c, ' +
-                          'Portal_Image__c, RecordType.Name, ' +
+                          'Portal_Image__c, RecordType.Name, Closed_Date__c, ' +
                           'Category__c, Neighbourhood__c ' +
                           'FROM Needs_Offers__c ' +
-                          'WHERE Status__c IN (\'Posted\', \'Reply Received\', \'Reply Accepted\') ' +
-                          'AND (Total_Available__c > 0 OR Total_Available__c = null) ' +
-                          'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ';
+                          'WHERE (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
+                          'AND ' + FEED_VISIBILITY_PREDICATE + ' ';
+            Set<String> activeFeedStatuses = ACTIVE_FEED_STATUSES;
+            String completedStatus = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+            Datetime lingerCutoff = lingerCutoff();
+            Set<Id> liveRecurringOccurrenceIds = liveRecurringOccurrenceIds(neighbourhoodAccountId);
 
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 askOfferQuery += 'AND (Neighbourhood__c = :neighbourhoodAccountId' +
@@ -387,21 +422,9 @@ public with sharing class FimbyHomeController {
              * Fetch Needs/Offers (when category is 'all' or 'askOffer')
              * ----------------------------------------------------------- */
             if (isAllCategory || category == 'askOffer') {
-                Set<Id> liveRecurringOccurrenceIds = new Set<Id>();
-                String seriesParentQuery = 'SELECT Id, Current_Occurrence__c FROM Needs_Offers__c ' +
-                    'WHERE Recurrence_Frequency__c != null AND Series_Parent__c = null';
-                if (String.isNotBlank(neighbourhoodAccountId)) {
-                    seriesParentQuery += ' AND Neighbourhood__c = :neighbourhoodAccountId';
-                }
-                for (Needs_Offers__c seriesParent : Database.query(seriesParentQuery)) {
-                    liveRecurringOccurrenceIds.add(
-                        seriesParent.Current_Occurrence__c != null
-                            ? seriesParent.Current_Occurrence__c
-                            : seriesParent.Id
-                    );
-                }
+                Set<Id> liveRecurringOccurrenceIds = liveRecurringOccurrenceIds(neighbourhoodAccountId);
 
-                String aoQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
+                String aoQuery = 'SELECT Id, Name, Details__c, Full_Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, ' +
                                  'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
                                  'Posted_By__r.Is_Parent_Proxied__c, Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, ' +
                                  'Posted_By__r.Organization_Account__r.Logo_URL__c, ' +
@@ -416,12 +439,14 @@ public with sharing class FimbyHomeController {
                                  'Active_Reserver_Ids__c, Is_Urgent__c, ' +
                                  'Event_Details__c, Location__c, Event_Type__c, Event_Link__c, ' +
                                  'Recurrence_Frequency__c, Series_Parent__c, Current_Occurrence__c, ' +
+                                 'Closed_Date__c, ' +
                                  'RecordType.Name, Category__c ' +
                                  'FROM Needs_Offers__c ' +
-                                 'WHERE Status__c IN (\'Posted\', \'Reply Received\', \'Reply Accepted\', \'Available\') ' +
-                                 'AND (Total_Available__c > 0 OR Total_Available__c = null) ' +
-                                 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
-                                 'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ';
+                                 'WHERE (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
+                                 'AND ' + FEED_VISIBILITY_PREDICATE + ' ';
+                Set<String> activeFeedStatuses = ACTIVE_FEED_STATUSES;
+                String completedStatus = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+                Datetime lingerCutoff = lingerCutoff();
 
                 if (String.isNotBlank(neighbourhoodAccountId)) {
                     aoQuery += 'AND (Neighbourhood__c = :neighbourhoodAccountId' +
@@ -444,6 +469,7 @@ public with sharing class FimbyHomeController {
                 aoQuery += 'ORDER BY Posted_Date__c DESC LIMIT :queryLimit';
 
                 List<Needs_Offers__c> aoItems = Database.query(aoQuery);
+                FimbyFeedItem.primeProxiedOwners(aoItems);
                 for (Needs_Offers__c item : aoItems) {
                     allItems.add(new FimbyFeedItem(item));
                 }
@@ -499,6 +525,7 @@ public with sharing class FimbyHomeController {
             }
 
             Boolean hasMore = endIndex < totalCount;
+            FimbyFeedItem.applyEngagement(pagedItems, viewerContactId);
 
             return new UnifiedFeedResult(pagedItems, hasMore, totalCount);
 

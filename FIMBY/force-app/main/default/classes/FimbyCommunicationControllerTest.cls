@@ -497,7 +497,8 @@ public class FimbyCommunicationControllerTest {
             Neighbourhood__c = neighbourhood.Id,
             Last_Reply__c = 'Great, let me know',
             Last_Reply_Date__c = Date.today(),
-            Last_Reply_Contact_Lookup__c = others[0].Id
+            Last_Reply_Contact_Lookup__c = others[0].Id,
+            Responder_Unread_Count__c = 2
         );
         insert resp;
 
@@ -507,6 +508,56 @@ public class FimbyCommunicationControllerTest {
             System.assert(count >= 1, 'Should have at least 1 unread from response');
         }
         Test.stopTest();
+    }
+
+    @IsTest
+    static void testRepresentedPosterSeesThreadWithNumericUnread() {
+        User testUser = getTestUser();
+        List<Contact> others = getOtherContacts();
+        Account neighbourhood = [SELECT Id FROM Account LIMIT 1];
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Ask typed by a helper',
+            Details__c = 'Need a ladder',
+            Type__c = 'Services - Free',
+            Status__c = 'Posted',
+            Neighbourhood__c = neighbourhood.Id,
+            Posted_By__c = others[1].Id,
+            Contact__c = testUser.ContactId
+        );
+        insert post;
+        Response__c resp = new Response__c(
+            Name = 'Reply',
+            Response__c = 'I have one',
+            Contact__c = others[0].Id,
+            On_Behalf_Of_Contact__c = others[0].Id,
+            Need_Offer_Responded_To__c = post.Id,
+            Status__c = 'New',
+            Neighbourhood__c = neighbourhood.Id,
+            Poster_Unread_Count__c = 3
+        );
+        insert resp;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'all', null);
+            FimbyCommunicationController.CommunicationThread thread;
+            for (FimbyCommunicationController.CommunicationThread t : result.threads) {
+                if (t.threadId == resp.Id) {
+                    thread = t;
+                }
+            }
+            System.assertNotEquals(null, thread, 'The represented owner sees replies to their post');
+            System.assertEquals(true, thread.isUnread);
+            System.assertEquals(3, thread.unreadCount, 'Unread comes from the poster counter');
+            System.assert(FimbyCommunicationController.getUnifiedUnreadCount() >= 1);
+
+            FimbyCommunicationController.markThreadRead('response', resp.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT Poster_Unread_Count__c FROM Response__c WHERE Id = :resp.Id].Poster_Unread_Count__c);
     }
 
     // ================================================================

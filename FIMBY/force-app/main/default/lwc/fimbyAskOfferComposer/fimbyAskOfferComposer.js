@@ -418,7 +418,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
 
         if (this.isNeed) {
             this.selectedTypeValue = 'Need';
-            this.endDate = this._endDateOffset(7);
+            this.endDate = this._endDateOffset(14);
         } else if (this.isEventType) {
             this.selectedTypeValue = 'Event';
             this.endDate = this._endDateOffset(21);
@@ -656,7 +656,7 @@ export default class FimbyAskOfferComposer extends NavigationMixin(LightningElem
         if (normalized === 'Need') {
             this.selectedType = 'Need';
             this.selectedTypeValue = 'Need';
-            this.endDate = this._endDateOffset(7);
+            this.endDate = this._endDateOffset(14);
             return;
         }
         this.selectedType = 'Offer';

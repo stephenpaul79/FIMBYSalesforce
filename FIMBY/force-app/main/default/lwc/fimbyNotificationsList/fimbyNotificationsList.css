@@ -108,14 +108,12 @@
  * --------------------------------------------------------------- */
 
 .confirm-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    position: fixed; inset: 0; background: transparent; background-color: transparent; background: rgba(0, 0, 0, 0.4);
     z-index: 200;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+    padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
 }
 
 .confirm-dialog {
@@ -496,7 +494,7 @@
     width: 44px;
     height: 44px;
     border: none;
-    background: transparent;
+    background-color: transparent;
     border-radius: 50%;
     color: var(--fimby-text-muted, #B5A088);
     cursor: pointer;
@@ -680,9 +678,7 @@
     .notifications-container {
         padding-bottom: 24px;
     }
-}
-
-/* ---------------------------------------------------------------
+}/* ---------------------------------------------------------------
  * Responsive: desktop (1024px+)
  * --------------------------------------------------------------- */
 
@@ -707,7 +703,7 @@
         box-sizing: border-box;
         padding: 10px 0;
         border-bottom: none;
-        background: transparent;
+        background-color: transparent;
     }
 
     .notifications-container {
@@ -722,4 +718,14 @@
         font-size: 15px;
     }
 
+}
+/* Shell chrome zones � content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

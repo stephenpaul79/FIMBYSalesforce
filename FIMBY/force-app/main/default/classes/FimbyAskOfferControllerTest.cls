@@ -554,6 +554,7 @@ public class FimbyAskOfferControllerTest {
 
         System.assertEquals(true, result.visible, 'Newly created visible post should be visible');
         System.assertEquals(false, result.removed, 'Visible post should not be reported as removed');
+        System.assertEquals(false, result.isPosterParentManaged, 'Standard offer should not be parent-managed');
     }
 
     @isTest
@@ -912,18 +913,28 @@ public class FimbyAskOfferControllerTest {
         );
         insert resp;
 
+        Map<String, Object> result;
         Test.startTest();
         System.runAs(testUser) {
-            FimbyAskOfferController.closePost(post.Id, 'resolved');
+            result = FimbyAskOfferController.closePost(post.Id, 'resolved');
         }
+        FimbyPostLifecycleService.onPostsClosed(new List<Needs_Offers__c>{ new Needs_Offers__c(Id = post.Id) });
         Test.stopTest();
 
-        post = [SELECT Status__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        post = [SELECT Status__c, Closed_By__c FROM Needs_Offers__c WHERE Id = :post.Id];
         System.assertEquals(FimbyConstants.NEEDS_OFFERS_COMPLETED, post.Status__c);
+        System.assertEquals(FimbyConstants.CLOSED_BY_POSTER, post.Closed_By__c);
+        System.assertEquals('Glad to hear it. Neighbours will see this as Answered.', result.get('message'));
+        System.assertEquals(FimbyConstants.RESPONSE_DECLINED, [SELECT Status__c FROM Response__c WHERE Id = :resp.Id].Status__c);
         System.assertEquals(
             1,
+            [SELECT COUNT() FROM Notification__c WHERE Contact__c = :responder.Id AND Type__c = :FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED],
+            'Unanswered responder hears about the close once'
+        );
+        System.assertEquals(
+            0,
             [SELECT COUNT() FROM Notification__c WHERE Contact__c = :responder.Id AND Type__c = :FimbyConstants.NOTIF_RESPONSE],
-            'Pending responder should be notified'
+            'No legacy close notification'
         );
     }
 

@@ -41,6 +41,12 @@ public class FimbyFeedItem implements Comparable {
     @AuraEnabled public Boolean isUrgent { get; set; }
     @AuraEnabled public String sourceScope { get; set; }
     @AuraEnabled public Boolean isRecurring { get; set; }
+    @AuraEnabled public String status { get; set; }
+    @AuraEnabled public Datetime closedDate { get; set; }
+    @AuraEnabled public String closedOutcome { get; set; }
+    @AuraEnabled public Integer replyCount { get; set; }
+    @AuraEnabled public Decimal totalAccepted { get; set; }
+    @AuraEnabled public Boolean viewerHasActiveResponse { get; set; }
 
     private Datetime sortDate;
 
@@ -57,7 +63,7 @@ public class FimbyFeedItem implements Comparable {
         this.sortDate = story.CreatedDate;
         this.postedByName = story.Posted_By__r?.Full_Name__c;
         this.isOrgContact = story.Posted_By__r?.Is_Organization_Contact__c == true;
-        this.isParentManaged = story.Posted_By__r?.Is_Parent_Proxied__c == true;
+        this.isParentManaged = FimbyProxiedPresenceGuard.isProxied(story.Posted_By__c);
         this.orgAccountId = story.Posted_By__r?.Organization_Account__c;
         if (this.isOrgContact && story.Posted_By__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = story.Posted_By__r.Organization_Account__r.Logo_URL__c;
@@ -79,7 +85,7 @@ public class FimbyFeedItem implements Comparable {
     public FimbyFeedItem(Needs_Offers__c item) {
         this.recordId = item.Id;
         this.name = item.Name;
-        this.description = item.Details__c;
+        this.description = resolveAskOfferFeedDescription(item);
         this.feedType = 'askOffer';
         this.itemType = item.RecordType?.Name;
         this.category = item.Category__c;
@@ -90,9 +96,8 @@ public class FimbyFeedItem implements Comparable {
         this.isOrgContact = hasContact
             ? (item.Contact__r.Is_Organization_Contact__c == true)
             : (item.Posted_By__r?.Is_Organization_Contact__c == true);
-        this.isParentManaged = hasContact
-            ? (item.Contact__r.Is_Parent_Proxied__c == true)
-            : (item.Posted_By__r?.Is_Parent_Proxied__c == true);
+        Id posterContactId = hasContact ? item.Contact__c : item.Posted_By__c;
+        this.isParentManaged = FimbyProxiedPresenceGuard.isProxied(posterContactId);
         this.orgAccountId = hasContact
             ? item.Contact__r.Organization_Account__c
             : item.Posted_By__r?.Organization_Account__c;
@@ -133,6 +138,78 @@ public class FimbyFeedItem implements Comparable {
         this.isUrgent = item.Is_Urgent__c == true;
         this.isRecurring = String.isNotBlank(item.Recurrence_Frequency__c)
             || item.Series_Parent__c != null;
+
+        Map<String, Object> populated = item.getPopulatedFieldsAsMap();
+        this.status = (String) populated.get('Status__c');
+        this.closedDate = (Datetime) populated.get('Closed_Date__c');
+        this.totalAccepted = item.Total_Accepted__c;
+        this.replyCount = 0;
+        this.viewerHasActiveResponse = false;
+        if (this.status == FimbyConstants.NEEDS_OFFERS_COMPLETED) {
+            this.closedOutcome = outcomeLabel(item.Type__c, this.recordTypeName);
+        }
+    }
+
+    /**
+     * @description Outcome label a completed post shows while it lingers in the feed.
+     */
+    @TestVisible
+    private static String outcomeLabel(String typeValue, String recordTypeName) {
+        if (recordTypeName == 'Bulk Buy' || recordTypeName == FimbyConstants.RT_BULK_BUY) return 'Purchased';
+        if (typeValue == 'Event') return 'Happened';
+        if (recordTypeName == FimbyConstants.RT_NEED) return 'Answered';
+        return 'Received';
+    }
+
+    /**
+     * @description Fills reply count and viewer state for Ask/Offer/Event/Bulk Buy cards from one
+     * set-based engagement read, instead of parsing Active_Reserver_Ids__c on the client.
+     * @param items feed items (non-askOffer items are ignored)
+     * @param viewerContactId represented viewer
+     */
+    public static void applyEngagement(List<FimbyFeedItem> items, Id viewerContactId) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        Set<Id> postIds = new Set<Id>();
+        for (FimbyFeedItem item : items) {
+            if (item.feedType == 'askOffer' && String.isNotBlank(item.recordId)) {
+                postIds.add(Id.valueOf(item.recordId));
+            }
+        }
+        if (postIds.isEmpty()) {
+            return;
+        }
+        Map<Id, FimbyPostEngagementService.Summary> summaries =
+            FimbyPostEngagementService.summarize(postIds, viewerContactId);
+        for (FimbyFeedItem item : items) {
+            if (item.feedType != 'askOffer' || String.isBlank(item.recordId)) {
+                continue;
+            }
+            FimbyPostEngagementService.Summary s = summaries.get(Id.valueOf(item.recordId));
+            if (s == null) {
+                continue;
+            }
+            item.replyCount = s.replyCount;
+            item.viewerHasActiveResponse = s.viewerHasActiveResponse;
+        }
+    }
+
+    /**
+     * @description Resolves parent-managed owners for a batch of posts in one query so each
+     * constructor call reads from the guard's cache.
+     */
+    public static void primeProxiedOwners(List<Needs_Offers__c> items) {
+        Set<Id> ownerIds = new Set<Id>();
+        for (Needs_Offers__c item : items) {
+            if (item.Contact__c != null) {
+                ownerIds.add(item.Contact__c);
+            }
+            if (item.Posted_By__c != null) {
+                ownerIds.add(item.Posted_By__c);
+            }
+        }
+        FimbyProxiedPresenceGuard.proxiedAmong(ownerIds);
     }
 
     public FimbyFeedItem(Library_Item__c item) {
@@ -146,7 +223,7 @@ public class FimbyFeedItem implements Comparable {
         this.sortDate = item.CreatedDate;
         this.postedByName = item.Owner_Contact__r?.Full_Name__c;
         this.isOrgContact = item.Owner_Contact__r?.Is_Organization_Contact__c == true;
-        this.isParentManaged = item.Owner_Contact__r?.Is_Parent_Proxied__c == true;
+        this.isParentManaged = FimbyProxiedPresenceGuard.isProxied(item.Owner_Contact__c);
         this.orgAccountId = item.Owner_Contact__r?.Organization_Account__c;
         if (this.isOrgContact && item.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
             this.postedByImageUrl = item.Owner_Contact__r.Organization_Account__r.Logo_URL__c;
@@ -172,5 +249,16 @@ public class FimbyFeedItem implements Comparable {
             return 1;
         }
         return 0;
+    }
+
+    @TestVisible
+    private static String resolveAskOfferFeedDescription(Needs_Offers__c item) {
+        if (item == null) {
+            return null;
+        }
+        if (String.isNotBlank(item.Full_Details__c)) {
+            return item.Full_Details__c;
+        }
+        return item.Details__c;
     }
 }

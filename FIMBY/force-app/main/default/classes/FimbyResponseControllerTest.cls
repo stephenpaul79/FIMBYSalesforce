@@ -131,8 +131,10 @@ public class FimbyResponseControllerTest {
         }
         Test.stopTest();
 
-        System.assertEquals(true, result2.get('success'), 'Second Need response should succeed even when Total_Available is 0');
-        System.assertEquals(2, [SELECT COUNT() FROM Response__c WHERE Need_Offer_Responded_To__c = :need.Id]);
+        System.assertEquals(true, result2.get('success'), 'A repeat tap opens the existing reply instead of failing');
+        System.assertEquals(true, result2.get('alreadyResponded'), 'The same identity keeps one active reply per post');
+        System.assertEquals(result1.get('responseId'), result2.get('responseId'));
+        System.assertEquals(1, [SELECT COUNT() FROM Response__c WHERE Need_Offer_Responded_To__c = :need.Id]);
     }
 
     @isTest
@@ -168,8 +170,8 @@ public class FimbyResponseControllerTest {
         Map<String, Object> result = FimbyResponseController.getNeedsOffersForResponse(testNeedOffer.Id);
         Test.stopTest();
 
-        System.assertEquals(false, result.get('success'), 'Should return failure when none available');
-        System.assertEquals('noneAvailable', result.get('error'), 'Should have noneAvailable error');
+        System.assertEquals(true, result.get('success'),
+            'A matched Offer stays replyable; only a full Gathering refuses new replies');
     }
 
     @isTest
@@ -239,6 +241,8 @@ public class FimbyResponseControllerTest {
         System.assertEquals(true, result.get('success'), 'Should return success');
         System.assertNotEquals(null, result.get('responseId'), 'Should return responseId');
         System.assertEquals('New', result.get('status'), 'Status should be New');
+        Response__c created = [SELECT Poster_Unread_Count__c FROM Response__c WHERE Id = :(Id) result.get('responseId')];
+        System.assertEquals(1, created.Poster_Unread_Count__c, 'A new reply starts unread for the poster');
     }
 
     @isTest
@@ -286,7 +290,42 @@ public class FimbyResponseControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, result.get('success'), 'Should return success');
-        System.assertEquals('Declined', result.get('status'), 'Status should be Declined');
+        System.assertEquals('New', result.get('status'),
+            'Declining is the poster\'s decision; a message-only reply stays New');
+    }
+
+    @isTest
+    static void testCreateResponse_GatheringKeepsItsCapacityGuard() {
+        User testUser = getTestUser();
+        Needs_Offers__c gathering = createTestNeed(testUser, 2);
+        System.runAs(testUser) {
+            gathering.Type__c = 'Event';
+            gathering.Event_Type__c = 'Gathering';
+            gathering.Start_Date__c = Date.today().addDays(3);
+            gathering.Location__c = 'Community Hall';
+            update gathering;
+        }
+
+        Map<String, Object> responseData = new Map<String, Object>{
+            'needOfferId' => gathering.Id,
+            'subject' => 'RSVP',
+            'responseDetails' => 'Bringing my family',
+            'amountRequested' => 5
+        };
+
+        Test.startTest();
+        String message;
+        System.runAs(testUser) {
+            try {
+                FimbyResponseController.createResponse(JSON.serialize(responseData));
+            } catch (AuraHandledException e) {
+                message = e.getMessage();
+            }
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, message, 'Asking for more spots than remain is refused');
+        System.assertEquals(0, [SELECT COUNT() FROM Response__c WHERE Need_Offer_Responded_To__c = :gathering.Id]);
     }
 
     @isTest
@@ -1165,7 +1204,8 @@ public class FimbyResponseControllerTest {
         System.runAs(testUser) {
             result2 = FimbyResponseController.updateResponseStatus(testResponse.Id, 'Declined');
         }
-        System.assertEquals(true, result2.get('success'), 'Should decline');
+        System.assertEquals(false, result2.get('success'), 'Accepted cannot jump back to Declined');
+        System.assertEquals('invalidTransition', result2.get('error'));
         Test.stopTest();
     }
 

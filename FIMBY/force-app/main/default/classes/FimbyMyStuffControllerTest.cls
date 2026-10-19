@@ -105,6 +105,36 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
+    static void testGetMyPosts_excludesPostsTypedForAnotherIdentity() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        List<Contact> nhContacts = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate, Id];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        Id representedId = nhContacts[0].Id == testContact.Id ? nhContacts[1].Id : nhContacts[0].Id;
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        insert new Needs_Offers__c(
+            Name = 'Posted for someone I support',
+            Details__c = 'Typed while acting as another identity',
+            Type__c = 'Goods - Unperishable',
+            Category__c = 'Tools',
+            Status__c = 'Posted',
+            Neighbourhood__c = testNeighbourhood.Id,
+            Posted_By__c = testContact.Id,
+            Contact__c = representedId
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            List<Needs_Offers__c> posts = FimbyMyStuffController.getMyPosts(20);
+            for (Needs_Offers__c p : posts) {
+                System.assertNotEquals('Posted for someone I support', p.Name,
+                    'A post owned by another identity belongs on their My Stuff, not the typist\'s.');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetMyStories() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
@@ -623,6 +653,33 @@ public class FimbyMyStuffControllerTest {
         System.runAs(testUser) {
             Map<String, Object> profile = FimbyMyStuffController.getNeighbourProfile(neighbour.Id);
             System.assertEquals(neighbour.Id, profile.get('contactId'));
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetMyContacts_excludesCrossNeighbourhood() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Account otherNeighbourhood = FimbyTestDataFactory.createNeighbourhood(true);
+        otherNeighbourhood.Name = 'Remote Neighbourhood SCI';
+        update otherNeighbourhood;
+        Contact remoteContact = FimbyTestDataFactory.createNeighbourhoodContact(otherNeighbourhood.Id, true);
+
+        insert new Shared_Contact_Info__c(
+            Contact__c = remoteContact.Id,
+            Shared_To__c = testContact.Id,
+            Email__c = 'remote@test.com',
+            Phone__c = '0499999999'
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            List<FimbyMyStuffController.ContactCardWrapper> contacts =
+                FimbyMyStuffController.getMyContacts(null);
+            System.assertEquals(0, contacts.size(), 'Cross-neighbourhood shares must not appear in My Contacts');
         }
         Test.stopTest();
     }

@@ -1,7 +1,8 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { navigate, profilePathForContact } from 'c/fimbyNavigation';
-import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import { refreshApex } from '@salesforce/apex';
 import Id from '@salesforce/user/Id';
@@ -23,6 +24,7 @@ import cancelBulkBuy from '@salesforce/apex/FimbyBulkBuyController.cancelBulkBuy
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import createEventGroupChat from '@salesforce/apex/FimbyGroupConversationController.createEventGroupChat';
 import declineResponseApex from '@salesforce/apex/FimbyResponseThreadController.declineResponse';
+import acceptResponseApex from '@salesforce/apex/FimbyResponseThreadController.acceptResponse';
 import { createShellScrimHandle } from 'c/fimbyModalShell';
 import blockContactApex from '@salesforce/apex/FimbyConversationController.blockContact';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
@@ -103,6 +105,8 @@ const FIELDS = [
     'Needs_Offers__c.Series_Parent__c',
     'Needs_Offers__c.Series_Parent__r.Recurrence_Frequency__c'
 ];
+
+const COMPLETED_STATUS = 'Completed (Offer Accepted / Need Met)';
 
 const EVENT_TYPE_CONFIG = {
     Gathering: {
@@ -195,6 +199,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     @track showPhotoUploader = false;
     @track showDeleteConfirm = false;
     @track isDeleting = false;
+    _pendingDecision = null;
+    decisionProcessing = false;
     @track seriesDeleteScope = 'THIS_EVENT';
     @track responses = [];
     @track isLoadingResponses = false;
@@ -543,10 +549,14 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
             const isThanksEligible = ['Accepted', 'Completed'].includes(resp.status);
             const posterThanked = resp.posterThanked || false;
+            const name = resp.responderName || 'this neighbour';
 
             return {
                 ...resp,
                 canReply,
+                showRowDecision: this.isAuthor && this.isPostActive && resp.status === 'New',
+                acceptAriaLabel: `Accept ${name}'s response`,
+                declineAriaLabel: `Decline ${name}'s response`,
                 rowClass,
                 hasUnread,
                 lastMessageDisplay: preview,
@@ -632,11 +642,34 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return active.has(this.status);
     }
 
+    // Only a Gathering has hard capacity; Asks and Offers stay replyable after a match.
     get isQuantityExhausted() {
-        if (!this.isGathering && this.isEventType) return false;
+        if (!this.isGathering) return false;
         if (!this.tracksQuantityForResponses) return false;
         const avail = this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Available__c') : null;
         return avail != null && avail <= 0;
+    }
+
+    get isMatched() {
+        if (this.isEventType || this.isBulkBuyType) return false;
+        const qty = Number(this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Quantity__c') : 0) || 0;
+        const accepted = Number(this.totalAccepted) || 0;
+        return qty > 0 && accepted >= qty;
+    }
+
+    get isPostCompleted() {
+        return this.status === COMPLETED_STATUS;
+    }
+
+    get outcomeLabel() {
+        if (this.isEventType) return 'Happened';
+        return this.postType === 'Need' ? 'Answered' : 'Received';
+    }
+
+    get statusBadgeLabel() {
+        if (this.isPostCompleted) return this.outcomeLabel;
+        if (this.status === 'Expired' && this.isEventType) return 'Event Ended';
+        return this.status;
     }
 
     get isRespondDisabled() {
@@ -647,16 +680,17 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get respondButtonLabel() {
         const cfg = this.eventTypeConfig;
         if (this.isPostActive && !this.isQuantityExhausted) {
-            return cfg ? cfg.ctaLabel : 'Respond';
+            if (cfg) return cfg.ctaLabel;
+            if (this.isMatched) return 'Reply anyway';
+            return this.postType === 'Need' ? 'Offer help' : 'I\u2019m interested';
         }
         if (!this.isPostActive) {
             const s = this.status;
             if (s === 'Cancelled') return 'Cancelled';
-            if (s === 'Expired') return cfg?.ctaExpiredLabel || (this.isEventType ? 'Event Ended' : 'Expired');
-            if (cfg) return cfg.ctaDisabledLabel || cfg.ctaExpiredLabel || 'Event Ended';
-            return 'Fulfilled';
+            if (this.isPostCompleted) return this.outcomeLabel;
+            return this.isEventType ? 'Event Ended' : 'Expired';
         }
-        return cfg?.ctaDisabledLabel || 'All Spoken For';
+        return 'Event Full';
     }
 
     get respondButtonClass() {
@@ -666,14 +700,15 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get respondAriaLabel() {
         const cfg = this.eventTypeConfig;
         if (!this.isRespondDisabled) {
-            return cfg ? `${cfg.ctaLabel} to this event` : 'Respond to this post';
+            if (cfg) return `${cfg.ctaLabel} to this event`;
+            return this.isMatched
+                ? 'Someone has been matched. Reply anyway in case plans change'
+                : `${this.respondButtonLabel} on this post`;
         }
         if (!this.isPostActive) {
             return `This post is ${this.respondButtonLabel.toLowerCase()} and no longer accepting responses`;
         }
-        return this.isGathering
-            ? 'All spots have been claimed'
-            : 'All available spots have been claimed';
+        return 'This gathering is full';
     }
 
     get respondHelperText() {
@@ -735,6 +770,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 { key: 'photo', label: 'Photo', icon: 'photo.png', display: 'responsive' },
                 { key: 'delete', label: 'Delete', icon: 'trash.png', display: 'responsive', variant: 'danger' }
             ];
+            if (this.canMarkComplete) {
+                items.unshift({ key: 'markComplete', label: 'Mark complete', icon: 'check-in.png', display: 'responsive' });
+            }
             if (this.isOpenEvent && this.eventTypeConfig?.usesOnDemandEventChat) {
                 const hasChat = this._hasEventGroupChat;
                 items.unshift(hasChat
@@ -772,6 +810,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             edit: () => this.handleEdit(),
             photo: () => this.handleUploadPhoto(),
             delete: () => this.handleDeleteClick(),
+            markComplete: () => this.handleMarkCompleteClick(),
             flag: () => this.handleFlag(),
             createEventChat: () => this.handleCreateEventChat(),
             openEventChat: () => this.handleOpenEventChat(),
@@ -1532,7 +1571,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return this.isPosterPersona && !this.hasResponses && !this.isLoadingResponses;
     }
     get showPotentialResponderActionContext() {
-        if (this.isOpenEvent || this.isCommunityEvent) return false;
+        if (this.isOpenEvent || this.isCommunityEvent || this.isPostCompleted) return false;
         return this.isResponderPersona;
     }
     get showRespondedStatusCard() {
@@ -1554,7 +1593,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return !!this.quickResponseId && (this.quickResponseStatus === 'New' || this.quickResponseStatus === 'Accepted');
     }
     get showQuickResponseCTA() {
-        return this.showQuickResponseSection && !this.hasQuickResponse;
+        return this.showQuickResponseSection && !this.hasQuickResponse && !this.isPostCompleted;
     }
     get showQuickResponseStatus() {
         return this.showQuickResponseSection && this.hasQuickResponse;
@@ -1595,6 +1634,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // Quick response getters
     get quickResponseCtaLabel() {
         const cfg = this.eventTypeConfig;
+        if (this.isPostCompleted) return this.outcomeLabel;
         if (!this.isPostActive) return cfg?.ctaExpiredLabel || 'Event Ended';
         return cfg?.ctaLabel || 'Respond';
     }
@@ -1956,10 +1996,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     handleDetailResponseSaved() {
+        clearCache(SCOPED_KEYS.homeFeed);
         if (this.isBulkBuyType) {
             this.loadBulkBuyDetail();
         }
         this.loadResponses();
+        if (this._wiredRecordResult) refreshApex(this._wiredRecordResult);
     }
 
     // ============================================
@@ -1982,6 +2024,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 this.quickResponseCelebration = true;
                 // eslint-disable-next-line @lwc/lwc/no-async-operation -- debounce / delayed UI
                 setTimeout(() => { this.quickResponseCelebration = false; }, 2000);
+                clearCache(SCOPED_KEYS.homeFeed);
                 await this.loadResponses();
             }
         } catch (error) {
@@ -2005,6 +2048,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 this.quickResponseStatus = null;
                 this.quickGuestCount = 1;
                 this.showGuestStepper = false;
+                clearCache(SCOPED_KEYS.homeFeed);
                 await this.loadResponses();
             }
         } catch (error) {
@@ -2164,12 +2208,124 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const result = await refreshPost({ recordId: this.effectiveRecordId });
             // Stays on the page — the refresh isn't otherwise visible, so confirm inline.
             this._refreshSuccessMessage = result.message || 'Your post has been refreshed.';
+            clearCache(SCOPED_KEYS.homeFeed);
             await refreshApex(this._wiredRecordResult);
             await this.loadRefreshState();
         } catch (error) {
             fireErrorToast(error);
         } finally {
             this.refreshActionLoading = false;
+        }
+    }
+
+    // ============================================
+    // POSTER: ROW ACCEPT / DECLINE + MARK COMPLETE
+    // ============================================
+
+    get canMarkComplete() {
+        return this.isPosterPersona && this.isPostActive && !this.isEventType && !this.isBulkBuyType;
+    }
+
+    get showMatchedCompletePrompt() {
+        return this.canMarkComplete && this.isMatched && !this.showRefreshPanel;
+    }
+
+    get showDecisionConfirm() {
+        return !!this._pendingDecision;
+    }
+
+    get decisionConfirmTitle() {
+        const d = this._pendingDecision;
+        if (!d) return '';
+        if (d.action === 'complete') return 'Mark this complete?';
+        return d.action === 'accept' ? `Accept ${d.name}'s response?` : `Decline ${d.name}'s response?`;
+    }
+
+    get decisionConfirmMessage() {
+        const d = this._pendingDecision;
+        if (!d) return '';
+        if (d.action === 'complete') {
+            return `Neighbours will see this as ${this.outcomeLabel}, and any open replies will be wrapped up for you.`;
+        }
+        if (d.action === 'accept') {
+            const share = this.autoShareContactInfo
+                ? `\n\nYour contact info will be shared with ${d.name}, as set on this post.`
+                : '';
+            return `Accepting lets ${d.name} know you're going ahead.${share}`;
+        }
+        return `We'll thank ${d.name} for replying and let them know you won't be going ahead this time.`;
+    }
+
+    get decisionConfirmLabel() {
+        const action = this._pendingDecision?.action;
+        if (action === 'complete') return 'Mark complete';
+        return action === 'accept' ? 'Accept' : 'Decline';
+    }
+
+    get decisionConfirmVariant() {
+        return this._pendingDecision?.action === 'decline' ? 'danger' : 'primary';
+    }
+
+    handleRowAccept(event) {
+        event.stopPropagation();
+        this._openDecision('accept', event.currentTarget.dataset);
+    }
+
+    handleRowDecline(event) {
+        event.stopPropagation();
+        this._openDecision('decline', event.currentTarget.dataset);
+    }
+
+    handleMarkCompleteClick() {
+        if (!this.canMarkComplete) return;
+        this._pendingDecision = { action: 'complete' };
+    }
+
+    _openDecision(action, dataset) {
+        if (!dataset?.responseId) return;
+        this._pendingDecision = {
+            action,
+            responseId: dataset.responseId,
+            name: dataset.responderName || 'this neighbour'
+        };
+    }
+
+    handleDecisionCancel() {
+        if (this.decisionProcessing) return;
+        this._pendingDecision = null;
+    }
+
+    async handleDecisionConfirm() {
+        const d = this._pendingDecision;
+        if (!d || this.decisionProcessing) return;
+        this.decisionProcessing = true;
+        try {
+            if (d.action === 'complete') {
+                await closePost({ recordId: this.effectiveRecordId, outcome: 'resolved' });
+            } else {
+                const apex = d.action === 'accept' ? acceptResponseApex : declineResponseApex;
+                const result = await apex({ responseId: d.responseId });
+                if (!result?.success) {
+                    throw new Error(result?.message || 'We couldn\u2019t update that response just now.');
+                }
+            }
+            this._pendingDecision = null;
+            await this._refreshAfterResponseChange();
+        } catch (error) {
+            fireErrorToast(error);
+        } finally {
+            this.decisionProcessing = false;
+        }
+    }
+
+    async _refreshAfterResponseChange() {
+        clearCache(SCOPED_KEYS.homeFeed);
+        const recordId = this.effectiveRecordId;
+        const tasks = [this.loadResponses(), this.loadRefreshState()];
+        if (this._wiredRecordResult) tasks.push(refreshApex(this._wiredRecordResult));
+        await Promise.all(tasks);
+        if (recordId) {
+            notifyRecordUpdateAvailable([{ recordId }]).catch(() => {});
         }
     }
 
@@ -2187,8 +2343,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         try {
             await closePost({ recordId: this.effectiveRecordId, outcome });
             // Closing visibly changes the post status/panel on the page itself.
-            await refreshApex(this._wiredRecordResult);
-            await this.loadRefreshState();
+            await this._refreshAfterResponseChange();
         } catch (error) {
             fireErrorToast(error);
         } finally {

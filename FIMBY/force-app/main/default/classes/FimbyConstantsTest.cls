@@ -71,5 +71,9 @@ private class FimbyConstantsTest {
             !FimbyConstants.isSharingGatedConversationContext(FimbyConstants.CTX_EVENT),
             'Contextual threads carry their own authorization'
         );
+        System.assert(
+            !FimbyConstants.isSharingGatedConversationContext(FimbyConstants.CTX_MODERATOR),
+            'Moderator welcome threads are authorized by the assignment, not contact sharing'
+        );
     }
 }

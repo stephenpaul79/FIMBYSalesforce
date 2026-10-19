@@ -5,7 +5,7 @@ public with sharing class FimbyProfileActivityController {
 
     private static final Integer QUERY_LIMIT = 150;
     private static final Set<String> ACTIVE_AO_STATUSES = new Set<String>{
-        'Posted', 'Reply Received', 'Reply Accepted', 'Available'
+        'Posted', 'Reply Received', 'Reply Accepted', 'Available', FimbyConstants.NEEDS_OFFERS_PICKUP_READY
     };
     private static final Set<String> ACTIVE_LIBRARY_STATUSES = new Set<String>{
         FimbyConstants.LIBRARY_AVAILABLE,
@@ -62,6 +62,7 @@ public with sharing class FimbyProfileActivityController {
             for (Integer i = startIndex; i < endIndex; i++) {
                 pagedItems.add(allItems[i]);
             }
+            FimbyFeedItem.applyEngagement(pagedItems, viewerContactId);
 
             return new ProfileActivityResult(pagedItems, endIndex < totalCount, totalCount);
         } catch (Exception e) {
@@ -94,6 +95,8 @@ public with sharing class FimbyProfileActivityController {
     }
 
     private static List<FimbyFeedItem> queryNeedsOffers(Id profileContactId, Date today) {
+        String completedStatus = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+        Datetime lingerCutoff = Datetime.now().addDays(-FimbySettings.finishedPostLingerDays());
         Set<Id> liveRecurringOccurrenceIds = new Set<Id>();
         for (Needs_Offers__c seriesParent : [
             SELECT Id, Current_Occurrence__c
@@ -112,7 +115,7 @@ public with sharing class FimbyProfileActivityController {
         }
 
         List<Needs_Offers__c> aoItems = [
-            SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
+            SELECT Id, Name, Details__c, Full_Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
                    Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c,
                    Posted_By__r.Organization_Account__r.Logo_URL__c,
@@ -128,22 +131,26 @@ public with sharing class FimbyProfileActivityController {
                    Event_Details__c, Location__c, Event_Type__c, Event_Link__c,
                    Start_Date__c, End_Date__c,
                    Recurrence_Frequency__c, Series_Parent__c, Current_Occurrence__c,
+                   Closed_Date__c,
                    RecordType.Name, Category__c, Contact__c, Posted_By__c
             FROM Needs_Offers__c
             WHERE Contact__c = :profileContactId
-              AND Status__c IN :ACTIVE_AO_STATUSES
-              AND (Total_Available__c > 0 OR Total_Available__c = null)
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
-              AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null)
-                   OR Id IN :liveRecurringOccurrenceIds)
-              AND (Type__c != 'Event'
-                   OR End_Date__c >= :today
-                   OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND (
+                  (Status__c IN :ACTIVE_AO_STATUSES
+                   AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null)
+                        OR Id IN :liveRecurringOccurrenceIds)
+                   AND (Type__c != 'Event'
+                        OR End_Date__c >= :today
+                        OR (End_Date__c = null AND Start_Date__c >= :today)))
+                  OR (Status__c = :completedStatus AND Closed_Date__c >= :lingerCutoff)
+              )
             WITH SECURITY_ENFORCED
             ORDER BY Posted_Date__c DESC
             LIMIT :QUERY_LIMIT
         ];
 
+        FimbyFeedItem.primeProxiedOwners(aoItems);
         List<FimbyFeedItem> items = new List<FimbyFeedItem>();
         for (Needs_Offers__c item : aoItems) {
             items.add(new FimbyFeedItem(item));

@@ -69,7 +69,7 @@ public without sharing class FimbyBulkBuyAutoLockJob implements Schedulable {
                 update activeFollowUps;
             }
 
-            FimbyBulkBuyController.completePost(post);
+            FimbyBulkBuyController.completePost(post, FimbyConstants.CLOSED_BY_AUTO);
         }
     }
 }

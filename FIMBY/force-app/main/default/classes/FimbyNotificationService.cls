@@ -41,6 +41,8 @@ public without sharing class FimbyNotificationService {
             FimbyConstants.NOTIF_VOUCH_REVOKED          => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_VOUCHER_PAUSED         => FimbyPushNotificationService.NotificationType.MESSAGE,
             FimbyConstants.NOTIF_REFRESH_REMINDER       => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS,
+            FimbyConstants.NOTIF_RESPONSE_REMINDER      => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS,
+            FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED  => FimbyPushNotificationService.NotificationType.NEEDS_OFFERS,
             // Sharing contact info is a personal act between two neighbours, so it
             // rides the Messages toggle alongside the vouch lifecycle rather than the
             // Asks & Offers activity toggle. An unmapped type would push while
@@ -128,8 +130,6 @@ public without sharing class FimbyNotificationService {
             return;
         }
 
-        User recipientUser = (skipPush == true) ? null : queryRecipientUser(recipientContactId);
-
         Notification__c notif = new Notification__c(
             Contact__c = recipientContactId,
             Type__c = type,
@@ -142,8 +142,7 @@ public without sharing class FimbyNotificationService {
             Actor_Contact__c = actorContactId
         );
 
-        notif.Push_Status__c = (skipPush == true) ? null : shouldQueue(type, recipientUser);
-        notif.Email_Status__c = FimbyEmailAlertService.shouldSendEmail(type, recipientUser);
+        stampDeliveryStatus(new List<Notification__c>{ notif }, new List<Boolean>{ skipPush == true });
 
         try {
             Database.insert(notif, true);
@@ -161,20 +160,7 @@ public without sharing class FimbyNotificationService {
             return;
         }
 
-        Set<Id> contactIds = new Set<Id>();
-        for (Notification__c n : notifications) {
-            if (n.Contact__c != null) {
-                contactIds.add(n.Contact__c);
-            }
-        }
-
-        Map<Id, User> userByContactId = queryRecipientUsers(contactIds);
-
-        for (Notification__c n : notifications) {
-            User u = userByContactId.get(n.Contact__c);
-            n.Push_Status__c = shouldQueue(n.Type__c, u);
-            n.Email_Status__c = FimbyEmailAlertService.shouldSendEmail(n.Type__c, u);
-        }
+        stampDeliveryStatus(notifications, null);
 
         try {
             Database.insert(notifications, true);
@@ -188,29 +174,26 @@ public without sharing class FimbyNotificationService {
      * per-record push gate checks. Every request inserts its own Notification__c row.
      */
     public static void createNotificationsFromRequests(List<NotificationRequest> requests) {
+        createNotificationsFromRequests(requests, false);
+    }
+
+    /**
+     * @description As createNotificationsFromRequests, but when strict is true an insert
+     * failure throws so an enclosing atomic operation (Send & Accept, lifecycle cascade)
+     * rolls back instead of committing without its notification.
+     */
+    public static void createNotificationsFromRequests(List<NotificationRequest> requests, Boolean strict) {
         if (requests == null || requests.isEmpty()) {
             return;
         }
 
-        List<NotificationRequest> valid = new List<NotificationRequest>();
-        Set<Id> allContactIds = new Set<Id>();
-
+        List<Notification__c> toInsert = new List<Notification__c>();
+        List<Boolean> skipPushFlags = new List<Boolean>();
         for (NotificationRequest req : requests) {
             if (req.recipientContactId == null || String.isBlank(req.type) || String.isBlank(req.title)) {
                 continue;
             }
-            valid.add(req);
-            allContactIds.add(req.recipientContactId);
-        }
-        if (valid.isEmpty()) {
-            return;
-        }
-
-        Map<Id, User> userByContactId = queryRecipientUsers(allContactIds);
-
-        List<Notification__c> toInsert = new List<Notification__c>();
-        for (NotificationRequest req : valid) {
-            User recipientUser = req.skipPush == true ? null : userByContactId.get(req.recipientContactId);
+            skipPushFlags.add(req.skipPush == true);
             toInsert.add(new Notification__c(
                 Contact__c = req.recipientContactId,
                 Type__c = req.type,
@@ -220,12 +203,18 @@ public without sharing class FimbyNotificationService {
                 Related_Record_Type__c = req.relatedRecordType,
                 Action_URL__c = req.actionUrl,
                 Actor_Name__c = req.actorName,
-                Actor_Contact__c = req.actorContactId,
-                Push_Status__c = (req.skipPush == true) ? null : shouldQueue(req.type, recipientUser),
-                Email_Status__c = FimbyEmailAlertService.shouldSendEmail(req.type, recipientUser)
+                Actor_Contact__c = req.actorContactId
             ));
         }
+        if (toInsert.isEmpty()) {
+            return;
+        }
+        stampDeliveryStatus(toInsert, skipPushFlags);
 
+        if (strict == true) {
+            Database.insert(toInsert, true);
+            return;
+        }
         try {
             Database.insert(toInsert, true);
         } catch (Exception e) {
@@ -264,6 +253,91 @@ public without sharing class FimbyNotificationService {
             this.actionUrl = actionUrl;
             this.actorName = actorName;
             this.skipPush = false;
+        }
+    }
+
+    /* ---------------------------------------------------------------
+     * Channel eligibility
+     * --------------------------------------------------------------- */
+
+    /**
+     * Stamps Push_Status__c / Email_Status__c before insert. A Contact with its own
+     * login is gated on that login's preferences. A Contact without one (parent-managed
+     * child, elder supportee, organization) keeps the single in-app row in its own inbox,
+     * and each approved helper is gated on their own preferences in the delivery ledger,
+     * so the batch jobs fan the row out once per eligible helper. skipPush means in-app only.
+     */
+    @TestVisible
+    private static void stampDeliveryStatus(List<Notification__c> rows, List<Boolean> skipPushFlags) {
+        Set<Id> contactIds = new Set<Id>();
+        for (Integer i = 0; i < rows.size(); i++) {
+            Boolean skipPush = skipPushFlags != null && skipPushFlags[i] == true;
+            if (rows[i].Contact__c != null && !skipPush) {
+                contactIds.add(rows[i].Contact__c);
+            }
+        }
+        if (contactIds.isEmpty()) {
+            for (Notification__c n : rows) {
+                n.Push_Status__c = null;
+                n.Email_Status__c = null;
+            }
+            return;
+        }
+
+        Map<Id, User> ownUserByContact = queryRecipientUsers(contactIds);
+        Set<Id> unbacked = FimbySupportedIdentityDelivery.unbackedContacts(contactIds, ownUserByContact);
+        Map<Id, Set<Id>> helpersBySupportee = unbacked.isEmpty()
+            ? new Map<Id, Set<Id>>()
+            : FimbySupportedIdentityDelivery.resolveHelperContacts(unbacked);
+        Set<Id> helperContactIds = new Set<Id>();
+        for (Set<Id> helpers : helpersBySupportee.values()) {
+            helperContactIds.addAll(helpers);
+        }
+        Map<Id, User> helperUserByContact = queryRecipientUsers(helperContactIds);
+
+        for (Integer i = 0; i < rows.size(); i++) {
+            Notification__c n = rows[i];
+            Boolean skipPush = skipPushFlags != null && skipPushFlags[i] == true;
+            if (skipPush || n.Contact__c == null) {
+                n.Push_Status__c = null;
+                n.Email_Status__c = null;
+                continue;
+            }
+
+            User own = ownUserByContact.get(n.Contact__c);
+            if (own != null || !helpersBySupportee.containsKey(n.Contact__c)) {
+                n.Push_Status__c = shouldQueue(n.Type__c, own);
+                n.Email_Status__c = FimbyEmailAlertService.shouldSendEmail(n.Type__c, own);
+                continue;
+            }
+
+            FimbySupportedIdentityDelivery.Ledger ledger = new FimbySupportedIdentityDelivery.Ledger(n.Contact__c);
+            Set<Id> seenUsers = new Set<Id>();
+            for (Id helperContactId : helpersBySupportee.get(n.Contact__c)) {
+                User helper = helperUserByContact.get(helperContactId);
+                if (helper == null || seenUsers.contains(helper.Id)) {
+                    continue;
+                }
+                seenUsers.add(helper.Id);
+                String pushState = shouldQueue(n.Type__c, helper);
+                String emailState = FimbyEmailAlertService.shouldSendEmail(n.Type__c, helper);
+                ledger.r.add(new FimbySupportedIdentityDelivery.Recipient(
+                    helper.Id,
+                    pushState == null ? FimbySupportedIdentityDelivery.SUPPRESSED : pushState,
+                    emailState == null ? FimbySupportedIdentityDelivery.SUPPRESSED : emailState
+                ));
+            }
+
+            String pushAggregate = ledger.pushAggregate();
+            String emailAggregate = ledger.emailAggregate();
+            n.Push_Status__c = (pushAggregate == FimbySupportedIdentityDelivery.PENDING
+                    || pushAggregate == FimbySupportedIdentityDelivery.PENDING_QUIET)
+                ? pushAggregate : null;
+            n.Email_Status__c = emailAggregate == FimbySupportedIdentityDelivery.PENDING
+                ? emailAggregate : null;
+            if (n.Push_Status__c != null || n.Email_Status__c != null) {
+                n.Delivery_State__c = FimbySupportedIdentityDelivery.serializeLedger(ledger);
+            }
         }
     }
 
@@ -375,26 +449,6 @@ public without sharing class FimbyNotificationService {
     /* ---------------------------------------------------------------
      * User query helpers — fetches all fields needed for gate checks
      * --------------------------------------------------------------- */
-
-    private static User queryRecipientUser(Id contactId) {
-        List<User> users = [
-            SELECT Id, ContactId,
-                   Push_Notifications_Enabled__c,
-                   Push_Messages__c, Push_Needs_Offers__c, Push_Library__c,
-                   Push_Stories__c, Push_Reminders__c, Push_Bulk_Buy__c,
-                   Push_Events__c,
-                   Last_DM_Push_At__c, Last_Activity_Push_At__c,
-                   Last_App_Open_At__c, TimeZoneSidKey,
-                   Email_Alerts_Enabled__c, Email_Alert_Messages__c,
-                   Email_Alert_Needs_Offers__c, Email_Alert_Library__c,
-                   Email_Alert_Stories__c, Email_Alert_Reminders__c,
-                   Email_Alert_Bulk_Buy__c, Email_Alert_Events__c
-            FROM User
-            WHERE ContactId = :contactId AND IsActive = true
-            LIMIT 1
-        ];
-        return users.isEmpty() ? null : users[0];
-    }
 
     private static Map<Id, User> queryRecipientUsers(Set<Id> contactIds) {
         Map<Id, User> result = new Map<Id, User>();

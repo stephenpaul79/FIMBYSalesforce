@@ -5,6 +5,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getProfileActivity from '@salesforce/apex/FimbyProfileActivityController.getProfileActivity';
 import { completeImageUrl } from 'c/fimbyImageUrl';
 import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbyLibraryCategoryConfig';
+import { feedLifecycleState } from 'c/fimbyFeedLifecycle';
 
 const SCROLL_BATCH_SIZE = 15;
 
@@ -62,6 +63,14 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
     }
 
     get showEmptyState() {
+        return false;
+    }
+
+    get cardShowMenu() {
+        return true;
+    }
+
+    get cardShowFooter() {
         return false;
     }
 
@@ -198,7 +207,15 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
                     : [],
                 eventDateTime,
                 eventLocation,
-                eventLinkUrl
+                eventLinkUrl,
+                statusPills: isAskOffer
+                    ? feedLifecycleState(item, {
+                        isEvent,
+                        isBulkBuy,
+                        isPoster: false,
+                        viewerResponded: item.viewerHasActiveResponse === true
+                    }).statusPills
+                    : null
             };
         });
     }
@@ -238,19 +255,11 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
     }
 
     handleCardClick(event) {
-        const recordId = event.currentTarget.dataset.recordId;
+        const recordId = event.target.closest('.feed-card-wrapper')?.dataset.recordId;
         const item = this.activityItems.find((row) => row.recordId === recordId);
         if (item) {
             this.navigateToDetailPage(item);
         }
-    }
-
-    handleCardKeydown(event) {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-        event.preventDefault();
-        this.handleCardClick(event);
     }
 
     navigateToDetailPage(item) {

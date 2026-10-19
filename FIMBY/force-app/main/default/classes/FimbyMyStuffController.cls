@@ -3,6 +3,10 @@
  */
 public with sharing class FimbyMyStuffController {
 
+    private static final Set<String> MY_ACTIVE_POST_STATUSES = new Set<String>{
+        'Posted', 'Reply Received', 'Reply Accepted', 'Available', FimbyConstants.NEEDS_OFFERS_PICKUP_READY
+    };
+
     /**
      * Return profile information for the acting-as contact.
      */
@@ -48,11 +52,12 @@ public with sharing class FimbyMyStuffController {
             return counts;
         }
 
-        Set<String> activeStatuses = new Set<String>{ 'Posted', 'Reply Received', 'Reply Accepted', 'Available', 'Shares Available', 'Pickup Ready' };
+        Set<String> activeStatuses = MY_ACTIVE_POST_STATUSES;
 
         List<Needs_Offers__c> allPosts = [
             SELECT Id, Status__c FROM Needs_Offers__c
-            WHERE Posted_By__c = :contactId WITH SECURITY_ENFORCED
+            WHERE (Contact__c = :contactId OR (Contact__c = null AND Posted_By__c = :contactId))
+            WITH SECURITY_ENFORCED
         ];
         Integer postsActive = 0;
         Integer postsInactive = 0;
@@ -169,7 +174,7 @@ public with sharing class FimbyMyStuffController {
             SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
                    RecordType.Name, Category__c, Event_Type__c
             FROM Needs_Offers__c
-            WHERE Posted_By__c = :contactId
+            WHERE (Contact__c = :contactId OR (Contact__c = null AND Posted_By__c = :contactId))
             WITH SECURITY_ENFORCED
             ORDER BY Posted_Date__c DESC
             LIMIT :limitSize
@@ -415,11 +420,10 @@ public with sharing class FimbyMyStuffController {
         Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.archivePageSize();
         Integer offsetVal = (offset != null && offset >= 0) ? offset : 0;
 
-        Set<String> activeStatuses = new Set<String>{
-            'Posted', 'Reply Received', 'Reply Accepted', 'Available', 'Shares Available', 'Pickup Ready'
-        };
-        String baseQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, RecordType.Name, Category__c, Event_Type__c FROM Needs_Offers__c WHERE Posted_By__c = :contactId AND Status__c NOT IN :activeStatuses';
-        String countQuery = 'SELECT COUNT() FROM Needs_Offers__c WHERE Posted_By__c = :contactId AND Status__c NOT IN :activeStatuses';
+        Set<String> activeStatuses = MY_ACTIVE_POST_STATUSES;
+        String ownerPredicate = '(Contact__c = :contactId OR (Contact__c = null AND Posted_By__c = :contactId))';
+        String baseQuery = 'SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c, RecordType.Name, Category__c, Event_Type__c FROM Needs_Offers__c WHERE ' + ownerPredicate + ' AND Status__c NOT IN :activeStatuses';
+        String countQuery = 'SELECT COUNT() FROM Needs_Offers__c WHERE ' + ownerPredicate + ' AND Status__c NOT IN :activeStatuses';
 
         if (String.isNotBlank(filterType) && filterType != 'All') {
             if (filterType == 'Event') {
@@ -714,6 +718,10 @@ public with sharing class FimbyMyStuffController {
             List<ContactCardWrapper> cards = new List<ContactCardWrapper>();
 
             for (Id otherId : counterpartIds) {
+                if (!FimbyContactVisibility.canView((Id) contactId, otherId)) {
+                    continue;
+                }
+
                 Shared_Contact_Info__c inbound = currentInbound.get(otherId);
                 Shared_Contact_Info__c outbound = currentOutbound.get(otherId);
                 Shared_Contact_Info__c anyRow = inbound != null ? inbound : outbound;
@@ -973,7 +981,8 @@ public with sharing class FimbyMyStuffController {
                 'careHowToAsk' => showCareStanding ? c.Care_How_To_Ask__c : null,
                 'careHardNos' => showCareStanding ? c.Care_Hard_Nos__c : null,
                 'hasSharedContactInfo' => hasSharedContactInfo,
-                'iHaveSharedWithThem' => iHaveSharedWithThem
+                'iHaveSharedWithThem' => iHaveSharedWithThem,
+                'isParentManaged' => FimbyProxiedPresenceGuard.isProxied(c.Id)
             };
 
             if (themToMeShare != null) {

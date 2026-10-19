@@ -228,7 +228,7 @@ public class FimbyTestDataFactory {
                 Posted_By__c = contactId,
                 RecordTypeId = rtId,
                 Posted_Date__c = Datetime.now(),
-                End_Date__c = Date.today().addDays(recordTypeDeveloperName == 'Need' ? 7 : 21)
+                End_Date__c = Date.today().addDays(recordTypeDeveloperName == 'Need' ? FimbySettings.needDefaultEndDays() : FimbySettings.offerDefaultEndDays())
             ));
         }
         if (doInsert) { insert items; }

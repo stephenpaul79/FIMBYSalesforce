@@ -238,6 +238,37 @@ public class FimbyQuickResponseControllerTest {
     }
 
     @isTest
+    static void testMissingPostRaisesFriendlyError() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c gone = new Needs_Offers__c(
+            Name = 'Deleted Need',
+            Details__c = 'Gone',
+            Status__c = 'Posted',
+            Posted_By__c = testContact.Id,
+            Contact__c = testContact.Id,
+            Giver_Recipient_Type__c = 'Self',
+            Neighbourhood__c = testContact.AccountId
+        );
+        insert gone;
+        Id missingPostId = gone.Id;
+        delete gone;
+
+        Test.startTest();
+        String message;
+        System.runAs(testUser) {
+            try {
+                FimbyQuickResponseController.getQuickResponseContext(missingPostId, 'askOffer');
+            } catch (AuraHandledException e) {
+                message = e.getMessage();
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals('Post not found.', message, 'Missing post should raise a friendly error');
+    }
+
+    @isTest
     static void testAlreadyRespondedAskOffer() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();
@@ -268,7 +299,10 @@ public class FimbyQuickResponseControllerTest {
             Response__c resp = new Response__c(
                 Need_Offer_Responded_To__c = post.Id,
                 Response__c = 'Already responded',
-                Amount_Requested__c = 1
+                Amount_Requested__c = 1,
+                Status__c = 'New',
+                Contact__c = testContact.Id,
+                On_Behalf_Of_Contact__c = testContact.Id
             );
             insert resp;
         }

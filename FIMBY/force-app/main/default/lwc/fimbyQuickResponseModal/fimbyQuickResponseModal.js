@@ -17,6 +17,7 @@ import requestSkillHelp from '@salesforce/apex/FimbySkillsController.requestSkil
 import searchContactsForMention from '@salesforce/apex/FimbyStoryCommentController.searchContactsForMention';
 import { getCategoryIconUrl, getCategoryColor } from 'c/fimbySkillCategoryConfig';
 import { createShellScrimHandle } from 'c/fimbyModalShell';
+import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
 
 const TYPE_CONFIG = {
     story: {
@@ -129,8 +130,6 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
     @track _subject = '';
     @track _responseDetails = '';
     @track _amountRequested = 1;
-    @track _decline = false;
-
     /* ================================================================
      * Bulk Buy Form State
      * ================================================================ */
@@ -169,7 +168,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._responseType = responseType;
         this._isItemAvailable = options?.isItemAvailable !== false;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
+        this._shellScrim.bind(() => this.hide(), this.template.host);
         this._viewState = 'loading';
         this._resetForm();
         this._loadContext();
@@ -370,15 +369,32 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         return this.isDetailsOver ? 'char-count over-limit' : (this.detailsLength > 230 ? 'char-count near-limit' : 'char-count');
     }
 
+    get isGatheringType() { return this._responseType === 'gathering'; }
+
     get showAmountField() {
-        return this._context && this._context.totalAvailable > 1;
+        return !!this._context && this.maxAmount > 1;
     }
 
+    // Only a Gathering caps by remaining capacity; an Ask/Offer stays replyable after a
+    // match, so its ceiling is the per-response limit.
     get maxAmount() {
         if (!this._context) return 1;
-        const available = this._context.totalAvailable || 1;
-        const perResponse = this._context.perResponseLimit || available;
-        return Math.min(available, perResponse);
+        if (this.isGatheringType) {
+            const available = this._context.totalAvailable || 1;
+            const perResponse = this._context.perResponseLimit || available;
+            return Math.max(1, Math.min(available, perResponse));
+        }
+        return Math.max(1, this._context.perResponseLimit || this._context.totalQuantity || 1);
+    }
+
+    get amountHint() {
+        return this.isGatheringType
+            ? `of ${this.maxAmount} available`
+            : `up to ${this.maxAmount}`;
+    }
+
+    get showMatchedNotice() {
+        return !this.isGatheringType && this._context?.isMatched === true;
     }
 
     /* ================================================================
@@ -713,8 +729,6 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         const val = parseInt(event.target.value, 10);
         this._amountRequested = isNaN(val) ? 1 : Math.max(1, Math.min(val, this.maxAmount));
     }
-    handleDeclineChange(event) { this._decline = event.target.checked; }
-
     /* ================================================================
      * BULK BUY FORM HANDLERS
      * ================================================================ */
@@ -811,6 +825,11 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
             }
 
             this._submittedResponseData = result;
+            clearCache(SCOPED_KEYS.homeFeed);
+            if (result?.alreadyResponded) {
+                this._viewState = 'alreadyResponded';
+                return;
+            }
             this._viewState = 'success';
 
             this.dispatchEvent(new CustomEvent('responsesaved', {
@@ -827,7 +846,8 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
         } catch (error) {
             const msg = error.body?.message || error.message || '';
-            const isQuantityError = /amount|available|quantity|validation/i.test(msg);
+            const isQuantityError = !/spots? (is|are) left/i.test(msg)
+                && /amount|available|quantity|validation|full/i.test(msg);
             if (isQuantityError) {
                 this._errorMessage = "Looks like this isn't available anymore — someone responded a bit more quickly.";
                 this._viewState = 'unavailable';
@@ -870,12 +890,15 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
             needOfferId: this._recordId,
             subject: this._subject.trim(),
             responseDetails: this._responseDetails.trim(),
-            amountRequested: this.showAmountField ? this._amountRequested : 1,
-            decline: this._decline
+            amountRequested: this.showAmountField ? this._amountRequested : 1
         };
         const result = await createResponse({ responseData: JSON.stringify(responseData) });
         if (!result.success) throw new Error(result.message || 'Failed to submit response.');
-        return { responseId: result.responseId, status: result.status };
+        return {
+            responseId: result.responseId,
+            status: result.status,
+            alreadyResponded: result.alreadyResponded === true
+        };
     }
 
     async _submitReservation() {
@@ -942,7 +965,6 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._subject = '';
         this._responseDetails = '';
         this._amountRequested = 1;
-        this._decline = false;
 
         this._reserveAmount = 1;
 

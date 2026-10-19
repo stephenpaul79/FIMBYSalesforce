@@ -692,6 +692,94 @@
     border-left-color: var(--fimby-cta-strip-accent, #3A7D8C);
 }
 
+.response-row {
+    flex-wrap: wrap;
+}
+
+.response-row-decision {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.row-decision-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 96px;
+    padding: 10px 16px;
+    border-radius: var(--fimby-btn-radius, 12px);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.row-decision-decline {
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-border-default);
+    color: var(--fimby-text-secondary);
+}
+
+.row-decision-decline:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.row-decision-accept {
+    background-color: var(--fimby-success, #1A7B40);
+    border: 1px solid var(--fimby-success, #1A7B40);
+    color: #ffffff;
+}
+
+.row-decision-accept:hover {
+    filter: brightness(0.92);
+}
+
+.row-decision-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+@media (max-width: 480px) {
+    .row-decision-btn {
+        flex: 1 1 0;
+    }
+}
+
+.matched-complete-prompt {
+    background-color: var(--fimby-success-tint, #eef6f0);
+    border-left: 4px solid var(--fimby-success, #1A7B40);
+    border-radius: var(--fimby-radius-md);
+    box-shadow: var(--fimby-shadow-card);
+    padding: 16px 20px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.matched-complete-text {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fimby-text-primary);
+    line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+    .matched-complete-prompt .refresh-action-btn {
+        width: 100%;
+    }
+}
+
 .response-open-btn {
     display: inline-flex;
     align-items: center;

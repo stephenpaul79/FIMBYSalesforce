@@ -325,6 +325,7 @@
 
 /* Action Buttons */
 .action-btn {
+    min-height: 44px;
     padding: 6px 16px;
     border-radius: var(--fimby-radius-md, 8px);
     border: none;
@@ -919,6 +920,7 @@
 }
 
 .compose-cancel {
+    min-height: 44px;
     padding: 8px 16px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md);
@@ -933,6 +935,7 @@
 }
 
 .compose-send {
+    min-height: 44px;
     padding: 8px 20px;
     border: none;
     border-radius: var(--fimby-radius-md);
@@ -945,6 +948,70 @@
 
 .compose-send:hover {
     background: var(--fimby-btn-primary-bg-active);
+}
+
+.compose-send:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.compose-send-outline {
+    background: transparent;
+    border: 1px solid var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
+}
+
+.compose-send-outline:hover:not(:disabled) {
+    background: var(--fimby-hover-bg);
+}
+
+.compose-send-accept {
+    background: var(--fimby-success, #1A7B40);
+    border: 1px solid var(--fimby-success, #1A7B40);
+    color: #ffffff;
+}
+
+.compose-send-accept:hover:not(:disabled) {
+    background: var(--fimby-success, #1A7B40);
+    filter: brightness(0.92);
+}
+
+.compose-cancel:focus-visible,
+.compose-send:focus-visible,
+.action-btn:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.compose-accept-note {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.compose-accept-caption,
+.compose-accept-disclosure {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--fimby-text-secondary);
+}
+
+@media (max-width: 480px) {
+    .compose-actions {
+        flex-wrap: wrap;
+    }
+
+    .compose-send-accept {
+        flex: 1 1 100%;
+        order: 3;
+    }
+
+    .compose-cancel,
+    .compose-send-outline {
+        flex: 1 1 0;
+    }
 }
 
 .compose-send:disabled {

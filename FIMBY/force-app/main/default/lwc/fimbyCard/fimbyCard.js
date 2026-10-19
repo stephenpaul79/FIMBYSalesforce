@@ -146,6 +146,8 @@ export default class FimbyCard extends LightningElement {
     }
     @api truncateDescription = false;
     @api descriptionMaxLines = 3;
+    /** When > 0, line-clamp applies only after plain-text length exceeds this (feed cards). */
+    @api descriptionMaxChars = 0;
     @api showTags = false;
     @api tags = [];
     @api showCustomContent = false;
@@ -196,24 +198,53 @@ export default class FimbyCard extends LightningElement {
     @api engagementCount = 0;
     @api engagementLabel = '';
     @api allocationPills = null;
+    /** Inert status labels: [{ key, label, tone }] where tone is 'active' | 'matched' | 'outcome'. */
+    @api statusPills = null;
+    @api responseDisabled = false;
 
     @track hasImageError = false;
 
     get showCardFooter() {
+        return !!this.responseLabel || this.hasStatusPills;
+    }
+
+    get showResponseButton() {
         return !!this.responseLabel;
     }
 
     get computedResponsePillClass() {
-        return this.responsePillClass || 'response-pill';
+        const base = this.responsePillClass || 'response-pill';
+        return this.isResponseDisabled ? `${base} response-pill-disabled` : base;
+    }
+
+    get isResponseDisabled() {
+        return this.responseDisabled === true || this.responseDisabled === 'true';
     }
 
     get hasAllocationPills() {
         return Array.isArray(this.allocationPills) && this.allocationPills.length > 0;
     }
 
+    get hasStatusPills() {
+        return Array.isArray(this.statusPills) && this.statusPills.length > 0;
+    }
+
+    get computedStatusPills() {
+        if (!this.hasStatusPills) return [];
+        return this.statusPills.map((pill, i) => ({
+            key: pill.key || `status-${i}`,
+            label: pill.label,
+            cssClass: `status-pill status-pill-${pill.tone || 'active'}`
+        }));
+    }
+
     get showEngagement() {
-        if (this.hasAllocationPills) return false;
+        if (this.hasAllocationPills || this.hasStatusPills) return false;
         return this.engagementLabel && this.engagementCount != null;
+    }
+
+    get showTitleLink() {
+        return this.isClickable === true || this.isClickable === 'true';
     }
 
     get engagementText() {
@@ -262,7 +293,7 @@ export default class FimbyCard extends LightningElement {
     }
 
     get showCompactBadgeRow() {
-        return this.isCondensedLayout && (this.badgeLabel || this.hasAllocationPills);
+        return this.isCondensedLayout && (this.badgeLabel || this.hasAllocationPills || this.hasStatusPills);
     }
 
     get showDefaultFooter() {
@@ -306,6 +337,10 @@ export default class FimbyCard extends LightningElement {
             classes.push('card-horizontal');
         }
 
+        if (this.menuOpen) {
+            classes.push('menu-open');
+        }
+
         return classes.join(' ');
     }
 
@@ -346,15 +381,36 @@ export default class FimbyCard extends LightningElement {
 
     /* --- Read-more / truncation --------------------------------------- */
 
+    get _useDescriptionClamp() {
+        if (!this.truncateDescription || this._isExpanded) {
+            return false;
+        }
+        if (this.descriptionMaxChars > 0) {
+            return this._plainDescriptionLength() > this.descriptionMaxChars;
+        }
+        return true;
+    }
+
+    _plainDescriptionLength() {
+        if (!this.description) {
+            return 0;
+        }
+        const stripped = decodeHtmlEntities(this.description)
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        return stripped.length;
+    }
+
     get descriptionClass() {
-        if (this.truncateDescription && !this._isExpanded) {
+        if (this._useDescriptionClamp) {
             return 'card-description truncated';
         }
         return 'card-description';
     }
 
     get descriptionStyle() {
-        if (this.truncateDescription && !this._isExpanded) {
+        if (this._useDescriptionClamp) {
             const lines = this._isDesktopHorizontal() ? 10 : this.descriptionMaxLines;
             return `-webkit-line-clamp: ${lines};`;
         }
@@ -374,22 +430,30 @@ export default class FimbyCard extends LightningElement {
     }
 
     handleReadMoreClick(event) {
-        if (this._isDesktopHorizontal()) {
-            // Let native click bubble to feed wrapper for navigation
-            return;
-        }
         event.stopPropagation();
         this._isExpanded = !this._isExpanded;
     }
 
     renderedCallback() {
-        if (this.truncateDescription && this.description) {
-            const el = this.template.querySelector('.card-description');
-            if (el) {
-                const newVal = el.scrollHeight > el.clientHeight || this._isExpanded;
-                if (this._needsTruncation !== newVal) {
-                    this._needsTruncation = newVal;
-                }
+        if (!this.truncateDescription || !this.description) {
+            if (this._needsTruncation) {
+                this._needsTruncation = false;
+            }
+            return;
+        }
+
+        if (this.descriptionMaxChars > 0 && this._plainDescriptionLength() <= this.descriptionMaxChars) {
+            if (this._needsTruncation) {
+                this._needsTruncation = false;
+            }
+            return;
+        }
+
+        const el = this.template.querySelector('.card-description');
+        if (el) {
+            const newVal = el.scrollHeight > el.clientHeight || this._isExpanded;
+            if (this._needsTruncation !== newVal) {
+                this._needsTruncation = newVal;
             }
         }
     }
@@ -429,6 +493,9 @@ export default class FimbyCard extends LightningElement {
             event.target.closest('.card-menu-backdrop') ||
             event.target.closest('.card-media') ||
             event.target.closest('.clickable-avatar') ||
+            event.target.closest('.title-link') ||
+            event.target.closest('.read-more-btn') ||
+            event.target.closest('.event-link-text') ||
             event.target.closest('.card-footer-bar') ||
             event.target.closest('.card-footer-compact') ||
             event.target.closest('.list-owner-row')) {
@@ -521,8 +588,18 @@ export default class FimbyCard extends LightningElement {
         this.dispatchEvent(customEvent);
     }
 
+    handleTitleLinkClick(event) {
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('cardclick', {
+            bubbles: true,
+            composed: true,
+            detail: { cardType: this.cardType, title: this.title, userName: this.userName }
+        }));
+    }
+
     handleResponseClick(event) {
         event.stopPropagation();
+        if (this.isResponseDisabled) return;
         this.dispatchEvent(new CustomEvent('cardrespond', {
             detail: { cardType: this.cardType }
         }));

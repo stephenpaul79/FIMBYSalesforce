@@ -132,7 +132,7 @@
                 <template for:each={displayFeedItems} for:item="feedItem">
                     <!-- Story Cards -->
                     <template lwc:if={feedItem.isStory}>
-                        <button type="button" class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick}>
+                        <div class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId}>
                             <c-fimby-card
                                 card-type="story"
                                 card-accent-color={feedItem.accentColor}
@@ -156,6 +156,7 @@
                                 engagement-count={feedItem.engagementCount}
                                 engagement-label={feedItem.engagementLabel}
                                 is-clickable="true"
+                                oncardclick={handleFeedCardClick}
                                 oncardrespond={handleCardRespond}
                                 oncardreport={handleCardReport}
                                 onavatarclick={handleAvatarNavigation}
@@ -165,12 +166,12 @@
                                     <span>{feedItem.badgeLabel}</span>
                                 </div>
                             </c-fimby-card>
-                        </button>
+                        </div>
                     </template>
 
                     <!-- Ask & Offer Cards (includes Events) -->
                     <template lwc:if={feedItem.isAskOffer}>
-                        <button type="button" class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick}>
+                        <div class="feed-card-wrapper" key={feedItem.recordId} data-record-id={feedItem.recordId}>
                             <c-fimby-card
                                 card-type="askOffer"
                                 card-accent-color={feedItem.accentColor}
@@ -195,7 +196,10 @@
                                 engagement-count={feedItem.engagementCount}
                                 engagement-label={feedItem.engagementLabel}
                                 allocation-pills={feedItem.allocationPills}
+                                status-pills={feedItem.statusPills}
+                                response-disabled={feedItem.responseDisabled}
                                 is-clickable="true"
+                                oncardclick={handleFeedCardClick}
                                 oncardrespond={handleCardRespond}
                                 oncardreport={handleCardReport}
                                 onavatarclick={handleAvatarNavigation}
@@ -211,7 +215,7 @@
                                     </template>
                                 </div>
                             </c-fimby-card>
-                        </button>
+                        </div>
                     </template>
 
                     <!-- Library "Just Listed" Cards -->

@@ -19,12 +19,7 @@
                         <div
                             class="feed-card-wrapper"
                             key={item.recordId}
-                            role="button"
-                            tabindex="0"
-                            data-record-id={item.recordId}
-                            aria-label="View post"
-                            onclick={handleCardClick}
-                            onkeydown={handleCardKeydown}>
+                            data-record-id={item.recordId}>
                             <c-fimby-card
                                 layout="list"
                                 card-type={item.cardType}
@@ -36,16 +31,17 @@
                                 event-date-time={item.eventDateTime}
                                 event-location={item.eventLocation}
                                 event-link-url={item.eventLinkUrl}
-                                show-header="false"
-                                show-footer="false"
-                                show-menu="false"
+                                show-menu={cardShowMenu}
+                                show-footer={cardShowFooter}
                                 timestamp={item.displayTimestamp}
                                 badge-label={item.badgeLabel}
                                 badge-icon-url={item.badgeIconUrl}
                                 badge-style={item.badgeStyle}
                                 images={item.images}
+                                status-pills={item.statusPills}
                                 elevation="low"
-                                is-clickable="true">
+                                is-clickable="true"
+                                oncardclick={handleCardClick}>
                             </c-fimby-card>
                         </div>
                     </template>

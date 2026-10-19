@@ -15,6 +15,8 @@ import getCelebrationContext from '@salesforce/apex/FimbyProfileController.getCe
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import isVouchedForBorrowing from '@salesforce/apex/FimbyLibraryController.isVouchedForBorrowing';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
+import { feedLifecycleState } from 'c/fimbyFeedLifecycle';
+import { SCOPED_KEYS, readCache, writeCache, clearCache } from 'c/fimbyCache';
 import { registerTourAnchorProvider } from 'c/fimbyGuidedTourAnchorRegistry';
 import getOnboardingStatus from '@salesforce/apex/FimbyOnboardingController.getOnboardingStatus';
 import dismissBioBanner from '@salesforce/apex/FimbyOnboardingController.dismissBioBanner';
@@ -96,7 +98,9 @@ const ASK_OFFER_SUB_FILTERS = [
 
 const INITIAL_FETCH_SIZE = 100;
 const SCROLL_BATCH_SIZE = 50;
-const CACHE_KEY = 'fimby-home-feed-state';
+const CACHE_KEY = SCOPED_KEYS.homeFeed;
+const CACHE_OWNER_HINT_KEY = 'fimby-home-feed-owner';
+const REVALIDATE_MAX_ITEMS = 50;
 // Holds the date the say-hi banner was rested. Per-device on purpose — "not today"
 // is a local mood; "don't show this again" is the one that persists server-side.
 const BIO_BANNER_SNOOZE_KEY = 'fimby-say-hi-snoozed-on';
@@ -131,7 +135,8 @@ const RAW_FEED_ITEM_KEYS = [
     'typeValue', 'engagementCount', 'recordTypeName', 'totalReserved', 'totalQuantity',
     'ownerShares', 'totalAvailable', 'activeReserverIds', 'isOrgContact', 'isParentManaged', 'orgAccountId',
     'eventDetails', 'location', 'eventType', 'eventLinkUrl', 'ownerContactId', 'realAuthorContactId',
-    'isUrgent', 'sourceScope', 'isRecurring'
+    'isUrgent', 'sourceScope', 'isRecurring',
+    'status', 'closedDate', 'closedOutcome', 'replyCount', 'totalAccepted', 'viewerHasActiveResponse'
 ];
 
 export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
@@ -673,22 +678,27 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
      */
     async _hydrateIdentityAndReprocessFeed() {
         let identityResolved = false;
+        let fresh = null;
         try {
             const category = this.activeFilter === 'all' ? null : this.activeFilter;
             const subType = this.activeSubFilter === 'All' ? null : this.activeSubFilter;
-            const result = await getUnifiedFeed({
+            const windowSize = Math.min(
+                Math.max(this.feedItems?.length || 0, this.pageSize || 15),
+                REVALIDATE_MAX_ITEMS
+            );
+            fresh = await getUnifiedFeed({
                 offset: 0,
-                pageSize: 1,
+                pageSize: windowSize,
                 category,
                 subType
             });
-            if (result?.currentContactId) {
-                this.currentContactId = result.currentContactId;
+            if (fresh?.currentContactId) {
+                this.currentContactId = fresh.currentContactId;
             }
-            if (result?.actingAsContactId) {
-                this.actingAsContactId = result.actingAsContactId;
+            if (fresh?.actingAsContactId) {
+                this.actingAsContactId = fresh.actingAsContactId;
             }
-            identityResolved = !!(result?.currentContactId || result?.actingAsContactId);
+            identityResolved = !!(fresh?.currentContactId || fresh?.actingAsContactId);
         } catch {
             // Fall through to the fail-safe discard below.
         }
@@ -703,9 +713,34 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
         this._cacheIdentityVerified = true;
         if (this.feedItems?.length) {
-            this.feedItems = this.processItems(this.feedItems.map((fi) => this._toRawFeedItem(fi)));
+            const rawCached = this.feedItems.map((fi) => this._toRawFeedItem(fi));
+            this.feedItems = this.processItems(this._reconcileWithFresh(rawCached, fresh));
+            this.loadedRecordIds = new Set(this.feedItems.map((fi) => fi.recordId));
             this.applyFilter();
         }
+    }
+
+    /**
+     * Scheduled completion/expiry happens server-side, so a restored feed is
+     * always reconciled: cards in the fresh window are replaced in place, and
+     * cached cards that fell out of that window (expired, withdrawn, past their
+     * linger) are dropped. New posts are left for the next pull-to-refresh so the
+     * restored scroll position doesn't jump.
+     */
+    _reconcileWithFresh(rawCached, fresh) {
+        const freshItems = fresh?.items || [];
+        if (freshItems.length === 0 && fresh?.hasMore !== false) {
+            return rawCached;
+        }
+        const freshById = new Map(freshItems.map((it) => [it.recordId, it]));
+        let lastMatchedIdx = -1;
+        rawCached.forEach((it, idx) => {
+            if (freshById.has(it.recordId)) lastMatchedIdx = idx;
+        });
+        const coversAll = fresh?.hasMore === false;
+        return rawCached
+            .filter((it, idx) => freshById.has(it.recordId) || (!coversAll && idx > lastMatchedIdx))
+            .map((it) => freshById.get(it.recordId) || it);
     }
 
     /**
@@ -802,6 +837,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             }
 
             // Response pill (footer action)
+            const viewerResponded = isAskOffer && item.viewerHasActiveResponse === true;
             let responseLabel, responseIconUrl, engagementLabel;
             if (isStory) {
                 responseLabel = 'Comment';
@@ -811,8 +847,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 const isBulkBuyPoster =
                     item.ownerContactId === this.actingAsContactId ||
                     item.realAuthorContactId === this.currentContactId;
-                const hasReserved = item.activeReserverIds &&
-                    item.activeReserverIds.includes(this.currentContactId);
+                const hasReserved = viewerResponded;
                 if (isBulkBuyPoster) {
                     responseLabel = 'View Post';
                     responseIconUrl = `${IMPACT_ICONS}/Magnify.png`;
@@ -826,8 +861,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 engagementLabel = null;
             } else if (isEvent) {
                 const evtType = item.eventType;
-                const alreadyResponded = this.currentContactId && item.activeReserverIds &&
-                    item.activeReserverIds.includes(this.currentContactId);
+                const alreadyResponded = viewerResponded;
                 if (evtType === 'Open_Event') {
                     responseIconUrl = `${IMPACT_ICONS}/people.png`;
                     responseLabel = alreadyResponded ? 'Going' : "I'm Going";
@@ -842,8 +876,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     engagementLabel = 'RSVPs';
                 }
             } else if (isAskOffer) {
-                const alreadyResponded = this.currentContactId && item.activeReserverIds &&
-                    item.activeReserverIds.includes(this.currentContactId);
+                const alreadyResponded = viewerResponded;
                 responseLabel = alreadyResponded ? 'Responded' : 'Respond';
                 responseIconUrl = `${IMPACT_ICONS}/reply.png`;
                 engagementLabel = 'Responses';
@@ -856,8 +889,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 + (hasVisibleImage ? ' library-has-image' : ' library-no-image');
 
             let responsePillClass = '';
-            const userHasResponded = isAskOffer && item.activeReserverIds &&
-                item.activeReserverIds.includes(this.currentContactId);
+            const userHasResponded = viewerResponded;
             if (isBulkBuy && userHasResponded) {
                 responsePillClass = 'response-pill-reserved';
             } else if (userHasResponded) {
@@ -911,6 +943,19 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 responsePillClass = 'response-pill-responded';
             }
 
+            const lifecycle = isAskOffer
+                ? feedLifecycleState(item, { isEvent, isBulkBuy, isPoster, viewerResponded })
+                : { statusPills: null, responseDisabled: false };
+            if (lifecycle.isCompleted) {
+                responseLabel = '';
+                responseIconUrl = '';
+                engagementLabel = null;
+            } else if (lifecycle.ctaOverride) {
+                responseLabel = lifecycle.ctaOverride.label;
+                responseIconUrl = lifecycle.ctaOverride.iconUrl;
+                responsePillClass = lifecycle.ctaOverride.pillClass;
+            }
+
             const processed = {
                 ...item,
                 isStory,
@@ -938,6 +983,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 responsePillClass,
                 engagementLabel,
                 allocationPills,
+                statusPills: lifecycle.statusPills,
+                responseDisabled: lifecycle.responseDisabled,
                 eventDateTime,
                 eventLocation,
                 eventLinkUrl,
@@ -1123,6 +1170,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const cardWrapper = event.currentTarget;
         const recordId = cardWrapper.dataset.recordId;
         const item = this.feedItems.find(i => i.recordId === recordId);
+        if (item) this.navigateToDetailPage(item);
+    }
+
+    handleFeedCardClick(event) {
+        const recordId = event.target.closest('.feed-card-wrapper')?.dataset.recordId;
+        const item = recordId && this.feedItems.find(i => i.recordId === recordId);
         if (item) this.navigateToDetailPage(item);
     }
 
@@ -1318,12 +1371,14 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 ...fi,
                 responsePillClass: 'response-pill-responded',
                 responseLabel: 'Interested',
-                engagementCount: prevCount + 1
+                engagementCount: prevCount + 1,
+                viewerHasActiveResponse: true
             };
         });
 
         try {
             await quickEventResponse({ eventId: recordId, action: 'respond', guestCount: 1 });
+            clearCache(SCOPED_KEYS.homeFeed);
         } catch (error) {
             this.feedItems = this.feedItems.map(fi => {
                 if (fi.recordId !== recordId) return fi;
@@ -1331,7 +1386,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     ...fi,
                     responsePillClass: prevClass,
                     responseLabel: prevLabel,
-                    engagementCount: prevCount
+                    engagementCount: prevCount,
+                    viewerHasActiveResponse: false
                 };
             });
             fireErrorToast(error, 'Something went wrong.');
@@ -1342,14 +1398,23 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     handleResponseSaved(event) {
         const { recordId, responseType } = event.detail;
+        const reprocessAsResponded = (fi, bumpReplies) => {
+            const raw = this._toRawFeedItem(fi);
+            if (bumpReplies && !raw.viewerHasActiveResponse) {
+                raw.replyCount = (Number(raw.replyCount) || 0) + 1;
+            }
+            raw.viewerHasActiveResponse = true;
+            return this.processItems([raw])[0];
+        };
         const updateMap = {
             story: (fi) => ({ ...fi, engagementCount: (fi.engagementCount || 0) + 1 }),
-            askOffer: (fi) => ({ ...fi, responsePillClass: 'response-pill-responded', responseLabel: 'Responded' }),
-            gathering: (fi) => ({ ...fi, responsePillClass: 'response-pill-responded', responseLabel: "RSVP'd" }),
-            openEvent: (fi) => ({ ...fi, responsePillClass: 'response-pill-responded', responseLabel: 'Going' }),
-            bulkBuy: (fi) => ({ ...fi, responsePillClass: 'response-pill-reserved', responseLabel: 'Reserved' }),
+            askOffer: (fi) => reprocessAsResponded(fi, true),
+            gathering: (fi) => reprocessAsResponded(fi, false),
+            openEvent: (fi) => reprocessAsResponded(fi, false),
+            bulkBuy: (fi) => reprocessAsResponded(fi, false),
             library: (fi) => ({ ...fi, responsePillClass: 'response-pill-responded', responseLabel: 'Requested' })
         };
+        clearCache(SCOPED_KEYS.homeFeed);
         const updater = updateMap[responseType];
         if (!updater) return;
 
@@ -1442,10 +1507,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 // identity). Verified against the server on restore so a
                 // different user logging in on this device can never read the
                 // previous user's neighbourhood feed.
-                ownerStamp: this._identityStamp(),
-                timestamp: Date.now()
+                ownerStamp: this._identityStamp()
             };
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify(state));
+            writeCache(CACHE_KEY, state, { identityId: state.ownerStamp });
+            sessionStorage.setItem(CACHE_OWNER_HINT_KEY, state.ownerStamp);
         } catch { /* storage unavailable or full */ }
     }
 
@@ -1460,14 +1525,13 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
 
     _restoreFeedState() {
         try {
-            const raw = sessionStorage.getItem(CACHE_KEY);
-            if (!raw) return false;
-
-            const state = JSON.parse(raw);
-            if (Date.now() - state.timestamp > CACHE_MAX_AGE_MS) {
-                sessionStorage.removeItem(CACHE_KEY);
-                return false;
-            }
+            // The owner hint only selects which scoped envelope to open; the
+            // server identity check in _hydrateIdentityAndReprocessFeed still
+            // gates the reveal.
+            const ownerHint = sessionStorage.getItem(CACHE_OWNER_HINT_KEY);
+            if (!ownerHint) return false;
+            const state = readCache(CACHE_KEY, { identityId: ownerHint, ttlMs: CACHE_MAX_AGE_MS });
+            if (!state || !Array.isArray(state.feedItems)) return false;
 
             this.feedItems = state.feedItems;
             this.filteredFeedItems = [...state.feedItems];
@@ -1497,7 +1561,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     _clearFeedCache() {
-        try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
+        clearCache(CACHE_KEY);
+        try { sessionStorage.removeItem(CACHE_OWNER_HINT_KEY); } catch { /* ignore */ }
     }
 
     renderedCallback() {

@@ -10,6 +10,15 @@ public without sharing class FimbyResponseAutoShareHelper {
      * @param responseId The accepted Response__c record ID
      */
     public static void tryAutoShareOnAccept(Id responseId) {
+        autoShareOnAccept(responseId, false);
+    }
+
+    /**
+     * @description As tryAutoShareOnAccept; when strict is true an exception propagates so an
+     * atomic acceptance rolls back rather than accepting without the promised share.
+     * An unsuccessful share result (nothing to share) is policy, not failure, and never throws.
+     */
+    public static void autoShareOnAccept(Id responseId, Boolean strict) {
         if (responseId == null) {
             return;
         }
@@ -89,6 +98,9 @@ public without sharing class FimbyResponseAutoShareHelper {
                 );
             }
         } catch (Exception e) {
+            if (strict == true) {
+                throw e;
+            }
             FimbyLogger.error('FimbyResponseAutoShareHelper', 'tryAutoShareOnAccept', e);
         }
     }

@@ -17,6 +17,9 @@ import blockContactApex from '@salesforce/apex/FimbyConversationController.block
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
 import { buildSentByLabel } from 'c/fimbyProxyLabels';
+import sendMessageAndAcceptApex from '@salesforce/apex/FimbyResponseThreadController.sendMessageAndAccept';
+import { fireErrorToast } from 'c/fimbyToastHelper';
+import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -125,6 +128,26 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
     get isSendDisabled() {
         return !this.messageText || !this.messageText.trim() || this.isSending;
+    }
+
+    get showSendAndAccept() {
+        return !this.isNonThreadedEventOnly && this.isPoster && this.response.status === 'New';
+    }
+
+    get sendAndAcceptCaption() {
+        return `Accepting lets ${this.responderName} know you\u2019re going ahead.`;
+    }
+
+    get showAutoShareDisclosure() {
+        return this.showSendAndAccept && this.post.autoShareContactInfo === true;
+    }
+
+    get autoShareDisclosure() {
+        return `Your contact info will be shared with ${this.responderName} when you accept.`;
+    }
+
+    get composeLabel() {
+        return `Reply to ${this.otherPartyName}`;
     }
 
     get isThreadActive() {
@@ -720,25 +743,86 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
         sendMessageApex({ responseId: this.activeResponseId, body })
             .then(result => {
-                if (result.success) {
-                    this.messages.push({
-                        id: result.messageId,
-                        body: body,
-                        senderId: this.myContactId,
-                        senderName: this.myContactName,
-                        sentDate: result.sentDate || new Date().toISOString(),
-                        isSystemMessage: false
-                    });
-                    this.processMessages();
-                    this.scrollToBottom();
-                    this.showCompose = false;
-                    this.messageText = '';
+                if (!result.success) {
+                    throw new Error(result.message || 'We couldn\u2019t send your message just now.');
                 }
+                this.messages.push({
+                    id: result.messageId,
+                    body: body,
+                    senderId: this.myContactId,
+                    senderName: this.myContactName,
+                    sentDate: result.sentDate || new Date().toISOString(),
+                    isSystemMessage: false
+                });
+                this.processMessages();
+                this.scrollToBottom();
+                this.showCompose = false;
+                this.messageText = '';
             })
-            .catch(() => {})
+            .catch(error => this._restoreDraft(body, error))
             .finally(() => {
                 this.isSending = false;
             });
+    }
+
+    handleSendAndAccept() {
+        if (this.isSendDisabled) return;
+        const body = this.messageText.trim();
+        this.isSending = true;
+
+        sendMessageAndAcceptApex({ responseId: this.activeResponseId, body })
+            .then(result => {
+                if (!result.success) {
+                    throw new Error(result.message || 'We couldn\u2019t send and accept just now.');
+                }
+                const now = new Date().toISOString();
+                this.messages.push({
+                    id: 'local-' + Date.now(),
+                    body,
+                    senderId: this.myContactId,
+                    senderName: this.myContactName,
+                    sentDate: now,
+                    isSystemMessage: false
+                });
+                this.response = { ...this.response, status: result.newStatus || 'Accepted' };
+                if (this.post.autoShareContactInfo === true) {
+                    this.contactShared = true;
+                }
+                this.appendSystemMessage(result.message || 'Response accepted');
+                this.showCompose = false;
+                this.messageText = '';
+                clearCache(SCOPED_KEYS.homeFeed);
+                this._focusAfterAction();
+            })
+            .catch(error => this._restoreDraft(body, error))
+            .finally(() => {
+                this.isSending = false;
+            });
+    }
+
+    _restoreDraft(body, error) {
+        this.messageText = body;
+        this.showCompose = true;
+        fireErrorToast(error);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            const textarea = this.template.querySelector('.compose-input');
+            if (textarea) {
+                textarea.value = body;
+                textarea.focus();
+            }
+        }, 0);
+    }
+
+    _focusAfterAction() {
+        const trigger = this._confirmTrigger;
+        this._confirmTrigger = null;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            const target = (trigger && trigger.isConnected) ? trigger
+                : (this.template.querySelector('.reply-trigger') || this.template.querySelector('.menu-button'));
+            if (target) target.focus();
+        }, 0);
     }
 
     autoResizeTextarea(el) {
@@ -748,7 +832,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
 
     // --- Status Actions ---
 
-    handleAccept() {
+    handleAccept(event) {
+        this._confirmTrigger = event?.currentTarget || null;
         this.confirmAction = 'accept';
         this.confirmTitle = 'Accept this response?';
         this.confirmMessage = 'Accept this response from ' + this.responderName + '?';
@@ -757,7 +842,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.showConfirmDialog = true;
     }
 
-    handleDecline() {
+    handleDecline(event) {
+        this._confirmTrigger = event?.currentTarget || null;
         this.confirmAction = 'decline';
         this.confirmTitle = 'Decline this response?';
         this.confirmMessage = 'Decline this response from ' + this.responderName + '?';
@@ -766,7 +852,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.showConfirmDialog = true;
     }
 
-    handleCancel() {
+    handleCancel(event) {
+        this._confirmTrigger = event?.currentTarget || null;
         this.confirmAction = 'cancel';
         this.confirmTitle = 'Cancel your response?';
         this.confirmMessage = 'This will release your reserved spot.';
@@ -775,7 +862,8 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.showConfirmDialog = true;
     }
 
-    handleComplete() {
+    handleComplete(event) {
+        this._confirmTrigger = event?.currentTarget || null;
         this.confirmAction = 'complete';
         this.confirmTitle = 'Mark as complete?';
         this.confirmMessage = 'Mark this response as complete?';
@@ -787,6 +875,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     handleConfirmDialogClose() {
         this.showConfirmDialog = false;
         this.confirmAction = null;
+        this._focusAfterAction();
     }
 
     handleConfirmDialogConfirm() {
@@ -794,54 +883,24 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         this.showConfirmDialog = false;
         this.confirmAction = null;
 
-        if (action === 'accept') this.executeAccept();
-        else if (action === 'decline') this.executeDecline();
-        else if (action === 'cancel') this.executeCancel();
-        else if (action === 'complete') this.executeComplete();
+        if (action === 'accept') this._runStatusAction(acceptResponseApex);
+        else if (action === 'decline') this._runStatusAction(declineResponseApex);
+        else if (action === 'cancel') this._runStatusAction(cancelResponseApex);
+        else if (action === 'complete') this._runStatusAction(completeResponseApex);
     }
 
-    executeAccept() {
-        acceptResponseApex({ responseId: this.activeResponseId })
+    _runStatusAction(apexMethod) {
+        apexMethod({ responseId: this.activeResponseId })
             .then(result => {
-                if (result.success) {
-                    this.response = { ...this.response, status: result.newStatus };
-                    this.appendSystemMessage(result.message);
+                if (!result.success) {
+                    throw new Error(result.message || 'We couldn\u2019t update this response just now.');
                 }
+                this.response = { ...this.response, status: result.newStatus };
+                this.appendSystemMessage(result.message);
+                clearCache(SCOPED_KEYS.homeFeed);
             })
-            .catch(() => {});
-    }
-
-    executeDecline() {
-        declineResponseApex({ responseId: this.activeResponseId })
-            .then(result => {
-                if (result.success) {
-                    this.response = { ...this.response, status: result.newStatus };
-                    this.appendSystemMessage(result.message);
-                }
-            })
-            .catch(() => {});
-    }
-
-    executeCancel() {
-        cancelResponseApex({ responseId: this.activeResponseId })
-            .then(result => {
-                if (result.success) {
-                    this.response = { ...this.response, status: result.newStatus };
-                    this.appendSystemMessage(result.message);
-                }
-            })
-            .catch(() => {});
-    }
-
-    executeComplete() {
-        completeResponseApex({ responseId: this.activeResponseId })
-            .then(result => {
-                if (result.success) {
-                    this.response = { ...this.response, status: result.newStatus };
-                    this.appendSystemMessage(result.message);
-                }
-            })
-            .catch(() => {});
+            .catch(error => fireErrorToast(error))
+            .finally(() => this._focusAfterAction());
     }
 
     appendSystemMessage(body) {

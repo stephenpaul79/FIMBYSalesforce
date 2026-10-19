@@ -659,6 +659,10 @@ private class FimbyEmailHtmlBuilderTest {
         System.assert(result.contains('Email preferences'),
             'Recurring emails must keep the footer email-preferences link');
         System.assert(result.contains('FIMBYwGrass.png'), 'Logo still renders');
+        System.assert(result.contains('class="nh-greet"') && result.contains('class="nh-badge"'),
+            'Badge row carries the classes that stack it on phones');
+        System.assert(result.contains('.nh-greet,.nh-badge{display:block!important'),
+            'Phone media query stacks the neighbourhood badge under the greeting');
     }
 
     @IsTest

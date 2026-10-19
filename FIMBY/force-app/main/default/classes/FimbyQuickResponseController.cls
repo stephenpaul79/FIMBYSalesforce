@@ -107,7 +107,10 @@ public with sharing class FimbyQuickResponseController {
             'eventDetails' => post.Event_Details__c,
             'location' => post.Location__c,
             'expectedAttendance' => post.Expected_Attendance__c,
-            'eventLink' => post.Event_Link__c
+            'eventLink' => post.Event_Link__c,
+            'isMatched' => post.Type__c != 'Event'
+                && post.RecordType?.DeveloperName != FimbyConstants.RT_BULK_BUY
+                && FimbyPostEngagementService.isMatched(post.Total_Quantity__c, post.Total_Accepted__c)
         };
     }
 
@@ -118,7 +121,7 @@ public with sharing class FimbyQuickResponseController {
         public Needs_Offers__c queryPost(String recordId) {
             List<Needs_Offers__c> rows = [
                 SELECT Id, Name, Details__c, Full_Details__c, Image_1_URL__c,
-                       Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
+                       Total_Available__c, Total_Quantity__c, Per_Response_Limit__c, Total_Accepted__c,
                        Status__c, Type__c, RecordType.DeveloperName,
                        Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
                        Event_Type__c, Event_Details__c, Location__c,

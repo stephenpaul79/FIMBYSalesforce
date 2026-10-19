@@ -233,7 +233,9 @@ public with sharing class FimbyResponseThreadController {
                 return errorResult('notFound', 'Response not found.');
             }
 
-            Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
+            Boolean isResponder = resp.Contact__c == identity.contact?.Id
+                || resp.Contact__c == myContactId
+                || resp.On_Behalf_Of_Contact__c == myContactId;
             if (!isResponder) {
                 return errorResult('notAuthorized', 'Only the respondee can update the amount.');
             }
@@ -247,12 +249,16 @@ public with sharing class FimbyResponseThreadController {
             }
 
             Needs_Offers__c post = resp.Need_Offer_Responded_To__r;
-            Decimal currentReservation = resp.Amount_Requested__c != null ? resp.Amount_Requested__c : 0;
-            Decimal totalAvailable = (post.Total_Available__c != null ? post.Total_Available__c : 0) + currentReservation;
             Decimal perLimit = post.Per_Response_Limit__c;
+            Boolean capsByAvailability = post.RecordType?.DeveloperName == FimbyConstants.RT_BULK_BUY
+                || (post.Type__c == 'Event' && post.Event_Type__c == 'Gathering');
 
-            if (newAmount > totalAvailable) {
-                return errorResult('quantityExceeded', 'Only ' + totalAvailable.intValue() + ' available. Please choose a smaller amount.');
+            if (capsByAvailability) {
+                Decimal currentReservation = resp.Amount_Requested__c != null ? resp.Amount_Requested__c : 0;
+                Decimal totalAvailable = (post.Total_Available__c != null ? post.Total_Available__c : 0) + currentReservation;
+                if (newAmount > totalAvailable) {
+                    return errorResult('quantityExceeded', 'Only ' + totalAvailable.intValue() + ' available. Please choose a smaller amount.');
+                }
             }
             if (perLimit != null && perLimit > 0 && newAmount > perLimit) {
                 return errorResult('limitExceeded', 'Maximum per response is ' + perLimit.intValue() + '.');
@@ -351,6 +357,25 @@ public with sharing class FimbyResponseThreadController {
     }
 
     /**
+     * @description LWC-callable atomic Send & Accept: the poster's message and the acceptance
+     * land in one transaction with one combined notification to the responder.
+     * @param responseId The Response__c record ID
+     * @param body The poster's message
+     * @return Map with success, newStatus, and message
+     */
+    @AuraEnabled
+    public static Map<String, Object> sendMessageAndAccept(String responseId, String body) {
+        try {
+            if (String.isBlank(responseId)) {
+                return errorResult('noRecordId', 'No response selected.');
+            }
+            return FimbyResponseStatusService.sendMessageAndAccept(Id.valueOf(responseId), body).toMap();
+        } catch (Exception e) {
+            return throwAura('We couldn\'t send your message and accept just now. Your message is still here, so please try again.');
+        }
+    }
+
+    /**
      * @description LWC-callable method that shares contact info between response participants.
      * Delegates to FimbyResponseController.shareContactInfo.
      * @param shareData JSON string with responseId, sharingContactId, recipientContactId, and share options
@@ -393,110 +418,12 @@ public with sharing class FimbyResponseThreadController {
     // ============================================
 
     private static Map<String, Object> changeStatus(String responseId, String newStatus, Boolean responderAction) {
-        FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
-        if (identity == null) {
-            return errorResult('noIdentity', 'Unable to determine your identity.');
-        }
-
-        String myContactId = identity.actingAsContactId;
-        Id myRealContactId = identity.contact?.Id;
-        String myName = identity.orgDisplayName;
-        ThreadHelper helper = new ThreadHelper();
-
-        Response__c resp = helper.queryThreadMinimal(responseId);
-        if (resp == null) {
-            return errorResult('notFound', 'Response not found.');
-        }
-
-        Id postOwnerId = resp.Need_Offer_Responded_To__r?.Contact__c;
-        Id postSubmittedBy = resp.Need_Offer_Responded_To__r?.Posted_By__c;
-        Boolean isPoster = postSubmittedBy == myRealContactId || postOwnerId == myContactId;
-        Boolean isResponder = (resp.Contact__c == myContactId || resp.On_Behalf_Of_Contact__c == myContactId);
-
-        if (responderAction && !isResponder) {
-            return errorResult('notAuthorized', 'Only the respondee can perform this action.');
-        }
-        if (!responderAction && !isPoster) {
-            return errorResult('notAuthorized', 'Only the poster can perform this action.');
-        }
-
-        Set<String> validFrom = new Set<String>();
-        if (newStatus == FimbyConstants.RESPONSE_ACCEPTED) validFrom.addAll(new List<String>{FimbyConstants.RESPONSE_NEW});
-        else if (newStatus == FimbyConstants.RESPONSE_DECLINED) validFrom.addAll(new List<String>{FimbyConstants.RESPONSE_NEW});
-        else if (newStatus == FimbyConstants.RESPONSE_CANCELLED) validFrom.addAll(new List<String>{FimbyConstants.RESPONSE_NEW, FimbyConstants.RESPONSE_ACCEPTED});
-        else if (newStatus == FimbyConstants.RESPONSE_COMPLETED) validFrom.addAll(new List<String>{FimbyConstants.RESPONSE_ACCEPTED});
-
-        if (!validFrom.contains(resp.Status__c)) {
-            return errorResult('invalidTransition', 'Cannot change from ' + resp.Status__c + ' to ' + newStatus + '.');
-        }
-
-        Response__c upd = new Response__c(Id = responseId, Status__c = newStatus);
-        if (newStatus == FimbyConstants.RESPONSE_COMPLETED) {
-            upd.Completed_Date__c = DateTime.now();
-        }
-        if (isPoster) {
-            upd.Responder_Unread_Count__c = (resp.Responder_Unread_Count__c != null ? resp.Responder_Unread_Count__c : 0) + 1;
-        } else {
-            upd.Poster_Unread_Count__c = (resp.Poster_Unread_Count__c != null ? resp.Poster_Unread_Count__c : 0) + 1;
-        }
-        helper.updateResponse(upd);
-
-        Id responderContactId = resp.Contact__c;
-        String parentRtName = resp.Need_Offer_Responded_To__r?.RecordType?.DeveloperName;
-        Boolean isActingAsOther = resp.On_Behalf_Of_Contact__c != null
-            && resp.On_Behalf_Of_Contact__c != resp.Contact__c;
-
-        if (newStatus == FimbyConstants.RESPONSE_CANCELLED) {
-            FimbyCounterService.onResponseCancelled(responderContactId, parentRtName, isActingAsOther, resp.Status__c);
-        } else {
-            FimbyCounterService.onResponseStatusChanged(responderContactId, parentRtName, isActingAsOther, resp.Status__c, newStatus);
-        }
-
-        String sysBody;
-        if (newStatus == FimbyConstants.RESPONSE_ACCEPTED) sysBody = 'Response accepted';
-        else if (newStatus == FimbyConstants.RESPONSE_DECLINED) sysBody = 'Response declined';
-        else if (newStatus == FimbyConstants.RESPONSE_CANCELLED) sysBody = myName + ' cancelled their response';
-        else if (newStatus == FimbyConstants.RESPONSE_COMPLETED) sysBody = 'Response marked as complete';
-        else sysBody = 'Status changed to ' + newStatus;
-
-        helper.createSystemMessage(responseId, myContactId, sysBody, 'Status_Change');
-
-        Id recipientContactId;
-        if (isPoster) {
-            recipientContactId = resp.On_Behalf_Of_Contact__c != null ? resp.On_Behalf_Of_Contact__c : resp.Contact__c;
-        } else {
-            recipientContactId = FimbyConstants.postOwnerContactId(resp.Need_Offer_Responded_To__r);
-        }
-
-        if (recipientContactId != null && recipientContactId != myContactId) {
-            String notifTitle;
-            if (newStatus == FimbyConstants.RESPONSE_ACCEPTED) notifTitle = 'Your response was accepted';
-            else if (newStatus == FimbyConstants.RESPONSE_DECLINED) notifTitle = 'Your response was declined';
-            else if (newStatus == FimbyConstants.RESPONSE_CANCELLED) notifTitle = myName + ' cancelled their response';
-            else if (newStatus == FimbyConstants.RESPONSE_COMPLETED) notifTitle = 'Response marked as complete';
-            else notifTitle = 'Response status updated';
-
-            FimbyNotificationService.createNotification(
-                recipientContactId,
-                FimbyConstants.NOTIF_RESPONSE,
-                notifTitle,
-                sysBody,
-                Id.valueOf(responseId),
-                'Response__c',
-                FimbySettings.getUrl('Response_Reply', null, '?recordId=' + responseId),
-                myName
-            );
-        }
-
-        if (newStatus == FimbyConstants.RESPONSE_ACCEPTED && isPoster) {
-            FimbyResponseAutoShareHelper.tryAutoShareOnAccept(resp.Id);
-        }
-
-        return new Map<String, Object>{
-            'success' => true,
-            'newStatus' => newStatus,
-            'message' => sysBody
-        };
+        FimbyResponseStatusService.Outcome outcome = FimbyResponseStatusService.changeStatus(
+            Id.valueOf(responseId),
+            newStatus,
+            responderAction ? FimbyResponseStatusService.Source.RESPONDER : FimbyResponseStatusService.Source.POSTER
+        );
+        return outcome.toMap();
     }
 
     private static Boolean isTerminalStatus(String status) {
@@ -572,7 +499,8 @@ public with sharing class FimbyResponseThreadController {
             'postedByName' => postedByName,
             'postedByImageUrl' => postedByImageUrl,
             'postedByIsOrg' => posterIsOrg,
-            'endDate' => post.End_Date__c
+            'endDate' => post.End_Date__c,
+            'autoShareContactInfo' => post.Auto_Share_Contact_Info__c == true
         };
     }
 
@@ -645,6 +573,7 @@ public with sharing class FimbyResponseThreadController {
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Logo_URL__c,
                        Need_Offer_Responded_To__r.End_Date__c,
+                       Need_Offer_Responded_To__r.Auto_Share_Contact_Info__c,
                        Need_Offer_Responded_To__r.OwnerId
                 FROM Response__c
                 WHERE Id = :responseId
@@ -683,6 +612,15 @@ public with sharing class FimbyResponseThreadController {
          * @return The Response__c record or null if not found
          */
         public Response__c queryThreadForAmountUpdate(String responseId) {
+            List<Response__c> probe = [
+                SELECT Need_Offer_Responded_To__c FROM Response__c WHERE Id = :responseId LIMIT 1
+            ];
+            if (probe.isEmpty()) {
+                return null;
+            }
+            // Parent first, then response: the same lock order as every status transition.
+            Id postId = probe[0].Need_Offer_Responded_To__c;
+            List<Needs_Offers__c> lockedPost = [SELECT Id FROM Needs_Offers__c WHERE Id = :postId FOR UPDATE];
             List<Response__c> results = [
                 SELECT Id, Name, Status__c, Amount_Requested__c,
                        Contact__c, On_Behalf_Of_Contact__c, OwnerId,
@@ -692,10 +630,14 @@ public with sharing class FimbyResponseThreadController {
                        Need_Offer_Responded_To__r.Per_Response_Limit__c,
                        Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__c,
-                       Need_Offer_Responded_To__r.Name
+                       Need_Offer_Responded_To__r.Name,
+                       Need_Offer_Responded_To__r.Type__c,
+                       Need_Offer_Responded_To__r.Event_Type__c,
+                       Need_Offer_Responded_To__r.RecordType.DeveloperName
                 FROM Response__c
                 WHERE Id = :responseId
                 LIMIT 1
+                FOR UPDATE
             ];
             return results.isEmpty() ? null : results[0];
         }

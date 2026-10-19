@@ -67,19 +67,9 @@ public without sharing class FimbyCounterService {
         Id responderContactId, String parentRecordTypeName,
         Boolean isActingAsOther, String oldStatus, String newStatus
     ) {
-        if (responderContactId == null) {
-            return;
-        }
-        Boolean wasQualifying = QUALIFYING_RESPONSE_STATUSES.contains(oldStatus);
-        Boolean isQualifying = QUALIFYING_RESPONSE_STATUSES.contains(newStatus);
-
-        if (!wasQualifying && isQualifying) {
-            Map<String, Decimal> deltas = buildResponseDeltas(parentRecordTypeName, isActingAsOther, 1);
-            applyContactAndAccountDeltas(responderContactId, deltas);
-        } else if (wasQualifying && !isQualifying) {
-            Map<String, Decimal> deltas = buildResponseDeltas(parentRecordTypeName, isActingAsOther, -1);
-            applyContactAndAccountDeltas(responderContactId, deltas);
-        }
+        onResponseStatusesChanged(new List<ResponseStatusDelta>{
+            new ResponseStatusDelta(responderContactId, parentRecordTypeName, isActingAsOther, oldStatus, newStatus)
+        }, false);
     }
 
     /**
@@ -99,6 +89,143 @@ public without sharing class FimbyCounterService {
             deltas.putAll(buildResponseDeltas(parentRecordTypeName, isActingAsOther, -1));
         }
         applyContactAndAccountDeltas(responderContactId, deltas);
+    }
+
+    /**
+     * @description One Response__c status transition for the bulk counter API.
+     * isResponderWithdrawal is true only when the responder themselves withdrew; it is
+     * the one path that also takes back Responses_Posted__c. Parent-driven cascades
+     * never erase a submission.
+     */
+    public class ResponseStatusDelta {
+        public Id responderContactId;
+        public String parentRecordTypeName;
+        public Boolean isActingAsOther = false;
+        public String oldStatus;
+        public String newStatus;
+        public Boolean isResponderWithdrawal = false;
+
+        public ResponseStatusDelta(
+            Id responderContactId, String parentRecordTypeName,
+            Boolean isActingAsOther, String oldStatus, String newStatus
+        ) {
+            this.responderContactId = responderContactId;
+            this.parentRecordTypeName = parentRecordTypeName;
+            this.isActingAsOther = isActingAsOther == true;
+            this.oldStatus = oldStatus;
+            this.newStatus = newStatus;
+        }
+    }
+
+    /**
+     * @description Bulk counterpart of onResponseStatusChanged: aggregates every delta per
+     * Contact and boundary Account, then reads and writes each object once.
+     * @param deltas transitions to apply
+     * @param strict when true, DML failures throw so an enclosing atomic operation rolls back
+     */
+    public static void onResponseStatusesChanged(List<ResponseStatusDelta> deltas, Boolean strict) {
+        if (deltas == null || deltas.isEmpty()) {
+            return;
+        }
+        Map<Id, Map<String, Decimal>> byContact = new Map<Id, Map<String, Decimal>>();
+        for (ResponseStatusDelta d : deltas) {
+            if (d == null || d.responderContactId == null || d.oldStatus == d.newStatus) {
+                continue;
+            }
+            Map<String, Decimal> fieldDeltas = new Map<String, Decimal>();
+            Boolean wasQualifying = QUALIFYING_RESPONSE_STATUSES.contains(d.oldStatus);
+            Boolean isQualifying = QUALIFYING_RESPONSE_STATUSES.contains(d.newStatus);
+            if (!wasQualifying && isQualifying) {
+                fieldDeltas.putAll(buildResponseDeltas(d.parentRecordTypeName, d.isActingAsOther, 1));
+            } else if (wasQualifying && !isQualifying) {
+                fieldDeltas.putAll(buildResponseDeltas(d.parentRecordTypeName, d.isActingAsOther, -1));
+            }
+            if (d.isResponderWithdrawal == true) {
+                fieldDeltas.put('Responses_Posted__c', -1);
+            }
+            if (fieldDeltas.isEmpty()) {
+                continue;
+            }
+            if (!byContact.containsKey(d.responderContactId)) {
+                byContact.put(d.responderContactId, new Map<String, Decimal>());
+            }
+            Map<String, Decimal> acc = byContact.get(d.responderContactId);
+            for (String field : fieldDeltas.keySet()) {
+                acc.put(field, (acc.containsKey(field) ? acc.get(field) : 0) + fieldDeltas.get(field));
+            }
+        }
+        applyBulkDeltas(byContact, strict == true);
+    }
+
+    private static void applyBulkDeltas(Map<Id, Map<String, Decimal>> byContact, Boolean strict) {
+        if (byContact.isEmpty()) {
+            return;
+        }
+        Set<String> contactFields = new Set<String>();
+        for (Map<String, Decimal> fieldDeltas : byContact.values()) {
+            contactFields.addAll(fieldDeltas.keySet());
+        }
+        Set<Id> contactIds = byContact.keySet();
+        String contactQuery = 'SELECT Id, AccountId, ' + String.join(new List<String>(contactFields), ', ')
+            + ' FROM Contact WHERE Id IN :contactIds';
+        List<Contact> currentContacts = Database.query(contactQuery);
+
+        Map<Id, Map<String, Decimal>> byAccount = new Map<Id, Map<String, Decimal>>();
+        List<Contact> contactUpdates = new List<Contact>();
+        for (Contact current : currentContacts) {
+            Map<String, Decimal> fieldDeltas = byContact.get(current.Id);
+            Contact upd = new Contact(Id = current.Id);
+            for (String field : fieldDeltas.keySet()) {
+                Decimal currentVal = current.get(field) != null ? (Decimal) current.get(field) : 0;
+                Decimal newVal = currentVal + fieldDeltas.get(field);
+                upd.put(field, newVal < 0 ? 0 : newVal);
+                if (current.AccountId != null && !CONTACT_ONLY_FIELDS.contains(field)) {
+                    if (!byAccount.containsKey(current.AccountId)) {
+                        byAccount.put(current.AccountId, new Map<String, Decimal>());
+                    }
+                    Map<String, Decimal> acc = byAccount.get(current.AccountId);
+                    acc.put(field, (acc.containsKey(field) ? acc.get(field) : 0) + fieldDeltas.get(field));
+                }
+            }
+            contactUpdates.add(upd);
+        }
+
+        List<Account> accountUpdates = new List<Account>();
+        if (!byAccount.isEmpty()) {
+            Set<String> accountFields = new Set<String>();
+            for (Map<String, Decimal> fieldDeltas : byAccount.values()) {
+                accountFields.addAll(fieldDeltas.keySet());
+            }
+            Set<Id> accountIds = byAccount.keySet();
+            String accountQuery = 'SELECT Id, ' + String.join(new List<String>(accountFields), ', ')
+                + ' FROM Account WHERE Id IN :accountIds';
+            for (Account current : (List<Account>) Database.query(accountQuery)) {
+                Map<String, Decimal> fieldDeltas = byAccount.get(current.Id);
+                Account upd = new Account(Id = current.Id);
+                for (String field : fieldDeltas.keySet()) {
+                    Decimal currentVal = current.get(field) != null ? (Decimal) current.get(field) : 0;
+                    Decimal newVal = currentVal + fieldDeltas.get(field);
+                    upd.put(field, newVal < 0 ? 0 : newVal);
+                }
+                accountUpdates.add(upd);
+            }
+        }
+
+        if (strict) {
+            update contactUpdates;
+            if (!accountUpdates.isEmpty()) {
+                update accountUpdates;
+            }
+            return;
+        }
+        try {
+            update contactUpdates;
+            if (!accountUpdates.isEmpty()) {
+                update accountUpdates;
+            }
+        } catch (Exception e) {
+            FimbyLogger.error('FimbyCounterService', 'applyBulkDeltas', e);
+        }
     }
 
     /**

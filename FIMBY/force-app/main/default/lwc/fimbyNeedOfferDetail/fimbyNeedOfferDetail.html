@@ -158,7 +158,7 @@
                             <template lwc:if={showCardLeft}>
                                 <div class={cardLeftClass}>
                                     <div class="card-left-header">
-                                        <div class="status-badge" data-status={status}>{status}</div>
+                                        <div class="status-badge" data-status={status}>{statusBadgeLabel}</div>
                                     </div>
                                     <div class="card-left-media">
                                         <template lwc:if={hasMultipleImages}>
@@ -196,7 +196,7 @@
                                             <div class="title-row">
                                                 <h1 class="post-title">{postTitle}</h1>
                                                 <template lwc:if={showStatusInRight}>
-                                                    <div class="status-badge" data-status={status}>{status}</div>
+                                                    <div class="status-badge" data-status={status}>{statusBadgeLabel}</div>
                                                 </template>
                                             </div>
                                             <span class="post-meta">
@@ -303,6 +303,26 @@
                                                 </button>
                                             </template>
                                         </div>
+                                        <template lwc:if={resp.showRowDecision}>
+                                            <div class="response-row-decision">
+                                                <button type="button"
+                                                        class="row-decision-btn row-decision-decline"
+                                                        data-response-id={resp.id}
+                                                        data-responder-name={resp.responderName}
+                                                        aria-label={resp.declineAriaLabel}
+                                                        onclick={handleRowDecline}>
+                                                    Decline
+                                                </button>
+                                                <button type="button"
+                                                        class="row-decision-btn row-decision-accept"
+                                                        data-response-id={resp.id}
+                                                        data-responder-name={resp.responderName}
+                                                        aria-label={resp.acceptAriaLabel}
+                                                        onclick={handleRowAccept}>
+                                                    Accept
+                                                </button>
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
                             </div>
@@ -318,6 +338,17 @@
                         <img src={postInfoIconUrl} alt="" class="empty-state-icon">
                         <p class="empty-state-message">{posterEmptyStateMessage}</p>
                         <span class="post-health-text">{posterPostHealthText}</span>
+                    </div>
+                </template>
+
+                <template lwc:if={showMatchedCompletePrompt}>
+                    <div class="matched-complete-prompt" role="region" aria-label="Mark this post complete">
+                        <p class="matched-complete-text">Looks like this is taken care of. Mark it complete?</p>
+                        <button type="button"
+                                class="refresh-action-btn refresh-action-primary"
+                                onclick={handleMarkCompleteClick}>
+                            Mark complete
+                        </button>
                     </div>
                 </template>
 
@@ -744,6 +775,18 @@
                 </div>
             </div>
         </template>
+
+        <c-fimby-confirm-modal
+            is-open={showDecisionConfirm}
+            title={decisionConfirmTitle}
+            message={decisionConfirmMessage}
+            confirm-label={decisionConfirmLabel}
+            variant={decisionConfirmVariant}
+            is-processing={decisionProcessing}
+            processing-label="Saving..."
+            onconfirm={handleDecisionConfirm}
+            oncancel={handleDecisionCancel}>
+        </c-fimby-confirm-modal>
 
         <!-- Lightbox -->
         <template lwc:if={showLightbox}>

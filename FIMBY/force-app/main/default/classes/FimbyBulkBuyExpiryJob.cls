@@ -20,6 +20,7 @@ public without sharing class FimbyBulkBuyExpiryJob implements Schedulable {
 
         for (Needs_Offers__c post : expired) {
             post.Status__c = FimbyConstants.NEEDS_OFFERS_EXPIRED;
+            post.Closed_By__c = FimbyConstants.CLOSED_BY_AUTO;
         }
 
         if (!expired.isEmpty()) {

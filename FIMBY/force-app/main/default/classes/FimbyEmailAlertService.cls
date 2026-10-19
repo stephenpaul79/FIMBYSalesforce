@@ -17,6 +17,8 @@ public without sharing class FimbyEmailAlertService {
         FimbyConstants.NOTIF_MESSAGE             => EmailDefault.ALWAYS,
         FimbyConstants.NOTIF_RESPONSE            => EmailDefault.ALWAYS,
         FimbyConstants.NOTIF_RESPONSE_REPLY      => EmailDefault.ALWAYS,
+        FimbyConstants.NOTIF_RESPONSE_REMINDER   => EmailDefault.ALWAYS,
+        FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED => EmailDefault.OPT_IN,
         FimbyConstants.NOTIF_EVENT_CHAT          => EmailDefault.OPT_IN,
         FimbyConstants.NOTIF_COMMENT             => EmailDefault.OPT_IN,
         FimbyConstants.NOTIF_LENDING_REQUEST     => EmailDefault.ALWAYS,
@@ -56,6 +58,8 @@ public without sharing class FimbyEmailAlertService {
         // Asks & Offers (matching the push override) — a reply email is silenced
         // by the user's Asks & Offers preference, not by Messages.
         FimbyConstants.NOTIF_RESPONSE_REPLY      => 'Email_Alert_Needs_Offers__c',
+        FimbyConstants.NOTIF_RESPONSE_REMINDER   => 'Email_Alert_Needs_Offers__c',
+        FimbyConstants.NOTIF_POST_LIFECYCLE_CLOSED => 'Email_Alert_Needs_Offers__c',
         FimbyConstants.NOTIF_EVENT_CHAT          => 'Email_Alert_Events__c',
         FimbyConstants.NOTIF_COMMENT             => 'Email_Alert_Stories__c',
         FimbyConstants.NOTIF_LENDING_REQUEST     => 'Email_Alert_Library__c',

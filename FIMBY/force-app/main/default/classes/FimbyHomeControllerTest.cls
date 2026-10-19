@@ -359,4 +359,128 @@ public class FimbyHomeControllerTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testFeedItemAskOfferDescriptionPrefersFullDetails() {
+        Needs_Offers__c legacyOnly = new Needs_Offers__c(
+            Details__c = 'Only preview',
+            Full_Details__c = null
+        );
+        System.assertEquals(
+            'Only preview',
+            FimbyFeedItem.resolveAskOfferFeedDescription(legacyOnly),
+            'Legacy rows without Full_Details__c should fall back to Details__c'
+        );
+
+        Needs_Offers__c withFull = new Needs_Offers__c(
+            Details__c = 'preview...',
+            Full_Details__c = 'Complete body text'
+        );
+        System.assertEquals(
+            'Complete body text',
+            FimbyFeedItem.resolveAskOfferFeedDescription(withFull),
+            'Feed description should prefer Full_Details__c'
+        );
+    }
+
+    @IsTest
+    static void testUnifiedFeedAskOfferUsesFullDetails() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        String fullBody = 'FEED-FULL-MARKER-' + 'abcdefghijklmnopqrstuvwxyz'.repeat(20);
+        String preview = fullBody.substring(0, 252) + '...';
+
+        Id needRtId = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName()
+            .get('Need')
+            .getRecordTypeId();
+
+        Needs_Offers__c longAsk = new Needs_Offers__c(
+            Name = 'Long body ask',
+            Details__c = preview,
+            Full_Details__c = fullBody,
+            Type__c = 'Goods - Unperishable',
+            Status__c = 'Posted',
+            Neighbourhood__c = testNeighbourhood.Id,
+            Contact__c = testContact.Id,
+            Posted_By__c = testContact.Id,
+            RecordTypeId = needRtId,
+            Posted_Date__c = Datetime.now(),
+            End_Date__c = Date.today().addDays(7)
+        );
+        insert longAsk;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyHomeController.UnifiedFeedResult feedResult = FimbyHomeController.getUnifiedFeed(0, 50);
+            Boolean found = false;
+            for (FimbyFeedItem item : feedResult.items) {
+                if (item.recordId == longAsk.Id) {
+                    found = true;
+                    System.assertEquals(
+                        fullBody,
+                        item.description,
+                        'Unified feed should return Full_Details__c for ask/offer cards'
+                    );
+                    break;
+                }
+            }
+            System.assert(found, 'Long ask post should appear in unified feed');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testUnifiedFeedShowsActiveAndLingeringPostsOnly() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+        Id needRtId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+
+        Map<String, Needs_Offers__c> byLabel = new Map<String, Needs_Offers__c>{
+            'accepted' => lifecyclePost('Accepted ask', 'Reply Accepted', null),
+            'recent' => lifecyclePost('Recently answered', FimbyConstants.NEEDS_OFFERS_COMPLETED, Datetime.now().addDays(-2)),
+            'old' => lifecyclePost('Answered long ago', FimbyConstants.NEEDS_OFFERS_COMPLETED, Datetime.now().addDays(-30)),
+            'expired' => lifecyclePost('Quietly expired', 'Expired', Datetime.now().addDays(-1)),
+            'cancelled' => lifecyclePost('Withdrawn', 'Cancelled', Datetime.now().addDays(-1))
+        };
+        for (Needs_Offers__c p : byLabel.values()) {
+            p.Neighbourhood__c = testNeighbourhood.Id;
+            p.Contact__c = testContact.Id;
+            p.Posted_By__c = testContact.Id;
+            p.RecordTypeId = needRtId;
+        }
+        insert byLabel.values();
+
+        Test.startTest();
+        Map<Id, FimbyFeedItem> shown = new Map<Id, FimbyFeedItem>();
+        System.runAs(testUser) {
+            for (FimbyFeedItem item : FimbyHomeController.getUnifiedFeed(0, 50).items) {
+                shown.put(Id.valueOf(item.recordId), item);
+            }
+        }
+        Test.stopTest();
+
+        System.assert(shown.containsKey(byLabel.get('accepted').Id), 'Accepted asks stay visible.');
+        System.assert(shown.containsKey(byLabel.get('recent').Id), 'Completed asks linger in the feed.');
+        System.assertEquals('Answered', shown.get(byLabel.get('recent').Id).closedOutcome);
+        System.assertEquals(0, shown.get(byLabel.get('accepted').Id).replyCount);
+        System.assert(!shown.containsKey(byLabel.get('old').Id), 'Completed asks leave after the linger window.');
+        System.assert(!shown.containsKey(byLabel.get('expired').Id), 'Expired asks leave the feed.');
+        System.assert(!shown.containsKey(byLabel.get('cancelled').Id), 'Withdrawn asks leave the feed.');
+    }
+
+    private static Needs_Offers__c lifecyclePost(String name, String status, Datetime closedDate) {
+        return new Needs_Offers__c(
+            Name = name,
+            Details__c = name,
+            Type__c = 'Goods - Unperishable',
+            Status__c = status,
+            Closed_Date__c = closedDate,
+            Posted_Date__c = Datetime.now().addDays(-3),
+            End_Date__c = Date.today().addDays(7)
+        );
+    }
+
 }

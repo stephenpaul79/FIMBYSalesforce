@@ -574,6 +574,29 @@ public class FimbyResponseThreadControllerTest {
     }
 
     @isTest
+    static void testSendMessageAndAccept() {
+        User posterUser = getPosterUser();
+        Contact posterContact = getPosterContact();
+        Contact responderContact = getResponderContact();
+        Needs_Offers__c post = createTestPost(posterUser, 5);
+        Response__c resp = createTestResponse(post, responderContact, posterContact, posterUser);
+
+        Test.startTest();
+        Map<String, Object> result;
+        Map<String, Object> blank;
+        System.runAs(posterUser) {
+            result = FimbyResponseThreadController.sendMessageAndAccept(resp.Id, 'See you Saturday');
+            blank = FimbyResponseThreadController.sendMessageAndAccept('', 'x');
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'));
+        System.assertEquals('Accepted', result.get('newStatus'));
+        System.assertEquals(false, blank.get('success'));
+        System.assertEquals(1, [SELECT COUNT() FROM Response_Message__c WHERE Response__c = :resp.Id AND Is_System_Message__c = false]);
+    }
+
+    @isTest
     static void testInvalidStatusTransition() {
         User posterUser = getPosterUser();
         Contact posterContact = getPosterContact();

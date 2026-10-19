@@ -72,7 +72,7 @@
                                         <span class="title-lead-dot">·</span>
                                     </span>
                                 </template>
-                                <span class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
+                                <button lwc:if={showTitleLink} type="button" class="title-link title-text" aria-label={titleTextAriaLabel} onclick={handleTitleLinkClick}>{displayTitle}</button><span lwc:else class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
                             </div>
                             <template lwc:if={showCompactCardMenu}>
                                 <div class="card-menu-wrap compact-card-menu">
@@ -100,7 +100,7 @@
                                     <span class="title-lead-dot">·</span>
                                 </span>
                             </template>
-                            <span class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
+                            <button lwc:if={showTitleLink} type="button" class="title-link title-text" aria-label={titleTextAriaLabel} onclick={handleTitleLinkClick}>{displayTitle}</button><span lwc:else class="title-text" aria-label={titleTextAriaLabel}>{displayTitle}</span>
                         </div>
                     </template>
 
@@ -115,6 +115,11 @@
                             </template>
                             <template lwc:if={hasAllocationPills}>
                                 <template for:each={allocationPills} for:item="pill">
+                                    <span key={pill.key} class={pill.cssClass}>{pill.label}</span>
+                                </template>
+                            </template>
+                            <template lwc:if={hasStatusPills}>
+                                <template for:each={computedStatusPills} for:item="pill">
                                     <span key={pill.key} class={pill.cssClass}>{pill.label}</span>
                                 </template>
                             </template>
@@ -226,10 +231,10 @@
                         <template lwc:if={avatarUrl}>
                             <img src={avatarUrl} alt="" class="compact-avatar">
                         </template>
-                        <span lwc:if={userName} class="compact-owner-name">{userName}</span>
+                        <span lwc:if={userName} class="compact-owner-name" title={userName}>{userName}</span>
                     </div>
                     <template lwc:if={responseLabel}>
-                        <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                        <button type="button" class={computedResponsePillClass} disabled={isResponseDisabled} aria-disabled={isResponseDisabled} onclick={handleResponseClick}>
                             <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
                             <span>{responseLabel}</span>
                         </button>
@@ -248,11 +253,18 @@
                         </template>
                     </div>
                 </template>
+                <template lwc:if={hasStatusPills}>
+                    <div class="footer-status-pills">
+                        <template for:each={computedStatusPills} for:item="pill">
+                            <span key={pill.key} class={pill.cssClass}>{pill.label}</span>
+                        </template>
+                    </div>
+                </template>
                 <div lwc:if={showEngagement} class="footer-engagement">
                     <span class="engagement-text">{engagementText}</span>
                 </div>
-                <div class="footer-response">
-                    <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                <div lwc:if={showResponseButton} class="footer-response">
+                    <button type="button" class={computedResponsePillClass} disabled={isResponseDisabled} aria-disabled={isResponseDisabled} onclick={handleResponseClick}>
                         <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="response-pill-icon">
                         <span>{responseLabel}</span>
                     </button>
@@ -270,7 +282,7 @@
                     <span lwc:if={userName} class="compact-owner-name">{userName}</span>
                 </div>
                 <template lwc:if={responseLabel}>
-                    <button class={computedResponsePillClass} onclick={handleResponseClick}>
+                    <button type="button" class={computedResponsePillClass} disabled={isResponseDisabled} aria-disabled={isResponseDisabled} onclick={handleResponseClick}>
                         <img lwc:if={responseIconUrl} src={responseIconUrl} alt="" class="compact-response-icon">
                         <span>{responseLabel}</span>
                     </button>

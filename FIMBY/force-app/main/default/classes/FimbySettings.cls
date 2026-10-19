@@ -32,9 +32,13 @@ public with sharing class FimbySettings {
     /** @description Days a borrower has to confirm before the request expires. */
     public static Integer lendingConfirmationExpiryDays() { return safe(get()?.Lending_Confirmation_Expiry_Days__c, 3); }
     /** @description Default end days for Need posts. */
-    public static Integer needDefaultEndDays()       { return safe(get()?.Need_Default_End_Days__c, 7); }
+    public static Integer needDefaultEndDays()       { return safe(get()?.Need_Default_End_Days__c, 14); }
     /** @description Default end days for Offer posts. */
     public static Integer offerDefaultEndDays()      { return safe(get()?.Offer_Default_End_Days__c, 21); }
+    /** @description Days a completed post stays in the feed with its outcome pill. */
+    public static Integer finishedPostLingerDays()   { return safe(get()?.Finished_Post_Linger_Days__c, 7); }
+    /** @description Hours a response waits without a poster reply before the one-time reply nudge. */
+    public static Integer replyNudgeHours()          { return safe(get()?.Reply_Nudge_Hours__c, 48); }
 
     // ---- Post Refresh ----
     /** @description Minimum days between post refreshes. */

@@ -94,6 +94,7 @@ public without sharing class FimbyEmailHtmlBuilder {
     @TestVisible
     static final Map<String, String> ALERT_BADGE_LABELS = new Map<String, String>{
         'Response' => 'RESPONSE', 'Comment' => 'COMMENT', 'Message' => 'MESSAGE',
+        'Response_Reminder' => 'RESPONSE', 'Post_Lifecycle_Closed' => 'POST',
         'Event_Chat' => 'EVENT CHAT', 'Event_Reminder' => 'EVENT',
         'Lending_Request' => 'LIBRARY', 'Loan_Approved' => 'LIBRARY',
         'Extension_Request' => 'LIBRARY', 'Extension_Approved' => 'LIBRARY',
@@ -107,6 +108,7 @@ public without sharing class FimbyEmailHtmlBuilder {
 
     private static final Map<String, String> ALERT_BADGE_ICONS = new Map<String, String>{
         'Response' => 'reply.png', 'Comment' => 'comment.png', 'Message' => 'reply.png',
+        'Response_Reminder' => 'reply.png', 'Post_Lifecycle_Closed' => 'BulletinBoardActive.png',
         'Event_Chat' => 'reply.png', 'Event_Reminder' => 'dining-table.png',
         'Lending_Request' => 'ToolboxActive.png', 'Loan_Approved' => 'ToolboxActive.png',
         'Extension_Request' => 'ToolboxActive.png', 'Extension_Approved' => 'ToolboxActive.png',
@@ -120,6 +122,7 @@ public without sharing class FimbyEmailHtmlBuilder {
 
     private static final Map<String, String> ALERT_CTA_ICONS = new Map<String, String>{
         'Response' => 'reply.png', 'Comment' => 'comment.png', 'Message' => 'reply.png',
+        'Response_Reminder' => 'reply.png', 'Post_Lifecycle_Closed' => 'enter.png',
         'Event_Chat' => 'reply.png', 'Event_Reminder' => 'dining-table.png',
         'Lending_Request' => 'borrow.png', 'Loan_Approved' => 'borrow.png',
         'Extension_Request' => 'borrow.png', 'Extension_Approved' => 'borrow.png',
@@ -133,6 +136,7 @@ public without sharing class FimbyEmailHtmlBuilder {
 
     private static final Map<String, String> ALERT_CTA_LABELS = new Map<String, String>{
         'Response' => 'View Response', 'Comment' => 'View Comment', 'Message' => 'View Message',
+        'Response_Reminder' => 'View Responses', 'Post_Lifecycle_Closed' => 'View Post',
         'Event_Chat' => 'View Message', 'Event_Reminder' => 'View Event',
         'Lending_Request' => 'View Item', 'Loan_Approved' => 'View Item',
         'Extension_Request' => 'View Item', 'Extension_Approved' => 'View Item',

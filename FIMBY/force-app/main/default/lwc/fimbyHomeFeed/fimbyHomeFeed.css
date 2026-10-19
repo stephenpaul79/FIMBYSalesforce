@@ -961,7 +961,7 @@ button.feed-card-wrapper {
 
 /* Keyboard focus visibility */
 .filter-button:focus-visible,
-.feed-card-wrapper:focus-visible,
+.library-announcement:focus-visible,
 .library-borrow-btn:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;

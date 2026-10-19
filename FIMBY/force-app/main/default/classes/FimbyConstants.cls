@@ -51,6 +51,9 @@ public class FimbyConstants {
     // Needs/Offers statuses
     public static final String NEEDS_OFFERS_POSTED = 'Posted';
     public static final String NEEDS_OFFERS_AVAILABLE = 'Available';
+    public static final String NEEDS_OFFERS_SUBMITTED = 'Submitted';
+    public static final String CLOSED_BY_POSTER = 'Poster';
+    public static final String CLOSED_BY_AUTO = 'Auto';
 
     // Onboarding statuses
     public static final String ONBOARDING_NOT_STARTED = 'Not Started';
@@ -70,6 +73,8 @@ public class FimbyConstants {
     public static final String NOTIF_THANKS_RECEIVED = 'Thanks_Received';
     public static final String NOTIF_REFRESH_REMINDER = 'Refresh_Reminder';
     public static final String NOTIF_RESPONSE_REPLY = 'Response_Reply';
+    public static final String NOTIF_RESPONSE_REMINDER = 'Response_Reminder';
+    public static final String NOTIF_POST_LIFECYCLE_CLOSED = 'Post_Lifecycle_Closed';
     public static final String NOTIF_CONTACT_INFO_SHARED = 'Contact_Info_Shared';
 
     // Needs/Offers record types
@@ -152,6 +157,7 @@ public class FimbyConstants {
     // Vouch context
     public static final String CTX_SKILL = 'Skill';
     public static final String CTX_VOUCH_REQUEST = 'Vouch_Request';
+    public static final String CTX_MODERATOR = 'Moderator';
 
     // Skill offer statuses
     public static final String SKILL_ACTIVE = 'Active';

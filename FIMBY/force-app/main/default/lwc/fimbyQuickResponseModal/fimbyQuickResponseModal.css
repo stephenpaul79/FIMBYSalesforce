@@ -4,13 +4,17 @@
 
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background-color: transparent;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     animation: fadeIn 0.2s ease;
 }
 
@@ -25,7 +29,7 @@
     width: 100%;
     max-width: 480px;
     max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 32px);
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100% - 32px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -443,21 +447,15 @@
     color: var(--fimby-text-secondary, #6B6256);
 }
 
-/* Decline checkbox */
-.decline-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--fimby-text-secondary, #6B6256);
-    cursor: pointer;
-}
-
-.decline-label input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--fimby-btn-primary-bg);
-    cursor: pointer;
+.matched-notice {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 4px solid var(--fimby-info-border, #9CC1F0);
+    background-color: var(--fimby-info-tint, #EEF5FF);
+    color: var(--fimby-text-strong, #2A2520);
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 /* =============================================
@@ -779,12 +777,12 @@
 }
 
 /* =============================================
- * Mobile: Bottom Sheet (â‰¤ 480px)
+ * Mobile: Bottom Sheet (Ã¢â°Â¤ 480px)
  * ============================================= */
 
 @media (max-width: 480px) {
     .modal-backdrop {
-        padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
         align-items: flex-end;
     }
 
@@ -843,3 +841,5 @@
     --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
     font-size: var(--fimby-input-font-size, 16px);
 }
+
+/* Shell chrome zones  content scrim stops above bottom nav (mobile) */

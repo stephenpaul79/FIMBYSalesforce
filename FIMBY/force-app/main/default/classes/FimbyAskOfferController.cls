@@ -404,17 +404,17 @@ public with sharing class FimbyAskOfferController {
             ? helper.queryAllResponses(needOfferId)
             : helper.queryResponsesForViewer(needOfferId, realContactId, actingAsContactId);
 
-        return mapResponsesForDetail(responses);
+        return mapResponsesForDetail(responses, isPoster);
     }
 
-    private static List<Map<String, Object>> mapResponsesForDetail(List<Response__c> responses) {
+    private static List<Map<String, Object>> mapResponsesForDetail(List<Response__c> responses, Boolean isPoster) {
         List<Map<String, Object>> results = new List<Map<String, Object>>();
         for (Response__c resp : responses) {
             Datetime lastActivity = resp.Last_Reply_Date__c != null
                 ? Datetime.newInstance(resp.Last_Reply_Date__c, Time.newInstance(0, 0, 0, 0))
                 : resp.CreatedDate;
-            Integer unreadCount = resp.Poster_Unread_Count__c != null
-                ? resp.Poster_Unread_Count__c.intValue() : 0;
+            Decimal viewerUnread = isPoster ? resp.Poster_Unread_Count__c : resp.Responder_Unread_Count__c;
+            Integer unreadCount = viewerUnread != null ? viewerUnread.intValue() : 0;
 
             results.add(new Map<String, Object>{
                 'id' => resp.Id,
@@ -427,7 +427,7 @@ public with sharing class FimbyAskOfferController {
                 'lastActivityDate' => lastActivity,
                 'unreadCount' => unreadCount,
                 'ownerId' => resp.OwnerId,
-                'contactId' => resp.On_Behalf_Of_Contact__c,
+                'contactId' => resp.On_Behalf_Of_Contact__c != null ? resp.On_Behalf_Of_Contact__c : resp.Contact__c,
                 'isOrgContact' => resp.On_Behalf_Of_Contact__r?.Is_Organization_Contact__c == true,
                 'orgAccountId' => resp.On_Behalf_Of_Contact__r?.Organization_Account__c,
                 'avatarUrl' => resp.On_Behalf_Of_Contact__r?.Display_Avatar_URL__c,
@@ -572,12 +572,12 @@ public with sharing class FimbyAskOfferController {
             } else {
                 throw refreshException('Please choose how to close this post.');
             }
+            post.Closed_By__c = FimbyConstants.CLOSED_BY_POSTER;
 
             new NeedsOffersHelper().updatePost(post);
-            notifyPendingRespondersOnClose(identity.orgDisplayName, identity.actingAsContactId, post, outcome);
 
             String message = outcome == 'resolved'
-                ? 'Glad to hear it — neighbours will see this as sorted.'
+                ? 'Glad to hear it. Neighbours will see this as ' + FimbyPostLifecycleService.outcomeLabel(post) + '.'
                 : 'Thanks for letting neighbours know.';
 
             return new Map<String, Object>{
@@ -626,41 +626,6 @@ public with sharing class FimbyAskOfferController {
         AuraHandledException ex = new AuraHandledException(message);
         ex.setMessage(message);
         return ex;
-    }
-
-    private static void notifyPendingRespondersOnClose(
-        String actorName,
-        Id actorContactId,
-        Needs_Offers__c post,
-        String outcome
-    ) {
-        List<Response__c> pendingResponses = new ResponseListHelper().queryPendingResponses(post.Id);
-        Set<Id> notifiedContacts = new Set<Id>();
-        String actionPhrase = outcome == 'resolved'
-            ? 'marked this as sorted'
-            : 'marked this as no longer available';
-
-        for (Response__c resp : pendingResponses) {
-            Id recipientId = resp.On_Behalf_Of_Contact__c != null
-                ? resp.On_Behalf_Of_Contact__c
-                : resp.Contact__c;
-            if (recipientId == null || notifiedContacts.contains(recipientId)) {
-                continue;
-            }
-            notifiedContacts.add(recipientId);
-            FimbyNotificationService.createNotification(
-                recipientId,
-                FimbyConstants.NOTIF_RESPONSE,
-                'updated a post you responded to',
-                '"' + post.Name + '" — they\'ve ' + actionPhrase + '.',
-                resp.Id,
-                'Response__c',
-                FimbySettings.getUrl('Home'),
-                actorName,
-                false,
-                actorContactId
-            );
-        }
     }
 
     /**
@@ -819,9 +784,11 @@ public with sharing class FimbyAskOfferController {
                 sharedContactIds
             );
 
-            return row == null
-                ? new VisibilityResult(false, true, 'This post is no longer available.')
-                : new VisibilityResult(true, false, null, row.Group_Conversation__c);
+            if (row == null) {
+                return new VisibilityResult(false, true, 'This post is no longer available.');
+            }
+            Boolean isPosterParentManaged = FimbyProxiedPresenceGuard.isProxied(row.Contact__c);
+            return new VisibilityResult(true, false, null, row.Group_Conversation__c, isPosterParentManaged);
 
         } catch (Exception e) {
             FimbyLogger.error('FimbyAskOfferController', 'getNeedOfferVisibility', e);
@@ -853,16 +820,29 @@ public with sharing class FimbyAskOfferController {
         @AuraEnabled public String message { get; set; }
         /** Event/Bulk Buy group chat — resolved server-side because community FLS may hide the lookup from uiRecordApi. */
         @AuraEnabled public Id groupConversationId { get; set; }
+        /** Post owner (Contact__c) is parent-managed — guard read because FLS may hide Is_Parent_Proxied__c. */
+        @AuraEnabled public Boolean isPosterParentManaged { get; set; }
 
         public VisibilityResult(Boolean visible, Boolean removed, String message) {
-            this(visible, removed, message, null);
+            this(visible, removed, message, null, false);
         }
 
         public VisibilityResult(Boolean visible, Boolean removed, String message, Id groupConversationId) {
+            this(visible, removed, message, groupConversationId, false);
+        }
+
+        public VisibilityResult(
+            Boolean visible,
+            Boolean removed,
+            String message,
+            Id groupConversationId,
+            Boolean isPosterParentManaged
+        ) {
             this.visible = visible;
             this.removed = removed;
             this.message = message;
             this.groupConversationId = groupConversationId;
+            this.isPosterParentManaged = isPosterParentManaged == true;
         }
     }
 
@@ -885,7 +865,7 @@ public with sharing class FimbyAskOfferController {
             return [
                 SELECT Id, Name, Responding_Contact_Text__c, Status__c, CreatedDate,
                        Amount_Requested__c, Last_Reply__c, Last_Reply_Date__c,
-                       Poster_Unread_Count__c, OwnerId,
+                       Poster_Unread_Count__c, Responder_Unread_Count__c, Contact__c, OwnerId,
                        On_Behalf_Of_Contact__c,
                        On_Behalf_Of_Contact__r.Image_URL__c,
                        On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
@@ -908,7 +888,7 @@ public with sharing class FimbyAskOfferController {
             return [
                 SELECT Id, Name, Responding_Contact_Text__c, Status__c, CreatedDate,
                        Amount_Requested__c, Last_Reply__c, Last_Reply_Date__c,
-                       Poster_Unread_Count__c, OwnerId,
+                       Poster_Unread_Count__c, Responder_Unread_Count__c, Contact__c, OwnerId,
                        On_Behalf_Of_Contact__c,
                        On_Behalf_Of_Contact__r.Image_URL__c,
                        On_Behalf_Of_Contact__r.Display_Avatar_URL__c,
@@ -969,6 +949,7 @@ public with sharing class FimbyAskOfferController {
                 FROM Needs_Offers__c
                 WHERE Id = :recordId
                 LIMIT 1
+                FOR UPDATE
             ];
             return posts.isEmpty() ? null : posts[0];
         }
@@ -990,7 +971,7 @@ public with sharing class FimbyAskOfferController {
             Set<Id> adjacentIds,
             Set<Id> sharedContactIds
         ) {
-            String query = 'SELECT Id, Group_Conversation__c FROM Needs_Offers__c WHERE Id = :recordId '
+            String query = 'SELECT Id, Contact__c, Group_Conversation__c FROM Needs_Offers__c WHERE Id = :recordId '
                 + 'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')';
 
             if (String.isNotBlank(neighbourhoodAccountId)) {

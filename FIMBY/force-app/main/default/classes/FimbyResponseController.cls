@@ -29,12 +29,15 @@ public with sharing class FimbyResponseController {
                 };
             }
 
-            Boolean isNeed = needOffer.RecordType?.DeveloperName == FimbyConstants.RT_NEED;
-            if (!isNeed && needOffer.Total_Available__c <= 0) {
+            Boolean isFullGathering = needOffer.Type__c == 'Event'
+                && needOffer.Event_Type__c == 'Gathering'
+                && needOffer.Total_Available__c != null
+                && needOffer.Total_Available__c <= 0;
+            if (isFullGathering) {
                 return new Map<String, Object>{
                     'success' => false,
                     'error' => 'noneAvailable',
-                    'message' => 'Oh No! This post has already been spoken for.'
+                    'message' => 'This gathering is full.'
                 };
             }
 
@@ -72,17 +75,12 @@ public with sharing class FimbyResponseController {
     @AuraEnabled
     public static Map<String, Object> checkExistingResponse(String needOfferId) {
         try {
-            List<Response__c> existingResponses = [
-                SELECT Id, Status__c, Name
-                FROM Response__c
-                WHERE Need_Offer_Responded_To__c = :needOfferId
-                AND OwnerId = :UserInfo.getUserId()
-                WITH SECURITY_ENFORCED
-                LIMIT 1
-            ];
+            Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
+            Response__c existing = (String.isBlank(needOfferId) || actingAsContactId == null)
+                ? null
+                : new ResponseHelper().findActiveResponseFor(Id.valueOf(needOfferId), actingAsContactId);
 
-            if (!existingResponses.isEmpty()) {
-                Response__c existing = existingResponses[0];
+            if (existing != null) {
                 String responseUrl = FimbySettings.getUrl('Response_Reply', null, '?recordId=' + existing.Id);
                 return new Map<String, Object>{
                     'success' => true,
@@ -118,12 +116,9 @@ public with sharing class FimbyResponseController {
             String needOfferId = (String) data.get('needOfferId');
             String subject = (String) data.get('subject');
             String responseDetails = (String) data.get('responseDetails');
-            Boolean decline = data.get('decline') == true;
 
             Decimal amountRequested = 1;
-            if (decline) {
-                amountRequested = 0;
-            } else if (data.get('amountRequested') != null) {
+            if (data.get('amountRequested') != null) {
                 amountRequested = Decimal.valueOf(String.valueOf(data.get('amountRequested')));
             }
 
@@ -131,15 +126,21 @@ public with sharing class FimbyResponseController {
             String realContactId = (String) actingAs.get('realContactId');
             String actingAsContactId = (String) actingAs.get('actingAsContactId');
 
-            Needs_Offers__c needOffer = [
-                SELECT Id, Auto_Accept_Responses__c, Neighbourhood__c, Status__c,
+            List<Needs_Offers__c> lockedPosts = [
+                SELECT Id, Auto_Accept_Responses__c, Neighbourhood__c, Status__c, Type__c, Event_Type__c,
+                       Total_Available__c, Per_Response_Limit__c,
                        Contact__c, Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
                        RecordType.DeveloperName
                 FROM Needs_Offers__c
                 WHERE Id = :needOfferId
                 WITH SECURITY_ENFORCED
                 LIMIT 1
+                FOR UPDATE
             ];
+            if (lockedPosts.isEmpty()) {
+                throw newAuraException('This post is no longer available.');
+            }
+            Needs_Offers__c needOffer = lockedPosts[0];
 
             Id replyToContactId = FimbyConstants.postOwnerContactId(needOffer);
 
@@ -149,17 +150,41 @@ public with sharing class FimbyResponseController {
                 'Reply Received', 'Reply Accepted'
             };
             if (!activeStatuses.contains(needOffer.Status__c)) {
-                AuraHandledException ahe = new AuraHandledException('This post is no longer accepting responses.');
-                ahe.setMessage('This post is no longer accepting responses.');
-                throw ahe;
+                throw newAuraException('This post is no longer accepting responses.');
             }
 
-            String status = FimbyConstants.RESPONSE_NEW;
-            if (amountRequested == 0 || decline) {
-                status = FimbyConstants.RESPONSE_DECLINED;
-            } else if (needOffer.Auto_Accept_Responses__c == true) {
-                status = FimbyConstants.RESPONSE_ACCEPTED;
+            Response__c existing = new ResponseHelper().findActiveResponseFor(needOffer.Id, Id.valueOf(actingAsContactId));
+            if (existing != null) {
+                return new Map<String, Object>{
+                    'success' => true,
+                    'responseId' => existing.Id,
+                    'responseUrl' => FimbySettings.getUrl('Response_Reply', null, '?recordId=' + existing.Id),
+                    'status' => existing.Status__c,
+                    'alreadyResponded' => true,
+                    'message' => 'You already replied to this post.'
+                };
             }
+
+            Boolean isGathering = needOffer.Type__c == 'Event' && needOffer.Event_Type__c == 'Gathering';
+            if (amountRequested < 0) {
+                amountRequested = 0;
+            }
+            if (isGathering) {
+                Decimal available = needOffer.Total_Available__c != null ? needOffer.Total_Available__c : 0;
+                if (amountRequested > available) {
+                    throw newAuraException(available <= 0
+                        ? 'This gathering is full.'
+                        : (available == 1 ? 'Only 1 spot is left.' : 'Only ' + available.intValue() + ' spots are left.'));
+                }
+            } else if (needOffer.Type__c != 'Event'
+                    && needOffer.Per_Response_Limit__c != null && needOffer.Per_Response_Limit__c > 0
+                    && amountRequested > needOffer.Per_Response_Limit__c) {
+                amountRequested = needOffer.Per_Response_Limit__c;
+            }
+
+            String status = needOffer.Auto_Accept_Responses__c == true
+                ? FimbyConstants.RESPONSE_ACCEPTED
+                : FimbyConstants.RESPONSE_NEW;
 
             Response__c newResponse = new Response__c(
                 Name = subject,
@@ -170,7 +195,8 @@ public with sharing class FimbyResponseController {
                 Amount_Requested__c = amountRequested,
                 On_Behalf_Of_Contact__c = actingAsContactId,
                 Reply_To_Contact__c = replyToContactId,
-                Neighbourhood__c = needOffer.Neighbourhood__c
+                Neighbourhood__c = needOffer.Neighbourhood__c,
+                Poster_Unread_Count__c = 1
             );
 
             new ResponseHelper().insertResponse(newResponse);
@@ -326,6 +352,9 @@ public with sharing class FimbyResponseController {
 
     /**
      * Submit a reply on a Response
+     * @deprecated Only fimbyResponseReply calls this and it is not placed in FIMBY1; replies go
+     * through FimbyResponseThreadController.sendMessage / sendMessageAndAccept. Any status
+     * change here still routes through FimbyResponseStatusService.
      */
     @AuraEnabled
     public static Map<String, Object> submitResponseReply(String replyData) {
@@ -396,11 +425,15 @@ public with sharing class FimbyResponseController {
                 Last_Reply_Contact_Lookup__c = recipientContactId
             );
 
-            if (isPoster && String.isNotBlank(newStatus)) {
-                responseUpdate.Status__c = newStatus;
-            }
-
             new ResponseHelper().updateResponse(responseUpdate);
+
+            if (isPoster && String.isNotBlank(newStatus) && newStatus != response.Status__c) {
+                FimbyResponseStatusService.Outcome outcome = FimbyResponseStatusService.changeStatus(
+                    Id.valueOf(responseId), newStatus, FimbyResponseStatusService.Source.POSTER);
+                if (!outcome.success) {
+                    throw new FimbyResponseStatusService.StatusException(outcome.message);
+                }
+            }
 
             String shareContactInfoUrl = null;
             if (shareContactInfo) {
@@ -461,35 +494,29 @@ public with sharing class FimbyResponseController {
 
     /**
      * Update Response status
+     * @deprecated Legacy status-update surface; routes through FimbyResponseStatusService so
+     * dual identity, the transition allowlist, counters, and notifications always apply.
      */
     @AuraEnabled
     public static Map<String, Object> updateResponseStatus(String responseId, String newStatus) {
         try {
-            Map<String, Object> accessCheck = getResponseForStatusUpdate(responseId);
-            if (!(Boolean) accessCheck.get('hasAccess')) {
+            if (String.isBlank(responseId) || String.isBlank(newStatus)) {
                 return new Map<String, Object>{
                     'success' => false,
-                    'error' => 'noAccess',
-                    'message' => 'You do not have the correct access level to update the status on this record.'
+                    'error' => 'invalidInput',
+                    'message' => 'Response and status are required.'
                 };
             }
-
-            Response__c responseUpdate = new Response__c(
-                Id = responseId,
-                Status__c = newStatus
-            );
-
-            new ResponseHelper().updateResponse(responseUpdate);
-
-            if (newStatus == FimbyConstants.RESPONSE_ACCEPTED) {
-                FimbyResponseAutoShareHelper.tryAutoShareOnAccept(responseId);
+            FimbyResponseStatusService.Source source = newStatus == FimbyConstants.RESPONSE_CANCELLED
+                ? FimbyResponseStatusService.Source.RESPONDER
+                : FimbyResponseStatusService.Source.POSTER;
+            Map<String, Object> result = FimbyResponseStatusService.changeStatus(
+                Id.valueOf(responseId), newStatus, source).toMap();
+            if (result.get('error') == 'notAuthorized') {
+                result.put('error', 'noAccess');
+                result.put('message', 'You do not have the correct access level to update the status on this record.');
             }
-
-            return new Map<String, Object>{
-                'success' => true,
-                'message' => 'Status updated successfully',
-                'newStatus' => newStatus
-            };
+            return result;
 
         } catch (Exception e) {
             FimbyLogger.error('FimbyResponseController', 'updateResponseStatus', e);
@@ -612,6 +639,7 @@ public with sharing class FimbyResponseController {
                 FROM Needs_Offers__c
                 WHERE Id = :eventId
                 LIMIT 1
+                FOR UPDATE
             ];
 
             Set<String> activePostStatuses = new Set<String>{
@@ -624,7 +652,7 @@ public with sharing class FimbyResponseController {
             }
 
             List<Response__c> existing = [
-                SELECT Id, Status__c, Amount_Requested__c
+                SELECT Id, Status__c, Amount_Requested__c, Contact__c, On_Behalf_Of_Contact__c
                 FROM Response__c
                 WHERE Need_Offer_Responded_To__c = :eventId
                 AND On_Behalf_Of_Contact__c = :actingAsContactId
@@ -726,8 +754,7 @@ public with sharing class FimbyResponseController {
                 };
             }
             Response__c resp = existing[0];
-            resp.Status__c = FimbyConstants.RESPONSE_CANCELLED;
-            update resp;
+            FimbyResponseStatusService.applyQuietResponderWithdrawal(resp, FimbyConstants.RT_OFFER);
 
             Id postOwnerId = FimbyConstants.postOwnerContactId(evt);
             if (postOwnerId != null && postOwnerId != actingAsContactId) {
@@ -905,6 +932,24 @@ public with sharing class FimbyResponseController {
         public void updateResponse(Response__c response) {
             update response;
         }
+
+        /**
+         * @description The represented identity's live response on a post, if any. Legacy rows
+         * without On_Behalf_Of_Contact__c fall back to Contact__c.
+         */
+        public Response__c findActiveResponseFor(Id postId, Id actingAsContactId) {
+            List<Response__c> rows = [
+                SELECT Id, Status__c, Name
+                FROM Response__c
+                WHERE Need_Offer_Responded_To__c = :postId
+                  AND Status__c IN :FimbyPostEngagementService.ACTIVE_REPLY_STATUSES
+                  AND (On_Behalf_Of_Contact__c = :actingAsContactId
+                       OR (On_Behalf_Of_Contact__c = null AND Contact__c = :actingAsContactId))
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ];
+            return rows.isEmpty() ? null : rows[0];
+        }
     }
 
     /**
@@ -943,7 +988,7 @@ public with sharing class FimbyResponseController {
          */
         public Response__c queryResponseForSubmitReply(String responseId) {
             return [
-                SELECT Id, Name, OwnerId, Contact__c, Contact__r.FirstName, Contact__r.LastName,
+                SELECT Id, Name, OwnerId, Status__c, Contact__c, Contact__r.FirstName, Contact__r.LastName,
                        On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
                        Reply_To_Contact__c, Need_Offer_Responded_To__c, Need_Offer_Responded_To__r.OwnerId,
                        Need_Offer_Responded_To__r.Contact__c,
@@ -983,7 +1028,7 @@ public with sharing class FimbyResponseController {
                        Total_Available__c, Total_Quantity__c, Per_Response_Limit__c,
                        Auto_Accept_Responses__c, Neighbourhood__c,
                        OwnerId, Posted_By__c, Posted_By__r.FirstName, Posted_By__r.LastName,
-                       RecordType.DeveloperName, Type__c
+                       RecordType.DeveloperName, Type__c, Event_Type__c
                 FROM Needs_Offers__c
                 WHERE Id = :recordId
                 LIMIT 1

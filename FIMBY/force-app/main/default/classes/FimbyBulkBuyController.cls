@@ -304,6 +304,7 @@ public with sharing class FimbyBulkBuyController {
             }
 
             post.Status__c = FimbyConstants.NEEDS_OFFERS_CANCELLED;
+            post.Closed_By__c = FimbyConstants.CLOSED_BY_POSTER;
             new BulkBuyHelper().updateRecord(post);
 
             // Notify while reservations are still Reserved (notifyAllReservers filters by status).
@@ -413,7 +414,16 @@ public with sharing class FimbyBulkBuyController {
      * @description Shared completion logic used by both manual complete and auto-lock job.
      */
     public static void completePost(Needs_Offers__c post) {
+        completePost(post, FimbyConstants.CLOSED_BY_POSTER);
+    }
+
+    /**
+     * @description Completion with an explicit closure source (Poster or Auto) for the shared
+     * Closed_By__c / Closed_Date__c lifecycle fields.
+     */
+    public static void completePost(Needs_Offers__c post, String closedBy) {
         post.Status__c = FimbyConstants.NEEDS_OFFERS_COMPLETED;
+        post.Closed_By__c = closedBy;
         new BulkBuyHelper().updateRecord(post);
 
         List<Response__c> responses = new BulkBuyHelper().getResponsesForCompletion(post.Id);
