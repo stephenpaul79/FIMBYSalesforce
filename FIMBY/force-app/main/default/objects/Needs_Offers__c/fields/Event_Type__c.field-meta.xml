@@ -15,7 +15,7 @@
             <sorted>false</sorted>
             <value>
                 <fullName>Gathering</fullName>
-                <default>true</default>
+                <default>false</default>
                 <label>Gathering</label>
             </value>
             <value>

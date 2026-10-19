@@ -11,7 +11,8 @@
 Amount_Requested__c &gt; Need_Offer_Responded_To__r.Total_Available__c
 &amp;&amp;
 (Need_Offer_Responded_To__r.RecordType.DeveloperName = &apos;Bulk_Buy&apos;
- || ISPICKVAL(Need_Offer_Responded_To__r.Event_Type__c, &apos;Gathering&apos;))
+ || (ISPICKVAL(Need_Offer_Responded_To__r.Type__c, &apos;Event&apos;)
+     &amp;&amp; ISPICKVAL(Need_Offer_Responded_To__r.Event_Type__c, &apos;Gathering&apos;)))
 ))</errorConditionFormula>
     <errorDisplayField>Amount_Requested__c</errorDisplayField>
     <errorMessage>Please select a valid amount: 0 or more.  Less or Equal to the Total Available. Less or Equal to the Per Response Limit.</errorMessage>
