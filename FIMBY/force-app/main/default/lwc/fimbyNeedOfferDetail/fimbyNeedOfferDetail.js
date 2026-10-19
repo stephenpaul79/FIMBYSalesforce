@@ -565,8 +565,6 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 statusDisplay: WITHDRAWN_RESPONSE_STATUSES.has(resp.status) ? 'Withdrawn' : resp.status,
                 showStatusPill: !showRowDecision,
                 showMetaRow: !showRowDecision || showAmounts,
-                showUnreadInTop: hasUnread && showRowDecision && !showAmounts,
-                showUnreadInMeta: hasUnread && (!showRowDecision || showAmounts),
                 unreadLabel: `${resp.unreadCount} unread`,
                 unreadAriaLabel: `${resp.unreadCount} unread ${resp.unreadCount === 1 ? 'message' : 'messages'}`,
                 acceptAriaLabel: `Accept ${name}'s response`,
@@ -810,7 +808,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 { key: 'photo', label: 'Photo', icon: 'photo.png', display: 'responsive' },
                 { key: 'delete', label: 'Delete', icon: 'trash.png', display: 'responsive', variant: 'danger' }
             ];
-            if (this.canMarkComplete) {
+            if (this.canMarkComplete && !this.showMatchedCompletePrompt) {
                 items.unshift({ key: 'markComplete', label: 'Mark complete', icon: 'check-in.png', display: 'responsive' });
             }
             if (this.isOpenEvent && this.eventTypeConfig?.usesOnDemandEventChat) {
@@ -1849,7 +1847,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return `Amount: ${resp.amountDisplay}`;
     }
 
-    get showYourResponseAmount() { return this.yourResponseAmountDisplay != null; }
+    get showYourResponseAmount() { return this.showResponseAmounts && this.yourResponseAmountDisplay != null; }
 
     get showResponderThanksAction() {
         const r = this.currentUserResponse;

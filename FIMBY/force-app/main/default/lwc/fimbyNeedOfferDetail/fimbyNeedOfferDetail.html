@@ -282,7 +282,7 @@
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
                                                 <span class="response-top-end">
-                                                    <template lwc:if={resp.showUnreadInTop}>
+                                                    <template lwc:if={resp.hasUnread}>
                                                         <span class="unread-pill" aria-label={resp.unreadAriaLabel}>{resp.unreadLabel}</span>
                                                     </template>
                                                     <span class="response-time-ago">{resp.timeAgo}</span>
@@ -298,9 +298,6 @@
                                                             <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
                                                         </template>
                                                     </span>
-                                                    <template lwc:if={resp.showUnreadInMeta}>
-                                                        <span class="unread-pill" aria-label={resp.unreadAriaLabel}>{resp.unreadLabel}</span>
-                                                    </template>
                                                 </div>
                                                 <template lwc:if={resp.lastMessageDisplay}>
                                                     <p class="response-preview">{resp.lastMessageDisplay}</p>
@@ -336,7 +333,7 @@
                                             </div>
                                         </template>
                                         <template lwc:if={resp.showRowDecision}>
-                                            <div class="response-row-decision">
+                                            <div class="response-row-decision response-row-decision-triple">
                                                 <template lwc:if={resp.canReply}>
                                                     <button type="button"
                                                             class="row-decision-btn row-decision-open"

@@ -170,10 +170,14 @@
     padding: 12px;
 }
 
+.submit-error {
+    margin-bottom: 12px;
+}
+
 .success-title {
     font-size: 18px;
     font-weight: 700;
-    color: var(--fimby-success, #2D8A4E);
+    color: var(--fimby-btn-success-bg, #1A7B40);
     margin: 0;
     text-align: center;
 }

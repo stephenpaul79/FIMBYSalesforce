@@ -19,6 +19,9 @@ import { getCategoryIconUrl, getCategoryColor } from 'c/fimbySkillCategoryConfig
 import { createShellScrimHandle } from 'c/fimbyModalShell';
 import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
 
+const UNAVAILABLE_PATTERN = /no longer (available|accepting)|is full\b|not available right now|^Only 0 /i;
+const ADJUSTABLE_LIMIT_PATTERN = /^(Only \d+ (shares?|spots?)|Maximum \d+ shares)/i;
+
 const TYPE_CONFIG = {
     story: {
         modalTitle: 'Add Comment',
@@ -48,11 +51,11 @@ const TYPE_CONFIG = {
         submittingContext: 'responding'
     },
     askOffer: {
-        modalTitle: 'Respond',
-        identityLabel: 'Responding as',
-        submitLabel: 'Submit Response',
+        modalTitle: 'Reply',
+        identityLabel: 'Replying as',
+        submitLabel: 'Send reply',
         celebrationAction: 'response',
-        successMessage: 'Response sent!',
+        successMessage: 'Reply sent!',
         loadingContext: 'general',
         submittingContext: 'responding'
     },
@@ -96,6 +99,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
     _recordId = '';
     @track _viewState = 'loading'; // loading | form | submitting | success | alreadyResponded | unavailable | error
     @track _errorMessage = '';
+    _submitError = '';
 
     /* ================================================================
      * Identity
@@ -797,6 +801,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._isSubmitting = true;
         this._viewState = 'submitting';
         this._errorMessage = '';
+        this._submitError = '';
 
         try {
             let result;
@@ -846,14 +851,15 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
         } catch (error) {
             const msg = error.body?.message || error.message || '';
-            const isQuantityError = !/spots? (is|are) left/i.test(msg)
-                && /amount|available|quantity|validation|full/i.test(msg);
-            if (isQuantityError) {
+            if (UNAVAILABLE_PATTERN.test(msg)) {
                 this._errorMessage = "Looks like this isn't available anymore — someone responded a bit more quickly.";
                 this._viewState = 'unavailable';
             } else {
-                this._errorMessage = msg || 'Something went wrong. Please try again.';
-                this._viewState = 'error';
+                // Back to the form with the draft intact; only our own adjustable limits are shown verbatim.
+                this._submitError = ADJUSTABLE_LIMIT_PATTERN.test(msg)
+                    ? msg
+                    : "We couldn't send that. Your note is still here — try again in a moment.";
+                this._viewState = 'form';
             }
         } finally {
             this._isSubmitting = false;
@@ -950,6 +956,7 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._context = null;
         this._identity = null;
         this._errorMessage = '';
+        this._submitError = '';
         this._isSubmitting = false;
         this._submittedResponseData = null;
         this._isWaitlisted = false;

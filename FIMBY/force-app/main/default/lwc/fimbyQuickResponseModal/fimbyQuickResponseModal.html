@@ -81,6 +81,12 @@
                     <!-- ========== FORM ========== -->
                     <template lwc:else>
 
+                        <template lwc:if={_submitError}>
+                            <div class="submit-error">
+                                <c-fimby-inline-banner variant="error" message={_submitError}></c-fimby-inline-banner>
+                            </div>
+                        </template>
+
                         <template lwc:if={showIdentityBanner}>
                             <div class="identity-row">
                                 <img src={identityIconUrl} alt="" class="identity-icon">
