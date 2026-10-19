@@ -266,7 +266,7 @@
 
                             <template lwc:if={showMatchedCompletePrompt}>
                                 <div class="matched-complete-prompt" role="region" aria-label="Mark this post complete">
-                                    <p class="matched-complete-text">Looks like this is taken care of. Mark it complete?</p>
+                                    <p class="matched-complete-text">{matchedCompleteText}</p>
                                     <button type="button"
                                             class="row-decision-btn row-decision-complete"
                                             onclick={handleMarkCompleteClick}>

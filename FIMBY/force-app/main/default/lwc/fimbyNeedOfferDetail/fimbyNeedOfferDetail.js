@@ -2315,6 +2315,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return this.canMarkComplete && this.isMatched && !this.showRefreshPanel;
     }
 
+    get matchedCompleteText() {
+        return this.postType === 'Offer'
+            ? 'Looks like this has found a home.'
+            : 'Looks like this is taken care of.';
+    }
+
     get showDecisionConfirm() {
         return !!this._pendingDecision;
     }
