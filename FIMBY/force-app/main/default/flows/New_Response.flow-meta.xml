@@ -1009,7 +1009,7 @@ IF({!Need_Offer.Auto_Accept_Responses__c} = TRUE, &quot;Accepted&quot;, &quot;Ne
             <targetReference>Record_Provided</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <textTemplates>
         <name>Angels</name>
         <isViewedAsPlainText>false</isViewedAsPlainText>

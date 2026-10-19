@@ -1214,7 +1214,7 @@ IF({!Posting_For}= &quot;Self&quot;, {!PostByID},&quot;&quot;))</expression>
             <targetReference>UserContact</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <subflows>
         <name>UploadaPhoto</name>
         <label>Upload a Photo</label>
