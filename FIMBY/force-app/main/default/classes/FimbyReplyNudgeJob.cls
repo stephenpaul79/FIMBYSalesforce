@@ -161,9 +161,9 @@ public without sharing class FimbyReplyNudgeJob implements Schedulable, Database
             FimbyNotificationService.NotificationRequest req = new FimbyNotificationService.NotificationRequest(
                 recipient,
                 FimbyConstants.NOTIF_RESPONSE_REMINDER,
-                'is waiting to hear back',
+                'is waiting to hear back about your ' + postNoun(post),
                 FimbyResponseStatusService.abbreviateTitleInBody(
-                    'They replied to “', post.Name, '”. A quick reply lets them know where things stand.'),
+                    'Review their response to “', post.Name, '” when you’re ready.'),
                 resp.Id,
                 'Response__c',
                 FimbySettings.getUrl('Response_Reply', null, '?recordId=' + resp.Id),
@@ -177,12 +177,19 @@ public without sharing class FimbyReplyNudgeJob implements Schedulable, Database
             FimbyConstants.NOTIF_RESPONSE_REMINDER,
             uniqueResponders.size() + ' neighbours are waiting to hear back',
             FimbyResponseStatusService.abbreviateTitleInBody(
-                'They replied to “', post.Name, '”. Take a look when you have a moment.'),
+                'Review the responses to “', post.Name, '” when you’re ready.'),
             post.Id,
             'Needs_Offers__c',
             FimbySettings.getUrl('Asks_Offers', post.Id),
             'FIMBY'
         );
+    }
+
+    private static String postNoun(Needs_Offers__c post) {
+        if (post.Type__c == 'Event') {
+            return 'event';
+        }
+        return post.RecordType?.DeveloperName == FimbyConstants.RT_OFFER ? 'offer' : 'ask';
     }
 
     private static String displayName(Contact c) {

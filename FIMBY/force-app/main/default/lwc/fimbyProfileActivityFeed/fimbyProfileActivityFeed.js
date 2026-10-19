@@ -67,7 +67,7 @@ export default class FimbyProfileActivityFeed extends NavigationMixin(LightningE
     }
 
     get cardShowMenu() {
-        return true;
+        return false;
     }
 
     get cardShowFooter() {

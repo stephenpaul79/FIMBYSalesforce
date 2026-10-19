@@ -318,7 +318,16 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
+    get isPostCompleted() {
+        return (this.post.status || '').startsWith('Completed');
+    }
+
     get postStatusDisplay() {
+        if (this.isPostCompleted) {
+            if (this.post.type === 'Event') return 'Happened';
+            if (this.post.recordType === 'Bulk_Buy') return 'Purchased';
+            return this.post.recordType === 'Offer' ? 'Received' : 'Answered';
+        }
         if (this.post.status === 'Expired' || this.post.status === 'Cancelled') {
             return this.post.status;
         }
@@ -326,7 +335,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     get isPostInactive() {
-        return this.post.status === 'Expired' || this.post.status === 'Cancelled' || this.post.status === 'Completed';
+        return this.post.status === 'Expired' || this.post.status === 'Cancelled' || this.isPostCompleted;
     }
 
     get thanksIconUrl() {
@@ -788,7 +797,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
                 if (this.post.autoShareContactInfo === true) {
                     this.contactShared = true;
                 }
-                this.appendSystemMessage(result.message || 'Response accepted');
+                this.appendSystemMessage('Response accepted');
                 this.showCompose = false;
                 this.messageText = '';
                 clearCache(SCOPED_KEYS.homeFeed);

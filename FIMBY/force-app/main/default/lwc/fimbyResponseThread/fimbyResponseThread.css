@@ -922,10 +922,11 @@
 .compose-cancel {
     min-height: 44px;
     padding: 8px 16px;
-    border: 1px solid var(--fimby-divider-default);
+    border: none;
     border-radius: var(--fimby-radius-md);
     background-color: transparent;
-    color: var(--fimby-text-primary);
+    color: var(--fimby-text-secondary);
+    font-weight: 600;
     font-size: 14px;
     cursor: pointer;
 }

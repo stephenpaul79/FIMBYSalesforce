@@ -46,7 +46,8 @@ private class FimbyReplyNudgeJobTest {
         ];
         System.assertEquals(1, notifs.size());
         System.assertEquals(c('PosterRNJ').Id, notifs[0].Contact__c);
-        System.assertEquals('is waiting to hear back', notifs[0].Title__c);
+        System.assertEquals('is waiting to hear back about your ask', notifs[0].Title__c);
+        System.assertEquals('Review their response to “Help moving a couch” when you’re ready.', notifs[0].Body__c);
         System.assertEquals('Ravi OneRNJ', notifs[0].Actor_Name__c);
         System.assertEquals(c('OneRNJ').Id, notifs[0].Actor_Contact__c);
         System.assertEquals(String.valueOf(r.Id), notifs[0].Related_Record_Id__c, 'Links to the thread');
@@ -63,9 +64,10 @@ private class FimbyReplyNudgeJobTest {
         Database.executeBatch(new FimbyReplyNudgeJob(new Set<Id>{ p.Id }, Datetime.now()), 50);
         Test.stopTest();
 
-        Notification__c n = [SELECT Title__c, Actor_Name__c, Related_Record_Id__c FROM Notification__c
+        Notification__c n = [SELECT Title__c, Body__c, Actor_Name__c, Related_Record_Id__c FROM Notification__c
             WHERE Type__c = :FimbyConstants.NOTIF_RESPONSE_REMINDER];
         System.assertEquals('2 neighbours are waiting to hear back', n.Title__c);
+        System.assertEquals('Review the responses to “Help moving a couch” when you’re ready.', n.Body__c);
         System.assertEquals('FIMBY', n.Actor_Name__c);
         System.assertEquals(String.valueOf(p.Id), n.Related_Record_Id__c, 'Links to the response list');
     }

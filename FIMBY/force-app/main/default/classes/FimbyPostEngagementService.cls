@@ -164,6 +164,7 @@ public without sharing class FimbyPostEngagementService {
             FROM Response_Message__c
             WHERE Response__r.Need_Offer_Responded_To__c IN :postIds
               AND Is_System_Message__c = false
+              AND Response__r.Status__c IN :ACTIVE_REPLY_STATUSES
               AND (Sender__c IN :posterContactIds OR Sent_By__c IN :posterContactIds)
         ]) {
             Needs_Offers__c post = postById.get(msg.Response__r.Need_Offer_Responded_To__c);

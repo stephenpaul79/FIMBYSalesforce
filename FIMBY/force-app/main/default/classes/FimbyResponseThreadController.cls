@@ -152,6 +152,10 @@ public with sharing class FimbyResponseThreadController {
             if (isTerminalStatus(resp.Status__c) && resp.Status__c != FimbyConstants.RESPONSE_COMPLETED) {
                 return errorResult('threadClosed', 'This conversation is no longer active.');
             }
+            if (isPastCompletedGrace(resp)) {
+                return errorResult('threadClosed',
+                    'This conversation wrapped up a while ago. You can still send a direct message from their profile.');
+            }
 
             Response_Message__c msg = new Response_Message__c(
                 Response__c = responseId,
@@ -430,6 +434,13 @@ public with sharing class FimbyResponseThreadController {
         return status == FimbyConstants.RESPONSE_DECLINED || status == FimbyConstants.RESPONSE_CANCELLED || status == FimbyConstants.RESPONSE_EXPIRED;
     }
 
+    @TestVisible
+    private static Boolean isPastCompletedGrace(Response__c resp) {
+        return resp.Status__c == FimbyConstants.RESPONSE_COMPLETED
+            && resp.Completed_Date__c != null
+            && resp.Completed_Date__c < Datetime.now().addDays(-FimbySettings.finishedPostLingerDays());
+    }
+
     private static Map<String, Object> buildResponseMap(Response__c resp) {
         Contact responder = resp.On_Behalf_Of_Contact__r?.Name != null
             ? resp.On_Behalf_Of_Contact__r
@@ -589,7 +600,7 @@ public with sharing class FimbyResponseThreadController {
          */
         public Response__c queryThreadMinimal(String responseId) {
             List<Response__c> results = [
-                SELECT Id, Name, Status__c, OwnerId,
+                SELECT Id, Name, Status__c, OwnerId, Completed_Date__c,
                        Contact__c, On_Behalf_Of_Contact__c,
                        Poster_Unread_Count__c, Responder_Unread_Count__c,
                        Poster_Last_Viewed__c, Responder_Last_Viewed__c,

@@ -1835,8 +1835,18 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         if (fulfilled != null) {
             items.push({ key: 'fulfilled', label: fulfilled, pillClass: 'pill-accepted' });
         }
-        if (remaining != null) {
+        if (this.isMatched) {
+            items.push({ key: 'matched', label: this.postType === 'Offer' ? 'Spoken for' : 'Help Found', pillClass: 'pill-accepted' });
+        } else if (remaining != null) {
             items.push({ key: 'remaining', label: remaining, pillClass: 'pill-available' });
+        }
+        const newCount = this.responseSummaryStats?.newCount || 0;
+        if (!this.isBulkBuyType && newCount > 0) {
+            items.push({
+                key: 'awaiting-review',
+                label: newCount === 1 ? '1 awaiting review' : `${newCount} awaiting review`,
+                pillClass: 'pill-new'
+            });
         }
         return items;
     }

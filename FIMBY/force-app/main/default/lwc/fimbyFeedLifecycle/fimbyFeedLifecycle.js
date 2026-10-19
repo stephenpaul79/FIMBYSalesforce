@@ -77,6 +77,13 @@ export function feedLifecycleState(item, flags) {
     if (matched) {
         const label = item.itemType === 'Need' ? 'Help Found' : 'Spoken for';
         state.statusPills = [{ key: 'matched', label, tone: 'matched' }];
+        if (!isPoster && !viewerResponded) {
+            state.ctaOverride = {
+                label: 'Reply anyway',
+                iconUrl: `${IMPACT_ICONS}/reply.png`,
+                pillClass: ''
+            };
+        }
     } else if (num(item.replyCount) > 0) {
         state.statusPills = [{ key: 'replies', label: replyCountLabel(num(item.replyCount)), tone: 'active' }];
     }

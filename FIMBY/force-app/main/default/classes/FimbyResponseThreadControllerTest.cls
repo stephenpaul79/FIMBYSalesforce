@@ -393,6 +393,16 @@ public class FimbyResponseThreadControllerTest {
     }
 
     @isTest
+    static void testCompletedGraceWindow() {
+        Response__c recent = new Response__c(Status__c = FimbyConstants.RESPONSE_COMPLETED, Completed_Date__c = Datetime.now().addDays(-2));
+        Response__c old = new Response__c(Status__c = FimbyConstants.RESPONSE_COMPLETED, Completed_Date__c = Datetime.now().addDays(-8));
+        Response__c active = new Response__c(Status__c = FimbyConstants.RESPONSE_ACCEPTED);
+        System.assertEquals(false, FimbyResponseThreadController.isPastCompletedGrace(recent), 'Within 7 days stays open');
+        System.assertEquals(true, FimbyResponseThreadController.isPastCompletedGrace(old), 'Past 7 days closes');
+        System.assertEquals(false, FimbyResponseThreadController.isPastCompletedGrace(active), 'Active threads unaffected');
+    }
+
+    @isTest
     static void testSendMessage_EmptyBody() {
         User posterUser = getPosterUser();
 

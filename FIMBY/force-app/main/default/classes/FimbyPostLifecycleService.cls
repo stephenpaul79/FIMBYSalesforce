@@ -262,7 +262,7 @@ public without sharing class FimbyPostLifecycleService {
         String outcome = outcomeLabel(post);
         String noun = post.Type__c == 'Event' ? 'event' : (post.RecordType?.DeveloperName == FimbyConstants.RT_NEED ? 'ask' : 'offer');
         String body = post.Type__c == 'Event'
-            ? FimbyResponseStatusService.abbreviateTitleInBody('Neighbours joined “', post.Name, '”, so it now shows as Happened.')
+            ? FimbyResponseStatusService.abbreviateTitleInBody('At least one neighbour RSVP’d to “', post.Name, '”, so it now shows as Happened.')
             : FimbyResponseStatusService.abbreviateTitleInBody(
                 'A neighbour replied to “', post.Name, '” before it ended, so it now shows as ' + outcome + '.');
         return new FimbyNotificationService.NotificationRequest(

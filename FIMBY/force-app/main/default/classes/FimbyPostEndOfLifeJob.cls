@@ -17,7 +17,7 @@
  * Schedule daily (America/Vancouver scheduling user), only after cutover reconciliation:
  *   System.schedule('FIMBY Post End of Life', '0 15 0 * * ?', new FimbyPostEndOfLifeJob());
  * Controlled run for QA (admin anonymous Apex):
- *   Database.executeBatch(new FimbyPostEndOfLifeJob(new Set<Id>{ postId }, Date.today()), 50);
+ *   Database.executeBatch(new FimbyPostEndOfLifeJob(new Set<Id>{ postId }, Date.today()), 10);
  */
 public without sharing class FimbyPostEndOfLifeJob implements Schedulable, Database.Batchable<SObject>, Database.Stateful {
 
@@ -46,7 +46,7 @@ public without sharing class FimbyPostEndOfLifeJob implements Schedulable, Datab
     }
 
     public void execute(SchedulableContext ctx) {
-        Database.executeBatch(new FimbyPostEndOfLifeJob(scopePostIds, asOfDate), 50);
+        Database.executeBatch(new FimbyPostEndOfLifeJob(scopePostIds, asOfDate), 10);
     }
 
     public Database.QueryLocator start(Database.BatchableContext bc) {
@@ -64,7 +64,16 @@ public without sharing class FimbyPostEndOfLifeJob implements Schedulable, Datab
     }
 
     public void execute(Database.BatchableContext bc, List<Needs_Offers__c> scope) {
-        processPosts(new Map<Id, Needs_Offers__c>(scope).keySet());
+        Set<Id> ids = new Map<Id, Needs_Offers__c>(scope).keySet();
+        Savepoint sp = Database.setSavepoint();
+        try {
+            processPosts(ids);
+        } catch (Exception e) {
+            Database.rollback(sp);
+            FimbyLogger.error('FimbyPostEndOfLifeJob', 'execute', e);
+            FimbyLogger.warn('FimbyPostEndOfLifeJob', 'execute',
+                'Chunk rolled back; it will retry next run. Posts: ' + String.join(new List<Id>(ids), ','));
+        }
     }
 
     public void finish(Database.BatchableContext bc) {
