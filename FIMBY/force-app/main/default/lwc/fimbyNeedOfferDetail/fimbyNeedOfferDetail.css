@@ -905,6 +905,7 @@
 .response-row-meta {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
 }
 
@@ -932,18 +933,19 @@
     white-space: nowrap;
 }
 
-.response-top-end {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    margin-left: 8px;
-}
-
 .response-time-ago {
     font-size: 0.8125rem;
     line-height: 1;
     color: var(--fimby-text-secondary);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.response-meta-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
 }
 
 .response-amount {
@@ -951,6 +953,21 @@
     line-height: 1;
     color: var(--fimby-text-secondary);
     font-weight: 600;
+}
+
+.unread-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 4px 10px;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    background-color: var(--fimby-chip-teal-bg);
+    color: var(--fimby-btn-primary-bg);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
 }
 
 .response-row-end:empty {

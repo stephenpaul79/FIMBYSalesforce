@@ -266,18 +266,18 @@
                                         <div class="response-row-main">
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
-                                                <span class="response-top-end">
-                                                    <span class="response-time-ago">{resp.timeAgo}</span>
-                                                    <template lwc:if={resp.hasUnread}>
-                                                        <span class="unread-badge">{resp.unreadCount}</span>
-                                                    </template>
-                                                </span>
+                                                <span class="response-time-ago">{resp.timeAgo}</span>
                                             </div>
                                             <div class="response-row-bottom">
                                                 <div class="response-row-meta">
-                                                    <span class="response-status" data-status={resp.status}>{resp.status}</span>
-                                                    <template lwc:if={showResponseAmounts}>
-                                                        <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
+                                                    <span class="response-meta-start">
+                                                        <span class="response-status" data-status={resp.status}>{resp.status}</span>
+                                                        <template lwc:if={showResponseAmounts}>
+                                                            <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
+                                                        </template>
+                                                    </span>
+                                                    <template lwc:if={resp.hasUnread}>
+                                                        <span class="unread-pill" aria-label={resp.unreadAriaLabel}>{resp.unreadLabel}</span>
                                                     </template>
                                                 </div>
                                                 <template lwc:if={resp.lastMessageDisplay}>

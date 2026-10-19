@@ -557,6 +557,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 canReply,
                 showRowDecision,
                 showOpenThreadInline: canReply && !showRowDecision,
+                unreadLabel: `${resp.unreadCount} unread`,
+                unreadAriaLabel: `${resp.unreadCount} unread ${resp.unreadCount === 1 ? 'message' : 'messages'}`,
                 acceptAriaLabel: `Accept ${name}'s response`,
                 declineAriaLabel: `Decline ${name}'s response`,
                 rowClass,
