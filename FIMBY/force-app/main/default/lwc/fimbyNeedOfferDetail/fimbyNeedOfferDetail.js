@@ -553,6 +553,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const posterThanked = resp.posterThanked || false;
             const name = resp.responderName || 'this neighbour';
             const showRowDecision = this.isAuthor && this.isPostActive && resp.status === 'New';
+            const showAmounts = this.showResponseAmounts;
 
             return {
                 ...resp,
@@ -562,6 +563,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 threadButtonLabel: READ_ONLY_RESPONSE_STATUSES.has(resp.status) ? 'View Thread' : 'Open Thread',
                 statusDisplay: WITHDRAWN_RESPONSE_STATUSES.has(resp.status) ? 'Withdrawn' : resp.status,
                 showStatusPill: !showRowDecision,
+                showMetaRow: !showRowDecision || showAmounts,
+                showUnreadInTop: hasUnread && showRowDecision && !showAmounts,
+                showUnreadInMeta: hasUnread && (!showRowDecision || showAmounts),
                 unreadLabel: `${resp.unreadCount} unread`,
                 unreadAriaLabel: `${resp.unreadCount} unread ${resp.unreadCount === 1 ? 'message' : 'messages'}`,
                 acceptAriaLabel: `Accept ${name}'s response`,
