@@ -550,11 +550,13 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             const isThanksEligible = ['Accepted', 'Completed'].includes(resp.status);
             const posterThanked = resp.posterThanked || false;
             const name = resp.responderName || 'this neighbour';
+            const showRowDecision = this.isAuthor && this.isPostActive && resp.status === 'New';
 
             return {
                 ...resp,
                 canReply,
-                showRowDecision: this.isAuthor && this.isPostActive && resp.status === 'New',
+                showRowDecision,
+                showOpenThreadInline: canReply && !showRowDecision,
                 acceptAriaLabel: `Accept ${name}'s response`,
                 declineAriaLabel: `Decline ${name}'s response`,
                 rowClass,

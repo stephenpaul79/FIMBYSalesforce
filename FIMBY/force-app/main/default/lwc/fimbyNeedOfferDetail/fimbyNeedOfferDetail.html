@@ -297,7 +297,7 @@
                                             <template lwc:if={resp.posterThanked}>
                                                 <span class="thanked-badge">Thanked</span>
                                             </template>
-                                            <template lwc:if={resp.canReply}>
+                                            <template lwc:if={resp.showOpenThreadInline}>
                                                 <button class="response-open-btn" data-response-id={resp.id} onclick={handleResponseClick}>
                                                     Open Thread
                                                 </button>
@@ -305,6 +305,14 @@
                                         </div>
                                         <template lwc:if={resp.showRowDecision}>
                                             <div class="response-row-decision">
+                                                <template lwc:if={resp.canReply}>
+                                                    <button type="button"
+                                                            class="row-decision-btn row-decision-open"
+                                                            data-response-id={resp.id}
+                                                            onclick={handleResponseClick}>
+                                                        Open Thread
+                                                    </button>
+                                                </template>
                                                 <button type="button"
                                                         class="row-decision-btn row-decision-decline"
                                                         data-response-id={resp.id}

@@ -708,15 +708,33 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 1 140px;
     min-height: 44px;
-    min-width: 96px;
-    padding: 10px 16px;
+    padding: 10px 12px;
+    box-sizing: border-box;
     border-radius: var(--fimby-btn-radius, 12px);
+    box-shadow: var(--fimby-btn-shadow), var(--fimby-btn-border-bottom);
     font-family: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--fimby-btn-font-size, 0.9375rem);
+    font-weight: 700;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.row-decision-btn:active {
+    box-shadow: var(--fimby-btn-shadow-active);
+    transform: scale(0.97);
+}
+
+.row-decision-open {
+    background-color: var(--fimby-surface-card);
+    border: 1px solid var(--fimby-btn-primary-bg);
+    color: var(--fimby-btn-primary-bg);
+}
+
+.row-decision-open:hover {
+    background-color: var(--fimby-selected-bg);
 }
 
 .row-decision-decline {
@@ -731,13 +749,14 @@
 }
 
 .row-decision-accept {
-    background-color: var(--fimby-success, #1A7B40);
-    border: 1px solid var(--fimby-success, #1A7B40);
+    background-color: var(--fimby-btn-success-bg);
+    border: 1px solid var(--fimby-btn-success-bg);
     color: #ffffff;
 }
 
 .row-decision-accept:hover {
-    filter: brightness(0.92);
+    background-color: var(--fimby-btn-success-bg-hover);
+    border-color: var(--fimby-btn-success-bg-hover);
 }
 
 .row-decision-btn:focus-visible {

@@ -337,7 +337,7 @@
 
 .action-btn:hover { opacity: 0.85; }
 
-.action-accept { background: var(--fimby-success, #2e7d32); color: white; }
+.action-accept { background-color: var(--fimby-btn-success-bg); color: white; }
 .action-decline { background: transparent; border: 1px solid var(--fimby-error, #c62828); color: var(--fimby-error, #c62828); }
 .action-complete { background: var(--fimby-btn-primary-bg); color: white; }
 .action-cancel { background: transparent; border: 1px solid var(--fimby-text-secondary); color: var(--fimby-text-secondary); }
@@ -967,14 +967,14 @@
 }
 
 .compose-send-accept {
-    background: var(--fimby-success, #1A7B40);
-    border: 1px solid var(--fimby-success, #1A7B40);
+    background-color: var(--fimby-btn-success-bg);
+    border: 1px solid var(--fimby-btn-success-bg);
     color: #ffffff;
 }
 
 .compose-send-accept:hover:not(:disabled) {
-    background: var(--fimby-success, #1A7B40);
-    filter: brightness(0.92);
+    background-color: var(--fimby-btn-success-bg-hover);
+    border-color: var(--fimby-btn-success-bg-hover);
 }
 
 .compose-cancel:focus-visible,
