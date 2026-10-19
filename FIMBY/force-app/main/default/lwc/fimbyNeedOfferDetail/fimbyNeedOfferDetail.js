@@ -529,8 +529,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             let rowClass = canReply ? 'response-row response-row-clickable' : 'response-row';
             if (hasUnread) rowClass += ' response-row-unread';
 
-            let preview = resp.lastMessagePreview || '';
-            if (preview.length > 60) preview = preview.substring(0, 60) + '...';
+            const subjectDisplay = (resp.name || '').trim();
 
             let timeAgo = '';
             if (resp.lastActivityDate) {
@@ -571,7 +570,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 declineAriaLabel: `Decline ${name}'s response`,
                 rowClass,
                 hasUnread,
-                lastMessageDisplay: preview,
+                subjectDisplay,
+                showSubject: subjectDisplay.length > 0,
                 timeAgo,
                 amountDisplay: resp.amountRequested != null ? resp.amountRequested : null,
                 posterThanked,

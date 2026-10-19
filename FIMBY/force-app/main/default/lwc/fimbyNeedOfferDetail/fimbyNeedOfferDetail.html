@@ -281,16 +281,12 @@
                                         <div class="response-row-main">
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
-                                                <span class="response-top-end">
-                                                    <template lwc:if={resp.hasUnread}>
-                                                        <span class="unread-pill" aria-label={resp.unreadAriaLabel}>{resp.unreadLabel}</span>
-                                                    </template>
-                                                    <span class="response-time-ago">{resp.timeAgo}</span>
-                                                </span>
-                                            </div>
-                                            <div class="response-row-bottom">
-                                                <div lwc:if={resp.showMetaRow} class="response-row-meta">
-                                                    <span class="response-meta-start">
+                                                <template lwc:if={resp.showSubject}>
+                                                    <span class="response-inbox-sep response-inbox-sep-desktop" aria-hidden="true">·</span>
+                                                    <span class="response-subject response-subject-desktop" title={resp.subjectDisplay}>{resp.subjectDisplay}</span>
+                                                </template>
+                                                <template lwc:if={resp.showMetaRow}>
+                                                    <span class="response-inbox-meta response-inbox-meta-desktop">
                                                         <template lwc:if={resp.showStatusPill}>
                                                             <span class="response-status" data-status={resp.statusDisplay}>{resp.statusDisplay}</span>
                                                         </template>
@@ -298,11 +294,29 @@
                                                             <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
                                                         </template>
                                                     </span>
-                                                </div>
-                                                <template lwc:if={resp.lastMessageDisplay}>
-                                                    <p class="response-preview">{resp.lastMessageDisplay}</p>
                                                 </template>
+                                                <span class="response-top-end">
+                                                    <template lwc:if={resp.hasUnread}>
+                                                        <span class="unread-pill" aria-label={resp.unreadAriaLabel}>{resp.unreadLabel}</span>
+                                                    </template>
+                                                    <span class="response-time-ago">{resp.timeAgo}</span>
+                                                </span>
                                             </div>
+                                            <template lwc:if={resp.showSubject}>
+                                                <div class="response-row-subject-mobile">
+                                                    <span class="response-subject" title={resp.subjectDisplay}>{resp.subjectDisplay}</span>
+                                                    <template lwc:if={resp.showMetaRow}>
+                                                        <span class="response-inbox-meta response-inbox-meta-mobile">
+                                                            <template lwc:if={resp.showStatusPill}>
+                                                                <span class="response-status" data-status={resp.statusDisplay}>{resp.statusDisplay}</span>
+                                                            </template>
+                                                            <template lwc:if={showResponseAmounts}>
+                                                                <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
+                                                            </template>
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </div>
                                         <template lwc:if={resp.showRowFollowUp}>
                                             <div class="response-row-decision">
