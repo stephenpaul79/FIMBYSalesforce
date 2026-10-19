@@ -306,6 +306,14 @@
                                         </div>
                                         <template lwc:if={resp.showRowFollowUp}>
                                             <div class="response-row-decision">
+                                                <template lwc:if={resp.canReply}>
+                                                    <button type="button"
+                                                            class="row-decision-btn row-decision-open"
+                                                            data-response-id={resp.id}
+                                                            onclick={handleResponseClick}>
+                                                        {resp.threadButtonLabel}
+                                                    </button>
+                                                </template>
                                                 <template lwc:if={resp.showThanksAction}>
                                                     <button type="button"
                                                             class="row-decision-btn row-decision-thanks"
@@ -320,14 +328,6 @@
                                                 <template lwc:if={resp.showThankedState}>
                                                     <button type="button" class="row-decision-btn row-decision-thanked" disabled>
                                                         Thanked ✓
-                                                    </button>
-                                                </template>
-                                                <template lwc:if={resp.canReply}>
-                                                    <button type="button"
-                                                            class="row-decision-btn row-decision-open"
-                                                            data-response-id={resp.id}
-                                                            onclick={handleResponseClick}>
-                                                        {resp.threadButtonLabel}
                                                     </button>
                                                 </template>
                                             </div>
@@ -434,6 +434,9 @@
                                 </span>
                             </div>
                             <div class="response-row-decision your-response-actions">
+                                <button type="button" class="row-decision-btn row-decision-open" onclick={handleOpenMyResponseThread}>
+                                    {yourResponseThreadLabel}
+                                </button>
                                 <template lwc:if={showResponderThanksAction}>
                                     <button type="button" class="row-decision-btn row-decision-thanks" onclick={handleSayThanksToPoster}>
                                         <img src={thanksIconUrl} alt="" class="row-decision-icon">
@@ -445,9 +448,6 @@
                                         Thanked ✓
                                     </button>
                                 </template>
-                                <button type="button" class="row-decision-btn row-decision-open" onclick={handleOpenMyResponseThread}>
-                                    {yourResponseThreadLabel}
-                                </button>
                             </div>
                         </div>
                     </div>
