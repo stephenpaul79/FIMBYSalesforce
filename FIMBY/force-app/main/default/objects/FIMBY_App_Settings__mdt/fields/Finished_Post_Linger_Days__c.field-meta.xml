@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Finished_Post_Linger_Days__c</fullName>
+    <defaultValue>7</defaultValue>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Finished Post Linger Days</label>
+    <precision>3</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <inlineHelpText>How many days a completed post stays in the feed with its outcome pill (Answered, Received, Happened, Purchased).</inlineHelpText>
+</CustomField>
