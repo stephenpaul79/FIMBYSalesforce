@@ -559,7 +559,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 ...resp,
                 canReply,
                 showRowDecision,
-                showOpenThreadInline: canReply && !showRowDecision,
+                showRowFollowUp: !showRowDecision && (canReply || isThanksEligible),
+                showThankedState: isThanksEligible && posterThanked,
                 threadButtonLabel: READ_ONLY_RESPONSE_STATUSES.has(resp.status) ? 'View Thread' : 'Open Thread',
                 statusDisplay: WITHDRAWN_RESPONSE_STATUSES.has(resp.status) ? 'Withdrawn' : resp.status,
                 showStatusPill: !showRowDecision,
@@ -1819,10 +1820,24 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     // PERSONA: RESPONDED USER CARD DATA
     // ============================================
 
-    get yourResponseStatus() { return this.currentUserResponse?.status || ''; }
+    get yourResponseStatus() {
+        const status = this.currentUserResponse?.status || '';
+        return WITHDRAWN_RESPONSE_STATUSES.has(status) ? 'Withdrawn' : status;
+    }
     get yourResponseTimeAgo() { return this.currentUserResponse?.timeAgo || ''; }
     get yourResponseUnread() { return this.currentUserResponse?.unreadCount || 0; }
     get yourResponseHasUnread() { return this.yourResponseUnread > 0; }
+    get yourResponseUnreadLabel() { return `${this.yourResponseUnread} unread`; }
+    get yourResponseUnreadAriaLabel() {
+        return `${this.yourResponseUnread} unread ${this.yourResponseUnread === 1 ? 'message' : 'messages'}`;
+    }
+    get yourResponseThreadLabel() {
+        return READ_ONLY_RESPONSE_STATUSES.has(this.currentUserResponse?.status) ? 'View Thread' : 'Open Thread';
+    }
+    get showYourResponseThanked() {
+        const r = this.currentUserResponse;
+        return !!r && ['Accepted', 'Completed'].includes(r.status) && !!r.responderThanked;
+    }
 
     get yourResponseAmountDisplay() {
         const resp = this.currentUserResponse;
@@ -1840,10 +1855,6 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         const r = this.currentUserResponse;
         if (!r) return false;
         return ['Accepted', 'Completed'].includes(r.status) && !r.responderThanked;
-    }
-
-    get yourResponseResponderThanked() {
-        return this.currentUserResponse?.responderThanked || false;
     }
 
     // ============================================
@@ -2337,7 +2348,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     }
 
     get decisionConfirmVariant() {
-        return this._pendingDecision?.action === 'decline' ? 'danger' : 'primary';
+        const action = this._pendingDecision?.action;
+        if (action === 'accept') return 'success';
+        return action === 'decline' ? 'neutral' : 'primary';
     }
 
     handleRowAccept(event) {

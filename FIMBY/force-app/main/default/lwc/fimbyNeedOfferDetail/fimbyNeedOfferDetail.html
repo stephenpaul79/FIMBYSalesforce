@@ -264,10 +264,20 @@
                                 </template>
                             </div>
 
+                            <template lwc:if={showMatchedCompletePrompt}>
+                                <div class="matched-complete-prompt" role="region" aria-label="Mark this post complete">
+                                    <p class="matched-complete-text">Looks like this is taken care of. Mark it complete?</p>
+                                    <button type="button"
+                                            class="row-decision-btn row-decision-complete"
+                                            onclick={handleMarkCompleteClick}>
+                                        Mark complete
+                                    </button>
+                                </div>
+                            </template>
+
                             <div class="responses-list">
                                 <template for:each={processedResponses} for:item="resp">
                                     <div key={resp.id} class={resp.rowClass}>
-                                        <div class="response-row-head">
                                         <div class="response-row-main">
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
@@ -297,27 +307,34 @@
                                                 </template>
                                             </div>
                                         </div>
-                                        <div class="response-row-end">
-                                            <template lwc:if={resp.showThanksAction}>
-                                                <button class="thanks-btn"
-                                                        data-response-id={resp.id}
-                                                        data-recipient-id={resp.contactId}
-                                                        data-recipient-name={resp.responderName}
-                                                        onclick={handleSayThanks}>
-                                                    <img src={thanksIconUrl} alt="" class="thanks-btn-icon">
-                                                    Say Thanks
-                                                </button>
-                                            </template>
-                                            <template lwc:if={resp.posterThanked}>
-                                                <span class="thanked-badge">Thanked</span>
-                                            </template>
-                                            <template lwc:if={resp.showOpenThreadInline}>
-                                                <button class="response-open-btn" data-response-id={resp.id} onclick={handleResponseClick}>
-                                                    {resp.threadButtonLabel}
-                                                </button>
-                                            </template>
-                                        </div>
-                                        </div>
+                                        <template lwc:if={resp.showRowFollowUp}>
+                                            <div class="response-row-decision">
+                                                <template lwc:if={resp.showThanksAction}>
+                                                    <button type="button"
+                                                            class="row-decision-btn row-decision-thanks"
+                                                            data-response-id={resp.id}
+                                                            data-recipient-id={resp.contactId}
+                                                            data-recipient-name={resp.responderName}
+                                                            onclick={handleSayThanks}>
+                                                        <img src={thanksIconUrl} alt="" class="row-decision-icon">
+                                                        Say Thanks
+                                                    </button>
+                                                </template>
+                                                <template lwc:if={resp.showThankedState}>
+                                                    <button type="button" class="row-decision-btn row-decision-thanked" disabled>
+                                                        Thanked ✓
+                                                    </button>
+                                                </template>
+                                                <template lwc:if={resp.canReply}>
+                                                    <button type="button"
+                                                            class="row-decision-btn row-decision-open"
+                                                            data-response-id={resp.id}
+                                                            onclick={handleResponseClick}>
+                                                        {resp.threadButtonLabel}
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </template>
                                         <template lwc:if={resp.showRowDecision}>
                                             <div class="response-row-decision">
                                                 <template lwc:if={resp.canReply}>
@@ -364,17 +381,6 @@
                     </div>
                 </template>
 
-                <template lwc:if={showMatchedCompletePrompt}>
-                    <div class="matched-complete-prompt" role="region" aria-label="Mark this post complete">
-                        <p class="matched-complete-text">Looks like this is taken care of. Mark it complete?</p>
-                        <button type="button"
-                                class="refresh-action-btn refresh-action-primary"
-                                onclick={handleMarkCompleteClick}>
-                            Mark complete
-                        </button>
-                    </div>
-                </template>
-
                 <!-- ========== POSTER: REFRESH / CLOSE PANEL (asks & offers) ========== -->
                 <template lwc:if={showRefreshPanel}>
                     <div class="refresh-panel" role="region" aria-label="Post refresh options">
@@ -414,32 +420,37 @@
                     <div class="your-response-card">
                         <h3 class="your-response-title">Your Response</h3>
                         <div class="your-response-body">
-                            <div class="your-response-meta">
-                                <span class="response-status" data-status={yourResponseStatus}>{yourResponseStatus}</span>
-                                <template lwc:if={showYourResponseAmount}>
-                                    <span class="your-response-amount">{yourResponseAmountDisplay}</span>
-                                </template>
-                                <template lwc:if={yourResponseTimeAgo}>
-                                    <span class="your-response-time">{yourResponseTimeAgo}</span>
-                                </template>
+                            <div class="response-row-meta">
+                                <span class="response-meta-start">
+                                    <span class="response-status" data-status={yourResponseStatus}>{yourResponseStatus}</span>
+                                    <template lwc:if={showYourResponseAmount}>
+                                        <span class="response-amount">{yourResponseAmountDisplay}</span>
+                                    </template>
+                                </span>
+                                <span class="response-top-end">
+                                    <template lwc:if={yourResponseHasUnread}>
+                                        <span class="unread-pill" aria-label={yourResponseUnreadAriaLabel}>{yourResponseUnreadLabel}</span>
+                                    </template>
+                                    <template lwc:if={yourResponseTimeAgo}>
+                                        <span class="response-time-ago">{yourResponseTimeAgo}</span>
+                                    </template>
+                                </span>
                             </div>
-                            <div class="your-response-actions">
-                                <button class="action-btn primary" onclick={handleOpenMyResponseThread}>
-                                    <img src={respondButtonIconUrl} alt="" class="action-btn-icon">
-                                    <span>Open Conversation</span>
-                                </button>
-                                <template lwc:if={yourResponseHasUnread}>
-                                    <span class="unread-badge">{yourResponseUnread}</span>
-                                </template>
+                            <div class="response-row-decision your-response-actions">
                                 <template lwc:if={showResponderThanksAction}>
-                                    <button class="thanks-btn" onclick={handleSayThanksToPoster}>
-                                        <img src={thanksIconUrl} alt="" class="thanks-btn-icon">
+                                    <button type="button" class="row-decision-btn row-decision-thanks" onclick={handleSayThanksToPoster}>
+                                        <img src={thanksIconUrl} alt="" class="row-decision-icon">
                                         Say Thanks
                                     </button>
                                 </template>
-                                <template lwc:if={yourResponseResponderThanked}>
-                                    <span class="thanked-badge">Thanked</span>
+                                <template lwc:if={showYourResponseThanked}>
+                                    <button type="button" class="row-decision-btn row-decision-thanked" disabled>
+                                        Thanked ✓
+                                    </button>
                                 </template>
+                                <button type="button" class="row-decision-btn row-decision-open" onclick={handleOpenMyResponseThread}>
+                                    {yourResponseThreadLabel}
+                                </button>
                             </div>
                         </div>
                     </div>

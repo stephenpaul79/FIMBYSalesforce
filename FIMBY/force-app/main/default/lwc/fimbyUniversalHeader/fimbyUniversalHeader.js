@@ -307,6 +307,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         }
         if (this._savedBodyOverflow !== null) {
             document.body.style.overflow = this._savedBodyOverflow;
+            document.documentElement.style.scrollbarGutter = '';
             this._savedBodyOverflow = null;
         }
     }
@@ -645,13 +646,19 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
             this.showTosModal ||
             this._quickPostOpen ||
             this.showShellModalScrim;
+        const root = document.documentElement;
         if (shouldLock) {
             if (this._savedBodyOverflow === null) {
                 this._savedBodyOverflow = document.body.style.overflow;
+                // Hiding a classic scrollbar widens the viewport and slides the page sideways.
+                if (window.innerWidth > root.clientWidth) {
+                    root.style.scrollbarGutter = 'stable';
+                }
             }
             document.body.style.overflow = 'hidden';
         } else if (this._savedBodyOverflow !== null) {
             document.body.style.overflow = this._savedBodyOverflow;
+            root.style.scrollbarGutter = '';
             this._savedBodyOverflow = null;
         }
     }

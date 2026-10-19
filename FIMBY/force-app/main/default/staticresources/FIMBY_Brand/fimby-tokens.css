@@ -388,9 +388,17 @@
 
   /* ── Layout ─────────────────────────────────────────────────── */
   --fimby-header-height: 70px;  /* Universal header height — single row, acting-as chip inline */
-  --fimby-bottom-nav-height: 70px;
+  --fimby-bottom-nav-height: 72px;
   --fimby-modal-top-gap: 16px;  /* breathing room below header on desktop modals */
   --fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap));
+  /* Content-region modal scrim fills the band between chrome zones (one layer per pixel) */
+  --fimby-modal-scrim-content-top: var(--fimby-header-height);
+  --fimby-modal-scrim-content-bottom: 0px;
+  --fimby-modal-scrim-seam-overlap: 2px; /* header + content scrims overlap to avoid bright seams */
+  --fimby-modal-scrim-band-top: calc(var(--fimby-modal-scrim-content-top) - var(--fimby-modal-scrim-seam-overlap));
+  --fimby-modal-scrim-band-bottom: 0px;
+  --fimby-modal-stack-z: 10051;
+  --fimby-shell-chrome-scrim-z: 500;
 
   /* ── Shared Non-Color Tokens ──────────────────────────────────── */
   --fimby-radius-sm:    8px;
@@ -402,6 +410,12 @@
   --fimby-shadow-card:       0 2px 8px rgba(0, 0, 0, 0.08);
   --fimby-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
   --fimby-shadow-modal:      0 8px 24px rgba(0, 0, 0, 0.20);
+}
+
+@media (max-width: 891px) {
+  :root {
+    --fimby-modal-scrim-band-bottom: calc(var(--fimby-bottom-nav-height) - var(--fimby-modal-scrim-seam-overlap));
+  }
 }
 
 /* Force page & section backgrounds to follow our tokens.
@@ -438,13 +452,17 @@ html {
 :root {
   --dxp-c-section-image-overlay-color: transparent;
   --dxp-c-section-background-color: var(--fimby-surface-page, #F0EBE3);
-  /* iOS WKWebView zooms the page when a focused form control is < 16px.
-     That zoom never resets under .fimby-zoom-locked (no pinch-out). */
+  /* iOS WKWebView zooms the page when a focused form control is smaller
+     than 16px. That zoom never resets under .fimby-zoom-locked (no pinch-out).
+     16px is the floor — never go smaller. */
   --fimby-input-font-size: 16px;
   --dxp-c-input-text-font-size: 16px;
+  --dxp-c-textarea-text-font-size: 16px;
+  --dxp-c-select-text-font-size: 16px;
   --dxp-s-form-element-text-font-size: 16px;
   --slds-c-input-text-font-size: 16px;
   --slds-c-textarea-text-font-size: 16px;
+  --slds-c-select-text-font-size: 16px;
 }
 
 /* Light-DOM fields (login, VF). LWC shadow inputs still need ≥16px in their own CSS. */

@@ -30,7 +30,7 @@ export default class FimbyConfirmModal extends LightningElement {
     @api message = '';
     @api confirmLabel = 'Confirm';
     @api cancelLabel = 'Cancel';
-    /** 'danger' for destructive or irreversible actions, 'primary' for everything else. */
+    /** 'danger' for destructive or irreversible actions, 'success' / 'neutral' to match the trigger button, 'primary' for everything else. */
     @api variant = 'danger';
     @api isProcessing = false;
     @api processingLabel = 'Working...';
@@ -47,12 +47,15 @@ export default class FimbyConfirmModal extends LightningElement {
     }
 
     get confirmButtonClass() {
-        return this.variant === 'primary' ? 'nav-btn nav-next' : 'nav-btn nav-danger';
+        if (this.variant === 'primary') return 'nav-btn nav-next';
+        if (this.variant === 'success') return 'nav-btn nav-success';
+        if (this.variant === 'neutral') return 'nav-btn nav-neutral';
+        return 'nav-btn nav-danger';
     }
 
     renderedCallback() {
         if (this.isOpen && !this._wasOpen) {
-            this._shellScrim.bind(() => this.handleCancel());
+            this._shellScrim.bind(() => this.handleCancel(), this.template.host);
             this._wasOpen = true;
             // Cancel takes focus rather than the confirm button: a stray Enter on a
             // destructive dialog should back out, not go through with it.

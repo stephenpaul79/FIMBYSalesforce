@@ -4,20 +4,18 @@
 }
 
 .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background-color: transparent;
+    position: fixed; inset: 0; background: transparent; background-color: transparent;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: 9999;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 @media (min-width: 768px) {
     .modal-backdrop {
         align-items: center;
-        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     }
 }
 
@@ -36,7 +34,7 @@
 @media (min-width: 768px) {
     .modal-container {
         border-radius: var(--fimby-radius-lg);
-        max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+        max-height: calc(100% - 32px);
     }
 }
 
@@ -57,7 +55,7 @@
 }
 
 .close-btn {
-    background: transparent;
+    background-color: transparent;
     border: none;
     width: 36px;
     height: 36px;
@@ -153,6 +151,34 @@
     border-color: var(--fimby-btn-primary-bg-hover);
 }
 
+.nav-neutral {
+    border-color: var(--fimby-border-strong);
+    color: var(--fimby-text-strong);
+    font-weight: 700;
+}
+
+.nav-success {
+    background-color: var(--fimby-btn-success-bg);
+    color: #ffffff;
+    border-color: var(--fimby-btn-success-bg);
+}
+
+.nav-success:hover {
+    background-color: var(--fimby-btn-success-bg-hover);
+    border-color: var(--fimby-btn-success-bg-hover);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .nav-btn { transition: none; }
+}
+
+/* Shell chrome zones � content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }
