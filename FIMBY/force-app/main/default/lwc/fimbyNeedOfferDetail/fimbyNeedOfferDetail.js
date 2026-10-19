@@ -606,6 +606,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return v != null && v > 0;
     }
 
+    get showResponseAmounts() {
+        if (!this.tracksQuantityForResponses) return false;
+        if (this.isGathering || this.isOpenEvent) return true;
+        return getFieldValue(this.record, 'Needs_Offers__c.Total_Quantity__c') > 1;
+    }
+
     get responseAmountLabel() {
         if (this.isGathering) return 'Attending';
         if (this.isOpenEvent) return 'Guests';

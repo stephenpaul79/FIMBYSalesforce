@@ -266,12 +266,17 @@
                                         <div class="response-row-main">
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
-                                                <span class="response-time-ago">{resp.timeAgo}</span>
+                                                <span class="response-top-end">
+                                                    <span class="response-time-ago">{resp.timeAgo}</span>
+                                                    <template lwc:if={resp.hasUnread}>
+                                                        <span class="unread-badge">{resp.unreadCount}</span>
+                                                    </template>
+                                                </span>
                                             </div>
                                             <div class="response-row-bottom">
                                                 <div class="response-row-meta">
                                                     <span class="response-status" data-status={resp.status}>{resp.status}</span>
-                                                    <template lwc:if={tracksQuantityForResponses}>
+                                                    <template lwc:if={showResponseAmounts}>
                                                         <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
                                                     </template>
                                                 </div>
@@ -281,9 +286,6 @@
                                             </div>
                                         </div>
                                         <div class="response-row-end">
-                                            <template lwc:if={resp.hasUnread}>
-                                                <span class="unread-badge">{resp.unreadCount}</span>
-                                            </template>
                                             <template lwc:if={resp.showThanksAction}>
                                                 <button class="thanks-btn"
                                                         data-response-id={resp.id}
