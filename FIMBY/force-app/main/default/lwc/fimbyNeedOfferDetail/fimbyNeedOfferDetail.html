@@ -157,9 +157,11 @@
                         <div class={cardLayoutClass}>
                             <template lwc:if={showCardLeft}>
                                 <div class={cardLeftClass}>
-                                    <div class="card-left-header">
-                                        <div class="status-badge" data-status={status}>{statusBadgeLabel}</div>
-                                    </div>
+                                    <template lwc:if={showStatusBadge}>
+                                        <div class="card-left-header">
+                                            <div class="status-badge" data-status={statusBadgeKey}>{statusBadgeLabel}</div>
+                                        </div>
+                                    </template>
                                     <div class="card-left-media">
                                         <template lwc:if={hasMultipleImages}>
                                             <c-fimby-image-grid
@@ -195,8 +197,8 @@
                                         <div class="post-header-left">
                                             <div class="title-row">
                                                 <h1 class="post-title">{postTitle}</h1>
-                                                <template lwc:if={showStatusInRight}>
-                                                    <div class="status-badge" data-status={status}>{statusBadgeLabel}</div>
+                                                <template lwc:if={showStatusBadgeInRight}>
+                                                    <div class="status-badge" data-status={statusBadgeKey}>{statusBadgeLabel}</div>
                                                 </template>
                                             </div>
                                             <span class="post-meta">
@@ -247,22 +249,25 @@
                     <!-- POSTER: Response Inbox (side-by-side on desktop) -->
                     <template lwc:if={showPosterResponseInbox}>
                         <div class="info-section responses-section">
-                            <h3 class="section-title">
-                                <lightning-icon icon-name="utility:comments" size="xx-small"></lightning-icon>
-                                Response Inbox ({responseCount})
-                            </h3>
+                            <div class="inbox-header">
+                                <h3 class="section-title">
+                                    <lightning-icon icon-name="utility:comments" size="xx-small"></lightning-icon>
+                                    Response Inbox ({responseCount})
+                                </h3>
 
-                            <template lwc:if={showAttentionStrip}>
-                                <div class="attention-strip">
-                                    <template for:each={attentionItems} for:item="item">
-                                        <span key={item.key} class={item.pillClass}>{item.label}</span>
-                                    </template>
-                                </div>
-                            </template>
+                                <template lwc:if={showAttentionStrip}>
+                                    <div class="attention-strip">
+                                        <template for:each={attentionItems} for:item="item">
+                                            <span key={item.key} class={item.pillClass}>{item.label}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
 
                             <div class="responses-list">
                                 <template for:each={processedResponses} for:item="resp">
                                     <div key={resp.id} class={resp.rowClass}>
+                                        <div class="response-row-head">
                                         <div class="response-row-main">
                                             <div class="response-row-top">
                                                 <span class="response-name">{resp.responderName}</span>
@@ -271,7 +276,9 @@
                                             <div class="response-row-bottom">
                                                 <div class="response-row-meta">
                                                     <span class="response-meta-start">
-                                                        <span class="response-status" data-status={resp.status}>{resp.status}</span>
+                                                        <template lwc:if={resp.showStatusPill}>
+                                                            <span class="response-status" data-status={resp.statusDisplay}>{resp.statusDisplay}</span>
+                                                        </template>
                                                         <template lwc:if={showResponseAmounts}>
                                                             <span class="response-amount">{responseAmountLabel} {resp.amountDisplay}</span>
                                                         </template>
@@ -301,9 +308,10 @@
                                             </template>
                                             <template lwc:if={resp.showOpenThreadInline}>
                                                 <button class="response-open-btn" data-response-id={resp.id} onclick={handleResponseClick}>
-                                                    Open Thread
+                                                    {resp.threadButtonLabel}
                                                 </button>
                                             </template>
+                                        </div>
                                         </div>
                                         <template lwc:if={resp.showRowDecision}>
                                             <div class="response-row-decision">

@@ -107,6 +107,8 @@ const FIELDS = [
 ];
 
 const COMPLETED_STATUS = 'Completed (Offer Accepted / Need Met)';
+const WITHDRAWN_RESPONSE_STATUSES = new Set(['Cancelled', 'Expired']);
+const READ_ONLY_RESPONSE_STATUSES = new Set(['Declined', 'Cancelled', 'Expired']);
 
 const EVENT_TYPE_CONFIG = {
     Gathering: {
@@ -557,6 +559,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                 canReply,
                 showRowDecision,
                 showOpenThreadInline: canReply && !showRowDecision,
+                threadButtonLabel: READ_ONLY_RESPONSE_STATUSES.has(resp.status) ? 'View Thread' : 'Open Thread',
+                statusDisplay: WITHDRAWN_RESPONSE_STATUSES.has(resp.status) ? 'Withdrawn' : resp.status,
+                showStatusPill: !showRowDecision,
                 unreadLabel: `${resp.unreadCount} unread`,
                 unreadAriaLabel: `${resp.unreadCount} unread ${resp.unreadCount === 1 ? 'message' : 'messages'}`,
                 acceptAriaLabel: `Accept ${name}'s response`,
@@ -582,11 +587,12 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get responseSummaryStats() {
         if (!this.responses || !this.responses.length) return null;
-        let newCount = 0, acceptedCount = 0, declinedCount = 0, unreadCount = 0;
+        let newCount = 0, acceptedCount = 0, declinedCount = 0, withdrawnCount = 0, unreadCount = 0;
         for (const r of this.responses) {
             if (r.status === 'New') newCount++;
-            else if (r.status === 'Accepted') acceptedCount++;
+            else if (r.status === 'Accepted' || r.status === 'Completed') acceptedCount++;
             else if (r.status === 'Declined') declinedCount++;
+            else if (WITHDRAWN_RESPONSE_STATUSES.has(r.status)) withdrawnCount++;
             if (r.unreadCount > 0) unreadCount++;
         }
         return {
@@ -594,6 +600,7 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             newCount,
             acceptedCount,
             declinedCount,
+            withdrawnCount,
             unreadCount,
             hasUnread: unreadCount > 0
         };
@@ -679,7 +686,25 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get statusBadgeLabel() {
         if (this.isPostCompleted) return this.outcomeLabel;
         if (this.status === 'Expired' && this.isEventType) return 'Event Ended';
+        if (this.isAskOrOffer && this.isPostActive) return this._askOfferActiveSlotLabel();
         return this.status;
+    }
+
+    // Active Asks/Offers: the inbox tells the reply story, so the slot only carries capacity or a match.
+    _askOfferActiveSlotLabel() {
+        if (this.isMatched) return this.postType === 'Offer' ? 'Spoken for' : 'Help Found';
+        const qty = Number(this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Quantity__c') : 0) || 0;
+        if (qty <= 1) return null;
+        const remaining = Math.max(qty - (Number(this.totalAccepted) || 0), 0);
+        return `${remaining} of ${qty} still ${this.postType === 'Offer' ? 'available' : 'needed'}`;
+    }
+
+    get showStatusBadge() {
+        return !!this.statusBadgeLabel;
+    }
+
+    get statusBadgeKey() {
+        return this.isAskOrOffer && this.isPostActive && !this.isMatched ? 'Capacity' : this.status;
     }
 
     get isRespondDisabled() {
@@ -877,6 +902,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     get showStatusInRight() {
         return !this.showCardLeft;
+    }
+
+    get showStatusBadgeInRight() {
+        return this.showStatusInRight && this.showStatusBadge;
     }
 
     get cardLayoutClass() {
@@ -1823,6 +1852,10 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         const stats = this.responseSummaryStats;
         if (!stats) return [];
 
+        if (this.isAskOrOffer) {
+            return this._buildReplyTallyItems(stats);
+        }
+
         if (this.tracksQuantityForResponses) {
             return this._buildCapacityAttentionItems();
         }
@@ -1836,6 +1869,23 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
             }];
         }
         return [];
+    }
+
+    get isAskOrOffer() {
+        return !this.isEventType && !this.isBulkBuyType;
+    }
+
+    // Pills always sum to the inbox count; a single reply needs no tally.
+    _buildReplyTallyItems(stats) {
+        if (stats.total < 2) return [];
+        return [
+            { key: 'accepted', count: stats.acceptedCount, word: 'accepted', pillClass: 'pill-accepted' },
+            { key: 'waiting', count: stats.newCount, word: 'waiting', pillClass: 'pill-new' },
+            { key: 'declined', count: stats.declinedCount, word: 'declined', pillClass: 'pill-declined' },
+            { key: 'withdrawn', count: stats.withdrawnCount, word: 'withdrawn', pillClass: 'pill-withdrawn' }
+        ]
+            .filter(item => item.count > 0)
+            .map(item => ({ key: item.key, label: `${item.count} ${item.word}`, pillClass: item.pillClass }));
     }
 
     _buildCapacityAttentionItems() {

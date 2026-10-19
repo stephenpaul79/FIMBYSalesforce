@@ -422,6 +422,9 @@
 .status-badge-sm[data-status="Expired"] {
     background: var(--fimby-error-tint); color: var(--fimby-error);
 }
+.status-badge[data-status="Capacity"] {
+    background-color: var(--fimby-chip-teal-bg); color: var(--fimby-btn-primary-bg);
+}
 .status-badge[data-status="Pending"],
 .status-badge-sm[data-status="Pending"] {
     background: var(--fimby-warning-tint); color: var(--fimby-warning);
@@ -653,6 +656,21 @@
 .pill-declined { background-color: var(--fimby-error-tint); color: var(--fimby-error); }
 .pill-unread { background-color: var(--fimby-btn-primary-bg); color: white; }
 .pill-available { background-color: var(--fimby-info-tint, #e0f0f5); color: var(--fimby-info); }
+.pill-withdrawn { background-color: var(--fimby-hover-bg); color: var(--fimby-text-secondary); }
+
+.inbox-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.inbox-header .section-title,
+.inbox-header .attention-strip {
+    margin: 0;
+}
 
 /* Attention Strip */
 .attention-strip {
@@ -679,10 +697,9 @@
 
 .response-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     padding: 10px 12px;
-    background: var(--fimby-surface-page);
+    background-color: var(--fimby-surface-page);
     border-radius: var(--fimby-radius-sm);
     border-left: 3px solid transparent;
     transition: border-color 0.2s ease;
@@ -692,12 +709,13 @@
     border-left-color: var(--fimby-cta-strip-accent, #3A7D8C);
 }
 
-.response-row {
-    flex-wrap: wrap;
+.response-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .response-row-decision {
-    flex-basis: 100%;
     display: flex;
     justify-content: flex-end;
     gap: 8px;
@@ -883,7 +901,7 @@
 }
 
 .response-row-main {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -1011,15 +1029,14 @@
     pointer-events: none;
     user-select: none;
 }
-.response-status[data-status="Declined"],
-.response-status[data-status="Expired"] {
+.response-status[data-status="Declined"] {
     background-color: var(--fimby-chip-expired-bg); color: var(--fimby-chip-expired-text);
 }
 .response-status[data-status="Pending"],
 .response-status[data-status="New"] {
     background-color: var(--fimby-chip-draft-bg); color: var(--fimby-chip-draft-text);
 }
-.response-status[data-status="Cancelled"] {
+.response-status[data-status="Withdrawn"] {
     background: var(--fimby-hover-bg); color: var(--fimby-text-secondary);
 }
 
