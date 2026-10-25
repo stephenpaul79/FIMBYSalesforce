@@ -156,6 +156,84 @@ private class FimbyDigestEmailSendQueueableTest {
         System.assert(key.contains('Daily'), 'Key should contain frequency.');
         System.assert(key.contains('001000000000001'), 'Key should contain neighbourhood ID.');
         System.assert(!key.contains('005'), 'Per-build key should NOT carry a user component.');
+        String nhId = String.valueOf(Id.valueOf('001000000000001'));
+        System.assertEquals(nhId + '_Daily_v2_2026-04-09', key);
+        System.assertEquals(nhId + '_DailySundayRest_v2_2026-04-09',
+            FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+                '001000000000001', FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST, Date.newInstance(2026, 4, 9)
+            ));
+    }
+
+    @IsTest
+    static void execute_exactWindow_stampsWindowFieldsOnLog() {
+        FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
+        Datetime startAt = Datetime.newInstanceGmt(2026, 1, 19, 11, 2, 0);
+        Datetime endAt = Datetime.newInstanceGmt(2026, 1, 20, 11, 0, 0);
+        Date windowDate = Date.newInstance(2026, 1, 19);
+
+        Test.startTest();
+        new FimbyDigestEmailSendQueueable(
+            null, 'Maplewood', 'Daily', windowDate, startAt, endAt,
+            new List<FimbyDigestEmailSendQueueable.DispatchCohort>{
+                new FimbyDigestEmailSendQueueable.DispatchCohort(
+                    new List<Id>{ UserInfo.getUserId() }, null, null, '<p>Cards</p>', 2
+                )
+            }
+        ).execute(null);
+        Test.stopTest();
+
+        Digest_Email_Log__c log = [
+            SELECT Window_Date__c, Window_Start__c, Window_End__c, Idempotency_Key__c
+            FROM Digest_Email_Log__c LIMIT 1
+        ];
+        System.assertEquals(windowDate, log.Window_Date__c);
+        System.assertEquals(startAt, log.Window_Start__c);
+        System.assertEquals(endAt, log.Window_End__c, 'Window_End__c is the next run\'s checkpoint.');
+        System.assertEquals(
+            FimbyDigestEmailSendQueueable.buildIdempotencyKey(null, 'Daily', windowDate), log.Idempotency_Key__c
+        );
+    }
+
+    @IsTest
+    static void execute_legacySentRowDoesNotBlockV2Send() {
+        FimbyDigestEmailSendQueueable.oweaCached = UserInfo.getUserId();
+        Date windowDate = Date.today().addDays(-1);
+        insert new Digest_Email_Log__c(
+            Cadence__c = 'Daily', Window_Date__c = windowDate, Status__c = 'Sent',
+            Recipient_Count__c = 1, Template_Version__c = 'FimbyEmailHtmlBuilder',
+            Idempotency_Key__c = 'null_Daily_' + String.valueOf(windowDate)
+        );
+
+        Test.startTest();
+        new FimbyDigestEmailSendQueueable(
+            null, 'Maplewood', 'Daily', windowDate, windowDate,
+            '<p>Cards</p>', 2, new List<Id>{ UserInfo.getUserId() }
+        ).execute(null);
+        Test.stopTest();
+
+        System.assertEquals(2, [SELECT COUNT() FROM Digest_Email_Log__c],
+            'The v2 key never matches a legacy calendar-day row.');
+    }
+
+    @IsTest
+    static void resolveDigestHeaderTitle_longWindow_usesRecoveryPhrase() {
+        Datetime endAt = Datetime.newInstanceGmt(2026, 1, 20, 11, 0, 0);
+        System.assertEquals(
+            'A few things your neighbours shared since we last wrote',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 4, endAt.addDays(-5), endAt)
+        );
+        System.assertEquals(
+            'A few things your neighbours shared yesterday',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Daily', 4, endAt.addHours(-24), endAt)
+        );
+        System.assertEquals(
+            'Something your neighbour shared this week',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Weekly', 1, endAt.addDays(-7), endAt)
+        );
+        System.assertEquals(
+            'Something your neighbour shared since we last wrote',
+            FimbyDigestEmailSendQueueable.resolveDigestHeaderTitle('Weekly', 1, endAt.addDays(-14), endAt)
+        );
     }
 
     @IsTest

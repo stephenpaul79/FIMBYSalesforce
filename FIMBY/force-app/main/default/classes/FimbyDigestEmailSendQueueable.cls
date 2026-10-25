@@ -7,8 +7,10 @@
  * one successor. That keeps every async transaction inside Salesforce's one-enqueue limit.
  *
  * Per-cohort logging (one Digest_Email_Log__c per neighbourhood + cadence + window + variant):
- *   - Idempotency_Key__c is {NeighbourhoodId}_{Cadence}_{WindowDate}, plus a _v{hash}
+ *   - Idempotency_Key__c is {NeighbourhoodId}_{Cadence}_v2_{WindowDate}, plus a _v{hash}
  *     suffix for filtered cohorts.
+ *   - Window_Start__c / Window_End__c record the exact content window; the batch uses
+ *     Window_End__c as the next run's start.
  *   - On the first chunk we initialize the row with Email_Body_Preview__c, Recipient_Count__c
  *     and a base Status__c.
  *   - Each subsequent chunk appends successful recipient lines to Recipients__c, failed
@@ -35,6 +37,8 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
     private String frequency;
     private Date windowStart;
     private Date windowEnd;
+    private Datetime windowStartAt;
+    private Datetime windowEndAt;
     private List<DispatchCohort> cohorts;
     private Integer cohortIndex = 0;
 
@@ -90,12 +94,36 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         Id neighbourhoodId, String neighbourhoodName, String frequency,
         Date windowStart, Date windowEnd, List<DispatchCohort> cohorts
     ) {
+        this(
+            neighbourhoodId, neighbourhoodName, frequency, windowStart,
+            startOfDay(windowStart),
+            startOfDay((windowEnd != null ? windowEnd : windowStart).addDays(1)),
+            cohorts
+        );
+        this.windowEnd = windowEnd != null ? windowEnd : windowStart;
+    }
+
+    /**
+     * @description Exact-window sender used by FimbyDigestEmailBatch. windowDate labels the
+     * log row and keys it; [windowStartAt, windowEndAt) is the content actually covered and
+     * is stamped on the row as the next run's checkpoint.
+     */
+    public FimbyDigestEmailSendQueueable(
+        Id neighbourhoodId, String neighbourhoodName, String frequency,
+        Date windowDate, Datetime windowStartAt, Datetime windowEndAt, List<DispatchCohort> cohorts
+    ) {
         this.neighbourhoodId = neighbourhoodId;
         this.neighbourhoodName = neighbourhoodName;
         this.frequency = frequency;
-        this.windowStart = windowStart;
-        this.windowEnd = windowEnd != null ? windowEnd : windowStart;
+        this.windowStart = windowDate;
+        this.windowEnd = windowDate;
+        this.windowStartAt = windowStartAt;
+        this.windowEndAt = windowEndAt;
         this.cohorts = cohorts != null ? cohorts : new List<DispatchCohort>();
+    }
+
+    private static Datetime startOfDay(Date d) {
+        return d != null ? Datetime.newInstance(d, Time.newInstance(0, 0, 0, 0)) : null;
     }
 
     /**
@@ -155,7 +183,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             FimbyDigestEmailBuilder.DigestResult built = FimbyDigestEmailBuilder.buildDigestContent(
                 neighbourhoodId, neighbourhoodName,
                 FimbyDigestEmailBatch.resolveBuilderCadence(frequency),
-                windowStart, windowEnd, cohort.excludedContactIds
+                windowStartAt, windowEndAt, cohort.excludedContactIds
             );
             if (built.isEmpty) {
                 writeSkippedLog(idempotencyKey, existingLog, built.itemCount);
@@ -180,8 +208,9 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
 
     private FimbyDigestEmailSendQueueable successor() {
         FimbyDigestEmailSendQueueable next = new FimbyDigestEmailSendQueueable(
-            neighbourhoodId, neighbourhoodName, frequency, windowStart, windowEnd, cohorts
+            neighbourhoodId, neighbourhoodName, frequency, windowStart, windowStartAt, windowEndAt, cohorts
         );
+        next.windowEnd = windowEnd;
         next.cohortIndex = cohortIndex;
         return next;
     }
@@ -247,7 +276,9 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         for (Id userId : currentChunk) {
             try {
                 String digestSubject = 'From the neighbourhood';
-                String headerTitle = resolveDigestHeaderTitle(frequency, cohort.contentItemCount);
+                String headerTitle = resolveDigestHeaderTitle(
+                    frequency, cohort.contentItemCount, windowStartAt, windowEndAt
+                );
                 String firstName = firstNameByUser.get(userId);
                 String fullContent = cohort.contentHtml + saturdayFooter;
 
@@ -322,6 +353,8 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             log.Neighbourhood__c = neighbourhoodId;
             log.Cadence__c = resolveLogCadence(frequency);
             log.Window_Date__c = windowStart;
+            log.Window_Start__c = windowStartAt;
+            log.Window_End__c = windowEndAt;
             log.Content_Item_Count__c = cohort.contentItemCount;
             log.Template_Version__c = 'FimbyEmailHtmlBuilder';
             log.Email_Body_Preview__c = truncateHtml(cohort.contentHtml);
@@ -359,6 +392,8 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
             Neighbourhood__c = neighbourhoodId,
             Cadence__c = resolveLogCadence(frequency),
             Window_Date__c = windowStart,
+            Window_Start__c = windowStartAt,
+            Window_End__c = windowEndAt,
             Status__c = 'Skipped',
             Recipient_Count__c = 0,
             Content_Item_Count__c = itemCount,
@@ -412,7 +447,7 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         List<Digest_Email_Log__c> rows = [
             SELECT Id, Status__c, Recipients__c, Failed_Recipients__c,
                    Recipient_Count__c, Email_Body_Preview__c, Sent_At__c,
-                   Idempotency_Key__c
+                   Idempotency_Key__c, Window_Start__c, Window_End__c
             FROM Digest_Email_Log__c
             WHERE Idempotency_Key__c = :idempotencyKey
             LIMIT 1
@@ -507,11 +542,17 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
         return buildIdempotencyKey(nhId, freq, windowStartDt, windowStartDt);
     }
 
+    /**
+     * @description v2 marks keys written by the since-last-send window, so they can never
+     * match a legacy calendar-day row and the batch can read run type and date back out.
+     */
+    public static final String KEY_VERSION_MARKER = '_v2_';
+
     public static String buildIdempotencyKey(Id nhId, String freq, Date windowStartDt, Date windowEndDt) {
         if (freq == FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST) {
-            return String.valueOf(nhId) + '_DailySundayRest_' + String.valueOf(windowStartDt);
+            return String.valueOf(nhId) + '_DailySundayRest' + KEY_VERSION_MARKER + String.valueOf(windowStartDt);
         }
-        return String.valueOf(nhId) + '_' + freq + '_' + String.valueOf(windowStartDt);
+        return String.valueOf(nhId) + '_' + freq + KEY_VERSION_MARKER + String.valueOf(windowStartDt);
     }
 
     /**
@@ -543,9 +584,26 @@ public without sharing class FimbyDigestEmailSendQueueable implements Queueable 
      */
     @TestVisible
     private static String resolveDigestHeaderTitle(String frequency, Integer itemCount) {
+        return resolveDigestHeaderTitle(frequency, itemCount, null, null);
+    }
+
+    /**
+     * @description A window longer than its cadence's normal span (catch-up after an outage)
+     * reads "since we last wrote" instead of claiming the posts are from yesterday.
+     */
+    @TestVisible
+    private static String resolveDigestHeaderTitle(
+        String frequency, Integer itemCount, Datetime windowStartAt, Datetime windowEndAt
+    ) {
         Integer n = itemCount != null && itemCount > 0 ? itemCount : 3;
         Boolean weekly = resolveDisplayFrequency(frequency) == 'weekly';
         String timePhrase = weekly ? 'this week' : 'yesterday';
+        if (windowStartAt != null && windowEndAt != null
+            && FimbyDigestEmailBuilder.resolveTimePhrase(
+                FimbyDigestEmailBatch.resolveBuilderCadence(frequency), windowStartAt, windowEndAt
+            ) == FimbyDigestEmailBuilder.TIME_PHRASE_RECOVERY) {
+            timePhrase = FimbyDigestEmailBuilder.TIME_PHRASE_RECOVERY;
+        }
         if (n == 1) {
             return 'Something your neighbour shared ' + timePhrase;
         }

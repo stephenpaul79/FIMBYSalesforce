@@ -37,11 +37,259 @@ private class FimbyDigestEmailBatchTest {
         System.assertNotEquals(null, new FimbyDigestEmailBatch(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST));
     }
 
+    /* ---------------------------------------------------------------
+     * Since-last-send window resolution. Runs are pinned to fixed instants
+     * in January (America/Toronto = UTC-5, no DST) so expectations are exact.
+     * Mon 2026-01-19 11:00Z = 6 AM Toronto.
+     * --------------------------------------------------------------- */
+
+    private static final String TORONTO = 'America/Toronto';
+    private static final Datetime MONDAY_RUN = Datetime.newInstanceGmt(2026, 1, 19, 11, 0, 0);
+    private static final Datetime TUESDAY_RUN = Datetime.newInstanceGmt(2026, 1, 20, 11, 0, 0);
+
+    private static Account torontoNeighbourhood() {
+        Account nh = new Account(Name = 'Window Test NH', Time_Zone__c = TORONTO);
+        insert nh;
+        return nh;
+    }
+
+    private static Digest_Email_Log__c insertRunLog(
+        Id nhId, String freq, Date windowDate, String variantKey,
+        String status, Datetime startAt, Datetime endAt
+    ) {
+        Digest_Email_Log__c log = new Digest_Email_Log__c(
+            Neighbourhood__c = nhId,
+            Cadence__c = FimbyDigestEmailBatch.resolveLogCadence(freq),
+            Window_Date__c = windowDate,
+            Window_Start__c = startAt,
+            Window_End__c = endAt,
+            Status__c = status,
+            Idempotency_Key__c = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+                nhId, freq, windowDate, windowDate, variantKey
+            )
+        );
+        insert log;
+        return log;
+    }
+
     @IsTest
-    static void batchSundayRestCatchUp_resolvesTwoDayWindow() {
-        FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch(FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST);
-        System.assertEquals(Date.today().addDays(-1), batch.getWindowEndForTest());
-        System.assertEquals(Date.today().addDays(-2), batch.getWindowStartForTest());
+    static void resolveWindow_dailyFirstRun_fallsBackToLocalMidnightYesterday() {
+        Account nh = torontoNeighbourhood();
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(Datetime.newInstanceGmt(2026, 1, 19, 5, 0, 0), w.startAt,
+            'No prior run: start at Toronto midnight on the label date.');
+        System.assertEquals(TUESDAY_RUN, w.endAt);
+        System.assertEquals(Date.newInstance(2026, 1, 19), w.windowDate);
+        System.assertEquals(
+            FimbyDigestEmailSendQueueable.buildIdempotencyKey(nh.Id, 'Daily', Date.newInstance(2026, 1, 19)),
+            w.baseKey
+        );
+    }
+
+    @IsTest
+    static void resolveWindow_dailyAnchorsOnPreviousSendEnd() {
+        Account nh = torontoNeighbourhood();
+        Datetime priorEnd = Datetime.newInstanceGmt(2026, 1, 19, 11, 2, 0);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0), priorEnd);
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(priorEnd, w.startAt,
+            'Posts made overnight after the last send are picked up, not deferred a day.');
+        System.assertEquals(TUESDAY_RUN, w.endAt);
+    }
+
+    @IsTest
+    static void resolveWindow_allFailedRunDoesNotAdvance() {
+        Account nh = torontoNeighbourhood();
+        Datetime sentEnd = Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 17), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 17, 11, 0, 0), sentEnd);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), null, 'Failed',
+            sentEnd, Datetime.newInstanceGmt(2026, 1, 19, 11, 0, 0));
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(sentEnd, w.startAt, 'A wholly failed run is covered again by the next run.');
+    }
+
+    @IsTest
+    static void resolveWindow_failedVariantStillAdvancesWhenBaseSent() {
+        Account nh = torontoNeighbourhood();
+        Datetime priorEnd = Datetime.newInstanceGmt(2026, 1, 19, 11, 0, 0);
+        Datetime priorStart = Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), null, 'Sent', priorStart, priorEnd);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), 'blocked-sig', 'Failed', priorStart, priorEnd);
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(priorEnd, w.startAt);
+    }
+
+    @IsTest
+    static void resolveWindow_rerunReusesStoredWindow() {
+        Account nh = torontoNeighbourhood();
+        Datetime storedStart = Datetime.newInstanceGmt(2026, 1, 19, 11, 1, 0);
+        Datetime storedEnd = Datetime.newInstanceGmt(2026, 1, 20, 11, 0, 0);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 19), null, 'Partial', storedStart, storedEnd);
+
+        FimbyDigestEmailBatch.DigestWindow w = new FimbyDigestEmailBatch(
+            'Daily', TUESDAY_RUN.addMinutes(45)
+        ).resolveWindowForTest(nh);
+
+        System.assertEquals(storedStart, w.startAt, 'A retry covers exactly the original window.');
+        System.assertEquals(storedEnd, w.endAt, 'A retry does not stretch the window to the retry time.');
+    }
+
+    @IsTest
+    static void resolveWindow_longOutageClampsToSevenDays() {
+        Account nh = torontoNeighbourhood();
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 8), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 8, 11, 0, 0), Datetime.newInstanceGmt(2026, 1, 9, 11, 0, 0));
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(TUESDAY_RUN.addDays(-7), w.startAt);
+        System.assertEquals(FimbyDigestEmailBuilder.TIME_PHRASE_RECOVERY,
+            FimbyDigestEmailBuilder.resolveTimePhrase('Daily', w.startAt, w.endAt));
+    }
+
+    @IsTest
+    static void resolveWindow_futureCheckpointIsIgnored() {
+        Account nh = torontoNeighbourhood();
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0), TUESDAY_RUN.addDays(1));
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+
+        System.assertEquals(Datetime.newInstanceGmt(2026, 1, 19, 5, 0, 0), w.startAt,
+            'A checkpoint later than the run itself is bad data, so fall back.');
+    }
+
+    @IsTest
+    static void resolveWindow_mondayCatchUpAnchorsOnSaturdaySend() {
+        Account nh = torontoNeighbourhood();
+        Datetime saturdayEnd = Datetime.newInstanceGmt(2026, 1, 17, 11, 0, 0);
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 16), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 16, 11, 0, 0), saturdayEnd);
+        // Sunday's Include_Sundays run must not anchor the Sunday-rest catch-up.
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 17), null, 'Sent',
+            saturdayEnd, Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0));
+
+        FimbyDigestEmailBatch.DigestWindow w = new FimbyDigestEmailBatch(
+            FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST, MONDAY_RUN
+        ).resolveWindowForTest(nh);
+
+        System.assertEquals(saturdayEnd, w.startAt);
+        System.assertEquals(MONDAY_RUN, w.endAt);
+        System.assertEquals(Date.newInstance(2026, 1, 17), w.windowDate, 'Catch-up labels Saturday.');
+        System.assert(w.baseKey.contains('_DailySundayRest_v2_'), w.baseKey);
+        System.assertEquals('this weekend',
+            FimbyDigestEmailBuilder.resolveTimePhrase('Daily', w.startAt, w.endAt));
+    }
+
+    @IsTest
+    static void resolveWindow_mondayCatchUpFirstRun_fallsBackToSaturdayMidnight() {
+        Account nh = torontoNeighbourhood();
+        FimbyDigestEmailBatch.DigestWindow w = new FimbyDigestEmailBatch(
+            FimbyDigestEmailBatch.CADENCE_DAILY_SUNDAY_REST, MONDAY_RUN
+        ).resolveWindowForTest(nh);
+
+        System.assertEquals(Datetime.newInstanceGmt(2026, 1, 17, 5, 0, 0), w.startAt);
+    }
+
+    @IsTest
+    static void resolveWindow_weeklyIgnoresDailyRunsAndClampsToFourteenDays() {
+        Account nh = torontoNeighbourhood();
+        insertRunLog(nh.Id, 'Daily', Date.newInstance(2026, 1, 18), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 18, 11, 0, 0), MONDAY_RUN);
+        Datetime weeklyEnd = Datetime.newInstanceGmt(2026, 1, 12, 11, 0, 0);
+        insertRunLog(nh.Id, 'Weekly', Date.newInstance(2026, 1, 5), null, 'Sent',
+            Datetime.newInstanceGmt(2026, 1, 5, 11, 0, 0), weeklyEnd);
+
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Weekly', MONDAY_RUN).resolveWindowForTest(nh);
+        System.assertEquals(weeklyEnd, w.startAt, 'Weekly anchors only on weekly sends.');
+        System.assertEquals(Date.newInstance(2026, 1, 12), w.windowDate);
+
+        Account other = torontoNeighbourhood();
+        insertRunLog(other.Id, 'Weekly', Date.newInstance(2025, 12, 29), null, 'Sent',
+            Datetime.newInstanceGmt(2025, 12, 29, 11, 0, 0), Datetime.newInstanceGmt(2026, 1, 1, 11, 0, 0));
+        FimbyDigestEmailBatch.DigestWindow clamped =
+            new FimbyDigestEmailBatch('Weekly', MONDAY_RUN).resolveWindowForTest(other);
+        System.assertEquals(MONDAY_RUN.addDays(-14), clamped.startAt);
+    }
+
+    @IsTest
+    static void resolveWindow_weeklyFirstRun_fallsBackSevenLocalDays() {
+        Account nh = torontoNeighbourhood();
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Weekly', MONDAY_RUN).resolveWindowForTest(nh);
+        System.assertEquals(Datetime.newInstanceGmt(2026, 1, 12, 5, 0, 0), w.startAt);
+    }
+
+    @IsTest
+    static void resolveWindow_labelDateUsesNeighbourhoodLocalDate() {
+        Account nh = torontoNeighbourhood();
+        // 03:00Z on Jan 20 is still 10 PM Jan 19 in Toronto.
+        FimbyDigestEmailBatch.DigestWindow w = new FimbyDigestEmailBatch(
+            'Daily', Datetime.newInstanceGmt(2026, 1, 20, 3, 0, 0)
+        ).resolveWindowForTest(nh);
+        System.assertEquals(Date.newInstance(2026, 1, 18), w.windowDate);
+    }
+
+    @IsTest
+    static void resolveWindow_blankTimeZoneUsesRunningUserZone() {
+        Account nh = new Account(Name = 'No Zone NH');
+        insert nh;
+        FimbyDigestEmailBatch.DigestWindow w =
+            new FimbyDigestEmailBatch('Daily', TUESDAY_RUN).resolveWindowForTest(nh);
+        System.assertEquals(
+            FimbyDigestEmailBatch.localMidnight(w.windowDate, UserInfo.getTimeZone()), w.startAt
+        );
+    }
+
+    @IsTest
+    static void batchConstructor_truncatesRunTimeToMinute() {
+        Account nh = torontoNeighbourhood();
+        FimbyDigestEmailBatch.DigestWindow w = new FimbyDigestEmailBatch(
+            'Daily', TUESDAY_RUN.addSeconds(42)
+        ).resolveWindowForTest(nh);
+        System.assertEquals(TUESDAY_RUN, w.endAt);
+    }
+
+    @IsTest
+    static void localMidnight_usesOffsetInEffectAtMidnightAcrossDst() {
+        TimeZone toronto = TimeZone.getTimeZone(TORONTO);
+        System.assertEquals(Datetime.newInstanceGmt(2026, 3, 8, 5, 0, 0),
+            FimbyDigestEmailBatch.localMidnight(Date.newInstance(2026, 3, 8), toronto),
+            'Spring-forward day: midnight is still standard time.');
+        System.assertEquals(Datetime.newInstanceGmt(2026, 3, 9, 4, 0, 0),
+            FimbyDigestEmailBatch.localMidnight(Date.newInstance(2026, 3, 9), toronto));
+        System.assertEquals(Datetime.newInstanceGmt(2026, 11, 1, 4, 0, 0),
+            FimbyDigestEmailBatch.localMidnight(Date.newInstance(2026, 11, 1), toronto),
+            'Fall-back day: midnight is still daylight time.');
+    }
+
+    @IsTest
+    static void baseKeyOf_stripsVariantSuffixAndRejectsLegacyKeys() {
+        Id nhId = torontoNeighbourhood().Id;
+        String base = FimbyDigestEmailSendQueueable.buildIdempotencyKey(nhId, 'Daily', Date.newInstance(2026, 1, 19));
+        String variant = FimbyDigestEmailSendQueueable.buildIdempotencyKey(
+            nhId, 'Daily', Date.newInstance(2026, 1, 19), Date.newInstance(2026, 1, 19), 'sig'
+        );
+        System.assertEquals(base, FimbyDigestEmailBatch.baseKeyOf(base));
+        System.assertEquals(base, FimbyDigestEmailBatch.baseKeyOf(variant));
+        System.assertEquals(null, FimbyDigestEmailBatch.baseKeyOf(nhId + '_Daily_2026-01-19'));
+        System.assertEquals(null, FimbyDigestEmailBatch.baseKeyOf(null));
     }
 
     @IsTest
@@ -165,10 +413,15 @@ private class FimbyDigestEmailBatchTest {
         Test.stopTest();
 
         List<Digest_Email_Log__c> logs = [
-            SELECT Id, Status__c, Recipient_Count__c, Content_Item_Count__c, Error_Message__c, Idempotency_Key__c
+            SELECT Id, Status__c, Recipient_Count__c, Content_Item_Count__c, Error_Message__c, Idempotency_Key__c,
+                   Window_Start__c, Window_End__c
             FROM Digest_Email_Log__c
             WHERE Neighbourhood__c = :emptyNh.Id
         ];
+        System.assertNotEquals(null, logs[0].Window_Start__c, 'Skipped rows still record the window.');
+        System.assert(logs[0].Window_Start__c < logs[0].Window_End__c, 'Window is non-empty.');
+        System.assert(logs[0].Idempotency_Key__c.contains(FimbyDigestEmailSendQueueable.KEY_VERSION_MARKER),
+            'New rows use v2 keys: ' + logs[0].Idempotency_Key__c);
         System.assertEquals(1, logs.size(), 'Empty neighbourhood should produce one Skipped log row.');
         System.assertEquals('Skipped', logs[0].Status__c);
         System.assertEquals(0, logs[0].Recipient_Count__c);
@@ -308,8 +561,8 @@ private class FimbyDigestEmailBatchTest {
         insert new Blocked_Contact__c(Blocker__c = a.Id, Blocked__c = b.Id);
 
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
-        Date ws = batch.getWindowStartForTest();
-        Date we = batch.getWindowEndForTest();
+        Date ws = batch.resolveWindowForTest(nh).windowDate;
+        Date we = ws;
         Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
         FimbyDigestEmailBatch.enforceLastLoginDate = false;
         FimbyDigestEmailSendQueueable.runInlineForTest = true;
@@ -383,8 +636,8 @@ private class FimbyDigestEmailBatchTest {
         insert new Blocked_Contact__c(Blocker__c = d.Id, Blocked__c = x.Id);
 
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Weekly');
-        Date ws = batch.getWindowStartForTest();
-        Date we = batch.getWindowEndForTest();
+        Date ws = batch.resolveWindowForTest(nh).windowDate;
+        Date we = ws;
         Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
         FimbyDigestEmailBatch.enforceLastLoginDate = false;
         FimbyDigestEmailSendQueueable.runInlineForTest = true;

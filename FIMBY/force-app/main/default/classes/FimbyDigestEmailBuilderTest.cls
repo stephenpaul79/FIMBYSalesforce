@@ -925,6 +925,75 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildDigestContent_exactWindow_isHalfOpen() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact author = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        Id needRt = Schema.SObjectType.Needs_Offers__c
+            .getRecordTypeInfosByDeveloperName().get('Need').getRecordTypeId();
+        Datetime startDt = Datetime.now().addHours(-6);
+        Datetime endDt = Datetime.now().addHours(-1);
+
+        List<Needs_Offers__c> asks = new List<Needs_Offers__c>();
+        Map<String, Datetime> postedByName = new Map<String, Datetime>{
+            'Starts Exactly Ask' => startDt,
+            'Ends Exactly Ask' => endDt,
+            'Too Early Ask' => startDt.addSeconds(-1)
+        };
+        for (String name : postedByName.keySet()) {
+            asks.add(new Needs_Offers__c(
+                Name = name, Details__c = 'detail',
+                Type__c = 'Goods - Unperishable', Status__c = 'Posted',
+                Neighbourhood__c = nh.Id, Contact__c = author.Id, Posted_By__c = author.Id,
+                RecordTypeId = needRt, Posted_Date__c = postedByName.get(name),
+                End_Date__c = Date.today().addDays(7)
+            ));
+        }
+        insert asks;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Daily', startDt, endDt, new Set<Id>()
+        );
+        Test.stopTest();
+
+        System.assert(result.html.contains('Starts Exactly Ask'), 'The start instant is inclusive.');
+        System.assert(!result.html.contains('Ends Exactly Ask'),
+            'The end instant belongs to the next run, so it is never sent twice.');
+        System.assert(!result.html.contains('Too Early Ask'));
+    }
+
+    @IsTest
+    static void resolveTimePhrase_longWindowsUseRecoveryPhrase() {
+        Datetime endDt = Datetime.newInstanceGmt(2026, 1, 20, 11, 0, 0);
+        System.assertEquals('yesterday',
+            FimbyDigestEmailBuilder.resolveTimePhrase('Daily', endDt.addHours(-24), endDt));
+        System.assertEquals('this weekend',
+            FimbyDigestEmailBuilder.resolveTimePhrase('Daily', endDt.addHours(-48), endDt));
+        System.assertEquals(FimbyDigestEmailBuilder.TIME_PHRASE_RECOVERY,
+            FimbyDigestEmailBuilder.resolveTimePhrase('Daily', endDt.addDays(-4), endDt));
+        System.assertEquals('this week',
+            FimbyDigestEmailBuilder.resolveTimePhrase('Weekly', endDt.addDays(-7), endDt));
+        System.assertEquals(FimbyDigestEmailBuilder.TIME_PHRASE_RECOVERY,
+            FimbyDigestEmailBuilder.resolveTimePhrase('Weekly', endDt.addDays(-14), endDt));
+    }
+
+    @IsTest
+    static void buildDigestContent_storiesOverQueryLimit_countsExactRemainder() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(true);
+        Contact author = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        FimbyTestDataFactory.createStories(nh.Id, author.Id, 12, true);
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult result = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Datetime.now().addDays(-1), Datetime.now().addMinutes(1), new Set<Id>()
+        );
+        Test.stopTest();
+
+        System.assert(result.html.contains('and 7 more'),
+            '12 stories show 5 cards and count the other 7, past the 10-row query: ' + result.html);
+    }
+
+    @IsTest
     static void formatRecurrenceFrequencyBadge_weekly() {
         System.assertEquals(
             'WEEKLY',

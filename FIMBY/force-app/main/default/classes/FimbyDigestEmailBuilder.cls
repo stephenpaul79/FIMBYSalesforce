@@ -16,6 +16,7 @@
 public without sharing class FimbyDigestEmailBuilder {
 
     private static final Integer MAX_CARDS_PER_SECTION = 5;
+    private static final Integer SECTION_QUERY_LIMIT = 10;
     private static final Integer POST_SNIPPET_LENGTH = 800;
     private static final Integer STORY_SNIPPET_LENGTH = 1000;
     private static final Integer LIBRARY_SNIPPET_LENGTH = 255;
@@ -78,10 +79,25 @@ public without sharing class FimbyDigestEmailBuilder {
         String frequency, Date windowStart, Date windowEnd,
         Set<Id> excludedAuthorContactIds
     ) {
+        return buildDigestContent(
+            neighbourhoodId, neighbourhoodName, frequency,
+            startOfDay(windowStart), startOfDay(windowEnd.addDays(1)),
+            excludedAuthorContactIds
+        );
+    }
+
+    /**
+     * @description Exact-window build used by the since-last-send digest. The window is
+     * half-open [windowStartDt, windowEndDt): the next run starts at this run's end, so a
+     * record created exactly on the boundary appears in exactly one digest.
+     */
+    public static DigestResult buildDigestContent(
+        Id neighbourhoodId, String neighbourhoodName,
+        String frequency, Datetime windowStartDt, Datetime windowEndDt,
+        Set<Id> excludedAuthorContactIds
+    ) {
         DigestResult result = new DigestResult();
         Set<Id> excluded = excludedAuthorContactIds != null ? excludedAuthorContactIds : new Set<Id>();
-        Datetime windowStartDt = Datetime.newInstance(windowStart, Time.newInstance(0, 0, 0, 0));
-        Datetime windowEndDt = Datetime.newInstance(windowEnd, Time.newInstance(23, 59, 59, 0));
 
         // Feed cards build first so feedCardCount is known before the resolution section —
         // the "Good things happening" rollup is gated against what this email already shows.
@@ -128,13 +144,13 @@ public without sharing class FimbyDigestEmailBuilder {
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Need'
               AND Status__c = 'Completed (Offer Accepted / Need Met)'
-              AND Closed_Date__c >= :startDt AND Closed_Date__c <= :endDt
+              AND Closed_Date__c >= :startDt AND Closed_Date__c < :endDt
         ];
         Integer completedLoans = [
             SELECT COUNT() FROM Loaned_Item__c
             WHERE Library_Item__r.Neighbourhood__c = :nhId
               AND Status__c = 'Returned'
-              AND LastModifiedDate >= :startDt AND LastModifiedDate <= :endDt
+              AND LastModifiedDate >= :startDt AND LastModifiedDate < :endDt
         ];
 
         CrossFimbyStat cross = getCrossFimbyStat(frequency, startDt, endDt);
@@ -226,24 +242,24 @@ public without sharing class FimbyDigestEmailBuilder {
                 count = [
                     SELECT COUNT() FROM Needs_Offers__c
                     WHERE RecordType.DeveloperName = 'Offer'
-                      AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+                      AND CreatedDate >= :startDt AND CreatedDate < :endDt
                 ];
             } else if (variant == 1) {
                 count = [
                     SELECT COUNT() FROM Needs_Offers__c
                     WHERE RecordType.DeveloperName = 'Need'
                       AND Status__c = 'Completed (Offer Accepted / Need Met)'
-                      AND Closed_Date__c >= :startDt AND Closed_Date__c <= :endDt
+                      AND Closed_Date__c >= :startDt AND Closed_Date__c < :endDt
                 ];
             } else if (variant == 2) {
                 count = [
                     SELECT COUNT() FROM Loaned_Item__c
-                    WHERE CreatedDate >= :startDt AND CreatedDate <= :endDt
+                    WHERE CreatedDate >= :startDt AND CreatedDate < :endDt
                 ];
             } else {
                 count = [
                     SELECT COUNT() FROM Story__c
-                    WHERE CreatedDate >= :startDt AND CreatedDate <= :endDt
+                    WHERE CreatedDate >= :startDt AND CreatedDate < :endDt
                 ];
             }
 
@@ -288,13 +304,38 @@ public without sharing class FimbyDigestEmailBuilder {
 
     @TestVisible
     private static String resolveCrossFimbyTimePhrase(String frequency, Datetime startDt, Datetime endDt) {
+        return resolveTimePhrase(frequency, startDt, endDt);
+    }
+
+    public static final String TIME_PHRASE_RECOVERY = 'since we last wrote';
+
+    private static final Long DAILY_MAX_HOURS = 36;
+    private static final Long WEEKEND_MAX_HOURS = 60;
+    private static final Long WEEKLY_MAX_HOURS = 8 * 24;
+
+    /**
+     * @description Timeframe wording for a digest window, judged by its length so a normal
+     * run keeps the familiar phrase and a window stretched by an outage reads honestly.
+     * The Sunday-rest catch-up builds as 'Daily', so it is recognised by its ~48h length.
+     */
+    public static String resolveTimePhrase(String frequency, Datetime startDt, Datetime endDt) {
+        Long hours = (startDt != null && endDt != null)
+            ? (endDt.getTime() - startDt.getTime()) / 3600000L
+            : 0;
         if (frequency == 'Weekly') {
-            return 'this week';
+            return hours <= WEEKLY_MAX_HOURS ? 'this week' : TIME_PHRASE_RECOVERY;
         }
-        if (startDt != null && endDt != null && startDt.date() != endDt.date()) {
+        if (hours <= DAILY_MAX_HOURS) {
+            return 'yesterday';
+        }
+        if (hours <= WEEKEND_MAX_HOURS) {
             return 'this weekend';
         }
-        return 'yesterday';
+        return TIME_PHRASE_RECOVERY;
+    }
+
+    private static Datetime startOfDay(Date d) {
+        return Datetime.newInstance(d, Time.newInstance(0, 0, 0, 0));
     }
 
     /* ---------------------------------------------------------------
@@ -450,21 +491,29 @@ public without sharing class FimbyDigestEmailBuilder {
                    CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Posted_By__c NOT IN :excluded
               AND Contact__c NOT IN :excluded
             ORDER BY CreatedDate DESC
-            LIMIT 10
+            LIMIT :SECTION_QUERY_LIMIT
         ];
         if (stories.isEmpty()) { return ''; }
+
+        Integer total = stories.size() < SECTION_QUERY_LIMIT ? stories.size() : [
+            SELECT COUNT() FROM Story__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Posted_By__c NOT IN :excluded
+              AND Contact__c NOT IN :excluded
+        ];
 
         String html = buildSectionHeader('Shared Life', EARTH_OCHRE);
         Integer count = Math.min(stories.size(), MAX_CARDS_PER_SECTION);
         for (Integer i = 0; i < count; i++) {
             html += buildStoryCard(stories[i]);
         }
-        if (stories.size() > MAX_CARDS_PER_SECTION) {
-            html += buildMoreLink(stories.size() - MAX_CARDS_PER_SECTION, FimbySettings.getUrl('Shared_Life_List'));
+        if (total > MAX_CARDS_PER_SECTION) {
+            html += buildMoreLink(total - MAX_CARDS_PER_SECTION, FimbySettings.getUrl('Shared_Life_List'));
         }
         return html;
     }
@@ -487,7 +536,7 @@ public without sharing class FimbyDigestEmailBuilder {
             'WHERE Neighbourhood__c = :nhId ' +
             'AND RecordType.DeveloperName IN (\'Need\', \'Offer\') ' +
             'AND Type__c != \'Event\' ' +
-            'AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt ' +
+            'AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt ' +
             'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
             'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
 
@@ -558,7 +607,7 @@ public without sharing class FimbyDigestEmailBuilder {
         String baseWhere = 'FROM Needs_Offers__c ' +
             'WHERE Neighbourhood__c = :nhId ' +
             'AND Type__c = \'Event\' ' +
-            'AND CreatedDate >= :startDt AND CreatedDate <= :endDt ' +
+            'AND CreatedDate >= :startDt AND CreatedDate < :endDt ' +
             'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
             'AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today)) ' +
             'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ' +
@@ -659,22 +708,32 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
-              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded
               AND Posted_By__c NOT IN :excluded
             ORDER BY Posted_Date__c DESC
-            LIMIT 10
+            LIMIT :SECTION_QUERY_LIMIT
         ];
         if (bulkBuys.isEmpty()) { return ''; }
+
+        Integer total = bulkBuys.size() < SECTION_QUERY_LIMIT ? bulkBuys.size() : [
+            SELECT COUNT() FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName = 'Bulk_Buy'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received')
+              AND Contact__c NOT IN :excluded
+              AND Posted_By__c NOT IN :excluded
+        ];
 
         String html = buildSectionHeader('Bulk Buys', EARTH_OCHRE);
         Integer count = Math.min(bulkBuys.size(), MAX_CARDS_PER_SECTION);
         for (Integer i = 0; i < count; i++) {
             html += buildBulkBuyCard(bulkBuys[i]);
         }
-        if (bulkBuys.size() > MAX_CARDS_PER_SECTION) {
-            html += buildMoreLink(bulkBuys.size() - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
+        if (total > MAX_CARDS_PER_SECTION) {
+            html += buildMoreLink(total - MAX_CARDS_PER_SECTION, FIMBY_BASE_URL);
         }
         return html;
     }
@@ -712,7 +771,11 @@ public without sharing class FimbyDigestEmailBuilder {
                 html += buildSkillCard(skills[i]);
             }
         }
-        Integer remaining = items.size() + skills.size() - itemsShown - skillsShown;
+        Integer itemTotal = items.size() < SECTION_QUERY_LIMIT
+            ? items.size() : countLibraryItems(nhId, startDt, endDt, excluded);
+        Integer skillTotal = skills.size() < SECTION_QUERY_LIMIT
+            ? skills.size() : countSkillOffers(nhId, startDt, endDt, excluded);
+        Integer remaining = itemTotal + skillTotal - itemsShown - skillsShown;
         if (remaining > 0) {
             html += buildMoreLink(remaining, FimbySettings.getUrl('Library_List'));
         }
@@ -740,13 +803,40 @@ public without sharing class FimbyDigestEmailBuilder {
                    CreatedDate
             FROM Library_Item__c
             WHERE Neighbourhood__c = :nhId
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Status__c IN :statuses
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
             ORDER BY CreatedDate DESC
-            LIMIT 10
+            LIMIT :SECTION_QUERY_LIMIT
+        ];
+    }
+
+    private static Integer countLibraryItems(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
+        List<String> statuses = new List<String>{
+            FimbyConstants.LIBRARY_AVAILABLE, FimbyConstants.LIBRARY_LENT_OUT
+        };
+        return [
+            SELECT COUNT() FROM Library_Item__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Status__c IN :statuses
+              AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+              AND Owner_Contact__c NOT IN :excluded
+              AND Listed_By__c NOT IN :excluded
+        ];
+    }
+
+    private static Integer countSkillOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
+        return [
+            SELECT COUNT() FROM Skill_Offer__c
+            WHERE Neighbourhood__c = :nhId
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Status__c = :FimbyConstants.SKILL_ACTIVE
+              AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+              AND Owner_Contact__c NOT IN :excluded
+              AND Listed_By__c NOT IN :excluded
         ];
     }
 
@@ -762,13 +852,13 @@ public without sharing class FimbyDigestEmailBuilder {
                    CreatedDate
             FROM Skill_Offer__c
             WHERE Neighbourhood__c = :nhId
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Status__c = :FimbyConstants.SKILL_ACTIVE
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
             ORDER BY CreatedDate DESC
-            LIMIT 10
+            LIMIT :SECTION_QUERY_LIMIT
         ];
     }
 
@@ -1091,8 +1181,8 @@ public without sharing class FimbyDigestEmailBuilder {
             return result;
         }
         Set<Id> excluded = excludedAuthorContactIds != null ? excludedAuthorContactIds : new Set<Id>();
-        Datetime startDt = Datetime.newInstance(windowStart, Time.newInstance(0, 0, 0, 0));
-        Datetime endDt = Datetime.newInstance(windowEnd, Time.newInstance(23, 59, 59, 0));
+        Datetime startDt = startOfDay(windowStart);
+        Datetime endDt = startOfDay(windowEnd.addDays(1));
 
         List<MixedPreviewItem> selected = selectMixedPreviewItems(
             neighbourhoodId, startDt, endDt, excluded, maxItems
@@ -1175,7 +1265,7 @@ public without sharing class FimbyDigestEmailBuilder {
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName IN ('Need', 'Offer')
               AND Type__c != 'Event'
-              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
             ORDER BY Posted_Date__c DESC
@@ -1240,7 +1330,7 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
-              AND Posted_Date__c >= :startDt AND Posted_Date__c <= :endDt
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
             ORDER BY Posted_Date__c DESC
@@ -1268,7 +1358,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
-              AND CreatedDate >= :startDt AND CreatedDate <= :endDt
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Posted_By__c NOT IN :excluded
               AND Contact__c NOT IN :excluded
             ORDER BY CreatedDate DESC
