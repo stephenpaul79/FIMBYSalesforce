@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Digests_Paused__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When checked, the daily, weekly and monthly digest batches send nothing for this neighbourhood (boundary Account) and log a Skipped row instead. Use while collecting signups before launch. Independent of Active__c, which controls signup routing.</description>
+    <inlineHelpText>Check to stop digest emails for this neighbourhood, e.g. while collecting signups before launch. Signups still route here if Active is Yes.</inlineHelpText>
+    <label>Pause Digest Emails</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>
