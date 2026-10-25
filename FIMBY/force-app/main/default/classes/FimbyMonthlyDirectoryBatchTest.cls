@@ -45,6 +45,27 @@ private class FimbyMonthlyDirectoryBatchTest {
     }
 
     @IsTest
+    static void execute_pausedNeighbourhood_sendsNothingAndLogsPaused() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(false);
+        nh.Digests_Paused__c = true;
+        insert nh;
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        FimbyTestDataFactory.createLibraryItems(nh.Id, c.Id, 2, true);
+        makeRecipient(c.Id);
+        FimbyMonthlyDirectoryBatch.enforceLastLoginDate = false;
+
+        Test.startTest();
+        new FimbyMonthlyDirectoryBatch().execute(null, new List<Account>{ nh });
+        Integer enqueued = Limits.getQueueableJobs();
+        Test.stopTest();
+
+        System.assertEquals(0, enqueued, 'A paused neighbourhood gets no monthly email.');
+        Digest_Email_Log__c log = logFor(nh.Id);
+        System.assertEquals('Skipped', log.Status__c);
+        System.assertEquals(FimbyDigestEmailBatch.SKIP_REASON_PAUSED, log.Error_Message__c);
+    }
+
+    @IsTest
     static void execute_contentWithoutRecipients_writesSkippedLog() {
         Account nh = FimbyTestDataFactory.createNeighbourhood(true);
         Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);

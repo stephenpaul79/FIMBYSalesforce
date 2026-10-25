@@ -500,6 +500,43 @@ private class FimbyDigestEmailBatchTest {
     }
 
     @IsTest
+    static void batchExecute_pausedNeighbourhood_sendsNothingAndAdvancesCheckpoint() {
+        Account nh = FimbyTestDataFactory.createNeighbourhood(false);
+        nh.Digests_Paused__c = true;
+        insert nh;
+        Contact c = FimbyTestDataFactory.createNeighbourhoodContact(nh.Id, true);
+        makeWeeklyRecipient(c.Id);
+        makeWindowedAsk(nh.Id, c.Id, 'Paused Ask');
+        Boolean priorLoginFilter = FimbyDigestEmailBatch.enforceLastLoginDate;
+        FimbyDigestEmailBatch.enforceLastLoginDate = false;
+
+        Test.startTest();
+        new FimbyDigestEmailBatch('Weekly').execute(null, new List<Account>{ nh });
+        Integer enqueued = Limits.getQueueableJobs();
+        Test.stopTest();
+
+        FimbyDigestEmailBatch.enforceLastLoginDate = priorLoginFilter;
+
+        System.assertEquals(0, enqueued, 'A paused neighbourhood sends no digest.');
+        List<Digest_Email_Log__c> logs = [
+            SELECT Status__c, Error_Message__c, Window_End__c, Recipient_Count__c
+            FROM Digest_Email_Log__c WHERE Neighbourhood__c = :nh.Id
+        ];
+        System.assertEquals(1, logs.size());
+        System.assertEquals('Skipped', logs[0].Status__c);
+        System.assertEquals(FimbyDigestEmailBatch.SKIP_REASON_PAUSED, logs[0].Error_Message__c);
+        System.assertNotEquals(null, logs[0].Window_End__c,
+            'The paused row carries a checkpoint so unpausing does not replay the paused stretch.');
+    }
+
+    @IsTest
+    static void isPaused_readsFieldOnlyWhenQueried() {
+        System.assert(FimbyDigestEmailBatch.isPaused(new Account(Digests_Paused__c = true)));
+        System.assert(!FimbyDigestEmailBatch.isPaused(new Account(Digests_Paused__c = false)));
+        System.assert(!FimbyDigestEmailBatch.isPaused(new Account(Name = 'No flag loaded')));
+    }
+
+    @IsTest
     static void buildSkippedLog_idempotencyKeyIsPerBuild() {
         Account nh = new Account(Name = 'Skipped Log Key NH');
         insert nh;

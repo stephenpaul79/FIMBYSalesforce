@@ -34,6 +34,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
 
     public static final String SKIP_REASON_NO_CONTENT = 'No feed-card content for this window';
     @TestVisible static final String SKIP_REASON_NO_RECIPIENTS = 'No eligible recipients (FIMBY_Summary_Emails__c)';
+    public static final String SKIP_REASON_PAUSED = 'Digests paused for this neighbourhood (Digests_Paused__c)';
 
     private static final Integer DAILY_MAX_LOOKBACK_DAYS = 7;
     private static final Integer WEEKLY_MAX_LOOKBACK_DAYS = 14;
@@ -64,20 +65,21 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
         public Datetime endAt;
         public Date windowDate;
         public String baseKey;
+        public Boolean isStoredWindow = false;
     }
 
     global Database.QueryLocator start(Database.BatchableContext ctx) {
         Set<String> pilotIds = FimbySettings.emailPilotNeighbourhoodIds();
         if (!pilotIds.isEmpty()) {
             return Database.getQueryLocator([
-            SELECT Id, Name, Time_Zone__c
+            SELECT Id, Name, Time_Zone__c, Digests_Paused__c
             FROM Account
             WHERE RecordType.DeveloperName = 'Boundary_Account'
                   AND Id IN :pilotIds
             ]);
         }
         return Database.getQueryLocator([
-            SELECT Id, Name, Time_Zone__c
+            SELECT Id, Name, Time_Zone__c, Digests_Paused__c
             FROM Account
             WHERE RecordType.DeveloperName = 'Boundary_Account'
         ]);
@@ -91,6 +93,14 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
         for (Account nh : neighbourhoods) {
             try {
                 DigestWindow window = windowByNeighbourhood.get(nh.Id);
+                if (isPaused(nh)) {
+                    // The Skipped row advances the checkpoint, so the first digest after
+                    // unpausing covers about a day rather than the whole paused stretch.
+                    if (!window.isStoredWindow) {
+                        skippedLogs.add(buildSkippedLog(nh.Id, window, 0, SKIP_REASON_PAUSED));
+                    }
+                    continue;
+                }
                 FimbyDigestEmailBuilder.DigestResult content =
                     FimbyDigestEmailBuilder.buildDigestContent(
                         nh.Id, nh.Name, builderCadence, window.startAt, window.endAt, new Set<Id>()
@@ -314,6 +324,7 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
                 if (log.Window_Start__c < log.Window_End__c) {
                     window.startAt = log.Window_Start__c;
                     window.endAt = log.Window_End__c;
+                    window.isStoredWindow = true;
                     return window;
                 }
                 FimbyLogger.error('FimbyDigestEmailBatch', 'resolveWindow',
@@ -409,6 +420,10 @@ global without sharing class FimbyDigestEmailBatch implements Database.Batchable
 
     private static Integer maxLookbackDays(String freq) {
         return freq == CADENCE_WEEKLY ? WEEKLY_MAX_LOOKBACK_DAYS : DAILY_MAX_LOOKBACK_DAYS;
+    }
+
+    public static Boolean isPaused(Account nh) {
+        return nh.getPopulatedFieldsAsMap().get('Digests_Paused__c') == true;
     }
 
     private static TimeZone resolveTimeZone(Account nh) {

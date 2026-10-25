@@ -32,12 +32,12 @@ global without sharing class FimbyMonthlyDirectoryBatch implements Database.Batc
         Set<String> pilotIds = FimbySettings.emailPilotNeighbourhoodIds();
         if (!pilotIds.isEmpty()) {
             return Database.getQueryLocator([
-                SELECT Id, Name FROM Account
+                SELECT Id, Name, Digests_Paused__c FROM Account
                 WHERE RecordType.DeveloperName = 'Boundary_Account' AND Id IN :pilotIds
             ]);
         }
         return Database.getQueryLocator([
-            SELECT Id, Name FROM Account WHERE RecordType.DeveloperName = 'Boundary_Account'
+            SELECT Id, Name, Digests_Paused__c FROM Account WHERE RecordType.DeveloperName = 'Boundary_Account'
         ]);
     }
 
@@ -58,6 +58,10 @@ global without sharing class FimbyMonthlyDirectoryBatch implements Database.Batc
         ];
         String existingStatus = existing.isEmpty() ? null : existing[0].Status__c;
         if (existingStatus == 'Sent') {
+            return;
+        }
+        if (FimbyDigestEmailBatch.isPaused(nh)) {
+            writeSkippedLog(nh.Id, key, existingStatus, 0, FimbyDigestEmailBatch.SKIP_REASON_PAUSED);
             return;
         }
 
