@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Digest_Email_Log_Compact</fullName>
+    <fields>Name</fields>
+    <fields>Status__c</fields>
+    <fields>Cadence__c</fields>
+    <fields>Window_Date__c</fields>
+    <fields>Window_Start__c</fields>
+    <fields>Window_End__c</fields>
+    <label>Digest Email Log Compact</label>
+</CompactLayout>

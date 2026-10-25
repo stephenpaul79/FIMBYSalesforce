@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Failed_or_Partial</fullName>
+    <columns>NAME</columns>
+    <columns>Window_Date__c</columns>
+    <columns>Window_Start__c</columns>
+    <columns>Window_End__c</columns>
+    <columns>Cadence__c</columns>
+    <columns>Neighbourhood__c</columns>
+    <columns>Status__c</columns>
+    <columns>Error_Message__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>Failed,Partial</value>
+    </filters>
+    <label>Failed or Partial</label>
+</ListView>
