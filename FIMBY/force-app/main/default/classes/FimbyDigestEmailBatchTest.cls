@@ -403,7 +403,7 @@ private class FimbyDigestEmailBatchTest {
 
     @IsTest
     static void batchExecute_emptyNeighbourhood_writesSkippedLog() {
-        Account emptyNh = new Account(Name = 'Empty Test NH');
+        Account emptyNh = new Account(Name = 'Empty Test NH', Digests_Paused__c = false);
         insert emptyNh;
 
         FimbyDigestEmailBatch batch = new FimbyDigestEmailBatch('Daily');

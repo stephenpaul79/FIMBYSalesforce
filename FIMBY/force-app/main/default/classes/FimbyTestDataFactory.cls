@@ -20,7 +20,8 @@ public class FimbyTestDataFactory {
             Account acc = new Account(
                 Name = 'Test Neighbourhood ' + (counter + i),
                 Type = 'Neighbourhood',
-                RecordTypeId = boundaryRecordTypeId
+                RecordTypeId = boundaryRecordTypeId,
+                Digests_Paused__c = false
             );
             accounts.add(acc);
         }
