@@ -20,7 +20,6 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
     @track _showDiscardConfirm = false;
 
     _previousActiveElement = null;
-    _savedBodyOverflow = '';
     _isDirty = false;
 
     constructor() {
@@ -40,8 +39,7 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
         this._taskData = taskData || {};
         this._viewState = 'ready';
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
-        this._lockBodyScroll();
+        this._shellScrim.bind(() => this.hide(), this.template.host);
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         requestAnimationFrame(() => {
@@ -54,8 +52,8 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     @api
     hide() {
+        if (!this._isVisible) return;
         this._shellScrim.clear();
-        this._unlockBodyScroll();
         this._isVisible = false;
         this._isDirty = false;
         this._showDiscardConfirm = false;
@@ -71,7 +69,7 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     disconnectedCallback() {
         if (this._isVisible) {
-            this._unlockBodyScroll();
+            this._shellScrim.clear();
             this._isVisible = false;
         }
     }
@@ -135,16 +133,5 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     handleClose() {
         this.hide();
-    }
-
-    // ── Body scroll lock/unlock ─────────────────────────────────────
-
-    _lockBodyScroll() {
-        this._savedBodyOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-    }
-
-    _unlockBodyScroll() {
-        document.body.style.overflow = this._savedBodyOverflow;
     }
 }
