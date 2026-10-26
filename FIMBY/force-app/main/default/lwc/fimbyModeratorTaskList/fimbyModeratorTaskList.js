@@ -1,7 +1,8 @@
 import { LightningElement, api } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 
-const CATEGORY_LABELS = {
+/** Full names for tooltips; list pills use LIST_CATEGORY_LABELS. */
+const CATEGORY_FULL_LABELS = {
     Content_Report: 'Content for Review',
     Bulk_Buy_Escalation: 'Bulk Buy',
     Blocked_Contact: 'Blocked',
@@ -9,6 +10,17 @@ const CATEGORY_LABELS = {
     Feedback_Triage: 'Feedback',
     Support_Relationship_Approval: 'Support Request',
     Organization_Approval: 'Organization Request',
+    Support_Person_Concern: 'Support Concern'
+};
+
+const LIST_CATEGORY_LABELS = {
+    Content_Report: 'Content',
+    Bulk_Buy_Escalation: 'Bulk Buy',
+    Blocked_Contact: 'Blocked',
+    New_Signup: 'New Signup',
+    Feedback_Triage: 'Feedback',
+    Support_Relationship_Approval: 'S.R. Approval',
+    Organization_Approval: 'Org Approval',
     Support_Person_Concern: 'Support Concern'
 };
 
@@ -67,16 +79,30 @@ export default class FimbyModeratorTaskList extends LightningElement {
             displaySummary = 'New neighbour — send a welcome when you can';
         }
 
+        const shortLabel =
+            LIST_CATEGORY_LABELS[category] ||
+            CATEGORY_FULL_LABELS[category] ||
+            category.replace(/_/g, ' ');
+        const fullLabel =
+            CATEGORY_FULL_LABELS[category] || category.replace(/_/g, ' ');
+        const categoryLabel = isOverdue ? `${shortLabel} — Overdue` : shortLabel;
+        const categoryClass = isOverdue
+            ? 'category-badge category-badge--overdue'
+            : 'category-badge';
+        const categoryTitle = isOverdue
+            ? `${fullLabel} — open more than 24 hours`
+            : fullLabel;
+
         return {
             ...task,
-            _categoryLabel: CATEGORY_LABELS[category] || category.replace(/_/g, ' '),
-            _categoryClass: 'category-badge',
+            _categoryLabel: categoryLabel,
+            _categoryClass: categoryClass,
+            _categoryTitle: categoryTitle,
             _subjectName: subjectName,
             _displaySummary: displaySummary,
             _reportCountLabel: reportCount > 1 ? `raised ${reportCount} times` : '',
             _age: this._formatAge(task.CreatedDate),
-            _isOverdue: isOverdue,
-            _ageClass: isOverdue ? 'task-age task-age--overdue' : 'task-age',
+            _ageClass: 'task-age',
             _ctas: this._buildCtas(task)
         };
     }

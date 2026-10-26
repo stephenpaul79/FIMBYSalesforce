@@ -165,21 +165,11 @@
     white-space: nowrap;
 }
 
-.task-age--overdue {
-    color: var(--fimby-status-danger, #b3261e);
-    font-weight: 600;
-}
-
-.overdue-badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #fff;
-    background-color: var(--fimby-status-danger, #b3261e);
-    padding: 2px 8px;
-    border-radius: 999px;
-    white-space: nowrap;
+.category-badge--overdue {
+    background-color: var(--fimby-error-tint);
+    color: var(--fimby-validation-text-error, var(--fimby-error, #b3261e));
+    border-color: var(--fimby-error-border, rgba(179, 38, 30, 0.35));
+    font-weight: 700;
 }
 
 /* ── CTA buttons ─────────────────────────────────── */

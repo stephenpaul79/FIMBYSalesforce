@@ -20,7 +20,7 @@
                     <li key={task.Id} class="task-row" role="listitem">
                         <div class="task-row-top">
                             <div class="task-row-head">
-                                <span class={task._categoryClass}>{task._categoryLabel}</span>
+                                <span class={task._categoryClass} title={task._categoryTitle}>{task._categoryLabel}</span>
                                 <span class={task._ageClass}>{task._age}</span>
                             </div>
                             <template lwc:if={task._subjectName}>
@@ -29,14 +29,11 @@
                             <div class="task-summary">{task._displaySummary}</div>
                         </div>
                         <div class="task-row-bottom">
-                            <div class="task-meta">
-                                <template lwc:if={task._isOverdue}>
-                                    <span class="overdue-badge" title="Open more than 24 hours">Overdue</span>
-                                </template>
-                                <template lwc:if={task._reportCountLabel}>
+                            <template lwc:if={task._reportCountLabel}>
+                                <div class="task-meta">
                                     <span class="report-count">{task._reportCountLabel}</span>
-                                </template>
-                            </div>
+                                </div>
+                            </template>
                             <div class="task-actions">
                                 <template for:each={task._ctas} for:item="cta">
                                     <button key={cta.action}
