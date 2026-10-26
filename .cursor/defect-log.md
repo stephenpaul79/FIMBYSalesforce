@@ -377,3 +377,39 @@ As Owner (Desktop Tester), approve or decline SF Tester's confirmed request so M
 
 **Fix:** `fimbyNotificationsList._normalizeLegacyActionUrl()` rewrites `/messages/{id}` → `/conversation?id={id}` on tap. Deployed + published.
 
+### DEF-2026-LF-01 — "Reply anyway" on a matched Ask is rejected as unavailable
+
+**Status:** OPEN — fix proposed (2026-10-18, live feed lifecycle QA, LF-ASK-04).
+
+**Symptom:** Amir opens Sarah's matched Ask (qty 1, one accepted) → **Reply anyway** → fills the quick-reply modal → **Submit Response** → "Looks like this isn't available anymore — someone responded a bit more quickly." Reply not saved; typed text discarded.
+
+**Root cause:** `Needs_Offers__c.Event_Type__c` has picklist default `Gathering`, so non-event posts are stamped Gathering on insert (26 non-event posts in org, oldest 2026-03-19). `Response__c.Amount_Must_Be_Valid` caps at `Total_Available__c` when `ISPICKVAL(Event_Type__c,'Gathering')` without checking `Type__c = 'Event'`, so a matched Ask (available 0) rejects every new reply. Apex guards already pair Event_Type with `Type__c == 'Event'`. Reproduced via rollback-only anonymous Apex insert.
+
+**Secondary:** `fimbyQuickResponseModal` maps any error containing "available/amount/validation" to the "someone responded more quickly" copy and drops the draft.
+
+### DEF-2026-LF-02 — Composer default end date is a day late in Pacific evenings
+
+**Status:** OPEN — pre-existing, not fixed (2026-10-18).
+
+**Symptom/Root cause:** `fimbyAskOfferComposer._endDateOffset` builds the default end date with `toISOString()` (UTC), so after ~5 PM Pacific the date rolls to tomorrow's offset. Same class as DEF-2026-005; should use `c/fimbyDateUtils.formatLocalDate`.
+
+---
+
+## DEF-2026-MH-01 — Borrow History empty for community user despite seeded rows
+
+**Status:** RESOLVED (2026-10-26).
+
+**Symptom:** **My Stuff → My Borrowing → Borrow History** showed empty while org had `Lending_History__c` rows for the acting-as Contact.
+
+**Root cause:** `getMyBorrowHistory` used `WITH SECURITY_ENFORCED`; community profile does not (and should not) grant broad `Lending_History__c` read.
+
+**Fix:** `BorrowHistoryHelper` (`private without sharing` in `FimbyMyStuffController`), SOQL scoped to `Borrowed_By__c = :actingAsContactId` only — same pattern as `SharedContactHelper`. No profile change.
+
+**Not a header regression.**
+
+### DEF-2026-MH-02 — `/loaned-items` not linked from My Stuff
+
+**Status:** CLOSED — by design (2026-10-26).
+
+**Finding:** Owner lending UX lives on **My Library Items** (On Loan / Available) → `/library-item/{id}`; borrower UX on **My Borrowing** + **Borrow History**. `/loaned-items` is a legacy list page (unfinished row actions, no hub nav). Full lending lifecycle does **not** require it.
+

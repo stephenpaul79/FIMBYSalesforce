@@ -82,9 +82,10 @@ const POST_STATUS_LABELS = {
 };
 
 const LIBRARY_STATUS_CLASSES = {
-    'Available':    'status-badge status-available',
-    'On Loan':      'status-badge status-on-loan',
-    'Unavailable':  'status-badge status-unavailable'
+    'Available':           'status-badge status-available',
+    'On Loan':             'status-badge status-on-loan',
+    'Currently Lent Out':  'status-badge status-on-loan',
+    'Unavailable':         'status-badge status-unavailable'
 };
 
 const SKILL_STATUS_CLASSES = {
@@ -392,10 +393,14 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
     get hasSkills()        { return this.mySkills.length > 0; }
     get hasBorrowedItems() { return this.myBorrowedItems.length > 0; }
     get loanedItems() {
-        return this.myLibraryItems.filter(item => item.loanInfo);
+        return this.myLibraryItems.filter(
+            item => item.loanInfo || item.status === 'Currently Lent Out'
+        );
     }
     get availableItems() {
-        return this.myLibraryItems.filter(item => !item.loanInfo && item.status === 'Available');
+        return this.myLibraryItems.filter(
+            item => !item.loanInfo && item.status === 'Available'
+        );
     }
     get hasLoanedItems() {
         return this.loanedItems.length > 0;
