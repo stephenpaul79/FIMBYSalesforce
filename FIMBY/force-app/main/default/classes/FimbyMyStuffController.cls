@@ -97,7 +97,7 @@ public with sharing class FimbyMyStuffController {
         Integer libActive = 0;
         Integer libAvailable = 0;
         for (Library_Item__c li : allLibItems) {
-            if (loanedItemIds.contains(li.Id) || li.Status__c == 'On Loan') {
+            if (loanedItemIds.contains(li.Id) || li.Status__c == FimbyConstants.LIBRARY_LENT_OUT) {
                 libActive++;
             } else if (li.Status__c == 'Available') {
                 libAvailable++;
@@ -159,7 +159,7 @@ public with sharing class FimbyMyStuffController {
     }
 
     /**
-     * My Posts — newest first, paginated.
+     * My Posts — active posts only, newest first. Everything else lives in the Post Archive.
      */
     @AuraEnabled(cacheable=false)
     public static List<Needs_Offers__c> getMyPosts(Integer pageSize) {
@@ -169,12 +169,14 @@ public with sharing class FimbyMyStuffController {
         }
 
         Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.myPostsPageSize();
+        Set<String> activeStatuses = MY_ACTIVE_POST_STATUSES;
 
         return [
             SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
                    RecordType.Name, Category__c, Event_Type__c
             FROM Needs_Offers__c
             WHERE (Contact__c = :contactId OR (Contact__c = null AND Posted_By__c = :contactId))
+              AND Status__c IN :activeStatuses
             WITH SECURITY_ENFORCED
             ORDER BY Posted_Date__c DESC
             LIMIT :limitSize
@@ -496,7 +498,7 @@ public with sharing class FimbyMyStuffController {
 
     /**
      * Library Items Archive — only items no longer active (Unavailable/removed).
-     * Active items (On Loan, Available) are shown on the MyStuffPage.
+     * Active items (Currently Lent Out, Available) are shown on the MyStuffPage.
      */
     @AuraEnabled(cacheable=false)
     public static ArchiveResult getMyLibraryItemsArchive(Integer pageSize, Integer offset, String filterStatus) {

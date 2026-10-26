@@ -88,6 +88,35 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
+    static void testGetMineSummary_countsCurrentlyLentOut() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Integer activeBefore;
+        System.runAs(testUser) {
+            activeBefore = FimbyMyStuffController.getMineSummary().get('libraryActiveCount');
+        }
+
+        insert new Library_Item__c(
+            Name = 'Lent out drill',
+            Description__c = 'With a neighbour right now',
+            Category__c = 'Tools',
+            Status__c = FimbyConstants.LIBRARY_LENT_OUT,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Owner_Contact__c = testContact.Id
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Integer activeAfter = FimbyMyStuffController.getMineSummary().get('libraryActiveCount');
+            System.assertEquals(activeBefore + 1, activeAfter,
+                'A Currently Lent Out item counts as active even without an open Loaned_Item__c');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetMyPosts() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
@@ -98,8 +127,49 @@ public class FimbyMyStuffControllerTest {
             List<Needs_Offers__c> posts = FimbyMyStuffController.getMyPosts(20);
 
             System.assertNotEquals(null, posts, 'Posts should not be null');
-            // Posts belong to the contact created in setup
-            System.assertEquals(6, posts.size(), 'Should return 6 posts (4 active + 2 archived)');
+            // Posts belong to the contact created in setup; the 2 Expired ones belong to the archive
+            System.assertEquals(4, posts.size(), 'Should return only the 4 active posts');
+            for (Needs_Offers__c p : posts) {
+                System.assertNotEquals('Expired', p.Status__c, 'Archived posts must not appear in My Posts');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetMyPosts_includesPickupReady() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Needs_Offers__c pickupReady = new Needs_Offers__c(
+            RecordTypeId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Bulk_Buy').getRecordTypeId(),
+            Name = 'Pickup ready bulk buy',
+            Details__c = 'Ready to collect',
+            Full_Details__c = 'Ready to collect',
+            Status__c = FimbyConstants.NEEDS_OFFERS_PICKUP_READY,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Posted_By__c = testContact.Id,
+            Contact__c = testContact.Id,
+            Giver_Recipient_Type__c = 'Self',
+            Total_Quantity__c = 10,
+            Allocation_Unit_Label__c = 'shares',
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed',
+            Auto_Accept_Responses__c = true,
+            Auto_Lock_Days__c = '7'
+        );
+        insert pickupReady;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Set<Id> activeIds = new Map<Id, Needs_Offers__c>(FimbyMyStuffController.getMyPosts(20)).keySet();
+            System.assert(activeIds.contains(pickupReady.Id), 'Pickup-ready bulk buys belong in My Posts');
+
+            FimbyMyStuffController.ArchiveResult archive = FimbyMyStuffController.getMyPostsArchive(20, 0, 'All');
+            for (Object item : archive.items) {
+                System.assertNotEquals(pickupReady.Id, ((Needs_Offers__c) item).Id,
+                    'Pickup-ready bulk buys must not appear in the archive');
+            }
         }
         Test.stopTest();
     }
