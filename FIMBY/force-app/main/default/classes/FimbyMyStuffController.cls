@@ -561,40 +561,7 @@ public with sharing class FimbyMyStuffController {
         Integer limitSize = (pageSize != null && pageSize > 0) ? pageSize : FimbySettings.archivePageSize();
         Integer offsetVal = (offset != null && offset >= 0) ? offset : 0;
 
-        result.totalCount = [
-            SELECT COUNT()
-            FROM Lending_History__c
-            WHERE Borrowed_By__c = :contactId
-            WITH SECURITY_ENFORCED
-        ];
-
-        List<Lending_History__c> histories = [
-            SELECT Id, Name, Library_Item__c, Library_Item__r.Category__c,
-                   Lent_By__r.Full_Name__c, Start_Date__c, End_Date__c, CreatedDate
-            FROM Lending_History__c
-            WHERE Borrowed_By__c = :contactId
-            WITH SECURITY_ENFORCED
-            ORDER BY End_Date__c DESC NULLS LAST, CreatedDate DESC
-            LIMIT :limitSize
-            OFFSET :offsetVal
-        ];
-
-        List<BorrowedItemWrapper> wrappers = new List<BorrowedItemWrapper>();
-        for (Lending_History__c h : histories) {
-            BorrowedItemWrapper w = new BorrowedItemWrapper();
-            w.Id = h.Id;
-            w.itemId = h.Library_Item__c;
-            w.itemName = h.Name;
-            w.ownerName = h.Lent_By__r?.Full_Name__c;
-            w.category = h.Library_Item__r?.Category__c;
-            w.dueDate = null;
-            w.status = 'Returned';
-            w.returnedDate = h.End_Date__c;
-            wrappers.add(w);
-        }
-        result.items = wrappers;
-
-        return result;
+        return new BorrowHistoryHelper().getBorrowHistoryInternal(contactId, limitSize, offsetVal);
     }
 
     /* ---------------------------------------------------------------
@@ -635,6 +602,48 @@ public with sharing class FimbyMyStuffController {
         @AuraEnabled public Date dueDate { get; set; }
         @AuraEnabled public String status { get; set; }
         @AuraEnabled public Date returnedDate { get; set; }
+    }
+
+    /**
+     * @description Without sharing — Lending_History__c is not granted on the community profile; scope in SOQL to the acting-as borrower only.
+     */
+    private without sharing class BorrowHistoryHelper {
+
+        public ArchiveResult getBorrowHistoryInternal(Id borrowedByContactId, Integer limitSize, Integer offsetVal) {
+            ArchiveResult result = new ArchiveResult();
+            result.items = new List<Object>();
+            result.totalCount = [
+                SELECT COUNT()
+                FROM Lending_History__c
+                WHERE Borrowed_By__c = :borrowedByContactId
+            ];
+
+            List<Lending_History__c> histories = [
+                SELECT Id, Name, Library_Item__c, Library_Item__r.Category__c,
+                       Lent_By__r.Full_Name__c, Start_Date__c, End_Date__c, CreatedDate
+                FROM Lending_History__c
+                WHERE Borrowed_By__c = :borrowedByContactId
+                ORDER BY End_Date__c DESC NULLS LAST, CreatedDate DESC
+                LIMIT :limitSize
+                OFFSET :offsetVal
+            ];
+
+            List<BorrowedItemWrapper> wrappers = new List<BorrowedItemWrapper>();
+            for (Lending_History__c h : histories) {
+                BorrowedItemWrapper w = new BorrowedItemWrapper();
+                w.Id = h.Id;
+                w.itemId = h.Library_Item__c;
+                w.itemName = h.Name;
+                w.ownerName = h.Lent_By__r?.Full_Name__c;
+                w.category = h.Library_Item__r?.Category__c;
+                w.dueDate = null;
+                w.status = 'Returned';
+                w.returnedDate = h.End_Date__c;
+                wrappers.add(w);
+            }
+            result.items = wrappers;
+            return result;
+        }
     }
 
     /**

@@ -117,6 +117,37 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
+    static void testGetMyLibraryItems_includesCurrentlyLentOutWithoutOpenLoan() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        insert new Library_Item__c(
+            Name = 'Lent out ladder',
+            Description__c = 'Off-platform loan',
+            Category__c = 'Tools',
+            Status__c = FimbyConstants.LIBRARY_LENT_OUT,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Owner_Contact__c = testContact.Id
+        );
+
+        Test.startTest();
+        System.runAs(testUser) {
+            List<FimbyMyStuffController.LibraryItemWrapper> items =
+                FimbyMyStuffController.getMyLibraryItems(20);
+            Boolean found = false;
+            for (FimbyMyStuffController.LibraryItemWrapper w : items) {
+                if (w.Name == 'Lent out ladder') {
+                    found = true;
+                    break;
+                }
+            }
+            System.assert(found, 'Currently Lent Out item should appear in getMyLibraryItems');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetMyPosts() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
@@ -318,7 +349,8 @@ public class FimbyMyStuffControllerTest {
         System.runAs(testUser) {
             FimbyMyStuffController.ArchiveResult result = FimbyMyStuffController.getMyBorrowHistory(20, 0, 'All');
             System.assertNotEquals(null, result, 'Borrow history result should not be null');
-            System.assert(result.totalCount >= 0, 'Total count should be non-negative');
+            System.assertEquals(1, result.totalCount, 'Should return seeded borrow history');
+            System.assertEquals(1, result.items.size(), 'Should return one history row');
         }
         Test.stopTest();
     }
