@@ -1,5 +1,5 @@
 <template>
-    <div class="fimby-page-header">
+    <div class={headerClass}>
         <div class="header-container">
             <!-- Back button (opt-in via show-back) -->
             <button lwc:if={showBack}
@@ -10,16 +10,29 @@
                 <lightning-icon icon-name="utility:chevronleft" size="small" variant="neutral"></lightning-icon>
             </button>
 
-            <!-- Left: Breadcrumb trail -->
-            <nav class="breadcrumb-nav">
+            <!-- Left: Breadcrumb trail (desktop) -->
+            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
                 <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
-                <template lwc:if={hasParent}>
-                    <span class="breadcrumb-separator">&rsaquo;</span>
-                    <a href={parentUrl} class="breadcrumb-link" onclick={handleNavLink}>{parentLabel}</a>
+                <template for:each={trailCrumbs} for:item="crumb">
+                    <span key={crumb.separatorKey} class="breadcrumb-separator">&rsaquo;</span>
+                    <a key={crumb.key} href={crumb.url} class="breadcrumb-link" onclick={handleNavLink}>{crumb.label}</a>
                 </template>
                 <span class="breadcrumb-separator">&rsaquo;</span>
-                <span class="breadcrumb-current">{pageTitle}</span>
+                <span class="breadcrumb-current" aria-current="page">{pageTitle}</span>
             </nav>
+
+            <!-- Left: Parent link + title (mobile) -->
+            <div class="compact-nav">
+                <a lwc:if={showParentLink}
+                   href={compactParentUrl}
+                   class="compact-parent"
+                   aria-label={parentLinkAriaLabel}
+                   onclick={handleNavLink}>
+                    <lightning-icon icon-name="utility:chevronleft" size="x-small" class="compact-parent-icon"></lightning-icon>
+                    <span class="compact-parent-label">{compactParentLabel}</span>
+                </a>
+                <span class="compact-title">{pageTitle}</span>
+            </div>
 
             <!-- Right: Actions -->
             <div class="header-right">
@@ -69,6 +82,11 @@
                     <lightning-icon icon-name="utility:threedots" size="small"></lightning-icon>
                 </button>
             </div>
+        </div>
+
+        <!-- Optional page-owned row attached below the header (filter chips, sub-tabs) -->
+        <div class="subheader">
+            <slot name="subheader" onslotchange={handleSubheaderSlotChange}></slot>
         </div>
 
         <!-- Optional progress bar -->

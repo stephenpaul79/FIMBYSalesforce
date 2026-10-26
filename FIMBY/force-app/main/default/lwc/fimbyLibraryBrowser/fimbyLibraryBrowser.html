@@ -5,11 +5,11 @@
         <div class={stickyHeaderClass}>
 
             <!-- Breadcrumb Navigation -->
-            <nav class="breadcrumb-nav">
+            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
                 <div class="breadcrumb-left">
                     <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
                     <span class="breadcrumb-separator">&rsaquo;</span>
-                    <span class="breadcrumb-current">Library</span>
+                    <span class="breadcrumb-current" aria-current="page">Library</span>
                 </div>
                 <div class="view-toggle">
                     <button class={gridToggleClass} onclick={handleGridView} aria-label="Grid view">
@@ -20,6 +20,9 @@
                     </button>
                 </div>
             </nav>
+            <div class="compact-nav">
+                <span class="compact-title">Library</span>
+            </div>
 
             <!-- All | Items | Skills (+ Filter when Items or Skills) -->
             <div class="feed-filters" data-tour="library-filter-bar" role="group" aria-label="Library filters">

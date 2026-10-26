@@ -15,6 +15,10 @@ export default class FimbyMyItemsArchive extends NavigationMixin(LightningElemen
     @track activeFilter = 'All';
 
     filters = FILTERS;
+    headerTrail = [
+        { label: 'My Stuff', url: '/my-stuff' },
+        { label: 'My Library Items', url: '/my-stuff/my-library-items' }
+    ];
 
     connectedCallback() {
         this.loadData();

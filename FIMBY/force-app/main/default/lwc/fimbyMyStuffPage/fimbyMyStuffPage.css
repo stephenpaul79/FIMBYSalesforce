@@ -12,51 +12,6 @@
     box-sizing: border-box;
 }
 
-/* Header Card (breadcrumb + filters) */
-.header-card {
-    border-radius: var(--fimby-radius-md);
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    margin-bottom: 12px;
-}
-
-/* Breadcrumb */
-.breadcrumb-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 16px;
-    background-color: var(--fimby-surface-card);
-    font-size: 0.85rem;
-}
-
-.header-card-has-filters .breadcrumb-nav {
-    border-bottom: 1px solid var(--fimby-border-subtle);
-}
-
-.breadcrumb-link {
-    color: var(--fimby-btn-primary-bg);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.15s ease;
-}
-
-.breadcrumb-link:hover {
-    color: var(--fimby-btn-primary-bg-active);
-    text-decoration: underline;
-}
-
-.breadcrumb-separator {
-    color: var(--fimby-text-muted);
-    font-size: 1rem;
-    line-height: 1;
-}
-
-.breadcrumb-current {
-    color: var(--fimby-text-primary);
-    font-weight: 600;
-}
-
 /* ================================================================
    Filter Chips (Contacts sub-filters)
    ================================================================ */
@@ -118,7 +73,6 @@
 /* Level 2 sub-filter chips (contacts) */
 .feed-sub-filters {
     background-color: var(--fimby-surface-card);
-    border-bottom: 1px solid var(--fimby-border-subtle);
     padding: 8px 16px;
 }
 
@@ -404,7 +358,7 @@ button.list-row {
     padding: 10px 14px;
     border: 1px solid var(--fimby-divider-default);
     border-radius: var(--fimby-radius-md);
-    font-size: 14px;
+    font-size: var(--fimby-input-font-size, 16px);
     background-color: var(--fimby-surface-card);
     outline: none;
 }
@@ -631,6 +585,10 @@ button.contact-card-header {
         max-width: 600px;
         margin: 0 auto;
         padding: 0 24px 80px;
+    }
+
+    .feed-sub-filters {
+        padding: 8px 24px;
     }
 }
 
@@ -911,7 +869,6 @@ button.share-result-item {
    Accessibility
    ================================================================ */
 /* Keyboard focus visibility */
-.breadcrumb-link:focus-visible,
 .filter-button:focus-visible,
 .list-row:focus-visible,
 .archive-btn:focus-visible,
@@ -1031,4 +988,26 @@ button.share-result-item {
         grid-row: 1 / 3;
         align-self: center;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

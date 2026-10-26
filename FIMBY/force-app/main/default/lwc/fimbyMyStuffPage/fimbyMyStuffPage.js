@@ -71,8 +71,14 @@ const POST_STATUS_CLASSES = {
     'Posted':          'status-badge status-active',
     'Reply Received':  'status-badge status-replied',
     'Reply Accepted':  'status-badge status-accepted',
+    'Available':       'status-badge status-active',
+    'Pickup_Ready':    'status-badge status-accepted',
     'Completed':       'status-badge status-completed',
     'Expired':         'status-badge status-expired'
+};
+
+const POST_STATUS_LABELS = {
+    'Pickup_Ready': 'Pickup Ready'
 };
 
 const LIBRARY_STATUS_CLASSES = {
@@ -175,10 +181,6 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         return this.activeFilter ? SECTION_TITLES[this.activeFilter] : '';
     }
 
-    get headerCardClass() {
-        return this.activeFilter === 'contacts' ? 'header-card header-card-has-filters' : 'header-card';
-    }
-
     /* ===============================================================
      * Data loaders
      * =============================================================== */
@@ -211,7 +213,6 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         if (this._postsLoaded) return;
         try {
             const posts = await getMyPosts({ pageSize: 20 });
-            const activeStatuses = new Set(['Posted', 'Reply Received', 'Reply Accepted', 'Available', 'Shares Available', 'Pickup Ready']);
             this.myPosts = posts.map(p => {
                 const rtName = p.RecordType?.Name;
                 const evtType = p.Event_Type__c;
@@ -246,9 +247,10 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
                     typeBadgeClass,
                     badgeIconUrl: `${IMPACT_ICONS}/${badgeIconFile}`,
                     statusBadgeClass: POST_STATUS_CLASSES[p.Status__c] || 'status-badge',
+                    statusLabel: POST_STATUS_LABELS[p.Status__c] || p.Status__c,
                     formattedDate: this._formatDate(p.CreatedDate)
                 };
-            }).filter(p => activeStatuses.has(p.Status__c));
+            });
             this._postsLoaded = true;
         } catch (error) {
             console.error('Error loading posts:', error);

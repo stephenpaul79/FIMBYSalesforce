@@ -24,7 +24,7 @@ Read this before writing or changing any LWC. All components are prefixed `fimby
 | `fimbyRecordEditModal` / `fimbyRecordDetailCard` | Dynamic record forms via field sets |
 | `fimbyLoadingMessage` | Rotating messages from `FIMBY_Loading_Message__mdt` |
 | `fimbyCelebration` | Emoji confetti + GIFs, occasion-scaled, reduced-motion aware |
-| `fimbyPageHeader` | Breadcrumb + `menuItems` three-tier actions + search + notifications |
+| `fimbyPageHeader` | Breadcrumb (desktop) / `‹ Parent` + title (mobile) + `trail` + `subheader` slot + `menuItems` three-tier actions + search + notifications |
 | `fimbyUniversalHeader` / `fimbyBottomNavigation` | Site nav: 4 tabs + Create + identity switcher + acting-as chip |
 | `fimbyManageIdentities`, `fimbyRelationshipSetupModal`, `fimbyOrganizationProfile` | Identity/relationship/org UIs |
 
@@ -85,6 +85,11 @@ handleHeaderMenuAction(event) {
 }
 ```
 **Never** use `slot="actions"`, `showCustomAction`, or `showMenu` (deprecated). All header actions via `menuItems`; always use `c-fimby-page-header` — never custom header markup.
+
+**Trail, sticky, subheader.** Desktop (≥768px) shows the breadcrumb `Home › trail… › pageTitle`; mobile shows a compact `‹ Parent` link + title (parent = last crumb; hidden when `show-back` is set).
+- `trail={[{ label, url }]}` — ancestors between Home and the current page, for multi-level pages (e.g. My Stuff › My Posts › Archive). Without it, `parent-label` / `parent-url` act as a one-crumb trail.
+- `sticky="false"` — header scrolls with the page. Use it when a subheader row would pin too much height on mobile.
+- `<div slot="subheader">` — page-owned filter-chip / sub-tab row attached below the header inside the same card, with a divider. Styled by the page's own CSS. **Filter rows only** — a control that belongs to that row (e.g. My Stuff Contacts' Share Info) may sit in it, but page-level actions stay in `menuItems`.
 
 ## Image URL resolution (Org ID suffix)
 CMS images need the Org ID suffix. Every LWC showing user-uploaded images:

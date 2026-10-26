@@ -25,6 +25,19 @@ export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
 
     @api menuItems = [];
 
+    /* Ancestor crumbs between Home and the current page: [{ label, url }] */
+    _trail = [];
+    @api get trail() { return this._trail; }
+    set trail(value) {
+        this._trail = Array.isArray(value) ? value.filter(crumb => crumb && crumb.label && crumb.url) : [];
+    }
+
+    _sticky = true;
+    @api get sticky() { return this._sticky; }
+    set sticky(value) { this._sticky = this._coerceBool(value); }
+
+    @track _hasSubheader = false;
+
     /* Back button (active) */
     _showBack = false;
     @api get showBack() { return this._showBack; }
@@ -53,7 +66,35 @@ export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
     _mediaQuery;
     _boundKeyDown;
 
-    get hasParent() { return !!this.parentLabel; }
+    get trailCrumbs() {
+        const crumbs = this._trail.length > 0
+            ? this._trail
+            : (this.parentLabel ? [{ label: this.parentLabel, url: this.parentUrl }] : []);
+        return crumbs.map((crumb, index) => ({
+            label: crumb.label,
+            url: crumb.url,
+            key: `crumb-${index}`,
+            separatorKey: `sep-${index}`
+        }));
+    }
+
+    get _parentCrumb() {
+        const crumbs = this.trailCrumbs;
+        return crumbs.length > 0 ? crumbs[crumbs.length - 1] : null;
+    }
+
+    get compactParentLabel() { return this._parentCrumb ? this._parentCrumb.label : ''; }
+    get compactParentUrl() { return this._parentCrumb ? this._parentCrumb.url : ''; }
+    // History-based back chevron takes priority; the parent link would duplicate it.
+    get showParentLink() { return !!this.compactParentUrl && !this._showBack; }
+    get parentLinkAriaLabel() { return `Back to ${this.compactParentLabel}`; }
+
+    get headerClass() {
+        let cls = 'fimby-page-header';
+        if (this._sticky) cls += ' is-sticky';
+        if (this._hasSubheader) cls += ' has-subheader';
+        return cls;
+    }
     get progressStyle() { return `width: ${this.progressValue}%`; }
     get searchIconUrl() { return `${IMPACT_ICONS}/Magnify.png`; }
     get notificationIconUrl() { return `${IMPACT_ICONS}/BellActive.png`; }
@@ -190,7 +231,11 @@ export default class FimbyPageHeader extends NavigationMixin(LightningElement) {
         const notCancelled = this.dispatchEvent(backEvent);
         if (!notCancelled) return;
 
-        navigateBack(this, this.parentUrl || null);
+        navigateBack(this, this.compactParentUrl || null);
+    }
+
+    handleSubheaderSlotChange(event) {
+        this._hasSubheader = event.target.assignedNodes().length > 0;
     }
 
     handleNavLink(event) {

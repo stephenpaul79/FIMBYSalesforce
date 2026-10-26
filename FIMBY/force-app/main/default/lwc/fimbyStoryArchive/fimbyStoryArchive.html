@@ -1,17 +1,7 @@
 <template>
     <div class="fimby-archive-page">
-        <div class="header-card">
-            <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff" class="breadcrumb-link" onclick={handleNavLink}>My Stuff</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff/my-shared-life" class="breadcrumb-link" onclick={handleNavLink}>My Shared Life</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <span class="breadcrumb-current">Archive</span>
-            </nav>
-
-            <div class="feed-filters">
+        <c-fimby-page-header page-title="Archive" trail={headerTrail} sticky="false">
+            <div slot="subheader" class="feed-filters">
                 <div class="filters-scroll">
                     <template for:each={processedFilters} for:item="filter">
                         <button key={filter.value}
@@ -23,7 +13,7 @@
                     </template>
                 </div>
             </div>
-        </div>
+        </c-fimby-page-header>
 
         <template lwc:if={isLoading}>
             <div class="loading-container">

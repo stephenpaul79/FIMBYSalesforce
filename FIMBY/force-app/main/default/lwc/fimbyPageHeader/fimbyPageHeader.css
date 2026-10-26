@@ -5,13 +5,11 @@
 
 /* FIMBY Page Header — Breadcrumb-based */
 .fimby-page-header {
-    position: sticky;
-    top: 0;
+    position: relative;
     background-color: var(--fimby-surface-card);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     box-shadow: var(--fimby-shadow-card);
-    z-index: 900;
     /* No safe-area inset: this is a subheader below fimbyUniversalHeader, never
        at the device edge. The native SafeAreaView owns top inset; env() here is
        a no-op on iOS and a double-count band on Android. */
@@ -19,19 +17,29 @@
     overflow: hidden;
 }
 
+.fimby-page-header.is-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.has-subheader .subheader {
+    border-top: 1px solid var(--fimby-border-subtle);
+}
+
 .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
-    min-height: 48px;
+    padding: 4px 12px;
+    min-height: 52px;
     max-width: 100%;
     gap: 12px;
 }
 
-/* Breadcrumb Navigation */
+/* Breadcrumb Navigation (desktop only — see compact-nav for mobile) */
 .breadcrumb-nav {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
@@ -68,6 +76,65 @@
     text-overflow: ellipsis;
 }
 
+/* Compact Navigation (mobile): parent link + page title */
+.compact-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.compact-parent {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 1 auto;
+    max-width: 50%;
+    min-width: 0;
+    min-height: 44px;
+    margin-left: -6px;
+    padding: 0 6px;
+    border-radius: var(--fimby-radius-sm);
+    color: var(--fimby-btn-primary-bg);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    --slds-c-icon-color-foreground-default: var(--fimby-btn-primary-bg);
+}
+
+.compact-parent:active {
+    background-color: var(--fimby-pressed-bg);
+}
+
+.compact-parent-icon {
+    flex-shrink: 0;
+}
+
+.compact-parent-label {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compact-title {
+    flex: 1;
+    min-width: 0;
+    color: var(--fimby-text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compact-parent + .compact-title {
+    padding-left: 10px;
+    border-left: 1px solid var(--fimby-border-subtle);
+}
+
 /* Right-side actions */
 .header-right {
     flex: 0 0 auto;
@@ -87,9 +154,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -275,23 +342,15 @@
 
 @media (max-width: 320px) {
     .header-container {
-        padding: 10px 12px;
-        min-height: 40px;
+        padding: 4px 10px;
     }
 
-    .breadcrumb-nav {
-        font-size: 0.8rem;
-        gap: 6px;
+    .compact-parent {
+        font-size: 0.85rem;
     }
 
     .header-right {
         gap: 4px;
-    }
-
-    .header-action {
-        width: 32px;
-        height: 32px;
-        border-radius: 16px;
     }
 
     .menu-inline-btn {
@@ -305,8 +364,19 @@
         padding: 16px 24px;
     }
 
+    .header-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+    }
+
     .breadcrumb-nav {
+        display: flex;
         font-size: 0.9rem;
+    }
+
+    .compact-nav {
+        display: none;
     }
 }
 
@@ -337,7 +407,8 @@ button.header-action:focus-visible {
 }
 
 /* Keyboard focus visibility */
-.breadcrumb-link:focus-visible {
+.breadcrumb-link:focus-visible,
+.compact-parent:focus-visible {
     outline: 2px solid var(--fimby-focus-ring);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
@@ -346,6 +417,7 @@ button.header-action:focus-visible {
 /* Accessibility: reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .header-action,
+    .compact-parent,
     .progress-fill,
     .menu-inline-btn,
     .menu-dropdown-item {

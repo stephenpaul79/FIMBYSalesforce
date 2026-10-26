@@ -1,16 +1,8 @@
 <template>
     <div class="fimby-my-stuff">
-        <!-- Header card: breadcrumb + optional contacts sub-filters -->
-        <div class={headerCardClass}>
-            <nav class="breadcrumb-nav">
-                <a href="/" class="breadcrumb-link" onclick={handleNavLink}>Home</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <a href="/my-stuff" class="breadcrumb-link" onclick={handleNavLink}>My Stuff</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <span class="breadcrumb-current">{sectionTitle}</span>
-            </nav>
+        <c-fimby-page-header page-title={sectionTitle} parent-label="My Stuff" parent-url="/my-stuff" sticky="false">
             <template lwc:if={showContacts}>
-                <div class="feed-sub-filters contacts-sub-row">
+                <div slot="subheader" class="feed-sub-filters contacts-sub-row">
                     <div class="filters-scroll">
                         <button class={receivedFilterClass}
                                 title="People who have shared their contact info with you (email, phone, address) - you can start a conversation with them"
@@ -41,7 +33,7 @@
                     </template>
                 </div>
             </template>
-        </div>
+        </c-fimby-page-header>
 
         <!-- Loading State -->
         <template lwc:if={isLoading}>
@@ -63,7 +55,7 @@
                                     {post.displayTypeName}
                                 </span>
                                 <span class="list-row-title">{post.Name}</span>
-                                <span class={post.statusBadgeClass}>{post.Status__c}</span>
+                                <span class={post.statusBadgeClass}>{post.statusLabel}</span>
                                 <span class="list-row-date">{post.formattedDate}</span>
                                 <lightning-icon icon-name="utility:chevronright" size="xx-small" class="list-row-chevron"></lightning-icon>
                             </button>

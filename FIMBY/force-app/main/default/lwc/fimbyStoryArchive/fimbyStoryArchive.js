@@ -46,6 +46,10 @@ export default class FimbyStoryArchive extends NavigationMixin(LightningElement)
     @track activeFilter = 'All';
 
     filters = FILTERS;
+    headerTrail = [
+        { label: 'My Stuff', url: '/my-stuff' },
+        { label: 'My Shared Life', url: '/my-stuff/my-shared-life' }
+    ];
 
     connectedCallback() {
         this.loadData();

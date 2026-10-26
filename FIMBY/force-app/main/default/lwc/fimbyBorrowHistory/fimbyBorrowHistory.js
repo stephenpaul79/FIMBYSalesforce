@@ -16,6 +16,10 @@ export default class FimbyBorrowHistory extends NavigationMixin(LightningElement
     @track activeFilter = 'All';
 
     filters = FILTERS;
+    headerTrail = [
+        { label: 'My Stuff', url: '/my-stuff' },
+        { label: 'My Borrowing', url: '/my-stuff/my-borrowing' }
+    ];
 
     connectedCallback() {
         this.loadData();
