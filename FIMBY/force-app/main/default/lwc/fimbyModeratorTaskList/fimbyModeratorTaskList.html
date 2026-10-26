@@ -19,9 +19,14 @@
                 <template for:each={processedTasks} for:item="task">
                     <li key={task.Id} class="task-row" role="listitem">
                         <div class="task-row-top">
-                            <span class={task._categoryClass}>{task._categoryLabel}</span>
-                            <span class="task-summary">{task._displaySummary}</span>
-                            <span class={task._ageClass}>{task._age}</span>
+                            <div class="task-row-head">
+                                <span class={task._categoryClass}>{task._categoryLabel}</span>
+                                <span class={task._ageClass}>{task._age}</span>
+                            </div>
+                            <template lwc:if={task._subjectName}>
+                                <div class="task-subject">{task._subjectName}</div>
+                            </template>
+                            <div class="task-summary">{task._displaySummary}</div>
                         </div>
                         <div class="task-row-bottom">
                             <div class="task-meta">

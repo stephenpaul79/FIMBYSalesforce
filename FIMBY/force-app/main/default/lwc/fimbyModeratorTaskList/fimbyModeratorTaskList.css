@@ -78,21 +78,30 @@
 
 .task-row-top {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.task-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.task-subject {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fimby-text-strong);
+    line-height: 1.3;
 }
 
 .task-summary {
-    flex: 1;
-    min-width: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--fimby-text-strong);
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fimby-text-secondary);
+    line-height: 1.4;
 }
 
 .task-age {
@@ -100,7 +109,6 @@
     color: var(--fimby-text-secondary);
     white-space: nowrap;
     flex-shrink: 0;
-    margin-top: 2px;
 }
 
 /* ── Row 2: meta + actions ───────────────────────── */
@@ -120,9 +128,15 @@
 
 .task-actions {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    flex-wrap: wrap;
+    width: 100%;
+}
+
+.task-actions .task-cta-btn {
+    width: 100%;
+    justify-content: center;
 }
 
 /* ── Category badge (top-left position) ──────────── */
@@ -289,6 +303,33 @@
         padding: 16px 20px;
     }
 
+    .task-row-top {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .task-row-head {
+        flex: 1 1 100%;
+    }
+
+    .task-subject {
+        flex: 1 1 100%;
+    }
+
+    .task-summary {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--fimby-text-strong);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
     .task-row-bottom {
         flex-direction: row;
         align-items: center;
@@ -296,8 +337,15 @@
     }
 
     .task-actions {
+        flex-direction: row;
         flex-wrap: nowrap;
         flex-shrink: 0;
+        width: auto;
+    }
+
+    .task-actions .task-cta-btn {
+        width: auto;
+        justify-content: flex-start;
     }
 }
 

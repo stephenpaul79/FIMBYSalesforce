@@ -16,7 +16,7 @@ const SUMMARY_PREFIX_PATTERNS = {
     Content_Report: /^Content\s+Report:\s*/i,
     Blocked_Contact: /^Block(?:\s+Report|\s+report\s+filed):?\s*/i,
     Bulk_Buy_Escalation: /^Bulk\s+Buy(?:\s+Escalation)?:\s*/i,
-    New_Signup: /^New\s+Sign[\s-]?up:\s*/i,
+    New_Signup: /^New\s+(?:neighbour\s+signed\s+up|Sign[\s-]?up):\s*/i,
     Feedback_Triage: /^Feedback(?:\s+Triage)?:\s*/i,
     Support_Relationship_Approval: /^Support(?:\s+Relationship)?(?:\s+Approval)?:\s*/i,
     Organization_Approval: /^New organization:\s*/i,
@@ -61,11 +61,18 @@ export default class FimbyModeratorTaskList extends LightningElement {
         const reportCount = task.Report_Count__c || 0;
         const isOverdue = task.Is_Overdue__c === true;
 
+        const subjectName = task.Subject_Contact__r?.Name || '';
+        let displaySummary = this._stripPrefix(task.Summary__c, category);
+        if (subjectName && category === 'New_Signup') {
+            displaySummary = 'New neighbour — send a welcome when you can';
+        }
+
         return {
             ...task,
             _categoryLabel: CATEGORY_LABELS[category] || category.replace(/_/g, ' '),
             _categoryClass: 'category-badge',
-            _displaySummary: this._stripPrefix(task.Summary__c, category),
+            _subjectName: subjectName,
+            _displaySummary: displaySummary,
             _reportCountLabel: reportCount > 1 ? `raised ${reportCount} times` : '',
             _age: this._formatAge(task.CreatedDate),
             _isOverdue: isOverdue,
