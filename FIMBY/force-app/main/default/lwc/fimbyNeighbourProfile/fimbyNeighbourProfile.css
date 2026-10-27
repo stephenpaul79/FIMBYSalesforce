@@ -101,6 +101,13 @@
     gap: 4px;
 }
 
+.identity-meta-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
 .identity-actions {
     margin-top: 16px;
 }
@@ -301,6 +308,50 @@
     background-color: var(--fimby-pressed-bg);
     box-shadow: var(--fimby-btn-shadow-active, 0 1px 2px rgba(0,0,0,0.12));
     transform: scale(0.97);
+}
+
+@media (min-width: 768px) {
+    .identity-card {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0 24px;
+        padding: 20px 24px;
+        text-align: left;
+    }
+
+    .avatar-section {
+        margin-bottom: 0;
+        align-items: flex-start;
+    }
+
+    .identity-info {
+        align-items: flex-start;
+        min-width: 0;
+    }
+
+    .identity-meta-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0;
+    }
+
+    .identity-meta-row .identity-meta:not(:last-child)::after {
+        content: "·";
+        margin: 0 8px;
+        color: var(--fimby-text-muted);
+    }
+
+    .identity-actions {
+        margin-top: 0;
+        justify-self: end;
+        align-self: center;
+    }
+
+    .message-btn {
+        white-space: nowrap;
+    }
 }
 
 @media (min-width: 892px) {

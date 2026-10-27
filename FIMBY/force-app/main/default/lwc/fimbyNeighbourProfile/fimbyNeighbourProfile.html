@@ -42,15 +42,17 @@
                             </span>
                         </template>
                         <p class="identity-pronouns">{displayPronouns}</p>
-                        <template lwc:if={profile.neighbourhood}>
-                            <p class="identity-meta">
-                                <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
-                                {profile.neighbourhood}
-                            </p>
-                        </template>
-                        <template lwc:if={formattedMemberSince}>
-                            <p class="identity-meta">Member since {formattedMemberSince}</p>
-                        </template>
+                        <div class="identity-meta-row">
+                            <template lwc:if={profile.neighbourhood}>
+                                <p class="identity-meta">
+                                    <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                    {profile.neighbourhood}
+                                </p>
+                            </template>
+                            <template lwc:if={formattedMemberSince}>
+                                <p class="identity-meta">Member since {formattedMemberSince}</p>
+                            </template>
+                        </div>
                     </div>
 
                     <template lwc:if={hasSharedContactInfo}>
