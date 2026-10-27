@@ -245,18 +245,8 @@
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 480px) {
-    .page-content {
-        padding: 0 12px;
-    }
-
     .link-grid {
         grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 768px) {
-    .page-content {
-        padding: 0 24px;
     }
 }
 
