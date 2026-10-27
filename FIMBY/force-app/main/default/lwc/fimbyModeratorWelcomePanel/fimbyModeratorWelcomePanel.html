@@ -26,30 +26,11 @@
             <span class={onboardingBadgeClass}>{onboardingStatusLabel}</span>
         </div>
 
-        <!-- Vouching status -->
-        <div class="vouching-status">
-            <div class="vouching-row">
-                <span class="status-label">Vouching</span>
-                <span class={vouchingBadgeClass}>{vouchingStatusLabel}</span>
-            </div>
-            <template lwc:if={hasPendingVouchRequest}>
-                <p class="vouching-detail">{pendingVouchSummary}</p>
-            </template>
-            <div class="vouching-actions">
-                <button type="button"
-                        class="btn-action btn-secondary"
-                        disabled={overrideVouchDisabled}
-                        title={overrideVouchHint}
-                        onclick={handleOverrideVouchClick}>
-                    Override-vouch
-                </button>
-                <template lwc:if={isAlreadyVouched}>
-                    <span class="vouching-hint">{overrideVouchHint}</span>
-                </template>
-            </div>
-            <c-fimby-inline-banner variant="success" message={vouchingSuccess}></c-fimby-inline-banner>
-            <c-fimby-inline-banner variant="error" message={vouchingError}></c-fimby-inline-banner>
-        </div>
+        <c-fimby-moderator-vouch-action
+            class="vouch-action"
+            contact-id={panelData.contactId}
+            first-name={firstName}>
+        </c-fimby-moderator-vouch-action>
 
         <!-- Welcome message textarea -->
         <div class="welcome-field">
@@ -70,16 +51,4 @@
         </div>
         <button class="btn-action btn-link" onclick={handleViewProfile}>View Profile</button>
     </div>
-
-    <c-fimby-confirm-modal
-        is-open={showOverrideConfirm}
-        title="Mark this neighbour as vouched?"
-        message="They will be able to borrow from the lending library immediately, without waiting for a neighbour to vouch for them."
-        confirm-label="Mark as vouched"
-        processing-label="Saving..."
-        variant="primary"
-        is-processing={vouchingActionInFlight}
-        onconfirm={handleOverrideConfirmed}
-        oncancel={handleOverrideCancelled}>
-    </c-fimby-confirm-modal>
 </template>

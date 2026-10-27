@@ -418,6 +418,7 @@ private class FimbyVouchControllerTest {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             modUser = makeUserWithContact(moderator);
         }
+        makeModeratorAssignment(moderator.Id, hood.Id);
 
         Test.startTest();
         Id vrId = null;
@@ -438,6 +439,117 @@ private class FimbyVouchControllerTest {
         Contact afterVouchee = [SELECT Vouched_Status__c, Vouched_By_Moderator__c FROM Contact WHERE Id = :settling.Id];
         System.assertEquals('Vouched', afterVouchee.Vouched_Status__c);
         System.assertEquals(true, afterVouchee.Vouched_By_Moderator__c);
+    }
+
+    @isTest
+    static void overrideVouch_non_moderator_throws() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact neighbour = makeContact('Plain', 'Neighbour', 'plain@example.com', hood.Id, 'Vouched');
+        Contact settling = makeContact('Set', 'Tling', 'set2@example.com', hood.Id, 'New');
+
+        User neighbourUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            neighbourUser = makeUserWithContact(neighbour);
+        }
+
+        String message = null;
+        Test.startTest();
+        System.runAs(neighbourUser) {
+            try {
+                FimbyVouchController.overrideVouch(settling.Id);
+            } catch (AuraHandledException e) {
+                message = e.getMessage();
+            }
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, message, 'non-moderators must be rejected');
+        Contact after = [SELECT Vouched_Status__c FROM Contact WHERE Id = :settling.Id];
+        System.assertEquals('New', after.Vouched_Status__c, 'vouchee untouched');
+        System.assertEquals(0, [SELECT COUNT() FROM Vouch_Record__c WHERE Requester_Contact__c = :settling.Id]);
+    }
+
+    @isTest
+    static void overrideVouch_moderator_of_other_neighbourhood_throws() {
+        Account modHood = makeNeighbourhood('Strathcona');
+        Account otherHood = makeNeighbourhood('Grandview');
+        Contact moderator = makeContact('Mod', 'Elsewhere', 'modelse@example.com', modHood.Id, 'Vouched');
+        Contact settling = makeContact('Set', 'Away', 'setaway@example.com', otherHood.Id, 'New');
+
+        User modUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            modUser = makeUserWithContact(moderator);
+        }
+        makeModeratorAssignment(moderator.Id, modHood.Id);
+
+        Boolean thrown = false;
+        Test.startTest();
+        System.runAs(modUser) {
+            try {
+                FimbyVouchController.overrideVouch(settling.Id);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, thrown, 'moderators can only vouch inside their own neighbourhood');
+    }
+
+    @isTest
+    static void getVouchingContextForContact_flags_moderator_can_override() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact moderator = makeContact('Mod', 'Flag', 'modflag@example.com', hood.Id, 'Vouched');
+        Contact settling = makeContact('Set', 'Flag', 'setflag@example.com', hood.Id, 'New');
+
+        User modUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            modUser = makeUserWithContact(moderator);
+        }
+        makeModeratorAssignment(moderator.Id, hood.Id);
+
+        FimbyVouchController.VouchingPanelContext forNeighbour;
+        FimbyVouchController.VouchingPanelContext forSelf;
+        Test.startTest();
+        System.runAs(modUser) {
+            forNeighbour = FimbyVouchController.getVouchingContextForContact(settling.Id);
+            forSelf = FimbyVouchController.getVouchingContextForContact(moderator.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, forNeighbour.canOverrideVouch, 'moderator can vouch for a neighbour');
+        System.assertEquals(false, forSelf.canOverrideVouch, 'moderator cannot vouch for themselves');
+    }
+
+    @isTest
+    static void getVouchingContextForContact_non_moderator_cannot_override() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact viewer = makeContact('View', 'Er', 'viewer@example.com', hood.Id, 'Vouched');
+        Contact settling = makeContact('Set', 'View', 'setview@example.com', hood.Id, 'New');
+
+        User viewerUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            viewerUser = makeUserWithContact(viewer);
+        }
+
+        FimbyVouchController.VouchingPanelContext ctx;
+        Test.startTest();
+        System.runAs(viewerUser) {
+            ctx = FimbyVouchController.getVouchingContextForContact(settling.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, ctx.canOverrideVouch);
+    }
+
+    private static void makeModeratorAssignment(Id contactId, Id neighbourhoodId) {
+        insert new Moderator_Assignment__c(
+            Contact__c = contactId,
+            Neighbourhood__c = neighbourhoodId,
+            Status__c = 'Active',
+            Role__c = 'Primary',
+            Assigned_Date__c = Datetime.now()
+        );
     }
 
     /* ==================================================================
@@ -524,6 +636,40 @@ private class FimbyVouchControllerTest {
         for (FimbyVouchController.VoucherOption opt : results) returnedIds.add(opt.id);
         System.assert(returnedIds.contains(sameHood.Id), 'same-neighbourhood result found');
         System.assert(!returnedIds.contains(otherHoodContact.Id), 'cross-neighbourhood contact excluded');
+    }
+
+    @isTest
+    static void searchVouchers_peer_matches_display_name_not_legal_name() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact requester = makeContact('Mask', 'Requester', 'maskreq@example.com', hood.Id, 'New');
+        Contact maskedVoucher = makeContact('Mask', 'Voucher', 'maskv@example.com', hood.Id, 'Vouched');
+        maskedVoucher.Mask_Last_Name__c = true;
+        update maskedVoucher;
+        maskedVoucher = [
+            SELECT Id, Full_Name__c
+            FROM Contact
+            WHERE Id = :maskedVoucher.Id
+        ];
+        System.assert(
+            String.isNotBlank(maskedVoucher.Full_Name__c) && !maskedVoucher.Full_Name__c.contains('Voucher'),
+            'masked contact should expose a display name without the full last name'
+        );
+
+        User reqUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            reqUser = makeUserWithContact(requester);
+        }
+
+        Test.startTest();
+        List<FimbyVouchController.VoucherOption> results = null;
+        System.runAs(reqUser) {
+            results = FimbyVouchController.searchVouchers(maskedVoucher.Full_Name__c, 'peer');
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, results.size(), 'search by neighbour-visible display name should find the voucher');
+        System.assertEquals(maskedVoucher.Id, results[0].id);
+        System.assertEquals(maskedVoucher.Full_Name__c, results[0].name);
     }
 
     @isTest

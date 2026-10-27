@@ -65,6 +65,14 @@
                     </template>
                 </div>
 
+                <c-fimby-moderator-vouch-action
+                    class="vouch-action"
+                    compact
+                    contact-id={profile.contactId}
+                    first-name={profile.firstName}
+                    onvouchcontextchange={handleVouchContextChange}>
+                </c-fimby-moderator-vouch-action>
+
                 <!-- ========== BULK BUY TRUST INDICATOR ========== -->
                 <template lwc:if={completedBulkBuysText}>
                     <div class="trust-indicator">

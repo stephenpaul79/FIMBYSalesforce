@@ -78,7 +78,7 @@ public without sharing class FimbyVouchController {
      *              All eligibility checks (block, paused, neighbourhood, etc.) run server-side.
      *              The same constraints are re-validated on submit — never trust the client.
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<VoucherOption> searchVouchers(String searchTerm, String voucherType) {
         List<VoucherOption> options = new List<VoucherOption>();
 
@@ -93,7 +93,7 @@ public without sharing class FimbyVouchController {
             return options;
         }
 
-        String pattern = '%' + term + '%';
+        String pattern = '%' + String.escapeSingleQuotes(term) + '%';
 
         if (VOUCHER_TYPE_COMMUNITY_GROUP.equals(voucherType)) {
             return searchCommunityGroups(pattern, neighbourhoodId);
@@ -107,7 +107,7 @@ public without sharing class FimbyVouchController {
         excluded.add(requesterContactId);
 
         for (Contact c : [
-            SELECT Id, Name
+            SELECT Id, Name, Full_Name__c
             FROM Contact
             WHERE AccountId = :neighbourhoodId
               AND Id NOT IN :excluded
@@ -115,14 +115,18 @@ public without sharing class FimbyVouchController {
               AND Vouching_Disabled__c != TRUE
               AND Is_Organization_Contact__c != TRUE
               AND Is_Parent_Proxied__c != TRUE
-              AND Name LIKE :pattern
+              AND (Full_Name__c LIKE :pattern
+                   OR Name LIKE :pattern
+                   OR FirstName LIKE :pattern
+                   OR LastName LIKE :pattern)
+            WITH SYSTEM_MODE
             ORDER BY Name ASC
             LIMIT :SEARCH_RESULT_LIMIT
         ]) {
             VoucherOption opt = new VoucherOption();
             opt.id = c.Id;
             opt.voucherType = VOUCHER_TYPE_PEER;
-            opt.name = c.Name;
+            opt.name = String.isNotBlank(c.Full_Name__c) ? c.Full_Name__c : c.Name;
             opt.subtitle = 'Neighbour';
             options.add(opt);
         }
@@ -139,6 +143,7 @@ public without sharing class FimbyVouchController {
             FROM Community_Group_Neighbourhood__c
             WHERE Neighbourhood__c = :neighbourhoodId
               AND Status__c = 'Active'
+            WITH SYSTEM_MODE
         ]) {
             if (link.Organization__c != null) orgIdsInHood.add(link.Organization__c);
         }
@@ -152,6 +157,7 @@ public without sharing class FimbyVouchController {
             WHERE Related_Organization__c IN :orgIdsInHood
               AND Relationship_Type__c = 'Community_Group_Rep'
               AND Status__c = 'Approved'
+            WITH SYSTEM_MODE
         ]) {
             if (sr.Related_Organization__c != null) orgIdsWithRep.add(sr.Related_Organization__c);
         }
@@ -165,6 +171,7 @@ public without sharing class FimbyVouchController {
               AND Active__c = 'Yes'
               AND Is_Approved_Community_Group__c = TRUE
               AND Name LIKE :pattern
+            WITH SYSTEM_MODE
             ORDER BY Name ASC
             LIMIT :SEARCH_RESULT_LIMIT
         ]) {
@@ -283,6 +290,7 @@ public without sharing class FimbyVouchController {
               AND Vouching_Disabled__c != TRUE
               AND Is_Organization_Contact__c != TRUE
               AND Is_Parent_Proxied__c != TRUE
+            WITH SYSTEM_MODE
             LIMIT 1
         ]) {
             return c.Id;
@@ -302,6 +310,7 @@ public without sharing class FimbyVouchController {
             WHERE Organization__c = :accountId
               AND Neighbourhood__c = :neighbourhoodId
               AND Status__c = 'Active'
+            WITH SYSTEM_MODE
         ];
         if (linkCount == 0) return null;
 
@@ -311,6 +320,7 @@ public without sharing class FimbyVouchController {
             WHERE Id = :accountId
               AND Active__c = 'Yes'
               AND Is_Approved_Community_Group__c = TRUE
+            WITH SYSTEM_MODE
             LIMIT 1
         ]) {
             return a.Id;
@@ -333,7 +343,7 @@ public without sharing class FimbyVouchController {
 
         vr.Status__c = STATUS_APPROVED;
         vr.Decided_Date__c = System.now();
-        update vr;
+        update as system vr;
 
         // Cache fields on the vouchee Contact.
         Contact vouchee = new Contact(
@@ -345,7 +355,7 @@ public without sharing class FimbyVouchController {
             Vouched_By_Moderator__c = false,
             Vouch_Source__c = vr.Source__c
         );
-        update vouchee;
+        update as system vouchee;
 
         // Lock conversation, mirror outcome.
         lockConversation(vr.Conversation__c, STATUS_APPROVED, FimbyIdentityRepository.getActingAsContactId());
@@ -393,14 +403,14 @@ public without sharing class FimbyVouchController {
         vr.Decision_Reason__c = reason;
         vr.Decision_Details__c = details;
         vr.Counts_Toward_Requester_Signal__c = DECISION_CONCERNING.equals(reason);
-        update vr;
+        update as system vr;
 
         // Vouchee returns to settling-in state (still can request from someone else).
         Contact vouchee = new Contact(
             Id = vr.Requester_Contact__c,
             Vouched_Status__c = 'New'
         );
-        update vouchee;
+        update as system vouchee;
 
         lockConversation(vr.Conversation__c, STATUS_DECLINED, FimbyIdentityRepository.getActingAsContactId());
 
@@ -440,13 +450,13 @@ public without sharing class FimbyVouchController {
 
         vr.Status__c = STATUS_WITHDRAWN;
         vr.Decided_Date__c = System.now();
-        update vr;
+        update as system vr;
 
         Contact vouchee = new Contact(
             Id = vr.Requester_Contact__c,
             Vouched_Status__c = 'New'
         );
-        update vouchee;
+        update as system vouchee;
 
         lockConversation(vr.Conversation__c, STATUS_WITHDRAWN, vr.Requester_Contact__c);
 
@@ -488,7 +498,7 @@ public without sharing class FimbyVouchController {
         vr.Revocation_Details__c = details;
         vr.Revoked_By_Contact__c = moderatorContactId;
         vr.Counts_Toward_Voucher_Pause__c = COUNTING_REVOCATION_CATEGORIES.contains(revocationCategory);
-        update vr;
+        update as system vr;
 
         // Reset vouchee to settling-in.
         Contact vouchee = new Contact(
@@ -499,12 +509,12 @@ public without sharing class FimbyVouchController {
             Vouched_Date__c = null,
             Vouched_By_Moderator__c = false
         );
-        update vouchee;
+        update as system vouchee;
 
         // Stamp the conversation thread for audit; system message in the read-only thread.
         if (vr.Conversation__c != null) {
             try {
-                update new Conversation__c(
+                update as system new Conversation__c(
                     Id = vr.Conversation__c,
                     Vouch_Revoked_Date__c = System.now()
                 );
@@ -540,6 +550,12 @@ public without sharing class FimbyVouchController {
      * 4. Override-vouch (moderator)
      * ================================================================== */
 
+    /**
+     * @description Moderator vouches for a neighbour directly, without waiting on a peer.
+     *              Callable from the welcome panel, the stuck-vouch task, or the neighbour profile.
+     * @param vouchedContactId Contact being vouched for
+     * @return Id of the approved Vouch_Record__c
+     */
     @AuraEnabled
     public static Id overrideVouch(Id vouchedContactId) {
         enforceOwnIdentityForVouching();
@@ -547,17 +563,21 @@ public without sharing class FimbyVouchController {
             throw new AuraHandledException('Missing contact');
         }
         Id moderatorContactId = FimbyIdentityRepository.getActingAsContactId();
-        Id neighbourhoodId = FimbyIdentityRepository.getNeighbourhoodId();
+        Id neighbourhoodId = enforceModeratorOfNeighbour(moderatorContactId, vouchedContactId);
 
         // Withdraw any open request first so we maintain "one active request at a time".
-        for (Vouch_Record__c open : [
+        List<Vouch_Record__c> openRequests = [
             SELECT Id FROM Vouch_Record__c
             WHERE Requester_Contact__c = :vouchedContactId
               AND Status__c = :STATUS_PENDING
-        ]) {
+            WITH SYSTEM_MODE
+        ];
+        for (Vouch_Record__c open : openRequests) {
             open.Status__c = STATUS_WITHDRAWN;
             open.Decided_Date__c = System.now();
-            update open;
+        }
+        if (!openRequests.isEmpty()) {
+            update as system openRequests;
         }
 
         Vouch_Record__c vr = new Vouch_Record__c(
@@ -569,7 +589,7 @@ public without sharing class FimbyVouchController {
             Requested_Date__c    = System.now(),
             Decided_Date__c      = System.now()
         );
-        insert vr;
+        insert as system vr;
 
         Contact vouchee = new Contact(
             Id = vouchedContactId,
@@ -579,9 +599,25 @@ public without sharing class FimbyVouchController {
             Vouched_By_Moderator__c = true,
             Vouch_Source__c = 'Moderator_Override'
         );
-        update vouchee;
+        update as system vouchee;
 
         return vr.Id;
+    }
+
+    /**
+     * @description Throws unless the caller actively moderates the neighbour's own neighbourhood.
+     * @return The neighbour's neighbourhood Id
+     */
+    private static Id enforceModeratorOfNeighbour(Id moderatorContactId, Id vouchedContactId) {
+        List<Contact> vouchees = [
+            SELECT AccountId FROM Contact WHERE Id = :vouchedContactId WITH SYSTEM_MODE LIMIT 1
+        ];
+        Id neighbourhoodId = vouchees.isEmpty() ? null : vouchees[0].AccountId;
+        if (neighbourhoodId == null || moderatorContactId == null
+                || !FimbyModeratorQueryService.isModeratorForNeighbourhood(moderatorContactId, neighbourhoodId)) {
+            throw new AuraHandledException('Only a moderator for this neighbourhood can vouch for them this way.');
+        }
+        return neighbourhoodId;
     }
 
     /* ==================================================================
@@ -589,8 +625,11 @@ public without sharing class FimbyVouchController {
      * ================================================================== */
 
     /**
-     * @description Loads vouching context for a Contact — used by the moderator welcome panel.
-     *              Returns current state plus the active pending Vouch_Record__c (if any).
+     * @description Loads vouching context for a Contact — used by the moderator vouch action
+     *              (welcome panel, stuck-vouch task, neighbour profile). Returns current state,
+     *              the active pending Vouch_Record__c (if any), and whether the caller may override-vouch.
+     * @param contactId Contact whose vouching state is loaded
+     * @return VouchingPanelContext, or null when contactId is null
      */
     // Not cacheable: the moderator welcome panel re-reads this immediately after an
     // override-vouch write, and a cached response would hand back the pre-write state.
@@ -603,10 +642,11 @@ public without sharing class FimbyVouchController {
             SELECT Id, Vouched_Status__c, Vouched_By_Contact__c, Vouched_By_Contact__r.Name,
                    Vouched_By_Organization__c, Vouched_By_Organization__r.Name,
                    Vouched_Date__c, Vouched_By_Moderator__c,
-                   Vouching_Disabled__c, Vouching_Disabled_Reason__c
-            FROM Contact WHERE Id = :contactId LIMIT 1
+                   Vouching_Disabled__c, Vouching_Disabled_Reason__c, AccountId
+            FROM Contact WHERE Id = :contactId WITH SYSTEM_MODE LIMIT 1
         ]) {
             out.contactId = c.Id;
+            out.canOverrideVouch = callerCanOverrideVouch(c);
             out.vouchedStatus = c.Vouched_Status__c;
             out.vouchedDate = c.Vouched_Date__c;
             out.vouchedByContactName = c.Vouched_By_Contact__r?.Name;
@@ -622,6 +662,7 @@ public without sharing class FimbyVouchController {
                    Reference_Organization__c, Reference_Organization__r.Name, Requested_Date__c
             FROM Vouch_Record__c
             WHERE Requester_Contact__c = :contactId AND Status__c = :STATUS_PENDING
+            WITH SYSTEM_MODE
             ORDER BY Requested_Date__c DESC NULLS LAST
             LIMIT 1
         ]) {
@@ -634,6 +675,20 @@ public without sharing class FimbyVouchController {
         return out;
     }
 
+    private static Boolean callerCanOverrideVouch(Contact target) {
+        FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
+        if (identity == null || identity.contact == null) {
+            return false;
+        }
+        Id realContactId = identity.contact.Id;
+        Id actingAsContactId = identity.actingAsContactId;
+        if ((actingAsContactId != null && actingAsContactId != realContactId)
+                || target.Id == realContactId || target.AccountId == null) {
+            return false;
+        }
+        return FimbyModeratorQueryService.isModeratorForNeighbourhood(realContactId, target.AccountId);
+    }
+
     /**
      * @description Moderator action: clears the auto-pause and re-enables vouching for this Contact.
      */
@@ -643,7 +698,7 @@ public without sharing class FimbyVouchController {
         if (voucherContactId == null) {
             throw new AuraHandledException('Missing contact');
         }
-        update new Contact(
+        update as system new Contact(
             Id = voucherContactId,
             Vouching_Disabled__c = false,
             Vouching_Disabled_Reason__c = null,
@@ -663,7 +718,7 @@ public without sharing class FimbyVouchController {
         for (Conversation__c c : [
             SELECT Id, Context_Type__c, Vouch_Record__c, Vouch_Outcome__c,
                    Vouch_Decided_Date__c, Vouch_Revoked_Date__c, Participant_1__c, Participant_2__c
-            FROM Conversation__c WHERE Id = :conversationId LIMIT 1
+            FROM Conversation__c WHERE Id = :conversationId WITH SYSTEM_MODE LIMIT 1
         ]) {
             conv = c;
         }
@@ -686,7 +741,7 @@ public without sharing class FimbyVouchController {
                        Requester_Contact__r.Name, Requester_Contact__r.FirstName,
                        Reference_Contact__r.Name, Reference_Contact__r.FirstName,
                        Reference_Organization__r.Name
-                FROM Vouch_Record__c WHERE Id = :conv.Vouch_Record__c LIMIT 1
+                FROM Vouch_Record__c WHERE Id = :conv.Vouch_Record__c WITH SYSTEM_MODE LIMIT 1
             ]) {
                 out.requesterContactId   = vr.Requester_Contact__c;
                 out.requesterName        = vr.Requester_Contact__r?.Name;
@@ -722,6 +777,7 @@ public without sharing class FimbyVouchController {
             WHERE Reference_Contact__c = :selfId
               AND (Status__c = :STATUS_APPROVED
                    OR (Status__c = :STATUS_REVOKED AND Counts_Toward_Voucher_Pause__c = true))
+            WITH SYSTEM_MODE
             ORDER BY Decided_Date__c DESC NULLS LAST
             LIMIT 5
         ]) {
@@ -744,6 +800,7 @@ public without sharing class FimbyVouchController {
         Integer n = [
             SELECT COUNT() FROM Vouch_Record__c
             WHERE Requester_Contact__c = :requesterContactId AND Status__c = :STATUS_PENDING
+            WITH SYSTEM_MODE
         ];
         return n > 0;
     }
@@ -755,6 +812,7 @@ public without sharing class FimbyVouchController {
             WHERE Related_Organization__c = :orgAccountId
               AND Relationship_Type__c = 'Community_Group_Rep'
               AND Status__c = 'Approved'
+            WITH SYSTEM_MODE
             LIMIT 1
         ]) {
             return sr.Contact__c;
@@ -765,7 +823,7 @@ public without sharing class FimbyVouchController {
     private static Contact loadContactForVouchCheck(Id contactId) {
         for (Contact c : [
             SELECT Id, Vouching_Disabled__c, Vouched_Status__c, Is_Organization_Contact__c
-            FROM Contact WHERE Id = :contactId LIMIT 1
+            FROM Contact WHERE Id = :contactId WITH SYSTEM_MODE LIMIT 1
         ]) {
             return c;
         }
@@ -801,7 +859,7 @@ public without sharing class FimbyVouchController {
             Source__c               = source,
             Requested_Date__c       = System.now()
         );
-        insert vr;
+        insert as system vr;
 
         // 2. Server-side conversation (bypasses SCI).
         Conversation__c conv = new Conversation__c(
@@ -817,13 +875,13 @@ public without sharing class FimbyVouchController {
             Last_Message_Date__c = System.now(),
             Last_Message_Preview__c = 'Vouch request'
         );
-        insert conv;
+        insert as system conv;
 
         // 3. Link the vouch record back to the conversation.
-        update new Vouch_Record__c(Id = vr.Id, Conversation__c = conv.Id);
+        update as system new Vouch_Record__c(Id = vr.Id, Conversation__c = conv.Id);
 
         // 4. Mark the vouchee as Vouch_Requested.
-        update new Contact(Id = requesterContactId, Vouched_Status__c = 'Vouch_Requested');
+        update as system new Contact(Id = requesterContactId, Vouched_Status__c = 'Vouch_Requested');
 
         // 5. System seed message.
         insertSystemMessage(
@@ -853,7 +911,7 @@ public without sharing class FimbyVouchController {
     private static void lockConversation(Id convId, String outcome, Id decidedByContactId) {
         if (convId == null) return;
         try {
-            update new Conversation__c(
+            update as system new Conversation__c(
                 Id = convId,
                 Locked__c = true,
                 Vouch_Outcome__c = outcome,
@@ -868,7 +926,7 @@ public without sharing class FimbyVouchController {
     private static void insertSystemMessage(Id convId, String systemType, String body) {
         if (convId == null) return;
         try {
-            insert new Message__c(
+            insert as system new Message__c(
                 Conversation__c        = convId,
                 Body__c                = body,
                 Is_System_Message__c   = true,
@@ -876,7 +934,7 @@ public without sharing class FimbyVouchController {
                 Sent_Date__c           = System.now()
             );
             // Bump conversation summary so the thread surfaces in inboxes correctly.
-            update new Conversation__c(
+            update as system new Conversation__c(
                 Id = convId,
                 Last_Message_Date__c    = System.now(),
                 Last_Message_Preview__c = body.left(255)
@@ -891,7 +949,7 @@ public without sharing class FimbyVouchController {
             SELECT Id, Status__c, Source__c,
                    Requester_Contact__c, Reference_Contact__c, Reference_Organization__c,
                    Neighbourhood__c, Conversation__c
-            FROM Vouch_Record__c WHERE Id = :vouchRecordId LIMIT 1
+            FROM Vouch_Record__c WHERE Id = :vouchRecordId WITH SYSTEM_MODE LIMIT 1
         ]) {
             return vr;
         }
@@ -912,7 +970,7 @@ public without sharing class FimbyVouchController {
         if (contactId == null) return 'A neighbour';
         // Full_Name__c honours Mask_Last_Name__c ("Emily D."); never use raw Name, which
         // leaks the full last name regardless of the contact's privacy setting.
-        for (Contact c : [SELECT Full_Name__c, Name FROM Contact WHERE Id = :contactId LIMIT 1]) {
+        for (Contact c : [SELECT Full_Name__c, Name FROM Contact WHERE Id = :contactId WITH SYSTEM_MODE LIMIT 1]) {
             if (String.isNotBlank(c.Full_Name__c)) return c.Full_Name__c;
             return String.isNotBlank(c.Name) ? c.Name : 'A neighbour';
         }
@@ -937,18 +995,19 @@ public without sharing class FimbyVouchController {
               AND Status__c = :STATUS_REVOKED
               AND Counts_Toward_Voucher_Pause__c = true
               AND Revoked_Date__c >= :twelveMonthsAgo
+            WITH SYSTEM_MODE
         ];
 
         if (recentCounting < threshold) return;
 
         for (Contact voucher : [
-            SELECT Id, Vouching_Disabled__c FROM Contact WHERE Id = :voucherContactId LIMIT 1
+            SELECT Id, Vouching_Disabled__c FROM Contact WHERE Id = :voucherContactId WITH SYSTEM_MODE LIMIT 1
         ]) {
             if (voucher.Vouching_Disabled__c == true) return;
             voucher.Vouching_Disabled__c = true;
             voucher.Vouching_Disabled_Reason__c = 'Auto_Threshold';
             voucher.Vouching_Paused_Date__c = System.now();
-            update voucher;
+            update as system voucher;
 
             // Private notification to the voucher.
             FimbyNotificationService.createNotification(
@@ -974,7 +1033,7 @@ public without sharing class FimbyVouchController {
      */
     private static void sendVoucherPauseEmail(Id voucherContactId, Integer countingCount) {
         Id voucherUserId = null;
-        for (User u : [SELECT Id FROM User WHERE ContactId = :voucherContactId AND IsActive = true LIMIT 1]) {
+        for (User u : [SELECT Id FROM User WHERE ContactId = :voucherContactId AND IsActive = true WITH SYSTEM_MODE LIMIT 1]) {
             voucherUserId = u.Id;
         }
         if (voucherUserId == null) return;
@@ -1058,6 +1117,7 @@ public without sharing class FimbyVouchController {
         @AuraEnabled public String pendingReferenceContactName;
         @AuraEnabled public String pendingReferenceOrganizationName;
         @AuraEnabled public Datetime pendingRequestedDate;
+        @AuraEnabled public Boolean canOverrideVouch = false;
     }
 
     public class VouchConversationContext {

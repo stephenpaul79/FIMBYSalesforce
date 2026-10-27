@@ -280,44 +280,8 @@
 
 /* â”€â”€ Vouching status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-.vouching-status {
-    padding: 12px 14px;
-    background-color: var(--fimby-vouch-tint);
-    border: 1px solid var(--fimby-vouch-border);
-    border-radius: var(--fimby-radius-md);
+.vouch-action {
     margin: 12px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.vouching-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.vouching-detail {
-    margin: 0;
-    color: var(--fimby-text-secondary);
-    font-size: 0.85rem;
-}
-
-.vouching-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.vouching-hint {
-    color: var(--fimby-text-secondary);
-    font-size: 0.85rem;
-}
-
-.vouching-status c-fimby-inline-banner {
-    display: block;
 }
 
 /* â”€â”€ Reduced Motion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

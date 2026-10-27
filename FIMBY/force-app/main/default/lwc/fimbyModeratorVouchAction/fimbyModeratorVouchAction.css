@@ -1,0 +1,136 @@
+:host {
+    display: block;
+}
+
+.vouching-status {
+    padding: 12px 14px;
+    background-color: var(--fimby-vouch-tint);
+    border: 1px solid var(--fimby-vouch-border);
+    border-radius: var(--fimby-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vouching-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.status-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fimby-text-secondary);
+}
+
+.vouch-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--fimby-badge-radius, 9999px);
+    font-size: var(--fimby-badge-font-size, 0.75rem);
+    font-weight: var(--fimby-badge-font-weight, 600);
+    padding: var(--fimby-badge-padding, 3px 10px);
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.vouch-badge.complete {
+    background-color: var(--fimby-success-tint);
+    color: var(--fimby-success);
+    border: 1px solid var(--fimby-success-border);
+}
+
+.vouch-badge.pending {
+    background-color: var(--fimby-warning-tint);
+    color: var(--fimby-text-strong);
+    border: 1px solid var(--fimby-warning-border);
+}
+
+.vouching-detail {
+    margin: 0;
+    color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+}
+
+.vouching-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vouching-hint {
+    color: var(--fimby-text-secondary);
+    font-size: 0.85rem;
+}
+
+c-fimby-inline-banner {
+    display: block;
+}
+
+.compact-banners {
+    margin-top: 12px;
+}
+
+/* ── Buttons (Tier 1 — Action) ── */
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--fimby-btn-radius);
+    font-size: var(--fimby-btn-font-size);
+    min-height: 44px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn-action:focus-visible {
+    outline: 2px solid var(--fimby-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--fimby-focus-glow);
+}
+
+.btn-secondary {
+    background-color: var(--fimby-surface-card);
+    color: var(--fimby-text-secondary);
+    border: 1px solid var(--fimby-border-default);
+    box-shadow: var(--fimby-btn-shadow);
+    font-weight: 600;
+}
+
+.btn-secondary:hover {
+    background-color: var(--fimby-hover-bg);
+    border-color: var(--fimby-border-strong);
+}
+
+.btn-secondary:active {
+    transform: scale(0.97);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-secondary:disabled:hover {
+    background-color: var(--fimby-surface-card);
+    border-color: var(--fimby-border-default);
+}
+
+.btn-secondary:disabled:active {
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-action {
+        transition: none;
+    }
+}

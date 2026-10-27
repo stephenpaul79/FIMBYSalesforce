@@ -1,0 +1,45 @@
+<template>
+    <template lwc:if={showStatus}>
+        <div class="vouching-status">
+            <div class="vouching-row">
+                <span class="status-label">Vouching</span>
+                <span class={badgeClass}>{statusLabel}</span>
+            </div>
+            <template lwc:if={hasPendingRequest}>
+                <p class="vouching-detail">{pendingSummary}</p>
+            </template>
+            <div class="vouching-actions">
+                <button type="button"
+                        class="btn-action btn-secondary"
+                        disabled={buttonDisabled}
+                        title={buttonHint}
+                        onclick={handleButtonClick}>
+                    Override-vouch
+                </button>
+                <template lwc:if={isAlreadyVouched}>
+                    <span class="vouching-hint">{buttonHint}</span>
+                </template>
+            </div>
+            <c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
+            <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
+        </div>
+    </template>
+    <template lwc:elseif={hasMessage}>
+        <div class="compact-banners">
+            <c-fimby-inline-banner variant="success" message={successMessage}></c-fimby-inline-banner>
+            <c-fimby-inline-banner variant="error" message={errorMessage}></c-fimby-inline-banner>
+        </div>
+    </template>
+
+    <c-fimby-confirm-modal
+        is-open={showConfirm}
+        title="Mark this neighbour as vouched?"
+        message="They will be able to borrow from the lending library immediately, without waiting for a neighbour to vouch for them."
+        confirm-label="Mark as vouched"
+        processing-label="Saving..."
+        variant="primary"
+        is-processing={inFlight}
+        onconfirm={handleConfirm}
+        oncancel={handleCancel}>
+    </c-fimby-confirm-modal>
+</template>

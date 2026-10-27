@@ -18,6 +18,7 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     @track isBlocking = false;
     @track isProfileModerator = false;
     @track isActingAsProxiedChild = false;
+    @track canModeratorVouch = false;
 
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get contactIconUrl() { return `${IMPACT_ICONS}/sign.png`; }
@@ -127,14 +128,29 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
 
     get headerMenuItems() {
         if (this.isLoading || this.showNotFound) return [];
-        return [
+        const items = [];
+        if (this.canModeratorVouch) {
+            const name = this.profile.firstName || 'this neighbour';
+            items.push({ key: 'vouch', label: `Vouch for ${name}`, icon: 'VouchActive.png', display: 'kebab' });
+        }
+        items.push(
             { key: 'report', label: 'Report this profile', icon: 'warning.png', display: 'kebab' },
             { key: 'block', label: 'Block', icon: 'block-user.png', display: 'kebab' }
-        ];
+        );
+        return items;
+    }
+
+    // Only moderators of this neighbour's neighbourhood, acting as themselves, get the
+    // vouch menu item; it drops away once the neighbour is vouched.
+    handleVouchContextChange(event) {
+        const { canOverrideVouch, isVouched } = event.detail;
+        this.canModeratorVouch = canOverrideVouch && !isVouched;
     }
 
     handleHeaderMenuAction(event) {
-        if (event.detail.key === 'block') {
+        if (event.detail.key === 'vouch') {
+            this.template.querySelector('c-fimby-moderator-vouch-action')?.openConfirm();
+        } else if (event.detail.key === 'block') {
             this.showBlockConfirm = true;
         } else if (event.detail.key === 'report') {
             // A photo or a whole profile can be the problem, not just a post —
