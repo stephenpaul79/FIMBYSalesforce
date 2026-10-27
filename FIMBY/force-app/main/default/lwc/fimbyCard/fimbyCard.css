@@ -120,6 +120,12 @@
     border: 2px solid var(--fimby-divider-default);
 }
 
+.avatar-image.avatar-org,
+.avatar-placeholder.avatar-org,
+.compact-avatar.avatar-org {
+    border-radius: 22%;
+}
+
 .avatar-initials {
     font-size: 14px;
     font-weight: 600;

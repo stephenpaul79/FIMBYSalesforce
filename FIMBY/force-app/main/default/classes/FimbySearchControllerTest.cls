@@ -340,6 +340,108 @@ public class FimbySearchControllerTest {
     }
 
     @IsTest
+    static void testAskOfferResultUsesRepresentedOwnerAndMaskedAvatar() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Contact represented = FimbyTestDataFactory.createNeighbourhoodContact(testNeighbourhood.Id, false);
+        represented.Image_URL__c = 'https://example.com/hidden-photo.jpg';
+        represented.Mask_Avatar__c = true;
+        insert represented;
+
+        Needs_Offers__c representedPost = FimbyTestDataFactory.createAskOfferItems(testNeighbourhood.Id, viewer.Id, 1, true)[0];
+        representedPost.Contact__c = represented.Id;
+        representedPost.Posted_By__c = viewer.Id;
+        update representedPost;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Test.setFixedSearchResults(new List<Id>{ representedPost.Id });
+            FimbySearchController.SearchResult result = FimbySearchController.search(
+                'Test', 'askOffer', 'relevance', 20, 0
+            );
+
+            Map<Id, FimbySearchController.SearchResultItem> byId = new Map<Id, FimbySearchController.SearchResultItem>();
+            for (FimbySearchController.SearchResultItem item : result.items) {
+                byId.put(item.recordId, item);
+            }
+            FimbySearchController.SearchResultItem representedItem = byId.get(representedPost.Id);
+            System.assertNotEquals(null, representedItem, 'Represented post should be returned');
+            System.assertEquals(represented.Id, representedItem.postedByContactId,
+                'Ask/offer owner must be the represented Contact__c, not the real author');
+            System.assert(String.isBlank(representedItem.postedByImageUrl),
+                'A masked profile photo must never be returned');
+            System.assertEquals(false, representedItem.isOrgContact, 'Person owner is not an org');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testApplyOwnerPrefersOrganisationLogo() {
+        Account orgAccount = new Account(Name = 'Logo Org');
+        insert orgAccount;
+        Contact orgOwner = new Contact(
+            Id = FimbyTestDataFactory.createNeighbourhoodContact(
+                [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1].Id, true).Id,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccount.Id
+        );
+        orgOwner.putSObject('Organization_Account__r', new Account(Id = orgAccount.Id, Logo_URL__c = 'https://example.com/logo.png'));
+
+        FimbySearchController.SearchResultItem item = new FimbySearchController.SearchResultItem();
+        FimbySearchController.applyOwner(item, orgOwner.Id, orgOwner);
+
+        System.assertEquals(orgOwner.Id, item.postedByContactId, 'Owner id should be set');
+        System.assertEquals(true, item.isOrgContact, 'Org flag should be set');
+        System.assertEquals(orgAccount.Id, item.orgAccountId, 'Org account should be set');
+        System.assertEquals('https://example.com/logo.png', item.postedByImageUrl, 'Logo wins for organisations');
+    }
+
+    @IsTest
+    static void testStoryResultCarriesOrganisationIdentityAndLogo() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Account orgAccount = new Account(Name = 'The Life Test', Logo_URL__c = 'https://example.com/life-logo.png');
+        try {
+            orgAccount.RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+                .get('Organization').getRecordTypeId();
+        } catch (Exception e) { /* RT may not exist in test org */ }
+        insert orgAccount;
+        Contact orgContact = new Contact(
+            FirstName = 'The', LastName = 'Life Test', AccountId = testNeighbourhood.Id,
+            Is_Organization_Contact__c = true, Organization_Account__c = orgAccount.Id
+        );
+        insert orgContact;
+
+        Story__c orgStory = FimbyTestDataFactory.createStories(testNeighbourhood.Id, orgContact.Id, 1, false)[0];
+        orgStory.Posted_By__c = orgContact.Id;
+        orgStory.Contact__c = viewer.Id;
+        insert orgStory;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Test.setFixedSearchResults(new List<Id>{ orgStory.Id });
+            FimbySearchController.SearchResult result = FimbySearchController.search(
+                'Test', 'stories', 'relevance', 20, 0
+            );
+            FimbySearchController.SearchResultItem found;
+            for (FimbySearchController.SearchResultItem item : result.items) {
+                if (item.recordId == orgStory.Id) {
+                    found = item;
+                }
+            }
+            System.assertNotEquals(null, found, 'Org story should be returned');
+            System.assertEquals(orgContact.Id, found.postedByContactId, 'Story owner is Posted_By__c');
+            System.assertEquals(true, found.isOrgContact, 'Org flag should be set');
+            System.assertEquals(orgAccount.Id, found.orgAccountId, 'Org account should be returned');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testSearchStoriesHidesBlockedAuthor() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];

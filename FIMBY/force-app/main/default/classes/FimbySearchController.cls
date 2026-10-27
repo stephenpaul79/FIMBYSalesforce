@@ -197,7 +197,8 @@ public with sharing class FimbySearchController {
         if (filter == 'all' || filter == 'stories') {
             String storyClause = 'Story__c(Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c, ' +
                 'Contact__c, Posted_By__c, ' +
-                'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, CreatedDate';
+                'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
+                OWNER_IDENTITY_FIELDS.replace('{r}', 'Posted_By__r') + ', CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 storyClause += ' WHERE ' + buildContentFilter(neighbourhoodAccountId, adjList, sharedList, 'Posted_By__c');
             }
@@ -209,7 +210,10 @@ public with sharing class FimbySearchController {
             String aoClause = 'Needs_Offers__c(Id, Name, Details__c, Type__c, Status__c, RecordType.Name, ' +
                 'Contact__c, Posted_By__c, ' +
                 'Image_1_URL__c, Image_1_Ratio__c, Category__c, ' +
-                'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, CreatedDate';
+                'Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, ' +
+                'Contact__r.Full_Name__c, Contact__r.Display_Avatar_URL__c, ' +
+                OWNER_IDENTITY_FIELDS.replace('{r}', 'Contact__r') + ', ' +
+                OWNER_IDENTITY_FIELDS.replace('{r}', 'Posted_By__r') + ', CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 aoClause += ' WHERE ' + buildContentFilter(neighbourhoodAccountId, adjList, sharedList, 'Posted_By__c');
             }
@@ -221,7 +225,8 @@ public with sharing class FimbySearchController {
             String libClause = 'Library_Item__c(Id, Name, Description__c, Category__c, Status__c, ' +
                 'Owner_Contact__c, Listed_By__c, ' +
                 'Image_URL__c, Image_Ratio__c, ' +
-                'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, CreatedDate';
+                'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, ' +
+                OWNER_IDENTITY_FIELDS.replace('{r}', 'Owner_Contact__r') + ', CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 libClause += ' WHERE ' + buildContentFilter(neighbourhoodAccountId, adjList, sharedList, 'Owner_Contact__c');
             }
@@ -232,6 +237,7 @@ public with sharing class FimbySearchController {
         if (filter == 'all' || filter == 'skills') {
             String skillClause = 'Skill_Offer__c(Id, Name, Description_Text__c, Skill_Category__c, Status__c, ' +
                 'Owner_Contact__c, Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, ' +
+                OWNER_IDENTITY_FIELDS.replace('{r}', 'Owner_Contact__r') + ', ' +
                 'Listed_By__c, CreatedDate';
             if (String.isNotBlank(neighbourhoodAccountId)) {
                 String nId = String.escapeSingleQuotes(neighbourhoodAccountId);
@@ -392,6 +398,22 @@ public with sharing class FimbySearchController {
     // Item builders
     // ============================================
 
+    private static final String OWNER_IDENTITY_FIELDS =
+        '{r}.Is_Organization_Contact__c, {r}.Organization_Account__c, {r}.Organization_Account__r.Logo_URL__c';
+
+    @TestVisible
+    private static void applyOwner(SearchResultItem item, Id ownerId, Contact owner) {
+        item.postedByContactId = ownerId;
+        item.postedByName = owner?.Full_Name__c;
+        item.postedByImageUrl = owner?.Display_Avatar_URL__c;
+        item.isOrgContact = owner?.Is_Organization_Contact__c == true;
+        item.orgAccountId = item.isOrgContact ? owner.Organization_Account__c : null;
+        String logoUrl = item.isOrgContact ? owner.Organization_Account__r?.Logo_URL__c : null;
+        if (String.isNotBlank(logoUrl)) {
+            item.postedByImageUrl = logoUrl;
+        }
+    }
+
     private static SearchResultItem buildStoryItem(Story__c s) {
         SearchResultItem item = new SearchResultItem();
         item.recordId = s.Id;
@@ -401,8 +423,7 @@ public with sharing class FimbySearchController {
         item.subType = s.Type__c;
         item.imageUrl = s.Image_URL__c;
         item.imageRatio = s.Image_Ratio__c;
-        item.postedByName = s.Posted_By__r?.Full_Name__c;
-        item.postedByImageUrl = s.Posted_By__r?.Display_Avatar_URL__c;
+        applyOwner(item, s.Posted_By__c, s.Posted_By__r);
         item.createdDate = s.CreatedDate;
         item.status = null;
         item.hasSharedContact = null;
@@ -418,8 +439,11 @@ public with sharing class FimbySearchController {
         item.subType = no.RecordType?.Name;
         item.imageUrl = no.Image_1_URL__c;
         item.imageRatio = no.Image_1_Ratio__c;
-        item.postedByName = no.Posted_By__r?.Full_Name__c;
-        item.postedByImageUrl = no.Posted_By__r?.Display_Avatar_URL__c;
+        if (no.Contact__c != null) {
+            applyOwner(item, no.Contact__c, no.Contact__r);
+        } else {
+            applyOwner(item, no.Posted_By__c, no.Posted_By__r);
+        }
         item.createdDate = no.CreatedDate;
         item.status = no.Status__c;
         item.hasSharedContact = null;
@@ -435,8 +459,7 @@ public with sharing class FimbySearchController {
         item.subType = li.Category__c;
         item.imageUrl = li.Image_URL__c;
         item.imageRatio = li.Image_Ratio__c;
-        item.postedByName = li.Owner_Contact__r?.Full_Name__c;
-        item.postedByImageUrl = li.Owner_Contact__r?.Display_Avatar_URL__c;
+        applyOwner(item, li.Owner_Contact__c, li.Owner_Contact__r);
         item.createdDate = li.CreatedDate;
         item.status = li.Status__c;
         item.hasSharedContact = null;
@@ -452,8 +475,7 @@ public with sharing class FimbySearchController {
         item.subType = sk.Skill_Category__c;
         item.imageUrl = null;
         item.imageRatio = null;
-        item.postedByName = sk.Owner_Contact__r?.Full_Name__c;
-        item.postedByImageUrl = sk.Owner_Contact__r?.Display_Avatar_URL__c;
+        applyOwner(item, sk.Owner_Contact__c, sk.Owner_Contact__r);
         item.createdDate = sk.CreatedDate;
         item.status = sk.Status__c;
         item.hasSharedContact = null;
@@ -475,7 +497,7 @@ public with sharing class FimbySearchController {
         item.status = null;
         item.hasSharedContact = false;
         item.isOrgContact = c.Is_Organization_Contact__c == true;
-        item.isParentManaged = c.Is_Parent_Proxied__c == true;
+        item.isParentManaged = FimbyProxiedPresenceGuard.isProxied(c.Id);
         item.orgAccountId = c.Organization_Account__c;
         return item;
     }
@@ -571,6 +593,7 @@ public with sharing class FimbySearchController {
         @AuraEnabled public String imageRatio { get; set; }
         @AuraEnabled public String postedByName { get; set; }
         @AuraEnabled public String postedByImageUrl { get; set; }
+        @AuraEnabled public Id postedByContactId { get; set; }
         @AuraEnabled public Datetime createdDate { get; set; }
         @AuraEnabled public String status { get; set; }
         @AuraEnabled public Boolean hasSharedContact { get; set; }

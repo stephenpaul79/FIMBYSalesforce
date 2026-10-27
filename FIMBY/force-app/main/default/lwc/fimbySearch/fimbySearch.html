@@ -134,12 +134,14 @@
                                 onclick={handleResultClick}
                                 onkeydown={handleResultKeydown}>
                                 <div class="search-people-card">
-                                    <template lwc:if={result.processedImageUrl}>
-                                        <img src={result.processedImageUrl} alt={result.name} class="person-avatar" />
-                                    </template>
-                                    <template lwc:else>
-                                        <img src={noProfilePhotoUrl} alt="" class="person-avatar" />
-                                    </template>
+                                    <c-fimby-avatar
+                                        class="person-avatar"
+                                        src={result.processedImageUrl}
+                                        name={result.name}
+                                        contact-id={result.personContactId}
+                                        organization-account-id={result.orgAccountId}
+                                        is-organization={result.isOrgContact}
+                                        size="40"></c-fimby-avatar>
                                     <div class="person-info">
                                         <div class="person-name">{result.name}</div>
                                         <template lwc:if={result.isParentManaged}>
@@ -193,6 +195,9 @@
                                     show-menu="false"
                                     user-name={result.postedByName}
                                     avatar-url={result.processedAvatarUrl}
+                                    contact-id={result.postedByContactId}
+                                    organization-account-id={result.orgAccountId}
+                                    is-org-poster={result.isOrgContact}
                                     timestamp={result.createdDate}
                                     images={result.images}
                                     badge-label={result.badgeLabel}

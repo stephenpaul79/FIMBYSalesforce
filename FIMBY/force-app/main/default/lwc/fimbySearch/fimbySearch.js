@@ -92,7 +92,6 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
 
     get searchHintIconUrl()    { return `${IMPACT_ICONS}/Magnify.png`; }
     get noResultsIconUrl()     { return `${IMPACT_ICONS}/Magnify.png`; }
-    get noProfilePhotoUrl()    { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get greenCircleUrl()       { return `${IMPACT_ICONS}/GreenCircle.png`; }
 
     get searchFilters() {
@@ -338,6 +337,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             return {
                 ...item,
                 isPeople,
+                personContactId: isPeople ? item.recordId : null,
                 showContactBadge: isPeople,
                 processedImageUrl: imageUrl,
                 processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),

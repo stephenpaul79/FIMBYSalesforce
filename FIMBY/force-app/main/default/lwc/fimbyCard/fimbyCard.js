@@ -44,6 +44,10 @@ export default class FimbyCard extends LightningElement {
     @api isOrgPoster = false;
     @api posterProfileUrl = '';
 
+    // Avatar tone identity (runtime only — not Builder properties)
+    @api contactId;
+    @api organizationAccountId;
+
     // Media properties (legacy single-image API — still works)
     @api showMedia = false;
     @api imageUrl = '';
@@ -384,7 +388,32 @@ export default class FimbyCard extends LightningElement {
     }
 
     get avatarToneStyle() {
-        return getAvatarToneStyle(this.userName);
+        return getAvatarToneStyle({
+            contactId: this.contactId,
+            organizationAccountId: this.organizationAccountId,
+            name: this.userName,
+            isOrganization: !!this.isOrgPoster
+        });
+    }
+
+    get _orgShapeSuffix() {
+        return this.isOrgPoster ? ' avatar-org' : '';
+    }
+
+    get avatarImageClass() {
+        return `avatar-image${this._orgShapeSuffix}`;
+    }
+
+    get avatarPlaceholderClass() {
+        return `avatar-placeholder${this._orgShapeSuffix}`;
+    }
+
+    get compactAvatarImageClass() {
+        return `compact-avatar${this._orgShapeSuffix}`;
+    }
+
+    get compactAvatarInitialsClass() {
+        return `compact-avatar compact-avatar-initials${this._orgShapeSuffix}`;
     }
 
     get avatarRole() {

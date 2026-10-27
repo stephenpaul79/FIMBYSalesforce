@@ -210,7 +210,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     // Set on logout so pagehide/disconnected saves can't resurrect the cache.
     _suppressStateSave = false;
 
-    defaultAvatarUrl = `${IMPACT_ICONS}/NoProfilePhoto.png`;
     feedColumnSizes = SIZES.feedColumn;
 
     /* ===============================================================
@@ -915,10 +914,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                     { key: 'available', label: `${availVal} available`, cssClass: availVal > 0 ? 'alloc-pill-compact alloc-pill-available' : 'alloc-pill-compact alloc-pill-available alloc-pill-zero' }
                 ];
             }
-            const orgAvatarFallback = `${IMPACT_ICONS}/NoOrgPhoto.png`;
-            const avatarUrl = item.postedByImageUrl
-                ? avatarImageUrl(item.postedByImageUrl)
-                : (isOrg ? orgAvatarFallback : this.defaultAvatarUrl);
+            const avatarUrl = item.postedByImageUrl ? avatarImageUrl(item.postedByImageUrl) : '';
             const posterProfileUrl = profilePathForContact({
                 contactId: item.ownerContactId,
                 isOrgContact: isOrg,

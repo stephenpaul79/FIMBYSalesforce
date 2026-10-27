@@ -7,8 +7,8 @@
                 <div lwc:if={showAvatar} class={avatarWrapperClass}
                      role={avatarRole} tabindex={avatarTabIndex} aria-label={avatarActionLabel}
                      onclick={handleAvatarClick} onkeydown={handleAvatarKeydown}>
-                    <img lwc:if={showAvatarImage} src={avatarUrl} alt={avatarAlt} class="avatar-image" onerror={handleAvatarError}>
-                    <div lwc:else class="avatar-placeholder" style={avatarToneStyle}>
+                    <img lwc:if={showAvatarImage} src={avatarUrl} alt={avatarAlt} class={avatarImageClass} onerror={handleAvatarError}>
+                    <div lwc:else class={avatarPlaceholderClass} style={avatarToneStyle}>
                         <span class="avatar-initials" aria-hidden="true">{userInitials}</span>
                     </div>
                 </div>
@@ -230,10 +230,10 @@
                     </template>
                     <div class="owner-identity">
                         <template lwc:if={showAvatarImage}>
-                            <img src={avatarUrl} alt="" class="compact-avatar" onerror={handleAvatarError}>
+                            <img src={avatarUrl} alt="" class={compactAvatarImageClass} onerror={handleAvatarError}>
                         </template>
                         <template lwc:elseif={showAvatarFallback}>
-                            <span class="compact-avatar compact-avatar-initials" style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
+                            <span class={compactAvatarInitialsClass} style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
                         </template>
                         <span lwc:if={userName} class="compact-owner-name" title={userName}>{userName}</span>
                     </div>
@@ -281,10 +281,10 @@
             <div class="card-footer-compact">
                 <div class="compact-owner">
                     <template lwc:if={showAvatarImage}>
-                        <img src={avatarUrl} alt="" class="compact-avatar" onerror={handleAvatarError}>
+                        <img src={avatarUrl} alt="" class={compactAvatarImageClass} onerror={handleAvatarError}>
                     </template>
                     <template lwc:elseif={showAvatarFallback}>
-                        <span class="compact-avatar compact-avatar-initials" style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
+                        <span class={compactAvatarInitialsClass} style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
                     </template>
                     <span lwc:if={userName} class="compact-owner-name">{userName}</span>
                 </div>

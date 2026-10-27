@@ -154,4 +154,35 @@ describe("c-fimby-card avatar fallback", () => {
       );
     }
   );
+
+  it.each(LAYOUTS)(
+    "keys the tone on the owner's Contact Id, not the name (%s layout)",
+    (layout) => {
+      const element = createCard({ layout, contactId: "003OL00000tXhWNYA0" });
+      const circle = element.shadowRoot.querySelector(
+        ".avatar-placeholder, .compact-avatar-initials"
+      );
+      expect(circle.getAttribute("style")).toContain("--fimby-earth-terracotta");
+      expect(circle.classList).not.toContain("avatar-org");
+    }
+  );
+
+  it.each(LAYOUTS)(
+    "renders an organisation without a logo as a rounded square (%s layout)",
+    (layout) => {
+      const element = createCard({
+        layout,
+        userName: "The Life",
+        isOrgPoster: true,
+        contactId: "003OL00000xUb3OYAS",
+        organizationAccountId: "001OL00000qGuI3YAK"
+      });
+      const square = element.shadowRoot.querySelector(
+        ".avatar-placeholder, .compact-avatar-initials"
+      );
+      expect(square.classList).toContain("avatar-org");
+      expect(square.getAttribute("style")).toContain("--fimby-earth-ochre");
+      expect(square.textContent).toBe("TL");
+    }
+  );
 });

@@ -146,6 +146,8 @@
                                 show-menu={feedItem.showCardMenu}
                                 user-name={feedItem.postedByName}
                                 avatar-url={feedItem.avatarUrl}
+                                contact-id={feedItem.ownerContactId}
+                                organization-account-id={feedItem.orgAccountId}
                                 is-org-poster={feedItem.isOrgPoster}
                                 parent-managed={feedItem.isParentManaged}
                                 poster-profile-url={feedItem.posterProfileUrl}
@@ -185,6 +187,8 @@
                                 show-menu={feedItem.showCardMenu}
                                 user-name={feedItem.postedByName}
                                 avatar-url={feedItem.avatarUrl}
+                                contact-id={feedItem.ownerContactId}
+                                organization-account-id={feedItem.orgAccountId}
                                 is-org-poster={feedItem.isOrgPoster}
                                 parent-managed={feedItem.isParentManaged}
                                 poster-profile-url={feedItem.posterProfileUrl}
@@ -226,7 +230,13 @@
                                     <div class={feedItem.libraryAvatarClass}
                                          onclick={handleLibraryAvatarClick}
                                          data-url={feedItem.posterProfileUrl}>
-                                        <img src={feedItem.avatarUrl} alt="" class="library-listed-avatar" />
+                                        <c-fimby-avatar
+                                            src={feedItem.avatarUrl}
+                                            name={feedItem.postedByName}
+                                            contact-id={feedItem.ownerContactId}
+                                            organization-account-id={feedItem.orgAccountId}
+                                            is-organization={feedItem.isOrgPoster}
+                                            size="40"></c-fimby-avatar>
                                     </div>
                                     <div class="library-listed-identity">
                                         <span class="library-listed-name">{feedItem.postedByName}</span>

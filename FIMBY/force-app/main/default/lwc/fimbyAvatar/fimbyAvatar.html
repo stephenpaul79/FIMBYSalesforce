@@ -1,0 +1,16 @@
+<template>
+    <span
+        class={wrapperClass}
+        style={wrapperStyle}
+        role={wrapperRole}
+        aria-label={label}
+        aria-hidden={wrapperAriaHidden}
+    >
+        <template lwc:if={showImage}>
+            <img class="avatar-image" src={src} alt="" onerror={handleImageError} />
+        </template>
+        <template lwc:else>
+            <span class="avatar-initials" aria-hidden="true">{initials}</span>
+        </template>
+    </span>
+</template>
