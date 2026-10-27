@@ -1,0 +1,38 @@
+# Salesforce Code Analyzer configuration for FIMBY.
+# Security rules (CRUD/FLS, sharing, SOQL injection, XSS) keep their default severity.
+
+ignores:
+  files:
+    - "**/node_modules/**"
+    - "**/.sfdx/**"
+    - "**/.sf/**"
+    - "**/.ai/**"
+    - "FIMBY Website/**"
+    - "FIMBY Social Media/**"
+    - "FIMBY Launch/**"
+    - "fimby-mobile-app/**"
+    - "fimby-auth-bridge/**"
+
+rules:
+  eslint:
+    # FIMBY styles with its own --fimby-* tokens, not SLDS 2 styling hooks.
+    "@salesforce-ux/slds/no-hardcoded-values-slds2":
+      disabled: true
+    "@salesforce-ux/slds/no-slds-namespace-for-custom-hooks":
+      disabled: true
+    # The project's ESLint config requires targeted disables (e.g. no-async-operation for timers).
+    "@lwc/lwc-platform/no-inline-disable":
+      severity: Info
+
+  pmd:
+    ApexDoc:
+      severity: Info
+    IfStmtsMustUseBraces:
+      severity: Info
+    IfElseStmtsMustUseBraces:
+      severity: Info
+    # Test methods use descriptive underscore names (testX_WhenY).
+    MethodNamingConventions:
+      severity: Info
+    AvoidBooleanMethodParameters:
+      severity: Info
