@@ -406,8 +406,10 @@ public without sharing class FimbyEmailHtmlBuilder {
             Notification__c n = notifications[i];
             FimbyEmailAlertQueueable.AlertCardEnrichment enrich = String.isNotBlank(n.Related_Record_Id__c)
                 ? safeMap.get(n.Related_Record_Id__c) : null;
+            FimbyEmailAlertQueueable.AlertCardEnrichment actor = n.Actor_Contact__c != null
+                ? safeMap.get(FimbyEmailAlertQueueable.actorKey(n.Actor_Contact__c)) : null;
             Boolean includeGreeting = (i == 0);
-            html += buildNotificationCard(n, enrich, includeGreeting ? recipientFirstName : null, recipientContactId);
+            html += buildNotificationCard(n, enrich, actor, includeGreeting ? recipientFirstName : null, recipientContactId);
         }
 
         if (notifications.size() > MAX_ALERT_CARDS) {
@@ -421,13 +423,6 @@ public without sharing class FimbyEmailHtmlBuilder {
         return truncateIfNeeded(html);
     }
 
-    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich) {
-        return buildNotificationCard(n, enrich, null, null);
-    }
-
-    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName) {
-        return buildNotificationCard(n, enrich, recipientFirstName, null);
-    }
 
     /**
      * @description True when this notification's `Title__c` is a de-actored verb phrase
@@ -459,7 +454,13 @@ public without sharing class FimbyEmailHtmlBuilder {
         return String.isBlank(title) ? n.Actor_Name__c : n.Actor_Name__c + ' ' + title;
     }
 
-    private static String buildNotificationCard(Notification__c n, FimbyEmailAlertQueueable.AlertCardEnrichment enrich, String recipientFirstName, Id recipientContactId) {
+    private static String buildNotificationCard(
+        Notification__c n,
+        FimbyEmailAlertQueueable.AlertCardEnrichment enrich,
+        FimbyEmailAlertQueueable.AlertCardEnrichment actor,
+        String recipientFirstName,
+        Id recipientContactId
+    ) {
         String accentColor = getAccentColorForType(n.Type__c);
         String ctaUrl = buildCtaUrl(n, recipientContactId);
         String notifType = n.Type__c != null ? n.Type__c : '';
@@ -475,10 +476,21 @@ public without sharing class FimbyEmailHtmlBuilder {
         // For FIMBY system messages we omit the visible first-name pill since the badge/icon
         // already conveys system origin (avoids "FIMBY ... FIMBY ..." duplication).
         Boolean isSystemActor = String.isNotBlank(n.Actor_Name__c) && n.Actor_Name__c.equalsIgnoreCase('FIMBY');
-        String avatarImageUrl = enrich != null ? enrich.actorImageUrl : null;
-        String avatarFirstName = enrich != null && String.isNotBlank(enrich.actorFirstName)
-            ? enrich.actorFirstName : extractFirstName(n.Actor_Name__c);
-        String avatarHtml = buildAvatar(avatarImageUrl, avatarFirstName, accentColor);
+        String avatarFirstName = actor != null && String.isNotBlank(actor.actorFirstName)
+            ? actor.actorFirstName : extractFirstName(n.Actor_Name__c);
+        String avatarHtml;
+        if (isSystemActor) {
+            avatarHtml = buildSystemAvatar(accentColor);
+        } else {
+            String avatarName = actor != null && String.isNotBlank(actor.actorName) ? actor.actorName : n.Actor_Name__c;
+            avatarHtml = buildAvatar(
+                actor != null ? actor.actorImageUrl : null,
+                avatarName,
+                actor != null ? actor.actorContactId : n.Actor_Contact__c,
+                actor != null ? actor.actorOrgAccountId : null,
+                actor != null && actor.actorIsOrganization
+            );
+        }
         String avatarPillName = isSystemActor ? '' : (avatarFirstName != null ? avatarFirstName : '');
 
         // Actor sub-line under the title is redundant when the headline already names the
@@ -876,18 +888,33 @@ public without sharing class FimbyEmailHtmlBuilder {
         return html;
     }
 
-    public static String buildAvatar(String imageUrl, String firstName, String accentColor) {
-        String color = String.isNotBlank(accentColor) ? accentColor : '#67BBD2';
-        String initial = String.isNotBlank(firstName) ? escapeHtml(firstName.substring(0, 1).toUpperCase()) : '?';
+    /**
+     * Person/organisation avatar matching the in-app c-fimby-avatar contract: the visible
+     * photo when present, otherwise two initials on the identity's light-theme earth tone
+     * (FimbyAvatarTone). Organisations use a rounded square instead of a circle.
+     */
+    public static String buildAvatar(String imageUrl, String displayName, Id contactId, Id organizationAccountId, Boolean isOrganization) {
+        String radius = isOrganization == true ? '22%' : '50%';
         String url = completeImageUrl(imageUrl);
         if (String.isNotBlank(url)) {
             return '<img src="' + url + '" width="32" height="32" alt="" '
-                + 'style="border-radius:50%;vertical-align:middle;margin-right:8px;border:0;" />';
+                + 'style="border-radius:' + radius + ';vertical-align:middle;margin-right:8px;border:0;object-fit:cover;" />';
         }
-        return '<span style="display:inline-block;width:32px;height:32px;border-radius:50%;'
-            + 'background:' + color + ';color:#FFFFFF;' + F + 'font-size:14px;font-weight:700;'
+        String tone = FimbyAvatarTone.toneHex(contactId, organizationAccountId, displayName, isOrganization);
+        return buildInitialsBadge(escapeHtml(FimbyAvatarTone.initials(displayName)), tone, radius, '13px');
+    }
+
+    /** FIMBY system actors keep the notification accent colour; they are not hashed as a person. */
+    public static String buildSystemAvatar(String accentColor) {
+        String color = String.isNotBlank(accentColor) ? accentColor : CTA_BG;
+        return buildInitialsBadge('F', color, '50%', '14px');
+    }
+
+    private static String buildInitialsBadge(String text, String background, String radius, String fontSize) {
+        return '<span style="display:inline-block;width:32px;height:32px;border-radius:' + radius + ';'
+            + 'background:' + background + ';color:#FFFFFF;' + F + 'font-size:' + fontSize + ';font-weight:700;'
             + 'line-height:32px;text-align:center;vertical-align:middle;margin-right:8px;">'
-            + initial + '</span>';
+            + text + '</span>';
     }
 
     public static String buildThermometer(Decimal reserved, Decimal total, String unitLabel, Decimal costPerShare) {

@@ -101,20 +101,28 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void buildAlertCards_withEnrichment_showsAvatarAndThumbnail() {
+        Id actorId = '003000000000009AAA';
         Notification__c n = new Notification__c(
             Title__c = 'Enriched Alert',
             Type__c = 'Response',
             Actor_Name__c = 'Maria Garcia',
+            Actor_Contact__c = actorId,
             Related_Record_Id__c = '0015f000003TestAAA',
             Action_URL__c = '/response-reply?recordId=test'
         );
         FimbyEmailAlertQueueable.AlertCardEnrichment enrich = new FimbyEmailAlertQueueable.AlertCardEnrichment();
-        enrich.actorImageUrl = 'https://example.com/avatar.jpg';
-        enrich.actorFirstName = 'Maria';
         enrich.itemImageUrl = 'https://example.com/post-image.jpg';
+        FimbyEmailAlertQueueable.AlertCardEnrichment actor = new FimbyEmailAlertQueueable.AlertCardEnrichment();
+        actor.actorContactId = actorId;
+        actor.actorName = 'Maria Garcia';
+        actor.actorFirstName = 'Maria';
+        actor.actorImageUrl = 'https://example.com/avatar.jpg';
 
         Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> enrichMap =
-            new Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment>{ '0015f000003TestAAA' => enrich };
+            new Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment>{
+                '0015f000003TestAAA' => enrich,
+                FimbyEmailAlertQueueable.actorKey(actorId) => actor
+            };
 
         String html = FimbyEmailHtmlBuilder.buildAlertCards(new List<Notification__c>{ n }, enrichMap);
         System.assert(html.contains('avatar.jpg'), 'Should render real avatar image');
@@ -361,24 +369,52 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void buildAvatar_withImage_producesImgCircle() {
-        String html = FimbyEmailHtmlBuilder.buildAvatar('https://example.com/photo.jpg', 'Jane', null);
+        String html = FimbyEmailHtmlBuilder.buildAvatar('https://example.com/photo.jpg', 'Jane Doe', null, null, false);
         System.assert(html.contains('<img'), 'Should produce img tag');
         System.assert(html.contains('border-radius:50%'), 'Should be circular');
         System.assert(html.contains('photo.jpg'), 'Should use image URL');
     }
 
     @IsTest
-    static void buildAvatar_noImage_producesInitial() {
-        String html = FimbyEmailHtmlBuilder.buildAvatar(null, 'Jane', '#67BBD2');
-        System.assert(html.contains('J'), 'Should contain first initial');
-        System.assert(html.contains('#67BBD2'), 'Should use accent color');
+    static void buildAvatar_noImage_usesTwoInitialsOnContactTone() {
+        Id contactId = '003000000000001AAA';
+        String html = FimbyEmailHtmlBuilder.buildAvatar(null, 'Jane Doe', contactId, null, false);
+        System.assert(html.contains('>JD</span>'), 'Should render two initials: ' + html);
+        String expectedTone = FimbyAvatarTone.toneHex(contactId, null, 'Jane Doe', false);
+        System.assert(html.contains('background:' + expectedTone), 'Should use the contact earth tone');
+        System.assert(!html.contains('#67BBD2'), 'Must not use the CTA teal fallback');
         System.assert(!html.contains('<img'), 'Should not have img tag');
     }
 
     @IsTest
+    static void buildAvatar_sameContactSameToneRegardlessOfName() {
+        Id contactId = '003000000000002AAA';
+        String a = FimbyEmailHtmlBuilder.buildAvatar(null, 'Amir Haddad', contactId, null, false);
+        String b = FimbyEmailHtmlBuilder.buildAvatar(null, 'Amir H.', contactId, null, false);
+        String tone = FimbyAvatarTone.toneHex(contactId, null, null, false);
+        System.assert(a.contains(tone) && b.contains(tone), 'Contact Id keys the tone, not the display name');
+    }
+
+    @IsTest
+    static void buildAvatar_organisationIsRoundedSquare() {
+        Id orgAccountId = '001000000000003AAA';
+        String html = FimbyEmailHtmlBuilder.buildAvatar(null, 'The Life', null, orgAccountId, true);
+        System.assert(html.contains('border-radius:22%'), 'Organisations render as a rounded square');
+        System.assert(html.contains('>TL</span>'), 'Should render org initials');
+        System.assert(html.contains(FimbyAvatarTone.toneHex(null, orgAccountId, 'The Life', true)));
+    }
+
+    @IsTest
     static void buildAvatar_nullName_showsQuestionMark() {
-        String html = FimbyEmailHtmlBuilder.buildAvatar(null, null, null);
+        String html = FimbyEmailHtmlBuilder.buildAvatar(null, null, null, null, false);
         System.assert(html.contains('?'), 'Should show ? for null name');
+    }
+
+    @IsTest
+    static void buildSystemAvatar_usesAccentNotTone() {
+        String html = FimbyEmailHtmlBuilder.buildSystemAvatar('#123456');
+        System.assert(html.contains('#123456'), 'System actors keep the accent colour');
+        System.assert(html.contains('>F</span>'));
     }
 
     @IsTest

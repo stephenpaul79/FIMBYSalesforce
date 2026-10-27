@@ -280,23 +280,43 @@ private class FimbyEmailAlertQueueableTest {
     }
 
     @IsTest
-    static void enrichNotifications_withConversation_returnsEnrichment() {
+    static void enrichNotifications_withActorContact_resolvesStampedActor() {
         Contact c = getTestContact();
-        Conversation__c conv = new Conversation__c(
-            Participant_1__c = c.Id,
-            Participant_2__c = c.Id,
-            Last_Message_Sender__c = c.Id
-        );
-        insert conv;
-
         Notification__c n = new Notification__c(
             Title__c = 'Conv notif', Type__c = 'Message',
-            Related_Record_Id__c = String.valueOf(conv.Id),
-            Related_Record_Type__c = 'Conversation__c'
+            Actor_Contact__c = c.Id, Actor_Name__c = 'Someone'
         );
         Map<String, FimbyEmailAlertQueueable.AlertCardEnrichment> result =
             FimbyEmailAlertQueueable.enrichNotifications(new List<Notification__c>{ n });
-        System.assert(result.containsKey(String.valueOf(conv.Id)), 'Should have enrichment for conversation');
+        FimbyEmailAlertQueueable.AlertCardEnrichment actor = result.get(FimbyEmailAlertQueueable.actorKey(c.Id));
+        System.assertNotEquals(null, actor, 'Stamped actor should be enriched directly');
+        System.assertEquals(c.Id, actor.actorContactId);
+        System.assertEquals(false, actor.actorIsOrganization);
+    }
+
+    @IsTest
+    static void toActorEnrichment_maskedPersonNeverUsesRawPhoto() {
+        Contact masked = (Contact) JSON.deserialize(
+            '{"attributes":{"type":"Contact"},"Id":"003000000000001AAA","FirstName":"Amir",'
+            + '"Full_Name__c":"Amir Haddad","Image_URL__c":"https://example.com/raw.jpg",'
+            + '"Display_Avatar_URL__c":null,"Is_Organization_Contact__c":false}',
+            Contact.class
+        );
+        FimbyEmailAlertQueueable.AlertCardEnrichment e = FimbyEmailAlertQueueable.toActorEnrichment(masked);
+        System.assertEquals(null, e.actorImageUrl, 'Masked person must not expose the raw photo');
+        System.assertEquals('Amir Haddad', e.actorName);
+    }
+
+    @IsTest
+    static void toActorEnrichment_organisationUsesLogoAndName() {
+        Contact org = new Contact(Id = '003000000000002AAA', Is_Organization_Contact__c = true,
+            Organization_Account__c = '001000000000002AAA');
+        org.putSObject('Organization_Account__r', new Account(Name = 'The Life', Logo_URL__c = 'https://example.com/logo.png'));
+        FimbyEmailAlertQueueable.AlertCardEnrichment e = FimbyEmailAlertQueueable.toActorEnrichment(org);
+        System.assertEquals(true, e.actorIsOrganization);
+        System.assertEquals('The Life', e.actorName);
+        System.assertEquals('https://example.com/logo.png', e.actorImageUrl);
+        System.assertEquals((Id) '001000000000002AAA', e.actorOrgAccountId);
     }
 
     @IsTest

@@ -1,78 +1,87 @@
 // ============================================================================
-// SEND DIGEST EMAIL MANUALLY
+// SEND DIGEST EMAIL MANUALLY (controlled Testhood render test)
 // ============================================================================
-// Sends the digest to ONE user so you can eyeball the new image layout
-// without emailing every active neighbour. Does not write a digest log row.
+// Builds one real Testhood neighbourhood digest and sends it to ONE allowlisted
+// inbox so you can eyeball the layout without emailing any neighbour.
 //
-// Picks the recipient by USERNAME (Setup -> Users -> Username column), which is
-// globally unique across the org, so you always know exactly who you selected.
-// (Email addresses are NOT unique - the same email can sit on many Contacts and
-// active/inactive Users, which is why the old email-based version was ambiguous.)
+// - The source User (exact Username) only selects the neighbourhood + greeting.
+//   It must be active and belong to the Testhood account.
+// - The email goes ONLY to DESTINATION_ADDRESS via setToAddresses, never to the
+//   source User or any Contact (no setTargetObjectId).
+// - Direct one-message send: no queueable, no batch, no Digest_Email_Log__c row,
+//   so it cannot advance or collide with scheduled-digest checkpoints.
+// - Fails loudly (throws) on any precondition or send error.
 //
-// Run via: Salesforce Developer Console -> Debug -> Open Execute Anonymous
-//          window, OR  `sf apex run --file scripts/apex/send-digest-email-manually.apex`
+// Run from the Salesforce project root:
+//   sf apex run --file "scripts/apex/send-digest-email-manually.apex"
 // ============================================================================
 
-String targetUsername = 'stephen@fimby.com';   // <-- set the exact Username (Setup > Users)
-String frequency      = 'Weekly';                            // 'Daily' or 'Weekly'
-Date windowStart      = Date.today().addDays(-8);            // widen if the window had no posts
-Date windowEnd        = Date.today().addDays(-1);
+String SOURCE_USERNAME        = 'reviewer@fimby.com';
+String REQUIRED_NEIGHBOURHOOD = 'Testhood';
+String DESTINATION_ADDRESS    = 'fimby@strathconavineyard.com';
+String frequency              = 'Weekly';
+Date windowEnd                = Date.today();
+Date windowStart              = windowEnd.addDays(-14);
 
 List<User> users = [
     SELECT Id, FirstName, Username, IsActive, Contact.AccountId, Contact.Account.Name
     FROM User
-    WHERE Username = :targetUsername
+    WHERE Username = :SOURCE_USERNAME
     LIMIT 1
 ];
-
 if (users.isEmpty()) {
-    System.debug('STOP: no User found with Username = ' + targetUsername
-        + '. Check Setup > Users for the exact Username.');
-} else {
-    User u = users[0];
-
-    if (!u.IsActive) {
-        System.debug('STOP: User ' + targetUsername + ' is inactive - cannot receive email.');
-    } else if (u.Contact.AccountId == null) {
-        System.debug('STOP: User ' + targetUsername + ' has no Contact/neighbourhood, '
-            + 'so there is no neighbourhood digest to build.');
-    } else {
-        Id nhId = u.Contact.AccountId;
-        String nhName = u.Contact.Account.Name;
-
-        FimbyDigestEmailBuilder.DigestResult content =
-            FimbyDigestEmailBuilder.buildDigestContent(nhId, nhName, frequency, windowStart, windowEnd);
-
-        if (content.isEmpty) {
-            System.debug('No feed-card content for ' + nhName + ' in window '
-                + windowStart + ' to ' + windowEnd + '. Widen the window and retry.');
-        } else {
-            String subject = 'Your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
-            String displaySubject = 'Here\'s your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
-
-            String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
-                content.html, displaySubject, nhName,
-                null,
-                false, false, u.FirstName, true
-            );
-
-            Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-            email.setTargetObjectId(u.Id);
-            email.setTreatTargetObjectAsRecipient(true);
-            email.setSubject(subject);
-            email.setHtmlBody(html);
-            email.setSaveAsActivity(false);
-
-            List<OrgWideEmailAddress> oweas = [
-                SELECT Id FROM OrgWideEmailAddress WHERE DisplayName = 'FIMBY' LIMIT 1
-            ];
-            if (!oweas.isEmpty()) {
-                email.setOrgWideEmailAddressId(oweas[0].Id);
-            }
-
-            Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
-            System.debug('Sent test digest to ' + targetUsername
-                + ' (' + content.itemCount + ' cards).');
-        }
-    }
+    throw new IllegalArgumentException('STOP: no User with Username = ' + SOURCE_USERNAME);
 }
+User u = users[0];
+if (!u.IsActive) {
+    throw new IllegalArgumentException('STOP: source User ' + SOURCE_USERNAME + ' is inactive.');
+}
+if (u.Contact == null || u.Contact.AccountId == null || u.Contact.Account.Name != REQUIRED_NEIGHBOURHOOD) {
+    throw new IllegalArgumentException('STOP: source User must belong to ' + REQUIRED_NEIGHBOURHOOD
+        + ' (found: ' + (u.Contact == null ? 'no Contact' : u.Contact.Account?.Name) + ').');
+}
+
+List<OrgWideEmailAddress> oweas = [
+    SELECT Id FROM OrgWideEmailAddress WHERE DisplayName = 'FIMBY' LIMIT 1
+];
+if (oweas.isEmpty()) {
+    throw new IllegalArgumentException('STOP: FIMBY Org-Wide Email Address not found.');
+}
+
+Id nhId = u.Contact.AccountId;
+String nhName = u.Contact.Account.Name;
+
+FimbyDigestEmailBuilder.DigestResult content =
+    FimbyDigestEmailBuilder.buildDigestContent(nhId, nhName, frequency, windowStart, windowEnd);
+if (content.isEmpty) {
+    throw new IllegalArgumentException('STOP: no feed-card content for ' + nhName + ' in window '
+        + windowStart + ' to ' + windowEnd + '.');
+}
+
+String subject = 'Your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
+String displaySubject = 'Here\'s your ' + frequency.toLowerCase() + ' neighbourhood update (test)';
+String html = FimbyEmailHtmlBuilder.wrapInBrandedShell(
+    content.html, displaySubject, nhName,
+    null,
+    false, false, u.FirstName, true
+);
+
+Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+email.setToAddresses(new List<String>{ DESTINATION_ADDRESS });
+email.setSubject(subject);
+email.setHtmlBody(html);
+email.setSaveAsActivity(false);
+email.setOrgWideEmailAddressId(oweas[0].Id);
+
+List<Messaging.SendEmailResult> results =
+    Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email }, false);
+Messaging.SendEmailResult result = results[0];
+if (!result.isSuccess()) {
+    List<String> errors = new List<String>();
+    for (Messaging.SendEmailError err : result.getErrors()) {
+        errors.add(err.getStatusCode() + ': ' + err.getMessage());
+    }
+    throw new IllegalArgumentException('SEND FAILED: ' + String.join(errors, '; '));
+}
+System.debug('SENT test digest for ' + nhName + ' to ' + DESTINATION_ADDRESS
+    + ' (' + content.itemCount + ' cards, window ' + windowStart + ' to ' + windowEnd + ').');

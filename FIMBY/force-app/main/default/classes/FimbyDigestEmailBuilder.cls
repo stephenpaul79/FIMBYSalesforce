@@ -488,6 +488,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__r.Name,
                    Posted_By__r.Organization_Account__r.Logo_URL__c,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
+                   Posted_By__r.Id, Posted_By__r.Organization_Account__c,
                    CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId
@@ -530,7 +531,8 @@ public without sharing class FimbyDigestEmailBuilder {
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
         String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
             'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
-            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
+            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, '
+            + 'Contact__r.Id, Contact__r.Organization_Account__c, ' +
             'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
         String baseWhere = 'FROM Needs_Offers__c ' +
             'WHERE Neighbourhood__c = :nhId ' +
@@ -601,7 +603,8 @@ public without sharing class FimbyDigestEmailBuilder {
     ) {
         String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
             'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
-            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, ' +
+            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, '
+            + 'Contact__r.Id, Contact__r.Organization_Account__c, ' +
             'Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
             'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
         String baseWhere = 'FROM Needs_Offers__c ' +
@@ -701,7 +704,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
                    Contact__r.Organization_Account__r.Logo_URL__c,
-                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Id, Contact__r.Organization_Account__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
                    Posted_Date__c, CreatedDate
@@ -800,6 +803,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__r.Name,
                    Owner_Contact__r.Organization_Account__r.Logo_URL__c,
                    Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
+                   Owner_Contact__r.Id, Owner_Contact__r.Organization_Account__c,
                    CreatedDate
             FROM Library_Item__c
             WHERE Neighbourhood__c = :nhId
@@ -849,6 +853,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__r.Name,
                    Owner_Contact__r.Organization_Account__r.Logo_URL__c,
                    Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c,
+                   Owner_Contact__r.Id, Owner_Contact__r.Organization_Account__c,
                    CreatedDate
             FROM Skill_Offer__c
             WHERE Neighbourhood__c = :nhId
@@ -1044,8 +1049,14 @@ public without sharing class FimbyDigestEmailBuilder {
         if (contactRef != null) {
             String displayName = resolveBylineDisplayName(contactRef);
             String avatarUrl = resolveBylineAvatarUrl(contactRef);
-            String avatarInitial = String.isNotBlank(displayName) ? displayName : (String) contactRef.get('FirstName');
-            leftHtml = FimbyEmailHtmlBuilder.buildAvatar(avatarUrl, avatarInitial, null)
+            Boolean isOrg = contactRef.get('Is_Organization_Contact__c') == true;
+            leftHtml = FimbyEmailHtmlBuilder.buildAvatar(
+                    avatarUrl,
+                    displayName,
+                    (Id) readPopulated(contactRef, 'Id'),
+                    isOrg ? (Id) readPopulated(contactRef, 'Organization_Account__c') : null,
+                    isOrg
+                )
                 + '<span style="' + FimbyEmailHtmlBuilder.F + 'font-size:13px;color:' + TEXT_SECONDARY
                 + ';vertical-align:middle;">' + escHtml(displayName) + '</span>';
         }
@@ -1080,6 +1091,11 @@ public without sharing class FimbyDigestEmailBuilder {
             return fullName;
         }
         return (String) contactRef.get('FirstName');
+    }
+
+    /** Reads a field only when the query populated it, so older byline refs fall back to the name key. */
+    private static Object readPopulated(SObject record, String fieldName) {
+        return record.getPopulatedFieldsAsMap().get(fieldName);
     }
 
     @TestVisible
@@ -1259,7 +1275,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
                    Contact__r.Organization_Account__r.Logo_URL__c,
-                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Id, Contact__r.Organization_Account__c,
                    RecordType.DeveloperName, Posted_Date__c, CreatedDate
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
@@ -1292,7 +1308,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
                    Contact__r.Organization_Account__r.Logo_URL__c,
-                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Id, Contact__r.Organization_Account__c,
                    Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
                    Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c
             FROM Needs_Offers__c
@@ -1323,7 +1339,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
                    Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
                    Contact__r.Organization_Account__r.Logo_URL__c,
-                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Id, Contact__r.Organization_Account__c,
                    Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Total_Available__c,
                    Allocation_Unit_Label__c, Estimated_Cost_Per_Share__c,
                    Posted_Date__c, CreatedDate
@@ -1355,6 +1371,7 @@ public without sharing class FimbyDigestEmailBuilder {
                    Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__r.Name,
                    Posted_By__r.Organization_Account__r.Logo_URL__c,
                    Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c,
+                   Posted_By__r.Id, Posted_By__r.Organization_Account__c,
                    CreatedDate
             FROM Story__c
             WHERE Neighbourhood__c = :nhId

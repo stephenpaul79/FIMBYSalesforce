@@ -14,10 +14,21 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
     private Map<Id, Id> inboxByRow;
     private Map<Id, String> inboxNameById;
 
+    /** Actor rows share the enrichment map with related-record rows under this key prefix. */
+    public static final String ACTOR_KEY_PREFIX = 'actor:';
+
     public class AlertCardEnrichment {
         public String actorImageUrl;
         public String actorFirstName;
+        public String actorName;
+        public Id actorContactId;
+        public Id actorOrgAccountId;
+        public Boolean actorIsOrganization = false;
         public String itemImageUrl;
+    }
+
+    public static String actorKey(Id actorContactId) {
+        return actorContactId == null ? null : ACTOR_KEY_PREFIX + String.valueOf(actorContactId).left(15);
     }
 
     public FimbyEmailAlertQueueable(Map<Id, List<Notification__c>> notifsByContact) {
@@ -403,6 +414,8 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         Map<String, AlertCardEnrichment> result = new Map<String, AlertCardEnrichment>();
         if (notifs == null || notifs.isEmpty()) { return result; }
 
+        result.putAll(enrichActors(notifs));
+
         Map<String, Set<String>> idsByType = new Map<String, Set<String>>();
         for (Notification__c n : notifs) {
             if (String.isBlank(n.Related_Record_Id__c) || String.isBlank(n.Related_Record_Type__c)) {
@@ -417,13 +430,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Needs_Offers__c')) {
             Set<String> ids = idsByType.get('Needs_Offers__c');
             for (Needs_Offers__c p : [
-                SELECT Id, Image_1_URL__c, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.FirstName
+                SELECT Id, Image_1_URL__c
                 FROM Needs_Offers__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = p.Image_1_URL__c;
-                e.actorImageUrl = p.Contact__r?.Display_Avatar_URL__c;
-                e.actorFirstName = p.Contact__r?.FirstName;
                 result.put(String.valueOf(p.Id), e);
             }
         }
@@ -431,14 +442,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Response__c')) {
             Set<String> ids = idsByType.get('Response__c');
             for (Response__c r : [
-                SELECT Id, Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.FirstName,
-                       Need_Offer_Responded_To__r.Image_1_URL__c
+                SELECT Id, Need_Offer_Responded_To__r.Image_1_URL__c
                 FROM Response__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = r.Need_Offer_Responded_To__r?.Image_1_URL__c;
-                e.actorImageUrl = r.Contact__r?.Display_Avatar_URL__c;
-                e.actorFirstName = r.Contact__r?.FirstName;
                 result.put(String.valueOf(r.Id), e);
             }
         }
@@ -446,13 +454,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Library_Item__c')) {
             Set<String> ids = idsByType.get('Library_Item__c');
             for (Library_Item__c li : [
-                SELECT Id, Image_URL__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, Owner_Contact__r.FirstName
+                SELECT Id, Image_URL__c
                 FROM Library_Item__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = li.Image_URL__c;
-                e.actorImageUrl = li.Owner_Contact__r?.Display_Avatar_URL__c;
-                e.actorFirstName = li.Owner_Contact__r?.FirstName;
                 result.put(String.valueOf(li.Id), e);
             }
         }
@@ -460,14 +466,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Lending_Request__c')) {
             Set<String> ids = idsByType.get('Lending_Request__c');
             for (Lending_Request__c lr : [
-                SELECT Id, Library_Item__r.Image_URL__c,
-                       Requested_By__r.Image_URL__c, Requested_By__r.Display_Avatar_URL__c, Requested_By__r.FirstName
+                SELECT Id, Library_Item__r.Image_URL__c
                 FROM Lending_Request__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = lr.Library_Item__r?.Image_URL__c;
-                e.actorImageUrl = lr.Requested_By__r?.Display_Avatar_URL__c;
-                e.actorFirstName = lr.Requested_By__r?.FirstName;
                 result.put(String.valueOf(lr.Id), e);
             }
         }
@@ -475,14 +478,11 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Loaned_Item__c')) {
             Set<String> ids = idsByType.get('Loaned_Item__c');
             for (Loaned_Item__c lo : [
-                SELECT Id, Library_Item__r.Image_URL__c,
-                       Loaned_To__r.Image_URL__c, Loaned_To__r.Display_Avatar_URL__c, Loaned_To__r.FirstName
+                SELECT Id, Library_Item__r.Image_URL__c
                 FROM Loaned_Item__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = lo.Library_Item__r?.Image_URL__c;
-                e.actorImageUrl = lo.Loaned_To__r?.Display_Avatar_URL__c;
-                e.actorFirstName = lo.Loaned_To__r?.FirstName;
                 result.put(String.valueOf(lo.Id), e);
             }
         }
@@ -490,43 +490,67 @@ public without sharing class FimbyEmailAlertQueueable implements Queueable {
         if (idsByType.containsKey('Story__c')) {
             Set<String> ids = idsByType.get('Story__c');
             for (Story__c s : [
-                SELECT Id, Image_URL__c, Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, Posted_By__r.FirstName
+                SELECT Id, Image_URL__c
                 FROM Story__c WHERE Id IN :ids
             ]) {
                 AlertCardEnrichment e = new AlertCardEnrichment();
                 e.itemImageUrl = s.Image_URL__c;
-                e.actorImageUrl = s.Posted_By__r?.Display_Avatar_URL__c;
-                e.actorFirstName = s.Posted_By__r?.FirstName;
                 result.put(String.valueOf(s.Id), e);
             }
         }
 
-        if (idsByType.containsKey('Message__c')) {
-            Set<String> ids = idsByType.get('Message__c');
-            for (Message__c m : [
-                SELECT Id, Sender__r.Image_URL__c, Sender__r.Display_Avatar_URL__c, Sender__r.FirstName
-                FROM Message__c WHERE Id IN :ids
-            ]) {
-                AlertCardEnrichment e = new AlertCardEnrichment();
-                e.actorImageUrl = m.Sender__r?.Display_Avatar_URL__c;
-                e.actorFirstName = m.Sender__r?.FirstName;
-                result.put(String.valueOf(m.Id), e);
-            }
-        }
-
-        if (idsByType.containsKey('Conversation__c')) {
-            Set<String> ids = idsByType.get('Conversation__c');
-            for (Conversation__c cv : [
-                SELECT Id, Last_Message_Sender__r.Image_URL__c, Last_Message_Sender__r.Display_Avatar_URL__c, Last_Message_Sender__r.FirstName
-                FROM Conversation__c WHERE Id IN :ids
-            ]) {
-                AlertCardEnrichment e = new AlertCardEnrichment();
-                e.actorImageUrl = cv.Last_Message_Sender__r?.Display_Avatar_URL__c;
-                e.actorFirstName = cv.Last_Message_Sender__r?.FirstName;
-                result.put(String.valueOf(cv.Id), e);
-            }
-        }
-
         return result;
+    }
+
+    /**
+     * Resolves each notification's stamped Actor_Contact__c (the represented identity) to
+     * its avatar identity. Uses the masking-safe Display_Avatar_URL__c, and an organisation's
+     * logo when present, so email never shows a photo the actor has hidden in the app.
+     */
+    @TestVisible
+    static Map<String, AlertCardEnrichment> enrichActors(List<Notification__c> notifs) {
+        Map<String, AlertCardEnrichment> result = new Map<String, AlertCardEnrichment>();
+        Set<Id> actorIds = new Set<Id>();
+        for (Notification__c n : notifs) {
+            if (n.Actor_Contact__c != null) {
+                actorIds.add(n.Actor_Contact__c);
+            }
+        }
+        if (actorIds.isEmpty()) {
+            return result;
+        }
+        for (Contact c : [
+            SELECT Id, FirstName, Full_Name__c, Name, Display_Avatar_URL__c,
+                   Is_Organization_Contact__c, Organization_Account__c,
+                   Organization_Account__r.Name, Organization_Account__r.Logo_URL__c
+            FROM Contact WHERE Id IN :actorIds
+        ]) {
+            result.put(actorKey(c.Id), toActorEnrichment(c));
+        }
+        return result;
+    }
+
+    @TestVisible
+    static AlertCardEnrichment toActorEnrichment(Contact c) {
+        AlertCardEnrichment e = new AlertCardEnrichment();
+        Boolean isOrg = c.Is_Organization_Contact__c == true;
+        e.actorContactId = c.Id;
+        e.actorIsOrganization = isOrg;
+        e.actorFirstName = c.FirstName;
+        e.actorName = String.isNotBlank(c.Full_Name__c) ? c.Full_Name__c : c.Name;
+        e.actorImageUrl = c.Display_Avatar_URL__c;
+        if (isOrg) {
+            e.actorOrgAccountId = c.Organization_Account__c;
+            if (c.Organization_Account__r != null) {
+                if (String.isNotBlank(c.Organization_Account__r.Name)) {
+                    e.actorName = c.Organization_Account__r.Name;
+                    e.actorFirstName = c.Organization_Account__r.Name;
+                }
+                if (String.isNotBlank(c.Organization_Account__r.Logo_URL__c)) {
+                    e.actorImageUrl = c.Organization_Account__r.Logo_URL__c;
+                }
+            }
+        }
+        return e;
     }
 }
