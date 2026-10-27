@@ -197,6 +197,9 @@
             <template lwc:if={isWelcomeModal}>
                 <c-fimby-moderator-welcome-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-welcome-panel>
             </template>
+            <template lwc:if={isVouchModal}>
+                <c-fimby-moderator-vouch-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-vouch-panel>
+            </template>
             <template lwc:if={isFeedbackModal}>
                 <c-fimby-moderator-feedback-panel panel-data={modalPanelData} onmodalaction={handleModalAction}></c-fimby-moderator-feedback-panel>
             </template>

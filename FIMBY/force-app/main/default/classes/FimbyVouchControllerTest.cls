@@ -128,13 +128,16 @@ private class FimbyVouchControllerTest {
         Contact requester = makeContact('R', 'Four', 'r4@example.com', hood.Id, 'Vouch_Requested');
         Contact reference = makeContact('Ref', 'Four', 'ref4@example.com', hood.Id, 'Vouched');
         Vouch_Record__c vr = makeVouchRecord(requester.Id, reference.Id, hood.Id, 'Pending');
+        User modUser = makeModeratorUser(hood.Id, 'mod4@example.com');
 
         Boolean thrown = false;
         Test.startTest();
-        try {
-            FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', null);
-        } catch (AuraHandledException e) {
-            thrown = true;
+        System.runAs(modUser) {
+            try {
+                FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', null);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
         }
         Test.stopTest();
 
@@ -147,13 +150,16 @@ private class FimbyVouchControllerTest {
         Contact requester = makeContact('R', 'Five', 'r5@example.com', hood.Id, 'Vouched');
         Contact reference = makeContact('Ref', 'Five', 'ref5@example.com', hood.Id, 'Vouched');
         Vouch_Record__c vr = makeVouchRecord(requester.Id, reference.Id, hood.Id, 'Approved');
+        User modUser = makeModeratorUser(hood.Id, 'mod5@example.com');
 
         Boolean thrown = false;
         Test.startTest();
-        try {
-            FimbyVouchController.revokeVouch(vr.Id, 'Other_For_Cause', null);
-        } catch (AuraHandledException e) {
-            thrown = true;
+        System.runAs(modUser) {
+            try {
+                FimbyVouchController.revokeVouch(vr.Id, 'Other_For_Cause', null);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
         }
         Test.stopTest();
 
@@ -363,9 +369,12 @@ private class FimbyVouchControllerTest {
             Decided_Date__c = System.now().addDays(-4)
         );
         insert vr;
+        User modUser = makeModeratorUser(hood.Id, 'modrv1@example.com');
 
         Test.startTest();
-        FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', 'detail');
+        System.runAs(modUser) {
+            FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', 'detail');
+        }
         Test.stopTest();
 
         Vouch_Record__c after = [
@@ -397,9 +406,12 @@ private class FimbyVouchControllerTest {
             Decided_Date__c = System.now().addDays(-1)
         );
         insert vr;
+        User modUser = makeModeratorUser(hood.Id, 'modrv2@example.com');
 
         Test.startTest();
-        FimbyVouchController.revokeVouch(vr.Id, 'Admin_Correction', null);
+        System.runAs(modUser) {
+            FimbyVouchController.revokeVouch(vr.Id, 'Admin_Correction', null);
+        }
         Test.stopTest();
 
         Vouch_Record__c after = [
@@ -540,6 +552,84 @@ private class FimbyVouchControllerTest {
         Test.stopTest();
 
         System.assertEquals(false, ctx.canOverrideVouch);
+    }
+
+    @isTest
+    static void getStuckVouchReviewData_returns_requester_and_wait() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact requester = makeContact('Wait', 'Ing', 'waiting@example.com', hood.Id, 'Vouch_Requested');
+        Contact reference = makeContact('Slow', 'Reply', 'slow@example.com', hood.Id, 'Vouched');
+        Vouch_Record__c vr = new Vouch_Record__c(
+            Requester_Contact__c = requester.Id,
+            Reference_Contact__c = reference.Id,
+            Neighbourhood__c = hood.Id,
+            Status__c = 'Pending',
+            Source__c = 'Peer',
+            Requested_Date__c = System.now().addDays(-9)
+        );
+        insert vr;
+        User modUser = makeModeratorUser(hood.Id, 'modstuck@example.com');
+
+        FimbyVouchController.StuckVouchReviewData data;
+        Test.startTest();
+        System.runAs(modUser) {
+            data = FimbyVouchController.getStuckVouchReviewData(vr.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(requester.Id, data.contactId);
+        System.assertEquals('Wait', data.firstName);
+        System.assertEquals(reference.Id, data.referenceContactId);
+        System.assertEquals(true, data.isStillPending);
+        System.assertEquals(9, data.daysWaiting);
+    }
+
+    @isTest
+    static void getStuckVouchReviewData_non_moderator_throws() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact requester = makeContact('Wait', 'Two', 'waiting2@example.com', hood.Id, 'Vouch_Requested');
+        Contact reference = makeContact('Ref', 'Two', 'slow2@example.com', hood.Id, 'Vouched');
+        Vouch_Record__c vr = makeVouchRecord(requester.Id, reference.Id, hood.Id, 'Pending');
+        User refUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            refUser = makeUserWithContact(reference);
+        }
+
+        Boolean thrown = false;
+        Test.startTest();
+        System.runAs(refUser) {
+            try {
+                FimbyVouchController.getStuckVouchReviewData(vr.Id);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, thrown, 'only moderators can load the stuck-vouch panel');
+    }
+
+    @isTest
+    static void getStuckVouchReviewData_null_id_throws() {
+        Boolean thrown = false;
+        Test.startTest();
+        try {
+            FimbyVouchController.getStuckVouchReviewData(null);
+        } catch (AuraHandledException e) {
+            thrown = true;
+        }
+        Test.stopTest();
+        System.assertEquals(true, thrown);
+    }
+
+    private static User makeModeratorUser(Id neighbourhoodId, String email) {
+        Contact moderator = makeContact('Mod', 'Erator', email, neighbourhoodId, 'Vouched');
+        User modUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            modUser = makeUserWithContact(moderator);
+        }
+        makeModeratorAssignment(moderator.Id, neighbourhoodId);
+        return modUser;
     }
 
     private static void makeModeratorAssignment(Id contactId, Id neighbourhoodId) {
@@ -969,9 +1059,12 @@ private class FimbyVouchControllerTest {
             Decided_Date__c = System.now().addDays(-4)
         );
         insert vr;
+        User modUser = makeModeratorUser(hood.Id, 'modrv3@example.com');
 
         Test.startTest();
-        FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', null);
+        System.runAs(modUser) {
+            FimbyVouchController.revokeVouch(vr.Id, 'Safety_Trust_Concern', null);
+        }
         Test.stopTest();
 
         // Threshold default is 2 — a single counting revoke shouldn't auto-pause.
@@ -1011,9 +1104,12 @@ private class FimbyVouchControllerTest {
             Decided_Date__c = System.now().addDays(-4)
         );
         insert vrSecond;
+        User modUser = makeModeratorUser(hood.Id, 'modrv4@example.com');
 
         Test.startTest();
-        FimbyVouchController.revokeVouch(vrSecond.Id, 'Repeated_No_Return', null);
+        System.runAs(modUser) {
+            FimbyVouchController.revokeVouch(vrSecond.Id, 'Repeated_No_Return', null);
+        }
         Test.stopTest();
 
         Contact afterVoucher = [SELECT Vouching_Disabled__c, Vouching_Disabled_Reason__c FROM Contact WHERE Id = :voucher.Id];
@@ -1029,14 +1125,70 @@ private class FimbyVouchControllerTest {
         voucher.Vouching_Disabled_Reason__c = 'Auto_Threshold';
         voucher.Vouching_Paused_Date__c = System.now();
         update voucher;
+        User modUser = makeModeratorUser(hood.Id, 'modre@example.com');
 
         Test.startTest();
-        FimbyVouchController.reEnableVoucher(voucher.Id);
+        System.runAs(modUser) {
+            FimbyVouchController.reEnableVoucher(voucher.Id);
+        }
         Test.stopTest();
 
         Contact after = [SELECT Vouching_Disabled__c, Vouching_Disabled_Reason__c FROM Contact WHERE Id = :voucher.Id];
         System.assertEquals(false, after.Vouching_Disabled__c);
         System.assertEquals(null, after.Vouching_Disabled_Reason__c);
+    }
+
+    @isTest
+    static void reEnableVoucher_non_moderator_throws() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact voucher = makeContact('Re', 'Paused', 'repaused@example.com', hood.Id, 'Vouched');
+        voucher.Vouching_Disabled__c = true;
+        update voucher;
+        Contact neighbour = makeContact('Just', 'Neighbour', 'justn@example.com', hood.Id, 'Vouched');
+        User neighbourUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            neighbourUser = makeUserWithContact(neighbour);
+        }
+
+        Boolean thrown = false;
+        Test.startTest();
+        System.runAs(neighbourUser) {
+            try {
+                FimbyVouchController.reEnableVoucher(voucher.Id);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, thrown, 'non-moderators cannot re-enable a voucher');
+        System.assertEquals(true, [SELECT Vouching_Disabled__c FROM Contact WHERE Id = :voucher.Id].Vouching_Disabled__c);
+    }
+
+    @isTest
+    static void revokeVouch_non_moderator_throws() {
+        Account hood = makeNeighbourhood('Strathcona');
+        Contact vouchee = makeContact('Rv', 'Vouchee', 'rvvee@example.com', hood.Id, 'Vouched');
+        Contact voucher = makeContact('Rv', 'Voucher', 'rvver@example.com', hood.Id, 'Vouched');
+        Vouch_Record__c vr = makeVouchRecord(vouchee.Id, voucher.Id, hood.Id, 'Approved');
+        User voucherUser = null;
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            voucherUser = makeUserWithContact(voucher);
+        }
+
+        Boolean thrown = false;
+        Test.startTest();
+        System.runAs(voucherUser) {
+            try {
+                FimbyVouchController.revokeVouch(vr.Id, 'Admin_Correction', null);
+            } catch (AuraHandledException e) {
+                thrown = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, thrown, 'only moderators can revoke');
+        System.assertEquals('Approved', [SELECT Status__c FROM Vouch_Record__c WHERE Id = :vr.Id].Status__c);
     }
 
     @isTest

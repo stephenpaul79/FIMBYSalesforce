@@ -486,11 +486,11 @@ public without sharing class FimbyVouchController {
         }
 
         Vouch_Record__c vr = loadVouchRecord(vouchRecordId);
+        Id moderatorContactId = FimbyIdentityRepository.getActingAsContactId();
+        enforceModeratorOfNeighbour(moderatorContactId, vr.Requester_Contact__c);
         if (!STATUS_APPROVED.equals(vr.Status__c)) {
             throw new AuraHandledException('Only approved vouches can be revoked.');
         }
-
-        Id moderatorContactId = FimbyIdentityRepository.getActingAsContactId();
 
         vr.Status__c = STATUS_REVOKED;
         vr.Revoked_Date__c = System.now();
@@ -615,7 +615,7 @@ public without sharing class FimbyVouchController {
         Id neighbourhoodId = vouchees.isEmpty() ? null : vouchees[0].AccountId;
         if (neighbourhoodId == null || moderatorContactId == null
                 || !FimbyModeratorQueryService.isModeratorForNeighbourhood(moderatorContactId, neighbourhoodId)) {
-            throw new AuraHandledException('Only a moderator for this neighbourhood can vouch for them this way.');
+            throw new AuraHandledException('Only a moderator for this neighbourhood can do this.');
         }
         return neighbourhoodId;
     }
@@ -675,6 +675,51 @@ public without sharing class FimbyVouchController {
         return out;
     }
 
+    /**
+     * @description Loads the stuck-vouch moderator panel (Vouch_Pending task) for one vouch request.
+     *              Moderator-only, scoped to the requester's neighbourhood.
+     * @param vouchRecordId The pending Vouch_Record__c the task points at
+     * @return StuckVouchReviewData for the moderator panel
+     */
+    @AuraEnabled
+    public static StuckVouchReviewData getStuckVouchReviewData(Id vouchRecordId) {
+        if (vouchRecordId == null) {
+            throw new AuraHandledException('Missing vouch record');
+        }
+        List<Vouch_Record__c> rows = [
+            SELECT Id, Status__c, Requested_Date__c, CreatedDate, Conversation__c,
+                   Requester_Contact__c, Requester_Contact__r.Name, Requester_Contact__r.FirstName,
+                   Requester_Contact__r.Pronouns__c, Requester_Contact__r.Image_URL__c,
+                   Reference_Contact__c, Reference_Contact__r.Full_Name__c, Reference_Contact__r.Name,
+                   Reference_Organization__r.Name
+            FROM Vouch_Record__c WHERE Id = :vouchRecordId WITH SYSTEM_MODE LIMIT 1
+        ];
+        if (rows.isEmpty()) {
+            throw new AuraHandledException('This vouch request is no longer available.');
+        }
+        Vouch_Record__c vr = rows[0];
+        enforceModeratorOfNeighbour(FimbyIdentityRepository.getActingAsContactId(), vr.Requester_Contact__c);
+
+        StuckVouchReviewData out = new StuckVouchReviewData();
+        out.vouchRecordId = vr.Id;
+        out.status = vr.Status__c;
+        out.isStillPending = STATUS_PENDING.equals(vr.Status__c);
+        out.contactId = vr.Requester_Contact__c;
+        out.contactName = vr.Requester_Contact__r?.Name;
+        out.firstName = vr.Requester_Contact__r?.FirstName;
+        out.pronouns = vr.Requester_Contact__r?.Pronouns__c;
+        out.contactPhotoUrl = vr.Requester_Contact__r?.Image_URL__c;
+        out.referenceContactId = vr.Reference_Contact__c;
+        out.referenceName = String.isNotBlank(vr.Reference_Contact__r?.Full_Name__c)
+            ? vr.Reference_Contact__r.Full_Name__c
+            : vr.Reference_Contact__r?.Name;
+        out.referenceOrganizationName = vr.Reference_Organization__r?.Name;
+        Datetime requested = vr.Requested_Date__c != null ? vr.Requested_Date__c : vr.CreatedDate;
+        out.requestedDate = requested;
+        out.daysWaiting = requested == null ? 0 : requested.date().daysBetween(Date.today());
+        return out;
+    }
+
     private static Boolean callerCanOverrideVouch(Contact target) {
         FimbyIdentityRepository.Identity identity = FimbyIdentityRepository.getIdentity();
         if (identity == null || identity.contact == null) {
@@ -698,6 +743,7 @@ public without sharing class FimbyVouchController {
         if (voucherContactId == null) {
             throw new AuraHandledException('Missing contact');
         }
+        enforceModeratorOfNeighbour(FimbyIdentityRepository.getActingAsContactId(), voucherContactId);
         update as system new Contact(
             Id = voucherContactId,
             Vouching_Disabled__c = false,
@@ -1118,6 +1164,22 @@ public without sharing class FimbyVouchController {
         @AuraEnabled public String pendingReferenceOrganizationName;
         @AuraEnabled public Datetime pendingRequestedDate;
         @AuraEnabled public Boolean canOverrideVouch = false;
+    }
+
+    public class StuckVouchReviewData {
+        @AuraEnabled public Id vouchRecordId;
+        @AuraEnabled public String status;
+        @AuraEnabled public Boolean isStillPending;
+        @AuraEnabled public Id contactId;
+        @AuraEnabled public String contactName;
+        @AuraEnabled public String firstName;
+        @AuraEnabled public String pronouns;
+        @AuraEnabled public String contactPhotoUrl;
+        @AuraEnabled public Id referenceContactId;
+        @AuraEnabled public String referenceName;
+        @AuraEnabled public String referenceOrganizationName;
+        @AuraEnabled public Datetime requestedDate;
+        @AuraEnabled public Integer daysWaiting;
     }
 
     public class VouchConversationContext {

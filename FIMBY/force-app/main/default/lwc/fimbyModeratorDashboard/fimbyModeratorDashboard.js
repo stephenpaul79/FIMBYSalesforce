@@ -32,6 +32,7 @@ import triageFeedback from '@salesforce/apex/FimbyModeratorDashboardController.t
 import approveSupportRelationship from '@salesforce/apex/FimbyModeratorDashboardController.approveSupportRelationship';
 import declineSupportRelationship from '@salesforce/apex/FimbyModeratorDashboardController.declineSupportRelationship';
 import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDashboardController.getOrCreateModeratorConversation';
+import getStuckVouchReviewData from '@salesforce/apex/FimbyVouchController.getStuckVouchReviewData';
 import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 
 const PAGE_SIZE = 20;
@@ -77,7 +78,8 @@ const SECTIONS = [
         tabs: [
             { key: 'bulkbuy', label: 'Bulk Buy', category: 'Bulk_Buy_Escalation' },
             { key: 'feedback', label: 'Feedback', category: 'Feedback_Triage' },
-            { key: 'signups', label: 'Signups', category: 'New_Signup' }
+            { key: 'signups', label: 'Signups', category: 'New_Signup' },
+            { key: 'vouches', label: 'Vouches', category: 'Vouch_Pending' }
         ]
     },
     {
@@ -120,6 +122,10 @@ const CTA_CONFIGS = [
         { action: 'markWelcomed', label: 'Mark Welcomed' },
         { action: 'viewProfile', label: 'View Profile' }
     ]},
+    { category: 'Vouch_Pending', actions: [
+        { action: 'review', label: 'Review', icon: 'VouchActive.png', variant: 'primary' },
+        { action: 'dismiss', label: 'No Action Needed' }
+    ]},
     { category: 'Feedback_Triage', actions: [
         { action: 'review', label: 'Review', icon: 'analysis.png', variant: 'primary' }
     ]},
@@ -153,7 +159,8 @@ const CATEGORY_MODAL_MAP = {
     Feedback_Triage: 'feedback',
     Support_Relationship_Approval: 'support',
     Support_Person_Concern: 'support',
-    New_Signup: 'welcome'
+    New_Signup: 'welcome',
+    Vouch_Pending: 'vouch'
 };
 
 const EMPTY_STATES = {
@@ -161,6 +168,7 @@ const EMPTY_STATES = {
     bulkbuy: { title: 'No bulk buy issues', message: 'All bulk buys are running smoothly.' },
     blocked: { title: 'No block reports', message: 'No new blocks to review.' },
     signups: { title: 'No new signups', message: 'Everyone\'s been welcomed!' },
+    vouches: { title: 'No vouch requests waiting', message: 'Every request has had a reply.' },
     feedback: { title: 'No feedback to triage', message: 'Inbox zero — well done.' },
     support: { title: 'No support requests', message: 'No pending approvals.' },
     organizations: { title: 'No organization requests', message: 'No new community groups to review.' },
@@ -377,6 +385,7 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
     get isFollowUpModal() { return this.activeModal === 'followUp'; }
     get isBlockModal() { return this.activeModal === 'block'; }
     get isWelcomeModal() { return this.activeModal === 'welcome'; }
+    get isVouchModal() { return this.activeModal === 'vouch'; }
     get isFeedbackModal() { return this.activeModal === 'feedback'; }
     get isSupportModal() { return this.activeModal === 'support'; }
     get isEscalationModal() { return this.activeModal === 'escalation'; }
@@ -740,6 +749,9 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
                     panelData = await getSupportConcernData({ taskId: task.Id });
                     this.supportPanelMode = 'concern';
                     break;
+                case 'Vouch_Pending':
+                    panelData = { ...(await getStuckVouchReviewData({ vouchRecordId: task.Related_Record_Id__c })) };
+                    break;
                 default:
                     return;
             }
@@ -805,7 +817,8 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
             Feedback_Triage: 'Feedback',
             Support_Relationship_Approval: 'Support Request',
             Organization_Approval: 'Organization Request',
-            Support_Person_Concern: 'Support Concern'
+            Support_Person_Concern: 'Support Concern',
+            Vouch_Pending: 'Vouch Request Waiting'
         };
         return labels[category] || (category || '').replace(/_/g, ' ');
     }
@@ -999,6 +1012,11 @@ export default class FimbyModeratorDashboard extends NavigationMixin(LightningEl
                     this._closeModalAndRemoveTask(task);
                     break;
                 }
+
+                case 'resolveVouched':
+                    await resolveTask({ taskId: task.Id, resolution: 'Resolved', notes: 'Vouched by moderator' });
+                    this._closeModalAndRemoveTask(task);
+                    break;
 
                 case 'markReviewed':
                 case 'dismiss':
