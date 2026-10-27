@@ -8,6 +8,14 @@ alwaysApply: false
 
 After **LWC** (or other Salesforce metadata) edits in this repo, **deploy** per the **Salesforce Deployment Rules** (`salesforce-deployments.mdc`)—including the default **proactive deploy** when finishing a task.
 
+## Avatars — one contract everywhere
+
+- **Bounded surfaces** (headers, profiles, detail pages, list rows, modals, moderator panels): `<c-fimby-avatar src={url} name={displayName} contact-id={representedContactId} organization-account-id={orgAccountId} is-organization={isOrg} size="40">`. Size via `size`; host CSS is layout only (`flex-shrink: 0`), never width/height/radius.
+- **Unbounded inline histories/cards** (message bubbles, `fimbyCard`, notification rows): `getAvatarToneStyle({ contactId, organizationAccountId, name, isOrganization })` + `getInitials(name)` from `c/fimbyAvatarTone`; add an `avatar-org` class (22% radius) for organisations.
+- **Key = represented identity:** Post Owner / acting-as Contact Id (never the real submitter), then org Account Id, then name. `FimbyAvatarTone.cls` is the Apex twin used by email — keep both in sync.
+- **Privacy:** neighbour-facing photos come from `Display_Avatar_URL__c` (honours `Mask_Avatar__c`) or the org `Logo_URL__c` — never fall back to raw `Image_URL__c`. Only private self/management surfaces (own header/profile, Manage Identities) and moderator views may use raw photos.
+- **Never** substitute `NoProfilePhoto.png`, `NoOrgPhoto.png`, `standard:user`/`utility:user`, a fixed teal circle, or a local initials helper for a missing photo.
+
 ## Card Type Badge Colours (Pill Badges)
 
 Every feed card must show a **type badge** (pill) in the top-right corner. Primary badges use **white text** on coloured backgrounds from `--fimby-badge-*` tokens. Secondary badges (Reserved, Available) can use tint backgrounds if WCAG contrast is maintained.

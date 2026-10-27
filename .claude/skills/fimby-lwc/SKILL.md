@@ -27,6 +27,14 @@ Read this before writing or changing any LWC. All components are prefixed `fimby
 | `fimbyPageHeader` | Breadcrumb (desktop) / `‹ Parent` + title (mobile) + `trail` + `subheader` slot + `menuItems` three-tier actions + search + notifications |
 | `fimbyUniversalHeader` / `fimbyBottomNavigation` | Site nav: 4 tabs + Create + identity switcher + acting-as chip |
 | `fimbyManageIdentities`, `fimbyRelationshipSetupModal`, `fimbyOrganizationProfile` | Identity/relationship/org UIs |
+| `fimbyAvatar` / `c/fimbyAvatarTone` | Person/org avatar: photo, else two initials on a stable earth tone (see *Avatars*) |
+
+## Avatars — one contract everywhere
+- **Bounded surfaces** (headers, profiles, detail pages, list rows, modals, moderator panels): `<c-fimby-avatar src={url} name={displayName} contact-id={representedContactId} organization-account-id={orgAccountId} is-organization={isOrg} size="40">`. Size the host via `size`; host CSS is only layout (`flex-shrink: 0`), never width/height/radius.
+- **Unbounded inline histories/cards** (message bubbles, `fimbyCard`, notification rows): `getAvatarToneStyle({ contactId, organizationAccountId, name, isOrganization })` + `getInitials(name)` from `c/fimbyAvatarTone`; add an `avatar-org` class (22% radius) for organisations.
+- **Key = represented identity:** the Post Owner / acting-as Contact Id (never the real submitter), then org Account Id, then name. Same identity → same tone on every surface and in email (`FimbyAvatarTone.cls` is the Apex twin; keep both in sync).
+- **Privacy:** neighbour-facing photos come from `Display_Avatar_URL__c` (honours `Mask_Avatar__c`) or the org `Logo_URL__c` — never fall back to raw `Image_URL__c`. Only private self/management surfaces (own header/profile, Manage Identities) and moderator views may use raw photos.
+- **Never** substitute `NoProfilePhoto.png`, `NoOrgPhoto.png`, `standard:user`/`utility:user`, a fixed teal circle, or a local initials helper for a missing photo. Emails use `FimbyEmailHtmlBuilder.buildAvatar(url, name, contactId, orgAccountId, isOrg)`; FIMBY system actors use `buildSystemAvatar`.
 
 ## Navigation — soft nav only (no `location.href`, no internal `<a href>`)
 FIMBY is a persistent-shell SPA on LWR. **All in-app navigation MUST be client-side (soft) navigation** so the header/footer shell stays mounted and only the content region swaps. A full reload remounts the shell and causes the empty → spinner → content flash we are eliminating. Route every in-app navigation through `c/fimbyNavigation`:

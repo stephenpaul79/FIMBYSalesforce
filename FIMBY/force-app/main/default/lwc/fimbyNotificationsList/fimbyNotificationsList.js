@@ -46,7 +46,6 @@ const TYPE_ICON_MAP = {
 const TOKEN_ACTORS = new Set(['FIMBY', 'Neighbourhood team', 'care', 'system']);
 const SYSTEM_PROFILE_ACTORS = new Set(['FIMBY', 'Neighbourhood team']);
 
-const GENERIC_PERSON_GLYPH = 'NoProfilePhoto.png';
 const DEFAULT_GLYPH = 'BellInactive.png';
 
 function resolveAvatarUrl(url) {
@@ -343,8 +342,6 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         const showInitials = hasHumanActor && !hasPhoto;
         const showGlyph = !hasHumanActor;
         const glyphUrl = `${IMPACT_ICONS}/${TYPE_ICON_MAP[n.type] || DEFAULT_GLYPH}`;
-        const genericGlyphUrl = `${IMPACT_ICONS}/${GENERIC_PERSON_GLYPH}`;
-
         const relativeTime = this._formatTime(n.createdDate);
         const absoluteTime = this._formatAbsoluteTime(n.createdDate);
         const isoTime = n.createdDate ? new Date(n.createdDate).toISOString() : '';
@@ -390,7 +387,6 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             showActorInitials: showInitials,
             showActorGlyph: showGlyph,
             glyphIconUrl: glyphUrl,
-            genericGlyphUrl,
             formattedTime: relativeTime,
             formattedAbsoluteTime: absoluteTime,
             isoTime,
