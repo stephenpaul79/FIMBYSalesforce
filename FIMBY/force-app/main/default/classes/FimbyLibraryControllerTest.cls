@@ -1101,6 +1101,51 @@ public class FimbyLibraryControllerTest {
         List<Object> requests = (List<Object>) result.get('lendingRequests');
         // FLS for community user may filter Lending_Request__c fields — accept 0 or 1
         System.assert(requests.size() >= 0, 'Should return lending requests list');
+        if (!requests.isEmpty()) {
+            Map<String, Object> row = (Map<String, Object>) requests[0];
+            System.assertEquals(testContact.Id, (Id) row.get('requesterContactId'),
+                'Request rows should carry the represented requester Contact Id for avatar tone');
+            System.assertEquals(false, row.get('requesterIsOrgContact'), 'Person requester is not an organisation');
+        }
+    }
+
+    @isTest
+    static void testPutAdminIdentity_MaskedPersonNeverUsesRawPhoto() {
+        Contact masked = new Contact(
+            Id = getTestContact().Id,
+            Is_Organization_Contact__c = false,
+            Image_URL__c = 'https://example.com/raw.jpg'
+        );
+        Map<String, Object> row = new Map<String, Object>();
+
+        FimbyLibraryController.putAdminIdentity(row, 'borrower', masked.Id, masked);
+
+        System.assertEquals(masked.Id, (Id) row.get('borrowerContactId'), 'Represented Contact Id is stamped');
+        System.assertEquals(false, row.get('borrowerIsOrgContact'), 'Person row is not an organisation');
+        System.assertEquals(null, row.get('borrowerOrgAccountId'), 'Person row carries no org Account');
+        System.assertEquals(null, row.get('borrowerAvatar'),
+            'A blank Display_Avatar_URL__c (masked) must never fall back to the raw Image_URL__c');
+    }
+
+    @isTest
+    static void testPutAdminIdentity_OrganisationUsesLogoAndName() {
+        Id orgAccountId = getTestContact().AccountId;
+        Contact orgContact = new Contact(
+            Id = getTestContact().Id,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccountId
+        );
+        orgContact.putSObject('Organization_Account__r', new Account(
+            Id = orgAccountId, Name = 'The Life', Logo_URL__c = 'https://example.com/logo.png'
+        ));
+        Map<String, Object> row = new Map<String, Object>();
+
+        FimbyLibraryController.putAdminIdentity(row, 'requester', orgContact.Id, orgContact);
+
+        System.assertEquals(true, row.get('requesterIsOrgContact'), 'Organisation flag is stamped');
+        System.assertEquals(orgAccountId, (Id) row.get('requesterOrgAccountId'), 'Org Account is stamped');
+        System.assertEquals('The Life', row.get('requesterName'), 'Organisation name is used for display');
+        System.assertEquals('https://example.com/logo.png', row.get('requesterAvatar'), 'Organisation logo is used');
     }
 
     @isTest
@@ -1773,5 +1818,48 @@ public class FimbyLibraryControllerTest {
         Test.stopTest();
 
         System.assert(caught, 'Non-owner should not be able to update');
+    }
+
+    @IsTest
+    static void testIsVouchedForBorrowing_inheritsFromVouchedParentGuardian() {
+        Account neighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact guardian = [SELECT Id FROM Contact WHERE AccountId = :neighbourhood.Id LIMIT 1];
+        User guardianUser = [SELECT Id, ContactId FROM User WHERE ContactId = :guardian.Id LIMIT 1];
+
+        Contact child = new Contact(
+            FirstName = 'Maya',
+            LastName = 'Borrow',
+            AccountId = neighbourhood.Id,
+            Birthdate = Date.today().addYears(-12),
+            Is_Parent_Proxied__c = true,
+            Proxied_By_Contact__c = guardian.Id,
+            Vouched_Status__c = 'New'
+        );
+        insert child;
+
+        update new Contact(Id = guardian.Id, Vouched_Status__c = 'Vouched');
+
+        insert new Support_Relationship__c(
+            Contact__c = guardian.Id,
+            Related_Contact__c = child.Id,
+            Status__c = 'Approved',
+            Relationship_Type__c = 'Parent_Guardian',
+            Consent_Method__c = 'Guardian',
+            Neighbourhood__c = neighbourhood.Id
+        );
+
+        update new Contact(Id = guardian.Id, Logged_In_As_Contact__c = child.Id);
+
+        Test.startTest();
+        Boolean eligible;
+        System.runAs(guardianUser) {
+            FimbyIdentityRepository.clearCache();
+            eligible = FimbyLibraryController.isVouchedForBorrowing();
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, eligible,
+            'A parent-managed child should inherit borrowing from a vouched guardian');
+        System.assertEquals(true, FimbyLibraryController.hasGuardianVouchStanding(child.Id));
     }
 }

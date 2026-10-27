@@ -53,7 +53,6 @@ const FIELDS = [
     'Needs_Offers__c.Posted_By__c',
     'Needs_Offers__c.Posted_By__r.Name',
     'Needs_Offers__c.Posted_By__r.Full_Name__c',
-    'Needs_Offers__c.Posted_By__r.Image_URL__c',
     'Needs_Offers__c.CreatedDate',
     'Needs_Offers__c.OwnerId',
     // Post Information
@@ -68,7 +67,6 @@ const FIELDS = [
     'Needs_Offers__c.Contact__c',
     'Needs_Offers__c.Contact__r.Name',
     'Needs_Offers__c.Contact__r.Full_Name__c',
-    'Needs_Offers__c.Contact__r.Image_URL__c',
     'Needs_Offers__c.Contact__r.Display_Avatar_URL__c',
     'Needs_Offers__c.Contact__r.Is_Organization_Contact__c',
     'Needs_Offers__c.Contact__r.Is_Parent_Proxied__c',
@@ -695,7 +693,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
 
     // Active Asks/Offers: the inbox tells the reply story, so the slot only carries capacity or a match.
     _askOfferActiveSlotLabel() {
-        if (this.isMatched) return this.postType === 'Offer' ? 'Spoken for' : 'Help Found';
+        if (this.isMatched && this.postType !== 'Need') {
+            return 'Spoken for';
+        }
         const qty = Number(this.record ? getFieldValue(this.record, 'Needs_Offers__c.Total_Quantity__c') : 0) || 0;
         if (qty <= 1) return null;
         const remaining = Math.max(qty - (Number(this.totalAccepted) || 0), 0);
@@ -793,9 +793,6 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
     get trashIconUrl() { return `${IMPACT_ICONS}/trash.png`; }
-    get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
-    get noOrgPhotoUrl() { return `${IMPACT_ICONS}/NoOrgPhoto.png`; }
-
     resolveContactAvatarUrl(rawUrl) {
         if (!rawUrl || typeof rawUrl !== 'string') return '';
         return avatarImageUrl(rawUrl.trim());
@@ -1007,22 +1004,22 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Name') || '';
     }
 
+    get posterIsOrg() {
+        return !!this.record
+            && getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Organization_Contact__c') === true;
+    }
+
+    get posterOrgAccountId() {
+        if (!this.record || !this.posterIsOrg) return null;
+        return getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__c');
+    }
+
     get posterAvatar() {
-        if (!this.record) return '';
-        const isOrg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Is_Organization_Contact__c') === true;
-        const postOwnerId = getFieldValue(this.record, 'Needs_Offers__c.Contact__c');
-        if (postOwnerId) {
-            if (isOrg) {
-                const logoUrl = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__r.Logo_URL__c');
-                if (logoUrl) return avatarImageUrl(logoUrl);
-                return this.noOrgPhotoUrl;
-            }
-            const contactImg = getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Display_Avatar_URL__c')
-                || getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Image_URL__c');
-            return contactImg ? avatarImageUrl(contactImg) : this.noProfilePhotoUrl;
-        }
-        const baseUrl = getFieldValue(this.record, 'Needs_Offers__c.Posted_By__r.Image_URL__c') || '';
-        return baseUrl ? avatarImageUrl(baseUrl) : this.noProfilePhotoUrl;
+        if (!this.record || !getFieldValue(this.record, 'Needs_Offers__c.Contact__c')) return '';
+        const url = this.posterIsOrg
+            ? getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Organization_Account__r.Logo_URL__c')
+            : getFieldValue(this.record, 'Needs_Offers__c.Contact__r.Display_Avatar_URL__c');
+        return url ? avatarImageUrl(url) : '';
     }
 
     get posterContactId() {
@@ -1728,7 +1725,9 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
                     profilePath,
                     avatarClass: 'attendee-avatar' + (profilePath ? ' clickable-avatar' : ''),
                     name: r.responderName || 'Neighbour',
-                    avatarUrl: resolved || this.noProfilePhotoUrl,
+                    isOrgContact: r.isOrgContact === true,
+                    orgAccountId: r.orgAccountId || null,
+                    avatarUrl: resolved,
                     guestCount: r.amountRequested || 1,
                     timeAgo: r.timeAgo || '',
                     removeLabel: `Remove ${r.responderName || 'attendee'}`,
@@ -1908,8 +1907,8 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         if (fulfilled != null) {
             items.push({ key: 'fulfilled', label: fulfilled, pillClass: 'pill-accepted' });
         }
-        if (this.isMatched) {
-            items.push({ key: 'matched', label: this.postType === 'Offer' ? 'Spoken for' : 'Help Found', pillClass: 'pill-accepted' });
+        if (this.isMatched && this.postType !== 'Need') {
+            items.push({ key: 'matched', label: 'Spoken for', pillClass: 'pill-accepted' });
         } else if (remaining != null) {
             items.push({ key: 'remaining', label: remaining, pillClass: 'pill-available' });
         }

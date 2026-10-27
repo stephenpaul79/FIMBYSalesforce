@@ -8,6 +8,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import { formatLocalDate } from 'c/fimbyDateUtils';
 import { createShellScrimHandle } from 'c/fimbyModalShell';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 export default class FimbyLendingApprovalModal extends LightningElement {
     _shellScrim = createShellScrimHandle();
@@ -87,7 +88,7 @@ export default class FimbyLendingApprovalModal extends LightningElement {
     show(recordId) {
         this._recordId = recordId;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
+        this._shellScrim.bind(() => this.hide(), this.template.host);
         this._viewState = 'loading';
         this._resetForm();
         this._loadRequest();
@@ -110,10 +111,6 @@ export default class FimbyLendingApprovalModal extends LightningElement {
         this._shellScrim.clear();
         this._isVisible = false;
     }
-
-    // ── Icons ───────────────────────────────────────────────────────
-
-    get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
 
     // ── View state getters ──────────────────────────────────────────
 
@@ -147,11 +144,11 @@ export default class FimbyLendingApprovalModal extends LightningElement {
     }
 
     get requesterAvatar() {
-        return this.lendingRequest?.requesterAvatar || '';
+        return avatarImageUrl(this.lendingRequest?.requesterAvatar);
     }
-    get hasRequesterAvatar() {
-        return !!this.requesterAvatar;
-    }
+    get requesterContactId() { return this.lendingRequest?.requestedById || null; }
+    get requesterOrgAccountId() { return this.lendingRequest?.requesterOrgAccountId || null; }
+    get requesterIsOrg() { return this.lendingRequest?.requesterIsOrgContact === true; }
 
     get modalTitle() {
         if (this.isShareContact) return 'Share Contact Info';

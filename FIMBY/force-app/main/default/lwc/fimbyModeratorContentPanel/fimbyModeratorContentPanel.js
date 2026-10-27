@@ -17,7 +17,7 @@ export default class FimbyModeratorContentPanel extends LightningElement {
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
 
     get authorPhoto() {
-        return this.panelData?.authorPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.authorPhotoUrl || '';
     }
 
     get hasImages() {

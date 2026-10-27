@@ -501,6 +501,36 @@ public class FimbyStoriesControllerTest {
     }
 
     @IsTest
+    static void testUseProfilePhotoForStory_MaskedPhotoIsNotReused() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        testContact.Image_URL__c = 'http://example.com/private.jpg';
+        testContact.Mask_Avatar__c = true;
+        update testContact;
+        User testUser = createTestUser(testContact.Id);
+
+        Boolean caught = false;
+        Id storyId;
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            storyId = FimbyStoriesController.createStory(
+                'Hi neighbours', 'My intro', 'Bio', null, null, false
+            );
+            try {
+                FimbyStoriesController.useProfilePhotoForStory(storyId);
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'A masked profile photo must not be copied onto a neighbour-facing story');
+        Story__c story = [SELECT Image_URL__c FROM Story__c WHERE Id = :storyId];
+        System.assertEquals(null, story.Image_URL__c, 'Story image should stay empty');
+    }
+
+    @IsTest
     static void testUseProfilePhotoForStory_NotOwner() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
         Story__c targetStory = [SELECT Id FROM Story__c WHERE Type__c = 'Prayer' LIMIT 1];

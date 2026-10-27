@@ -65,24 +65,28 @@ public with sharing class FimbyLendingController {
                 ? lendingRequest.Requested_Date__c.format()
                 : 'Not specified';
 
+            String requesterName = lendingRequest.Requested_By__r?.Full_Name__c != null
+                ? lendingRequest.Requested_By__r.Full_Name__c
+                : lendingRequest.Requested_By__r?.FirstName;
+            Map<String, Object> requestMap = new Map<String, Object>{
+                'id' => lendingRequest.Id,
+                'name' => lendingRequest.Name,
+                'status' => lendingRequest.Status__c,
+                'requestedDate' => requestedDateStr,
+                'daysNeeded' => lendingRequest.of_Days_Needed__c,
+                'requestedById' => lendingRequest.Requested_By__c
+            };
+            requesterName = applyRequesterIdentity(requestMap, lendingRequest.Requested_By__c, requesterName);
+
             return new Map<String, Object>{
                 'success' => true,
-                'lendingRequest' => new Map<String, Object>{
-                    'id' => lendingRequest.Id,
-                    'name' => lendingRequest.Name,
-                    'status' => lendingRequest.Status__c,
-                    'requestedDate' => requestedDateStr,
-                    'daysNeeded' => lendingRequest.of_Days_Needed__c,
-                    'requestedById' => lendingRequest.Requested_By__c
-                },
+                'lendingRequest' => requestMap,
                 'libraryItem' => new Map<String, Object>{
                     'id' => lendingRequest.Library_Item__r.Id,
                     'name' => lendingRequest.Library_Item__r.Name,
                     'recordTypeName' => lendingRequest.Library_Item__r.RecordType?.Name
                 },
-                'requesterName' => lendingRequest.Requested_By__r?.Full_Name__c != null
-                    ? lendingRequest.Requested_By__r.Full_Name__c
-                    : lendingRequest.Requested_By__r?.FirstName,
+                'requesterName' => requesterName,
                 'ownerContact' => new Map<String, Object>{
                     'id' => lendingRequest.Item_Owner__r?.Id,
                     'firstName' => lendingRequest.Item_Owner__r?.FirstName,
@@ -102,6 +106,44 @@ public with sharing class FimbyLendingController {
             ex.setMessage('Error loading lending request: ' + e.getMessage());
             throw ex;
         }
+    }
+
+    /**
+     * Adds the requester's avatar identity (masked visible photo or org logo, org flag
+     * and Account) to the request map and returns the display name (org name for orgs).
+     */
+    @TestVisible
+    private static String applyRequesterIdentity(Map<String, Object> requestMap, Id requesterId, String fallbackName) {
+        if (requesterId == null) {
+            return fallbackName;
+        }
+        List<Contact> rows = [
+            SELECT Id, Display_Avatar_URL__c, Is_Organization_Contact__c, Organization_Account__c,
+                   Organization_Account__r.Name, Organization_Account__r.Logo_URL__c
+            FROM Contact
+            WHERE Id = :requesterId
+            LIMIT 1
+        ];
+        return applyRequesterIdentity(requestMap, rows.isEmpty() ? null : rows[0], fallbackName);
+    }
+
+    @TestVisible
+    private static String applyRequesterIdentity(Map<String, Object> requestMap, Contact requester, String fallbackName) {
+        Boolean isOrg = requester?.Is_Organization_Contact__c == true;
+        String name = fallbackName;
+        String avatar = requester?.Display_Avatar_URL__c;
+        if (isOrg && requester.Organization_Account__r != null) {
+            if (String.isNotBlank(requester.Organization_Account__r.Name)) {
+                name = requester.Organization_Account__r.Name;
+            }
+            if (String.isNotBlank(requester.Organization_Account__r.Logo_URL__c)) {
+                avatar = requester.Organization_Account__r.Logo_URL__c;
+            }
+        }
+        requestMap.put('requesterAvatar', avatar);
+        requestMap.put('requesterIsOrgContact', isOrg);
+        requestMap.put('requesterOrgAccountId', isOrg ? requester.Organization_Account__c : null);
+        return name;
     }
 
     /**
@@ -1176,6 +1218,9 @@ public with sharing class FimbyLendingController {
 
             if (!reqs.isEmpty()) {
                 Lending_Request__c req = reqs[0];
+                if (req.Status__c != FimbyConstants.LENDING_APPROVED) {
+                    return new Map<String, Object>{ 'phase' => null };
+                }
                 Boolean isOwner = (callerContactId == req.Library_Item__r.Owner_Contact__c);
                 String otherName = isOwner
                     ? conv.Participant_2__c == callerContactId

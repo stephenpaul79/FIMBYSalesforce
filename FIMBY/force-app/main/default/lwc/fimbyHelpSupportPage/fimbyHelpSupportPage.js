@@ -171,9 +171,9 @@ export default class FimbyHelpSupportPage extends NavigationMixin(LightningEleme
     get moderatorName() { return this._moderatorData?.name || ''; }
     get moderatorPronouns() { return this._moderatorData?.pronouns || ''; }
     get moderatorPhotoUrl() {
-        const url = avatarImageUrl(this._moderatorData?.photoUrl || '');
-        return url || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return avatarImageUrl(this._moderatorData?.photoUrl || '');
     }
+    get moderatorContactId() { return this._moderatorData?.contactId || null; }
 
     connectedCallback() {
         this._loadModerator();

@@ -9,11 +9,11 @@ export default class FimbyModeratorSupportPanel extends LightningElement {
     get isConcernMode() { return this.mode === 'concern'; }
 
     get helperPhoto() {
-        return this.panelData?.helperPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.helperPhotoUrl || '';
     }
 
     get subjectPhoto() {
-        return this.panelData?.subjectPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.subjectPhotoUrl || '';
     }
 
     get warningIconUrl() { return `${IMPACT_ICONS}/warning.png`; }

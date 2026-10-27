@@ -484,10 +484,19 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
                this.record.Posted_By__r.Name || '';
     }
 
-    // Construct complete avatar URL with Organization ID
+    get authorIsOrg() {
+        return this.record?.Posted_By__r?.Is_Organization_Contact__c === true;
+    }
+
+    get authorOrgAccountId() {
+        return this.authorIsOrg ? this.record.Posted_By__r.Organization_Account__c : null;
+    }
+
     get authorAvatar() {
-        const baseUrl = this.record && this.record.Posted_By__r ? this.record.Posted_By__r.Image_URL__c : '';
-        return avatarImageUrl(baseUrl);
+        const author = this.record?.Posted_By__r;
+        if (!author) return '';
+        const logo = this.authorIsOrg ? author.Organization_Account__r?.Logo_URL__c : '';
+        return avatarImageUrl(logo || author.Display_Avatar_URL__c);
     }
 
     get authorContactId() {

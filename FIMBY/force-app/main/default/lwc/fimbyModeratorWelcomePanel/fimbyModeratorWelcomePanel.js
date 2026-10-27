@@ -1,5 +1,4 @@
 import { LightningElement, api, track } from 'lwc';
-import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getVouchingContextForContact from '@salesforce/apex/FimbyVouchController.getVouchingContextForContact';
 import overrideVouch from '@salesforce/apex/FimbyVouchController.overrideVouch';
 
@@ -99,7 +98,7 @@ export default class FimbyModeratorWelcomePanel extends LightningElement {
     }
 
     get contactPhoto() {
-        return this._panelData?.contactPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this._panelData?.contactPhotoUrl || '';
     }
 
     get onboardingBadgeClass() {

@@ -661,8 +661,14 @@ public with sharing class FimbyBulkBuyController {
             List<Map<String, Object>> results = new List<Map<String, Object>>();
             List<Response__c> responses = [
                 SELECT Id, Contact__c, Contact__r.FirstName, Contact__r.LastName,
+                       Contact__r.Display_Avatar_URL__c, Contact__r.Is_Organization_Contact__c,
+                       Contact__r.Organization_Account__c, Contact__r.Organization_Account__r.Name,
+                       Contact__r.Organization_Account__r.Logo_URL__c,
                        On_Behalf_Of_Contact__c,
                        On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
+                       On_Behalf_Of_Contact__r.Display_Avatar_URL__c, On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
+                       On_Behalf_Of_Contact__r.Organization_Account__c, On_Behalf_Of_Contact__r.Organization_Account__r.Name,
+                       On_Behalf_Of_Contact__r.Organization_Account__r.Logo_URL__c,
                        Amount_Requested__c, Status__c, CreatedDate
                 FROM Response__c
                 WHERE Need_Offer_Responded_To__c = :postId
@@ -679,7 +685,10 @@ public with sharing class FimbyBulkBuyController {
                 String lastName = r.On_Behalf_Of_Contact__c != null
                     ? r.On_Behalf_Of_Contact__r.LastName
                     : r.Contact__r.LastName;
-                results.add(new Map<String, Object>{
+                Contact represented = r.On_Behalf_Of_Contact__c != null
+                    ? r.On_Behalf_Of_Contact__r
+                    : r.Contact__r;
+                Map<String, Object> row = new Map<String, Object>{
                     'id' => r.Id,
                     'contactId' => representedId,
                     'realContactId' => r.Contact__c,
@@ -689,9 +698,32 @@ public with sharing class FimbyBulkBuyController {
                     'amount' => r.Amount_Requested__c,
                     'status' => r.Status__c,
                     'createdDate' => r.CreatedDate
-                });
+                };
+                putReservationIdentity(row, represented);
+                results.add(row);
             }
             return results;
         }
+    }
+
+    /**
+     * Adds avatarUrl (masked visible photo or org logo), isOrgContact, orgAccountId and
+     * orgName for the represented reserver. Never falls back to the raw Image_URL__c.
+     */
+    @TestVisible
+    private static void putReservationIdentity(Map<String, Object> row, Contact represented) {
+        Boolean isOrg = represented?.Is_Organization_Contact__c == true;
+        String avatar = represented?.Display_Avatar_URL__c;
+        String orgName = null;
+        if (isOrg && represented.Organization_Account__r != null) {
+            orgName = represented.Organization_Account__r.Name;
+            if (String.isNotBlank(represented.Organization_Account__r.Logo_URL__c)) {
+                avatar = represented.Organization_Account__r.Logo_URL__c;
+            }
+        }
+        row.put('avatarUrl', avatar);
+        row.put('isOrgContact', isOrg);
+        row.put('orgAccountId', isOrg ? represented.Organization_Account__c : null);
+        row.put('orgName', orgName);
     }
 }

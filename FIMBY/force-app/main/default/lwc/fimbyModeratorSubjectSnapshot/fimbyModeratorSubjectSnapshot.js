@@ -10,7 +10,11 @@ export default class FimbyModeratorSubjectSnapshot extends LightningElement {
     get infoIconUrl() { return `${IMPACT_ICONS}/info.png`; }
 
     get photoUrl() {
-        return this.subjectData?.photoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.subjectData?.photoUrl || '';
+    }
+
+    get subjectContactId() {
+        return this.subjectData?.contactId || this.subjectData?.subjectContactId || null;
     }
 
     get chevronIcon() {

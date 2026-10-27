@@ -34,9 +34,10 @@ const FIELDS = [
     'Library_Item__c.Owner_Contact__c',
     'Library_Item__c.Owner_Contact__r.Name',
     'Library_Item__c.Owner_Contact__r.Full_Name__c',
-    'Library_Item__c.Owner_Contact__r.Image_URL__c',
+    'Library_Item__c.Owner_Contact__r.Display_Avatar_URL__c',
     'Library_Item__c.Owner_Contact__r.Is_Organization_Contact__c',
     'Library_Item__c.Owner_Contact__r.Organization_Account__c',
+    'Library_Item__c.Owner_Contact__r.Organization_Account__r.Logo_URL__c',
     'Library_Item__c.Owner_Organization__c',
     'Library_Item__c.Owner_Organization__r.Name',
     'Library_Item__c.OwnerId',
@@ -369,7 +370,6 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
     get trashIconUrl() { return `${IMPACT_ICONS}/trash.png`; }
-    get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get historyIconUrl() { return `${IMPACT_ICONS}/plannersm.png`; }
     get messageIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
 
@@ -510,9 +510,22 @@ export default class FimbyLibraryItemDetail extends NavigationMixin(LightningEle
                getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Name') || '';
     }
 
+    get ownerIsOrg() {
+        return !!this.record
+            && getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Is_Organization_Contact__c') === true;
+    }
+
+    get ownerOrgAccountId() {
+        if (!this.record || !this.ownerIsOrg) return null;
+        return getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Organization_Account__c');
+    }
+
     get ownerAvatar() {
-        const baseUrl = this.record ? getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Image_URL__c') : '';
-        return avatarImageUrl(baseUrl);
+        if (!this.record) return '';
+        const url = (this.ownerIsOrg
+            && getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Organization_Account__r.Logo_URL__c'))
+            || getFieldValue(this.record, 'Library_Item__c.Owner_Contact__r.Display_Avatar_URL__c');
+        return avatarImageUrl(url);
     }
 
     get ownerContactId() {

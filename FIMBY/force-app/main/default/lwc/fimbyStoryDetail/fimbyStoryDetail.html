@@ -36,14 +36,9 @@
                     <!-- Author Header - badge sits in-flow beside the name (no overlap, no duplicate type) -->
                     <div class="story-header">
                         <div class={authorInfoClass} onclick={handleAuthorAvatarClick}>
-                            <template lwc:if={authorAvatar}>
-                                <img src={authorAvatar} alt={authorName} class="author-avatar">
-                            </template>
-                            <template lwc:else>
-                                <div class="avatar-placeholder">
-                                    <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
-                                </div>
-                            </template>
+                            <c-fimby-avatar class="author-avatar" src={authorAvatar} name={authorName}
+                                contact-id={authorContactId} organization-account-id={authorOrgAccountId}
+                                is-organization={authorIsOrg} size="40"></c-fimby-avatar>
                             <div class="author-details">
                                 <span class="author-name">{authorName}</span>
                                 <span class="story-meta">
@@ -121,12 +116,9 @@
                                     <div class={comment.authorAvatarClass}
                                          data-profile-path={comment.profilePath}
                                          onclick={handleCommentAvatarClick}>
-                                        <template lwc:if={comment.authorPhotoUrl}>
-                                            <img src={comment.authorPhotoUrl} alt={comment.authorName}>
-                                        </template>
-                                        <template lwc:else>
-                                            <lightning-icon icon-name="standard:user" size="x-small"></lightning-icon>
-                                        </template>
+                                        <c-fimby-avatar src={comment.authorPhotoUrl} name={comment.authorName}
+                                            contact-id={comment.authorId} organization-account-id={comment.authorOrgAccountId}
+                                            is-organization={comment.authorIsOrg} size="32"></c-fimby-avatar>
                                     </div>
                                     <div class="comment-content">
                                         <div class="comment-meta">

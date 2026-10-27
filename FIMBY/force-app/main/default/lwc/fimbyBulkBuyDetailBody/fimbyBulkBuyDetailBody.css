@@ -306,23 +306,6 @@
     box-shadow: 0 0 0 4px var(--fimby-focus-glow);
 }
 
-.avatar-placeholder {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.avatar-initial {
-    line-height: 1;
-}
-
 .reservation-info {
     flex: 1;
     min-width: 0;

@@ -130,12 +130,7 @@
                         </template>
                         <!-- Requester summary -->
                         <div class="requester-summary">
-                            <template lwc:if={hasRequesterAvatar}>
-                                <img src={requesterAvatar} alt="" class="requester-avatar">
-                            </template>
-                            <template lwc:else>
-                                <img src={noProfilePhotoUrl} alt="" class="requester-avatar">
-                            </template>
+                            <c-fimby-avatar class="requester-avatar" src={requesterAvatar} name={requesterName} contact-id={requesterContactId} organization-account-id={requesterOrgAccountId} is-organization={requesterIsOrg} size="44"></c-fimby-avatar>
                             <div class="requester-info">
                                 <span class="requester-name">{requesterName}</span>
                                 <span class="requester-meta">wants to borrow <strong>{libraryItem.name}</strong></span>

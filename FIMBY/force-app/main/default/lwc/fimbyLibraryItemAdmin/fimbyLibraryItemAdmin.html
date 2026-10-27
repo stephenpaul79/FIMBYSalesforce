@@ -16,12 +16,7 @@
                     </h2>
                     <div class="loan-row">
                         <div class="loan-user-row">
-                            <template lwc:if={currentLoan.borrowerAvatar}>
-                                <img src={currentLoan.borrowerAvatar} alt="" class="avatar-sm">
-                            </template>
-                            <template lwc:else>
-                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
-                            </template>
+                            <c-fimby-avatar class="avatar-sm" src={currentLoan.borrowerAvatar} name={currentLoanBorrowerName} contact-id={currentLoan.borrowerContactId} organization-account-id={currentLoan.borrowerOrgAccountId} is-organization={currentLoan.borrowerIsOrgContact} size="32"></c-fimby-avatar>
                             <div class="loan-info">
                                 <span class="loan-name">{currentLoanBorrowerName}</span>
                                 <span class="loan-meta">
@@ -72,12 +67,7 @@
                                 <li key={req.id} class="request-item">
                                     <div class={req.rowStripClass}>
                                         <div class="request-user-row">
-                                            <template lwc:if={req.requesterAvatar}>
-                                                <img src={req.requesterAvatar} alt="" class="avatar-sm">
-                                            </template>
-                                            <template lwc:else>
-                                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
-                                            </template>
+                                            <c-fimby-avatar class="avatar-sm" src={req.requesterAvatar} name={req.requesterName} contact-id={req.requesterContactId} organization-account-id={req.requesterOrgAccountId} is-organization={req.requesterIsOrgContact} size="32"></c-fimby-avatar>
                                             <div class="request-info">
                                                 <span class="request-name">{req.requesterName}</span>
                                                 <span class="request-meta">
@@ -144,12 +134,7 @@
                                 <li key={hist.id} class="history-item">
                                     <div class="history-row">
                                         <div class="history-user-row">
-                                            <template lwc:if={hist.borrowerAvatar}>
-                                                <img src={hist.borrowerAvatar} alt="" class="avatar-sm">
-                                            </template>
-                                            <template lwc:else>
-                                                <img src={noProfilePhotoUrl} alt="" class="avatar-sm">
-                                            </template>
+                                            <c-fimby-avatar class="avatar-sm" src={hist.borrowerAvatar} name={hist.borrowerName} contact-id={hist.borrowerContactId} organization-account-id={hist.borrowerOrgAccountId} is-organization={hist.borrowerIsOrgContact} size="32"></c-fimby-avatar>
                                             <div class="history-info">
                                                 <span class="history-name">{hist.borrowerName}</span>
                                                 <span class="history-meta">{hist.displayStartDate} — {hist.displayEndDate}</span>

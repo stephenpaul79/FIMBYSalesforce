@@ -2,7 +2,7 @@
     <div class="panel-body">
         <!-- New member card -->
         <div class="member-card">
-            <img src={contactPhoto} alt="" class="member-photo">
+            <c-fimby-avatar class="member-photo" src={contactPhoto} name={panelData.contactName} contact-id={panelData.contactId} size="64"></c-fimby-avatar>
             <div class="member-info">
                 <span class="member-name">{panelData.contactName}</span>
                 <template lwc:if={panelData.pronouns}>

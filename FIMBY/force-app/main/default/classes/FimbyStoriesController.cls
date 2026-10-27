@@ -146,11 +146,11 @@ public with sharing class FimbyStoriesController {
             }
 
             Contact avatarContact = helper.queryContactAvatar(actingAsContactId);
-            if (avatarContact == null || String.isBlank(avatarContact.Image_URL__c)) {
+            if (avatarContact == null || String.isBlank(avatarContact.Display_Avatar_URL__c)) {
                 throw new AuraHandledException('No profile photo found to reuse.');
             }
 
-            story.Image_URL__c = avatarContact.Image_URL__c;
+            story.Image_URL__c = avatarContact.Display_Avatar_URL__c;
             story.Image_Ratio__c = avatarContact.Image_Ratio__c;
             helper.updateStory(story);
         } catch (AuraHandledException e) {
@@ -315,8 +315,9 @@ public with sharing class FimbyStoriesController {
 
             String query = 'SELECT Id, Name, Message__c, Type__c, Image_URL__c, Image_Ratio__c, '
                 + 'Posted_By__c, Posted_By__r.Name, Posted_By__r.Full_Name__c, '
-                + ' Posted_By__r.Image_URL__c, Posted_By__r.Display_Avatar_URL__c, '
+                + 'Posted_By__r.Display_Avatar_URL__c, '
                 + 'Posted_By__r.Is_Organization_Contact__c, Posted_By__r.Organization_Account__c, '
+                + 'Posted_By__r.Organization_Account__r.Name, Posted_By__r.Organization_Account__r.Logo_URL__c, '
                 + 'Contact__c, Neighbourhood__c, Visibility_Scope__c, '
                 + 'Moderation_Status__c, CreatedDate, OwnerId, Comment_Count__c '
                 + 'FROM Story__c WHERE Id = :storyId '
@@ -401,7 +402,7 @@ public with sharing class FimbyStoriesController {
                 return null;
             }
             List<Contact> rows = [
-                SELECT Id, Image_URL__c, Image_Ratio__c
+                SELECT Id, Display_Avatar_URL__c, Image_Ratio__c
                 FROM Contact
                 WHERE Id = :contactId
                 LIMIT 1

@@ -318,28 +318,19 @@ public with sharing class FimbyLibraryController {
     @AuraEnabled(cacheable=true)
     public static Boolean isVouchedForBorrowing() {
         Id actingId = FimbyIdentityRepository.getActingAsContactId();
-        if (actingId == null) return false;
-
-        for (Contact c : [
-            SELECT Id, Vouched_Status__c, Is_Organization_Contact__c
-            FROM Contact WHERE Id = :actingId LIMIT 1
-        ]) {
-            if (c.Is_Organization_Contact__c == true) return true;
-            if ('Vouched'.equals(c.Vouched_Status__c)) return true;
+        if (actingId == null) {
+            return false;
         }
+        return new BorrowingEligibilityReader().isEligible(actingId);
+    }
 
-        // Supportee path: if I'm being supported by someone who is Vouched, I inherit.
-        for (Support_Relationship__c sr : [
-            SELECT Contact__c, Contact__r.Vouched_Status__c
-            FROM Support_Relationship__c
-            WHERE Related_Contact__c = :actingId
-              AND Status__c = 'Approved'
-            LIMIT 5
-        ]) {
-            if ('Vouched'.equals(sr.Contact__r?.Vouched_Status__c)) return true;
-        }
-
-        return false;
+    /**
+     * @description Whether a parent-managed child may borrow via an Approved Parent_Guardian
+     *              who is Vouched. Used by the profile UI; reads in SYSTEM MODE so FLS on
+     *              supporter vouch fields cannot hide inherited library access.
+     */
+    public static Boolean hasGuardianVouchStanding(Id contactId) {
+        return new BorrowingEligibilityReader().hasParentGuardianVouchStanding(contactId);
     }
 
     @AuraEnabled
@@ -673,7 +664,9 @@ public with sharing class FimbyLibraryController {
             // Borrower's lending history for this item
             List<Lending_History__c> borrowerHist = [
                 SELECT Id, Start_Date__c, End_Date__c, Condition_Upon_Return__c,
-                       Lent_By__r.Full_Name__c, Lent_By__r.Image_URL__c, Lent_By__r.Display_Avatar_URL__c
+                       Lent_By__c,
+                       Lent_By__r.Full_Name__c, Lent_By__r.Image_URL__c, Lent_By__r.Display_Avatar_URL__c,
+                       Lent_By__r.Is_Organization_Contact__c, Lent_By__r.Organization_Account__c
                 FROM Lending_History__c
                 WHERE Borrowed_By__c = :actingAsContactId
                 AND Library_Item__c = :itemId
@@ -702,6 +695,9 @@ public with sharing class FimbyLibraryController {
                         'startDate' => bh.Start_Date__c,
                         'endDate' => bh.End_Date__c,
                         'condition' => bh.Condition_Upon_Return__c,
+                        'lenderContactId' => bh.Lent_By__c,
+                        'lenderIsOrgContact' => bh.Lent_By__r?.Is_Organization_Contact__c == true,
+                        'lenderOrgAccountId' => bh.Lent_By__r?.Organization_Account__c,
                         'lenderName' => bh.Lent_By__r?.Full_Name__c,
                         'lenderAvatar' => bh.Lent_By__r?.Display_Avatar_URL__c
                     };
@@ -753,7 +749,9 @@ public with sharing class FimbyLibraryController {
             // Current loan — includes "Owner to Confirm Return" where borrower has set Returned_Date__c
             List<Loaned_Item__c> activeLoans = [
                 SELECT Id, Status__c, Loan_Due_Date__c, Loan_Start_Date__c,
-                       Loaned_To__r.Full_Name__c, Loaned_To__r.Image_URL__c, Loaned_To__r.Display_Avatar_URL__c,
+                       Loaned_To__c, Loaned_To__r.Full_Name__c, Loaned_To__r.Display_Avatar_URL__c,
+                       Loaned_To__r.Is_Organization_Contact__c, Loaned_To__r.Organization_Account__c,
+                       Loaned_To__r.Organization_Account__r.Name, Loaned_To__r.Organization_Account__r.Logo_URL__c,
                        Requested_Due_Date_Extension__c, Return_Confirmed_By_Borrower__c
                 FROM Loaned_Item__c
                 WHERE Library_Item__c = :itemId
@@ -775,25 +773,27 @@ public with sharing class FimbyLibraryController {
                 ];
                 if (!loanConvs.isEmpty()) loanConvId = loanConvs[0].Id;
 
-                result.put('currentLoan', new Map<String, Object>{
+                Map<String, Object> loanMap = new Map<String, Object>{
                     'id' => loan.Id,
                     'status' => loan.Status__c,
                     'loanStatusDerived' => loanPhase,
                     'dueDate' => loan.Loan_Due_Date__c,
                     'startDate' => loan.Loan_Start_Date__c,
-                    'borrowerName' => loan.Loaned_To__r?.Full_Name__c,
-                    'borrowerAvatar' => loan.Loaned_To__r?.Display_Avatar_URL__c,
                     'conversationId' => loanConvId,
                     'requestedDueDateExtension' => loan.Requested_Due_Date_Extension__c,
                     'returnConfirmedByBorrower' => loan.Return_Confirmed_By_Borrower__c
-                });
+                };
+                putAdminIdentity(loanMap, 'borrower', loan.Loaned_To__c, loan.Loaned_To__r);
+                result.put('currentLoan', loanMap);
             }
 
             // Active lending requests (waitlist) — enriched with conversation IDs for Approved
             List<Lending_Request__c> reqRecords = [
                 SELECT Id, Status__c, Waitlist_Position__c, Requested_Date__c,
                        of_Days_Needed__c, Estimated_Available_Date__c,
-                       Requested_By__r.Full_Name__c, Requested_By__r.Image_URL__c, Requested_By__r.Display_Avatar_URL__c
+                       Requested_By__c, Requested_By__r.Full_Name__c, Requested_By__r.Display_Avatar_URL__c,
+                       Requested_By__r.Is_Organization_Contact__c, Requested_By__r.Organization_Account__c,
+                       Requested_By__r.Organization_Account__r.Name, Requested_By__r.Organization_Account__r.Logo_URL__c
                 FROM Lending_Request__c
                 WHERE Library_Item__c = :itemId
                 AND Status__c NOT IN ('Cancelled', 'Declined')
@@ -827,10 +827,9 @@ public with sharing class FimbyLibraryController {
                     'waitlistPosition' => req.Waitlist_Position__c,
                     'requestedDate' => req.Requested_Date__c,
                     'daysNeeded' => req.of_Days_Needed__c,
-                    'estimatedAvailableDate' => req.Estimated_Available_Date__c,
-                    'requesterName' => req.Requested_By__r?.Full_Name__c,
-                    'requesterAvatar' => req.Requested_By__r?.Display_Avatar_URL__c
+                    'estimatedAvailableDate' => req.Estimated_Available_Date__c
                 };
+                putAdminIdentity(reqMap, 'requester', req.Requested_By__c, req.Requested_By__r);
                 if (reqConvMap.containsKey(String.valueOf(req.Id))) {
                     reqMap.put('conversationId', String.valueOf(reqConvMap.get(String.valueOf(req.Id))));
                 }
@@ -842,7 +841,9 @@ public with sharing class FimbyLibraryController {
             List<Lending_History__c> histRecords = [
                 SELECT Id, Start_Date__c, End_Date__c, Condition_Upon_Return__c,
                        Lender_Rating__c, Borrow_Rating__c,
-                       Borrowed_By__r.Full_Name__c, Borrowed_By__r.Image_URL__c, Borrowed_By__r.Display_Avatar_URL__c
+                       Borrowed_By__c, Borrowed_By__r.Full_Name__c, Borrowed_By__r.Display_Avatar_URL__c,
+                       Borrowed_By__r.Is_Organization_Contact__c, Borrowed_By__r.Organization_Account__c,
+                       Borrowed_By__r.Organization_Account__r.Name, Borrowed_By__r.Organization_Account__r.Logo_URL__c
                 FROM Lending_History__c
                 WHERE Library_Item__c = :itemId
                 ORDER BY End_Date__c DESC
@@ -873,10 +874,9 @@ public with sharing class FimbyLibraryController {
                     'endDate' => hist.End_Date__c,
                     'condition' => hist.Condition_Upon_Return__c,
                     'lenderRating' => hist.Lender_Rating__c,
-                    'borrowRating' => hist.Borrow_Rating__c,
-                    'borrowerName' => hist.Borrowed_By__r?.Full_Name__c,
-                    'borrowerAvatar' => hist.Borrowed_By__r?.Display_Avatar_URL__c
+                    'borrowRating' => hist.Borrow_Rating__c
                 };
+                putAdminIdentity(histMap, 'borrower', hist.Borrowed_By__c, hist.Borrowed_By__r);
                 String histIdStr = String.valueOf(hist.Id);
                 if (histConvMap.containsKey(histIdStr)) {
                     histMap.put('conversationId', String.valueOf(histConvMap.get(histIdStr)));
@@ -895,6 +895,32 @@ public with sharing class FimbyLibraryController {
             ex.setMessage('Error loading admin data: ' + e.getMessage());
             throw ex;
         }
+    }
+
+    /**
+     * Stamps the represented identity for a Library Admin row under {prefix}ContactId,
+     * {prefix}IsOrgContact, {prefix}OrgAccountId, {prefix}Name and {prefix}Avatar.
+     * The avatar is the organisation logo for org contacts, otherwise the masked
+     * Display_Avatar_URL__c — never the raw Image_URL__c.
+     */
+    @TestVisible
+    private static void putAdminIdentity(Map<String, Object> row, String prefix, Id contactId, Contact c) {
+        Boolean isOrg = c?.Is_Organization_Contact__c == true;
+        String name = c?.Full_Name__c;
+        String avatar = c?.Display_Avatar_URL__c;
+        if (isOrg && c.Organization_Account__r != null) {
+            if (String.isNotBlank(c.Organization_Account__r.Name)) {
+                name = c.Organization_Account__r.Name;
+            }
+            if (String.isNotBlank(c.Organization_Account__r.Logo_URL__c)) {
+                avatar = c.Organization_Account__r.Logo_URL__c;
+            }
+        }
+        row.put(prefix + 'ContactId', contactId);
+        row.put(prefix + 'IsOrgContact', isOrg);
+        row.put(prefix + 'OrgAccountId', isOrg ? c.Organization_Account__c : null);
+        row.put(prefix + 'Name', name);
+        row.put(prefix + 'Avatar', avatar);
     }
 
     // ============================================
@@ -1381,6 +1407,65 @@ public with sharing class FimbyLibraryController {
             this.visible = visible;
             this.removed = removed;
             this.message = message;
+        }
+    }
+
+    /**
+     * @description Borrowing eligibility reads in SYSTEM MODE. A parent-managed child inherits
+     *              library access from any Approved supporter who is Vouched; that inheritance
+     *              must not fail when the community profile cannot read vouch fields on others.
+     */
+    private without sharing class BorrowingEligibilityReader {
+        public Boolean isEligible(Id actingId) {
+            for (Contact c : [
+                SELECT Id, Vouched_Status__c, Is_Organization_Contact__c
+                FROM Contact
+                WHERE Id = :actingId
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ]) {
+                if (c.Is_Organization_Contact__c == true) {
+                    return true;
+                }
+                if ('Vouched'.equals(c.Vouched_Status__c)) {
+                    return true;
+                }
+            }
+            return hasVouchedSupporter(actingId);
+        }
+
+        public Boolean hasParentGuardianVouchStanding(Id childContactId) {
+            if (childContactId == null || !FimbyProxiedPresenceGuard.isProxied(childContactId)) {
+                return false;
+            }
+            for (Support_Relationship__c sr : [
+                SELECT Id
+                FROM Support_Relationship__c
+                WHERE Related_Contact__c = :childContactId
+                  AND Status__c = 'Approved'
+                  AND Relationship_Type__c = :FimbyProxiedPresenceGuard.TYPE_PARENT_GUARDIAN
+                  AND Contact__r.Vouched_Status__c = 'Vouched'
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ]) {
+                return true;
+            }
+            return false;
+        }
+
+        private Boolean hasVouchedSupporter(Id supporteeId) {
+            for (Support_Relationship__c sr : [
+                SELECT Id
+                FROM Support_Relationship__c
+                WHERE Related_Contact__c = :supporteeId
+                  AND Status__c = 'Approved'
+                  AND Contact__r.Vouched_Status__c = 'Vouched'
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ]) {
+                return true;
+            }
+            return false;
         }
     }
 }

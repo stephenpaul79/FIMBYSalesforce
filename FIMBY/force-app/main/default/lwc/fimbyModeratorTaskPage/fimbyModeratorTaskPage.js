@@ -33,7 +33,6 @@ import getOrCreateModeratorConversation from '@salesforce/apex/FimbyModeratorDas
 import getReporterFilingStats from '@salesforce/apex/FimbyModeratorDashboardController.getReporterFilingStats';
 import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
 
-const NO_PHOTO = '/resource/Impact_Icons/NoProfilePhoto.png';
 const BODY_TRUNCATE_LENGTH = 300;
 
 const CATEGORY_LABELS = {
@@ -307,27 +306,27 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
     // ================================================================
 
     get authorName() { return this._panelData?.authorName || ''; }
-    get authorPhoto() { return this._panelData?.authorPhotoUrl || NO_PHOTO; }
+    get authorPhoto() { return this._panelData?.authorPhotoUrl || ''; }
     get authorContactId() { return this._panelData?.authorContactId; }
 
     get reporterName() { return this._panelData?.reporterName || ''; }
-    get reporterPhoto() { return this._panelData?.reporterPhotoUrl || NO_PHOTO; }
+    get reporterPhoto() { return this._panelData?.reporterPhotoUrl || ''; }
     get reporterContactId() { return this._panelData?.reporterContactId; }
 
     get blockerName() { return this._panelData?.blockerName || ''; }
-    get blockerPhoto() { return this._panelData?.blockerPhotoUrl || NO_PHOTO; }
+    get blockerPhoto() { return this._panelData?.blockerPhotoUrl || ''; }
     get blockerContactId() { return this._panelData?.blockerContactId; }
 
     get blockedName() { return this._panelData?.blockedName || ''; }
-    get blockedPhoto() { return this._panelData?.blockedPhotoUrl || NO_PHOTO; }
+    get blockedPhoto() { return this._panelData?.blockedPhotoUrl || ''; }
     get blockedContactId() { return this._panelData?.blockedContactId; }
 
     get helperName() { return this._panelData?.helperName || ''; }
-    get helperPhoto() { return this._panelData?.helperPhotoUrl || NO_PHOTO; }
+    get helperPhoto() { return this._panelData?.helperPhotoUrl || ''; }
     get helperContactId() { return this._panelData?.helperContactId; }
 
     get subjectName() { return this._panelData?.subjectName || ''; }
-    get subjectPhoto() { return this._panelData?.subjectPhotoUrl || NO_PHOTO; }
+    get subjectPhoto() { return this._panelData?.subjectPhotoUrl || ''; }
     get subjectContactId() { return this._panelData?.subjectContactId; }
 
     // ================================================================
@@ -384,11 +383,11 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
     get hasReportMessage() { return !!this._panelData?.reportMessage; }
 
     get reportedUserName() { return this._panelData?.reportedUserName || ''; }
-    get reportedUserPhoto() { return this._panelData?.reportedUserPhotoUrl || NO_PHOTO; }
+    get reportedUserPhoto() { return this._panelData?.reportedUserPhotoUrl || ''; }
     get reportedUserId() { return this._panelData?.reportedUserId; }
 
     get organiserName() { return this._panelData?.organiserName || ''; }
-    get organiserPhoto() { return this._panelData?.organiserPhotoUrl || NO_PHOTO; }
+    get organiserPhoto() { return this._panelData?.organiserPhotoUrl || ''; }
     get organiserContactId() { return this._panelData?.organiserContactId; }
 
     get isBulkBuyBlocked() { return !!this._panelData?.isBlocked; }
@@ -425,7 +424,8 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
     get showHistoryRow() { return this.hasSubjectSnapshot || this.showReporterHistory; }
 
     get subjectHistoryName() { return this._panelData?.subjectData?.name || ''; }
-    get subjectHistoryPhoto() { return this._panelData?.subjectData?.photoUrl || NO_PHOTO; }
+    get subjectHistoryPhoto() { return this._panelData?.subjectData?.photoUrl || ''; }
+    get subjectHistoryContactId() { return this._panelData?.subjectData?.contactId || null; }
     get subjectHistoryPronouns() { return this._panelData?.subjectData?.pronouns || ''; }
     get subjectReportCount() { return this._panelData?.subjectData?.totalReports || 0; }
     get subjectCheckInCount() { return this._panelData?.subjectData?.checkIns || 0; }
@@ -685,6 +685,7 @@ export default class FimbyModeratorTaskPage extends NavigationMixin(LightningEle
                 }).then(h => {
                     const contact = h.subject || {};
                     panelData.subjectData = {
+                        contactId: contact.Id || subjectId,
                         name: contact.Name || '',
                         photoUrl: contact.Image_URL__c ? avatarImageUrl(contact.Image_URL__c) : '',
                         pronouns: contact.Pronouns__c || '',

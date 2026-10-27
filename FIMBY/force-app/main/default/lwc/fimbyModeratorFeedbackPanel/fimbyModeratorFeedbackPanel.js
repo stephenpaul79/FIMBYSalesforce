@@ -19,7 +19,7 @@ export default class FimbyModeratorFeedbackPanel extends NavigationMixin(Lightni
     }
 
     get submitterPhoto() {
-        return this.panelData?.submitterPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.submitterPhotoUrl || '';
     }
 
     get typeBadgeClass() {

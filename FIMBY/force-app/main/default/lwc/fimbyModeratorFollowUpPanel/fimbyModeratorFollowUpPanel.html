@@ -11,7 +11,7 @@
 
         <!-- Reported user row -->
         <div class="user-row">
-            <img src={reportedUserPhoto} alt="" class="user-photo">
+            <c-fimby-avatar class="user-photo" src={reportedUserPhoto} name={panelData.reportedUserName} contact-id={panelData.reportedUserId} size="44"></c-fimby-avatar>
             <div class="user-details">
                 <span class="user-name">{panelData.reportedUserName}</span>
                 <template lwc:if={panelData.isBlocked}>

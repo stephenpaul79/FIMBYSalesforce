@@ -151,7 +151,7 @@
                             <div class="people-grid">
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={authorPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={authorPhoto} name={authorName} contact-id={authorContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Author</span>
                                             <span class="person-name">{authorName}</span>
@@ -165,7 +165,7 @@
                                 <template lwc:if={reporterName}>
                                     <div class="person-card">
                                         <div class="person-row-1">
-                                            <img src={reporterPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={reporterPhoto} name={reporterName} contact-id={reporterContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-role">Reporter</span>
                                                 <span class="person-name">{reporterName}</span>
@@ -191,7 +191,7 @@
                                 <template lwc:if={isSubjectExpanded}>
                                     <div id="subject-body-c" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={subjectHistoryPhoto} name={subjectHistoryName} contact-id={subjectHistoryContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{subjectHistoryName}</span>
                                                 <template lwc:if={subjectHistoryPronouns}>
@@ -247,7 +247,7 @@
                                 <template lwc:if={isReporterExpanded}>
                                     <div id="reporter-body-c" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={reporterHistoryPhoto} name={reporterHistoryName} contact-id={reporterContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{reporterHistoryName}</span>
                                             </div>
@@ -334,9 +334,9 @@
                             <div class={whatHappenedClass}>
                                 <div class="section-label">What Happened</div>
                                 <div class="block-visual">
-                                    <img src={blockerPhoto} alt="" class="person-avatar">
+                                    <c-fimby-avatar class="person-avatar" src={blockerPhoto} name={blockerName} contact-id={blockerContactId} size="36"></c-fimby-avatar>
                                     <span class="block-arrow">blocked</span>
-                                    <img src={blockedPhoto} alt="" class="person-avatar">
+                                    <c-fimby-avatar class="person-avatar" src={blockedPhoto} name={blockedName} contact-id={blockedContactId} size="36"></c-fimby-avatar>
                                 </div>
                                 <div class="block-names">
                                     <span>{blockerName}</span>
@@ -369,7 +369,7 @@
                             <div class="people-grid">
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={blockerPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={blockerPhoto} name={blockerName} contact-id={blockerContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Blocker</span>
                                             <span class="person-name">{blockerName}</span>
@@ -382,7 +382,7 @@
                                 </div>
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={blockedPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={blockedPhoto} name={blockedName} contact-id={blockedContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Blocked Person</span>
                                             <span class="person-name">{blockedName}</span>
@@ -406,7 +406,7 @@
                                 <template lwc:if={isSubjectExpanded}>
                                     <div id="subject-body-b" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={subjectHistoryPhoto} name={subjectHistoryName} contact-id={subjectHistoryContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{subjectHistoryName}</span>
                                                 <template lwc:if={subjectHistoryPronouns}>
@@ -449,7 +449,7 @@
                                 <template lwc:if={isReporterExpanded}>
                                     <div id="reporter-body-b" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={reporterHistoryPhoto} name={reporterHistoryName} contact-id={reporterContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info"><span class="person-name">{reporterHistoryName}</span></div>
                                         </div>
                                         <div class="stats-grid-inline">
@@ -587,7 +587,7 @@
                             <div class="people-grid">
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={helperPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={helperPhoto} name={helperName} contact-id={helperContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Helper</span>
                                             <span class="person-name">{helperName}</span>
@@ -600,7 +600,7 @@
                                 </div>
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={subjectPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={subjectPhoto} name={subjectName} contact-id={subjectContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Subject</span>
                                             <span class="person-name">{subjectName}</span>
@@ -624,7 +624,7 @@
                                 <template lwc:if={isSubjectExpanded}>
                                     <div id="subject-body-sa" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={subjectHistoryPhoto} name={subjectHistoryName} contact-id={subjectHistoryContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{subjectHistoryName}</span>
                                                 <template lwc:if={subjectHistoryPronouns}>
@@ -874,7 +874,7 @@
                             <div class="people-grid">
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={helperPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={helperPhoto} name={helperName} contact-id={helperContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Helper</span>
                                             <span class="person-name">{helperName}</span>
@@ -887,7 +887,7 @@
                                 </div>
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={subjectPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={subjectPhoto} name={subjectName} contact-id={subjectContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Subject</span>
                                             <span class="person-name">{subjectName}</span>
@@ -911,7 +911,7 @@
                                 <template lwc:if={isSubjectExpanded}>
                                     <div id="subject-body-sc" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={subjectHistoryPhoto} name={subjectHistoryName} contact-id={subjectHistoryContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{subjectHistoryName}</span>
                                                 <template lwc:if={subjectHistoryPronouns}>
@@ -1037,7 +1037,7 @@
                             <div class="people-grid people-grid-three">
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={reportedUserPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={reportedUserPhoto} name={reportedUserName} contact-id={reportedUserId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Reported User</span>
                                             <span class="person-name">{reportedUserName}</span>
@@ -1050,7 +1050,7 @@
                                 </div>
                                 <div class="person-card">
                                     <div class="person-row-1">
-                                        <img src={reporterPhoto} alt="" class="person-avatar">
+                                        <c-fimby-avatar class="person-avatar" src={reporterPhoto} name={reporterName} contact-id={reporterContactId} size="36"></c-fimby-avatar>
                                         <div class="person-info">
                                             <span class="person-role">Reporter</span>
                                             <span class="person-name">{reporterName}</span>
@@ -1064,7 +1064,7 @@
                                 <template lwc:if={showOrganiserCard}>
                                     <div class="person-card">
                                         <div class="person-row-1">
-                                            <img src={organiserPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={organiserPhoto} name={organiserName} contact-id={organiserContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-role">Organiser</span>
                                                 <span class="person-name">{organiserName}</span>
@@ -1089,7 +1089,7 @@
                                 <template lwc:if={isSubjectExpanded}>
                                     <div id="subject-body-bb" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={subjectHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={subjectHistoryPhoto} name={subjectHistoryName} contact-id={subjectHistoryContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info">
                                                 <span class="person-name">{subjectHistoryName}</span>
                                                 <template lwc:if={subjectHistoryPronouns}>
@@ -1132,7 +1132,7 @@
                                 <template lwc:if={isReporterExpanded}>
                                     <div id="reporter-body-bb" class="history-card-body">
                                         <div class="history-person">
-                                            <img src={reporterHistoryPhoto} alt="" class="person-avatar">
+                                            <c-fimby-avatar class="person-avatar" src={reporterHistoryPhoto} name={reporterHistoryName} contact-id={reporterContactId} size="36"></c-fimby-avatar>
                                             <div class="person-info"><span class="person-name">{reporterHistoryName}</span></div>
                                         </div>
                                         <div class="stats-grid-inline">

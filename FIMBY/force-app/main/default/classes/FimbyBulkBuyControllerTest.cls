@@ -221,6 +221,54 @@ public class FimbyBulkBuyControllerTest {
     }
 
     @isTest
+    static void testGetBulkBuyDetail_ReservationRowsCarryAvatarIdentity() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 1);
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyBulkBuyController.getBulkBuyDetail(post.Id);
+        }
+        Test.stopTest();
+
+        List<Object> rows = (List<Object>) result.get('reservations');
+        System.assert(!rows.isEmpty(), 'Should return the seeded reservation');
+        Map<String, Object> row = (Map<String, Object>) rows[0];
+        System.assertEquals(testContact.Id, row.get('contactId'), 'Row should carry the represented Contact Id');
+        System.assert(row.containsKey('avatarUrl'), 'Row should carry avatarUrl');
+        System.assertEquals(false, row.get('isOrgContact'), 'Person reserver is not an organisation');
+    }
+
+    @isTest
+    static void testPutReservationIdentity_MaskedPersonNeverUsesRawPhoto() {
+        Contact masked = (Contact) JSON.deserialize(
+            '{"attributes":{"type":"Contact"},"Image_URL__c":"https://example.com/raw.jpg",'
+            + '"Display_Avatar_URL__c":null,"Is_Organization_Contact__c":false}',
+            Contact.class
+        );
+        Map<String, Object> row = new Map<String, Object>();
+        FimbyBulkBuyController.putReservationIdentity(row, masked);
+        System.assertEquals(null, row.get('avatarUrl'), 'Masked person must not expose the raw photo');
+        System.assertEquals(false, row.get('isOrgContact'));
+        System.assertEquals(null, row.get('orgAccountId'));
+    }
+
+    @isTest
+    static void testPutReservationIdentity_OrganisationUsesLogoAndName() {
+        Contact org = new Contact(Is_Organization_Contact__c = true);
+        Account orgAccount = new Account(Name = 'The Life', Logo_URL__c = 'https://example.com/logo.png');
+        org.putSObject('Organization_Account__r', orgAccount);
+        Map<String, Object> row = new Map<String, Object>();
+        FimbyBulkBuyController.putReservationIdentity(row, org);
+        System.assertEquals('https://example.com/logo.png', row.get('avatarUrl'), 'Org logo takes precedence');
+        System.assertEquals(true, row.get('isOrgContact'));
+        System.assertEquals('The Life', row.get('orgName'));
+    }
+
+    @isTest
     static void testNotifyForPickup_Success() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();

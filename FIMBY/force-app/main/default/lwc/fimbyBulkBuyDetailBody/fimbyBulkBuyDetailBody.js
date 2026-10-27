@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { fireErrorToast } from 'c/fimbyToastHelper';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationController.cancelReservation';
@@ -400,7 +401,6 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
                 disabled = true;
             }
             const fn = r.firstName || '';
-            const avatarInitial = fn ? fn.charAt(0).toUpperCase() : (r.lastName ? String(r.lastName).charAt(0).toUpperCase() : '?');
             const displayName = [fn, r.lastName || ''].filter(Boolean).join(' ') || 'Reserver';
             const profilePath = profilePathForContact({
                 contactId: r.contactId,
@@ -411,7 +411,8 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
                 buttonLabel: label,
                 buttonClass,
                 buttonDisabled: disabled,
-                avatarInitial,
+                avatarSrc: avatarImageUrl(r.avatarUrl),
+                avatarName: (r.isOrgContact && r.orgName) || displayName,
                 displayName,
                 profilePath,
                 avatarClass: 'reservation-avatar' + (profilePath ? ' clickable-avatar' : '')

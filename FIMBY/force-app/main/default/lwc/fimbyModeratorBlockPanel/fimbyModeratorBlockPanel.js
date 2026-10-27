@@ -15,11 +15,11 @@ export default class FimbyModeratorBlockPanel extends LightningElement {
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
 
     get blockerPhoto() {
-        return this.panelData?.blockerPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.blockerPhotoUrl || '';
     }
 
     get blockedPhoto() {
-        return this.panelData?.blockedPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.blockedPhotoUrl || '';
     }
 
     get hasOtherBlocks() {

@@ -32,7 +32,7 @@
                         </span>
                     </div>
                     <button type="button" class="owner-row" onclick={handleOwnerClick} aria-label="View neighbour profile">
-                        <img src={ownerAvatarUrl} alt="" class="owner-avatar">
+                        <c-fimby-avatar class="owner-avatar" src={ownerAvatarUrl} name={skill.ownerName} contact-id={skill.ownerContactId} organization-account-id={skill.orgAccountId} is-organization={skill.isOrganization} size="32"></c-fimby-avatar>
                         <span class="owner-name">Offered by {skill.ownerName}</span>
                     </button>
                 </div>

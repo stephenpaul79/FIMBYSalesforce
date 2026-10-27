@@ -87,7 +87,8 @@
                         <h2 class="section-title">Your Neighbourhood Moderator</h2>
                     </div>
                     <div class="moderator-card">
-                        <img src={moderatorPhotoUrl} alt="" class="moderator-photo">
+                        <c-fimby-avatar class="moderator-photo" src={moderatorPhotoUrl} name={moderatorName}
+                            contact-id={moderatorContactId} size="56"></c-fimby-avatar>
                         <div class="moderator-info">
                             <span class="moderator-name">{moderatorName}</span>
                             <template lwc:if={moderatorPronouns}>

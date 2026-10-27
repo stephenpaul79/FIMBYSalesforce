@@ -67,7 +67,7 @@
                                             </span>
                                         </div>
                                         <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
-                                            <img src={posterAvatar} alt={posterName} class="poster-avatar">
+                                            <c-fimby-avatar class="poster-avatar" src={posterAvatar} name={posterName} contact-id={posterContactId} organization-account-id={posterOrgAccountId} is-organization={posterIsOrg} size="40"></c-fimby-avatar>
                                             <span class="poster-name">{posterName}</span>
                                             <c-fimby-proxy-badge lwc:if={isPosterParentManaged} parent-managed={isPosterParentManaged}></c-fimby-proxy-badge>
                                         </div>
@@ -224,7 +224,7 @@
                                             </template>
                                         </div>
                                         <div class={posterInfoClass} onclick={handlePosterAvatarClick}>
-                                            <img src={posterAvatar} alt={posterName} class="poster-avatar">
+                                            <c-fimby-avatar class="poster-avatar" src={posterAvatar} name={posterName} contact-id={posterContactId} organization-account-id={posterOrgAccountId} is-organization={posterIsOrg} size="40"></c-fimby-avatar>
                                             <span class="poster-name">{posterName}</span>
                                             <c-fimby-proxy-badge lwc:if={isPosterParentManaged} parent-managed={isPosterParentManaged}></c-fimby-proxy-badge>
                                         </div>
@@ -578,9 +578,15 @@
                             <template for:each={attendeeList} for:item="attendee">
                                 <div key={attendee.id} class="attendee-row">
                                     <div class="attendee-info">
-                                        <img src={attendee.avatarUrl} alt="" class={attendee.avatarClass}
+                                        <c-fimby-avatar class={attendee.avatarClass}
+                                             src={attendee.avatarUrl}
+                                             name={attendee.name}
+                                             contact-id={attendee.contactId}
+                                             organization-account-id={attendee.orgAccountId}
+                                             is-organization={attendee.isOrgContact}
+                                             size="32"
                                              data-profile-path={attendee.profilePath}
-                                             onclick={handleAttendeeAvatarClick}>
+                                             onclick={handleAttendeeAvatarClick}></c-fimby-avatar>
                                         <span class="attendee-name">{attendee.name}</span>
                                         <template lwc:if={attendee.guestCount}>
                                             <span class="attendee-guests" lwc:if={isOpenEvent}>+{attendee.guestCount}</span>

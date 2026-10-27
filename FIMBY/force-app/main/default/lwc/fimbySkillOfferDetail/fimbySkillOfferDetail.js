@@ -124,7 +124,7 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
     }
 
     get ownerAvatarUrl() {
-        return this.skill?.ownerImageUrl ? avatarImageUrl(this.skill.ownerImageUrl) : `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return avatarImageUrl(this.skill?.ownerImageUrl);
     }
 
     get decodedDescription() {

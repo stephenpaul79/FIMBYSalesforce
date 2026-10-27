@@ -88,6 +88,48 @@ public class FimbyLendingControllerTest {
         System.assertEquals(true, result.get('success'), 'Should return success');
         System.assertNotEquals(null, result.get('lendingRequest'), 'Should return lending request data');
         System.assertNotEquals(null, result.get('libraryItem'), 'Should return library item data');
+        Map<String, Object> req = (Map<String, Object>) result.get('lendingRequest');
+        System.assertEquals(testContact.Id, (Id) req.get('requestedById'), 'Represented requester Id is returned');
+        System.assertEquals(false, req.get('requesterIsOrgContact'), 'Person requester is not an organisation');
+        System.assert(req.containsKey('requesterAvatar'), 'Requester avatar key is always present');
+    }
+
+    @isTest
+    static void testApplyRequesterIdentity_MaskedPersonNeverUsesRawPhoto() {
+        Contact masked = new Contact(
+            Id = getTestContact().Id,
+            Is_Organization_Contact__c = false,
+            Image_URL__c = 'https://example.com/raw.jpg'
+        );
+        Map<String, Object> requestMap = new Map<String, Object>();
+
+        String name = FimbyLendingController.applyRequesterIdentity(requestMap, masked, 'Rosa A.');
+
+        System.assertEquals('Rosa A.', name, 'Person keeps the canonical display name');
+        System.assertEquals(null, requestMap.get('requesterAvatar'),
+            'A blank Display_Avatar_URL__c (masked) must never fall back to the raw Image_URL__c');
+        System.assertEquals(null, requestMap.get('requesterOrgAccountId'), 'Person carries no org Account');
+    }
+
+    @isTest
+    static void testApplyRequesterIdentity_OrganisationUsesLogoAndName() {
+        Id orgAccountId = getTestContact().AccountId;
+        Contact orgContact = new Contact(
+            Id = getTestContact().Id,
+            Is_Organization_Contact__c = true,
+            Organization_Account__c = orgAccountId
+        );
+        orgContact.putSObject('Organization_Account__r', new Account(
+            Id = orgAccountId, Name = 'The Life', Logo_URL__c = 'https://example.com/logo.png'
+        ));
+        Map<String, Object> requestMap = new Map<String, Object>();
+
+        String name = FimbyLendingController.applyRequesterIdentity(requestMap, orgContact, 'Org Contact');
+
+        System.assertEquals('The Life', name, 'Organisation name is used for display');
+        System.assertEquals('https://example.com/logo.png', requestMap.get('requesterAvatar'), 'Organisation logo is used');
+        System.assertEquals(true, requestMap.get('requesterIsOrgContact'), 'Organisation flag is returned');
+        System.assertEquals(orgAccountId, (Id) requestMap.get('requesterOrgAccountId'), 'Org Account is returned');
     }
 
     @isTest

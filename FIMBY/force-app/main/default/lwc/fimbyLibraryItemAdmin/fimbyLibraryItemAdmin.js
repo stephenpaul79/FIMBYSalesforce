@@ -20,7 +20,6 @@ export default class FimbyLibraryItemAdmin extends NavigationMixin(LightningElem
     get lendingIconUrl() { return `${IMPACT_ICONS}/borrow.png`; }
     get historyIconUrl() { return `${IMPACT_ICONS}/plannersm.png`; }
     get waitlistIconUrl() { return `${IMPACT_ICONS}/reply.png`; }
-    get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get messageIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get checkIconUrl() { return `${IMPACT_ICONS}/complete.png`; }
     get reviewIconUrl() { return `${IMPACT_ICONS}/Magnify.png`; }

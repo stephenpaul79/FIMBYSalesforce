@@ -3,12 +3,12 @@
         <!-- Block summary -->
         <div class="block-summary">
             <div class="block-party">
-                <img src={blockerPhoto} alt="" class="user-photo">
+                <c-fimby-avatar class="user-photo" src={blockerPhoto} name={panelData.blockerName} contact-id={panelData.blockerContactId} size="56"></c-fimby-avatar>
                 <span class="user-name">{panelData.blockerName}</span>
             </div>
             <span class="block-arrow" aria-hidden="true">blocked</span>
             <div class="block-party">
-                <img src={blockedPhoto} alt="" class="user-photo">
+                <c-fimby-avatar class="user-photo" src={blockedPhoto} name={panelData.blockedName} contact-id={panelData.blockedContactId} size="56"></c-fimby-avatar>
                 <span class="user-name">{panelData.blockedName}</span>
             </div>
         </div>

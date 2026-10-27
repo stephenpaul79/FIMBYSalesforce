@@ -3,7 +3,7 @@
         <!-- Two-person card (both modes) -->
         <div class="person-pair-card">
             <div class="person-col">
-                <img src={helperPhoto} alt="" class="person-photo">
+                <c-fimby-avatar class="person-photo" src={helperPhoto} name={panelData.helperName} contact-id={panelData.helperContactId} size="56"></c-fimby-avatar>
                 <span class="person-label">Helper</span>
                 <span class="person-name">{panelData.helperName}</span>
             </div>
@@ -11,7 +11,7 @@
                 <lightning-icon icon-name="utility:forward" size="x-small"></lightning-icon>
             </div>
             <div class="person-col">
-                <img src={subjectPhoto} alt="" class="person-photo">
+                <c-fimby-avatar class="person-photo" src={subjectPhoto} name={panelData.subjectName} contact-id={panelData.subjectContactId} size="56"></c-fimby-avatar>
                 <span class="person-label">Subject</span>
                 <span class="person-name">{panelData.subjectName}</span>
             </div>

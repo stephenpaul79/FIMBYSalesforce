@@ -21,7 +21,7 @@ export default class FimbyModeratorFollowUpPanel extends LightningElement {
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
 
     get reportedUserPhoto() {
-        return this.panelData?.reportedUserPhotoUrl || `${IMPACT_ICONS}/NoProfilePhoto.png`;
+        return this.panelData?.reportedUserPhotoUrl || '';
     }
 
     get hasTimeline() {

@@ -12,7 +12,7 @@
         <template lwc:if={isExpanded}>
             <div id="snapshot-body" class="snapshot-body">
                 <div class="subject-card">
-                    <img src={photoUrl} alt="" class="subject-photo">
+                    <c-fimby-avatar class="subject-photo" src={photoUrl} name={subjectData.name} contact-id={subjectContactId} size="48"></c-fimby-avatar>
                     <div class="subject-info">
                         <span class="subject-name">{subjectData.name}</span>
                         <template lwc:if={subjectData.pronouns}>
