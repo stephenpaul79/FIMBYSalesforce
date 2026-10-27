@@ -44,7 +44,7 @@ get homeIconUrl() { return `${IMPACT_ICONS}/${this.isActive ? TAB_ICONS.home.act
 ## Library categories (icons & badge colors)
 `import { getCategoryIconUrl, getCategoryStyle, getCategoryColor, CATEGORY_COLORS } from 'c/fimbyLibraryCategoryConfig';`
 
-Used on library pages (`fimbyLibraryBrowser`, `fimbyLibraryItemDetail`, `fimbyLibraryItemCard`, `fimbyMyStuffPage`, `fimbyBorrowHistory`). The **home feed** uses one generic "Library" badge (`ToolboxActive.png`, `rgba(141,123,106,0.9)`). All badge colors are WCAG AA with white text.
+Used on library pages (`fimbyLibraryBrowser`, `fimbyLibraryItemDetail`, `fimbyLibraryItemCard`, `fimbyMyStuffPage`, `fimbyBorrowHistory`). The **home feed** "just listed" cards use them too: `LIBRARY · {CATEGORY}` / `SKILL · {CATEGORY}` badges (skills via `c/fimbySkillCategoryConfig`) on the category colour, plus a category icon tile when there is no photo. All badge colors are WCAG AA with white text.
 
 | Category | Icon | Color |
 |----------|------|-------|

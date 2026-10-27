@@ -235,9 +235,9 @@
                                         </template>
                                     </div>
                                     <div class="library-listed-actions">
-                                        <div class="card-type-badge library-badge" style={libraryBadgeStyle}>
+                                        <div class="card-type-badge library-badge" style={feedItem.justListedBadgeStyle} title={feedItem.justListedBadgeLabel}>
                                             <img src={feedItem.justListedBadgeIconUrl} alt="" class="badge-icon" />
-                                            <span>{feedItem.justListedBadgeLabel}</span>
+                                            <span class="just-listed-badge-label">{feedItem.justListedBadgeLabel}</span>
                                         </div>
                                         <template lwc:if={feedItem.showCardMenu}>
                                             <div class="library-card-menu-wrap">
@@ -270,7 +270,9 @@
                                         <span class="library-listed-text">
                                             {feedItem.justListedLead} <strong>{feedItem.name}</strong> {feedItem.justListedTail}
                                         </span>
-                                        <span class="library-listed-meta">{feedItem.justListedMeta}</span>
+                                        <template lwc:if={feedItem.justListedMeta}>
+                                            <span class="library-listed-meta">{feedItem.justListedMeta}</span>
+                                        </template>
                                     </div>
                                 </div>
                                 <div class="library-listed-body">
@@ -287,6 +289,11 @@
                                                 onload={handleThumbLoad}
                                                 onerror={handleLibraryThumbError}
                                                 data-original={feedItem.imageUrl} />
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="library-listed-media library-listed-icon-tile">
+                                            <img src={feedItem.justListedBadgeIconUrl} alt="" class="library-listed-tile-icon" />
                                         </div>
                                     </template>
                                     <div class="library-listed-content">

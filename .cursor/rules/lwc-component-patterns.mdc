@@ -26,7 +26,7 @@ Every feed card must show a **type badge** (pill) in the top-right corner. Prima
 | **Event** | `--fimby-badge-event` | `.event-badge` | `plannersm.png` |
 | **Library** | per-category inline style | per-category inline style | per-category icon (see `fimbyLibraryCategoryConfig`) |
 
-Library badges use **per-category icons and colors** from the shared `c/fimbyLibraryCategoryConfig` module instead of a single token/class. Import `getCategoryIconUrl`, `getCategoryStyle`, and `CATEGORY_COLORS`. See the **Library Categories (Icons & Badge Colors)** section in the Icon Index rule for the full 23-category mapping with hex colors. The **home feed** keeps a single generic "Library" type badge — do not apply per-category styling there.
+Library badges use **per-category icons and colors** from the shared `c/fimbyLibraryCategoryConfig` module instead of a single token/class. Import `getCategoryIconUrl`, `getCategoryStyle`, and `CATEGORY_COLORS`. See the **Library Categories (Icons & Badge Colors)** section in the Icon Index rule for the full 23-category mapping with hex colors. The **home feed** "just listed" cards use per-category styling too: `LIBRARY · {CATEGORY}` / `SKILL · {CATEGORY}` badges (skills via `c/fimbySkillCategoryConfig`), with a category icon tile when there is no photo.
 
 ### CSS
 

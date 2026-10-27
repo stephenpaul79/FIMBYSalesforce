@@ -723,6 +723,38 @@
     opacity: 1;
 }
 
+/* Photo-less just-listed cards: category icon on a soft tint of the category colour */
+.library-listed-icon-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    background-color: var(--fimby-surface-section, #F0EBE3);
+    background-color: color-mix(in srgb, var(--just-listed-accent, #736B5C) 14%, var(--fimby-surface-card, #FAF7F2));
+}
+
+.library-listed-tile-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+/* Category names can be long; keep the badge on one line beside the identity column */
+.library-badge {
+    max-width: 16rem;
+    min-width: 0;
+}
+
+.just-listed-badge-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .library-badge { max-width: 11rem; }
+}
+
 .library-listed-content {
     padding: 12px 16px;
     display: none;
@@ -946,6 +978,17 @@ button.feed-card-wrapper {
 
     .library-has-image .library-listed-item-name {
         font-size: 18px;
+    }
+
+    .library-icon-tile .library-listed-media {
+        width: 34%;
+        max-width: 220px;
+        min-height: 140px;
+    }
+
+    .library-listed-tile-icon {
+        width: 80px;
+        height: 80px;
     }
 }
 

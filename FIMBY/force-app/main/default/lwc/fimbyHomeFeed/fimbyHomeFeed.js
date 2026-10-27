@@ -5,6 +5,14 @@ import { fireToast, fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import MEMES5 from '@salesforce/resourceUrl/Memes5';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
+import {
+    getCategoryIconUrl as getLibraryCategoryIconUrl,
+    getCategoryColor as getLibraryCategoryColor
+} from 'c/fimbyLibraryCategoryConfig';
+import {
+    getCategoryIconUrl as getSkillCategoryIconUrl,
+    getCategoryColor as getSkillCategoryColor
+} from 'c/fimbySkillCategoryConfig';
 
 import getUnifiedFeed from '@salesforce/apex/FimbyHomeController.getUnifiedFeed';
 import { completeImageUrl, avatarImageUrl, buildSrcset, thumbnailUrl, fallbackThumbnailToOriginal, SIZES } from 'c/fimbyImageUrl';
@@ -73,8 +81,7 @@ const BADGE_BG_COLORS = {
     'Offer':     'rgba(91, 135, 96, 0.9)',
     'Event':           'rgba(68, 142, 158, 0.9)',
     'Community_Event': 'rgba(113, 90, 158, 0.9)',
-    'Bulk Buy':        'rgba(168, 132, 78, 0.90)',
-    'library':         'rgba(141, 123, 106, 0.9)'
+    'Bulk Buy':        'rgba(168, 132, 78, 0.90)'
 };
 
 /* Level-2 sub-filter definitions */
@@ -333,8 +340,6 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     get askForHelpIconUrl()    { return `${IMPACT_ICONS}/lightbulb.png`; }
     get viewPostIconUrl()      { return `${IMPACT_ICONS}/Magnify.png`; }
     get reportIconUrl()        { return `${IMPACT_ICONS}/warning.png`; }
-    get libraryBadgeStyle()    { return `background: ${BADGE_BG_COLORS.library};`; }
-
     /* ===============================================================
      * L2 Sub-filter logic
      * =============================================================== */
@@ -832,8 +837,10 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 badgeIconUrl = this.askOfferBadgeIconUrl;
                 badgeLabel = item.itemType === 'Need' ? 'Ask' : (item.itemType || 'Ask & Offer');
                 badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS.askOffer;
-            } else if (item.feedType === 'library' || item.feedType === 'skill') {
-                badgeBg = BADGE_BG_COLORS.library;
+            } else if (item.feedType === 'library') {
+                badgeBg = getLibraryCategoryColor(item.category);
+            } else if (item.feedType === 'skill') {
+                badgeBg = getSkillCategoryColor(item.category);
             }
 
             // Response pill (footer action)
@@ -885,8 +892,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             const isOrg = item.isOrgContact === true;
 
             const hasVisibleImage = item.hasImage === true && !!processedImageUrl && processedImageUrl.trim() !== '';
-            const libraryWrapperClass = 'feed-card-wrapper library-announcement'
-                + (hasVisibleImage ? ' library-has-image' : ' library-no-image');
+            // Just-listed cards without a photo show a category icon tile in the photo slot.
+            const libraryWrapperClass = 'feed-card-wrapper library-announcement library-has-image'
+                + (hasVisibleImage ? '' : ' library-icon-tile');
 
             let responsePillClass = '';
             const userHasResponded = viewerResponded;
@@ -992,7 +1000,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 eventLocation,
                 eventLinkUrl,
                 accentColor: badgeBg || null,
-                libraryCardStyle: badgeBg ? `border-left-color: ${badgeBg};` : '',
+                libraryCardStyle: badgeBg ? `border-left-color: ${badgeBg}; --just-listed-accent: ${badgeBg};` : '',
                 badgeClass,
                 badgeIconUrl,
                 badgeLabel,
@@ -1043,21 +1051,19 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     }
 
     _justListedCopy(item) {
-        if (item.feedType === 'skill') {
-            return {
-                justListedBadgeLabel: 'SKILL',
-                justListedBadgeIconUrl: `${IMPACT_ICONS}/lightbulb.png`,
-                justListedLead: 'Offered',
-                justListedTail: 'as a skill',
-                justListedMeta: [item.category, item.availabilityNote].filter(Boolean).join(' · ')
-            };
-        }
+        const isSkill = item.feedType === 'skill';
+        const color = isSkill ? getSkillCategoryColor(item.category) : getLibraryCategoryColor(item.category);
+        const iconUrl = isSkill
+            ? getSkillCategoryIconUrl(IMPACT_ICONS, item.category)
+            : getLibraryCategoryIconUrl(IMPACT_ICONS, item.category);
+        const typeLabel = isSkill ? 'SKILL' : 'LIBRARY';
         return {
-            justListedBadgeLabel: 'LIBRARY ITEM',
-            justListedBadgeIconUrl: `${IMPACT_ICONS}/ToolboxActive.png`,
-            justListedLead: 'Added',
-            justListedTail: 'to the Library',
-            justListedMeta: item.category
+            justListedBadgeLabel: item.category ? `${typeLabel} · ${item.category}` : typeLabel,
+            justListedBadgeIconUrl: iconUrl,
+            justListedBadgeStyle: `background-color: ${color};`,
+            justListedLead: isSkill ? 'Offered' : 'Added',
+            justListedTail: isSkill ? 'as a skill' : 'to the Library',
+            justListedMeta: isSkill ? item.availabilityNote : null
         };
     }
 

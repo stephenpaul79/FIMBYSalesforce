@@ -140,7 +140,7 @@ get homeIconUrl() {
 
 Shared config: `import { getCategoryIconUrl, getCategoryStyle, getCategoryColor, CATEGORY_COLORS } from 'c/fimbyLibraryCategoryConfig';`
 
-Per-category icons and badge colors are used on **library-specific pages**: `fimbyLibraryBrowser`, `fimbyLibraryItemDetail`, `fimbyLibraryItemCard`, `fimbyMyStuffPage` (library & borrowed items), and `fimbyBorrowHistory`. The **home feed** (`fimbyHomeFeed`) uses a single generic "Library" type badge (`ToolboxActive.png`, `rgba(141, 123, 106, 0.9)`) — not per-category styling.
+Per-category icons and badge colors are used on **library-specific pages**: `fimbyLibraryBrowser`, `fimbyLibraryItemDetail`, `fimbyLibraryItemCard`, `fimbyMyStuffPage` (library & borrowed items), and `fimbyBorrowHistory`. The **home feed** (`fimbyHomeFeed`) "just listed" cards also use them: badge = category icon + `LIBRARY · {CATEGORY}` (or `SKILL · {CATEGORY}` via `c/fimbySkillCategoryConfig`) on the category colour, and photo-less cards show the category icon on a tinted tile in the photo slot.
 
 All badge colors are WCAG AA compliant with white (`#ffffff`) text.
 

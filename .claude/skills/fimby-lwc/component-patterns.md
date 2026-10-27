@@ -17,7 +17,7 @@ Every feed card shows a type badge (pill) top-right. Primary badges = white text
 | Event | `--fimby-badge-event` | `.event-badge` | `plannersm.png` |
 | Library | per-category inline style | per-category | per-category (see icons-resources.md) |
 
-Library badges use per-category icons/colors from `c/fimbyLibraryCategoryConfig` (`getCategoryIconUrl`, `getCategoryStyle`, `CATEGORY_COLORS`) on library pages; the **home feed** keeps one generic "Library" badge.
+Library badges use per-category icons/colors from `c/fimbyLibraryCategoryConfig` (`getCategoryIconUrl`, `getCategoryStyle`, `CATEGORY_COLORS`) on library pages and the home feed's "just listed" cards (`LIBRARY · {CATEGORY}` / `SKILL · {CATEGORY}`, category icon tile when there is no photo).
 
 ```css
 .type-badge {
