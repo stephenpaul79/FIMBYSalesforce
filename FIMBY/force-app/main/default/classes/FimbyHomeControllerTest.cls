@@ -209,6 +209,50 @@ public class FimbyHomeControllerTest {
     }
 
     @IsTest
+    static void testGetUnifiedFeedIncludesJustListedSkills() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Skill_Offer__c visibleSkill = new Skill_Offer__c(
+            Name = 'Bike Repair',
+            Skill_Category__c = 'Yard & Outdoor Work',
+            Description__c = 'Happy to true a wheel.',
+            Availability_Note__c = 'Weekday evenings',
+            Owner_Contact__c = testContact.Id,
+            Listed_By__c = testContact.Id,
+            Neighbourhood__c = testNeighbourhood.Id,
+            Status__c = FimbyConstants.SKILL_ACTIVE,
+            Moderation_Status__c = 'Visible'
+        );
+        Skill_Offer__c hiddenSkill = visibleSkill.clone(false, true);
+        hiddenSkill.Name = 'Hidden Skill';
+        hiddenSkill.Moderation_Status__c = 'Hidden_By_Moderator';
+        insert new List<Skill_Offer__c>{ visibleSkill, hiddenSkill };
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyFeedItem skillItem;
+            Boolean hiddenFound = false;
+            for (FimbyFeedItem item : FimbyHomeController.getUnifiedFeed(0, 50).items) {
+                if (item.recordId == visibleSkill.Id) skillItem = item;
+                if (item.recordId == hiddenSkill.Id) hiddenFound = true;
+            }
+            System.assertNotEquals(null, skillItem, 'Active skill should appear in the All feed');
+            System.assertEquals('skill', skillItem.feedType);
+            System.assertEquals('Skill_Offer__c', skillItem.objectApiName);
+            System.assertEquals('Weekday evenings', skillItem.availabilityNote);
+            System.assertEquals(String.valueOf(testContact.Id), skillItem.ownerContactId);
+            System.assert(!hiddenFound, 'Moderator-hidden skill must not appear');
+
+            for (FimbyFeedItem item : FimbyHomeController.getUnifiedFeed(0, 50, 'askOffer', null).items) {
+                System.assertNotEquals('skill', item.feedType, 'Skills only show under the All filter');
+            }
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testUnifiedFeedStoryEngagementCountFromRollup() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];

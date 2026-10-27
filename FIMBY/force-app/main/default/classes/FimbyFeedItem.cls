@@ -47,6 +47,7 @@ public class FimbyFeedItem implements Comparable {
     @AuraEnabled public Integer replyCount { get; set; }
     @AuraEnabled public Decimal totalAccepted { get; set; }
     @AuraEnabled public Boolean viewerHasActiveResponse { get; set; }
+    @AuraEnabled public String availabilityNote { get; set; }
 
     private Datetime sortDate;
 
@@ -238,6 +239,32 @@ public class FimbyFeedItem implements Comparable {
         this.engagementCount = 0;
         this.ownerContactId = item.Owner_Contact__c;
         this.realAuthorContactId = item.Listed_By__c;
+    }
+
+    public FimbyFeedItem(Skill_Offer__c skill) {
+        this.recordId = skill.Id;
+        this.name = skill.Name;
+        this.description = skill.Description__c;
+        this.availabilityNote = skill.Availability_Note__c;
+        this.feedType = 'skill';
+        this.itemType = 'Skill';
+        this.category = skill.Skill_Category__c;
+        this.createdDate = skill.CreatedDate;
+        this.sortDate = skill.CreatedDate;
+        this.postedByName = skill.Owner_Contact__r?.Full_Name__c;
+        this.isOrgContact = skill.Owner_Contact__r?.Is_Organization_Contact__c == true;
+        this.isParentManaged = FimbyProxiedPresenceGuard.isProxied(skill.Owner_Contact__c);
+        this.orgAccountId = skill.Owner_Contact__r?.Organization_Account__c;
+        if (this.isOrgContact && skill.Owner_Contact__r?.Organization_Account__r?.Logo_URL__c != null) {
+            this.postedByImageUrl = skill.Owner_Contact__r.Organization_Account__r.Logo_URL__c;
+        } else {
+            this.postedByImageUrl = skill.Owner_Contact__r?.Display_Avatar_URL__c;
+        }
+        this.hasImage = false;
+        this.objectApiName = 'Skill_Offer__c';
+        this.engagementCount = 0;
+        this.ownerContactId = skill.Owner_Contact__c;
+        this.realAuthorContactId = skill.Listed_By__c;
     }
 
     public Integer compareTo(Object compareTo) {

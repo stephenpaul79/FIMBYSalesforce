@@ -504,6 +504,17 @@ public with sharing class FimbyHomeController {
                 for (Library_Item__c item : libItems) {
                     allItems.add(new FimbyFeedItem(item));
                 }
+
+                // Skills stay in the home neighbourhood only: lending time is a bigger ask than lending a tool.
+                if (String.isNotBlank(neighbourhoodAccountId)) {
+                    Datetime skillCutoff = Datetime.newInstance(
+                        Date.today().addDays(-FimbySettings.libraryJustListedDays()), Time.newInstance(0, 0, 0, 0));
+                    List<Skill_Offer__c> skills = new SkillFeedQuery()
+                        .justListed(neighbourhoodAccountId, skillCutoff, queryLimit);
+                    for (Skill_Offer__c skill : skills) {
+                        allItems.add(new FimbyFeedItem(skill));
+                    }
+                }
             }
 
             allItems.sort();
@@ -543,6 +554,29 @@ public with sharing class FimbyHomeController {
      */
     public static UnifiedFeedResult getUnifiedFeed(Integer offset, Integer pageSize) {
         return getUnifiedFeed(offset, pageSize, null, null);
+    }
+
+    /**
+     * @description Skill_Offer__c is Private for external users, so neighbourhood-scoped reads
+     * run without sharing, matching FimbySkillsController.SkillsQueryHelper.
+     */
+    private without sharing class SkillFeedQuery {
+        public List<Skill_Offer__c> justListed(Id neighbourhoodId, Datetime cutoff, Integer lim) {
+            return [
+                SELECT Id, Name, Description__c, Availability_Note__c, Skill_Category__c, CreatedDate,
+                       Owner_Contact__c, Listed_By__c,
+                       Owner_Contact__r.Full_Name__c, Owner_Contact__r.Display_Avatar_URL__c,
+                       Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__c,
+                       Owner_Contact__r.Organization_Account__r.Logo_URL__c
+                FROM Skill_Offer__c
+                WHERE Neighbourhood__c = :neighbourhoodId
+                  AND Status__c = :FimbyConstants.SKILL_ACTIVE
+                  AND CreatedDate >= :cutoff
+                  AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+                ORDER BY CreatedDate DESC
+                LIMIT :lim
+            ];
+        }
     }
 
     // Inner classes for return types
