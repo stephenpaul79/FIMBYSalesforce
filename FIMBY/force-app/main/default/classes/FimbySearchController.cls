@@ -10,7 +10,7 @@ public with sharing class FimbySearchController {
     /**
      * @description LWC-callable method that performs full-text search across stories, ask/offer, library, and people.
      * @param searchTerm Search string (min 2 chars)
-     * @param filterType all, stories, askOffer, library, or people
+     * @param filterType all, stories, askOffer, library, skills, people, or orgs
      * @param sortBy relevance, newest, or oldest
      * @param pageSize Items per page (capped at 50)
      * @param offset Pagination offset
@@ -71,7 +71,8 @@ public with sharing class FimbySearchController {
             'askOffer' => 0,
             'library' => 0,
             'skills' => 0,
-            'people' => 0
+            'people' => 0,
+            'orgs' => 0
         };
 
         Integer resultSetIndex = 0;
@@ -142,6 +143,14 @@ public with sharing class FimbySearchController {
                 }
                 allItems.add(item);
             }
+        }
+
+        if (filter == 'all' || filter == 'orgs') {
+            List<SearchResultItem> orgItems = new OrganizationLookup().search(
+                searchTerm.trim(), neighbourhoodAccountId, blockedContactIds
+            );
+            countsByType.put('orgs', orgItems.size());
+            allItems.addAll(orgItems);
         }
 
         // Sort
@@ -512,9 +521,62 @@ public with sharing class FimbySearchController {
             'askOffer' => 0,
             'library' => 0,
             'skills' => 0,
-            'people' => 0
+            'people' => 0,
+            'orgs' => 0
         };
         return result;
+    }
+
+    /**
+     * @description Approved community groups with an Active Community_Group_Neighbourhood__c
+     *              link to the viewer's neighbourhood. Without sharing so community users can
+     *              read the junction; only public org fields are returned.
+     */
+    private without sharing class OrganizationLookup {
+        public List<SearchResultItem> search(String searchTerm, String neighbourhoodAccountId, Set<Id> blockedContactIds) {
+            List<SearchResultItem> items = new List<SearchResultItem>();
+            if (String.isBlank(neighbourhoodAccountId) || String.isBlank(searchTerm)) return items;
+
+            Id viewerNeighbourhoodId = (Id) neighbourhoodAccountId;
+            String pattern = '%' + String.escapeSingleQuotes(searchTerm.trim()) + '%';
+            Integer limitVal = FimbySettings.searchContactsLimit();
+            Set<Id> blocked = blockedContactIds != null ? blockedContactIds : new Set<Id>();
+
+            for (Community_Group_Neighbourhood__c link : [
+                SELECT Organization__c, Neighbourhood__r.Name,
+                       Organization__r.Name, Organization__r.Description, Organization__r.Logo_URL__c,
+                       Organization__r.Organization_Contact__c
+                FROM Community_Group_Neighbourhood__c
+                WHERE Status__c = 'Active'
+                  AND Neighbourhood__c = :viewerNeighbourhoodId
+                  AND Organization__r.Is_Approved_Community_Group__c = true
+                  AND Organization__r.Organization_Contact__c != null
+                  AND Organization__r.Name LIKE :pattern
+                ORDER BY Organization__r.Name ASC
+                LIMIT :limitVal
+            ]) {
+                if (blocked.contains(link.Organization__r.Organization_Contact__c)) continue;
+                items.add(buildOrgItem(link));
+            }
+            return items;
+        }
+    }
+
+    @TestVisible
+    private static SearchResultItem buildOrgItem(Community_Group_Neighbourhood__c link) {
+        Account org = link.Organization__r;
+        SearchResultItem item = new SearchResultItem();
+        item.recordId = org.Organization_Contact__c;
+        item.resultType = 'org';
+        item.name = org.Name;
+        item.description = org.Description;
+        item.subType = link.Neighbourhood__r?.Name;
+        item.imageUrl = org.Logo_URL__c;
+        item.isOrgContact = true;
+        item.isParentManaged = false;
+        item.orgAccountId = link.Organization__c;
+        item.hasSharedContact = null;
+        return item;
     }
 
     /**

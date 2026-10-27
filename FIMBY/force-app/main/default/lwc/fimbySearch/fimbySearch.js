@@ -1,5 +1,5 @@
-import { LightningElement, track } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import { completeImageUrl, avatarImageUrl } from 'c/fimbyImageUrl';
 import search from '@salesforce/apex/FimbySearchController.search';
@@ -30,12 +30,14 @@ const FILTER_ICONS = {
     askOffer: { active: 'BulletinBoardActive.png',    inactive: 'BulletinBoardInactive.png' },
     library:  { active: 'ToolboxActive.png',          inactive: 'ToolboxInactive.png' },
     skills:   { active: 'lightbulb.png',              inactive: 'lightbulb.png' },
-    people:   { active: 'people.png',                 inactive: 'people.png' }
+    people:   { active: 'people.png',                 inactive: 'people.png' },
+    orgs:     { active: 'CommunityReps.png',          inactive: 'CommunityReps.png' }
 };
 
 const BASE_FILTERS = [
     { value: 'all', label: 'All' },
     { value: 'people', label: 'People' },
+    { value: 'orgs', label: 'Orgs' },
     { value: 'library', label: 'Library' },
     { value: 'skills', label: 'Skills' },
     { value: 'askOffer', label: 'Ask & Offer' },
@@ -152,6 +154,21 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     // URL state management
     // ========================================================
 
+    _lastUrlTerm = null;
+
+    /** Soft nav to /search while already on it doesn't remount; re-run when the header sends a new term. */
+    @wire(CurrentPageReference)
+    handlePageReference(pageRef) {
+        const q = pageRef?.state?.q;
+        if (!q || q === this._lastUrlTerm) return;
+        this._lastUrlTerm = q;
+        if (q === this.searchTerm && this._hasSearched) return;
+        this.searchTerm = q;
+        this.currentOffset = 0;
+        this.searchResults = [];
+        if (q.length > 2) this.performSearch();
+    }
+
     _applyUrlState() {
         try {
             const params = new URLSearchParams(window.location.search);
@@ -160,6 +177,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             const s = params.get('sort');
             if (q) {
                 this.searchTerm = q;
+                this._lastUrlTerm = q;
             }
             if (f && BASE_FILTERS.some(bf => bf.value === f)) {
                 this.selectedFilter = f;
@@ -167,7 +185,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             if (s && SORT_OPTIONS.some(so => so.value === s)) {
                 this.sortBy = s;
             }
-            if (this.searchTerm.length > 2) {
+            if (this.searchTerm.length > 2 && !this.isSearching && !this._hasSearched) {
                 this.performSearch();
             }
         } catch {
@@ -332,13 +350,14 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             const cardMeta = this._buildCardMeta(item);
             const imageUrl = completeImageUrl(item.imageUrl);
             const hasImage = !!imageUrl && imageUrl.trim() !== '';
-            const isPeople = item.resultType === 'people';
+            const isOrg = item.resultType === 'org';
+            const isPeople = item.resultType === 'people' || isOrg;
 
             return {
                 ...item,
                 isPeople,
                 personContactId: isPeople ? item.recordId : null,
-                showContactBadge: isPeople,
+                showContactBadge: isPeople && !isOrg,
                 processedImageUrl: imageUrl,
                 processedAvatarUrl: avatarImageUrl(item.postedByImageUrl),
                 shortDescription: this.truncate(item.description, 120),
@@ -489,7 +508,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             return;
         }
 
-        if (resultType === 'people') {
+        if (resultType === 'people' || resultType === 'org') {
             const item = this.searchResults.find(r => r.recordId === recordId);
             const path = profilePathForContact({
                 contactId: recordId,
@@ -552,7 +571,8 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
             'askOffer': this.countsByType.askOffer,
             'library': this.countsByType.library,
             'skills': this.countsByType.skills,
-            'people': this.countsByType.people
+            'people': this.countsByType.people,
+            'orgs': this.countsByType.orgs
         };
         return map[filterValue];
     }

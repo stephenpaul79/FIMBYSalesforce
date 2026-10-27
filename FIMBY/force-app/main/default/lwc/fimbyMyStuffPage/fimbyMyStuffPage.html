@@ -235,7 +235,7 @@
                                      aria-label="View contact"
                                      onclick={handleContactClick}
                                      data-contact-id={contact.contactId}>
-                                    <c-fimby-avatar class="contact-avatar-circle" name={contact.name} contact-id={contact.contactId} size="44"></c-fimby-avatar>
+                                    <c-fimby-avatar class="contact-avatar-circle" src={contact.avatarSrc} name={contact.name} contact-id={contact.contactId} size="44"></c-fimby-avatar>
                                     <div class="contact-card-body">
                                         <span class="compact-card-title">{contact.name}</span>
                                         <template lwc:if={contact.neighbourhood}>

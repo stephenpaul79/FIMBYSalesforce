@@ -655,4 +655,80 @@ public class FimbySearchControllerTest {
         }
         Test.stopTest();
     }
+
+    private static Contact createLinkedOrg(String name, Id neighbourhoodId, Boolean approved, String linkStatus) {
+        Account org = new Account(
+            Name = name,
+            RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Organization').getRecordTypeId(),
+            Is_Approved_Community_Group__c = approved,
+            Description = name + ' description'
+        );
+        insert org;
+        Contact orgContact = new Contact(
+            FirstName = 'Org', LastName = name, AccountId = neighbourhoodId,
+            Is_Organization_Contact__c = true, Organization_Account__c = org.Id
+        );
+        insert orgContact;
+        org.Organization_Contact__c = orgContact.Id;
+        update org;
+        insert new Community_Group_Neighbourhood__c(
+            Organization__c = org.Id, Neighbourhood__c = neighbourhoodId,
+            Status__c = linkStatus, Is_Primary__c = (linkStatus == 'Active')
+        );
+        return orgContact;
+    }
+
+    @IsTest
+    static void testSearchOrgsReturnsApprovedActiveLinkedOrgsOnly() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Contact approved = createLinkedOrg('Zephyr Approved Group', testNeighbourhood.Id, true, 'Active');
+        createLinkedOrg('Zephyr Pending Group', testNeighbourhood.Id, false, 'Active');
+        createLinkedOrg('Zephyr Unlinked Group', testNeighbourhood.Id, true, 'Inactive');
+        Account elsewhere = FimbyTestDataFactory.createNeighbourhood(true);
+        createLinkedOrg('Zephyr Elsewhere Group', elsewhere.Id, true, 'Active');
+
+        Test.startTest();
+        FimbySearchController.SearchResult result;
+        System.runAs(testUser) {
+            result = FimbySearchController.search('Zephyr', 'orgs', 'relevance', 20, 0);
+        }
+        Test.stopTest();
+
+        System.assertEquals(1, result.items.size(), 'Only the approved, actively linked, in-neighbourhood org is returned');
+        FimbySearchController.SearchResultItem item = result.items[0];
+        System.assertEquals('org', item.resultType, 'Org results carry their own type');
+        System.assertEquals(approved.Id, item.recordId, 'Result points at the org contact');
+        System.assertEquals(true, item.isOrgContact, 'Org flag drives the rounded-square avatar');
+        System.assertEquals('Zephyr Approved Group', item.name, 'Uses the organisation name');
+        System.assertEquals(1, result.countsByType.get('orgs'), 'Orgs count matches');
+    }
+
+    @IsTest
+    static void testSearchOrgsHidesBlockedOrgAndAllFilterIncludesOrgs() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact viewer = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id ORDER BY CreatedDate ASC LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :viewer.Id LIMIT 1];
+
+        Contact visible = createLinkedOrg('Quokka Visible Group', testNeighbourhood.Id, true, 'Active');
+        Contact blocked = createLinkedOrg('Quokka Blocked Group', testNeighbourhood.Id, true, 'Active');
+        insert new Blocked_Contact__c(Blocker__c = viewer.Id, Blocked__c = blocked.Id);
+
+        Test.startTest();
+        FimbySearchController.SearchResult result;
+        System.runAs(testUser) {
+            Test.setFixedSearchResults(new List<Id>());
+            result = FimbySearchController.search('Quokka', 'all', 'relevance', 20, 0);
+        }
+        Test.stopTest();
+
+        Set<Id> orgIds = new Set<Id>();
+        for (FimbySearchController.SearchResultItem item : result.items) {
+            if (item.resultType == 'org') orgIds.add(item.recordId);
+        }
+        System.assert(orgIds.contains(visible.Id), 'All filter includes matching orgs');
+        System.assert(!orgIds.contains(blocked.Id), 'Blocked org is hidden');
+    }
 }

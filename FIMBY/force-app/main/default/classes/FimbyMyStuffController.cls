@@ -692,9 +692,9 @@ public with sharing class FimbyMyStuffController {
             Integer sharedLim = FimbySettings.sharedContactsLimit();
             List<Shared_Contact_Info__c> shared = [
                 SELECT Id, Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.LastName,
-                       Contact__r.Account.Name,
+                       Contact__r.Account.Name, Contact__r.Display_Avatar_URL__c,
                        Shared_To__c, Shared_To__r.Name, Shared_To__r.Full_Name__c, Shared_To__r.FirstName, Shared_To__r.LastName,
-                       Shared_To__r.Account.Name,
+                       Shared_To__r.Account.Name, Shared_To__r.Display_Avatar_URL__c,
                        Email__c, Phone__c, Street__c, City__c, Province_State__c, Postal_Code__c,
                        Country__c, Additional_Info__c, Status__c, Origin__c, CreatedDate
                 FROM Shared_Contact_Info__c
@@ -750,6 +750,7 @@ public with sharing class FimbyMyStuffController {
                 w.firstName = other?.FirstName;
                 w.lastName = other?.LastName;
                 w.neighbourhood = other?.Account?.Name;
+                w.avatarUrl = other?.Display_Avatar_URL__c;
                 w.connectedDate = anyRow.CreatedDate;
                 w.theySharedWithMe = false;
                 w.iSharedWithThem = false;
@@ -1030,6 +1031,7 @@ public with sharing class FimbyMyStuffController {
         @AuraEnabled public String firstName { get; set; }
         @AuraEnabled public String lastName { get; set; }
         @AuraEnabled public String neighbourhood { get; set; }
+        @AuraEnabled public String avatarUrl { get; set; }
         @AuraEnabled public String email { get; set; }
         @AuraEnabled public String phone { get; set; }
         @AuraEnabled public String street { get; set; }

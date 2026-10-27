@@ -271,7 +271,7 @@
 }
 
 .checkbox-input:checked + .checkbox-custom::after {
-    content: '✓';
+    content: '\2713';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -287,7 +287,7 @@
     line-height: 1.4;
 }
 
-/* Item / Skill type cards — same scale as fimbyQuickPostForm modal-grid */
+/* Item / Skill type cards - same scale as fimbyQuickPostForm modal-grid */
 .library-type-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -718,4 +718,26 @@
     .back-button {
         transition: none;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

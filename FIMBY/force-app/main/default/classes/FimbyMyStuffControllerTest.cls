@@ -411,6 +411,37 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
+    static void testGetMyContactsAvatarHonoursMask() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        String photo = 'https://cms.example.com/img/neighbour?rendition=ORIGINAL_FREE';
+        Contact visible = new Contact(FirstName = 'Visible', LastName = 'Photo', AccountId = testNeighbourhood.Id,
+            Image_URL__c = photo, Mask_Avatar__c = false);
+        Contact masked = new Contact(FirstName = 'Masked', LastName = 'Photo', AccountId = testNeighbourhood.Id,
+            Image_URL__c = photo, Mask_Avatar__c = true);
+        insert new List<Contact>{ visible, masked };
+        insert new List<Shared_Contact_Info__c>{
+            new Shared_Contact_Info__c(Contact__c = testContact.Id, Shared_To__c = visible.Id, Email__c = 'v@test.com'),
+            new Shared_Contact_Info__c(Contact__c = masked.Id, Shared_To__c = testContact.Id, Email__c = 'm@test.com')
+        };
+
+        Map<String, String> avatarByName = new Map<String, String>();
+        Test.startTest();
+        System.runAs(testUser) {
+            for (FimbyMyStuffController.ContactCardWrapper w : FimbyMyStuffController.getMyContacts(null)) {
+                avatarByName.put(w.firstName, w.avatarUrl);
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(photo, avatarByName.get('Visible'), 'Unmasked neighbour shows their photo');
+        System.assert(avatarByName.containsKey('Masked'), 'Masked neighbour is still listed');
+        System.assert(String.isBlank(avatarByName.get('Masked')), 'Masked neighbour never exposes the raw photo');
+    }
+
+    @IsTest
     static void testGetMyContactsWithDirectionFlags() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];

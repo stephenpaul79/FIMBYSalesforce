@@ -5,7 +5,7 @@ import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import ICONS from '@salesforce/resourceUrl/Icons';
 import MEMES4 from '@salesforce/resourceUrl/Memes4';
 import getAppPromptConfig from '@salesforce/apex/FimbyAppPromptController.getAppPromptConfig';
-import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
+import { navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import { launchGuidedTourReplay } from 'c/fimbyGuidedTourLauncher';
 import { fireEmojiConfetti } from 'c/fimbyConfettiHelper';
 import getSettingsData from '@salesforce/apex/FimbyProfileController.getSettingsData';
@@ -463,6 +463,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             }
         } catch { /* native bridge unavailable */ }
 
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         this._appLockCapabilityTimeout = setTimeout(() => {
             this._appLockCapabilityTimeout = null;
             // No reply within the safety window — leave the section hidden.
@@ -1052,7 +1053,7 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
         try {
             const risks = await getManagedProfilesAtRisk();
             this.managedProfilesAtRisk = risks || [];
-        } catch (error) {
+        } catch {
             // Never block the deletion on this check; fall back to generic copy.
             this.managedProfileCheckFailed = true;
         } finally {

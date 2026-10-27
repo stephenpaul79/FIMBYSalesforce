@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { fireToast } from 'c/fimbyToastHelper';
 import { navigate } from 'c/fimbyNavigation';
+import { avatarImageUrl } from 'c/fimbyImageUrl';
 
 import getMyPosts from '@salesforce/apex/FimbyMyStuffController.getMyPosts';
 import getMyStories from '@salesforce/apex/FimbyMyStuffController.getMyStories';
@@ -332,6 +333,7 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             const contacts = await getMyContacts({ searchTerm: searchTerm || null });
             this.myContacts = contacts.map(c => ({
                 ...c,
+                avatarSrc: avatarImageUrl(c.avatarUrl),
                 formattedDate: this._formatDate(c.connectedDate),
                 isExpanded: c.contactId === this.expandedContactId,
                 hasAddress: (c.street || c.city || c.provinceState),
