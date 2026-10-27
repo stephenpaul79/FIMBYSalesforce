@@ -1070,13 +1070,19 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         // Untitled skills default their title to the category, which the badge already shows.
         const title = (item.name || '').trim();
         const hasCustomTitle = !!title && title.toLowerCase() !== (item.category || '').trim().toLowerCase();
+        const description = (item.description || '').trim();
+        const hasOwnWords = hasCustomTitle || !!description || !!item.availabilityNote;
         return {
             ...badge,
             justListedLead: hasCustomTitle ? 'Offered to help with ' : 'Offered to lend a hand',
             justListedStrong: hasCustomTitle ? title : null,
             justListedTail: '',
-            justListedSnippet: (item.description || '').trim(),
-            hasSkillDetails: !!((item.description || '').trim() || item.availabilityNote)
+            justListedSnippet: description,
+            hasSkillDetails: !!(description || item.availabilityNote),
+            skillPanelTitle: hasCustomTitle ? title : null,
+            skillPanelFallback: hasOwnWords || !item.category
+                ? null
+                : `Happy to help neighbours with ${item.category}.`
         };
     }
 

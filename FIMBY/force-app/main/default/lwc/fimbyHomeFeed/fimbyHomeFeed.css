@@ -572,11 +572,16 @@
     flex-shrink: 0;
 }
 
-/* Mobile: match fimbyCard feed header — capped name column, kebab under badge */
+/* Mobile: capped name column; badge stays beside the name and the kebab shares the announcement row */
 @media (max-width: 767px) {
-    /* Floor the name column so the badge shrinks before names break mid-word */
+    /* Name column floors at its longest word so names wrap between words, never mid-word.
+       The 44px last column holds the kebab on the announcement row; the badge spans it. */
     .library-listed-header {
-        grid-template-columns: auto minmax(6rem, 1fr) auto;
+        grid-template-columns: auto minmax(min-content, 1fr) auto 44px;
+        grid-template-areas:
+            "avatar identity badge badge"
+            "announcement announcement announcement menu";
+        column-gap: 10px;
     }
 
     .library-listed-identity {
@@ -584,10 +589,24 @@
     }
 
     .library-listed-actions {
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 2px;
+        display: contents;
     }
+
+    .library-listed-actions .library-badge {
+        grid-area: badge;
+        justify-self: end;
+        align-self: start;
+    }
+
+    .library-card-menu-wrap {
+        grid-area: menu;
+        align-self: start;
+        margin-top: -10px;
+    }
+}
+
+.library-listed-text.just-listed-text-wide {
+    display: none;
 }
 
 .library-card-menu-wrap {
@@ -1006,8 +1025,18 @@ button.feed-card-wrapper {
     }
 
     /* Desktop shows the skill's own words in the side panel beside the tile instead */
-    .just-listed-skill-details-inline {
+    .just-listed-skill-details-inline,
+    .library-listed-text.just-listed-text-compact {
         display: none;
+    }
+
+    .library-listed-text.just-listed-text-wide {
+        display: block;
+    }
+
+    .library-listed-content .library-listed-snippet {
+        font-size: 16px;
+        line-height: 1.5;
     }
 
     .library-icon-tile .library-listed-media {

@@ -267,7 +267,13 @@
                                         </template>
                                     </div>
                                     <div class="library-listed-announcement">
-                                        <span class="library-listed-text">{feedItem.justListedLead}<template lwc:if={feedItem.justListedStrong}><strong>{feedItem.justListedStrong}</strong></template>{feedItem.justListedTail}</span>
+                                        <template lwc:if={feedItem.isSkill}>
+                                            <span class="library-listed-text just-listed-text-compact">{feedItem.justListedLead}<template lwc:if={feedItem.justListedStrong}><strong>{feedItem.justListedStrong}</strong></template></span>
+                                            <span class="library-listed-text just-listed-text-wide">Offered to lend a hand</span>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="library-listed-text">{feedItem.justListedLead}<strong>{feedItem.justListedStrong}</strong>{feedItem.justListedTail}</span>
+                                        </template>
                                         <template lwc:if={feedItem.hasSkillDetails}>
                                             <div class="just-listed-skill-details-inline">
                                                 <template lwc:if={feedItem.justListedSnippet}>
@@ -303,8 +309,14 @@
                                     </template>
                                     <div class="library-listed-content">
                                         <template lwc:if={feedItem.isSkill}>
+                                            <template lwc:if={feedItem.skillPanelTitle}>
+                                                <span class="library-listed-item-name">{feedItem.skillPanelTitle}</span>
+                                            </template>
                                             <template lwc:if={feedItem.justListedSnippet}>
                                                 <span class="library-listed-snippet">{feedItem.justListedSnippet}</span>
+                                            </template>
+                                            <template lwc:if={feedItem.skillPanelFallback}>
+                                                <span class="library-listed-snippet">{feedItem.skillPanelFallback}</span>
                                             </template>
                                             <template lwc:if={feedItem.availabilityNote}>
                                                 <span class="library-listed-item-category">{feedItem.availabilityNote}</span>
