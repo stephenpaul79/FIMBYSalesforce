@@ -753,6 +753,26 @@
 
 @media (max-width: 480px) {
     .library-badge { max-width: 11rem; }
+    .just-listed-badge-type { display: none; }
+}
+
+.library-listed-snippet {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--fimby-text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.library-listed-content .library-listed-snippet {
+    -webkit-line-clamp: 4;
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: var(--fimby-text-primary);
 }
 
 .library-listed-content {
@@ -978,6 +998,11 @@ button.feed-card-wrapper {
 
     .library-has-image .library-listed-item-name {
         font-size: 18px;
+    }
+
+    /* Desktop shows the skill's own words in the side panel beside the tile instead */
+    .just-listed-skill-details-inline {
+        display: none;
     }
 
     .library-icon-tile .library-listed-media {

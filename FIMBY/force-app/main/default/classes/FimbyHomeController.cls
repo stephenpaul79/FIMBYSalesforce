@@ -563,7 +563,7 @@ public with sharing class FimbyHomeController {
     private without sharing class SkillFeedQuery {
         public List<Skill_Offer__c> justListed(Id neighbourhoodId, Datetime cutoff, Integer lim) {
             return [
-                SELECT Id, Name, Description__c, Availability_Note__c, Skill_Category__c, CreatedDate,
+                SELECT Id, Name, Description_Text__c, Availability_Note__c, Skill_Category__c, CreatedDate,
                        Owner_Contact__c, Listed_By__c,
                        Owner_Contact__r.Full_Name__c, Owner_Contact__r.Display_Avatar_URL__c,
                        Owner_Contact__r.Is_Organization_Contact__c, Owner_Contact__r.Organization_Account__c,

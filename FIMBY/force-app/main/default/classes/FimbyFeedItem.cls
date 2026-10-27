@@ -244,7 +244,7 @@ public class FimbyFeedItem implements Comparable {
     public FimbyFeedItem(Skill_Offer__c skill) {
         this.recordId = skill.Id;
         this.name = skill.Name;
-        this.description = skill.Description__c;
+        this.description = skill.Description_Text__c;
         this.availabilityNote = skill.Availability_Note__c;
         this.feedType = 'skill';
         this.itemType = 'Skill';

@@ -1057,13 +1057,26 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             ? getSkillCategoryIconUrl(IMPACT_ICONS, item.category)
             : getLibraryCategoryIconUrl(IMPACT_ICONS, item.category);
         const typeLabel = isSkill ? 'SKILL' : 'LIBRARY';
-        return {
+        const badge = {
             justListedBadgeLabel: item.category ? `${typeLabel} · ${item.category}` : typeLabel,
+            justListedBadgeType: item.category ? `${typeLabel} · ` : typeLabel,
+            justListedBadgeCategory: item.category || '',
             justListedBadgeIconUrl: iconUrl,
-            justListedBadgeStyle: `background-color: ${color};`,
-            justListedLead: isSkill ? 'Offered' : 'Added',
-            justListedTail: isSkill ? 'as a skill' : 'to the Library',
-            justListedMeta: isSkill ? item.availabilityNote : null
+            justListedBadgeStyle: `background-color: ${color};`
+        };
+        if (!isSkill) {
+            return { ...badge, justListedLead: 'Added ', justListedStrong: item.name, justListedTail: ' to the Library' };
+        }
+        // Untitled skills default their title to the category, which the badge already shows.
+        const title = (item.name || '').trim();
+        const hasCustomTitle = !!title && title.toLowerCase() !== (item.category || '').trim().toLowerCase();
+        return {
+            ...badge,
+            justListedLead: hasCustomTitle ? 'Offered to help with ' : 'Offered to lend a hand',
+            justListedStrong: hasCustomTitle ? title : null,
+            justListedTail: '',
+            justListedSnippet: (item.description || '').trim(),
+            hasSkillDetails: !!((item.description || '').trim() || item.availabilityNote)
         };
     }
 

@@ -217,7 +217,7 @@ public class FimbyHomeControllerTest {
         Skill_Offer__c visibleSkill = new Skill_Offer__c(
             Name = 'Bike Repair',
             Skill_Category__c = 'Yard & Outdoor Work',
-            Description__c = 'Happy to true a wheel.',
+            Description_Text__c = 'Happy to true a wheel.',
             Availability_Note__c = 'Weekday evenings',
             Owner_Contact__c = testContact.Id,
             Listed_By__c = testContact.Id,
@@ -242,6 +242,7 @@ public class FimbyHomeControllerTest {
             System.assertEquals('skill', skillItem.feedType);
             System.assertEquals('Skill_Offer__c', skillItem.objectApiName);
             System.assertEquals('Weekday evenings', skillItem.availabilityNote);
+            System.assertEquals('Happy to true a wheel.', skillItem.description);
             System.assertEquals(String.valueOf(testContact.Id), skillItem.ownerContactId);
             System.assert(!hiddenFound, 'Moderator-hidden skill must not appear');
 

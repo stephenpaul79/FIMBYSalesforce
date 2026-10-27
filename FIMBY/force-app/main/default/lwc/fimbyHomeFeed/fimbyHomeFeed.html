@@ -237,7 +237,7 @@
                                     <div class="library-listed-actions">
                                         <div class="card-type-badge library-badge" style={feedItem.justListedBadgeStyle} title={feedItem.justListedBadgeLabel}>
                                             <img src={feedItem.justListedBadgeIconUrl} alt="" class="badge-icon" />
-                                            <span class="just-listed-badge-label">{feedItem.justListedBadgeLabel}</span>
+                                            <span class="just-listed-badge-label"><span class="just-listed-badge-type">{feedItem.justListedBadgeType}</span>{feedItem.justListedBadgeCategory}</span>
                                         </div>
                                         <template lwc:if={feedItem.showCardMenu}>
                                             <div class="library-card-menu-wrap">
@@ -267,11 +267,16 @@
                                         </template>
                                     </div>
                                     <div class="library-listed-announcement">
-                                        <span class="library-listed-text">
-                                            {feedItem.justListedLead} <strong>{feedItem.name}</strong> {feedItem.justListedTail}
-                                        </span>
-                                        <template lwc:if={feedItem.justListedMeta}>
-                                            <span class="library-listed-meta">{feedItem.justListedMeta}</span>
+                                        <span class="library-listed-text">{feedItem.justListedLead}<template lwc:if={feedItem.justListedStrong}><strong>{feedItem.justListedStrong}</strong></template>{feedItem.justListedTail}</span>
+                                        <template lwc:if={feedItem.hasSkillDetails}>
+                                            <div class="just-listed-skill-details-inline">
+                                                <template lwc:if={feedItem.justListedSnippet}>
+                                                    <span class="library-listed-snippet">{feedItem.justListedSnippet}</span>
+                                                </template>
+                                                <template lwc:if={feedItem.availabilityNote}>
+                                                    <span class="library-listed-meta">{feedItem.availabilityNote}</span>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                 </div>
@@ -297,8 +302,18 @@
                                         </div>
                                     </template>
                                     <div class="library-listed-content">
-                                        <span class="library-listed-item-name">{feedItem.name}</span>
-                                        <span class="library-listed-item-category">{feedItem.category}</span>
+                                        <template lwc:if={feedItem.isSkill}>
+                                            <template lwc:if={feedItem.justListedSnippet}>
+                                                <span class="library-listed-snippet">{feedItem.justListedSnippet}</span>
+                                            </template>
+                                            <template lwc:if={feedItem.availabilityNote}>
+                                                <span class="library-listed-item-category">{feedItem.availabilityNote}</span>
+                                            </template>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="library-listed-item-name">{feedItem.name}</span>
+                                            <span class="library-listed-item-category">{feedItem.category}</span>
+                                        </template>
                                     </div>
                                 </div>
                                 <div class="library-listed-footer">
