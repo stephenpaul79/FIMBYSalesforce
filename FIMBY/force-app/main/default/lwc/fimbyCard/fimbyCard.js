@@ -21,8 +21,19 @@ export default class FimbyCard extends LightningElement {
     // Header properties
     @api showHeader = false;
     @api showAvatar = false;
-    @api avatarUrl = '';
     @api userName = '';
+    _avatarUrl = '';
+    @track _avatarFailed = false;
+
+    @api
+    get avatarUrl() { return this._avatarUrl; }
+    set avatarUrl(value) {
+        const next = value || '';
+        if (next !== this._avatarUrl) {
+            this._avatarUrl = next;
+            this._avatarFailed = false;
+        }
+    }
     @api parentManaged = false;
     @api showMenu = false;
 
@@ -202,8 +213,6 @@ export default class FimbyCard extends LightningElement {
     @api statusPills = null;
     @api responseDisabled = false;
 
-    @track hasImageError = false;
-
     get showCardFooter() {
         return !!this.responseLabel || this.hasStatusPills;
     }
@@ -359,6 +368,34 @@ export default class FimbyCard extends LightningElement {
 
     get avatarWrapperClass() {
         return this.posterProfileUrl ? 'user-avatar clickable-avatar' : 'user-avatar';
+    }
+
+    get showAvatarImage() {
+        return !!this.showAvatar && !!this._avatarUrl && !this._avatarFailed;
+    }
+
+    get showAvatarFallback() {
+        return !!this.showAvatar && !this.showAvatarImage;
+    }
+
+    get userInitials() {
+        const words = (this.userName || '').trim().split(/\s+/).filter(Boolean);
+        if (words.length === 0) return '?';
+        return words.slice(0, 2).map(word => word.charAt(0)).join('').toUpperCase();
+    }
+
+    get avatarRole() {
+        return this.posterProfileUrl ? 'button' : null;
+    }
+
+    get avatarTabIndex() {
+        return this.posterProfileUrl ? '0' : null;
+    }
+
+    get avatarActionLabel() {
+        if (!this.posterProfileUrl) return null;
+        const name = (this.userName || '').trim() || (this.isOrgPoster ? 'this organization' : 'this neighbour');
+        return `View ${name}'s profile`;
     }
 
     get formattedTimestamp() {
@@ -623,9 +660,8 @@ export default class FimbyCard extends LightningElement {
         }));
     }
 
-    handleImageError(event) {
-        this.hasImageError = true;
-        event.target.style.display = 'none';
+    handleAvatarError() {
+        this._avatarFailed = true;
     }
 
     // Public methods
