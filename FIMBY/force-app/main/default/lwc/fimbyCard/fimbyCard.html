@@ -8,7 +8,7 @@
                      role={avatarRole} tabindex={avatarTabIndex} aria-label={avatarActionLabel}
                      onclick={handleAvatarClick} onkeydown={handleAvatarKeydown}>
                     <img lwc:if={showAvatarImage} src={avatarUrl} alt={avatarAlt} class="avatar-image" onerror={handleAvatarError}>
-                    <div lwc:else class="avatar-placeholder">
+                    <div lwc:else class="avatar-placeholder" style={avatarToneStyle}>
                         <span class="avatar-initials" aria-hidden="true">{userInitials}</span>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
                             <img src={avatarUrl} alt="" class="compact-avatar" onerror={handleAvatarError}>
                         </template>
                         <template lwc:elseif={showAvatarFallback}>
-                            <span class="compact-avatar compact-avatar-initials" aria-hidden="true">{userInitials}</span>
+                            <span class="compact-avatar compact-avatar-initials" style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
                         </template>
                         <span lwc:if={userName} class="compact-owner-name" title={userName}>{userName}</span>
                     </div>
@@ -284,7 +284,7 @@
                         <img src={avatarUrl} alt="" class="compact-avatar" onerror={handleAvatarError}>
                     </template>
                     <template lwc:elseif={showAvatarFallback}>
-                        <span class="compact-avatar compact-avatar-initials" aria-hidden="true">{userInitials}</span>
+                        <span class="compact-avatar compact-avatar-initials" style={avatarToneStyle} aria-hidden="true">{userInitials}</span>
                     </template>
                     <span lwc:if={userName} class="compact-owner-name">{userName}</span>
                 </div>

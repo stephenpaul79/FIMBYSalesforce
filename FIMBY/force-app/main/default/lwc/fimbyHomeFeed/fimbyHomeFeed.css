@@ -574,6 +574,11 @@
 
 /* Mobile: match fimbyCard feed header — capped name column, kebab under badge */
 @media (max-width: 767px) {
+    /* Floor the name column so the badge shrinks before names break mid-word */
+    .library-listed-header {
+        grid-template-columns: auto minmax(6rem, 1fr) auto;
+    }
+
     .library-listed-identity {
         max-width: 7.5rem;
     }

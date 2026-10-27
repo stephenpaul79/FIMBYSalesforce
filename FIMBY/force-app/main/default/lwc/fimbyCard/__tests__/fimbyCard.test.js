@@ -1,5 +1,6 @@
 import { createElement } from "lwc";
 import FimbyCard from "c/fimbyCard";
+import { getAvatarTone } from "c/fimbyAvatarTone";
 
 const PHOTO_URL = "https://example.com/photo-a.jpg";
 const OTHER_PHOTO_URL = "https://example.com/photo-b.jpg";
@@ -140,4 +141,17 @@ describe("c-fimby-card avatar fallback", () => {
     expect(wrapper.getAttribute("tabindex")).toBeNull();
     expect(wrapper.getAttribute("aria-label")).toBeNull();
   });
+
+  it.each(LAYOUTS)(
+    "colours the initials circle with the person's earth tone (%s layout)",
+    (layout) => {
+      const element = createCard({ layout });
+      const circle = element.shadowRoot.querySelector(
+        ".avatar-placeholder, .compact-avatar-initials"
+      );
+      expect(circle.getAttribute("style")).toContain(
+        getAvatarTone("Sarah Chen")
+      );
+    }
+  );
 });

@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { toExperiencePath } from 'c/fimbyExperienceUrl';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 
 export default class FimbyCard extends LightningElement {
     // Layout properties
@@ -379,9 +380,11 @@ export default class FimbyCard extends LightningElement {
     }
 
     get userInitials() {
-        const words = (this.userName || '').trim().split(/\s+/).filter(Boolean);
-        if (words.length === 0) return '?';
-        return words.slice(0, 2).map(word => word.charAt(0)).join('').toUpperCase();
+        return getInitials(this.userName);
+    }
+
+    get avatarToneStyle() {
+        return getAvatarToneStyle(this.userName);
     }
 
     get avatarRole() {

@@ -464,6 +464,7 @@
 
 .feed-card-wrapper {
     position: relative;
+    min-width: 0;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     animation: slideInUp 0.3s ease-out;
@@ -579,7 +580,7 @@
     .compact-nav { display: none; }
     .feed-filters { padding: 12px 24px; }
     .feed-section {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 20px;
         padding: 24px 0;
     }
@@ -598,7 +599,7 @@
         max-width: 1150px;
     }
     .feed-section {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
     .feed-section.grid-single {
         grid-template-columns: minmax(0, 350px);
