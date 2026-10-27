@@ -112,6 +112,19 @@ All TTLs from `FIMBY_App_Settings__mdt` with fallback defaults.
 - **Utilities**: `FimbySettings` (typed `FIMBY_App_Settings__mdt` / `FIMBY_URL__mdt`), `FimbyConstants` (status values, record types), `FimbyIdentityRepository` (cached identity with `clearCache()`), `FimbyLogger` (publishes `Error_Log_Event__e`)
 - **Test data**: `FimbyTestDataFactory` creates neighbourhoods, contacts, users, stories, etc.
 
+## Code Analyzer hygiene
+
+Salesforce Code Analyzer runs with `code-analyzer.yml` at the repo root (tuned to FIMBY: SLDS token rules off, style rules at Info, security rules at full strength). The pre-deploy gate in `salesforce-deployments.mdc` blocks on any **Critical/High** finding in a deployed file. These patterns keep files clean:
+
+- **Explicit access mode on every SOQL and DML.** Apex already runs in system mode by default, so marking system access changes nothing at runtime; it records intent and clears `ApexCRUDViolation`.
+  - Authorization and plumbing inside `without sharing` helpers (blocks, reps, moderators, consent, identity, delivery fan-out, audit stamps): `[SELECT ... WITH SYSTEM_MODE]`, `insert as system rec;`, `Database.update(rows, AccessLevel.SYSTEM_MODE)`. Verified: all three satisfy the rule.
+  - Queries where the viewer's own permissions should apply: `WITH USER_MODE` / `insert as user`. Only switch an **existing** query to user mode with a test proving the community profile can still read every field. User mode enforces FLS and will break community users on fields they can't see.
+- **Dynamic SOQL**: user-supplied values only via bind variables (`:myContactId`). Concatenate only whitelisted literals (sort/filter maps). `String.escapeSingleQuotes()` is a fallback, not the defence.
+- **New code passes cleanly**: braces on every `if`/`else`, constants and fields at the top of the class, ApexDoc (`@description`, `@param`, `@return`) on new public and `@AuraEnabled` methods.
+- **Don't grow long methods.** When adding behaviour to an already-large method (`FimbyMessageController.sendMessageInternal` / `getMessagesInternal`, `FimbyConversationController.validateCanMessage`, the big `FimbyMyStuffController` methods), extract a named private check instead of adding another branch.
+- **No inline suppressions** (`NOPMD`, `code-analyzer-suppress`). If a rule genuinely doesn't fit FIMBY, change `code-analyzer.yml` with a one-line reason.
+- **Tests**: no empty `catch` blocks; assert on the exception message or a flag.
+
 ## Test data lookup (do not query Users by email)
 
 `FimbyTestDataFactory.createCommunityUser()` generates **dynamic** User emails and usernames (`DateTime.now()`, random suffix, static counter). You cannot know the email in advance, and patterns like `Email LIKE '%@testorg.com'` are **unreliable** (zero rows, wrong user, flaky deploys).

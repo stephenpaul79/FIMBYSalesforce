@@ -80,6 +80,18 @@ A gate is **open** when: never pushed, OR user logged in since last push, OR new
 - **Utilities**: `FimbySettings`, `FimbyConstants`, `FimbyIdentityRepository`, `FimbyLogger` (publishes `Error_Log_Event__e`).
 - **Test data**: `FimbyTestDataFactory`.
 
+## Code Analyzer hygiene
+Salesforce Code Analyzer runs with `code-analyzer.yml` at the repo root (SLDS token rules off, style rules at Info, security rules at full strength). The pre-deploy gate (CLAUDE.md §6) blocks on any **Critical/High** finding in a deployed file.
+
+- **Explicit access mode on every SOQL and DML.** Apex defaults to system mode, so marking it changes nothing at runtime; it records intent and clears `ApexCRUDViolation`.
+  - Authorization and plumbing in `without sharing` helpers (blocks, reps, moderators, consent, identity, delivery fan-out, audit stamps): `WITH SYSTEM_MODE`, `insert as system rec;`, `Database.update(rows, AccessLevel.SYSTEM_MODE)`. All three verified to satisfy the rule.
+  - Where the viewer's own permissions should apply: `WITH USER_MODE` / `as user`. Only switch an **existing** query to user mode with a test proving the community profile can still read every field. User mode enforces FLS and breaks community users on hidden fields.
+- **Dynamic SOQL**: user values only via binds (`:var`); concatenate only whitelisted literals. `escapeSingleQuotes` is a fallback.
+- **New code passes cleanly**: braces on every `if`/`else`, constants/fields at top of class, ApexDoc (`@description`, `@param`, `@return`) on new public/`@AuraEnabled` methods.
+- **Don't grow long methods** (`FimbyMessageController.sendMessageInternal` / `getMessagesInternal`, `FimbyConversationController.validateCanMessage`, big `FimbyMyStuffController` methods): extract a named private check instead of adding a branch.
+- **No inline suppressions** (`NOPMD`, `code-analyzer-suppress`). If a rule doesn't fit FIMBY, change `code-analyzer.yml` with a reason.
+- **Tests**: no empty `catch` blocks; assert on the exception.
+
 ## Test data lookup — never query Users by email
 `FimbyTestDataFactory.createCommunityUser()` generates **dynamic** emails/usernames (`DateTime.now()`, random suffix, static counter). `Email LIKE '%@testorg.com'` is unreliable (zero rows / wrong user / flaky deploys). Tie the User to the Contact created in the same class's `@TestSetup`:
 

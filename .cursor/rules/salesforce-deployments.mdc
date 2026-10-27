@@ -9,7 +9,16 @@ alwaysApply: true
 
 When a task changes Salesforce metadata (including **LWC** bundles), **run the targeted deploy** before wrapping up the same turn — but **only after** the user has approved implementation per **Confirm Before Implement** (`diagnose-before-fix.mdc`). Do not deploy exploratory or unapproved changes.
 
-**Skip or defer** if the user asked to keep changes local, not deploy yet, or treat the work as draft; if implementation was not yet approved; or if a deploy is impossible in context (e.g. no CLI org). If multiple bundles or paths changed, deploy each changed `--source-dir` (or `--metadata` set) sequentially—still scoped, never the whole `force-app`.
+**Skip or defer** if the user asked to keep changes local, not deploy yet, or treat the work as draft; if implementation was not yet approved; or if a deploy is impossible in context (e.g. no CLI org).
+
+### Scope: only what you edited (since last deploy)
+
+Deploy **only** metadata paths **you edited in the current task** since the **last successful org deploy** in this session—not every bundle that “relates” to the feature, not a repo-wide grep fan-out, and never all of `force-app`.
+
+- Track the set of changed paths (LWC bundle folders, static resources, Apex classes, etc.) as you work.
+- When it is time to deploy, use **one** `sf project deploy start` with **multiple `--source-dir` flags**—one per changed path—so the org gets a single bundled deploy.
+- Do **not** redeploy bundles that were already deployed unchanged earlier in the session.
+- Exception: atomic rollback split (schema-only deploy, then Apex with tests) still uses **two** deploy calls when required—each call still lists only the paths that changed in that step.
 
 ---
 
@@ -20,9 +29,7 @@ Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`
 
 Do not use `cd`, `Set-Location`, `&&`, or other shell navigation in the command. Do not include `--target-org`. Keep `| Select-Object -Last 20`.
 
-Deploy only metadata created or changed in the current chat. Use targeted `--source-dir` or `--metadata`. Never deploy the whole project or all of `force-app`.
-
-For LWCs, `--source-dir` must point to the bundle folder, not an individual file. If multiple LWC bundles changed, include each as its own `--source-dir`.
+For LWCs, `--source-dir` must point to the bundle folder, not an individual file. Repeat `--source-dir` for each edited bundle in the same deploy command.
 
 ### MANDATORY pre-deploy check — run this mental checklist EVERY deploy
 
@@ -32,6 +39,21 @@ For LWCs, `--source-dir` must point to the bundle folder, not an individual file
 2. Never use `--test-level RunAllTestsInOrg` or `--test-level RunLocalTests` — always name specific tests.
 3. Confirm each test class still covers the Apex change (target 80%+, 75%+ only in a pinch).
 
+### MANDATORY pre-deploy Code Analyzer gate
+
+Run this before **every** deploy that includes Apex or LWC, after tests are chosen and before `sf project deploy start`.
+
+1. Scan exactly the deployed paths (same set as `--source-dir`, including each test class), using `working_directory: c:\Users\srathjen\FIMBY` (repo root) so `code-analyzer.yml` applies:
+   `sf code-analyzer run --target "FIMBY/force-app/main/default/classes/MyClass.cls" --target "FIMBY/force-app/main/default/lwc/myBundle" --output-file "C:\Users\srathjen\AppData\Local\Temp\ca-predeploy.csv" 2>&1 | Select-Object -Last 3`
+   Then list blockers:
+   `Import-Csv "C:\Users\srathjen\AppData\Local\Temp\ca-predeploy.csv" | Where-Object { [int]$_.severity -le 2 } | ForEach-Object { "{0} | {1}:{2} | {3}" -f $_.severity, (Split-Path $_.file -Leaf), $_.startLine, $_.rule }`
+2. **Any Critical (1) or High (2) finding anywhere in a deployed file blocks the deploy**, including pre-existing findings on lines you didn't change. Fix them, re-scan to zero, and make sure the named tests still cover the class. Fixes must be behaviour-neutral or covered by tests; follow `fimby-apex-patterns.mdc` → *Code Analyzer hygiene* (for example, explicit `WITH SYSTEM_MODE` / `as system` on authorization helpers).
+   - If a finding can't be fixed safely within the task (it needs a design change, or user mode would break community access), **stop and ask Stephen** before deploying. Never suppress it to get past the gate.
+   - Expect the first deploy of a large legacy file to carry extra work (e.g. `FimbyConversationController` had ~37 CRUD findings). Mention that scope in the plan before starting.
+3. Moderate (3) on lines you changed: fix when cheap, otherwise list in the summary. Low/Info: no action required.
+4. **Editor mirror:** if `c:\Users\srathjen\FIMBY\.ai\problems\all-problems.json` has a `generatedAt` within the last ~15 minutes, read it too and treat `Sev1`/`Sev2` entries for deployed files the same way. It only covers files Stephen has scanned in the editor, so the CLI scan above remains the gate.
+5. In the deploy summary, add one line: `Code Analyzer: 0 Critical/High in N deployed files (fixed X pre-existing)`.
+
 If deploy output ends with `Error (MetadataTransferError): Metadata API request failed: Missing message metadata.transfer:Finalizing for locale en_US.` then the deployment succeeded. This is a known Salesforce CLI locale bug that also corrupts the test summary — the pass/fail counts, percentages, and the `Failed: ×` indicator are all display artifacts and do not reflect actual test results. Treat the deploy as fully successful. Do not run `sf project deploy report` to re-check.
 
 ### Post-deploy: Publish Experience Cloud after LWC deploys
@@ -40,6 +62,12 @@ After a **successful** LWC deploy, immediately publish the Experience Cloud site
 `sf community publish --name "FIMBY" 2>&1 | Select-Object -Last 20`
 
 Use `working_directory: c:\Users\srathjen\FIMBY\FIMBY`. This applies to any deploy that includes one or more LWC bundles. Skip only if the user explicitly says not to publish.
+
+**Publishing is asynchronous — wait before any live check.** The command only *queues* the publish ("We're publishing your changes now…"). It takes about **4 minutes** from queueing until the site is actually live (when Salesforce's confirmation email arrives). Until then the site serves the **old build**, so live results are meaningless.
+
+- Note the time the publish was queued. Do **not** start browser QA, launch a browser/QA subagent, or tell the user the change is live until **at least 4 minutes** have passed.
+- Commit + push can happen during the wait. Use the wait timer (e.g. `AwaitShell`), not a shell `sleep`.
+- When the live check starts, first confirm the **new build** is being served: hard-reload and probe the DOM for a marker of the change. If it's still the old build, wait about 60s and reload; repeat a few times before reporting the publish as not yet live.
 
 ### Post-deploy: Git commit (mandatory — no prompt)
 

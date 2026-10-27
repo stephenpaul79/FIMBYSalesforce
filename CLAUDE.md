@@ -158,6 +158,8 @@ FIMBY serves neighbours who may be vulnerable, low-tech, or new to digital commu
 
 **Proactive deploy (default):** when an *approved* task changes Salesforce metadata (incl. LWC bundles), run the targeted deploy before wrapping up the same turn. Never deploy exploratory/unapproved changes. Skip/defer if the user said keep it local/draft, or no CLI org is available.
 
+**Deploy scope:** only paths **edited since the last successful deploy** in the session—group them into **one** `sf project deploy start` with multiple `--source-dir` flags. Do not redeploy unchanged bundles and do not fan out to “all related” LWCs via grep/scripts unless those bundles were actually edited in this task.
+
 ⚠️ **The Bash shell's cwd is the repo root `c:/Users/srathjen/FIMBY`, which is NOT the Salesforce project — `sfdx-project.json` lives one level down in `c:/Users/srathjen/FIMBY/FIMBY`.** The Bash tool has **no `working_directory` parameter**, and `cd`/`&&` are banned in deploy commands, so a *relative* `--source-dir` resolves against the wrong folder and fails with "File or folder not found." **Always pass an ABSOLUTE `--source-dir` rooted at `c:/Users/srathjen/FIMBY/FIMBY/force-app/...`** — copy-paste the example below and swap only the bundle/metadata tail. Use targeted `--source-dir` (or `--metadata`) — **never** the whole `force-app`. For LWCs, point `--source-dir` at the bundle folder; deploy each changed bundle as its own `--source-dir`.
 
 ```bash
@@ -171,6 +173,14 @@ Do not use `cd` / `&&` inside the command; do not include `--target-org`. (Curso
 3. Confirm each test class still covers the change (target 80%+, 75% only in a pinch).
 4. **Coverage is enforced PER CHANGED CLASS (≥75%), not org-wide.** Every `.cls` in the `--source-dir` set must individually clear 75% from the tests you name — a single class at 74% fails the *entire* atomic deploy even when all named tests pass. So name **each changed class's own test** (changing `FimbySettings.cls` → add `FimbySettingsTest`), not just the test for the behaviour you touched. A `Test coverage of selected Apex Class is NN%` failure is fixed by adding that class's test to `--tests`, never by editing product code.
 
+**MANDATORY pre-deploy Code Analyzer gate** (every deploy with Apex or LWC, before `sf project deploy start`):
+1. From the repo root (so `code-analyzer.yml` applies), scan exactly the deployed paths incl. test classes:
+   `sf code-analyzer run --target "FIMBY/force-app/main/default/classes/MyClass.cls" --target "FIMBY/force-app/main/default/lwc/myBundle" --output-file "$TEMP/ca-predeploy.csv" 2>&1 | tail -n 3`
+2. **Any Critical (1) or High (2) anywhere in a deployed file blocks the deploy** — pre-existing findings included. Fix (behaviour-neutral or test-covered; see **fimby-apex** skill → *Code Analyzer hygiene*), re-scan to zero. If a fix needs a design change, **stop and ask Stephen**; never suppress to pass. Flag in the plan when a large legacy file will drag in extra fixes.
+3. Moderate (3) on changed lines: fix when cheap, else list in summary. Low/Info: no action.
+4. If `.ai/problems/all-problems.json` was generated in the last ~15 min, read it too and treat `Sev1`/`Sev2` entries for deployed files the same (editor-scanned files only — the CLI scan is the gate).
+5. Summary line: `Code Analyzer: 0 Critical/High in N deployed files (fixed X pre-existing)`.
+
 If deploy output ends with `Error (MetadataTransferError): Metadata API request failed: Missing message metadata.transfer:Finalizing for locale en_US.` the **deploy succeeded** — known CLI locale bug; pass/fail counts shown are display artifacts. Don't re-run `sf project deploy report`.
 
 **Atomic rollback:** a deploy is atomic per call — a failed test rolls back **everything**, including new fields/objects. Deploy schema-only changes (fields, picklist values, new CMDT types) in a separate call **without** `--tests`, then the dependent Apex in a second call **with** `--tests`.
@@ -182,6 +192,8 @@ If deploy output ends with `Error (MetadataTransferError): Metadata API request 
 sf community publish --name "FIMBY" 2>&1 | tail -n 20
 ```
 Skip only if the user says not to publish.
+
+**Publishing is asynchronous — wait before any live check.** The command only *queues* the publish. It takes about **4 minutes** from queueing until the site is live (when Salesforce's confirmation email arrives). Until then the site serves the **old build**. Do **not** start browser QA, launch a QA subagent, or tell the user the change is live until at least 4 minutes after queueing. Commit + push can happen during the wait. When live-checking, first confirm the new build is being served (reload and probe the DOM for a marker of the change). If it's still the old build, wait about 60s and reload, a few times, before reporting it as not yet live.
 
 **Post-deploy commit + push (mandatory — no prompt):** after **each successful** org deploy (and after publish when LWC was included), commit immediately, then `git push origin <current-branch>` (normally `main`). Do not ask whether to commit or push. One commit per deploy call; stage only paths from that deploy plus related session wiring; brief why-focused message (`Deploy: …`); never secrets. **Push every commit you create** (not just deploy commits) so each is backed up to GitHub with zero lag rather than living only on the laptop. Safety guards: never `--force`, never force-push to `main`. Skip commit+push only on deploy failure or explicit user opt-out (keep local / deploy only / no commit). Empty commit → skip. A daily 9 AM "FIMBY Auto Git Sync" task (`FIMBY-automation/fimby-auto-sync.ps1`) remains as a catch-all safety net that sweeps up uncommitted working files and pushes — it is a backstop, not a substitute for pushing your own commits now.
 
@@ -219,7 +231,6 @@ Before your **first edit of a given file type this session**, invoke the matchin
 | `**/*.cls`, `**/*.trigger` | **fimby-apex** (Apex patterns, best practices, notification contract) |
 | `**/lwc/**` (any LWC file) | **fimby-lwc** (component patterns, CSS foundations, UI/UX, icons, mobile gestures, checklist) |
 | CMS content import packages (zip/JSON for Salesforce CMS) | **salesforce-cms-import** |
-| `FIMBY Website/**` going **live to fimby.com** via Respira MCP | **respira-inject** |
 | Running browser/QA test scenarios as a persona | **fimby-qa-testing** |
 
 When work spans an LWC and notifications, or Apex and the notification contract, load both relevant skills/reference docs.
