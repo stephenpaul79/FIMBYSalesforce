@@ -26,11 +26,11 @@ https://our.fimby.com/login
 
 ## Test Personas
 
-Default password for all personas except Sarah: `dtes4Jesus!`
+Default password for all personas except Sarah and Appy: `dtes4Jesus!`
 
 | Persona | Age | Background | Gender | Email | Password | Purpose |
 |---------|-----|------------|--------|-------|----------|---------|
-| **Appy Review** | — | — | — | reviewer@fimby.com | `dtes4Jesus!` | App Store reviewer account (formerly `sftester@fimby.com`); Salesforce-integrated features and data sync |
+| **Appy Review** | — | — | — | reviewer@fimby.com | `fimby4good!` | Moderator; App Store reviewer account (formerly `sftester@fimby.com`); Salesforce-integrated features and data sync |
 | **Sarah Chen** | 34 | Chinese-Canadian | F | sarah@fimby.com | `dtes4Love!` | Primary wide-layout / default browser testing (formerly `desktop@fimby.com`) |
 | **Rosa Alvarez** | 67 | Mexican-Canadian | F | rosa@fimby.com | `dtes4Jesus!` | Alternate user in multi-persona scenarios; emulated-mobile and senior-neighbour flows (formerly `mobiletester@fimby.com`) |
 | **Marcus Bell** | 45 | Black Canadian | M | marcus@fimby.com | `dtes4Jesus!` | Multi-persona and cross-user interaction scenarios |
@@ -38,6 +38,28 @@ Default password for all personas except Sarah: `dtes4Jesus!`
 | **Joan Whitecloud** | 70 | Coast Salish (Indigenous) | F | joan@fimby.com | `dtes4Jesus!` | Multi-persona and Indigenous-representation scenarios |
 
 **Legacy email mapping** (for older runbooks and git history): `desktop@fimby.com` → `sarah@fimby.com`; `mobiletester@fimby.com` → `rosa@fimby.com`; `sftester@fimby.com` → `reviewer@fimby.com`.
+
+**Test data stays put:** the personas live in the private **Testhood** neighbourhood (its own Neighbourhood Account), so no real neighbour sees QA posts. Do not add cleanup/teardown steps to runbooks or delete QA records after a run.
+
+### Parent-managed profile QA data (anchored)
+
+Use these **fixed identities** for parent-proxied presence runs. Canonical runbook: **`C:\Users\srathjen\.cursor\plans\parent_proxied_presence_qa.plan.md`**.
+
+| Role | Name | Login | Password | Notes |
+|------|------|-------|----------|-------|
+| **Primary guardian** | Sarah Chen | sarah@fimby.com | `dtes4Love!` | Creates Maya via **Manage Identities → Family member** if not already present |
+| **Proxied child** | **Maya Chen** | *(none — Contact only)* | — | `Is_Parent_Proxied__c = true`; shares Sarah's last name; birthdate **~12 years ago** (10–17 band); **no User** |
+| **Second guardian** | Amir Haddad | amir@fimby.com | `dtes4Jesus!` | Approved `Parent_Guardian` on Maya — **admin-seeded** for two-guardian fan-out (see runbook P0) |
+| **Cross-user neighbour** | Marcus Bell | marcus@fimby.com | `dtes4Jesus!` | Replies, SCI grant/revoke, search, blocking — never a guardian |
+
+**Maya setup (once per org):**
+
+1. Log in as **Sarah** → **My Stuff** or header → **Manage Identities** → **Family member**.
+2. First name **Maya**, birthdate making her under 19 (e.g. twelve years ago), attestation checked, optional photo.
+3. Confirm **Maya** appears under **People I Support** with **Parent-managed** badge and **Access** works.
+4. **Second guardian (admin):** In Salesforce, insert an **Approved** `Support_Relationship__c`: `Relationship_Type__c = Parent_Guardian`, `Contact__c` = Amir's Contact, `Related_Contact__c` = Maya's Contact, `Consent_Method__c = Guardian`, same neighbourhood as Sarah. Amir should then see Maya in his identity switcher after reload.
+
+**Do not** create a User for Maya. **Do not** reuse Maya for elder paper-form supportee regression — that scenario needs a separate login-less adult supportee (see runbook P8).
 
 ## Browser QA Procedures
 
@@ -131,6 +153,16 @@ For each QA scenario, verify:
 - Notifications/updates propagate correctly across personas
 - UI renders correctly at **both desktop and emulated-mobile** viewports
 - Interactive elements (buttons, forms, menus) are usable with **mouse/keyboard** semantics; gesture-only flows logged as `AUTOMATION_LIMIT`
+
+### Parent-managed profiles
+
+Use the dedicated runbook: **`C:\Users\srathjen\.cursor\plans\parent_proxied_presence_qa.plan.md`**. Summary:
+
+- **First entry to Manage Identities** after login: **My Stuff** → manage connections, or header kebab → switch/manage identities — not by typing `/manage-identities`.
+- **Identity switch:** header kebab → **Switch to Maya** (or **Access** on Manage Identities). Acting-as chip should include **`· parent-managed`** in the aria-label; green **Posting as: Maya** banner on forms.
+- **Paths after clicks:** `/manage-identities`, `/neighbour?id={contactId}` (profile), `/notifications` (via bell — valid), `/messages`, `/conversation?id={id}`, `/my-stuff/my-contacts`.
+- **Multi-persona:** Sarah acts as Maya → Marcus reacts → verify on Sarah **and** Amir (fan-out). Log out between User personas; never paste `?actAs=` to *start* a flow (notification taps that add it are valid).
+- **Mobile pass:** after desktop scenarios, **`browser_resize`** to **393×851**, **reload**, re-check badge, switcher unread pills, and blocked listing entry points.
 
 ### Library & lending
 

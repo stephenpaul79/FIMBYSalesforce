@@ -18,18 +18,22 @@ QA covers **desktop and emulated mobile**. Per-runbook scope decides required si
 URL: **https://our.fimby.com/login**
 
 ### Test personas
-Default password for all personas except Sarah: `dtes4Jesus!`
+Default password for all personas except Sarah and Appy: `dtes4Jesus!`
 
 | Persona | Age | Background | G | Email | Password | Purpose |
 |---------|-----|------------|---|-------|----------|---------|
-| **Appy Review** | — | — | — | reviewer@fimby.com | `dtes4Jesus!` | App Store reviewer; SF-integrated features & data sync |
+| **Appy Review** | — | — | — | reviewer@fimby.com | `fimby4good!` | Moderator; App Store reviewer; SF-integrated features & data sync |
 | **Sarah Chen** | 34 | Chinese-Canadian | F | sarah@fimby.com | `dtes4Love!` | Primary wide-layout / default browser testing |
 | **Rosa Alvarez** | 67 | Mexican-Canadian | F | rosa@fimby.com | `dtes4Jesus!` | Emulated-mobile & senior-neighbour flows |
 | **Marcus Bell** | 45 | Black Canadian | M | marcus@fimby.com | `dtes4Jesus!` | Multi-persona / cross-user scenarios |
 | **Amir Haddad** | 31 | Lebanese-Canadian | M | amir@fimby.com | `dtes4Jesus!` | Multi-persona / cross-user scenarios |
 | **Joan Whitecloud** | 70 | Coast Salish (Indigenous) | F | joan@fimby.com | `dtes4Jesus!` | Multi-persona & Indigenous-representation |
 
+**Parent-managed QA (no User):** **Maya Chen** — proxied child under **Sarah Chen**; second guardian **Amir Haddad** (admin-seeded). **Marcus Bell** = cross-user neighbour. See **Parent-managed profile QA data** in `qa-testing-login.mdc` and runbook `C:\Users\srathjen\.cursor\plans\parent_proxied_presence_qa.plan.md`.
+
 Legacy email mapping (older runbooks / git history): `desktop@fimby.com` → `sarah@`; `mobiletester@fimby.com` → `rosa@`; `sftester@fimby.com` → `reviewer@`.
+
+**Test data stays put:** the personas live in the private **Testhood** neighbourhood (its own Neighbourhood Account), so no real neighbour sees QA posts. Do not add cleanup/teardown steps to runbooks or delete QA records after a run.
 
 ### Login flow
 1. Navigate to `https://our.fimby.com/login`.
@@ -61,6 +65,8 @@ These were learned against Cursor's MCP; apply the *intent* with whatever tool y
 ## Multi-persona validation
 For cross-user features (notifications, updates, shared data): (1) log in as one persona and perform the triggering action; (2) switch to another persona and verify the receiving side sees the expected update/notification. Multi-step lending (borrow → approve → confirm → pickup → loan → extension → return) needs hat switches between owner and borrower; allow time for LWC reloads and modal chains.
 
+**Faster hat changes:** use **identity switch** (header menu → Switch to … / Manage Identities) when the scenario is one **User** acting as another **Contact** via an approved Support Relationship (e.g. Sarah ↔ Maya, Amir ↔ Maya). That avoids logout. Testhood neighbours who are **different Users** (Sarah, Marcus, Amir, Rosa, …) still require logout + login or a second session — identity switch does not substitute for those.
+
 ## Human–agent handoff (collaborative QA — do not skip)
 When automation can't reliably complete a step (Lightning date pickers, segmented date inputs, shadow-DOM controls, blur-gated Submit, passkeys): (1) don't mark the scenario done/failed/out-of-scope without asking; (2) pause and ask the human to enter the data in the live UI (give field names, suggested values, and what "success" looks like — toast, modal close, URL change); (3) when they reply done, take a fresh snapshot and continue verification. A run may combine agent navigation with short human inputs; outcomes count as verified once confirmed in the browser after handoff.
 
@@ -75,3 +81,6 @@ When the UI shows a calendar date (e.g. "Requested Apr 6"), compare to the known
 
 ## Library & lending
 Canonical runbook: `C:\Users\srathjen\.cursor\plans\lending_browsing_lifecycle_qa.plan.md`. First library entry after login must be via visible UI (Library tab, Home feed library card, My Stuff links) — not typing `/library-list`. Paths you'll recognize after clicks: `/library-list`, `/library-item/{id}`, `/add-library-item`, `/messages`, `/conversation?id={id}`, `/loaned-items`, `/my-stuff/my-library-items`.
+
+## Parent-managed profiles
+Canonical runbook: `C:\Users\srathjen\.cursor\plans\parent_proxied_presence_qa.plan.md`. Anchored data: **Maya Chen** (no login) under **Sarah Chen**; **Amir Haddad** second guardian for fan-out; **Marcus Bell** counterparty. Manage Identities via UI, not pasted `/manage-identities`. Run desktop then 393×851 + reload for mobile layout.
