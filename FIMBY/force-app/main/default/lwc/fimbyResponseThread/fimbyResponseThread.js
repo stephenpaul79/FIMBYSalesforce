@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { navigate, navigateBack, profilePathForContact } from 'c/fimbyNavigation';
 import { avatarImageUrl, completeImageUrl } from 'c/fimbyImageUrl';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getThread from '@salesforce/apex/FimbyResponseThreadController.getThread';
 import getMessages from '@salesforce/apex/FimbyResponseThreadController.getMessages';
@@ -211,8 +212,62 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         return this.isWithinCompletedGracePeriod;
     }
 
-    get tracksQuantity() {
-        return this.post.totalQuantity != null && this.post.totalQuantity > 0;
+    get _postQuantity() {
+        const q = Number(this.post.totalQuantity);
+        return Number.isFinite(q) && q > 0 ? q : 0;
+    }
+
+    get _isNeedPost() {
+        const rt = this.post.recordType;
+        return rt === 'Need' || rt === 'Ask';
+    }
+
+    get _isGatheringPost() {
+        return this.post.type === 'Event' && this.post.eventType === 'Gathering';
+    }
+
+    get _isOpenEventPost() {
+        return this.post.type === 'Event' && this.post.eventType === 'Open_Event';
+    }
+
+    /** Post-level "X of Y" in the thread header — not for asks (qty is always 1 server-side). */
+    get showPostCapacityInHeader() {
+        if (this._isNeedPost) {
+            return false;
+        }
+        if (this._postQuantity <= 0) {
+            return false;
+        }
+        if (this._isGatheringPost || this._isOpenEventPost) {
+            return true;
+        }
+        if (this.post.recordType === 'Bulk_Buy') {
+            return true;
+        }
+        if (this.post.recordType === 'Offer') {
+            return this._postQuantity > 1;
+        }
+        return false;
+    }
+
+    /** Per-response amount pill and edit — mirrors fimbyNeedOfferDetail.showResponseAmounts. */
+    get showResponseAmountInThread() {
+        if (this._isNeedPost) {
+            return false;
+        }
+        if (this._postQuantity <= 0) {
+            return false;
+        }
+        if (this._isGatheringPost || this._isOpenEventPost) {
+            return true;
+        }
+        if (this.post.recordType === 'Bulk_Buy') {
+            return true;
+        }
+        if (this.post.recordType === 'Offer') {
+            return this._postQuantity > 1;
+        }
+        return false;
     }
 
     get amountLabel() {
@@ -249,7 +304,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     }
 
     get showEditAmountButton() {
-        return this.isResponder && !this.isPoster && this.tracksQuantity &&
+        return this.isResponder && !this.isPoster && this.showResponseAmountInThread &&
             (this.response.status === 'New' || this.response.status === 'Accepted');
     }
 
@@ -291,12 +346,6 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         return this.isPoster ? this.responderName : this.posterName;
     }
 
-    get otherPartyInitials() {
-        const name = this.otherPartyName;
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
-
     _profilePathForSender({ senderId, senderIsOrg, senderOrgAccountId }) {
         if (!senderId) return '';
         return profilePathForContact({
@@ -313,9 +362,14 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
         if (path) navigate(this, path);
     }
 
-    _getInitials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    _avatarFields({ contactId, name, isOrganization, profilePath }) {
+        const shape = isOrganization ? ' avatar-org' : '';
+        return {
+            senderInitials: getInitials(name),
+            senderAvatarStyle: getAvatarToneStyle({ contactId, name, isOrganization }),
+            avatarClass: 'card-avatar' + shape + (profilePath ? ' clickable-avatar' : ''),
+            collapsedAvatarClass: 'msg-collapsed-avatar' + shape
+        };
     }
 
     get isPostCompleted() {
@@ -516,7 +570,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             ? resolveAvatarUrl(this.myContactImageUrl)
             : resolveAvatarUrl(this.response.responderImageUrl);
 
-        if (this.response.amountRequested) {
+        if (this.showResponseAmountInThread && this.response.amountRequested) {
             items.push({
                 id: 'amount-pill',
                 isDateSeparator: false,
@@ -551,13 +605,17 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
             formattedTimeShort: this.formatTimeShort(this.response.createdDate),
             formattedTimeRelative: this.formatTimeRelative(this.response.createdDate),
             senderDisplayName: origDisplayName,
-            senderInitials: this._getInitials(origDisplayName),
+            ...this._avatarFields({
+                contactId: origIsFromMe ? this.myContactId : this.response?.responderContactId,
+                name: origDisplayName,
+                isOrganization: !!this.response.responderIsOrg,
+                profilePath: origProfilePath
+            }),
             senderAvatarUrl: origAvatarUrl,
             hasAvatarImage: !!origAvatarUrl,
             responderIsOrg: !!this.response.responderIsOrg,
             profilePath: origProfilePath,
             avatarClickable: !!origProfilePath,
-            avatarClass: 'card-avatar' + (origProfilePath ? ' clickable-avatar' : ''),
             cardClass: 'message-card' + (origIsFromMe ? ' from-me' : ''),
             snippetText: this._getSnippet(this.response.responseText)
         };
@@ -617,12 +675,16 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
                 readDate: msg.readDate,
                 systemMessageType: msg.systemMessageType,
                 senderDisplayName: msgDisplayName,
-                senderInitials: this._getInitials(msgDisplayName),
+                ...this._avatarFields({
+                    contactId: isMe ? this.myContactId : msg.senderId,
+                    name: msgDisplayName,
+                    isOrganization: !!msg.senderIsOrg,
+                    profilePath: msgProfilePath
+                }),
                 senderAvatarUrl: msgAvatarUrl,
                 hasAvatarImage: !!msgAvatarUrl,
                 profilePath: msgProfilePath,
                 avatarClickable: !!msgProfilePath,
-                avatarClass: 'card-avatar' + (msgProfilePath ? ' clickable-avatar' : ''),
                 showViaLabel: !!proxyLabel,
                 viaLabel: proxyLabel,
                 cardClass: msg.isSystemMessage

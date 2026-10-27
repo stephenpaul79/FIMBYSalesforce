@@ -8,7 +8,14 @@
                 </button>
                 <template lwc:if={showActingAsChip}>
                     <button type="button" class="acting-as-chip" onclick={handleSwitchBack} aria-label={actingAsAriaLabel}>
-                        <img src={actingAsAvatarUrl} alt="" class="acting-as-avatar" />
+                        <c-fimby-avatar
+                            class="acting-as-avatar"
+                            src={actingAsAvatarUrl}
+                            name={actingAsDisplayName}
+                            contact-id={_actingAsContactId}
+                            organization-account-id={_orgAccountId}
+                            is-organization={_isOrgContact}
+                            size="28"></c-fimby-avatar>
                         <span class="acting-as-name">{actingAsDisplayName}</span>
                     </button>
                 </template>
@@ -94,7 +101,7 @@
                     <template lwc:if={selfMenuItem}>
                         <template lwc:if={selfIsActive}>
                             <div class="identity-row" aria-current="true">
-                                <img src={selfMenuItem.avatarUrl} alt="" class="identity-avatar" />
+                                <c-fimby-avatar class="identity-avatar" src={selfMenuItem.avatarUrl} name={selfMenuItem.name} contact-id={selfMenuItem.contactId} size="22"></c-fimby-avatar>
                                 <div class="identity-pill">
                                     <span class="identity-name">{selfMenuItem.name}</span>
                                 </div>
@@ -102,7 +109,7 @@
                         </template>
                         <template lwc:else>
                             <button type="button" class="identity-row menu-item" onclick={handleSwitchBack} aria-label={switchBackAriaLabel}>
-                                <img src={selfMenuItem.avatarUrl} alt="" class="identity-avatar" />
+                                <c-fimby-avatar class="identity-avatar" src={selfMenuItem.avatarUrl} name={selfMenuItem.name} contact-id={selfMenuItem.contactId} size="22"></c-fimby-avatar>
                                 <span class="identity-row-name">{selfMenuItem.name}</span>
                             </button>
                         </template>
@@ -115,7 +122,7 @@
                     <template for:each={otherIdentityMenuItems} for:item="identity">
                         <template lwc:if={identity.isActive}>
                             <div key={identity.relationshipId} class="identity-row" aria-current="true">
-                                <img src={identity.avatarUrl} alt="" class="identity-avatar" />
+                                <c-fimby-avatar class="identity-avatar" src={identity.avatarUrl} name={identity.name} contact-id={identity.targetContactId} is-organization={identity.isOrganization} size="22"></c-fimby-avatar>
                                 <div class="identity-pill">
                                     <span class="identity-pill-label">Logged in as:</span>
                                     <span class="identity-name">{identity.name}</span>
@@ -127,7 +134,7 @@
                         </template>
                         <template lwc:else>
                             <button key={identity.relationshipId} type="button" class="identity-row menu-item" data-id={identity.relationshipId} onclick={handleIdentitySwitch} aria-label={identity.switchAriaLabel}>
-                                <img src={identity.avatarUrl} alt="" class="identity-avatar" />
+                                <c-fimby-avatar class="identity-avatar" src={identity.avatarUrl} name={identity.name} contact-id={identity.targetContactId} is-organization={identity.isOrganization} size="22"></c-fimby-avatar>
                                 <div class="identity-row-info">
                                     <span class="identity-row-name">{identity.name}</span>
                                     <span class="identity-row-neighbourhood">{identity.neighbourhoodName}</span>

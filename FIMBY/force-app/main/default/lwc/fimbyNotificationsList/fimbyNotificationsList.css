@@ -391,6 +391,10 @@
     overflow: hidden;
 }
 
+.notif-avatar-org {
+    border-radius: 22%;
+}
+
 .notif-avatar-img {
     width: 100%;
     height: 100%;

@@ -7,14 +7,13 @@
             </button>
 
             <div class="participant-info">
-                <div class="participant-avatar-circle">
-                    <template lwc:if={participantAvatarUrl}>
-                        <img src={participantAvatarUrl} alt="" class="avatar-img" />
-                    </template>
-                    <template lwc:else>
-                        {participantInitials}
-                    </template>
-                </div>
+                <c-fimby-avatar
+                    class="participant-avatar"
+                    src={participantAvatarUrl}
+                    name={otherParticipantName}
+                    contact-id={otherParticipantId}
+                    is-organization={isOtherParticipantOrg}
+                    size="36"></c-fimby-avatar>
                 <div class="participant-details">
                     <h2 class="participant-name">{otherParticipantName}</h2>
                     <template lwc:if={showProxyBadge}>
@@ -91,7 +90,7 @@
                             <template lwc:if={isFirstExpanded}>
                                 <div class={firstMessage.cardClass}>
                                     <div class="message-card-header">
-                                        <div class="card-avatar">
+                                        <div class={firstMessage.cardAvatarClass} style={firstMessage.senderAvatarStyle}>
                                             <template lwc:if={firstMessage.hasAvatarImage}>
                                                 <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                             </template>
@@ -112,7 +111,7 @@
                             </template>
                             <template lwc:else>
                                 <div class="msg-collapsed zone-first">
-                                    <span class="msg-collapsed-avatar">
+                                    <span class={firstMessage.collapsedAvatarClass} style={firstMessage.senderAvatarStyle}>
                                         <template lwc:if={firstMessage.hasAvatarImage}>
                                             <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                         </template>
@@ -148,7 +147,7 @@
                                             <template lwc:if={mid.isExpanded}>
                                                 <div class={mid.cardClass}>
                                                     <div class="message-card-header">
-                                                        <div class="card-avatar">
+                                                        <div class={mid.cardAvatarClass} style={mid.senderAvatarStyle}>
                                                             <template lwc:if={mid.hasAvatarImage}>
                                                                 <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                             </template>
@@ -169,7 +168,7 @@
                                             </template>
                                             <template lwc:else>
                                                 <div class="msg-collapsed">
-                                                    <span class="msg-collapsed-avatar">
+                                                    <span class={mid.collapsedAvatarClass} style={mid.senderAvatarStyle}>
                                                         <template lwc:if={mid.hasAvatarImage}>
                                                             <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                         </template>
@@ -211,7 +210,7 @@
                         <template for:each={lastMessages} for:item="last">
                             <div key={last.id} class={last.cardClass}>
                                 <div class="message-card-header">
-                                    <div class="card-avatar">
+                                    <div class={last.cardAvatarClass} style={last.senderAvatarStyle}>
                                         <template lwc:if={last.hasAvatarImage}>
                                             <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
                                         </template>
@@ -252,7 +251,7 @@
                                     <template lwc:else>
                                         <div class={item.cardClass}>
                                             <div class="message-card-header">
-                                                <div class="card-avatar">
+                                                <div class={item.cardAvatarClass} style={item.senderAvatarStyle}>
                                                     <template lwc:if={item.hasAvatarImage}>
                                                         <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
                                                     </template>

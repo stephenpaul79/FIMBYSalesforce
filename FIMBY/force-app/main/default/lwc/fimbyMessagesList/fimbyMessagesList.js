@@ -57,7 +57,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
 
     @track isActingAsSelf = true;
     @track actingAsContactName = '';
-    @track actingAsAvatarUrl = '';
     @track isActingAsOrg = false;
     @track hasMultipleIdentities = false;
     @track currentContactId = null;
@@ -289,7 +288,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         const completedImageUrl = resolveAvatarUrl(thread.participantImageUrl);
         const hasPostImage = isGroup && !!completedImageUrl;
         const showGroupIconAvatar = isGroup && !hasPostImage;
-        const hasParticipantImage = !isGroup && !!thread.participantImageUrl;
         const archiveAction = this.isArchivedView ? 'unarchive' : 'archive';
         const archiveLabel = this.isArchivedView ? 'Unarchive' : 'Archive';
 
@@ -329,19 +327,17 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread'),
             participantImageUrl: completedImageUrl,
             isOrgContact: !!thread.isOrgContact,
-            hasParticipantImage,
             hasPostImage,
             showGroupIconAvatar,
             groupAvatarIconUrl: `${IMPACT_ICONS}/${getThreadAvatarIcon(badgeType)}`,
             groupAvatarClass: showGroupIconAvatar
                 ? `thread-avatar group-avatar group-avatar-${groupVariant}`
                 : 'thread-avatar',
-            participantInitials: this.getInitials(thread.participantName),
             profilePath,
             avatarClickable: !!profilePath,
             avatarClass: isGroup
                 ? (hasPostImage ? 'thread-avatar thread-avatar-group' : `thread-avatar group-avatar group-avatar-${groupVariant}`)
-                : ('thread-avatar' + (thread.isOrgContact ? ' thread-avatar-org' : '') + (profilePath ? ' thread-avatar-clickable' : '')),
+                : ('thread-avatar thread-avatar-person' + (profilePath ? ' thread-avatar-clickable' : '')),
             archiveAction,
             archiveLabel,
             subjectLine,
@@ -370,21 +366,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         }
 
         return MONTH_NAMES[date.getMonth()] + ' ' + date.getDate();
-    }
-
-    getInitials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
-
-    handleAvatarError(event) {
-        const img = event.target;
-        img.style.display = 'none';
-        const parent = img.parentElement;
-        if (parent) {
-            const initials = parent.querySelector('.thread-avatar-initials, .banner-avatar-initials, .contact-avatar-initials');
-            if (initials) initials.style.display = '';
-        }
     }
 
     handleGroupPostImageError(event) {
@@ -752,11 +733,8 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
             const raw = await getMessageableContacts({ searchTerm: this.contactSearchTerm });
             this.messageableContacts = raw.map(c => ({
                 ...c,
-                initials: this.getInitials(c.contactName),
                 isOrgContact: !!c.isOrgContact,
-                avatarUrl: resolveAvatarUrl(c.avatarUrl),
-                hasAvatar: !!c.avatarUrl,
-                contactAvatarClass: 'contact-avatar-sm' + (c.isOrgContact ? ' contact-avatar-org' : '')
+                avatarUrl: resolveAvatarUrl(c.avatarUrl)
             }));
         } catch (error) {
             console.error('Error searching contacts:', error);
@@ -819,14 +797,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         }
     }
 
-    get actingAsInitials() {
-        return this.getInitials(this.actingAsContactName);
-    }
-
-    get hasActingAsAvatar() {
-        return !!this.actingAsAvatarUrl;
-    }
-
     async _loadActingAs() {
         try {
             const result = await getActingAsContact();
@@ -834,7 +804,6 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
                 this.currentContactId = result.contactId || result.realContactId || null;
                 this.isActingAsSelf = !!result.isActingAsSelf;
                 this.actingAsContactName = result.postingAsDisplayName || result.actingAsContactName || '';
-                this.actingAsAvatarUrl = resolveAvatarUrl(result.actingAsAvatarUrl);
                 this.isActingAsOrg = !!result.isActingAsOrg;
             }
         } catch {

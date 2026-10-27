@@ -902,7 +902,6 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
             const result = await getBlockedContacts();
             this.blockedContacts = result.map(bc => ({
                 ...bc,
-                initials: this._getInitials(bc.contactName),
                 formattedDate: this._formatDate(bc.blockedDate)
             }));
         } catch (error) {
@@ -1104,11 +1103,6 @@ export default class FimbySettingsView extends NavigationMixin(LightningElement)
     // ============================================
     // HELPERS
     // ============================================
-    _getInitials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
-
     _formatDate(dateValue) {
         if (!dateValue) return '';
         try {

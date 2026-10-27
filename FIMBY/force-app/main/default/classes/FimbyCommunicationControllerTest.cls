@@ -223,6 +223,52 @@ public class FimbyCommunicationControllerTest {
     }
 
     @IsTest
+    static void testResponseThreadKeysOnRepresentedPostOwner() {
+        User testUser = getTestUser();
+        Contact myContact = [SELECT Id, AccountId FROM Contact WHERE Id = :testUser.ContactId];
+        Account neighbourhood = [SELECT Id FROM Account WHERE Id = :myContact.AccountId];
+
+        Contact realAuthor = new Contact(FirstName = 'Real', LastName = 'Author', AccountId = neighbourhood.Id);
+        Contact represented = new Contact(FirstName = 'Represented', LastName = 'Owner', AccountId = neighbourhood.Id,
+            Image_URL__c = 'https://example.com/masked.jpg', Mask_Avatar__c = true);
+        insert new List<Contact>{ realAuthor, represented };
+
+        Needs_Offers__c post = new Needs_Offers__c(
+            Name = 'Represented Need', Details__c = 'Posted on behalf', Type__c = 'Goods - Unperishable',
+            Status__c = 'Posted', Neighbourhood__c = neighbourhood.Id,
+            Posted_By__c = realAuthor.Id, Contact__c = represented.Id
+        );
+        insert post;
+
+        Response__c resp = new Response__c(
+            Name = 'Helping', Response__c = 'I can help', Contact__c = myContact.Id,
+            On_Behalf_Of_Contact__c = myContact.Id, Need_Offer_Responded_To__c = post.Id,
+            Status__c = 'New', Neighbourhood__c = neighbourhood.Id,
+            Last_Reply__c = 'Thanks', Last_Reply_Date__c = Date.today(),
+            Last_Reply_Contact_Lookup__c = represented.Id
+        );
+        insert resp;
+
+        Test.startTest();
+        System.runAs(testUser) {
+            FimbyCommunicationController.ThreadListResult result =
+                FimbyCommunicationController.getThreads(20, 0, 'responses', null);
+            FimbyCommunicationController.CommunicationThread found;
+            for (FimbyCommunicationController.CommunicationThread t : result.threads) {
+                if (t.threadId == resp.Id) {
+                    found = t;
+                }
+            }
+            System.assertNotEquals(null, found, 'Response thread should be listed');
+            System.assertEquals(represented.Id, found.participantContactId,
+                'Responder sees the represented post owner, not the real author');
+            System.assertEquals('Represented Owner', found.participantName, 'Represented owner name');
+            System.assert(String.isBlank(found.participantImageUrl), 'Masked photo must stay hidden');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testGetThreadsExcludesCommunityEventWithoutMessages() {
         User testUser = getTestUser();
         List<Contact> others = getOtherContacts();
@@ -1285,6 +1331,10 @@ public class FimbyCommunicationControllerTest {
                         'Participant name should be org account name');
                     System.assertEquals('https://example.com/garden.jpg', t.participantImageUrl,
                         'Participant image should be org logo');
+                    System.assertEquals(orgContact.Id, t.participantContactId,
+                        'Response rows carry the org Contact Id for a stable avatar tone');
+                    System.assertEquals(orgAccount.Id, t.participantOrgAccountId,
+                        'Response rows carry the org Account Id');
                 }
             }
             System.assert(foundOrgThread, 'Should find the org contact response thread');

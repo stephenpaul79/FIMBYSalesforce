@@ -349,15 +349,12 @@ public with sharing class FimbyCommunicationController {
 
                 String otherName;
                 String otherImageUrl;
-                String otherInitials;
                 if (otherIsOrg) {
                     otherName = other.Organization_Account__r?.Name;
                     otherImageUrl = other.Organization_Account__r?.Logo_URL__c;
-                    otherInitials = buildOrgInitials(otherName);
                 } else {
                     otherName = other?.Full_Name__c;
                     otherImageUrl = other?.Display_Avatar_URL__c;
-                    otherInitials = buildInitials(other?.FirstName, other?.LastName);
                 }
 
                 if (searchLower != null && (otherName == null || !otherName.toLowerCase().contains(searchLower))) {
@@ -384,7 +381,6 @@ public with sharing class FimbyCommunicationController {
                 t.isGroup = false;
                 t.threadId = conv.Id;
                 t.participantName = otherName;
-                t.participantInitials = otherInitials;
                 t.participantImageUrl = otherImageUrl;
                 t.participantContactId = otherContactId;
                 t.participantOrgAccountId = other?.Organization_Account__c;
@@ -500,7 +496,6 @@ public with sharing class FimbyCommunicationController {
                 t.isGroup = true;
                 t.threadId = cm.Conversation__c;
                 t.participantName = groupName;
-                t.participantInitials = buildGroupInitials(groupName);
                 t.participantImageUrl = imageUrl;
                 t.isOrgContact = false;
                 t.contextLabel = null;
@@ -518,15 +513,6 @@ public with sharing class FimbyCommunicationController {
             return threads;
         }
 
-        private String buildGroupInitials(String groupName) {
-            if (String.isBlank(groupName)) return '?';
-            String trimmed = groupName.trim();
-            if (trimmed.length() >= 2) {
-                return trimmed.substring(0, 2).toUpperCase();
-            }
-            return trimmed.substring(0, 1).toUpperCase();
-        }
-
         private List<CommunicationThread> getResponseThreads(
             String myContactId, String searchLower, Boolean showArchived
         ) {
@@ -540,6 +526,7 @@ public with sharing class FimbyCommunicationController {
                        Contact__c, Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, Contact__r.LastName,
                        Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, Contact__r.Is_Organization_Contact__c,
                        Contact__r.Organization_Account__r.Name, Contact__r.Organization_Account__r.Logo_URL__c,
+                       Contact__r.Organization_Account__c, On_Behalf_Of_Contact__r.Organization_Account__c,
                        On_Behalf_Of_Contact__c, On_Behalf_Of_Contact__r.Name, On_Behalf_Of_Contact__r.Full_Name__c,
                        On_Behalf_Of_Contact__r.FirstName, On_Behalf_Of_Contact__r.LastName,
                        On_Behalf_Of_Contact__r.Image_URL__c, On_Behalf_Of_Contact__r.Display_Avatar_URL__c, On_Behalf_Of_Contact__r.Is_Organization_Contact__c,
@@ -560,6 +547,16 @@ public with sharing class FimbyCommunicationController {
                        Need_Offer_Responded_To__r.Posted_By__r.Is_Organization_Contact__c,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Name,
                        Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__r.Logo_URL__c,
+                       Need_Offer_Responded_To__r.Posted_By__r.Organization_Account__c,
+                       Need_Offer_Responded_To__r.Contact__r.Name,
+                       Need_Offer_Responded_To__r.Contact__r.Full_Name__c,
+                       Need_Offer_Responded_To__r.Contact__r.FirstName,
+                       Need_Offer_Responded_To__r.Contact__r.LastName,
+                       Need_Offer_Responded_To__r.Contact__r.Display_Avatar_URL__c,
+                       Need_Offer_Responded_To__r.Contact__r.Is_Organization_Contact__c,
+                       Need_Offer_Responded_To__r.Contact__r.Organization_Account__c,
+                       Need_Offer_Responded_To__r.Contact__r.Organization_Account__r.Name,
+                       Need_Offer_Responded_To__r.Contact__r.Organization_Account__r.Logo_URL__c,
                        Poster_Last_Viewed__c, Responder_Last_Viewed__c,
                        Poster_Archived__c, Responder_Archived__c, Poster_Unread_Count__c, Responder_Unread_Count__c,
                        CreatedDate
@@ -618,26 +615,30 @@ public with sharing class FimbyCommunicationController {
                 }
 
                 Contact otherContact;
+                Id otherContactId;
                 if (isPoster) {
-                    otherContact = resp.On_Behalf_Of_Contact__r?.Name != null
-                        ? resp.On_Behalf_Of_Contact__r
-                        : resp.Contact__r;
+                    Boolean hasRepresented = resp.On_Behalf_Of_Contact__r?.Name != null;
+                    otherContact = hasRepresented ? resp.On_Behalf_Of_Contact__r : resp.Contact__r;
+                    otherContactId = hasRepresented ? resp.On_Behalf_Of_Contact__c : resp.Contact__c;
                 } else {
-                    otherContact = resp.Need_Offer_Responded_To__r?.Posted_By__r;
+                    Boolean hasOwner = resp.Need_Offer_Responded_To__r?.Contact__r?.Name != null;
+                    otherContact = hasOwner
+                        ? resp.Need_Offer_Responded_To__r.Contact__r
+                        : resp.Need_Offer_Responded_To__r?.Posted_By__r;
+                    otherContactId = hasOwner
+                        ? resp.Need_Offer_Responded_To__r.Contact__c
+                        : resp.Need_Offer_Responded_To__r?.Posted_By__c;
                 }
 
                 Boolean otherIsOrg = otherContact?.Is_Organization_Contact__c == true;
                 String otherName;
                 String otherImageUrl;
-                String otherInitials;
                 if (otherIsOrg) {
                     otherName = otherContact.Organization_Account__r?.Name;
                     otherImageUrl = otherContact.Organization_Account__r?.Logo_URL__c;
-                    otherInitials = buildOrgInitials(otherName);
                 } else {
                     otherName = otherContact?.Full_Name__c;
                     otherImageUrl = otherContact?.Display_Avatar_URL__c;
-                    otherInitials = buildInitials(otherContact?.FirstName, otherContact?.LastName);
                 }
 
                 if (searchLower != null && (otherName == null || !otherName.toLowerCase().contains(searchLower))) {
@@ -664,8 +665,9 @@ public with sharing class FimbyCommunicationController {
                 t.isGroup = false;
                 t.threadId = resp.Id;
                 t.participantName = otherName;
-                t.participantInitials = otherInitials;
                 t.participantImageUrl = otherImageUrl;
+                t.participantContactId = otherContactId;
+                t.participantOrgAccountId = otherIsOrg ? otherContact.Organization_Account__c : null;
                 t.isOrgContact = otherIsOrg;
                 t.contextLabel = resp.Need_Offer_Responded_To__r?.Name;
                 t.lastMessagePreview = preview;
@@ -690,25 +692,6 @@ public with sharing class FimbyCommunicationController {
         private Integer viewerUnreadCount(Response__c resp, Boolean isPoster) {
             Decimal counter = isPoster ? resp.Poster_Unread_Count__c : resp.Responder_Unread_Count__c;
             return counter != null ? counter.intValue() : 0;
-        }
-
-        private String buildInitials(String firstName, String lastName) {
-            String initials = '';
-            if (String.isNotBlank(firstName)) initials += firstName.substring(0, 1);
-            if (String.isNotBlank(lastName)) initials += lastName.substring(0, 1);
-            return initials.toUpperCase();
-        }
-
-        private String buildOrgInitials(String orgName) {
-            if (String.isBlank(orgName)) return '?';
-            List<String> words = orgName.split('\\s+');
-            String initials = '';
-            for (String w : words) {
-                if (String.isNotBlank(w) && initials.length() < 2) {
-                    initials += w.substring(0, 1);
-                }
-            }
-            return initials.toUpperCase();
         }
 
         /**
@@ -1158,7 +1141,6 @@ public with sharing class FimbyCommunicationController {
         @AuraEnabled public Boolean isGroup { get; set; }
         @AuraEnabled public Id threadId { get; set; }
         @AuraEnabled public String participantName { get; set; }
-        @AuraEnabled public String participantInitials { get; set; }
         @AuraEnabled public String participantImageUrl { get; set; }
         @AuraEnabled public Id participantContactId { get; set; }
         @AuraEnabled public Id participantOrgAccountId { get; set; }

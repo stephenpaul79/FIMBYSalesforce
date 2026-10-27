@@ -160,7 +160,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--fimby-btn-primary-bg);
+    background: var(--fimby-earth-driftwood, #6B5E50);
     color: #fff;
     font-size: 2rem;
     font-weight: 700;
@@ -382,7 +382,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -400,7 +400,7 @@
     padding: 10px 12px;
     border: 1px solid var(--fimby-border-default);
     border-radius: var(--fimby-radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--fimby-input-font-size, 16px);
     color: var(--fimby-text-strong);
     background: var(--fimby-surface-input, var(--fimby-surface-card));
     outline: none;
@@ -807,4 +807,26 @@ button.avatar-wrapper {
         flex: 1 1 0;
         min-width: 0;
     }
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

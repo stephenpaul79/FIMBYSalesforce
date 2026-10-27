@@ -338,61 +338,14 @@
     cursor: pointer;
 }
 
-.thread-avatar-org {
-    border-radius: var(--fimby-radius-sm, 4px);
-    background: var(--fimby-surface-page, #F0EBE3);
+.thread-avatar-person {
+    background: transparent;
 }
 
 .thread-avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.thread-avatar-initials {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-    pointer-events: none;
-}
-
-/* â”€â”€ Acting-as banner avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.banner-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.banner-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.banner-avatar-initials {
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 1;
-}
-
-/* â”€â”€ Compose picker avatar (org variant) â”€â”€â”€â”€â”€â”€â”€â”€ */
-.contact-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: inherit;
-}
-
-.contact-avatar-org {
-    border-radius: var(--fimby-radius-sm, 4px);
-    background: var(--fimby-surface-page, #F0EBE3);
 }
 
 /* â”€â”€ Desktop kebab dropdown (rendered outside scroll container) â”€â”€ */
@@ -746,19 +699,6 @@
     background: var(--fimby-hover-bg);
 }
 
-.contact-avatar-sm {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
 
 .contact-name {
     font-size: 14px;

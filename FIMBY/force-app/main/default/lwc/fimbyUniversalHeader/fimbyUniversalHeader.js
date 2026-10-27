@@ -64,9 +64,6 @@ const MENU_ICONS = {
 };
 
 const MAX_KEBAB_IDENTITIES = 3;
-const NO_PROFILE_PHOTO = 'NoProfilePhoto.png';
-const NO_ORG_PHOTO = 'NoOrgPhoto.png';
-
 /* Tab-prefix → tab mapping now lives in c/fimbyNavigation (resolveTabFromPath). */
 
 /* Icon file-name map (inside the Impact_Icons static resource zip) */
@@ -488,8 +485,6 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     get logoutMenuIconUrl()   { return `${IMPACT_ICONS}/${MENU_ICONS.logout}`; }
     get switchIconUrl()       { return `${IMPACT_ICONS}/${MENU_ICONS.switch}`; }
     get peopleIconUrl()       { return `${IMPACT_ICONS}/${MENU_ICONS.people}`; }
-    get defaultAvatarUrl()    { return `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`; }
-
     get showActingAsChip() { return !this.isActingAsSelf; }
     get hasAvailableIdentities() { return this.otherIdentityMenuItems.length > 0; }
     /**
@@ -518,11 +513,10 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     }
 
     _applyActingAsContext(actingResult) {
-        const selfAvatarUrl = avatarImageUrl(actingResult.realContactAvatarUrl)
-            || this.defaultAvatarUrl;
         this.selfMenuItem = {
             name: actingResult.realContactName,
-            avatarUrl: selfAvatarUrl,
+            contactId: actingResult.realContactId,
+            avatarUrl: avatarImageUrl(actingResult.realContactAvatarUrl),
             isActive: actingResult.isActingAsSelf
         };
         this.isActingAsSelf = actingResult.isActingAsSelf;
@@ -534,10 +528,7 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
         this.hasPriorTosAcceptance = actingResult.hasPriorTosAcceptance === true;
         if (!actingResult.isActingAsSelf) {
             this.actingAsDisplayName = actingResult.actingAsContactName;
-            this.actingAsAvatarUrl = avatarImageUrl(actingResult.actingAsAvatarUrl)
-                || (actingResult.isOrganizationContact
-                    ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
-                    : this.defaultAvatarUrl);
+            this.actingAsAvatarUrl = avatarImageUrl(actingResult.actingAsAvatarUrl);
             this._isOrgContact = actingResult.isOrganizationContact === true;
             this.actingAsIsParentManaged = actingResult.isActingAsProxiedChild === true;
             this._orgAccountId = actingResult.organizationAccountId || null;
@@ -566,10 +557,8 @@ export default class FimbyUniversalHeader extends NavigationMixin(LightningEleme
     _applyAvailableIdentities(identitiesResult) {
         const raw = (identitiesResult || []).map(id => ({
             ...id,
-            avatarUrl: avatarImageUrl(id.avatarUrl)
-                || (id.type === 'Community_Group_Rep'
-                    ? `${IMPACT_ICONS}/${NO_ORG_PHOTO}`
-                    : `${IMPACT_ICONS}/${NO_PROFILE_PHOTO}`)
+            avatarUrl: avatarImageUrl(id.avatarUrl),
+            isOrganization: id.type === 'Community_Group_Rep'
         }));
 
         const actingAsContactId = this._actingAsContactId;

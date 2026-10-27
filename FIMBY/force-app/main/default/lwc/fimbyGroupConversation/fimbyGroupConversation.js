@@ -15,6 +15,7 @@ import {
     getThreadAvatarIcon
 } from 'c/fimbyThreadBadgeConfig';
 import { buildSentByLabel } from 'c/fimbyProxyLabels';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -148,21 +149,6 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
         return this._rawMiddle.length;
     }
 
-    _getInitials(firstName, lastName) {
-        const parts = [firstName, lastName].filter(Boolean);
-        if (parts.length === 0) return '?';
-        return parts
-            .map(n => String(n).charAt(0))
-            .join('')
-            .substring(0, 2)
-            .toUpperCase();
-    }
-
-    _getInitialsFromName(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
-
     async connectedCallback() {
         if (this.conversationId) {
             await this.loadConversationMetadata();
@@ -229,9 +215,6 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
     processMessages() {
         const processed = [];
         let lastDate = null;
-        const senderToColorIndex = new Map();
-        let nextColorIndex = 0;
-
         this.messages.forEach((msg) => {
             const messageDate = new Date(msg.sentDate);
             const currentDate = messageDate.toDateString();
@@ -253,20 +236,8 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
                 ? msg.senderDisplayName
                 : [msg.senderFirstName, msg.senderLastName].filter(Boolean).join(' ') || 'Unknown';
 
-            const senderInitials = isOrgSender
-                ? this._getInitialsFromName(msg.senderDisplayName)
-                : this._getInitials(msg.senderFirstName, msg.senderLastName);
-
             const avatarUrl = resolveAvatarUrl(msg.senderAvatarUrl);
-
-            let senderColorIndex = 0;
-            if (!isMine && msg.senderId) {
-                if (!senderToColorIndex.has(msg.senderId)) {
-                    senderToColorIndex.set(msg.senderId, nextColorIndex % 6);
-                    nextColorIndex += 1;
-                }
-                senderColorIndex = senderToColorIndex.get(msg.senderId);
-            }
+            const avatarShape = isOrgSender ? ' avatar-org' : '';
 
             // Org senders already read "Org Name (Sarah)", so a second "via Sarah"
             // line only repeated it. Human proxies had no attribution at all — this
@@ -291,13 +262,19 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
                     ? 'message-card system-message'
                     : 'message-card' + (isMine ? ' from-me' : '') + (isOrgSender ? ' from-org' : ''),
                 senderDisplayName: isMine ? 'You' : senderName,
-                senderInitials,
+                senderInitials: getInitials(senderName),
+                senderAvatarStyle: getAvatarToneStyle({
+                    contactId: msg.senderId,
+                    name: senderName,
+                    isOrganization: isOrgSender
+                }),
+                cardAvatarClass: 'card-avatar' + avatarShape,
+                collapsedAvatarClass: 'msg-collapsed-avatar' + avatarShape,
                 senderAvatarUrl: avatarUrl,
                 hasAvatarImage: !!avatarUrl,
                 isOrgSender,
                 showViaLabel: !!viaLabel && !isMine,
                 viaLabel,
-                senderColorIndex,
                 snippetText: this._getSnippet(msg.body)
             });
         });
@@ -531,7 +508,6 @@ export default class FimbyGroupConversation extends NavigationMixin(LightningEle
                     ...m,
                     displayName: name,
                     shortName,
-                    initials: isOrg ? this._getInitialsFromName(m.displayName) : this._getInitials(m.firstName, m.lastName),
                     isOwner: m.role === 'Owner',
                     isOrgContact: isOrg,
                     avatarUrl,

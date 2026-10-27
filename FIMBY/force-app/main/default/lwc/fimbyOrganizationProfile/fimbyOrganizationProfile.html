@@ -14,7 +14,7 @@
                 <div class="logo-section">
                     <template lwc:if={canEdit}>
                         <button type="button" class="logo-wrapper" aria-label="Change organization logo" onclick={handleLogoClick}>
-                            <img src={orgLogoUrl} alt="" class="org-logo" />
+                            <c-fimby-avatar class="org-logo" src={orgLogoUrl} name={orgName} contact-id={orgContactId} organization-account-id={orgAccountId} is-organization size="96"></c-fimby-avatar>
                             <div class="logo-overlay">
                                 <img src={photoIconUrl} alt="" class="logo-overlay-icon">
                             </div>
@@ -27,7 +27,7 @@
                         </template>
                     </template>
                     <template lwc:else>
-                        <img src={orgLogoUrl} alt="" class="org-logo" />
+                        <c-fimby-avatar class="org-logo" src={orgLogoUrl} name={orgName} contact-id={orgContactId} organization-account-id={orgAccountId} is-organization size="96"></c-fimby-avatar>
                     </template>
                 </div>
 
@@ -196,7 +196,7 @@
                     <div class="people-list">
                         <template for:each={peopleWithAvatarUrls} for:item="person">
                             <div key={person.id} class="person-row">
-                                <img src={person.avatarUrl} alt="" class="person-avatar" />
+                                <c-fimby-avatar class="person-avatar" src={person.avatarUrl} name={person.name} contact-id={person.id} size="36"></c-fimby-avatar>
                                 <span class="person-name">{person.name}</span>
                             </div>
                         </template>

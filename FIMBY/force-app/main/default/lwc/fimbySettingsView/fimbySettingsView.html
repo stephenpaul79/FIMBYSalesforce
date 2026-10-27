@@ -414,7 +414,7 @@
                                 <div class="blocked-list">
                                     <template for:each={blockedContacts} for:item="bc">
                                         <div key={bc.id} class="blocked-row">
-                                            <div class="blocked-avatar">{bc.initials}</div>
+                                            <c-fimby-avatar class="blocked-avatar" name={bc.contactName} contact-id={bc.contactId} size="36"></c-fimby-avatar>
                                             <div class="blocked-info">
                                                 <span class="blocked-name">{bc.contactName}</span>
                                                 <span class="blocked-date">Blocked {bc.formattedDate}</span>

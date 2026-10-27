@@ -112,12 +112,14 @@
                                     <template lwc:elseif={thread.showGroupIconAvatar}>
                                         <img src={thread.groupAvatarIconUrl} alt="" class="group-avatar-icon" />
                                     </template>
-                                    <template lwc:elseif={thread.hasParticipantImage}>
-                                        <img src={thread.participantImageUrl} alt="" class="thread-avatar-img" onerror={handleAvatarError} />
-                                        <span class="thread-avatar-initials" style="display:none">{thread.participantInitials}</span>
-                                    </template>
                                     <template lwc:else>
-                                        <span class="thread-avatar-initials">{thread.participantInitials}</span>
+                                        <c-fimby-avatar
+                                            src={thread.participantImageUrl}
+                                            name={thread.participantName}
+                                            contact-id={thread.participantContactId}
+                                            organization-account-id={thread.participantOrgAccountId}
+                                            is-organization={thread.isOrgContact}
+                                            size="36"></c-fimby-avatar>
                                     </template>
                                 </div>
                                 <div class="thread-content">
@@ -233,15 +235,13 @@
                                      aria-label="Select contact"
                                      onclick={handleContactSelect}
                                      data-contact-id={contact.contactId}>
-                                    <div class={contact.contactAvatarClass}>
-                                        <template lwc:if={contact.hasAvatar}>
-                                            <img src={contact.avatarUrl} alt="" class="contact-avatar-img" onerror={handleAvatarError} />
-                                            <span class="contact-avatar-initials" style="display:none">{contact.initials}</span>
-                                        </template>
-                                        <template lwc:else>
-                                            <span class="contact-avatar-initials">{contact.initials}</span>
-                                        </template>
-                                    </div>
+                                    <c-fimby-avatar
+                                        src={contact.avatarUrl}
+                                        name={contact.contactName}
+                                        contact-id={contact.contactId}
+                                        organization-account-id={contact.orgAccountId}
+                                        is-organization={contact.isOrgContact}
+                                        size="36"></c-fimby-avatar>
                                     <div class="contact-name">{contact.contactName}</div>
                                 </button>
                             </template>

@@ -236,7 +236,7 @@
                                     <div class="phone-feed-region">
                                         <div class="phone-feed-card">
                                             <div class="phone-feed-card-header">
-                                                <div class="phone-feed-avatar">AT</div>
+                                                <div class="phone-feed-avatar" style={arthurAvatarStyle}>AT</div>
                                                 <div class="phone-feed-meta">
                                                     <div class="phone-feed-name">Arthur T.</div>
                                                     <div class="phone-feed-time">This morning</div>
@@ -339,7 +339,7 @@
                                                         <template for:each={sharedLifePhonePosts} for:item="post">
                                                             <div key={post.id} class="phone-feed-card phone-feed-card-sharedlife" style={post.cardStyle}>
                                                                 <div class="phone-feed-card-header">
-                                                                    <div class="phone-feed-avatar">{post.initials}</div>
+                                                                    <div class="phone-feed-avatar" style={post.avatarStyle}>{post.initials}</div>
                                                                     <div class="phone-feed-meta">
                                                                         <div class="phone-feed-name">{post.name}</div>
                                                                         <div class="phone-feed-time">{post.time}</div>

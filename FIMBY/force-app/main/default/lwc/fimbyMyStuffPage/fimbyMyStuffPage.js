@@ -332,7 +332,6 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             const contacts = await getMyContacts({ searchTerm: searchTerm || null });
             this.myContacts = contacts.map(c => ({
                 ...c,
-                initials: this._getInitials(c.name),
                 formattedDate: this._formatDate(c.connectedDate),
                 isExpanded: c.contactId === this.expandedContactId,
                 hasAddress: (c.street || c.city || c.provinceState),
@@ -342,11 +341,6 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
         } catch (error) {
             console.error('Error loading contacts:', error);
         }
-    }
-
-    _getInitials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
     /** The Shared and Revoked tabs only list outbound shares, which a child never has. */

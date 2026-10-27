@@ -34,7 +34,7 @@
                             <span class="header-post-name">{post.name}</span>
                             <span class="header-post-meta">
                                 <span class="post-type-badge">{post.type}</span>
-                                <template lwc:if={tracksQuantity}>
+                                <template lwc:if={showPostCapacityInHeader}>
                                     &middot; {post.totalAvailable} of {post.totalQuantity}
                                 </template>
                                 <template lwc:if={isPostInactive}>
@@ -176,7 +176,7 @@
                                 <template lwc:if={isFirstExpanded}>
                                     <div class={firstMessage.cardClass}>
                                         <div class="message-card-header">
-                                            <div class={firstMessage.avatarClass}
+                                            <div class={firstMessage.avatarClass} style={firstMessage.senderAvatarStyle}
                                                  data-profile-path={firstMessage.profilePath} onclick={handleSenderAvatarClick}>
                                                 <template lwc:if={firstMessage.hasAvatarImage}>
                                                     <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
@@ -198,7 +198,7 @@
                                 </template>
                                 <template lwc:else>
                                     <div class="msg-collapsed zone-first">
-                                        <span class="msg-collapsed-avatar">
+                                        <span class={firstMessage.collapsedAvatarClass} style={firstMessage.senderAvatarStyle}>
                                             <template lwc:if={firstMessage.hasAvatarImage}>
                                                 <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                             </template>
@@ -255,7 +255,7 @@
                                                 <template lwc:if={mid.isExpanded}>
                                                     <div class={mid.cardClass}>
                                                         <div class="message-card-header">
-                                                            <div class={mid.avatarClass}
+                                                            <div class={mid.avatarClass} style={mid.senderAvatarStyle}
                                                                  data-profile-path={mid.profilePath} onclick={handleSenderAvatarClick}>
                                                                 <template lwc:if={mid.hasAvatarImage}>
                                                                     <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
@@ -277,7 +277,7 @@
                                                 </template>
                                                 <template lwc:else>
                                                     <div class="msg-collapsed">
-                                                        <span class="msg-collapsed-avatar">
+                                                        <span class={mid.collapsedAvatarClass} style={mid.senderAvatarStyle}>
                                                             <template lwc:if={mid.hasAvatarImage}>
                                                                 <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                             </template>
@@ -371,7 +371,7 @@
                                     <template lwc:else>
                                         <div class={last.cardClass}>
                                             <div class="message-card-header">
-                                                <div class={last.avatarClass}
+                                                <div class={last.avatarClass} style={last.senderAvatarStyle}
                                                      data-profile-path={last.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={last.hasAvatarImage}>
                                                         <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
@@ -405,7 +405,7 @@
                                     <template lwc:elseif={item.isOriginalResponse}>
                                         <div class={item.cardClass}>
                                             <div class="message-card-header">
-                                                <div class={item.avatarClass}
+                                                <div class={item.avatarClass} style={item.senderAvatarStyle}
                                                      data-profile-path={item.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={item.hasAvatarImage}>
                                                         <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
@@ -457,7 +457,7 @@
                                     <template lwc:else>
                                         <div class={item.cardClass}>
                                             <div class="message-card-header">
-                                                <div class={item.avatarClass}
+                                                <div class={item.avatarClass} style={item.senderAvatarStyle}
                                                      data-profile-path={item.profilePath} onclick={handleSenderAvatarClick}>
                                                     <template lwc:if={item.hasAvatarImage}>
                                                         <img src={item.senderAvatarUrl} alt="" class="avatar-img" />

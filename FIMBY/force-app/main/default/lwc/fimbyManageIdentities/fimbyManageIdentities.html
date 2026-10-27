@@ -23,7 +23,7 @@
                     <div class="identity-list">
                         <template for:each={peopleISupport} for:item="rel">
                             <div key={rel.id} class={rel.rowClass}>
-                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <c-fimby-avatar class="row-avatar" src={rel.avatarUrl} name={rel.name} contact-id={rel.avatarContactId} organization-account-id={rel.organizationId} is-organization={rel.isOrganization} size="44"></c-fimby-avatar>
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
                                     <c-fimby-proxy-badge parent-managed={rel.parentManaged}></c-fimby-proxy-badge>
@@ -68,7 +68,7 @@
                     <div class="identity-list">
                         <template for:each={communityGroups} for:item="rel">
                             <div key={rel.id} class={rel.rowClass}>
-                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <c-fimby-avatar class="row-avatar" src={rel.avatarUrl} name={rel.name} contact-id={rel.avatarContactId} organization-account-id={rel.organizationId} is-organization={rel.isOrganization} size="44"></c-fimby-avatar>
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
                                     <span class={rel.statusClass}>{rel.statusLabel}</span>
@@ -142,7 +142,7 @@
                     <div class="identity-list">
                         <template for:each={peopleWhoSupportMe} for:item="rel">
                             <div key={rel.id} class={rel.rowClass}>
-                                <img src={rel.avatarUrl} alt="" class="row-avatar" />
+                                <c-fimby-avatar class="row-avatar" src={rel.avatarUrl} name={rel.name} contact-id={rel.avatarContactId} organization-account-id={rel.organizationId} is-organization={rel.isOrganization} size="44"></c-fimby-avatar>
                                 <div class="row-info">
                                     <span class="row-name">{rel.name}</span>
                                     <span class={rel.statusClass}>{rel.statusLabel}</span>
@@ -201,7 +201,7 @@
                     </div>
                     <template lwc:if={detailRecord}>
                         <div class="detail-content">
-                            <img src={detailRecord.avatarUrl} alt="" class="detail-avatar" />
+                            <c-fimby-avatar class="detail-avatar" src={detailRecord.avatarUrl} name={detailRecord.name} contact-id={detailRecord.avatarContactId} organization-account-id={detailRecord.organizationId} is-organization={detailRecord.isOrganization} size="64"></c-fimby-avatar>
                             <p class="detail-name">{detailRecord.name}</p>
                             <span class={detailRecord.statusClass}>{detailRecord.statusLabel}</span>
                             <template lwc:if={detailRecord.parentManaged}>

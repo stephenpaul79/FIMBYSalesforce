@@ -36,11 +36,9 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
     actingAsContactId = null;
     orgContactId = null;
 
-    get noOrgPhotoUrl() { return `${IMPACT_ICONS}/NoOrgPhoto.png`; }
     get shieldIconUrl() { return `${IMPACT_ICONS}/shield.png`; }
     get globeIconUrl() { return `${IMPACT_ICONS}/globe.png`; }
     get communityIconUrl() { return `${IMPACT_ICONS}/CommunityReps.png`; }
-    get noProfilePhotoUrl() { return `${IMPACT_ICONS}/NoProfilePhoto.png`; }
     get editIconUrl() { return `${IMPACT_ICONS}/edit.png`; }
     get photoIconUrl() { return `${IMPACT_ICONS}/photo.png`; }
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
@@ -48,9 +46,9 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
 
     get orgLogoUrl() {
         const base = this.org?.Logo_URL__c;
-        if (!base) return this.noOrgPhotoUrl;
-        return completeImageUrl(base) || this.noOrgPhotoUrl;
+        return base ? completeImageUrl(base) : '';
     }
+    get orgAccountId() { return this.org?.Id || null; }
     get orgName() { return this.org?.Name || ''; }
     get orgType() { return this.org?.Type || 'Organization'; }
     get orgDescription() { return this.org?.Description || this.org?.Description__c || ''; }
@@ -87,7 +85,7 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
         if (!this.people || !this.people.length) return [];
         return this.people.map(p => ({
             ...p,
-            avatarUrl: p.avatarUrl ? avatarImageUrl(p.avatarUrl) : this.noProfilePhotoUrl
+            avatarUrl: avatarImageUrl(p.avatarUrl)
         }));
     }
 

@@ -6,6 +6,7 @@ import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileDa
 import updateProfileSection from '@salesforce/apex/FimbyProfileController.updateProfileSection';
 import removeImage from '@salesforce/apex/FimbyLibraryController.removeImage';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 import { getModeratorContext } from 'c/fimbyModeratorContext';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 
@@ -233,10 +234,13 @@ export default class FimbyUserProfileView extends NavigationMixin(LightningEleme
         return avatarImageUrl(this.profile.imageUrl);
     }
     get hasAvatar() { return !!this.profile.imageUrl; }
-    get initials() {
-        const f = (this.profile.firstName || '').charAt(0);
-        const l = (this.profile.lastName || '').charAt(0);
-        return (f + l).toUpperCase() || '?';
+    get _avatarName() {
+        return this.profile.fullName
+            || [this.profile.firstName, this.profile.lastName].filter(Boolean).join(' ');
+    }
+    get initials() { return getInitials(this._avatarName); }
+    get avatarToneStyle() {
+        return getAvatarToneStyle({ contactId: this.profile.contactId, name: this._avatarName });
     }
     get formattedMemberSince() {
         if (!this.profile.memberSince) return '';

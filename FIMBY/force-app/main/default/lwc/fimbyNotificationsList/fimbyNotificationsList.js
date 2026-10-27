@@ -11,6 +11,7 @@ import { isKnownExperienceHost, toExperiencePath } from 'c/fimbyExperienceUrl';
 import { navigate, profilePathForContact } from 'c/fimbyNavigation';
 import { honourActAsThenNavigate, parseActAsFromUrl } from 'c/fimbyActAsNavigation';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 
 const PAGE_SIZE = 20;
@@ -334,7 +335,11 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
         const photoUrl = hasHumanActor ? resolveAvatarUrl(n.actorPhotoUrl) : '';
         const hasPhoto = !!photoUrl;
-        const initials = hasHumanActor ? this._getInitials(actorName) : '';
+        const initials = hasHumanActor ? getInitials(actorName) : '';
+        const actorIsOrg = n.actorIsOrg === true;
+        const avatarStyle = hasHumanActor
+            ? getAvatarToneStyle({ contactId: n.actorContactId, name: actorName, isOrganization: actorIsOrg })
+            : '';
         const showInitials = hasHumanActor && !hasPhoto;
         const showGlyph = !hasHumanActor;
         const glyphUrl = `${IMPACT_ICONS}/${TYPE_ICON_MAP[n.type] || DEFAULT_GLYPH}`;
@@ -396,17 +401,11 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
             readSwipeClass: 'swipe-action swipe-action-left ' + (isUnread ? 'swipe-mark-read' : 'swipe-mark-unread'),
             actorProfilePath,
             actorAvatarClickable: !!actorProfilePath,
-            notifAvatarClass: 'notif-avatar' + (actorProfilePath ? ' notif-avatar-clickable' : '')
+            notifAvatarStyle: avatarStyle,
+            notifAvatarClass: 'notif-avatar'
+                + (hasHumanActor && actorIsOrg ? ' notif-avatar-org' : '')
+                + (actorProfilePath ? ' notif-avatar-clickable' : '')
         };
-    }
-
-    _getInitials(name) {
-        const trimmed = (name || '').trim();
-        if (!trimmed) return '';
-        const parts = trimmed.split(/\s+/).filter(Boolean);
-        if (parts.length === 0) return '';
-        if (parts.length === 1) return parts[0][0].toUpperCase();
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
     _formatTime(timestamp) {

@@ -19,6 +19,7 @@ import {
     HEADER_ACTIONS,
     FEED_FILTER_PILLS
 } from './fimbyWalkthroughContent';
+import { getAvatarToneStyle } from 'c/fimbyAvatarTone';
 
 const TOTAL_PROFILE_STEPS = 4;
 const TOUR_PENDING_SESSION_KEY = 'fimby_tour_pending';
@@ -294,10 +295,13 @@ export default class FimbyOnboardingPage extends NavigationMixin(LightningElemen
     get sharedLifePhonePosts() {
         return SHARED_LIFE_PHONE_POSTS.map(post => ({
             ...post,
+            avatarStyle: getAvatarToneStyle(post.name),
             badgeStyle: `background-color: ${post.badgeColor};`,
             cardStyle: `border-left-color: ${post.accentColor};`
         }));
     }
+
+    get arthurAvatarStyle() { return getAvatarToneStyle('Arthur T.'); }
 
     get sharedLifeFilterPills() {
         return FEED_FILTER_PILLS.map(pill => ({

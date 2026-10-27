@@ -31,14 +31,13 @@
                 <div class="members-strip">
                     <template for:each={members} for:item="member">
                         <div key={member.id} class="member-chip">
-                            <div class="member-avatar">
-                                <template lwc:if={member.hasAvatarImage}>
-                                    <img src={member.avatarUrl} alt="" class="avatar-img" />
-                                </template>
-                                <template lwc:else>
-                                    {member.initials}
-                                </template>
-                            </div>
+                            <c-fimby-avatar
+                                class="member-avatar"
+                                src={member.avatarUrl}
+                                name={member.displayName}
+                                contact-id={member.contactId}
+                                is-organization={member.isOrgContact}
+                                size="22"></c-fimby-avatar>
                             <span class="member-name">{member.shortName}</span>
                             <template lwc:if={member.isOwner}>
                                 <span class="owner-badge">Owner</span>
@@ -99,15 +98,14 @@
 
                         <!-- Zone 1: First message — collapsed by default -->
                         <div data-msg-id={firstMessage.id}
-                             data-sender-color={firstMessage.senderColorIndex}
                              role="button" tabindex="0"
                              onclick={handleExpandMessage}
                              onkeydown={handleExpandMessageKey}
                              style="cursor: pointer;">
                             <template lwc:if={isFirstExpanded}>
-                                <div class={firstMessage.cardClass} data-sender-color={firstMessage.senderColorIndex}>
+                                <div class={firstMessage.cardClass}>
                                     <div class="message-card-header">
-                                        <div class="card-avatar">
+                                        <div class={firstMessage.cardAvatarClass} style={firstMessage.senderAvatarStyle}>
                                             <template lwc:if={firstMessage.hasAvatarImage}>
                                                 <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                             </template>
@@ -130,7 +128,7 @@
                             </template>
                             <template lwc:else>
                                 <div class="msg-collapsed zone-first">
-                                    <span class="msg-collapsed-avatar">
+                                    <span class={firstMessage.collapsedAvatarClass} style={firstMessage.senderAvatarStyle}>
                                         <template lwc:if={firstMessage.hasAvatarImage}>
                                             <img src={firstMessage.senderAvatarUrl} alt="" class="avatar-img" />
                                         </template>
@@ -159,15 +157,14 @@
                                     </template>
                                     <template lwc:else>
                                         <div key={mid.id} data-msg-id={mid.id}
-                                             data-sender-color={mid.senderColorIndex}
                                              role="button" tabindex="0"
                                              onclick={handleExpandMessage}
                                              onkeydown={handleExpandMessageKey}
                                              style="cursor: pointer;">
                                             <template lwc:if={mid.isExpanded}>
-                                                <div class={mid.cardClass} data-sender-color={mid.senderColorIndex}>
+                                                <div class={mid.cardClass}>
                                                     <div class="message-card-header">
-                                                        <div class="card-avatar">
+                                                        <div class={mid.cardAvatarClass} style={mid.senderAvatarStyle}>
                                                             <template lwc:if={mid.hasAvatarImage}>
                                                                 <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                             </template>
@@ -190,7 +187,7 @@
                                             </template>
                                             <template lwc:else>
                                                 <div class="msg-collapsed">
-                                                    <span class="msg-collapsed-avatar">
+                                                    <span class={mid.collapsedAvatarClass} style={mid.senderAvatarStyle}>
                                                         <template lwc:if={mid.hasAvatarImage}>
                                                             <img src={mid.senderAvatarUrl} alt="" class="avatar-img" />
                                                         </template>
@@ -239,9 +236,9 @@
                                     </div>
                                 </template>
                                 <template lwc:else>
-                                    <div class={last.cardClass} data-sender-color={last.senderColorIndex}>
+                                    <div class={last.cardClass}>
                                         <div class="message-card-header">
-                                            <div class="card-avatar">
+                                            <div class={last.cardAvatarClass} style={last.senderAvatarStyle}>
                                                 <template lwc:if={last.hasAvatarImage}>
                                                     <img src={last.senderAvatarUrl} alt="" class="avatar-img" />
                                                 </template>
@@ -283,9 +280,9 @@
                                     </div>
                                 </template>
                                 <template lwc:else>
-                                    <div class={item.cardClass} data-sender-color={item.senderColorIndex}>
+                                    <div class={item.cardClass}>
                                         <div class="message-card-header">
-                                            <div class="card-avatar">
+                                            <div class={item.cardAvatarClass} style={item.senderAvatarStyle}>
                                                 <template lwc:if={item.hasAvatarImage}>
                                                     <img src={item.senderAvatarUrl} alt="" class="avatar-img" />
                                                 </template>

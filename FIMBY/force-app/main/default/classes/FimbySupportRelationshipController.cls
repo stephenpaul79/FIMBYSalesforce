@@ -254,7 +254,8 @@ public with sharing class FimbySupportRelationshipController {
                 'peopleWhoSupportMe' => supportMe,
                 'communityGroups' => myGroups,
                 'orgAvatarUrls' => new OrgAvatarHelper().getAvatarUrlsByOrgId(orgIds),
-                'orgNames' => new OrgAvatarHelper().getNamesByOrgId(orgIds)
+                'orgNames' => new OrgAvatarHelper().getNamesByOrgId(orgIds),
+                'orgContactIds' => new OrgAvatarHelper().getOrganizationContactIdsByOrgId(orgIds)
             };
         } catch (Exception e) {
             throw new AuraHandledException('Error loading relationships: ' + e.getMessage());
@@ -1004,6 +1005,22 @@ public with sharing class FimbySupportRelationshipController {
                 if (String.isNotBlank(org.Name)) {
                     result.put(String.valueOf(org.Id), org.Name);
                 }
+            }
+            return result;
+        }
+
+        public Map<String, String> getOrganizationContactIdsByOrgId(Set<Id> orgIds) {
+            Map<String, String> result = new Map<String, String>();
+            if (orgIds == null || orgIds.isEmpty()) {
+                return result;
+            }
+            for (Account org : [
+                SELECT Id, Organization_Contact__c
+                FROM Account
+                WHERE Id IN :orgIds
+                  AND Organization_Contact__c != NULL
+            ]) {
+                result.put(String.valueOf(org.Id), String.valueOf(org.Organization_Contact__c));
             }
             return result;
         }

@@ -4,6 +4,7 @@ import { fireErrorToast } from 'c/fimbyToastHelper';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import getNeighbourProfile from '@salesforce/apex/FimbyMyStuffController.getNeighbourProfile';
 import { avatarImageUrl } from 'c/fimbyImageUrl';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
@@ -61,10 +62,16 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
         return avatarImageUrl(this.profile.imageUrl);
     }
     get hasAvatar() { return !!this.profile.imageUrl; }
-    get initials() {
-        const f = (this.profile.firstName || '').charAt(0);
-        const l = (this.profile.lastName || '').charAt(0);
-        return (f + l).toUpperCase() || '?';
+    get _avatarName() {
+        return this.profile.fullName
+            || [this.profile.firstName, this.profile.lastName].filter(Boolean).join(' ');
+    }
+    get initials() { return getInitials(this._avatarName); }
+    get avatarToneStyle() {
+        return getAvatarToneStyle({
+            contactId: this.profile.contactId || this.neighbourContactId,
+            name: this._avatarName
+        });
     }
     get formattedMemberSince() {
         if (!this.profile.memberSince) return '';

@@ -217,18 +217,7 @@
 }
 
 .member-avatar {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 600;
     flex-shrink: 0;
-    overflow: hidden;
 }
 
 .member-name {
@@ -374,7 +363,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
+    background: var(--fimby-earth-driftwood, #6B5E50);
     color: white;
     display: flex;
     align-items: center;
@@ -385,26 +374,10 @@
     overflow: hidden;
 }
 
-.message-card.from-me .card-avatar {
-    background: var(--fimby-earth-driftwood, #8D7B6A);
+.card-avatar.avatar-org,
+.msg-collapsed-avatar.avatar-org {
+    border-radius: 22%;
 }
-
-.message-card.from-org .card-avatar {
-    border-radius: 8px;
-    background: var(--fimby-surface-input);
-}
-
-/* Sender color variety for multi-participant (per unique sender) */
-.message-card[data-sender-color]:not(.from-me) .card-avatar {
-    background: var(--fimby-btn-primary-bg);
-}
-
-.message-card[data-sender-color="0"]:not(.from-me) .card-avatar { background: var(--fimby-btn-primary-bg); }
-.message-card[data-sender-color="1"]:not(.from-me) .card-avatar { background: var(--fimby-earth-driftwood, #8D7B6A); }
-.message-card[data-sender-color="2"]:not(.from-me) .card-avatar { background: var(--fimby-badge-story, #C4A35A); }
-.message-card[data-sender-color="3"]:not(.from-me) .card-avatar { background: var(--fimby-badge-thank-you, #B85C38); }
-.message-card[data-sender-color="4"]:not(.from-me) .card-avatar { background: var(--fimby-badge-prayer, #6B5B73); }
-.message-card[data-sender-color="5"]:not(.from-me) .card-avatar { background: var(--fimby-badge-bio, #6B7B5C); }
 
 .message-card-header {
     display: flex;
@@ -715,7 +688,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--fimby-btn-primary-bg);
+    background: var(--fimby-earth-driftwood, #6B5E50);
     color: white;
     display: flex;
     align-items: center;

@@ -21,6 +21,7 @@ import approveVouch from '@salesforce/apex/FimbyVouchController.approveVouch';
 import withdrawVouchRequest from '@salesforce/apex/FimbyVouchController.withdrawVouchRequest';
 import { getHeaderBadge } from 'c/fimbyThreadBadgeConfig';
 import { buildSentByLabel, buildProxyExplainer } from 'c/fimbyProxyLabels';
+import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -299,18 +300,8 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
         return buildSentByLabel(msg.sentByFirstName || msg.sentByName, msg.senderProxyType);
     }
 
-    get participantInitials() {
-        if (!this.otherParticipantName) return '?';
-        return this.otherParticipantName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
-
     get participantAvatarUrl() {
         return resolveAvatarUrl(this.otherParticipantImageUrl);
-    }
-
-    _getInitials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
     get hasMiddleMessages() {
@@ -771,6 +762,13 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
             const avatarUrl = isMine
                 ? resolveAvatarUrl(this.myContactImageUrl)
                 : resolveAvatarUrl(msg.senderImageUrl || this.otherParticipantImageUrl);
+            const senderIsOrg = isMine ? false : !!(msg.senderIsOrg ?? this.isOtherParticipantOrg);
+            const toneIdentity = {
+                contactId: isMine ? this.myContactId : (msg.senderContactId || this.otherParticipantId),
+                name: isMine ? this.actingAsContactName : displayName,
+                isOrganization: senderIsOrg
+            };
+            const avatarShape = senderIsOrg ? ' avatar-org' : '';
 
             processed.push({
                 ...msg,
@@ -781,7 +779,10 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
                 formattedTimeRelative: this.formatTimeRelative(msg.sentDate),
                 cardClass: 'message-card' + (isMine ? ' from-me' : ''),
                 senderDisplayName: displayName,
-                senderInitials: this._getInitials(displayName),
+                senderInitials: getInitials(displayName),
+                senderAvatarStyle: getAvatarToneStyle(toneIdentity),
+                cardAvatarClass: 'card-avatar' + avatarShape,
+                collapsedAvatarClass: 'msg-collapsed-avatar' + avatarShape,
                 senderAvatarUrl: avatarUrl,
                 hasAvatarImage: !!avatarUrl,
                 senderIsOrg: !!msg.senderIsOrg,

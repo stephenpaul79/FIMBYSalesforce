@@ -451,6 +451,36 @@ private class FimbySupportRelationshipControllerTest {
     }
 
     @IsTest
+    static void testGetManagedRelationships_ReturnsOrganizationContactIds() {
+        User testUser = getHelperUser();
+        Account orgAcct = [SELECT Id, Organization_Contact__c FROM Account WHERE Id = :getOrganization().Id];
+        Account nh = getNeighbourhood();
+
+        insert new Support_Relationship__c(
+            Contact__c = testUser.ContactId,
+            Related_Organization__c = orgAcct.Id,
+            Relationship_Type__c = 'Community_Group_Rep',
+            Status__c = 'Approved',
+            Neighbourhood__c = nh.Id,
+            Dismissed_By_Helper__c = false
+        );
+
+        System.runAs(testUser) {
+            Map<String, Object> result =
+                FimbySupportRelationshipController.getManagedRelationships();
+            Map<String, String> orgContactIds = (Map<String, String>) result.get('orgContactIds');
+
+            System.assertNotEquals(null, orgContactIds, 'orgContactIds should be returned');
+            System.assertNotEquals(null, orgAcct.Organization_Contact__c, 'Fixture org should have an organisation contact');
+            System.assertEquals(
+                String.valueOf(orgAcct.Organization_Contact__c),
+                orgContactIds.get(String.valueOf(orgAcct.Id)),
+                'Community group rows should carry the organisation Contact Id for avatar tone'
+            );
+        }
+    }
+
+    @IsTest
     static void testGetManagedRelationships_OrgAvatarUrls_ContactFallback() {
         User testUser = getHelperUser();
         Account orgAcct = getOrganization();

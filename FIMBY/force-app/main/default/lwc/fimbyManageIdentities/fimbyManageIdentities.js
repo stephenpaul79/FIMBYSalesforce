@@ -21,8 +21,6 @@ const ICONS = {
     community: 'CommunityReps.png',
     switch: 'switch.png',
     trust: 'trust.png',
-    noProfile: 'NoProfilePhoto.png',
-    noOrg: 'NoOrgPhoto.png',
     add: 'add.png'
 };
 
@@ -62,6 +60,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
     @track _lifecycleGroupName = '';
     orgAvatarUrls = {};
     orgNames = {};
+    orgContactIds = {};
     _shellScrim = createShellScrimHandle();
 
     get _identityModalOpen() {
@@ -75,7 +74,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
     }
 
     renderedCallback() {
-        this._shellScrim.sync(this._identityModalOpen, () => this._dismissIdentityModal());
+        this._shellScrim.sync(this._identityModalOpen, () => this._dismissIdentityModal(), this.template.host);
     }
 
     _dismissIdentityModal() {
@@ -153,6 +152,7 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
             .then((result) => {
                 this.orgAvatarUrls = result.orgAvatarUrls || {};
                 this.orgNames = result.orgNames || {};
+                this.orgContactIds = result.orgContactIds || {};
                 this.peopleISupport = this._mapSupport(result.peopleISupport || []);
                 this.peopleWhoSupportMe = this._mapSupportMe(result.peopleWhoSupportMe || []);
                 this.communityGroups = this._mapGroups(result.communityGroups || []);
@@ -165,8 +165,8 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         this._loadPaperRelationships();
     }
 
-    _resolveAvatarUrl(rawUrl, fallbackIcon) {
-        return avatarImageUrl(rawUrl) || `${IMPACT_ICONS}/${fallbackIcon}`;
+    _resolveAvatarUrl(rawUrl) {
+        return avatarImageUrl(rawUrl);
     }
 
     _loadPaperRelationships() {
@@ -230,7 +230,9 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
             id: r.Id,
             name: r.Related_Contact__r?.Name || 'Unknown',
             targetContactId: r.Related_Contact__c,
-            avatarUrl: this._resolveAvatarUrl(r.Related_Contact__r?.Image_URL__c, ICONS.noProfile),
+            avatarUrl: this._resolveAvatarUrl(r.Related_Contact__r?.Image_URL__c),
+            avatarContactId: r.Related_Contact__c,
+            isOrganization: false,
             parentManaged: r.Related_Contact__r?.Is_Parent_Proxied__c === true,
             // A parent-managed profile belongs to the household, so any guardian
             // may retire it. Adult supportees speak for themselves and are never
@@ -254,7 +256,9 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
         return records.map(r => ({
             id: r.Id,
             name: r.Contact__r?.Name || 'Unknown',
-            avatarUrl: this._resolveAvatarUrl(r.Contact__r?.Image_URL__c, ICONS.noProfile),
+            avatarUrl: this._resolveAvatarUrl(r.Contact__r?.Image_URL__c),
+            avatarContactId: r.Contact__c,
+            isOrganization: false,
             status: r.Status__c,
             statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
@@ -275,7 +279,9 @@ export default class FimbyManageIdentities extends NavigationMixin(LightningElem
             id: r.Id,
             organizationId: r.Related_Organization__c,
             name: this.orgNames[r.Related_Organization__c] || r.Related_Organization__r?.Name || 'Unknown',
-            avatarUrl: this._resolveAvatarUrl(this.orgAvatarUrls[r.Related_Organization__c], ICONS.noOrg),
+            avatarUrl: this._resolveAvatarUrl(this.orgAvatarUrls[r.Related_Organization__c]),
+            avatarContactId: this.orgContactIds[r.Related_Organization__c] || null,
+            isOrganization: true,
             status: r.Status__c,
             statusLabel: this._statusLabel(r.Status__c),
             statusClass: this._statusClass(r.Status__c),
