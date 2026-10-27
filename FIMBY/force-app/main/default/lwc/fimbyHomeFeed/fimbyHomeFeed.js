@@ -328,9 +328,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
     /* Badge icons (always active/coloured variant) */
     get storyBadgeIconUrl()    { return `${IMPACT_ICONS}/${FILTER_ICONS.story.active}`; }
     get askOfferBadgeIconUrl() { return `${IMPACT_ICONS}/${FILTER_ICONS.askOffer.active}`; }
-    get libraryBadgeIconUrl()  { return `${IMPACT_ICONS}/ToolboxActive.png`; }
     get urgentIconUrl()        { return `${IMPACT_ICONS}/exclamation.png`; }
     get borrowIconUrl()        { return `${IMPACT_ICONS}/borrow.png`; }
+    get askForHelpIconUrl()    { return `${IMPACT_ICONS}/lightbulb.png`; }
     get viewPostIconUrl()      { return `${IMPACT_ICONS}/Magnify.png`; }
     get reportIconUrl()        { return `${IMPACT_ICONS}/warning.png`; }
     get libraryBadgeStyle()    { return `background: ${BADGE_BG_COLORS.library};`; }
@@ -832,7 +832,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 badgeIconUrl = this.askOfferBadgeIconUrl;
                 badgeLabel = item.itemType === 'Need' ? 'Ask' : (item.itemType || 'Ask & Offer');
                 badgeBg = BADGE_BG_COLORS[item.itemType] || BADGE_BG_COLORS.askOffer;
-            } else if (item.feedType === 'library') {
+            } else if (item.feedType === 'library' || item.feedType === 'skill') {
                 badgeBg = BADGE_BG_COLORS.library;
             }
 
@@ -967,6 +967,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 isNotPoster: !isPoster,
                 showCardMenu: !isPoster,
                 isLibrary: item.feedType === 'library',
+                isSkill: item.feedType === 'skill',
+                isJustListed: item.feedType === 'library' || item.feedType === 'skill',
+                ...this._justListedCopy(item),
                 isOrgPoster: isOrg,
                 posterProfileUrl,
                 showImage: hasVisibleImage,
@@ -1039,6 +1042,25 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         return images;
     }
 
+    _justListedCopy(item) {
+        if (item.feedType === 'skill') {
+            return {
+                justListedBadgeLabel: 'SKILL',
+                justListedBadgeIconUrl: `${IMPACT_ICONS}/lightbulb.png`,
+                justListedLead: 'Offered',
+                justListedTail: 'as a skill',
+                justListedMeta: [item.category, item.availabilityNote].filter(Boolean).join(' · ')
+            };
+        }
+        return {
+            justListedBadgeLabel: 'LIBRARY ITEM',
+            justListedBadgeIconUrl: `${IMPACT_ICONS}/ToolboxActive.png`,
+            justListedLead: 'Added',
+            justListedTail: 'to the Library',
+            justListedMeta: item.category
+        };
+    }
+
     _storyBadgeIconUrl(storyType) {
         if (STORY_SUB_ICONS[storyType]) {
             return `${IMPACT_ICONS}/${STORY_SUB_ICONS[storyType].active}`;
@@ -1098,7 +1120,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const openMenuId = this._openLibraryMenuRecordId;
         return this.feedItems.map((item) => ({
             ...item,
-            libraryMenuOpen: item.isLibrary && openMenuId === item.recordId
+            libraryMenuOpen: item.isJustListed && openMenuId === item.recordId
         }));
     }
 
@@ -1190,7 +1212,8 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const objectByFeedType = {
             story: 'Story__c',
             askOffer: 'Needs_Offers__c',
-            library: 'Library_Item__c'
+            library: 'Library_Item__c',
+            skill: 'Skill_Offer__c'
         };
         this._navigateToRecord(objectByFeedType[item.feedType], item.recordId);
     }
@@ -1288,14 +1311,16 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         const recordId = event.currentTarget?.dataset?.recordId;
         if (!recordId) return;
         this._openLibraryMenuRecordId = null;
-        this._openContentReport(recordId, { feedType: 'library' });
+        const item = this.feedItems.find(i => i.recordId === recordId);
+        this._openContentReport(recordId, { feedType: item?.feedType || 'library' });
     }
 
     _openContentReport(recordId, item) {
         const contentTypeByFeed = {
             story: 'Story',
             askOffer: 'Need_Offer',
-            library: 'Library_Item'
+            library: 'Library_Item',
+            skill: 'Skill_Offer'
         };
         const contentType = contentTypeByFeed[item.feedType];
         if (!contentType) return;

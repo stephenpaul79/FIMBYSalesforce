@@ -74,7 +74,7 @@
             <div class="say-hi-banner" role="status">
                 <img src={tourBannerIconUrl} alt="" class="say-hi-icon">
                 <div class="say-hi-content">
-                    <p class="say-hi-title">Quick tour of your neighbourhood?</p>
+                    <p class="say-hi-title">New here? Let me show you around.</p>
                     <p class="say-hi-text">Two minutes to see the feed, sharing, the library, and messages.</p>
                     <label class="say-hi-forever">
                         <input type="checkbox" checked={tourBannerDismissForever} onchange={handleTourBannerForeverChange}>
@@ -218,8 +218,8 @@
                         </div>
                     </template>
 
-                    <!-- Library "Just Listed" Cards -->
-                    <template lwc:if={feedItem.isLibrary}>
+                    <!-- "Just Listed" Cards (library items + skills) -->
+                    <template lwc:if={feedItem.isJustListed}>
                         <div class={feedItem.libraryWrapperClass} role="button" tabindex="0" key={feedItem.recordId} data-record-id={feedItem.recordId} aria-label="View post" onclick={handleCardClick} onkeydown={handleCardKeydown}>
                             <div class="library-just-listed-card" style={feedItem.libraryCardStyle}>
                                 <div class="library-listed-header">
@@ -236,8 +236,8 @@
                                     </div>
                                     <div class="library-listed-actions">
                                         <div class="card-type-badge library-badge" style={libraryBadgeStyle}>
-                                            <img src={libraryBadgeIconUrl} alt="Library Item" class="badge-icon" />
-                                            <span>LIBRARY ITEM</span>
+                                            <img src={feedItem.justListedBadgeIconUrl} alt="" class="badge-icon" />
+                                            <span>{feedItem.justListedBadgeLabel}</span>
                                         </div>
                                         <template lwc:if={feedItem.showCardMenu}>
                                             <div class="library-card-menu-wrap">
@@ -268,9 +268,9 @@
                                     </div>
                                     <div class="library-listed-announcement">
                                         <span class="library-listed-text">
-                                            Added <strong>{feedItem.name}</strong> to the Library
+                                            {feedItem.justListedLead} <strong>{feedItem.name}</strong> {feedItem.justListedTail}
                                         </span>
-                                        <span class="library-listed-meta">{feedItem.category}</span>
+                                        <span class="library-listed-meta">{feedItem.justListedMeta}</span>
                                     </div>
                                 </div>
                                 <div class="library-listed-body">
@@ -299,6 +299,12 @@
                                         <button class="library-view-btn" onclick={handleLibraryView}>
                                             <img src={viewPostIconUrl} alt="" class="borrow-btn-icon" />
                                             <span>View Post</span>
+                                        </button>
+                                    </template>
+                                    <template lwc:elseif={feedItem.isSkill}>
+                                        <button class="library-borrow-btn" onclick={handleLibraryView}>
+                                            <img src={askForHelpIconUrl} alt="" class="borrow-btn-icon" />
+                                            <span>Ask for Help</span>
                                         </button>
                                     </template>
                                     <template lwc:else>
