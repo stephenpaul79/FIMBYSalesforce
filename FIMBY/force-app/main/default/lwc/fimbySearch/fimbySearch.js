@@ -83,6 +83,7 @@ export default class FimbySearch extends NavigationMixin(LightningElement) {
     @track recentSearches = [];
     @track isSearching = false;
     @track resultsCount = 0;
+    get resultsNoun() { return this.resultsCount === 1 ? 'result' : 'results'; }
     @track hasMore = false;
     @track countsByType = {};
     @track showSortDropdown = false;

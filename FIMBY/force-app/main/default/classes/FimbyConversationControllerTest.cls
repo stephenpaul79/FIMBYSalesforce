@@ -26,7 +26,7 @@ public class FimbyConversationControllerTest {
     }
 
     private static User getTestUser() {
-        return [SELECT Id, ContactId FROM User WHERE Profile.Name = 'Customer Community User - Mobile App' AND IsActive = true ORDER BY CreatedDate DESC LIMIT 1];
+        return [SELECT Id, ContactId FROM User WHERE Profile.Name = 'Customer Community User - Mobile App' AND IsActive = true AND Contact.LastName != :ORG_REP_LAST_NAME ORDER BY CreatedDate DESC LIMIT 1];
     }
 
     private static Contact getOtherContact() {
@@ -351,15 +351,23 @@ public class FimbyConversationControllerTest {
         Test.stopTest();
     }
 
+    private static final String ORG_REP_LAST_NAME = 'OrgRepVolunteer';
+
     private static Contact createOrgContactInNeighbourhood() {
+        return createOrgContactInNeighbourhood(true, true);
+    }
+
+    private static Contact createOrgContactInNeighbourhood(Boolean linked, Boolean withRep) {
         User u = getTestUser();
         Contact myContact = [SELECT Id, AccountId FROM Contact WHERE Id = :u.ContactId];
 
-        Account orgAccount = new Account(Name = 'Test Org', Logo_URL__c = 'https://example.com/org-logo.jpg');
-        try {
-            orgAccount.RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                .get('Organization').getRecordTypeId();
-        } catch (Exception e) { /* RT may not exist */ }
+        Account orgAccount = new Account(
+            Name = 'Test Org',
+            Logo_URL__c = 'https://example.com/org-logo.jpg',
+            Is_Approved_Community_Group__c = true,
+            RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+                .get('Organization').getRecordTypeId()
+        );
         insert orgAccount;
 
         Contact orgContact = new Contact(
@@ -369,7 +377,70 @@ public class FimbyConversationControllerTest {
             Organization_Account__c = orgAccount.Id
         );
         insert orgContact;
+        orgAccount.Organization_Contact__c = orgContact.Id;
+        update orgAccount;
+
+        if (linked) {
+            insert new Community_Group_Neighbourhood__c(
+                Organization__c = orgAccount.Id, Neighbourhood__c = myContact.AccountId,
+                Status__c = 'Active', Is_Primary__c = true
+            );
+        }
+        if (withRep) {
+            Contact rep = new Contact(FirstName = 'Rep', LastName = ORG_REP_LAST_NAME, AccountId = myContact.AccountId);
+            insert rep;
+            FimbyTestDataFactory.createCommunityUser(rep.Id, 'Customer Community User - Mobile App', true);
+            insert new Support_Relationship__c(
+                Contact__c = rep.Id,
+                Related_Organization__c = orgAccount.Id,
+                Relationship_Type__c = 'Community_Group_Rep',
+                Status__c = 'Approved',
+                Neighbourhood__c = myContact.AccountId
+            );
+        }
         return orgContact;
+    }
+
+    @IsTest
+    static void testOrgWithoutRepCannotBeMessaged() {
+        User testUser = getTestUser();
+        Contact orgContact = createOrgContactInNeighbourhood(true, false);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Boolean threw = false;
+            try {
+                FimbyConversationController.prepareDirectConversation(orgContact.Id);
+            } catch (AuraHandledException e) {
+                threw = true;
+            }
+            System.assert(threw, 'An org with no available rep must not accept new conversations');
+
+            Boolean listed = false;
+            for (Map<String, Object> c : FimbyConversationController.getMessageableContacts(null)) {
+                if ((Id) c.get('contactId') == orgContact.Id) listed = true;
+            }
+            System.assert(!listed, 'An org with no available rep must not appear in the picker');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testOrgNotLinkedToNeighbourhoodCannotBeMessaged() {
+        User testUser = getTestUser();
+        Contact orgContact = createOrgContactInNeighbourhood(false, true);
+
+        Test.startTest();
+        System.runAs(testUser) {
+            Boolean threw = false;
+            try {
+                FimbyConversationController.prepareDirectConversation(orgContact.Id);
+            } catch (AuraHandledException e) {
+                threw = true;
+            }
+            System.assert(threw, 'An org not linked to the viewer neighbourhood must not accept new conversations');
+        }
+        Test.stopTest();
     }
 
     @IsTest
@@ -849,5 +920,91 @@ public class FimbyConversationControllerTest {
         ];
         System.assertEquals(true, locked.Locked__c,
             'Reverse Active share must not keep the revoked episode thread writable');
+    }
+
+    @IsTest
+    static void testLibraryLendingThreadIsNotSciReadOnlyWithoutShare() {
+        User testUser = getTestUser();
+        Contact other = getOtherContact();
+        Account neighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+
+        Library_Item__c item = new Library_Item__c(
+            Name = 'Whale',
+            Category__c = 'Games & Toys',
+            Owner_Contact__c = other.Id,
+            Neighbourhood__c = neighbourhood.Id,
+            Status__c = 'Available'
+        );
+        insert item;
+
+        Lending_Request__c request = new Lending_Request__c(
+            Library_Item__c = item.Id,
+            Requested_By__c = testUser.ContactId,
+            Item_Owner__c = other.Id,
+            Status__c = FimbyConstants.LENDING_APPROVED,
+            Date_Approved__c = Date.today()
+        );
+        insert request;
+
+        Conversation__c conv = new Conversation__c(
+            Participant_1__c = other.Id,
+            Participant_2__c = testUser.ContactId,
+            Status__c = FimbyConstants.CONVERSATION_ACTIVE,
+            Context_Type__c = FimbyConstants.CTX_LIBRARY_LENDING,
+            Related_Record_Id__c = request.Id
+        );
+        insert conv;
+
+        FimbyConversationController.ConversationAccessState access;
+        System.runAs(testUser) {
+            access = FimbyConversationController.getConversationAccessState(conv.Id);
+        }
+
+        System.assertEquals(false, access.isConsentRevoked,
+            'Lending threads carry their own authorization and must not inherit SCI read-only');
+        System.assertEquals(false, access.isLocked);
+    }
+
+    @IsTest
+    static void testNeighbourWelcomeThreadIsNotSciReadOnly() {
+        User moderatorUser = getTestUser();
+        Account neighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact neighbour = [
+            SELECT Id FROM Contact
+            WHERE Id != :moderatorUser.ContactId
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+
+        insert new Moderator_Assignment__c(
+            Contact__c = moderatorUser.ContactId,
+            Neighbourhood__c = neighbourhood.Id,
+            Status__c = 'Active',
+            Role__c = 'Primary',
+            Assigned_Date__c = Datetime.now(),
+            OwnerId = moderatorUser.Id
+        );
+
+        Conversation__c welcomeConv = new Conversation__c(
+            Participant_1__c = moderatorUser.ContactId,
+            Participant_2__c = neighbour.Id,
+            Status__c = FimbyConstants.CONVERSATION_ACTIVE,
+            Context_Type__c = FimbyConstants.CTX_DIRECT
+        );
+        insert welcomeConv;
+
+        User neighbourUser = FimbyTestDataFactory.createCommunityUser(
+            neighbour.Id, 'Customer Community User - Mobile App', true);
+
+        FimbyConversationController.ConversationAccessState access;
+        Test.startTest();
+        System.runAs(neighbourUser) {
+            access = FimbyConversationController.getConversationAccessState(welcomeConv.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(false, access.isConsentRevoked,
+            'Neighbour must see Reply on a moderator welcome DM with no contact sharing');
+        System.assertEquals(false, access.isLocked);
     }
 }

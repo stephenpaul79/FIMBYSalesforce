@@ -142,6 +142,9 @@
                             </button>
                         </template>
                     </div>
+                    <template lwc:if={showNoRepsNote}>
+                        <p class="no-reps-note">No one from {orgName} is on FIMBY to receive messages yet.</p>
+                    </template>
                 </template>
             </div>
 

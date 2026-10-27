@@ -616,4 +616,76 @@ private class FimbyOrganizationProfileControllerTest {
         System.assertEquals('VIC', updated.BillingState);
         System.assertEquals('3001', updated.BillingPostalCode);
     }
+
+    private static Id attachOrgContact(Account org) {
+        Contact helper = [SELECT AccountId FROM Contact WHERE LastName = :HELPER_CONTACT_NAME LIMIT 1];
+        Contact orgContact = new Contact(
+            FirstName = 'Org', LastName = ORG_NAME, AccountId = helper.AccountId,
+            Is_Organization_Contact__c = true, Organization_Account__c = org.Id
+        );
+        insert orgContact;
+        update new Account(Id = org.Id, Organization_Contact__c = orgContact.Id);
+        return orgContact.Id;
+    }
+
+    private static void addOtherActiveRep(Account org) {
+        Contact helper = [SELECT AccountId FROM Contact WHERE LastName = :HELPER_CONTACT_NAME LIMIT 1];
+        Contact rep = FimbyTestDataFactory.createNeighbourhoodContact(helper.AccountId, true);
+        FimbyTestDataFactory.createCommunityUser(rep.Id, null, true);
+        insert new Support_Relationship__c(
+            Contact__c = rep.Id,
+            Related_Organization__c = org.Id,
+            Relationship_Type__c = 'Community_Group_Rep',
+            Status__c = 'Approved',
+            Neighbourhood__c = helper.AccountId,
+            Dismissed_By_Helper__c = false
+        );
+    }
+
+    @IsTest
+    static void testCanMessageTrueWhenAnotherRepIsAvailable() {
+        User viewer = getHelperUser();
+        Account org = getOrganization();
+        attachOrgContact(org);
+        addOtherActiveRep(org);
+
+        Map<String, Object> result;
+        System.runAs(viewer) {
+            Test.startTest();
+            result = FimbyOrganizationProfileController.getOrganizationProfile(org.Id);
+            Test.stopTest();
+        }
+        System.assertEquals(true, result.get('canMessage'), 'A linked org with an active rep can receive messages');
+    }
+
+    @IsTest
+    static void testCanMessageFalseWithoutReps() {
+        User viewer = getHelperUser();
+        Account org = getOrganization();
+        attachOrgContact(org);
+
+        Map<String, Object> result;
+        System.runAs(viewer) {
+            Test.startTest();
+            result = FimbyOrganizationProfileController.getOrganizationProfile(org.Id);
+            Test.stopTest();
+        }
+        System.assertEquals(false, result.get('canMessage'), 'No rep means no one would read the message');
+    }
+
+    @IsTest
+    static void testCanMessageFalseWhenViewerIsTheOnlyRep() {
+        User viewer = getHelperUser();
+        Account org = getOrganization();
+        attachOrgContact(org);
+        createApprovedGroupRepRelationship();
+
+        Map<String, Object> result;
+        System.runAs(viewer) {
+            Test.startTest();
+            result = FimbyOrganizationProfileController.getOrganizationProfile(org.Id);
+            Test.stopTest();
+        }
+        System.assertEquals(false, result.get('canMessage'), 'The only rep messaging their own org would reach no one else');
+    }
 }

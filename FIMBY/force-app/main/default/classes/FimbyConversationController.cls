@@ -158,6 +158,14 @@ public with sharing class FimbyConversationController {
             ] > 0;
         }
 
+        private Boolean isActiveModerator(Id contactId) {
+            if (contactId == null) return false;
+            return [
+                SELECT COUNT() FROM Moderator_Assignment__c
+                WHERE Contact__c = :contactId AND Status__c = 'Active'
+            ] > 0;
+        }
+
         private Boolean isModeratorForContact(Id moderatorContactId, Id targetContactId) {
             List<Contact> targets = [
                 SELECT AccountId FROM Contact WHERE Id = :targetContactId LIMIT 1
@@ -311,6 +319,16 @@ public with sharing class FimbyConversationController {
         private Id validateCanMessage(String myContactId, String targetContactId) {
             if (myContactId == targetContactId) {
                 throw new AuraHandledException('You cannot start a conversation with yourself.');
+            }
+
+            Boolean targetIsOrg = [
+                SELECT COUNT() FROM Contact
+                WHERE Id = :targetContactId AND Is_Organization_Contact__c = true
+            ] > 0;
+            if (targetIsOrg && !FimbyContactVisibility.isMessageableOrgContact((Id) targetContactId)) {
+                throw new AuraHandledException(
+                    'No one from this group is on FIMBY to receive messages right now.'
+                );
             }
 
             Id authorizingSciId = null;
@@ -852,13 +870,24 @@ public with sharing class FimbyConversationController {
                 }
             }
 
-            // Org contacts in the same neighbourhood are messageable without SCI
+            // Org contacts are messageable without SCI when the group is linked to this
+            // neighbourhood and has a rep available to receive the message.
+            Set<Id> linkedOrgContactIds = new Set<Id>();
+            for (Community_Group_Neighbourhood__c link : [
+                SELECT Organization__r.Organization_Contact__c
+                FROM Community_Group_Neighbourhood__c
+                WHERE Neighbourhood__c = :neighbourhoodId
+                  AND Status__c = 'Active'
+                  AND Organization__r.Organization_Contact__c != null
+            ]) {
+                linkedOrgContactIds.add(link.Organization__r.Organization_Contact__c);
+            }
+            Set<Id> reachableOrgContactIds = FimbyContactVisibility.getMessageableOrgContactIds(linkedOrgContactIds);
             List<Contact> orgContacts = [
                 SELECT Id, Name, Organization_Account__c,
                        Organization_Account__r.Name, Organization_Account__r.Logo_URL__c
                 FROM Contact
-                WHERE Is_Organization_Contact__c = true
-                  AND AccountId = :neighbourhoodId
+                WHERE Id IN :reachableOrgContactIds
                   AND Id != :myContactId
                   AND Id NOT IN :blockedIds
                 ORDER BY Organization_Account__r.Name
@@ -961,7 +990,17 @@ public with sharing class FimbyConversationController {
             if (eitherIsOrgContact(p1, p2)) {
                 return state;
             }
-            if (isModeratorForContact(p1, p2) || isModeratorForContact(p2, p1)) {
+            // Welcome DMs (and any other moderator thread) are authorized by the
+            // assignment, not contact sharing. Neighbourhood matching on AccountId
+            // is too strict — household Accounts would hide Reply for the neighbour.
+            if (isActiveModerator(p1) || isActiveModerator(p2)) {
+                return state;
+            }
+
+            // Keep in sync with FimbyMessageController.sendMessage — lending threads are
+            // never SCI-gated, so a parent-managed borrower without outbound share must
+            // not inherit a false read-only banner here.
+            if (!FimbyConstants.isSharingGatedConversationContext(convo.Context_Type__c)) {
                 return state;
             }
 

@@ -56,8 +56,14 @@ public with sharing class FimbyOrganizationProfileController {
             List<Map<String, String>> neighbourhoods = new OrgProfileHelper().getNeighbourhoods(organizationId);
             List<Map<String, Object>> people = new OrgProfileHelper().getApprovedReps(organizationId);
 
+            Id orgContactId = org.Organization_Contact__c;
+            Boolean canMessage = orgContactId != null
+                && orgContactId != FimbyIdentityRepository.getActingAsContactId()
+                && FimbyContactVisibility.isMessageableOrgContact(orgContactId);
+
             return new Map<String, Object>{
                 'success' => true,
+                'canMessage' => canMessage,
                 'org' => new Map<String, Object>{
                     'Id' => org.Id,
                     'Name' => org.Name,
@@ -177,7 +183,7 @@ public with sharing class FimbyOrganizationProfileController {
     private without sharing class OrgProfileHelper {
         public Account getAccount(Id organizationId) {
             return [
-                SELECT Id, Name, Type, Description, Website, Logo_URL__c, Is_Approved_Community_Group__c,
+                SELECT Id, Name, toLabel(Type), Description, Website, Logo_URL__c, Is_Approved_Community_Group__c,
                        Phone, BillingStreet, BillingCity, BillingState, BillingPostalCode,
                        Organization_Contact__c, Organization_Contact__r.Email
                 FROM Account

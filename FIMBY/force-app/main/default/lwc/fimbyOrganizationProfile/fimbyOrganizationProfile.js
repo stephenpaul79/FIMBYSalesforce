@@ -32,6 +32,7 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
     @track editBillingPostalCode = '';
     @track editEmail = '';
     @track isMessaging = false;
+    @track canMessage = false;
 
     actingAsContactId = null;
     orgContactId = null;
@@ -77,8 +78,14 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
     get hasPhone() { return !!this.orgPhone; }
     get hasAddress() { return !!this.orgAddress; }
     get hasContactInfo() { return this.hasEmail || this.hasPhone || this.hasAddress; }
+    get isViewingAsOrg() {
+        return !!this.orgContactId && this.actingAsContactId === this.orgContactId;
+    }
     get showMessageButton() {
-        return !!this.orgContactId && this.actingAsContactId !== this.orgContactId;
+        return this.canMessage && !this.isViewingAsOrg;
+    }
+    get showNoRepsNote() {
+        return !this.canMessage && !this.isViewingAsOrg && !this.canEdit;
     }
 
     get peopleWithAvatarUrls() {
@@ -122,6 +129,7 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
             this.neighbourhoods = profileResult.neighbourhoods || [];
             this.people = profileResult.people || [];
             this.canEdit = canEditResult === true;
+            this.canMessage = profileResult.canMessage === true;
             this.orgContactId = this.org?.Organization_Contact__c || null;
             this.actingAsContactId = identityResult?.actingAsContactId || null;
         } catch (err) {
@@ -239,7 +247,7 @@ export default class FimbyOrganizationProfile extends NavigationMixin(LightningE
     }
 
     handleMessage() {
-        if (!this.orgContactId) return;
+        if (!this.orgContactId || !this.canMessage) return;
         navigate(this, '/conversation?contactId=' + this.orgContactId);
     }
 }
