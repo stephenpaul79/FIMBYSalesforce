@@ -81,7 +81,7 @@
     border-radius: var(--fimby-radius-md);
     box-shadow: var(--fimby-shadow-card);
     padding: 16px 56px 16px 20px;
-    margin: 12px 0;
+    margin: 12px 16px;
     box-sizing: border-box;
 }
 
@@ -188,8 +188,6 @@
         flex-direction: row;
         align-items: center;
         gap: 16px;
-        max-width: 800px;
-        margin: 12px auto;
     }
     .say-hi-cta.btn-primary {
         align-self: center;
@@ -756,8 +754,7 @@
 
 @media (max-width: 480px) {
     .library-listed-footer {
-        justify-content: center;
-        padding: 12px 16px;
+        padding: 10px 16px;
     }
 }
 
@@ -844,6 +841,7 @@ button.feed-card-wrapper {
    ================================================================ */
 @media (max-width: 320px) {
     .feed-section { padding: 12px; }
+    .say-hi-banner { margin: 12px; }
     .feed-card-wrapper { margin-bottom: 12px; }
     .feed-filters { padding: 10px 12px; }
     .feed-sub-filters { padding: 6px 12px; }
@@ -884,6 +882,7 @@ button.feed-card-wrapper {
     .greeting-section,
     .feed-filter-header,
     .feed-section { width: 100%; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
+    .say-hi-banner { width: 100%; max-width: 600px; margin: 12px auto; }
     .feed-section { padding: 24px 0; }
     .feed-card-wrapper { margin-bottom: 20px; }
 
@@ -953,7 +952,8 @@ button.feed-card-wrapper {
 @media (min-width: 1024px) {
     .greeting-section,
     .feed-filter-header,
-    .feed-section { max-width: 800px; }
+    .feed-section,
+    .say-hi-banner { max-width: 800px; }
 }
 
 /* Cards no longer animate in individually — fimbyInfiniteScroll reveals the
