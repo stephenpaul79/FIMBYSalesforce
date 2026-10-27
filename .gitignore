@@ -2,6 +2,9 @@
 # FIMBY monorepo .gitignore
 # ==========================================================================
 
+# --- Editor diagnostics mirror (Diagnostics Mirror extension) -------------
+.ai/
+
 # --- Secrets & credentials (NEVER commit) --------------------------------
 .env
 .env.*
