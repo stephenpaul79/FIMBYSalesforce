@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the hindu, sikh and jain festival of lights. people clean and decorate their homes, set rows of small oil lamps along windows and doorsteps, and carry sweets to their neighbours' doors. the doorstep part is the oldest bit of it.</value>
+        <value xsi:type="xsd:string">The Hindu, Sikh, and Jain festival of lights. People clean their homes, set rows of small oil lamps in the windows and along the doorstep, and take sweets to the doors around them.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -16,19 +16,19 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,11 +44,11 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>

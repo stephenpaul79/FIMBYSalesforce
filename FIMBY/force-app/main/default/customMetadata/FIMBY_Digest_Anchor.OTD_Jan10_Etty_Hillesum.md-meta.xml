@@ -8,11 +8,11 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a dutch jewish woman who wrote with fierce tenderness from a transit camp before she was killed at auschwitz. she said: ultimately we have just one moral duty, to reclaim large areas of peace in ourselves.</value>
+        <value xsi:type="xsd:string">A Dutch Jewish woman whose Amsterdam diaries and letters from the Westerbork transit camp survived her. She was killed at Auschwitz in 1943. Her diaries were published in 1981 and have been read around the world since. "Ultimately we have just one moral duty: to reclaim large areas of peace in ourselves."</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">10.0</value>
+        <value xsi:type="xsd:double">15.0</value>
     </values>
     <values>
         <field>Month__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

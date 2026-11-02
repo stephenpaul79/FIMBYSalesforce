@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the UN set this day aside to remember the millions forced from home. welcoming a stranger is the oldest test of a neighbourhood.</value>
+        <value xsi:type="xsd:string">The UN first marked this day in 2001, for refugees: people who had to leave their own country because staying meant war or persecution. Many wait years for somewhere to start again.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

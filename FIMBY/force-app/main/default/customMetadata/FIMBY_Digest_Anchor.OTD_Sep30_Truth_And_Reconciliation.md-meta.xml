@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">canada set aside this day to remember the children who were taken to residential schools and never came home. orange shirts honour them. reconciliation is not a day. it is a practice.</value>
+        <value xsi:type="xsd:string">In 2021 Canada set aside this day to honour residential school survivors and remember the children who never came home. People now wear orange on this day because of Phyllis Webstad. In 1973, when she was six, her granny bought her a shiny new orange shirt for her first day at residential school in BC. The school took it from her when she arrived, and she never wore it again.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

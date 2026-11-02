@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he spent twenty years in parliament fighting to end the slave trade. he succeeded three days before he died. persistence is a form of love.</value>
+        <value xsi:type="xsd:string">He spent decades in Parliament against the slave trade, and then against slavery itself. In July 1833 he heard the abolition bill would pass. He died three days later. The act went on to free some 800,000 enslaved people across the British colonies.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

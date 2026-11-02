@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">black american pastor and mystic who mentored martin luther king jr. his book jesus and the disinherited gave the civil rights movement some of its theology. he said: do not ask what the world needs. ask what makes you come alive, because what the world needs is people who have come alive.</value>
+        <value xsi:type="xsd:string">Black American pastor who in 1944 co-founded one of the first interracial, interfaith churches in the US, in San Francisco. Martin Luther King Jr. is said to have carried his book Jesus and the Disinherited when he travelled. It asks what the teachings and the life of Jesus have to say "to those who stand, at a moment in human history, with their backs against the wall."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

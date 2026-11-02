@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she called it the little way: doing small things with great love. she never left her convent. her short autobiography, written for her sisters, has been read by millions.</value>
+        <value xsi:type="xsd:string">She called it the little way: small things, done with love, in a convent she never left. Her sister Pauline, by then her prioress, asked her to write it down. The book is Story of a Soul. She died at 24, and in 1997 she was named a Doctor of the Church.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

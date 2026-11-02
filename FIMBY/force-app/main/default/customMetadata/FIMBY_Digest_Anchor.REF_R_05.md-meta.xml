@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">when you're the one having a hard week, who near you would know?</value>
+        <value xsi:type="xsd:string">If this were a hard week, who near you would already be able to tell? What would they see that you might not say out loud?</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

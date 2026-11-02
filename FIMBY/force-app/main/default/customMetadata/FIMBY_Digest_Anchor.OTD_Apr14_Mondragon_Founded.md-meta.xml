@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a basque priest blessed the foundation stone of a small workshop in mondragon, spain, started by five of his former students who believed workers should own the company they work for. it grew into a federation of cooperatives employing over 80,000 people, still owned by the people who work there.</value>
+        <value xsi:type="xsd:string">A Basque priest blessed the foundation stone of a small workshop in Mondragon, Spain, started by five of his former students who believed workers should own the company they work for. It grew into Mondragon, a federation of worker cooperatives that now employs about 70,000 people.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,14 +44,14 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>

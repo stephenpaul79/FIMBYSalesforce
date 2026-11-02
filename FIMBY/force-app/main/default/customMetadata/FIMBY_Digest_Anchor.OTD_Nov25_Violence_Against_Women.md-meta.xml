@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a neighbourhood is only as safe as its most vulnerable member. silence is not peace. speaking up is an act of neighbouring.</value>
+        <value xsi:type="xsd:string">In 1999 the UN set this day aside to honour Patria, Minerva, and María Teresa Mirabal, sisters killed in the Dominican Republic in 1960 for opposing the dictator Rafael Trujillo. In the underground they were known as Las Mariposas, the butterflies.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

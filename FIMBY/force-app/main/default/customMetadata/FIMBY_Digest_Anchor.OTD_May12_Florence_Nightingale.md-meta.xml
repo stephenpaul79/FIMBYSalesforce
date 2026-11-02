@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she counted deaths no one else was counting and proved that clean water and open windows saved lives. she turned caring into evidence and evidence into policy.</value>
+        <value xsi:type="xsd:string">The Lady with the Lamp, from the Crimean War. Afterwards she turned the army's death records into charts made for officials who would not read reports. They showed most soldiers had died of disease, not wounds, and helped force the army to clean up its hospitals. In 1860 she set up a training school for nurses in London, the start of nursing as a trained profession.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

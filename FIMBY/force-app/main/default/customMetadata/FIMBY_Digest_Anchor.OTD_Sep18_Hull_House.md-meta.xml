@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">jane addams welcomed her first immigrant neighbours into a battered chicago mansion. it ran for 123 years and rewrote what a city could do for the lonely.</value>
+        <value xsi:type="xsd:string">In 1889 Jane Addams and Ellen Gates Starr moved into a run-down Chicago mansion and opened it to the immigrant families around it. It grew into a kindergarten, night classes, a gym, and a coffee house.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

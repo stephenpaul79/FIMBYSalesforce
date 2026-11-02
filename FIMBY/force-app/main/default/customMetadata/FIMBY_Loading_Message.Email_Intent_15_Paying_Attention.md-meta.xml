@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">this is what it looks like when people pay attention to each other.</value>
+        <value xsi:type="xsd:string">This is what it looks like when people pay attention to each other.</value>
     </values>
 </CustomMetadata>

@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">a neighbourhood is just people who kept showing up.</value>
+        <value xsi:type="xsd:string">A neighbourhood is just people who kept showing up.</value>
     </values>
 </CustomMetadata>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">persian sufi poet who wrote about love as the foundation of everything. he said: out beyond ideas of wrongdoing and rightdoing, there is a field. i'll meet you there. eight centuries later, people are still walking toward that field.</value>
+        <value xsi:type="xsd:string">A Persian poet, died in 1273. Many English readers first meet him in Coleman Barks's loose modern versions, like this one: "Out beyond ideas of wrongdoing and rightdoing, there is a field. I'll meet you there."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

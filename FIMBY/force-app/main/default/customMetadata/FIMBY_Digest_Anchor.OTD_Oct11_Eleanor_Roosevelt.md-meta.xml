@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she chaired the committee that drafted the universal declaration of human rights. she said: where, after all, do universal human rights begin. in small places, close to home.</value>
+        <value xsi:type="xsd:string">She chaired the committee that drafted the Universal Declaration of Human Rights. "Where, after all, do universal human rights begin? In small places, close to home."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -32,6 +32,6 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Death</value>
+        <value xsi:type="xsd:string">Birth</value>
     </values>
 </CustomMetadata>

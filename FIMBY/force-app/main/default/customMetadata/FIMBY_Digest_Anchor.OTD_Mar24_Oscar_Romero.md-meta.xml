@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">archbishop of san salvador, shot while saying mass. he had asked the soldiers to stop killing their own people. he was canonized in 2018.</value>
+        <value xsi:type="xsd:string">Archbishop of San Salvador, shot while saying mass. The day before, he had begged the soldiers to stop killing their own people. He was canonized in 2018, and the UN marks his death as the International Day for the Right to the Truth.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">south african archbishop who fought apartheid with theology and laughter. he said: my humanity is bound up in yours, for we can only be human together.</value>
+        <value xsi:type="xsd:string">South African archbishop who won the Nobel Peace Prize in 1984 for opposing apartheid without violence, then chaired the commission that heard its victims and its perpetrators. "My humanity is bound up in yours, for we can only be human together."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

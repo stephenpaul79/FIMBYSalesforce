@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the first indigenous judge in manitoba, and chair of canada's truth and reconciliation commission. he listened to more than 6,500 residential-school survivors and turned what they said into 94 calls to action. reconciliation, he reminded the country, is everyone's work.</value>
+        <value xsi:type="xsd:string">The first Indigenous judge in Manitoba. He chaired Canada's Truth and Reconciliation Commission, listened to more than 6,500 survivors, and the report set out 94 calls to action. He said, "This is not an Aboriginal problem. This is a Canadian problem."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

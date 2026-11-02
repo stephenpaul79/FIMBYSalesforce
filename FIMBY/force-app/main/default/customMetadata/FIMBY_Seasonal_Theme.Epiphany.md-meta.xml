@@ -40,6 +40,6 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">epiphany. the wise ones arrive. always late, always welcome.</value>
+        <value xsi:type="xsd:string">Epiphany. the wise ones arrive. always late, always welcome.</value>
     </values>
 </CustomMetadata>

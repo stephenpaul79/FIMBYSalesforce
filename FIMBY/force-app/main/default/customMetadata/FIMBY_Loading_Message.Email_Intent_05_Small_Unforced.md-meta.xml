@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">small, unforced, and close to home.</value>
+        <value xsi:type="xsd:string">Small, unforced, and close to home.</value>
     </values>
 </CustomMetadata>

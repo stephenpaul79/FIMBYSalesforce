@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">advent. the long, slow, hopeful wait.</value>
+        <value xsi:type="xsd:string">Advent. the long, slow, hopeful wait.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

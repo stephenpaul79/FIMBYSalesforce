@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he ran one of the world's largest volunteer ambulance networks out of pakistan. he lived simply, drew no salary, and served people no one else wanted to touch. he donated his eyes when he died.</value>
+        <value xsi:type="xsd:string">He built a volunteer ambulance service in Pakistan that became one of the largest in the world. He took no salary. When he died, his corneas went to two blind patients.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

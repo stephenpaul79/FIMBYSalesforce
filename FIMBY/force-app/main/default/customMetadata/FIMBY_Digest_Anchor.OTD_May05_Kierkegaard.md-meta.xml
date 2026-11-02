@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">danish philosopher who said that love of neighbour is the only love mentioned in the bible that carries a command. he meant it as good news, not a scolding.</value>
+        <value xsi:type="xsd:string">Danish philosopher. In Works of Love (1847) he argued that "you shall love your neighbour" is a command, and that only love that is a duty is safe from every change of feeling.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he wrote a rule for monks that begins: listen carefully. his communities balanced prayer and work and hospitality. he told his monks to welcome every stranger as christ.</value>
+        <value xsi:type="xsd:string">He wrote a rule for monks that begins: listen carefully. His communities balanced prayer and work and hospitality. He told his monks to welcome every stranger as Christ. Monasteries still live by his rule, almost 1,500 years later.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

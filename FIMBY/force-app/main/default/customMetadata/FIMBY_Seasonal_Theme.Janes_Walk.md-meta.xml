@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">jane's walk. go look at your own street like a visitor would.</value>
+        <value xsi:type="xsd:string">Jane's walk. go look at your own street like a visitor would.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

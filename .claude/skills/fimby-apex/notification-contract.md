@@ -6,7 +6,6 @@ Voice inherits from CLAUDE.md §5. Cross-refs: architecture (identity stamping, 
 | Rule | Example |
 |------|---------|
 | Active voice, present tense | `Maya replied to your offer` not `A reply has been posted` |
-| Lowercase first-person (`i`, `my`) | `i wanted to check in` |
 | Recipient-aware second person | `Maya wants to borrow your drill` not `A neighbour requested an item` |
 | Non-punitive | `Maya didn't respond yet` not `Maya failed to respond` |
 | No exclamation marks | `Pickup is ready for Maple Co-op` |

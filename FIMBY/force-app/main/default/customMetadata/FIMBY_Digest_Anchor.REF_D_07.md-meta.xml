@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">for most of its history the church was not a building. it was whoever showed up. knocking, lending, listening still counts.</value>
+        <value xsi:type="xsd:string">For its first two centuries or so, the church had no buildings of its own. It met in people's houses.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

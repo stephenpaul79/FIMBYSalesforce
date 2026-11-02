@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he opened the windows of the church, literally and figuratively. he called the second vatican council because he believed the church should talk with the world, not at it.</value>
+        <value xsi:type="xsd:string">Elected at 76, he was expected to be a caretaker pope. Within three months he announced the Second Vatican Council. Opening it in 1962, he told the bishops he disagreed with the "prophets of gloom, who are always forecasting disaster." He did not live to see it finish, but it opened the door to the mass in people's own languages instead of Latin.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">it starts with knowing their name.</value>
+        <value xsi:type="xsd:string">It starts with knowing their name.</value>
     </values>
 </CustomMetadata>

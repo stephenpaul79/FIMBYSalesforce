@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a people demanded liberty, equality, and fraternity. the last word is the hardest. fraternity means showing up for someone who is not your family.</value>
+        <value xsi:type="xsd:string">On 14 July 1789 a crowd in Paris stormed the Bastille. The revolution took up a shout: LIBERTÉ, ÉGALITÉ, FRATERNITÉ!</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

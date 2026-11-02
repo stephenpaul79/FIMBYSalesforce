@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">south african anti-apartheid activist who died in police custody. he said: the most potent weapon of the oppressor is the mind of the oppressed. community begins with believing you belong.</value>
+        <value xsi:type="xsd:string">South African anti-apartheid activist who died in police custody in 1977. He said, "The most potent weapon in the hands of the oppressor is the mind of the oppressed."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

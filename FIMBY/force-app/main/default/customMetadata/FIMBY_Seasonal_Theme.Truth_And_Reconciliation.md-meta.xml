@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">every child matters. a day to listen and remember.</value>
+        <value xsi:type="xsd:string">Every child matters. a day to listen and remember.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

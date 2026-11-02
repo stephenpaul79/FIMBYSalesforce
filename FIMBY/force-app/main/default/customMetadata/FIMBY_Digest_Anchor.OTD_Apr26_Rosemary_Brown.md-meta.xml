@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the first black woman elected to a provincial legislature in canada. she ran for the federal NDP leadership in 1975 and lost by 658 votes. for fourteen years in the bc legislature she fought for fair pay, daycare, and equal access to housing.</value>
+        <value xsi:type="xsd:string">The first Black woman elected to a provincial legislature in Canada. In 1975 she ran for the federal NDP leadership and came second, 658 votes to Ed Broadbent's 984. For fourteen years in the BC legislature she fought for fair pay, daycare, and equal access to housing.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

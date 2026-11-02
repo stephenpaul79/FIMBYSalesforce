@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">marked across china, vietnam, korea and much of east asia on the full moon nearest the autumn equinox. people gather outdoors to look at the moon and share mooncakes, which are dense and rich and cut into wedges so that one cake feeds a whole table. a festival built around splitting something.</value>
+        <value xsi:type="xsd:string">Marked across China, Vietnam, Korea, and much of East Asia on the full moon of the eighth lunar month, in September or early October. People go outside to look at the moon and share mooncakes, dense and rich, cut into wedges so one cake feeds a table.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -16,19 +16,19 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,11 +44,11 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>

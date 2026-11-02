@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">an irish saint of hearth and hospitality. she founded a monastery in kildare that took in travellers, the poor, and the sick alongside the nuns who lived there. her cross is still woven from rushes every year.</value>
+        <value xsi:type="xsd:string">An Irish abbess. The stories say her monastery at Kildare took in travellers, the poor, and the sick. On her day, people still weave a small cross out of rushes.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">&quot;not this week&quot; is a complete answer, and you don't owe a reason. &quot;i can't, but i hope someone can&quot; is a real reply too. a kind no keeps the door open better than silence does.</value>
+        <value xsi:type="xsd:string">"Not this week" is a complete answer, and you don't owe a reason. "I can't, but I hope someone can" is a real reply too. A kind no keeps the door open better than silence does.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

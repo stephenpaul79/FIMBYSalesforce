@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">&quot;the kingdom of god is among you,&quot; jesus said, when people asked him where to look for it. whatever you make of the claim, the location is worth noticing. not elsewhere. here.</value>
+        <value xsi:type="xsd:string">"The kingdom of God is in your midst," Jesus said, when he was asked when it would come.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

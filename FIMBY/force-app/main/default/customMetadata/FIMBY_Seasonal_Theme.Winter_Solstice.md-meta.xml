@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">the longest night of the year. from here, the light starts coming back.</value>
+        <value xsi:type="xsd:string">The longest night of the year. from here, the light starts coming back.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

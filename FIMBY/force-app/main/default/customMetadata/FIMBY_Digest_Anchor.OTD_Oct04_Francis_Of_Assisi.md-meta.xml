@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">gave away his inheritance to live with the poor, called the sun his brother and the moon his sister. his prayer asks to be made an instrument of peace.</value>
+        <value xsi:type="xsd:string">He gave his inheritance away and lived among the poor. In 1209 he started a small brotherhood to live the same way. Eight centuries later, some 26,000 Franciscan friars carry it on in more than a hundred countries. He also wrote a song that calls the sun his brother and the moon his sister. Written in his local dialect instead of Latin, it is one of the earliest known works written in Italian. In 2013, the first pope ever to take the name Francis chose it in his honour.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">proof people nearby are awake and kind.</value>
+        <value xsi:type="xsd:string">Proof people nearby are awake and kind.</value>
     </values>
 </CustomMetadata>

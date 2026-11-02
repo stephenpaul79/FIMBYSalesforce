@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">feeding your neighbours is one of the first things communities figured out how to do. it's still the most important.</value>
+        <value xsi:type="xsd:string">This day was first marked in 1981, on the anniversary of the UN Food and Agriculture Organization's founding in 1945. Its job is ending hunger.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,11 +20,11 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:type="xsd:string">1945</value>
+        <value xsi:type="xsd:string">1981</value>
     </values>
     <values>
         <field>Title__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he wrote about small people carrying heavy things together. friendship, loyalty, and courage do more than power ever can.</value>
+        <value xsi:type="xsd:string">He wrote The Hobbit and The Lord of the Rings, about small people carrying something too heavy for them to carry alone.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

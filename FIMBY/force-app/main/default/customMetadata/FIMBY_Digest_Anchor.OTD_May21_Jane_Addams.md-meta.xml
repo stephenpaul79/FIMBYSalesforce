@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">co-founded hull house in chicago, where immigrants, neighbours, and reformers ate together. she called it the simple expression of a complicated faith.</value>
+        <value xsi:type="xsd:string">She co-founded Hull House in Chicago, opposed the First World War when that was unpopular, and in 1931 became the first American woman to win the Nobel Peace Prize.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

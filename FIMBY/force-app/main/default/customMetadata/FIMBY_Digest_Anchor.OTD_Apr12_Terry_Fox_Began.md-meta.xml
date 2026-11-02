@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a 21-year-old with one leg dipped his artificial foot in the atlantic ocean and started running west. he wanted one dollar from every canadian for cancer research. he made it 5,373 kilometres before the cancer came back.</value>
+        <value xsi:type="xsd:string">A 21-year-old with one leg dipped his artificial foot in the Atlantic Ocean and started running west. He wanted one dollar from every Canadian for cancer research. He made it 5,373 kilometres before the cancer came back. Five months later, Canada had given its dollar each. Every September since, millions run in his name, and the total for cancer research has passed one billion dollars.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

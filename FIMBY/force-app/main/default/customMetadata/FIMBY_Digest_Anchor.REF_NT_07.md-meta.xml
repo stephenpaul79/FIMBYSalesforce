@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the awkward middle, between meeting someone and trusting them, is where most neighbouring actually lives. it is not a sign you are doing it wrong.</value>
+        <value xsi:type="xsd:string">The awkward middle, between meeting someone and trusting them, is where most neighbouring actually lives. It is not a sign you are doing it wrong.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -16,15 +16,15 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -32,11 +32,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>
@@ -44,14 +44,14 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the UN designated this day after the sharpeville massacre. neighbouring across lines of race means telling the truth about what those lines cost.</value>
+        <value xsi:type="xsd:string">In 1960, police in Sharpeville, South Africa, killed 69 people protesting the pass laws (the papers Black South Africans had to carry, or be arrested). The UN named this day in 1966.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

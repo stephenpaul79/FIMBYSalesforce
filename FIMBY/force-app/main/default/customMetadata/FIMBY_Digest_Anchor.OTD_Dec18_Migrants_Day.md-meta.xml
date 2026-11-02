@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the UN set aside a day for the millions who leave home because they have to. a neighbourhood that welcomes a newcomer becomes a better neighbourhood. full stop.</value>
+        <value xsi:type="xsd:string">In 2000 the UN set this day aside for migrants: the farmworker, the caregiver, the student, the cousin sending money home. The date marks a 1990 convention on the rights of migrant workers and their families.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

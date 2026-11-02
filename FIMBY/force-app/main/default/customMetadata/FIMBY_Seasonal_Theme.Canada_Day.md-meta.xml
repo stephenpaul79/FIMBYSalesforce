@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">happy canada day. good to share this place with you.</value>
+        <value xsi:type="xsd:string">Happy Canada day. good to share this place with you.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

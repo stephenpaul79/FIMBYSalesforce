@@ -40,6 +40,6 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">someone&apos;s coming to your door tonight. say hi.</value>
+        <value xsi:type="xsd:string">Someone&apos;s coming to your door tonight. say hi.</value>
     </values>
 </CustomMetadata>

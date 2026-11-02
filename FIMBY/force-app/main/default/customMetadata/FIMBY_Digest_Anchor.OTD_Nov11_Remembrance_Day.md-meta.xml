@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the guns stopped. in canada we wear poppies and stand silent for two minutes. remembering the cost of war is how a neighbourhood says: never again.</value>
+        <value xsi:type="xsd:string">The fighting of the First World War stopped at 11 a.m. on November 11, 1918. Within a few years, Canadians began wearing poppies and keeping two minutes of silence at that hour for everyone who died serving in war and on peacekeeping missions, more than 60,000 of them in that first war alone.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

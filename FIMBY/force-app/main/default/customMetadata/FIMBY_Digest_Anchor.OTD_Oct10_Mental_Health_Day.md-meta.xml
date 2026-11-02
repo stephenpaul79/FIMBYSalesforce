@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the world set aside a day to say: your mind matters. checking in on a neighbour's mental health is one of the bravest, most ordinary things you can do.</value>
+        <value xsi:type="xsd:string">The World Federation for Mental Health first marked this day in 1992. In any given year, one in five Canadians lives with a mental illness. Chances are you know several of them.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

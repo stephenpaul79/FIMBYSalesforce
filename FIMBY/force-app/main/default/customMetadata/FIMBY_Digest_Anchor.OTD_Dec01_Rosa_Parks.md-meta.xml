@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she sat down on a bus and a city stood up. she spent the rest of her life working quietly in community organizing. courage and neighbouring live in the same place.</value>
+        <value xsi:type="xsd:string">She refused to give up her seat on a segregated bus in Montgomery, Alabama. She had already been the local NAACP secretary for years. The city's Black residents then stayed off the buses for 381 days, until the US Supreme Court ruled bus segregation unconstitutional. The boycott made a young pastor named Martin Luther King Jr. a national leader. Congress later called her "the mother of the freedom movement."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,11 +20,11 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:type="xsd:string">1913–2005</value>
+        <value xsi:type="xsd:string">1955</value>
     </values>
     <values>
         <field>Title__c</field>
@@ -32,6 +32,6 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Death</value>
+        <value xsi:type="xsd:string">Event</value>
     </values>
 </CustomMetadata>

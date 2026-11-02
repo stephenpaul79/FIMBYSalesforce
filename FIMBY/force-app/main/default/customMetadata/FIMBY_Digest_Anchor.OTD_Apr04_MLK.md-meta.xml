@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">shot on a motel balcony in memphis. he had come to support striking sanitation workers. his last campaign was about the dignity of the people who take out the garbage.</value>
+        <value xsi:type="xsd:string">He was shot and killed on this day in 1968, on the balcony of the Lorraine Motel in Memphis. He had come to stand with Black sanitation workers on strike for fair pay and safe working conditions, after two of their co-workers, Echol Cole and Robert Walker, were crushed to death in a dilapidated city garbage truck.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

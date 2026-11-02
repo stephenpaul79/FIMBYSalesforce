@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the war in europe ended. neighbours who had hidden each other came out of basements. rebuilding began the next morning, as it always does.</value>
+        <value xsi:type="xsd:string">Germany surrendered, and the Second World War in Europe was over. Crowds filled streets across Europe and North America. In the Pacific, the war went on for three more months.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

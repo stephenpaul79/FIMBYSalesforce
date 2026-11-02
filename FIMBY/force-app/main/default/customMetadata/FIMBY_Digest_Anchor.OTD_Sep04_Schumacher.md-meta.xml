@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he wrote small is beautiful and argued that economics should serve people, not the other way around. he believed the best solutions are local, human-scaled, and gentle.</value>
+        <value xsi:type="xsd:string">In 1973 he published Small Is Beautiful, subtitled A Study of Economics as if People Mattered. The title outlived him as a slogan for local, human-sized work.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

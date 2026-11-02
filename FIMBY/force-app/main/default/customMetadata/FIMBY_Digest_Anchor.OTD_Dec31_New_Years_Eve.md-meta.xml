@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the year is ending. the neighbourhood is still here. that's the gift. see you tomorrow.</value>
+        <value xsi:type="xsd:string">At midnight, many of us will sing "Auld Lang Syne," a song we only half know. Robert Burns wrote it down in 1788 from what he said was an old Scottish song. The title is Scots for "old long since," roughly "for old times' sake." It gets sung as a goodbye, but it is really about old friends meeting again to share "a cup o' kindness yet." A band from London, Ontario, Guy Lombardo and His Royal Canadians, helped make it the midnight song by playing it on their New Year's Eve radio show in 1929.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

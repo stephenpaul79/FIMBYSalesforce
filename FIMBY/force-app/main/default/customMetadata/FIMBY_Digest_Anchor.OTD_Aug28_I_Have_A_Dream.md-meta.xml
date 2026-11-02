@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">on the steps of the lincoln memorial, dr. king named a beloved community where everyone is at the table. it is still being built.</value>
+        <value xsi:type="xsd:string">In 1963, at the March on Washington, Martin Luther King Jr. stood on the steps of the Lincoln Memorial before some 250,000 people and said, "I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">Martin Luther King Jr's &quot;I Have a Dream&quot;</value>
+        <value xsi:type="xsd:string">Martin Luther King Jr's "I Have a Dream"</value>
     </values>
     <values>
         <field>Type__c</field>

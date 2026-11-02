@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">someone asked for help this week. someone else said yes.</value>
+        <value xsi:type="xsd:string">Someone asked for help this week. someone else said yes.</value>
     </values>
 </CustomMetadata>

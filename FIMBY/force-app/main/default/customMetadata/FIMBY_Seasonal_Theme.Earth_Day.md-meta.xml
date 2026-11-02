@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">earth day. the greenest purchase is the one your neighbour already made, and you borrow.</value>
+        <value xsi:type="xsd:string">Earth Day. the greenest purchase is the one your neighbour already made, and you borrow.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

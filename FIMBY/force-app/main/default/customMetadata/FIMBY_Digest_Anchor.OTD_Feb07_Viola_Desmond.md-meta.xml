@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a black nova scotian businesswoman who refused to leave the whites-only section of a movie theatre in 1946. she is on canada's ten-dollar bill now. courage has a face.</value>
+        <value xsi:type="xsd:string">A Black Nova Scotian businesswoman who refused to leave the whites-only section of a New Glasgow movie theatre in 1946... and now she is on Canada's ten-dollar bill.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he ran 5,373 kilometres on one leg before the cancer came back. he raised 24 million dollars and asked for no corporate sponsors. every september, canadians run in his name. he was 22.</value>
+        <value xsi:type="xsd:string">He died in New Westminster, BC, a month before his 23rd birthday. Six months before his run, he wrote to the Canadian Cancer Society asking for support: "I'm not a dreamer, and I'm not saying this will initiate any kind of definitive answer or cure to cancer, but I believe in miracles. I have to."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

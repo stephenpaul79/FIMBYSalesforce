@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">nigerian writer and activist hanged by the military government for defending the ogoni people against oil companies that were poisoning their land. his last words: lord, take my soul, but the struggle continues.</value>
+        <value xsi:type="xsd:string">Nigerian writer and activist who defended the Ogoni people against oil companies that were poisoning their land. The military government hanged him in 1995 with eight others, and the Commonwealth suspended Nigeria in protest. His last words were reported as "Lord take my soul, but the struggle continues."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

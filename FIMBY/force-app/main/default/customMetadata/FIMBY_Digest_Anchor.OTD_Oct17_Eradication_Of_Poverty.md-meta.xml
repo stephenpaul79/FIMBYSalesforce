@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">inscribed on a stone in paris: wherever people are condemned to live in poverty, human rights are violated. to come together to ensure that these rights be respected is our solemn duty.</value>
+        <value xsi:type="xsd:string">In 1987 these words were inscribed on a stone in Paris: "Wherever men and women are condemned to live in extreme poverty, human rights are violated. To come together to ensure that these rights be respected is our solemn duty." The UN named the day in 1992.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

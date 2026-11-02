@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">happy easter. peace to our neighbourhood.</value>
+        <value xsi:type="xsd:string">Happy Easter. peace to our neighbourhood.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

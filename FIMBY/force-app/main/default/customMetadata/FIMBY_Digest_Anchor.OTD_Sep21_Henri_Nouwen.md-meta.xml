@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a priest who left a yale tenure to live at l'arche, alongside adults with disabilities. he wrote that the wounded heart is the strongest place to love from.</value>
+        <value xsi:type="xsd:string">A Dutch priest who taught at Yale and Harvard, then in 1986 moved to L'Arche Daybreak, near Toronto, to live with people who have intellectual disabilities. He stayed until he died, and wrote a book about Adam, the man he was asked to help each morning.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

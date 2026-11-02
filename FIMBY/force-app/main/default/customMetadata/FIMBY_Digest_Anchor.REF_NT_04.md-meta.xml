@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the one who lent the ladder in june is the one asking for a ride in november. nobody stays the helper. nobody stays the helped.</value>
+        <value xsi:type="xsd:string">The Library page has Items and Skills. Items are things you borrow and bring back, like a ladder or a mixer. Skills are a neighbour's help in a particular area that you can ask for, like a repair or a ride.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

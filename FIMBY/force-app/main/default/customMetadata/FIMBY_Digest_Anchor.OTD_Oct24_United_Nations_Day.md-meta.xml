@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the UN charter came into force. it begins: we the peoples. not we the governments. not we the powerful. we the peoples. neighbouring is how that sentence stays true.</value>
+        <value xsi:type="xsd:string">In 1945 the UN Charter came into force. It opens, "We the peoples of the United Nations..."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

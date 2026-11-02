@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she opened houses of hospitality during the great depression and never stopped. her line: the only solution is love, and love comes with community.</value>
+        <value xsi:type="xsd:string">She opened houses of hospitality during the Great Depression and kept them going. Her autobiography ends, "We have all known the long loneliness and we have learned that the only solution is love and that love comes with community."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

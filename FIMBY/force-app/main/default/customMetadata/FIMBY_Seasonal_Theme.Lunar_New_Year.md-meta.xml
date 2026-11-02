@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">happy lunar new year. may the year ahead be full, and shared.</value>
+        <value xsi:type="xsd:string">Happy lunar new year. may the year ahead be full, and shared.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

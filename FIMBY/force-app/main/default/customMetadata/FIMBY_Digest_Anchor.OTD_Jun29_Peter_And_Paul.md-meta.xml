@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">peter was a fisherman. paul was a tentmaker. they disagreed about almost everything and built the church anyway. community doesn't require agreement. it requires staying.</value>
+        <value xsi:type="xsd:string">Peter fished. Paul made tents. In one letter Paul says he opposed Peter to his face. Tradition says both died in Rome.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

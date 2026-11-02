@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">started small confraternities of women who organized food and care for the poor. he believed mercy needed structure, not just feeling.</value>
+        <value xsi:type="xsd:string">In 1617, in the French parish of Châtillon, he organized women to take turns bringing meals to the sick poor, so the care would not depend on one person's good mood. The Society of St. Vincent de Paul, started by students in Paris in 1833 and named for him, now has some 800,000 members in 155 countries.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

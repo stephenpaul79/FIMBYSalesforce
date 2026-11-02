@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a pastor who chose to die rather than support a regime that hated its neighbours. his book life together is still where christians learn to live in real community.</value>
+        <value xsi:type="xsd:string">A pastor hanged for resisting the Nazi regime. His book Life Together is still where many Christians learn what it means to live in real community.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

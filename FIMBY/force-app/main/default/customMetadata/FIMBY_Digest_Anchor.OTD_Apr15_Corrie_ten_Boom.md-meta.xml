@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a dutch watchmaker who hid jewish families in her home during the war. she was caught, survived the camps, and spent the rest of her life talking about forgiveness.</value>
+        <value xsi:type="xsd:string">A Dutch watchmaker. She and her family hid Jewish people in their house. They were caught. She survived Ravensbrück. Her father and her sister did not. After the war she spent decades travelling to speak about forgiveness. She wrote of a day in 1947 when a former Ravensbrück guard asked her to forgive him, and she took his hand.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

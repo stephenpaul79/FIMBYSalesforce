@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">japanese pastor who moved into the slums of kobe at age 21 and stayed. he organized labour unions, built credit cooperatives for workers, and helped found japan's first peasant union.</value>
+        <value xsi:type="xsd:string">A Japanese pastor who, at 21, moved into the slums of Kobe and lived there. From there he organized labour unions and cooperatives. One of the co-ops he helped start in 1921 is now Co-op Kobe, with about 1.7 million members. In Japan he is still called the father of the co-op movement.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

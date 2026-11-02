@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he wrote the plague, a novel about a city under quarantine. the people who held it together were a doctor who stayed, neighbours who didn't run, and a journalist who could have left and chose not to.</value>
+        <value xsi:type="xsd:string">In 1947 he published The Plague, written out of the Nazi occupation of France: a novel about a city sealed off by disease, and about ordinary people who stay and do the work instead of waiting for a hero. In the spring of 2020, its sales jumped again.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

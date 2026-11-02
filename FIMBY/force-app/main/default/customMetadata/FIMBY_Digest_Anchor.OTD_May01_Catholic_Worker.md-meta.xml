@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">in a new york apartment, dorothy day and peter maurin started the catholic worker. food, shelter, conversation. nine decades later it has not stopped.</value>
+        <value xsi:type="xsd:string">On this day in 1933, in a New York apartment, Dorothy Day and Peter Maurin put out the first issue of a newspaper for the unemployed. They sold it for a penny. Soon they opened houses of hospitality, where anyone who needed a meal or a bed could come. Today nearly 200 Catholic Worker communities carry that on, and the paper still costs a penny.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

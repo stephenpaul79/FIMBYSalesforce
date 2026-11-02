@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">luke was a physician and a storyteller. he wrote the parable of the good samaritan, the story that asks: who is my neighbour. the answer is: whoever you find on the road.</value>
+        <value xsi:type="xsd:string">Tradition says Luke was a physician. His is the only Gospel with the parable of the Good Samaritan, which Jesus tells to answer the question: who is my neighbour?</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

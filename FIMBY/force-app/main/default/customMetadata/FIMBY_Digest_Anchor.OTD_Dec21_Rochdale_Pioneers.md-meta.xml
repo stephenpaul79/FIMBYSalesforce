@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">twenty-eight weavers in england pooled their money and opened a cooperative shop. they wrote rules about fair prices and shared profits. the modern co-op movement started in one small room.</value>
+        <value xsi:type="xsd:string">Twenty-eight working people in Rochdale, England, many of them weavers, pooled their money and opened a cooperative shop. They opened their shop in 1844 and wrote rules about fair prices, one member one vote, and shared profits. Those rules still guide the world's co-ops, which now count about a billion members.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

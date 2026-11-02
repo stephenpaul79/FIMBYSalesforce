@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">the news that fits in a kitchen.</value>
+        <value xsi:type="xsd:string">The news that fits in a kitchen.</value>
     </values>
 </CustomMetadata>

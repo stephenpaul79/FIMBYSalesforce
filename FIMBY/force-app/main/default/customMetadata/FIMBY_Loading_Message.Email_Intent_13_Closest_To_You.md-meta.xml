@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">the people closest to you are usually the ones who keep you going.</value>
+        <value xsi:type="xsd:string">The people closest to you are usually the ones who keep you going.</value>
     </values>
 </CustomMetadata>

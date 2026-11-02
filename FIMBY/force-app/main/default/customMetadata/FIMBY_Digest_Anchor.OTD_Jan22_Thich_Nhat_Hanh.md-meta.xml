@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">vietnamese zen buddhist monk who taught the world to practise peace one breath at a time. he said: the most precious gift we can offer others is our presence. when mindfulness embraces those we love, they bloom like flowers.</value>
+        <value xsi:type="xsd:string">A Vietnamese Zen monk who taught meditation as a way of paying attention to the person in front of you. Martin Luther King Jr. nominated him for the Nobel Peace Prize in 1967. He said, "The most precious gift we can offer others is our presence."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

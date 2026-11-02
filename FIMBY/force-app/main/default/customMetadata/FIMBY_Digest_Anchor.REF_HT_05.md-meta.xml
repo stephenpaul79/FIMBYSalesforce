@@ -8,15 +8,15 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">not everyone can work an app. manage identities, in the header menu, lets you act for someone who can't. add a family member, including a child too young for their own account. ask to become an adult's support person. connect a local group you represent. their name goes on the post and yours is recorded beside it, so nobody has to log in to take part.</value>
+        <value xsi:type="xsd:string">Not everyone can work an app. Manage Identities, in the header menu, lets you act for someone who can't. Add a family member, including a child too young for their own account. Ask to become an adult's support person. Connect a local group you represent. Their name goes on the post and yours is recorded beside it, so nobody has to log in to take part.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
@@ -24,11 +24,11 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Type__c</field>

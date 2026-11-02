@@ -8,19 +8,19 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she walked through every jail and asylum she could find, wrote down what she saw, and told the government to do better. she spent forty years making them listen.</value>
+        <value xsi:type="xsd:string">In the 1840s she went through the jails and poorhouses of Massachusetts and found people with mental illness kept in cages, cellars, and pens. Her report to the legislature led to a new state hospital, and she spent the next forty years doing the same across the country.</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">5.0</value>
+        <value xsi:type="xsd:double">17.0</value>
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:type="xsd:double">2.0</value>
+        <value xsi:type="xsd:double">7.0</value>
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

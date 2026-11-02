@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a week-long harvest festival. families build a sukkah, a small temporary shelter with a roof left open to the sky, and eat their meals inside it for the week. the tradition is to invite guests in, including strangers. the point is remembering that shelter is fragile, and that hospitality matters most to people who do not have a roof of their own.</value>
+        <value xsi:type="xsd:string">A week-long harvest festival. Families build a sukkah, a small shelter with the roof left open, and eat their meals in it. Guests are part of the week, including people who do not have a roof of their own.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -16,19 +16,19 @@
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,11 +44,11 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>

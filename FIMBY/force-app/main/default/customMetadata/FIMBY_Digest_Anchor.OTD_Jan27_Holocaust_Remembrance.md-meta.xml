@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">auschwitz was liberated on this day. we remember because forgetting is how it starts. neighbouring means refusing to look away.</value>
+        <value xsi:type="xsd:string">Auschwitz was liberated on this day. We remember because forgetting is how it starts.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

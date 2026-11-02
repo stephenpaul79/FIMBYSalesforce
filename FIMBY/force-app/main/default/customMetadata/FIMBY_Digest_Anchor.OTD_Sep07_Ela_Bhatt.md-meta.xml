@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">indian labour organizer who spent fifty years building a union of the poorest working women in the world. she said: we are poor, but so many. she proved that so many is enough.</value>
+        <value xsi:type="xsd:string">In 1972 in India she founded SEWA, a union for women who work for themselves: street vendors, home workers, labourers. Today SEWA has more than 3.7 million members. Her book about it is called We Are Poor but So Many.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,14 +44,14 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>

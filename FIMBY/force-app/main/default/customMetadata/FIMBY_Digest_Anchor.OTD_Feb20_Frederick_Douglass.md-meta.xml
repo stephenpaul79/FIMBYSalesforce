@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he chose this date as his birthday because he never knew his real one. he taught himself to read, freed himself, and spent the rest of his life insisting that everyone else deserved the same.</value>
+        <value xsi:type="xsd:string">He died on this day in 1895. Born enslaved, he kept teaching himself to read after his enslaver forbade it, escaped at 20, and became the best-known Black voice against slavery in America. He never knew his birthday, and chose February 14 for himself.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -32,6 +32,6 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Birth</value>
+        <value xsi:type="xsd:string">Death</value>
     </values>
 </CustomMetadata>

@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">the people next to you are the ones you can love today.</value>
+        <value xsi:type="xsd:string">The people next to you are the ones you can love today.</value>
     </values>
 </CustomMetadata>

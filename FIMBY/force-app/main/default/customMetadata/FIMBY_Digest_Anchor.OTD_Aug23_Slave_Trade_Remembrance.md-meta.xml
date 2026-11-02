@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">on this night in 1791, enslaved people in saint-domingue rose up. the haitian revolution began with people who refused to accept that they were not neighbours.</value>
+        <value xsi:type="xsd:string">On this night in 1791, enslaved people in Saint-Domingue (the French colony that is now Haiti) rose up. In 1804 they declared independence: the only nation ever founded by a successful revolt of enslaved people.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">brazilian educator who believed that teaching people to read was the same as teaching them they matter. his book pedagogy of the oppressed says that no one is free until everyone is free.</value>
+        <value xsi:type="xsd:string">Brazilian educator who taught poor adults to read, and was jailed and exiled for it after the 1964 coup. In Pedagogy of the Oppressed he wrote that speaking your own word "is not the privilege of some few persons, but the right of everyone."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

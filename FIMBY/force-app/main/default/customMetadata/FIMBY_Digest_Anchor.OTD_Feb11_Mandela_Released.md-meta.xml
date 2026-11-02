@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">after 27 years, he walked out and chose reconciliation over revenge. he said: it always seems impossible until it's done.</value>
+        <value xsi:type="xsd:string">After 27 years, he walked out of Victor Verster Prison. People lined the road into Cape Town. Four years later, after the country's first election open to all races, he became its first Black president.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

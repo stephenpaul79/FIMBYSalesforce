@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the architect of india's constitution and a lifelong champion of the dalits, the people india called untouchable. he said: i measure the progress of a community by the degree of progress which women have achieved.</value>
+        <value xsi:type="xsd:string">Born a Dalit, one of the people India called untouchable, he chaired the committee that drafted India's constitution. "I measure the progress of a community by the degree of progress which women have achieved."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

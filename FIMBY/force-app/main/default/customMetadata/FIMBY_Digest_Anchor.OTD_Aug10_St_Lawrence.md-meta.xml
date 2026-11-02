@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">when roman soldiers demanded the church's treasure, lawrence brought them the poor, the sick, and the orphaned and said: here is the treasure of the church.</value>
+        <value xsi:type="xsd:string">The story goes that when Roman officials demanded the church's treasure, Lawrence brought them the poor, the sick, and the orphaned, and said, "Here is the treasure of the church."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

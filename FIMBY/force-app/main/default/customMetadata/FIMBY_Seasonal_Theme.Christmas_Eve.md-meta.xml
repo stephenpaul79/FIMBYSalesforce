@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">tonight, the long wait ends.</value>
+        <value xsi:type="xsd:string">Tonight, the long wait ends.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

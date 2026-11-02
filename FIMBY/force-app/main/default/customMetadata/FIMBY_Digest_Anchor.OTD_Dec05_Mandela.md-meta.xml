@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he died at home in johannesburg. his final years were spent asking south africa to be patient with itself. reconciliation is not an event. it is a practice.</value>
+        <value xsi:type="xsd:string">He died at home in Johannesburg in 2013, at 95. He had spent 27 years in prison, won the Nobel Peace Prize, and become South Africa's first Black president.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she was thirteen when she started writing. she hid in an attic for two years with the help of neighbours who risked everything. she wrote: how wonderful it is that nobody need wait a single moment before starting to improve the world.</value>
+        <value xsi:type="xsd:string">She got her diary for her thirteenth birthday. For two years her family hid in rooms behind her father's office in Amsterdam, fed by helpers who risked their lives. She wrote, "How wonderful it is that nobody need wait a single moment before starting to improve the world."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

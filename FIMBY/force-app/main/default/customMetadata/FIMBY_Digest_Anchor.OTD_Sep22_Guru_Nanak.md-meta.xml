@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">founder of sikhism. when he died, both hindus and muslims claimed his body. in life he taught that there is no hindu, there is no muslim, there is only one god and one humanity. his langar tradition feeds millions every day, free, without question.</value>
+        <value xsi:type="xsd:string">Founder of Sikhism. Tradition remembers his first teaching as: there is no Hindu, there is no Muslim. Sikhs still cook langar, a meal anyone can sit down and eat, and nobody is asked who they are first. Some 25 million people are Sikhs today.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

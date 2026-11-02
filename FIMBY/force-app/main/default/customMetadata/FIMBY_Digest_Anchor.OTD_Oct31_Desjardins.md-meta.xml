@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a quebecois journalist who saw that banks wouldn't lend to working people. he started a caisse populaire in his own home in levis, quebec, and the desjardins credit union movement grew from there. neighbours lending to neighbours.</value>
+        <value xsi:type="xsd:string">A Quebec journalist. Banks would not lend to working people, so in 1900 he opened a caisse populaire in his house in Lévis. The Desjardins credit unions started there. Desjardins is now the largest cooperative financial group in Canada.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

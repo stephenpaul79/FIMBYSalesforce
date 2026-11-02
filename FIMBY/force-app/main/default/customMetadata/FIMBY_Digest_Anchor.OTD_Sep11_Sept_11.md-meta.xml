@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">on this day, thousands of people ran toward the danger. first responders, bystanders, strangers. grief and love arrived at the same moment.</value>
+        <value xsi:type="xsd:string">In 2001, hijacked planes were flown into the World Trade Center, the Pentagon, and a field in Pennsylvania. Nearly three thousand people were killed. Thousands of others, first responders and bystanders, ran toward the danger to help.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

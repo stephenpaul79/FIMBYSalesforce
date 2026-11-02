@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">fifty nations signed a document saying they would try to solve problems together. it has not always worked. it is still the attempt that matters.</value>
+        <value xsi:type="xsd:string">On this day in 1945, fifty nations signed the charter that created the United Nations, promising to try to solve problems together. It has not always worked.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

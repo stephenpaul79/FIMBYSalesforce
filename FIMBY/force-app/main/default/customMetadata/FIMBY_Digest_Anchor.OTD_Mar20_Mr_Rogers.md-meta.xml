@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he spent thirty three years telling children they were worth caring about exactly as they were. in 1969 he saved public television with six minutes of plain speech to a us senate subcommittee. his one recurring question, said slowly enough that a child could answer it, was won't you be my neighbour.</value>
+        <value xsi:type="xsd:string">He spent thirty three years telling children they were worth caring about as they were. In 1969, when funding for public television was about to be cut, he went to the US Senate to defend it. He spoke for six minutes, and the funding was saved. Every episode opened with the same song: "Won't you be my neighbor?"</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,14 +44,14 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>

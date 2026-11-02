@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the world agreed that children have rights: to safety, to education, to play, to be heard. every neighbourhood is measured by how it treats its youngest.</value>
+        <value xsi:type="xsd:string">On this day in 1989, the UN General Assembly adopted the Convention on the Rights of the Child, which sets out children's rights to safety, to education, to play, and to be heard. Every UN member country except the United States has since ratified it.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

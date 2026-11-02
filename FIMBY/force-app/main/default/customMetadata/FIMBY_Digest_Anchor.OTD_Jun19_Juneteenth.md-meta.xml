@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">enslaved people in galveston, texas, learned they were free, two and a half years after the emancipation proclamation. freedom delayed is freedom denied. community means making sure the word reaches everyone.</value>
+        <value xsi:type="xsd:string">In 1865, Union troops arrived in Galveston, Texas, and announced that the enslaved people there were free. Lincoln's proclamation had declared it two and a half years earlier. Nobody in Texas had enforced it.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

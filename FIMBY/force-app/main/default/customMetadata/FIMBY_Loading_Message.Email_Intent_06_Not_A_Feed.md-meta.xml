@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">not a feed. just the people around you.</value>
+        <value xsi:type="xsd:string">Not a feed. just the people around you.</value>
     </values>
 </CustomMetadata>

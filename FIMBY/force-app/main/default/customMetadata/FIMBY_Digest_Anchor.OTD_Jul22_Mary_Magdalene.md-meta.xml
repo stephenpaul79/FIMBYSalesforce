@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">in the gospels she is the first person at the empty tomb, and the first sent to tell the others. she was also the first the church tried to forget. faithfulness doesn't need permission.</value>
+        <value xsi:type="xsd:string">In the Gospels she is the first person at the empty tomb, and the first sent to tell the others. Thomas Aquinas called her the "apostle of the apostles," and in 2016 Pope Francis raised her day to a feast, the same rank the church gives the apostles.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

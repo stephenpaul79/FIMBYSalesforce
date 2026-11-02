@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">neighbouring is unglamorous on purpose.</value>
+        <value xsi:type="xsd:string">Neighbouring is unglamorous on purpose.</value>
     </values>
 </CustomMetadata>

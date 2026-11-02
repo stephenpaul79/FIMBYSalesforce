@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">the shakeout is today. drop, cover, hold on. then check on the person next door.</value>
+        <value xsi:type="xsd:string">The ShakeOut is today. drop, cover, hold on. then check on the person next door.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

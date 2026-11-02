@@ -8,11 +8,11 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">peruvian priest who wrote a theology of liberation. he said god has a preferential option for the poor. not because the poor are better, but because they are poor.</value>
+        <value xsi:type="xsd:string">Peruvian priest who wrote A Theology of Liberation in 1971, the book that gave liberation theology its name. Of the poor, he said, "I accompany them not because they are all good, or because I am all good, but because God is good."</value>
     </values>
     <values>
         <field>Day__c</field>
-        <value xsi:type="xsd:double">10.0</value>
+        <value xsi:type="xsd:double">8.0</value>
     </values>
     <values>
         <field>Month__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

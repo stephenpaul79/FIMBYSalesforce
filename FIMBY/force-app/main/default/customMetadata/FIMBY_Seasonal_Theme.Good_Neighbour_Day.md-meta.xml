@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">good neighbour day. one hello is enough to start.</value>
+        <value xsi:type="xsd:string">Good neighbour day. one hello is enough to start.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

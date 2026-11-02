@@ -12,6 +12,6 @@
     </values>
     <values>
         <field>Message__c</field>
-        <value xsi:type="xsd:string">asking, offering, and showing up.</value>
+        <value xsi:type="xsd:string">Asking, offering, and showing up.</value>
     </values>
 </CustomMetadata>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a swedish diplomat who issued thousands of protective passports to hungarian jews during the holocaust. he saved tens of thousands of lives. he disappeared into soviet custody and never came home.</value>
+        <value xsi:type="xsd:string">A Swedish diplomat in Budapest who handed out protective passports to Hungarian Jews, at times climbing onto trains bound for the camps to pass them through the windows. Estimates of the lives he saved run from thousands to tens of thousands. He disappeared into Soviet custody and never came home.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -28,10 +28,10 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">Raoul Wallenberg disappeared</value>
+        <value xsi:type="xsd:string">Raoul Wallenberg</value>
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Death</value>
+        <value xsi:type="xsd:string">Birth</value>
     </values>
 </CustomMetadata>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">kenyan woman who planted 30 million trees. she won the nobel peace prize and said: it is the people who must save the environment. it is the people who must make their leaders change.</value>
+        <value xsi:type="xsd:string">She founded the Green Belt Movement in Kenya. The women in it have planted tens of millions of trees. In 2004 she received the Nobel Peace Prize. "It is the people who must save the environment."</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

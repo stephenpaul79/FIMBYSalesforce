@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">kentucky farmer-poet who wrote the membership: the idea that we belong to a place and the people in it. he is still here, still writing.</value>
+        <value xsi:type="xsd:string">Born on this day in 1934. He farmed in Henry County, Kentucky, for more than forty years and wrote novels, poems, and essays about belonging to one place. In his Port William novels, the townspeople call themselves the membership. He died on August 31, 2026.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,11 +20,11 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:type="xsd:string">b. 1934</value>
+        <value xsi:type="xsd:string">1934–2026</value>
     </values>
     <values>
         <field>Title__c</field>

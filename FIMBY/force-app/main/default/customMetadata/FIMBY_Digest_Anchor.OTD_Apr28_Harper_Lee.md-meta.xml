@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she wrote one novel: a small alabama town, a racial injustice trial, a child watching the adults around her decide who counts as a neighbour. the question she put on the page is still the question.</value>
+        <value xsi:type="xsd:string">In 1960 she published To Kill a Mockingbird, a novel about a child in a small Alabama town watching the adults decide who deserves justice. It won the Pulitzer Prize the next year.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

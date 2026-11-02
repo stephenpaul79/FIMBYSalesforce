@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">czech writer and dissident who lived under a regime that wanted everyone to repeat the same lies in public. he taught that small acts of honesty, a shopkeeper refusing to display the official slogan, a friend showing up, kept the country's conscience alive while the state tried to erase it.</value>
+        <value xsi:type="xsd:string">Czech playwright, jailed for dissent, later president. In The Power of the Powerless (1978) he wrote about a greengrocer who puts the party slogan in his window without believing it, and what changes the day he stops. Copies were passed hand to hand across the Soviet bloc. In 1989 he helped lead the Velvet Revolution, six weeks of peaceful protests and strikes that ended 41 years of Communist rule in Czechoslovakia.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

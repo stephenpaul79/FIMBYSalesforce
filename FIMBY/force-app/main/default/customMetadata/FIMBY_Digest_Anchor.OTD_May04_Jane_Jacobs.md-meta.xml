@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">she had no planning degree and stopped an expressway from cutting through lower manhattan. she argued that safe streets are not made by police but by people who know each other and are casually watching, which she called eyes on the street. she wrote that in 1961. it is still the argument for knowing your neighbours.</value>
+        <value xsi:type="xsd:string">She had no planning degree and helped stop an expressway from cutting through Lower Manhattan. In The Death and Life of Great American Cities (1961) she argued that safe streets come from people who know each other and are casually watching. She called that eyes on the street. She later moved to Toronto and helped stop the Spadina Expressway too.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Easter_Offset_Days__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Month__c</field>
@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -44,14 +44,14 @@
     </values>
     <values>
         <field>Week_Ordinal__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Weekday__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>

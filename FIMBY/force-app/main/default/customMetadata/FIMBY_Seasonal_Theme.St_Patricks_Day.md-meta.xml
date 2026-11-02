@@ -40,6 +40,6 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">a day for kindness, songs, and second helpings.</value>
+        <value xsi:type="xsd:string">A day for kindness, songs, and second helpings.</value>
     </values>
 </CustomMetadata>

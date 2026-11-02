@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">a mystic who told popes to do better, cared for plague victims, and wrote letters to everyone she thought needed correcting. she said: be who god meant you to be and you will set the world on fire.</value>
+        <value xsi:type="xsd:string">A mystic who told popes to do better, cared for plague victims, and wrote letters to anyone she thought needed correcting. She helped persuade the pope to move back to Rome from Avignon, and in 1970 became one of the first two women named a Doctor of the Church. To one friend she wrote, "If you are what you should be, you will set all of Italy ablaze!"</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -44,7 +44,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">today we remember those who served, and those who didn&apos;t come home.</value>
+        <value xsi:type="xsd:string">Today we remember those who served, and those who didn&apos;t come home.</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>

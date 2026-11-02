@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">the first atomic bomb was dropped on a city of 350,000 people. the survivors are called hibakusha. they have spent eighty years telling the world to never do it again.</value>
+        <value xsi:type="xsd:string">The first atomic bomb was dropped on a city of 350,000 people. The survivors are called hibakusha. Many of them have spent their lives telling what they saw, so that no one else has to see it.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">on new year's day, enslaved people in confederate states became legally free. freedom is always unfinished. neighbouring is one way to keep building it.</value>
+        <value xsi:type="xsd:string">On New Year's Day in 1863, during the American Civil War, Lincoln's proclamation declared enslaved people in the rebelling states free. Freedom came only as Union armies arrived.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">he walked 70,000 kilometres across india asking landowners to share their land. over four million acres were given to the landless. he called it a revolution of love.</value>
+        <value xsi:type="xsd:string">Starting in 1951, he walked from village to village across India asking landowners to give land to the landless. They pledged more than four million acres. Much of it was never handed over.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

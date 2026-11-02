@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">in canada, the commission documented what happened to indigenous children in residential schools. the 94 calls to action are still being answered. reconciliation is measured in actions, not apologies.</value>
+        <value xsi:type="xsd:string">On this day in 2015, Canada's Truth and Reconciliation Commission released its full final report on residential schools. Its 94 calls to action had come out that June. It documented the deaths of at least 3,200 children in the schools, and the commission's chair said the real number was likely much higher. Call to action 80 asked for a national day to honour survivors. Since 2021, that day has been September 30.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>

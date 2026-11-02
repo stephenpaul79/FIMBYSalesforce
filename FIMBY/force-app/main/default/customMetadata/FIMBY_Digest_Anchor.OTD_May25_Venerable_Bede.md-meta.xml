@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">an english monk who spent his whole life in one monastery, writing and teaching. he finished translating the gospel of john on the day he died. faithfulness in a small place.</value>
+        <value xsi:type="xsd:string">An English monk who spent his life in one monastery. He wrote the history of the English church, and it is still one of the main sources for that era. He finished translating the Gospel of John on the day he died.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
@@ -32,6 +32,6 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Death</value>
+        <value xsi:type="xsd:string">Feast_Day</value>
     </values>
 </CustomMetadata>

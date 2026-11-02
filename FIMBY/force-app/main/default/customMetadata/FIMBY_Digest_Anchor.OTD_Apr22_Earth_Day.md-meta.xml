@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">twenty million americans gathered to say the earth matters. taking care of the land and taking care of each other are the same work.</value>
+        <value xsi:type="xsd:string">On April 22, 1970, an estimated twenty million Americans filled parks, streets, and lecture halls for the first Earth Day. By December, the US had an Environmental Protection Agency.</value>
     </values>
     <values>
         <field>Day__c</field>
@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Sort_Order__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:nil="true" />
     </values>
     <values>
         <field>Subtitle__c</field>
