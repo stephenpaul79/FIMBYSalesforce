@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Auschwitz was liberated on this day. We remember because forgetting is how it starts.</value>
+        <value xsi:type="xsd:string">On this day in 1945, Soviet soldiers reached Auschwitz, the largest of the Nazi death camps, and found about 7,000 prisoners still alive. About 1.1 million people were murdered there, most of them Jews. In all, the Nazis and their collaborators killed six million Jews, along with Roma, disabled people, and many others. In 2005 the UN set this day aside to remember them.</value>
     </values>
     <values>
         <field>Day__c</field>

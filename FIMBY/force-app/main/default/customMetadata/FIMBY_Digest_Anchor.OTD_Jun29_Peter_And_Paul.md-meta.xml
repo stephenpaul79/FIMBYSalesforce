@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Peter fished. Paul made tents. In one letter Paul says he opposed Peter to his face. Tradition says both died in Rome.</value>
+        <value xsi:type="xsd:string">Peter was a fisherman who left his nets to follow Jesus and became a leader of the first disciples. Paul made tents, persecuted the early church, and then carried it across the Roman world. His letters make up nearly half the books of the New Testament. In one he says he opposed Peter to his face, and still they are honoured together. Tradition says both were killed in Rome for their faith.</value>
     </values>
     <values>
         <field>Day__c</field>

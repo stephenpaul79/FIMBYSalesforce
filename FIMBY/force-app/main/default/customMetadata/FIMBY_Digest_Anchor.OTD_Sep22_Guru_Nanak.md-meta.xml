@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Founder of Sikhism. Tradition remembers his first teaching as: there is no Hindu, there is no Muslim. Sikhs still cook langar, a meal anyone can sit down and eat, and nobody is asked who they are first. Some 25 million people are Sikhs today.</value>
+        <value xsi:type="xsd:string">Founder of Sikhism. Tradition remembers his first teaching as: there is no Hindu, there is no Muslim, meaning that before God, people are not divided by the names of their religions. Sikhs still cook langar, a meal anyone can sit down and eat, and nobody is asked who they are first. Some 25 million people are Sikhs today.</value>
     </values>
     <values>
         <field>Day__c</field>

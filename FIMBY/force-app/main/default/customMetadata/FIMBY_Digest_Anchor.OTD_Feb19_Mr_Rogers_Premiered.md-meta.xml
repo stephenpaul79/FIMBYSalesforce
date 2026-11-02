@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">The first episode aired in 1968. Fred Rogers opened it singing, "Won't you be my neighbor?"</value>
+        <value xsi:type="xsd:string">On this day in 1968, the show first aired across the United States. Fred Rogers talked with children, slowly and plainly, about things adults often avoided: anger, divorce, death. In 1969, when some public pools still turned Black swimmers away, he invited Officer Clemmons, played by the Black singer François Clemmons, to cool his feet beside him in a small plastic pool, and then shared his towel.</value>
     </values>
     <values>
         <field>Day__c</field>

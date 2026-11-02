@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">In 1215, at Runnymede, English barons forced King John to seal Magna Carta. The king was not above the law.</value>
+        <value xsi:type="xsd:string">In 1215, at Runnymede, English barons forced King John to seal Magna Carta, a charter that set limits on what the king could do to his subjects. The pope annulled it within ten weeks, but it was reissued again and again. Its promise that no free man could be imprisoned except by the lawful judgment of his peers or the law of the land still stands behind the right to a fair trial.</value>
     </values>
     <values>
         <field>Day__c</field>

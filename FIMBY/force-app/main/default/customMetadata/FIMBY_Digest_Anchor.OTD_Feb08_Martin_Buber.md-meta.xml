@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Jewish philosopher who wrote about the difference between treating someone as an object and meeting them as a person.</value>
+        <value xsi:type="xsd:string">A Jewish philosopher, born in Vienna. In his 1923 book I and Thou, he wrote that we can treat another person as an It, something to use or sort, or meet them as a You, with our whole attention. He believed real life happens in that meeting. The book still shapes how many teachers, counsellors, and clergy think about listening.</value>
     </values>
     <values>
         <field>Day__c</field>

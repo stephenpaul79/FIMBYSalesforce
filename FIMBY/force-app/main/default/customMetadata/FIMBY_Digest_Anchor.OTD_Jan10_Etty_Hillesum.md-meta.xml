@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">A Dutch Jewish woman whose Amsterdam diaries and letters from the Westerbork transit camp survived her. She was killed at Auschwitz in 1943. Her diaries were published in 1981 and have been read around the world since. "Ultimately we have just one moral duty: to reclaim large areas of peace in ourselves."</value>
+        <value xsi:type="xsd:string">A Dutch Jewish woman whose Amsterdam diaries and letters from the Westerbork transit camp survived her. She was killed at Auschwitz in 1943. Her diaries were published in 1981 and have been read around the world since. "Ultimately, we have just one moral duty: to reclaim large areas of peace in ourselves, more and more peace, and to reflect it toward others."</value>
     </values>
     <values>
         <field>Day__c</field>

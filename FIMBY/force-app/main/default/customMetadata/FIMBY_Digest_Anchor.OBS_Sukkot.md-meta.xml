@@ -32,7 +32,7 @@
     </values>
     <values>
         <field>Subtitle__c</field>
-        <value xsi:type="xsd:string">jewish harvest festival</value>
+        <value xsi:type="xsd:string">Jewish harvest festival</value>
     </values>
     <values>
         <field>Title__c</field>
@@ -52,7 +52,8 @@
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:type="xsd:string">2027-10-16
+        <value xsi:type="xsd:string">2026-09-26
+2027-10-16
 2028-10-05
 2029-09-24
 2030-10-12

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">On 14 July 1789 a crowd in Paris stormed the Bastille. The revolution took up a shout: LIBERTÉ, ÉGALITÉ, FRATERNITÉ!</value>
+        <value xsi:type="xsd:string">On 14 July 1789 a crowd in Paris stormed the Bastille, a fortress prison that stood for the king's power to jail people without trial. About a hundred of the attackers died, along with several of the defenders. Six weeks later, the new National Assembly adopted the Declaration of the Rights of Man and of the Citizen, which begins by saying that people are born and remain free and equal in rights.</value>
     </values>
     <values>
         <field>Day__c</field>

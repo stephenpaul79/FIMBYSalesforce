@@ -40,7 +40,7 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Feast_Day</value>
+        <value xsi:type="xsd:string">Event</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>
@@ -52,7 +52,8 @@
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:type="xsd:string">2027-09-15
+        <value xsi:type="xsd:string">2026-09-25
+2027-09-15
 2028-10-03
 2029-09-22
 2030-09-12

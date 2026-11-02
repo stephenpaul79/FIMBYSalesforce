@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">This day was first marked in 1981, on the anniversary of the UN Food and Agriculture Organization's founding in 1945. Its job is ending hunger.</value>
+        <value xsi:type="xsd:string">On this day in 1945, delegates from 44 nations met at the Château Frontenac in Quebec City and founded the UN Food and Agriculture Organization, to help a hungry world grow and share enough food after the war. World Food Day has marked the anniversary since 1981. The organization tracks harvests and hunger around the world, helps small farmers, and warns governments when famine is coming.</value>
     </values>
     <values>
         <field>Day__c</field>

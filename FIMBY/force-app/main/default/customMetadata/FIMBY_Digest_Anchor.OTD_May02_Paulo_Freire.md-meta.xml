@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Brazilian educator who taught poor adults to read, and was jailed and exiled for it after the 1964 coup. In Pedagogy of the Oppressed he wrote that speaking your own word "is not the privilege of some few persons, but the right of everyone."</value>
+        <value xsi:type="xsd:string">Brazilian educator who taught poor adults to read, and was jailed and exiled for it after the 1964 coup. In his book Pedagogy of the Oppressed, he argued that teaching should start from people's own lives instead of pouring facts into them. Saying the true word, the word that names and changes your world, he wrote, "is not the privilege of some few persons, but the right of everyone."</value>
     </values>
     <values>
         <field>Day__c</field>

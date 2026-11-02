@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">A French pastor. With his wife Magda he led the village of Le Chambon-sur-Lignon in sheltering nearly 2,000 Jewish refugees during the war. Israel's Holocaust memorial, Yad Vashem, later honoured the whole village. It also named about 40 villagers Righteous Among the Nations, its title for non-Jews who risked their lives to save Jews.</value>
+        <value xsi:type="xsd:string">A French pastor. With his wife Magda he led the village of Le Chambon-sur-Lignon in sheltering thousands of Jewish refugees during the war. Israel's Holocaust memorial, Yad Vashem, later honoured the whole village. It also named about 40 villagers Righteous Among the Nations, its title for non-Jews who risked their lives to save Jews.</value>
     </values>
     <values>
         <field>Day__c</field>

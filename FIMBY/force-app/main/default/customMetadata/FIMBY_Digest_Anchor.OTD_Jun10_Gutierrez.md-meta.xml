@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">Peruvian priest who wrote A Theology of Liberation in 1971, the book that gave liberation theology its name. Of the poor, he said, "I accompany them not because they are all good, or because I am all good, but because God is good."</value>
+        <value xsi:type="xsd:string">Peruvian priest who wrote A Theology of Liberation in 1971, the book that gave liberation theology its name: the belief that God stands with the poor, and that faith has to be lived alongside them. For about twenty years he was the parish priest in Rímac, a poor neighbourhood of Lima. Of the poor, he said, "I accompany them not because they are all good, or because I am all good, but because God is good."</value>
     </values>
     <values>
         <field>Day__c</field>

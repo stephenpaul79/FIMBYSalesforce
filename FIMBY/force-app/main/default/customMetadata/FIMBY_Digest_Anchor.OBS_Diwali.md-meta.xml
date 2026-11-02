@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">The Hindu, Sikh, and Jain festival of lights. People clean their homes, set rows of small oil lamps in the windows and along the doorstep, and take sweets to the doors around them.</value>
+        <value xsi:type="xsd:string">For many Hindus, Diwali is the biggest festival of the year, a celebration of light over darkness. On the same night, Sikhs mark Bandi Chhor Divas, the release of Guru Hargobind from prison, and Jains remember the passing of Mahavira, their great teacher. People clean their homes, set rows of small oil lamps in the windows and along the doorstep, and give boxes of sweets to family and friends.</value>
     </values>
     <values>
         <field>Date_Rule__c</field>
@@ -40,7 +40,7 @@
     </values>
     <values>
         <field>Type__c</field>
-        <value xsi:type="xsd:string">Feast_Day</value>
+        <value xsi:type="xsd:string">Event</value>
     </values>
     <values>
         <field>Week_Ordinal__c</field>
@@ -52,7 +52,8 @@
     </values>
     <values>
         <field>Year_Dates__c</field>
-        <value xsi:type="xsd:string">2027-10-29
+        <value xsi:type="xsd:string">2026-11-08
+2027-10-29
 2028-10-17
 2029-11-05
 2030-10-26
