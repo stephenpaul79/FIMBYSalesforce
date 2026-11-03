@@ -21,10 +21,6 @@ public without sharing class FimbyDigestEmailBuilder {
     private static final Integer STORY_SNIPPET_LENGTH = 1000;
     private static final Integer LIBRARY_SNIPPET_LENGTH = 255;
 
-    private static final String CONTACT_BYLINE_FIELDS =
-        'Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name, '
-        + 'Contact__r.Organization_Account__r.Logo_URL__c, ';
-
     // Compact card layout: a 140x120 thumbnail floats right inside the text cell so badge, title
     // and body wrap beside and then under it
     // (see FimbyEmailHtmlBuilder.buildDigestFloatImage). A shared footer row carries the avatar +
@@ -145,12 +141,14 @@ public without sharing class FimbyDigestEmailBuilder {
               AND RecordType.DeveloperName = 'Need'
               AND Status__c = 'Completed (Offer Accepted / Need Met)'
               AND Closed_Date__c >= :startDt AND Closed_Date__c < :endDt
+            WITH SYSTEM_MODE
         ];
         Integer completedLoans = [
             SELECT COUNT() FROM Loaned_Item__c
             WHERE Library_Item__r.Neighbourhood__c = :nhId
               AND Status__c = 'Returned'
               AND LastModifiedDate >= :startDt AND LastModifiedDate < :endDt
+            WITH SYSTEM_MODE
         ];
 
         CrossFimbyStat cross = getCrossFimbyStat(frequency, startDt, endDt);
@@ -243,6 +241,7 @@ public without sharing class FimbyDigestEmailBuilder {
                     SELECT COUNT() FROM Needs_Offers__c
                     WHERE RecordType.DeveloperName = 'Offer'
                       AND CreatedDate >= :startDt AND CreatedDate < :endDt
+                    WITH SYSTEM_MODE
                 ];
             } else if (variant == 1) {
                 count = [
@@ -250,16 +249,19 @@ public without sharing class FimbyDigestEmailBuilder {
                     WHERE RecordType.DeveloperName = 'Need'
                       AND Status__c = 'Completed (Offer Accepted / Need Met)'
                       AND Closed_Date__c >= :startDt AND Closed_Date__c < :endDt
+                    WITH SYSTEM_MODE
                 ];
             } else if (variant == 2) {
                 count = [
                     SELECT COUNT() FROM Loaned_Item__c
                     WHERE CreatedDate >= :startDt AND CreatedDate < :endDt
+                    WITH SYSTEM_MODE
                 ];
             } else {
                 count = [
                     SELECT COUNT() FROM Story__c
                     WHERE CreatedDate >= :startDt AND CreatedDate < :endDt
+                    WITH SYSTEM_MODE
                 ];
             }
 
@@ -370,6 +372,7 @@ public without sharing class FimbyDigestEmailBuilder {
                        Week_Ordinal__c, Year_Dates__c
                 FROM FIMBY_Digest_Anchor__mdt
                 WHERE Active__c = true
+                WITH SYSTEM_MODE
                 ORDER BY Sort_Order__c ASC NULLS LAST, DeveloperName ASC
             ];
         }
@@ -495,6 +498,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Posted_By__c NOT IN :excluded
               AND Contact__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY CreatedDate DESC
             LIMIT :SECTION_QUERY_LIMIT
         ];
@@ -506,6 +510,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Posted_By__c NOT IN :excluded
               AND Contact__c NOT IN :excluded
+            WITH SYSTEM_MODE
         ];
 
         String html = buildSectionHeader('Shared Life', EARTH_OCHRE);
@@ -528,44 +533,79 @@ public without sharing class FimbyDigestEmailBuilder {
         }
     }
 
+    /**
+     * @description Tier 1 = never-refreshed posts, tier 2 = refreshed posts, so fresh asks and
+     * offers fill the card cap before bumped ones. Both tiers share the same scope filters.
+     */
     private static TieredDigestResult queryTieredAskOffers(Id nhId, Datetime startDt, Datetime endDt, Set<Id> excluded) {
-        String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c, ' +
-            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
-            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, '
-            + 'Contact__r.Id, Contact__r.Organization_Account__c, ' +
-            'RecordType.DeveloperName, Posted_Date__c, CreatedDate ';
-        String baseWhere = 'FROM Needs_Offers__c ' +
-            'WHERE Neighbourhood__c = :nhId ' +
-            'AND RecordType.DeveloperName IN (\'Need\', \'Offer\') ' +
-            'AND Type__c != \'Event\' ' +
-            'AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt ' +
-            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
-            'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
-
         Integer max = MAX_CARDS_PER_SECTION;
-        List<Needs_Offers__c> tier1 = Database.query(
-            selectClause + baseWhere +
-            'AND (Refresh_Count__c = null OR Refresh_Count__c = 0) ' +
-            'ORDER BY Posted_Date__c DESC LIMIT :max'
-        );
+        List<Needs_Offers__c> cards = new List<Needs_Offers__c>([
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Id, Contact__r.Organization_Account__c,
+                   RecordType.DeveloperName, Posted_Date__c, CreatedDate
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName IN ('Need', 'Offer')
+              AND Type__c != 'Event'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND (Refresh_Count__c = null OR Refresh_Count__c = 0)
+            WITH SYSTEM_MODE
+            ORDER BY Posted_Date__c DESC
+            LIMIT :max
+        ]);
 
-        Integer totalTier1 = Database.countQuery(
-            'SELECT COUNT() ' + baseWhere + 'AND (Refresh_Count__c = null OR Refresh_Count__c = 0)'
-        );
-        Integer totalTier2 = Database.countQuery(
-            'SELECT COUNT() ' + baseWhere + 'AND Refresh_Count__c > 0'
-        );
+        Integer totalTier1 = [
+            SELECT COUNT() FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName IN ('Need', 'Offer')
+              AND Type__c != 'Event'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND (Refresh_Count__c = null OR Refresh_Count__c = 0)
+            WITH SYSTEM_MODE
+        ];
+        Integer totalTier2 = [
+            SELECT COUNT() FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND RecordType.DeveloperName IN ('Need', 'Offer')
+              AND Type__c != 'Event'
+              AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND Refresh_Count__c > 0
+            WITH SYSTEM_MODE
+        ];
         Integer totalCount = totalTier1 + totalTier2;
 
-        List<Needs_Offers__c> cards = new List<Needs_Offers__c>(tier1);
         if (cards.size() < max) {
             Integer remainder = max - cards.size();
-            List<Needs_Offers__c> tier2 = Database.query(
-                selectClause + baseWhere +
-                'AND Refresh_Count__c > 0 ' +
-                'ORDER BY Posted_Date__c DESC LIMIT :remainder'
-            );
-            cards.addAll(tier2);
+            cards.addAll([
+                SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, Is_Urgent__c, Refresh_Count__c,
+                       Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                       Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                       Contact__r.Organization_Account__r.Logo_URL__c,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                       Contact__r.Id, Contact__r.Organization_Account__c,
+                       RecordType.DeveloperName, Posted_Date__c, CreatedDate
+                FROM Needs_Offers__c
+                WHERE Neighbourhood__c = :nhId
+                  AND RecordType.DeveloperName IN ('Need', 'Offer')
+                  AND Type__c != 'Event'
+                  AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
+                  AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+                  AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+                  AND Refresh_Count__c > 0
+                WITH SYSTEM_MODE
+                ORDER BY Posted_Date__c DESC
+                LIMIT :remainder
+            ]);
         }
         return new TieredDigestResult(cards, totalCount);
     }
@@ -601,45 +641,80 @@ public without sharing class FimbyDigestEmailBuilder {
         Date today,
         Set<Id> excluded
     ) {
-        String selectClause = 'SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c, ' +
-            'Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName, ' + CONTACT_BYLINE_FIELDS
-            + 'Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c, '
-            + 'Contact__r.Id, Contact__r.Organization_Account__c, ' +
-            'Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate, ' +
-            'Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c ';
-        String baseWhere = 'FROM Needs_Offers__c ' +
-            'WHERE Neighbourhood__c = :nhId ' +
-            'AND Type__c = \'Event\' ' +
-            'AND CreatedDate >= :startDt AND CreatedDate < :endDt ' +
-            'AND Status__c IN (\'Posted\', \'Available\', \'Reply Received\', \'Reply Accepted\') ' +
-            'AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today)) ' +
-            'AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds) ' +
-            'AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded ';
-
         Integer max = MAX_CARDS_PER_SECTION;
-        List<Needs_Offers__c> tier1 = Database.query(
-            selectClause + baseWhere +
-            'AND Series_Parent__c = null ' +
-            'ORDER BY CreatedDate DESC LIMIT :max'
-        );
+        List<Needs_Offers__c> cards = new List<Needs_Offers__c>([
+            SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
+                   Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                   Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                   Contact__r.Organization_Account__r.Logo_URL__c,
+                   Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                   Contact__r.Id, Contact__r.Organization_Account__c,
+                   Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
+                   Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c
+            FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND Type__c = 'Event'
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND Series_Parent__c = null
+            WITH SYSTEM_MODE
+            ORDER BY CreatedDate DESC
+            LIMIT :max
+        ]);
 
-        Integer totalTier1 = Database.countQuery(
-            'SELECT COUNT() ' + baseWhere + 'AND Series_Parent__c = null'
-        );
-        Integer totalTier2 = Database.countQuery(
-            'SELECT COUNT() ' + baseWhere + 'AND Series_Parent__c != null'
-        );
+        Integer totalTier1 = [
+            SELECT COUNT() FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND Type__c = 'Event'
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND Series_Parent__c = null
+            WITH SYSTEM_MODE
+        ];
+        Integer totalTier2 = [
+            SELECT COUNT() FROM Needs_Offers__c
+            WHERE Neighbourhood__c = :nhId
+              AND Type__c = 'Event'
+              AND CreatedDate >= :startDt AND CreatedDate < :endDt
+              AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+              AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+              AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
+              AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+              AND Series_Parent__c != null
+            WITH SYSTEM_MODE
+        ];
         Integer totalCount = totalTier1 + totalTier2;
 
-        List<Needs_Offers__c> cards = new List<Needs_Offers__c>(tier1);
         if (cards.size() < max) {
             Integer remainder = max - cards.size();
-            List<Needs_Offers__c> tier2 = Database.query(
-                selectClause + baseWhere +
-                'AND Series_Parent__c != null ' +
-                'ORDER BY CreatedDate DESC LIMIT :remainder'
-            );
-            cards.addAll(tier2);
+            cards.addAll([
+                SELECT Id, Name, Full_Details__c, Image_1_URL__c, Image_1_Ratio__c,
+                       Contact__r.Name, Contact__r.Full_Name__c, Contact__r.FirstName,
+                       Contact__r.Is_Organization_Contact__c, Contact__r.Organization_Account__r.Name,
+                       Contact__r.Organization_Account__r.Logo_URL__c,
+                       Contact__r.Image_URL__c, Contact__r.Display_Avatar_URL__c,
+                       Contact__r.Id, Contact__r.Organization_Account__c,
+                       Event_Type__c, Event_Details__c, Start_Date__c, End_Date__c, Location__c, CreatedDate,
+                       Recurrence_Frequency__c, Recurrence_Interval__c, Series_Parent__c
+                FROM Needs_Offers__c
+                WHERE Neighbourhood__c = :nhId
+                  AND Type__c = 'Event'
+                  AND CreatedDate >= :startDt AND CreatedDate < :endDt
+                  AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
+                  AND (End_Date__c >= :today OR (End_Date__c = null AND Start_Date__c >= :today))
+                  AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
+                  AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+                  AND Series_Parent__c != null
+                WITH SYSTEM_MODE
+                ORDER BY CreatedDate DESC
+                LIMIT :remainder
+            ]);
         }
         return new TieredDigestResult(cards, totalCount);
     }
@@ -670,6 +745,7 @@ public without sharing class FimbyDigestEmailBuilder {
             WHERE Neighbourhood__c = :neighbourhoodId
               AND Recurrence_Frequency__c != null
               AND Series_Parent__c = null
+            WITH SYSTEM_MODE
         ]) {
             liveIds.add(
                 seriesParent.Current_Occurrence__c != null
@@ -715,6 +791,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded
               AND Posted_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY Posted_Date__c DESC
             LIMIT :SECTION_QUERY_LIMIT
         ];
@@ -728,6 +805,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded
               AND Posted_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
         ];
 
         String html = buildSectionHeader('Bulk Buys', EARTH_OCHRE);
@@ -812,6 +890,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY CreatedDate DESC
             LIMIT :SECTION_QUERY_LIMIT
         ];
@@ -829,6 +908,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
         ];
     }
 
@@ -841,6 +921,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
         ];
     }
 
@@ -862,6 +943,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
               AND Owner_Contact__c NOT IN :excluded
               AND Listed_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY CreatedDate DESC
             LIMIT :SECTION_QUERY_LIMIT
         ];
@@ -1017,6 +1099,8 @@ public without sharing class FimbyDigestEmailBuilder {
     /**
      * @description Badge + linked title on one row. The badge is vertically centred against the
      * title and never wraps; the title is a link to the record (large, honest tap target).
+     * The plain space after the badge is the only wrap point beside a floated thumbnail;
+     * without it the badge + first title word drop below the image on phones.
      */
     private static String badgeTitleRow(String label, String typeKey, String title, String ctaUrl) {
         return badgeTitleRow(label,
@@ -1036,7 +1120,7 @@ public without sharing class FimbyDigestEmailBuilder {
                 + ';text-decoration:none;vertical-align:middle;line-height:1.3;">' + escHtml(title) + '</a>';
         }
         return '<p style="margin:0 0 4px;line-height:1.3;">'
-            + '<span style="white-space:nowrap;margin-right:8px;">' + badge + '</span>'
+            + '<span style="white-space:nowrap;margin-right:4px;">' + badge + '</span> '
             + titleHtml + '</p>';
     }
 
@@ -1284,6 +1368,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received', 'Reply Accepted')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY Posted_Date__c DESC
             LIMIT 10
         ]) {
@@ -1318,6 +1403,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND Start_Date__c >= :today
               AND ((Recurrence_Frequency__c = null AND Series_Parent__c = null) OR Id IN :liveRecurringOccurrenceIds)
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY Start_Date__c ASC
             LIMIT 10
         ]) {
@@ -1349,6 +1435,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY Posted_Date__c DESC
             LIMIT 10
         ]) {
@@ -1378,6 +1465,7 @@ public without sharing class FimbyDigestEmailBuilder {
               AND CreatedDate >= :startDt AND CreatedDate < :endDt
               AND Posted_By__c NOT IN :excluded
               AND Contact__c NOT IN :excluded
+            WITH SYSTEM_MODE
             ORDER BY CreatedDate DESC
             LIMIT 10
         ]) {

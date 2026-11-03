@@ -527,10 +527,11 @@ private class FimbyDigestEmailBuilderTest {
             Name = 'Strathcona Vineyard',
             Logo_URL__c = 'https://example.com/strathcona-logo.jpg'
         );
-        try {
-            orgAccount.RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                .get('Organization').getRecordTypeId();
-        } catch (Exception e) { /* RT may not exist in test org */ }
+        Schema.RecordTypeInfo orgRt = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+            .get('Organization');
+        if (orgRt != null) {
+            orgAccount.RecordTypeId = orgRt.getRecordTypeId();
+        }
         insert orgAccount;
 
         Contact orgContact = new Contact(
