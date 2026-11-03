@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>OTD Apr 11 Simone Weil</label>
+    <label>OTD Aug 24 Simone Weil</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">French philosopher who worked in factories to understand the poor. She said attention is the rarest and purest form of generosity.</value>
+        <value xsi:type="xsd:string">A French philosopher who left teaching to work on factory lines, so she would know the lives she wrote about. In wartime England she limited her food to what she believed people in occupied France received. She died at 34. She wrote that attention is the rarest and purest form of generosity.</value>
     </values>
     <values>
         <field>Day__c</field>

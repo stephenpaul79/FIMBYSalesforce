@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">On this day in 1945, fifty nations signed the charter that created the United Nations, promising to try to solve problems together. It has not always worked.</value>
+        <value xsi:type="xsd:string">On this day in 1945, fifty nations signed the charter that created the United Nations. They promised to save the next generations from war, and to stand for human rights and the dignity of every person. It has not always worked, and it is still the place where nearly every country on earth comes to try.</value>
     </values>
     <values>
         <field>Day__c</field>

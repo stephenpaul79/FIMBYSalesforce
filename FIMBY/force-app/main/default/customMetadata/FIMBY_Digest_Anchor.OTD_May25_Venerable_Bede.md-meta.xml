@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">An English monk who spent his life in one monastery. He wrote the history of the English church, and it is still one of the main sources for that era. He finished translating the Gospel of John on the day he died.</value>
+        <value xsi:type="xsd:string">An English monk who lived in the monastery of Wearmouth and Jarrow from the age of seven. His history of the English church is still one of the main sources for that era, and it helped spread the habit of counting years as AD. He was translating the Gospel of John into the English of his day, and finished it on the day he died.</value>
     </values>
     <values>
         <field>Day__c</field>

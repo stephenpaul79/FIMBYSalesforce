@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">He wrote The Hobbit and The Lord of the Rings, about small people carrying something too heavy for them to carry alone.</value>
+        <value xsi:type="xsd:string">He wrote The Hobbit and The Lord of the Rings. In the second, a small hobbit named Frodo has to carry something far too heavy for him, and his friend Sam will not let him carry it alone. Near the end, when Frodo cannot walk any farther, Sam carries him.</value>
     </values>
     <values>
         <field>Day__c</field>

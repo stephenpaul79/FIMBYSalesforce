@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>OTD Feb 5 Dorothea Dix</label>
+    <label>OTD Jul 17 Dorothea Dix</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">In the 1840s she went through the jails and poorhouses of Massachusetts and found people with mental illness kept in cages, cellars, and pens. Her report to the legislature led to a new state hospital, and she spent the next forty years doing the same across the country.</value>
+        <value xsi:type="xsd:string">In the 1840s she went through the jails and poorhouses of Massachusetts and found people with mental illness kept in cages, cellars, and pens. Her report to the legislature led to a new state hospital, and she spent the next forty years doing the same across the country. She took that work to the Atlantic colonies, including Nova Scotia and Newfoundland, and raised money for lifeboats on Sable Island.</value>
     </values>
     <values>
         <field>Day__c</field>

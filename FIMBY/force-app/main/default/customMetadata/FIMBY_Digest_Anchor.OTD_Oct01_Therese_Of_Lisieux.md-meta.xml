@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">St. Therese of Lisieux</value>
+        <value xsi:type="xsd:string">St. Thérèse of Lisieux</value>
     </values>
     <values>
         <field>Type__c</field>

@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">In 2001, hijacked planes were flown into the World Trade Center, the Pentagon, and a field in Pennsylvania. Nearly three thousand people were killed. Thousands of others, first responders and bystanders, ran toward the danger to help.</value>
+        <value xsi:type="xsd:string">In 2001, hijacked planes were flown into the World Trade Center, the Pentagon, and a field in Pennsylvania. Nearly three thousand people were killed, and thousands of first responders and bystanders ran toward the danger. With American airspace closed, planes landed across Canada. In Gander, Newfoundland, and the towns around it, people took thousands of stranded passengers into their homes.</value>
     </values>
     <values>
         <field>Day__c</field>

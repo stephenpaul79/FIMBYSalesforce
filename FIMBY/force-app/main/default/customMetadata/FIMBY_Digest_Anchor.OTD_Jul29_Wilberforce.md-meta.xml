@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">He spent decades in Parliament against the slave trade, and then against slavery itself. In July 1833 he heard the abolition bill would pass. He died three days later. The act went on to free some 800,000 enslaved people, most of them in the British Caribbean.</value>
+        <value xsi:type="xsd:string">He spent decades in Parliament against the slave trade, and then against slavery itself. In July 1833 he heard the abolition bill would pass. He died three days later. The act compensated slave owners, and it kept most of the people they had enslaved working for them as apprentices. Full freedom for most of those 800,000 people, in the British Caribbean, came in 1838.</value>
     </values>
     <values>
         <field>Day__c</field>

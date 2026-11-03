@@ -28,7 +28,7 @@
     </values>
     <values>
         <field>Title__c</field>
-        <value xsi:type="xsd:string">Soren Kierkegaard</value>
+        <value xsi:type="xsd:string">Søren Kierkegaard</value>
     </values>
     <values>
         <field>Type__c</field>

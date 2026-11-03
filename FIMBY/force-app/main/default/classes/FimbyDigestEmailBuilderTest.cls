@@ -275,50 +275,103 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
-    static void pickAnchorRecord_returnsActiveRecordOrNull() {
+    static void pickAnchorRecords_returnsActiveRecordsWithBodies() {
         Test.startTest();
-        FIMBY_Digest_Anchor__mdt result = FimbyDigestEmailBuilder.pickAnchorRecord(Date.today());
+        List<FIMBY_Digest_Anchor__mdt> results = FimbyDigestEmailBuilder.pickAnchorRecords(Date.today());
         Test.stopTest();
 
-        if (result != null) {
+        System.assert(!results.isEmpty(), 'Today must resolve at least one anchor.');
+        for (FIMBY_Digest_Anchor__mdt result : results) {
             System.assertNotEquals(null, result.Type__c, 'Selected anchor must have a Type.');
             System.assert(String.isNotBlank(result.Body__c), 'Selected anchor must have a Body.');
         }
     }
 
     @IsTest
-    static void pickAnchorRecord_handlesArbitraryDates() {
+    static void pickAnchorRecords_handlesArbitraryDates() {
         Test.startTest();
-        FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 7, 8));
-        FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 12, 31));
-        FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 1, 1));
+        List<Date> dates = new List<Date>{
+            Date.newInstance(2026, 7, 8),
+            Date.newInstance(2026, 12, 31),
+            Date.newInstance(2026, 1, 1)
+        };
+        for (Date d : dates) {
+            System.assert(
+                !FimbyDigestEmailBuilder.pickAnchorRecords(d).isEmpty(),
+                'Every date must resolve at least one anchor: ' + d
+            );
+        }
         Test.stopTest();
     }
 
     @IsTest
-    static void pickAnchorRecord_fixedDateIsDeterministic() {
-        // Two records may share a Month/Day. Selection must not depend on row order.
-        FIMBY_Digest_Anchor__mdt first = FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 4, 22));
-        FIMBY_Digest_Anchor__mdt second = FimbyDigestEmailBuilder.pickAnchorRecord(Date.newInstance(2026, 4, 22));
-        System.assertNotEquals(null, first, 'April 22 has at least one dated anchor');
+    static void pickAnchorRecords_fixedDateIsDeterministic() {
+        List<String> first = anchorNames(FimbyDigestEmailBuilder.pickAnchorRecords(Date.newInstance(2026, 4, 22)));
+        List<String> second = anchorNames(FimbyDigestEmailBuilder.pickAnchorRecords(Date.newInstance(2026, 4, 22)));
+        System.assert(!first.isEmpty(), 'April 22 has at least one dated anchor');
+        System.assertEquals(first, second, 'Repeated picks for the same date must return the same ordered records');
+    }
+
+    @IsTest
+    static void pickAnchorRecords_everyDayOfYearResolvesABody() {
+        Date cursor = Date.newInstance(2026, 1, 1);
+        for (Integer i = 0; i < 365; i++) {
+            List<FIMBY_Digest_Anchor__mdt> records = FimbyDigestEmailBuilder.pickAnchorRecords(cursor);
+            System.assert(!records.isEmpty(), 'Every day must resolve an anchor: ' + cursor);
+            for (FIMBY_Digest_Anchor__mdt record : records) {
+                System.assert(
+                    String.isNotBlank(record.Body__c),
+                    'Anchor body must be populated for ' + cursor + ' (' + record.DeveloperName + ')'
+                );
+            }
+            cursor = cursor.addDays(1);
+        }
+    }
+
+    @IsTest
+    static void pickAnchorRecords_ruleAndFixedCollision_returnsBothInOrder() {
+        List<String> names = anchorNames(FimbyDigestEmailBuilder.pickAnchorRecords(Date.newInstance(2026, 9, 25)));
         System.assertEquals(
-            first.DeveloperName, second.DeveloperName,
-            'Repeated picks for the same date must return the same record'
+            new List<String>{ 'OBS_Mid_Autumn_Festival', 'OTD_Sep25_Wangari_Maathai' },
+            names,
+            'A moveable observance and a fixed anniversary on the same day must both be returned, observance first'
         );
     }
 
     @IsTest
-    static void pickAnchorRecord_everyDayOfYearResolvesABody() {
-        Date cursor = Date.newInstance(2026, 1, 1);
-        for (Integer i = 0; i < 365; i++) {
-            FIMBY_Digest_Anchor__mdt record = FimbyDigestEmailBuilder.pickAnchorRecord(cursor);
-            System.assertNotEquals(null, record, 'Every day must resolve an anchor: ' + cursor);
-            System.assert(
-                String.isNotBlank(record.Body__c),
-                'Anchor body must be populated for ' + cursor + ' (' + record.DeveloperName + ')'
-            );
-            cursor = cursor.addDays(1);
+    static void buildAnchorCard_collision_rendersBothCards() {
+        Test.startTest();
+        String html = FimbyDigestEmailBuilder.buildAnchorCard(Date.newInstance(2026, 9, 25));
+        Test.stopTest();
+
+        System.assert(html.contains('Mid-Autumn Festival'), 'Clash day must render the observance card.');
+        System.assert(html.contains('Wangari Maathai'), 'Clash day must render the anniversary card.');
+        System.assert(
+            html.indexOf('Mid-Autumn Festival') < html.indexOf('Wangari Maathai'),
+            'The observance card must render before the anniversary card.'
+        );
+    }
+
+    @IsTest
+    static void pickAnchorRecords_noClash_returnsSingleFixedRecord() {
+        List<String> names = anchorNames(FimbyDigestEmailBuilder.pickAnchorRecords(Date.newInstance(2026, 4, 22)));
+        System.assertEquals(new List<String>{ 'OTD_Apr22_Earth_Day' }, names, 'April 22 must show only Earth Day');
+    }
+
+    @IsTest
+    static void pickAnchorRecords_noDatedMatch_returnsOneEvergreen() {
+        List<FIMBY_Digest_Anchor__mdt> records = FimbyDigestEmailBuilder.pickAnchorRecords(Date.newInstance(2026, 1, 2));
+        System.assertEquals(1, records.size(), 'A day with no dated anchor must fall back to exactly one evergreen.');
+        System.assertEquals(null, records[0].Month__c, 'The fallback must be an evergreen with no Month.');
+        System.assertEquals(null, records[0].Day__c, 'The fallback must be an evergreen with no Day.');
+    }
+
+    private static List<String> anchorNames(List<FIMBY_Digest_Anchor__mdt> records) {
+        List<String> names = new List<String>();
+        for (FIMBY_Digest_Anchor__mdt record : records) {
+            names.add(record.DeveloperName);
         }
+        return names;
     }
 
     @IsTest

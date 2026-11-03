@@ -342,15 +342,26 @@ public without sharing class FimbyDigestEmailBuilder {
 
     /* ---------------------------------------------------------------
      * Anchor card — OTD when today matches, evergreen cycle otherwise.
-     * Single slot rendered after the feed cards.
+     * Rendered after the feed cards: one card on ordinary days, one card
+     * per dated match when a moveable observance and a fixed anniversary
+     * fall on the same day.
      * --------------------------------------------------------------- */
 
     @TestVisible
     private static String buildAnchorCard() {
+        return buildAnchorCard(Date.today());
+    }
+
+    @TestVisible
+    private static String buildAnchorCard(Date today) {
         try {
-            FIMBY_Digest_Anchor__mdt record = pickAnchorRecord(Date.today());
-            if (record == null || String.isBlank(record.Body__c)) { return ''; }
-            return renderAnchorCard(record);
+            String html = '';
+            for (FIMBY_Digest_Anchor__mdt record : pickAnchorRecords(today)) {
+                if (record != null && String.isNotBlank(record.Body__c)) {
+                    html += renderAnchorCard(record);
+                }
+            }
+            return html;
         } catch (Exception e) {
             return '';
         }
@@ -380,32 +391,30 @@ public without sharing class FimbyDigestEmailBuilder {
     }
 
     @TestVisible
-    private static FIMBY_Digest_Anchor__mdt pickAnchorRecord(Date today) {
+    private static List<FIMBY_Digest_Anchor__mdt> pickAnchorRecords(Date today) {
         List<FIMBY_Digest_Anchor__mdt> anchors = getActiveAnchors();
-
-        FIMBY_Digest_Anchor__mdt ruleMatch = pickRuleAnchor(anchors, today);
-        if (ruleMatch != null) {
-            return ruleMatch;
-        }
-
+        List<FIMBY_Digest_Anchor__mdt> selected = pickRuleAnchors(anchors, today);
         List<FIMBY_Digest_Anchor__mdt> evergreen = new List<FIMBY_Digest_Anchor__mdt>();
+
         for (FIMBY_Digest_Anchor__mdt record : anchors) {
-            if (isRuleResolved(record)) { continue; }
+            if (isRuleResolved(record)) {
+                continue;
+            }
             if (record.Month__c == null && record.Day__c == null) {
                 evergreen.add(record);
             } else if (record.Month__c == today.month() && record.Day__c == today.day()) {
-                // Already ordered by Sort_Order then DeveloperName, so the first match on a
-                // date shared by two records is deterministic.
-                return record;
+                selected.add(record);
             }
         }
-        if (evergreen.isEmpty()) {
-            return null;
+
+        if (!selected.isEmpty() || evergreen.isEmpty()) {
+            return selected;
         }
         // Apex Date.dayOfYear() is 1-based (Jan 1 = 1); subtract 1 for a zero-based cycle
         // so Jan 1 maps to evergreen[0] (the record with Sort_Order__c = 1).
         Integer index = Math.mod(today.dayOfYear() - 1, evergreen.size());
-        return evergreen[index];
+        selected.add(evergreen[index]);
+        return selected;
     }
 
     private static Boolean isRuleResolved(FIMBY_Digest_Anchor__mdt record) {
@@ -417,7 +426,8 @@ public without sharing class FimbyDigestEmailBuilder {
      * SOQL, so every rule-based record is resolved in Apex. A window opened late in December
      * can still land in January, hence the previous-year check.
      */
-    private static FIMBY_Digest_Anchor__mdt pickRuleAnchor(List<FIMBY_Digest_Anchor__mdt> anchors, Date today) {
+    private static List<FIMBY_Digest_Anchor__mdt> pickRuleAnchors(List<FIMBY_Digest_Anchor__mdt> anchors, Date today) {
+        List<FIMBY_Digest_Anchor__mdt> matches = new List<FIMBY_Digest_Anchor__mdt>();
         for (FIMBY_Digest_Anchor__mdt record : anchors) {
             if (!isRuleResolved(record)) { continue; }
 
@@ -434,10 +444,10 @@ public without sharing class FimbyDigestEmailBuilder {
 
             if (today == FimbySeasonalThemeResolver.resolveStartDate(spec, today.year())
                 || today == FimbySeasonalThemeResolver.resolveStartDate(spec, today.year() - 1)) {
-                return record;
+                matches.add(record);
             }
         }
-        return null;
+        return matches;
     }
 
     private static String renderAnchorCard(FIMBY_Digest_Anchor__mdt record) {

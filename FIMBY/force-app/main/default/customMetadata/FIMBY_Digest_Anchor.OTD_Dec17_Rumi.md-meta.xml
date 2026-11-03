@@ -8,7 +8,7 @@
     </values>
     <values>
         <field>Body__c</field>
-        <value xsi:type="xsd:string">A Persian poet, died in 1273. Many English readers first meet him in Coleman Barks's loose modern versions, like this one: "Out beyond ideas of wrongdoing and rightdoing, there is a field. I'll meet you there."</value>
+        <value xsi:type="xsd:string">A Persian poet and Sufi teacher. In the Masnavi, Rumi tells of Moses scolding a shepherd whose prayer sounds foolish to him. God rebukes Moses: "I have given to every one a peculiar form of expression." Rumi's point is that love can look and sound different depending on where we come from. What seems strange to one person may be another person's sincere way of offering care.</value>
     </values>
     <values>
         <field>Day__c</field>
