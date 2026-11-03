@@ -7,9 +7,10 @@
 IF(ISPICKVAL(Status__c, &apos;Expired&apos;), &apos;Expired&apos;,
 IF(ISPICKVAL(Status__c, &apos;Completed (Offer Accepted / Need Met)&apos;), &apos;Completed&apos;,
 IF(ISPICKVAL(Status__c, &apos;Pickup_Ready&apos;), &apos;Pickup Ready&apos;,
+IF(NOT(ISBLANK(Reservations_Closed_Date__c)), &apos;Reservations Closed&apos;,
 IF(Total_Available__c &lt;= 0, &apos;Fully Reserved&apos;,
 IF(Total_Reserved__c &gt; 0, &apos;Shares Available&apos;,
-&apos;Available&apos;))))))</formula>
+&apos;Available&apos;)))))))</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Display Status</label>
     <required>false</required>
