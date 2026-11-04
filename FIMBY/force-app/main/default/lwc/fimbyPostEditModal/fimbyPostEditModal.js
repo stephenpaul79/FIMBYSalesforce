@@ -89,6 +89,7 @@ export default class FimbyPostEditModal extends LightningElement {
     @track isSaving = false;
     @track isLoading = true;
     @track errorMessage = '';
+    @track saveError = '';
     @track actingAsContact = null;
     @track hasMultipleIdentities = false;
     @track libraryCategoryOptions = [];
@@ -412,7 +413,7 @@ export default class FimbyPostEditModal extends LightningElement {
         this._resetFormState();
         this._formPopulated = false;
         this.isVisible = true;
-        this._shellScrim.bind(() => this.hide());
+        this._shellScrim.bind(() => this.hide(), this.template.host);
         this.isLoading = true;
         this.errorMessage = '';
         this.isSaving = false;
@@ -693,6 +694,7 @@ export default class FimbyPostEditModal extends LightningElement {
     async handleSave() {
         if (this.isSaveDisabled) return;
         this.isSaving = true;
+        this.saveError = '';
         try {
             if (this.isBulkBuy) {
                 await this._saveBulkBuy();
@@ -710,6 +712,7 @@ export default class FimbyPostEditModal extends LightningElement {
             }));
             this.hide();
         } catch (error) {
+            this.saveError = error?.body?.message || error?.message || 'Something went wrong. Please try again.';
             fireErrorToast(error);
         } finally {
             this.isSaving = false;

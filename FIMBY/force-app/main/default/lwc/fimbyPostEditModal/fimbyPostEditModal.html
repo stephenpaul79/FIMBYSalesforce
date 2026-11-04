@@ -463,6 +463,9 @@
                 </div>
 
                 <template lwc:if={showFooter}>
+                    <template lwc:if={saveError}>
+                        <p class="save-error" role="alert">{saveError}</p>
+                    </template>
                     <div class="modal-footer">
                         <button class="cancel-button" onclick={handleCancel} disabled={isSaving}>Cancel</button>
                         <button class="save-button" onclick={handleSave} disabled={isSaveDisabled}>

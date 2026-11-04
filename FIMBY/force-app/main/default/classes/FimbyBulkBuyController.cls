@@ -99,11 +99,11 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
-                throw new AuraHandledException('You can only edit posts you created.');
+                throw buildAuraException('You can only edit posts you created.');
             }
             if (FimbyBulkBuyReservationController.isReservationWindowClosed(post)
                 && changesAllocation(post, data)) {
-                throw new AuraHandledException(ALLOCATION_LOCKED_MESSAGE);
+                throw buildAuraException(ALLOCATION_LOCKED_MESSAGE);
             }
 
             Decimal newQuantity = toDecimal(data.get('totalQuantity'), null);
@@ -111,7 +111,7 @@ public with sharing class FimbyBulkBuyController {
             Decimal effectiveOwner = newOwnerShares != null ? newOwnerShares : 0;
             Decimal committed = post.Total_Reserved__c + effectiveOwner;
             if (newQuantity != null && newQuantity < committed) {
-                throw new AuraHandledException('Total shares cannot be less than reserved + owner shares (' + committed.intValue() + ').');
+                throw buildAuraException('Total shares cannot be less than reserved + owner shares (' + committed.intValue() + ').');
             }
 
             if (newQuantity != null) { post.Total_Quantity__c = newQuantity; }
@@ -218,7 +218,7 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
-                throw new AuraHandledException('Only the organiser can notify for pickup.');
+                throw buildAuraException('Only the organiser can notify for pickup.');
             }
             assertPickupAllowed(post);
 
@@ -276,7 +276,7 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
-                throw new AuraHandledException('Only the organiser can complete this bulk buy.');
+                throw buildAuraException('Only the organiser can complete this bulk buy.');
             }
 
             List<Bulk_Buy_Follow_Up__c> activeFollowUps = [
@@ -288,7 +288,7 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (!activeFollowUps.isEmpty()) {
-                throw new AuraHandledException('Resolve open check-ins before completing.');
+                throw buildAuraException('Resolve open check-ins before completing.');
             }
 
             completePost(post);
@@ -318,7 +318,7 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
-                throw new AuraHandledException('Only the organiser can cancel this bulk buy.');
+                throw buildAuraException('Only the organiser can cancel this bulk buy.');
             }
 
             post.Status__c = FimbyConstants.NEEDS_OFFERS_CANCELLED;
@@ -381,16 +381,16 @@ public with sharing class FimbyBulkBuyController {
             ];
 
             if (post.Posted_By__c != realContactId && post.Contact__c != actingAsContactId) {
-                throw new AuraHandledException('Only the organiser can close reservations.');
+                throw buildAuraException('Only the organiser can close reservations.');
             }
             if (post.Status__c != FimbyConstants.NEEDS_OFFERS_AVAILABLE) {
-                throw new AuraHandledException('This bulk buy is no longer taking reservations.');
+                throw buildAuraException('This bulk buy is no longer taking reservations.');
             }
             if (post.Reservations_Closed_Date__c != null) {
-                throw new AuraHandledException('Reservations are already closed for this bulk buy.');
+                throw buildAuraException('Reservations are already closed for this bulk buy.');
             }
             if (new BulkBuyHelper().countReserved(post.Id) == 0) {
-                throw new AuraHandledException(NO_RESERVATIONS_TO_CLOSE_MESSAGE);
+                throw buildAuraException(NO_RESERVATIONS_TO_CLOSE_MESSAGE);
             }
 
             new BulkBuyHelper().updateRecord(
@@ -412,20 +412,20 @@ public with sharing class FimbyBulkBuyController {
      */
     private static void assertPickupAllowed(Needs_Offers__c post) {
         if (post.Status__c == FimbyConstants.NEEDS_OFFERS_PICKUP_READY) {
-            throw new AuraHandledException('Everyone has already been notified for pickup.');
+            throw buildAuraException('Everyone has already been notified for pickup.');
         }
         if (post.Status__c != FimbyConstants.NEEDS_OFFERS_AVAILABLE) {
-            throw new AuraHandledException('This bulk buy is no longer active, so pickup can\'t be announced.');
+            throw buildAuraException('This bulk buy is no longer active, so pickup can\'t be announced.');
         }
         Decimal reserved = new BulkBuyHelper().sumReserved(post.Id);
         if (reserved <= 0) {
-            throw new AuraHandledException('Nobody has reserved a share yet, so there\'s no pickup to announce.');
+            throw buildAuraException('Nobody has reserved a share yet, so there\'s no pickup to announce.');
         }
         Decimal owner = post.Owner_Shares__c != null ? post.Owner_Shares__c : 0;
         Decimal total = post.Total_Quantity__c != null ? post.Total_Quantity__c : 0;
         Boolean fullyReserved = total - owner - reserved <= 0;
         if (!fullyReserved && !FimbyBulkBuyReservationController.isReservationWindowClosed(post)) {
-            throw new AuraHandledException(
+            throw buildAuraException(
                 'Some shares are still open. Close reservations first if you\'d like to go ahead with what\'s reserved.');
         }
     }

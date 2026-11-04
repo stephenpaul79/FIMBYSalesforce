@@ -960,7 +960,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 responseIconUrl = lifecycle.ctaOverride.iconUrl;
                 responsePillClass = lifecycle.ctaOverride.pillClass;
             }
-            if (lifecycle.reservationsClosed && allocationPills) {
+            if ((lifecycle.reservationsClosed || item.status === 'Pickup_Ready') && allocationPills) {
                 allocationPills = allocationPills.filter(pill => pill.key !== 'available');
             }
 

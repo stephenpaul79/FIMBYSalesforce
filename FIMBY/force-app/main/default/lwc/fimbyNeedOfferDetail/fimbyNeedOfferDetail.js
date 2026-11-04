@@ -1243,6 +1243,11 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return this.bulkBuyReservationsClosed ? 'Reservations Closed' : this.bulkBuyDisplayStatus;
     }
 
+    /** The image column carries the badge when a photo is present. */
+    get showBulkBuyStatusInTitle() {
+        return !this.showCardLeft;
+    }
+
     get bulkBuyStatusBadgeClass() {
         if (this.userHasBulkBuyReservation) {
             return 'status-badge status-badge-reserved';

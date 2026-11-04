@@ -59,6 +59,9 @@
                             </template>
                             <div class="card-right">
                                 <div class="card-right-top">
+                                    <template lwc:if={showBulkBuyStatusInTitle}>
+                                        <div class={bulkBuyStatusBadgeClass} data-status={bulkBuyDisplayStatus}>{bulkBuyStatusBadgeText}</div>
+                                    </template>
                                     <div class="post-header-compact">
                                         <div class="post-header-left">
                                             <h1 class="post-title">{postTitle}</h1>

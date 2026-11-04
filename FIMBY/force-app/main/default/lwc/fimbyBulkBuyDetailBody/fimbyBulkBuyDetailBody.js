@@ -90,6 +90,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     }
 
     get hasAvailableShares() {
+        if (this.isReservationsClosed || this.isPickupReady || this.isCompleted || this.isCancelled) return false;
         return this.availableShares > 0;
     }
 
@@ -369,6 +370,10 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     // ============================================
 
     get visitorActionContext() {
+        if (this.isReservationsClosed || this.isPickupReady) {
+            return 'Reservations are closed. Message the organiser if something has changed.';
+        }
+        if (this.isCancelled || this.isCompleted) return null;
         return 'Reserve a share to join this bulk buy. The organiser will confirm pickup details.';
     }
 
@@ -418,7 +423,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     }
 
     get showFooterGroupChat() {
-        return this.hasGroupConversation && !this.isCompleted && !this.isCancelled;
+        return this.hasGroupConversation && !this.hasUserReservation && !this.isCompleted && !this.isCancelled;
     }
 
     get reservationsWithButtonState() {

@@ -85,7 +85,9 @@
             <!-- ========== NEW VISITOR: ACTION CONTEXT + RESERVE CTA ========== -->
             <template lwc:if={showReserveButton}>
                 <div class="visitor-action-block">
-                    <p class="action-context-text">{visitorActionContext}</p>
+                    <template lwc:if={visitorActionContext}>
+                        <p class="action-context-text">{visitorActionContext}</p>
+                    </template>
                     <div class="reserve-btn-wrap">
                         <button type="button"
                                 class={reserveButtonClass}
@@ -108,6 +110,9 @@
             <!-- ========== ORGANISER: ACTIONS ========== -->
             <template lwc:if={showOrganiserActions}>
                 <div class="section section-actions">
+                    <template lwc:if={isReservationsClosed}>
+                        <p class="post-health-text">Reservations closed. Reserved shares stay reserved.</p>
+                    </template>
                     <div class="action-buttons">
                         <template lwc:if={showNotifyPickupButton}>
                             <button type="button"
