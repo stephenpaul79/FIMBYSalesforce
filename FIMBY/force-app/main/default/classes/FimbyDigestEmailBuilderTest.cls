@@ -113,6 +113,35 @@ private class FimbyDigestEmailBuilderTest {
     }
 
     @IsTest
+    static void buildDigestContent_closedBulkBuysAreNotAdvertised() {
+        Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
+        List<Needs_Offers__c> bulkBuys = [
+            SELECT Id FROM Needs_Offers__c WHERE RecordType.DeveloperName = 'Bulk_Buy' ORDER BY CreatedDate
+        ];
+        for (Integer i = 0; i < bulkBuys.size(); i++) {
+            bulkBuys[i].Name = 'Window Check Buy ' + i;
+        }
+        update bulkBuys;
+
+        Test.startTest();
+        FimbyDigestEmailBuilder.DigestResult openResult = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+        );
+        for (Needs_Offers__c bb : bulkBuys) {
+            bb.Reservations_Closed_Date__c = Datetime.now().addMinutes(-5);
+        }
+        update bulkBuys;
+        FimbyDigestEmailBuilder.DigestResult closedResult = FimbyDigestEmailBuilder.buildDigestContent(
+            nh.Id, nh.Name, 'Weekly', Date.today().addDays(-7), Date.today()
+        );
+        Test.stopTest();
+
+        System.assert(openResult.html.contains('Window Check Buy 0'), 'Open bulk buys are advertised');
+        System.assert(!closedResult.html.contains('Window Check Buy'), 'Closed bulk buys are not advertised');
+        System.assert(closedResult.itemCount < openResult.itemCount, 'Closed bulk buys leave the item count');
+    }
+
+    @IsTest
     static void buildDigestContent_countsAsksByClosedDateIncludingAutoClosures() {
         Account nh = [SELECT Id, Name FROM Account WHERE Type = 'Neighbourhood' LIMIT 1];
         Contact c = [SELECT Id FROM Contact WHERE AccountId != null LIMIT 1];

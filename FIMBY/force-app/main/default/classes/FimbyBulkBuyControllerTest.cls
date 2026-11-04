@@ -273,6 +273,8 @@ public class FimbyBulkBuyControllerTest {
         User testUser = getTestUser();
         Contact testContact = getTestContact();
         Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        post.Total_Quantity__c = 4;
+        update post;
         createGroupConversation(post);
         createReservation(post.Id, testContact.Id, 2);
 
@@ -408,6 +410,311 @@ public class FimbyBulkBuyControllerTest {
         );
         System.assert(String.isBlank(cancelNotifs[0].Body__c),
             'Cancel body should be empty when title carries the message');
+    }
+
+    private static Boolean pickupRejected(User runner, Id postId) {
+        Boolean caught = false;
+        System.runAs(runner) {
+            try {
+                FimbyBulkBuyController.notifyForPickup(postId, '', null);
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        return caught;
+    }
+
+    private static Boolean closeRejected(User runner, Id postId) {
+        Boolean caught = false;
+        System.runAs(runner) {
+            try {
+                FimbyBulkBuyController.closeReservations(postId);
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        return caught;
+    }
+
+    private static void stampClosed(Needs_Offers__c post) {
+        post.Reservations_Closed_Date__c = System.now().addMinutes(-5);
+        update post;
+    }
+
+    @isTest
+    static void testNotifyForPickup_ClosedPartialAllowed() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 2);
+        stampClosed(post);
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyBulkBuyController.notifyForPickup(post.Id, '', null);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Closed partial buy should go ahead with what is reserved');
+        System.assertEquals('Pickup_Ready', [SELECT Status__c FROM Needs_Offers__c WHERE Id = :post.Id].Status__c);
+    }
+
+    @isTest
+    static void testNotifyForPickup_OpenPartialRejected() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 2);
+
+        Test.startTest();
+        Boolean rejected = pickupRejected(testUser, post.Id);
+        Test.stopTest();
+
+        System.assert(rejected, 'Open partial buy must close reservations before pickup');
+        System.assertEquals('Available', [SELECT Status__c FROM Needs_Offers__c WHERE Id = :post.Id].Status__c);
+    }
+
+    @isTest
+    static void testNotifyForPickup_NoReserverRejected() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        stampClosed(post);
+
+        Test.startTest();
+        Boolean rejected = pickupRejected(testUser, post.Id);
+        Test.stopTest();
+
+        System.assert(rejected, 'Pickup needs at least one reserved share');
+    }
+
+    @isTest
+    static void testNotifyForPickup_TerminalAndDuplicateRejected() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c cancelled = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(cancelled.Id, testContact.Id, 2);
+        stampClosed(cancelled);
+        cancelled.Status__c = 'Cancelled';
+        update cancelled;
+
+        Needs_Offers__c alreadyReady = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(alreadyReady.Id, testContact.Id, 2);
+        alreadyReady.Status__c = 'Pickup_Ready';
+        update alreadyReady;
+
+        Test.startTest();
+        Boolean terminalRejected = pickupRejected(testUser, cancelled.Id);
+        Boolean duplicateRejected = pickupRejected(testUser, alreadyReady.Id);
+        Test.stopTest();
+
+        System.assert(terminalRejected, 'Cancelled buy cannot announce pickup');
+        System.assert(duplicateRejected, 'Pickup cannot be announced twice');
+    }
+
+    @isTest
+    static void testUpdateBulkBuyPost_ClosedAllocationEditRejected() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 2);
+        stampClosed(post);
+
+        Test.startTest();
+        Boolean caught = false;
+        System.runAs(testUser) {
+            try {
+                FimbyBulkBuyController.updateBulkBuyPost(JSON.serialize(new Map<String, Object>{
+                    'recordId' => post.Id, 'totalQuantity' => 12
+                }));
+            } catch (AuraHandledException e) {
+                caught = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Closed buy must not silently reopen through a quantity edit');
+        System.assertEquals(10, [SELECT Total_Quantity__c FROM Needs_Offers__c WHERE Id = :post.Id].Total_Quantity__c);
+    }
+
+    @isTest
+    static void testUpdateBulkBuyPost_ClosedDescriptiveEditAndCancelAllowed() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 2);
+        stampClosed(post);
+
+        Test.startTest();
+        Map<String, Object> editResult;
+        Map<String, Object> cancelResult;
+        System.runAs(testUser) {
+            editResult = FimbyBulkBuyController.updateBulkBuyPost(JSON.serialize(new Map<String, Object>{
+                'recordId' => post.Id, 'title' => 'Renamed after closing', 'totalQuantity' => 10
+            }));
+            cancelResult = FimbyBulkBuyController.cancelBulkBuy(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, editResult.get('success'), 'Descriptive edits stay open after closure');
+        System.assertEquals(true, cancelResult.get('success'), 'Organiser can still cancel the whole buy');
+        Needs_Offers__c updated = [SELECT Name, Status__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        System.assertEquals('Renamed after closing', updated.Name);
+        System.assertEquals('Cancelled', updated.Status__c);
+    }
+
+    @isTest
+    static void testChangesAllocation_ExpiryTolerance() {
+        Datetime expiry = Datetime.newInstance(2030, 1, 15, 10, 30, 0);
+        Needs_Offers__c post = new Needs_Offers__c(
+            Total_Quantity__c = 10, Owner_Shares__c = 2, Per_Response_Limit__c = 5,
+            Availability_Rule__c = 'Expires_At_Date', Expiry_DateTime__c = expiry
+        );
+        String sameMinute = expiry.format('yyyy-MM-dd') + 'T' + expiry.format('HH:mm');
+        Datetime later = expiry.addHours(2);
+        String laterMinute = later.format('yyyy-MM-dd') + 'T' + later.format('HH:mm');
+
+        System.assertEquals(false, FimbyBulkBuyController.changesAllocation(post, new Map<String, Object>{
+            'expiryDateTime' => sameMinute, 'ownerShares' => 2, 'perResponseLimit' => 5,
+            'availabilityRule' => 'Expires_At_Date'
+        }), 'Re-saving unchanged allocation is not a change');
+        System.assertEquals(true, FimbyBulkBuyController.changesAllocation(post, new Map<String, Object>{
+            'expiryDateTime' => laterMinute
+        }), 'Moving the expiry is an allocation change');
+        System.assertEquals(true, FimbyBulkBuyController.changesAllocation(post, new Map<String, Object>{
+            'ownerShares' => 3
+        }), 'Owner shares change is an allocation change');
+        System.assertEquals(true, FimbyBulkBuyController.changesAllocation(post, new Map<String, Object>{
+            'perResponseLimit' => 4
+        }), 'Per-person limit change is an allocation change');
+        System.assertEquals(true, FimbyBulkBuyController.changesAllocation(post, new Map<String, Object>{
+            'availabilityRule' => 'Open_Until_Full_Or_Closed'
+        }), 'Rule change is an allocation change');
+    }
+
+    @isTest
+    static void testCloseReservations_OrganiserClosesPartialThenNotifiesPickup() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createGroupConversation(post);
+        createReservation(post.Id, testContact.Id, 2);
+        Integer notificationsBefore = [SELECT COUNT() FROM Notification__c];
+        Integer messagesBefore = [SELECT COUNT() FROM Message__c];
+
+        Test.startTest();
+        Map<String, Object> closeResult;
+        System.runAs(testUser) {
+            closeResult = FimbyBulkBuyController.closeReservations(post.Id);
+        }
+        Integer notificationsAfterClose = [SELECT COUNT() FROM Notification__c];
+        Integer messagesAfterClose = [SELECT COUNT() FROM Message__c];
+        Map<String, Object> pickupResult;
+        System.runAs(testUser) {
+            pickupResult = FimbyBulkBuyController.notifyForPickup(post.Id, '', null);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, closeResult.get('success'), 'Organiser should close reservations');
+        System.assertEquals(notificationsBefore, notificationsAfterClose, 'Closing reservations notifies nobody');
+        System.assertEquals(messagesBefore, messagesAfterClose, 'Closing reservations posts nothing to chat');
+        System.assertEquals(true, pickupResult.get('success'), 'Closed partial buy can then notify for pickup');
+        Needs_Offers__c updated = [SELECT Status__c, Reservations_Closed_Date__c FROM Needs_Offers__c WHERE Id = :post.Id];
+        System.assertNotEquals(null, updated.Reservations_Closed_Date__c, 'Closure should be stamped');
+        System.assertEquals('Pickup_Ready', updated.Status__c);
+    }
+
+    @isTest
+    static void testCloseReservations_NonOrganiserRejected() {
+        Contact testContact = getTestContact();
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(post.Id, testContact.Id, 2);
+
+        Contact otherContact = new Contact(
+            FirstName = 'Other', LastName = 'Neighbour',
+            AccountId = testContact.AccountId, Email = 'other.close@fimby.example.com'
+        );
+        insert otherContact;
+        User otherUser = FimbyTestDataFactory.createCommunityUser(otherContact.Id, null, true);
+
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        Boolean rejected = closeRejected(otherUser, post.Id);
+        Test.stopTest();
+
+        System.assert(rejected, 'Only the organiser can close reservations');
+        System.assertEquals(null,
+            [SELECT Reservations_Closed_Date__c FROM Needs_Offers__c WHERE Id = :post.Id].Reservations_Closed_Date__c);
+    }
+
+    @isTest
+    static void testCloseReservations_ActingAsRepresentedOrganiserAllowed() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Contact represented = new Contact(
+            FirstName = 'Represented', LastName = 'Organiser',
+            AccountId = testContact.AccountId, Email = 'represented.close@fimby.example.com'
+        );
+        Contact author = new Contact(
+            FirstName = 'Original', LastName = 'Author',
+            AccountId = testContact.AccountId, Email = 'author.close@fimby.example.com'
+        );
+        insert new List<Contact>{ represented, author };
+        insert new Support_Relationship__c(
+            Contact__c = testContact.Id,
+            Related_Contact__c = represented.Id,
+            Relationship_Type__c = 'Support_Person',
+            Status__c = 'Approved',
+            Neighbourhood__c = testContact.AccountId
+        );
+        update new Contact(Id = testContact.Id, Logged_In_As_Contact__c = represented.Id);
+
+        Needs_Offers__c post = createBulkBuyPost(testContact, testContact.AccountId);
+        post.Posted_By__c = author.Id;
+        post.Contact__c = represented.Id;
+        update post;
+        createReservation(post.Id, author.Id, 2);
+
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        Map<String, Object> result;
+        System.runAs(testUser) {
+            result = FimbyBulkBuyController.closeReservations(post.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Acting as the represented organiser should be allowed');
+        System.assertNotEquals(null,
+            [SELECT Reservations_Closed_Date__c FROM Needs_Offers__c WHERE Id = :post.Id].Reservations_Closed_Date__c);
+    }
+
+    @isTest
+    static void testCloseReservations_AlreadyClosedEmptyAndTerminalRejected() {
+        User testUser = getTestUser();
+        Contact testContact = getTestContact();
+
+        Needs_Offers__c alreadyClosed = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(alreadyClosed.Id, testContact.Id, 2);
+        stampClosed(alreadyClosed);
+
+        Needs_Offers__c empty = createBulkBuyPost(testContact, testContact.AccountId);
+
+        Needs_Offers__c terminal = createBulkBuyPost(testContact, testContact.AccountId);
+        createReservation(terminal.Id, testContact.Id, 2);
+        terminal.Status__c = 'Pickup_Ready';
+        update terminal;
+
+        Test.startTest();
+        Boolean closedRejected = closeRejected(testUser, alreadyClosed.Id);
+        Boolean emptyRejected = closeRejected(testUser, empty.Id);
+        Boolean terminalRejected = closeRejected(testUser, terminal.Id);
+        Test.stopTest();
+
+        System.assert(closedRejected, 'Already-closed buy cannot be closed again');
+        System.assert(emptyRejected, 'A buy with no reservations has nothing to close');
+        System.assert(terminalRejected, 'A buy past Available cannot be closed');
     }
 
     @isTest

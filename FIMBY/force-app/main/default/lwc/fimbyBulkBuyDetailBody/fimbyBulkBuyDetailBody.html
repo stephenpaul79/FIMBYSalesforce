@@ -119,6 +119,11 @@
                                 <span>{notifyPickupLabel}</span>
                             </button>
                         </template>
+                        <template lwc:if={showCloseReservationsButton}>
+                            <button type="button" class="action-btn organiser-btn" onclick={handleCloseReservationsClick}>
+                                <span>Close Reservations</span>
+                            </button>
+                        </template>
                         <template lwc:if={canComplete}>
                             <button type="button" class="action-btn primary" onclick={handleComplete}>
                                 <img src={completeIconUrl} alt="" class="action-btn-icon" />
@@ -164,6 +169,17 @@
                     </div>
                 </div>
             </template>
+
+            <c-fimby-confirm-modal
+                is-open={closeReservationsConfirmVisible}
+                title="Close reservations?"
+                message="Neighbours who already reserved keep their shares. Nobody new can join, and you can notify everyone for pickup when you're ready."
+                confirm-label="Close Reservations"
+                cancel-label="Keep Open"
+                variant="primary"
+                onconfirm={handleCloseReservationsConfirm}
+                oncancel={handleCloseReservationsDismiss}>
+            </c-fimby-confirm-modal>
 
             <!-- ========== ORGANISER: RESERVATIONS LIST ========== -->
             <template lwc:if={showOrganiserReservationsList}>
@@ -218,7 +234,7 @@
             <!-- Expiry Info -->
             <template lwc:if={hasExpiry}>
                 <div class="section section-expiry">
-                    <p class="expiry-text">Expires: {formattedExpiry}</p>
+                    <p class="expiry-text">{expiryText}</p>
                 </div>
             </template>
 

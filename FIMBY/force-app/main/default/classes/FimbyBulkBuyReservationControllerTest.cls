@@ -272,6 +272,187 @@ public class FimbyBulkBuyReservationControllerTest {
         System.assertEquals(4, updated.Amount_Requested__c, 'Amount should be updated');
     }
 
+    private static final String CLOSED_BY_STAMP = 'stamp';
+    private static final String CLOSED_BY_EXPIRY = 'expiry';
+
+    private static Needs_Offers__c createClosedBulkBuy(Contact poster, String closedBy) {
+        Needs_Offers__c post = createBulkBuyPost(poster, poster.AccountId);
+        if (closedBy == CLOSED_BY_STAMP) {
+            post.Reservations_Closed_Date__c = System.now().addMinutes(-5);
+        } else {
+            post.Availability_Rule__c = 'Expires_At_Date';
+            post.Expiry_DateTime__c = System.now().addHours(-1);
+        }
+        update post;
+        return post;
+    }
+
+    private static Response__c insertReserved(Id postId, Id contactId, Integer amount) {
+        Response__c resp = new Response__c(
+            Need_Offer_Responded_To__c = postId,
+            Contact__c = contactId,
+            Amount_Requested__c = amount,
+            Status__c = 'New'
+        );
+        insert resp;
+        resp.Status__c = 'Reserved';
+        update resp;
+        return resp;
+    }
+
+    private static void assertCreateBlocked(String closedBy) {
+        User reserverUser = getReserverUser();
+        Needs_Offers__c post = createClosedBulkBuy(getOrganiserContact(), closedBy);
+
+        Test.startTest();
+        Boolean caught = false;
+        try {
+            System.runAs(reserverUser) {
+                FimbyBulkBuyReservationController.createReservation(post.Id, 1);
+            }
+        } catch (AuraHandledException e) {
+            caught = true;
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Create should be blocked once reservations close (' + closedBy + ')');
+        System.assertEquals(0, [SELECT COUNT() FROM Response__c WHERE Need_Offer_Responded_To__c = :post.Id],
+            'No reservation should be created after closure');
+    }
+
+    private static void assertAmountChangesBlocked(String closedBy) {
+        User reserverUser = getReserverUser();
+        Needs_Offers__c post = createClosedBulkBuy(getOrganiserContact(), closedBy);
+        Response__c resp = insertReserved(post.Id, getReserverContact().Id, 2);
+
+        Test.startTest();
+        Integer blocked = 0;
+        System.runAs(reserverUser) {
+            for (Integer newAmount : new List<Integer>{ 3, 1 }) {
+                try {
+                    FimbyBulkBuyReservationController.updateReservationAmount(resp.Id, newAmount);
+                } catch (AuraHandledException e) {
+                    blocked++;
+                }
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(2, blocked, 'Increase and decrease should both be blocked (' + closedBy + ')');
+        System.assertEquals(2, [SELECT Amount_Requested__c FROM Response__c WHERE Id = :resp.Id].Amount_Requested__c,
+            'Reserved amount should be unchanged');
+    }
+
+    private static void assertCancelBlocked(String closedBy) {
+        User reserverUser = getReserverUser();
+        Needs_Offers__c post = createClosedBulkBuy(getOrganiserContact(), closedBy);
+        Response__c resp = insertReserved(post.Id, getReserverContact().Id, 2);
+
+        Test.startTest();
+        Boolean caught = false;
+        try {
+            System.runAs(reserverUser) {
+                FimbyBulkBuyReservationController.cancelReservation(resp.Id);
+            }
+        } catch (AuraHandledException e) {
+            caught = true;
+        }
+        Test.stopTest();
+
+        System.assert(caught, 'Cancel should be blocked once reservations close (' + closedBy + ')');
+        System.assertEquals('Reserved', [SELECT Status__c FROM Response__c WHERE Id = :resp.Id].Status__c,
+            'Reservation should stay reserved');
+    }
+
+    private static Map<String, Object> contextForReserver(String closedBy) {
+        User reserverUser = getReserverUser();
+        Needs_Offers__c post = createClosedBulkBuy(getOrganiserContact(), closedBy);
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(reserverUser) {
+            result = FimbyBulkBuyReservationController.getReservationContext(post.Id);
+        }
+        Test.stopTest();
+        return result;
+    }
+
+    @isTest
+    static void testCreateReservation_BlockedWhenStamped() {
+        assertCreateBlocked(CLOSED_BY_STAMP);
+    }
+
+    @isTest
+    static void testCreateReservation_BlockedWhenExpiryPassedBeforeJob() {
+        assertCreateBlocked(CLOSED_BY_EXPIRY);
+    }
+
+    @isTest
+    static void testUpdateAmount_BlockedWhenStamped() {
+        assertAmountChangesBlocked(CLOSED_BY_STAMP);
+    }
+
+    @isTest
+    static void testUpdateAmount_BlockedWhenExpiryPassedBeforeJob() {
+        assertAmountChangesBlocked(CLOSED_BY_EXPIRY);
+    }
+
+    @isTest
+    static void testCancelReservation_BlockedWhenStamped() {
+        assertCancelBlocked(CLOSED_BY_STAMP);
+    }
+
+    @isTest
+    static void testCancelReservation_BlockedWhenExpiryPassedBeforeJob() {
+        assertCancelBlocked(CLOSED_BY_EXPIRY);
+    }
+
+    @isTest
+    static void testRevokeReservation_AllowedAfterClosure() {
+        User organiserUser = getOrganiserUser();
+        Needs_Offers__c post = createClosedBulkBuy(getOrganiserContact(), CLOSED_BY_STAMP);
+        Response__c resp = insertReserved(post.Id, getReserverContact().Id, 2);
+
+        Test.startTest();
+        Map<String, Object> result;
+        System.runAs(organiserUser) {
+            result = FimbyBulkBuyReservationController.revokeReservation(resp.Id);
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('success'), 'Organiser revoke should stay available after closure');
+        System.assertEquals('Cancelled', [SELECT Status__c FROM Response__c WHERE Id = :resp.Id].Status__c,
+            'Revoked reservation should be cancelled');
+    }
+
+    @isTest
+    static void testGetReservationContext_ClosedWhenStamped() {
+        Map<String, Object> result = contextForReserver(CLOSED_BY_STAMP);
+        System.assertEquals('reservationsClosed', result.get('viewState'), 'Stamped buy should report closed');
+        System.assertEquals(true, result.get('reservationsClosed'), 'Closed flag should be true');
+    }
+
+    @isTest
+    static void testGetReservationContext_ClosedWhenExpiryPassedBeforeJob() {
+        Map<String, Object> result = contextForReserver(CLOSED_BY_EXPIRY);
+        System.assertEquals('reservationsClosed', result.get('viewState'), 'Past-expiry buy should report closed');
+        System.assertEquals(true, result.get('reservationsClosed'), 'Closed flag should be true');
+    }
+
+    @isTest
+    static void testIsReservationWindowClosed_OpenCases() {
+        System.assertEquals(false, FimbyBulkBuyReservationController.isReservationWindowClosed(null), 'Null post is open');
+        Needs_Offers__c future = new Needs_Offers__c(
+            Availability_Rule__c = 'Expires_At_Date', Expiry_DateTime__c = System.now().addDays(1)
+        );
+        System.assertEquals(false, FimbyBulkBuyReservationController.isReservationWindowClosed(future), 'Future expiry is open');
+        Needs_Offers__c undated = new Needs_Offers__c(
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed', Expiry_DateTime__c = System.now().addDays(-1)
+        );
+        System.assertEquals(false, FimbyBulkBuyReservationController.isReservationWindowClosed(undated),
+            'Expiry is ignored unless the buy uses Expires_At_Date');
+    }
+
     @isTest
     static void testCreateReservation_BlockedUser() {
         User reserverUser = getReserverUser();

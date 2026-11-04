@@ -143,7 +143,8 @@ const RAW_FEED_ITEM_KEYS = [
     'ownerShares', 'totalAvailable', 'activeReserverIds', 'isOrgContact', 'isParentManaged', 'orgAccountId',
     'eventDetails', 'location', 'eventType', 'eventLinkUrl', 'ownerContactId', 'realAuthorContactId',
     'isUrgent', 'sourceScope', 'isRecurring',
-    'status', 'closedDate', 'closedOutcome', 'replyCount', 'totalAccepted', 'viewerHasActiveResponse'
+    'status', 'closedDate', 'closedOutcome', 'replyCount', 'totalAccepted', 'viewerHasActiveResponse',
+    'reservationsClosedDate'
 ];
 
 export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
@@ -959,6 +960,9 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 responseIconUrl = lifecycle.ctaOverride.iconUrl;
                 responsePillClass = lifecycle.ctaOverride.pillClass;
             }
+            if (lifecycle.reservationsClosed && allocationPills) {
+                allocationPills = allocationPills.filter(pill => pill.key !== 'available');
+            }
 
             const processed = {
                 ...item,
@@ -992,6 +996,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
                 allocationPills,
                 statusPills: lifecycle.statusPills,
                 responseDisabled: lifecycle.responseDisabled,
+                bulkBuyReservationsClosed: lifecycle.reservationsClosed === true,
                 eventDateTime,
                 eventLocation,
                 eventLinkUrl,
@@ -1288,7 +1293,7 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
         if (item.isStory) {
             this._openQuickResponseModal(recordId, 'story');
         } else if (item.isBulkBuy) {
-            if (item.responsePillClass === 'response-pill-reserved') {
+            if (item.responsePillClass === 'response-pill-reserved' || item.bulkBuyReservationsClosed) {
                 this._navigateToRecord('Needs_Offers__c', recordId);
             } else {
                 this._openQuickResponseModal(recordId, 'bulkBuy');

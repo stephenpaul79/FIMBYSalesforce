@@ -21,6 +21,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     @track cancelConfirmVisible = false;
     @track isCancelling = false;
     @track cancelPostConfirmVisible = false;
+    @track closeReservationsConfirmVisible = false;
     @track realContactId = null;
 
     @wire(getActingAsContact)
@@ -146,9 +147,39 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
         return this.displayStatus === 'Cancelled' || this.displayStatus === 'Expired';
     }
 
+    /** Matches the server guard: stamped closure, or a dated buy past expiry before the job runs. */
+    get isReservationsClosed() {
+        if (this.post?.Status__c !== 'Available') return false;
+        if (this.post?.Reservations_Closed_Date__c || this.displayStatus === 'Reservations Closed') return true;
+        const expiry = this.post?.Expiry_DateTime__c;
+        return this.post?.Availability_Rule__c === 'Expires_At_Date'
+            && !!expiry
+            && new Date(expiry).getTime() <= Date.now();
+    }
+
+    get showCloseReservationsButton() {
+        return this.isOrganiser
+            && this.post?.Status__c === 'Available'
+            && !this.isReservationsClosed
+            && this.reservedShares > 0;
+    }
+
+    handleCloseReservationsClick() {
+        this.closeReservationsConfirmVisible = true;
+    }
+
+    handleCloseReservationsDismiss() {
+        this.closeReservationsConfirmVisible = false;
+    }
+
+    handleCloseReservationsConfirm() {
+        this.closeReservationsConfirmVisible = false;
+        this.dispatchEvent(new CustomEvent('closereservations'));
+    }
+
     get canReserve() {
         if (!this.post || this.isOrganiser) return false;
-        if (this.isCancelled || this.isCompleted) return false;
+        if (this.isCancelled || this.isCompleted || this.isReservationsClosed) return false;
         if (this.hasUserReservation) return false;
         return this.availableShares > 0;
     }
@@ -158,14 +189,15 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     }
 
     get isReserveDisabled() {
-        return this.isCancelled || this.isCompleted || this.isPickupReady || this.availableShares <= 0;
+        return this.isCancelled || this.isCompleted || this.isPickupReady
+            || this.isReservationsClosed || this.availableShares <= 0;
     }
 
     get reserveButtonLabel() {
         if (!this.isReserveDisabled) return 'Reserve A Share';
         if (this.isCompleted) return 'Completed';
         if (this.isCancelled) return this.displayStatus === 'Expired' ? 'Expired' : 'Cancelled';
-        if (this.isPickupReady) return 'Reservations Closed';
+        if (this.isPickupReady || this.isReservationsClosed) return 'Reservations Closed';
         return 'Fully Reserved';
     }
 
@@ -179,7 +211,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     }
 
     get reserveHelperText() {
-        if (this.isCancelled || this.isCompleted || this.isPickupReady) return null;
+        if (this.isCancelled || this.isCompleted || this.isPickupReady || this.isReservationsClosed) return null;
         if (this.availableShares <= 0) {
             return 'All shares have been reserved \u2014 check back in case one is released.';
         }
@@ -202,8 +234,10 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
         return !this.isPickupReady && !this.isCompleted && !this.isCancelled;
     }
 
+    /** Pickup needs at least one reserved share, and either every share taken or the window closed. */
     get isNotifyPickupDisabled() {
-        return this.availableShares > 0;
+        if (this.reservedShares <= 0) return true;
+        return this.availableShares > 0 && !this.isReservationsClosed;
     }
 
     get notifyPickupLabel() {
@@ -284,7 +318,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     }
 
     get canCancelReservation() {
-        if (!this.hasUserReservation) return false;
+        if (!this.hasUserReservation || this.isReservationsClosed) return false;
         return this.displayStatus === 'Shares Available' || this.displayStatus === 'Available';
     }
 
@@ -303,9 +337,10 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     get organiserPostHealthText() {
         const parts = [];
         const status = this.displayStatus;
-        if (status === 'Shares Available' || status === 'Available') parts.push('Buy is active');
+        if (this.isReservationsClosed) parts.push('Reservations closed');
+        else if (status === 'Shares Available' || status === 'Available') parts.push('Buy is active');
         else parts.push(status || 'Active');
-        if (this.hasExpiry) parts.push(`Expires ${this.formattedExpiry}`);
+        if (this.hasExpiry && !this.isReservationsClosed) parts.push(`Expires ${this.formattedExpiry}`);
         return parts.join(' \u00B7 ');
     }
 
@@ -315,6 +350,7 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
 
     get reserverStatusContext() {
         const status = this.displayStatus;
+        if (this.isReservationsClosed) return 'Reservations are closed. Your share is still reserved while the organiser arranges the buy.';
         if (status === 'Shares Available' || status === 'Available') return 'Your share is reserved \u2014 waiting for all spots to fill';
         if (status === 'Fully Reserved') return 'All shares reserved \u2014 waiting for organiser to confirm pickup';
         if (status === 'Pickup Ready') return 'Ready for pickup!';
@@ -351,6 +387,12 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     get formattedExpiry() {
         const d = this.post?.Expiry_DateTime__c;
         return d ? new Date(d).toLocaleString() : '';
+    }
+
+    get expiryText() {
+        return this.isReservationsClosed
+            ? `Reservations closed: ${this.formattedExpiry}`
+            : `Expires: ${this.formattedExpiry}`;
     }
 
     get thermometerBarStyle() {

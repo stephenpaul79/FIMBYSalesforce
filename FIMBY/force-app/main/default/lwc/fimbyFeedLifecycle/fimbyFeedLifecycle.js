@@ -18,14 +18,22 @@ export function replyCountLabel(count) {
     return count === 1 ? '1 neighbour replied' : `${count} neighbours replied`;
 }
 
+/** Asks always use qty 1 server-side; capacity-matched pills misread as "all done" while still Posted. */
+export function showCapacityMatchedPill(item) {
+    if (item?.itemType === 'Need') {
+        return false;
+    }
+    return num(item?.totalQuantity) > 0 && num(item?.totalAccepted) >= num(item?.totalQuantity);
+}
+
 /**
  * @param {object} item raw FimbyFeedItem DTO
  * @param {object} flags { isEvent, isBulkBuy, isPoster, viewerResponded }
- * @returns {{ statusPills: Array|null, responseDisabled: boolean, isCompleted: boolean, ctaOverride: object|null }}
+ * @returns {{ statusPills: Array|null, responseDisabled: boolean, isCompleted: boolean, ctaOverride: object|null, reservationsClosed: boolean }}
  */
 export function feedLifecycleState(item, flags) {
     const { isEvent, isBulkBuy, isPoster, viewerResponded } = flags;
-    const state = { statusPills: null, responseDisabled: false, isCompleted: false, ctaOverride: null };
+    const state = { statusPills: null, responseDisabled: false, isCompleted: false, ctaOverride: null, reservationsClosed: false };
 
     if (item.status === COMPLETED_STATUS) {
         state.isCompleted = true;
@@ -45,6 +53,9 @@ export function feedLifecycleState(item, flags) {
         const fullyReserved = item.totalAvailable != null && num(item.totalQuantity) > 0 && num(item.totalAvailable) <= 0;
         if (item.status === PICKUP_READY_STATUS) {
             state.statusPills = [{ key: 'pickup', label: 'Pickup Ready', tone: 'matched' }];
+        } else if (item.reservationsClosedDate) {
+            state.statusPills = [{ key: 'closed', label: 'Reservations closed', tone: 'matched' }];
+            state.reservationsClosed = true;
         } else if (fullyReserved) {
             state.statusPills = [{ key: 'full', label: 'Fully reserved', tone: 'matched' }];
         }
@@ -73,10 +84,8 @@ export function feedLifecycleState(item, flags) {
         return state;
     }
 
-    const matched = num(item.totalQuantity) > 0 && num(item.totalAccepted) >= num(item.totalQuantity);
-    if (matched) {
-        const label = item.itemType === 'Need' ? 'Help Found' : 'Spoken for';
-        state.statusPills = [{ key: 'matched', label, tone: 'matched' }];
+    if (showCapacityMatchedPill(item)) {
+        state.statusPills = [{ key: 'matched', label: 'Spoken for', tone: 'matched' }];
         if (!isPoster && !viewerResponded) {
             state.ctaOverride = {
                 label: 'Reply anyway',

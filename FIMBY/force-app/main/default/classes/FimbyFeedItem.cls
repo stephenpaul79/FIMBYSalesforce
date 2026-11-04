@@ -48,6 +48,7 @@ public class FimbyFeedItem implements Comparable {
     @AuraEnabled public Decimal totalAccepted { get; set; }
     @AuraEnabled public Boolean viewerHasActiveResponse { get; set; }
     @AuraEnabled public String availabilityNote { get; set; }
+    @AuraEnabled public Datetime reservationsClosedDate { get; set; }
 
     private Datetime sortDate;
 
@@ -143,12 +144,33 @@ public class FimbyFeedItem implements Comparable {
         Map<String, Object> populated = item.getPopulatedFieldsAsMap();
         this.status = (String) populated.get('Status__c');
         this.closedDate = (Datetime) populated.get('Closed_Date__c');
+        this.reservationsClosedDate = effectiveReservationsClosedDate(populated);
         this.totalAccepted = item.Total_Accepted__c;
         this.replyCount = 0;
         this.viewerHasActiveResponse = false;
         if (this.status == FimbyConstants.NEEDS_OFFERS_COMPLETED) {
             this.closedOutcome = outcomeLabel(item.Type__c, this.recordTypeName);
         }
+    }
+
+    /**
+     * @description Closure stamp, or a dated buy's passed expiry before the job stamps it, so feed
+     * cards match FimbyBulkBuyReservationController.isReservationWindowClosed.
+     * @param populated the queried fields of the Needs_Offers__c row
+     * @return effective reservation-window close time, or null while reservations are open
+     */
+    @TestVisible
+    private static Datetime effectiveReservationsClosedDate(Map<String, Object> populated) {
+        Datetime stamped = (Datetime) populated.get('Reservations_Closed_Date__c');
+        if (stamped != null) {
+            return stamped;
+        }
+        Datetime expiry = (Datetime) populated.get('Expiry_DateTime__c');
+        if (populated.get('Availability_Rule__c') == 'Expires_At_Date'
+            && expiry != null && expiry <= System.now()) {
+            return expiry;
+        }
+        return null;
     }
 
     /**

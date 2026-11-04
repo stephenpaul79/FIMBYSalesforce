@@ -131,7 +131,7 @@ public with sharing class FimbyProfileActivityController {
                    Event_Details__c, Location__c, Event_Type__c, Event_Link__c,
                    Start_Date__c, End_Date__c,
                    Recurrence_Frequency__c, Series_Parent__c, Current_Occurrence__c,
-                   Closed_Date__c,
+                   Closed_Date__c, Reservations_Closed_Date__c, Availability_Rule__c, Expiry_DateTime__c,
                    RecordType.Name, Category__c, Contact__c, Posted_By__c
             FROM Needs_Offers__c
             WHERE Contact__c = :profileContactId

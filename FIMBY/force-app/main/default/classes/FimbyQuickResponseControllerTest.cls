@@ -163,6 +163,63 @@ public class FimbyQuickResponseControllerTest {
     }
 
     @isTest
+    static void testBulkBuyClosedNeverMapsToForm() {
+        User posterUser = getTestUser();
+        Contact posterContact = getTestContact();
+
+        Contact viewerContact = new Contact(
+            FirstName = 'Closed',
+            LastName = 'Viewer',
+            AccountId = posterContact.AccountId,
+            Email = 'closed.viewer@fimby.example.com'
+        );
+        insert viewerContact;
+        User viewerUser = FimbyTestDataFactory.createCommunityUser(viewerContact.Id, null, true);
+
+        Id bulkBuyRtId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName()
+            .get('Bulk_Buy').getRecordTypeId();
+        List<Needs_Offers__c> posts = new List<Needs_Offers__c>();
+        for (String closedBy : new List<String>{ 'stamp', 'expiry' }) {
+            Needs_Offers__c post = new Needs_Offers__c(
+                RecordTypeId = bulkBuyRtId,
+                Name = 'Closed bulk buy (' + closedBy + ')',
+                Details__c = 'Closed',
+                Full_Details__c = 'Closed',
+                Status__c = 'Available',
+                Posted_By__c = posterContact.Id,
+                Contact__c = posterContact.Id,
+                Neighbourhood__c = posterContact.AccountId,
+                Giver_Recipient_Type__c = 'Self',
+                Total_Quantity__c = 10,
+                Per_Response_Limit__c = 5,
+                Allocation_Unit_Label__c = 'shares',
+                Availability_Rule__c = closedBy == 'stamp' ? 'Open_Until_Full_Or_Closed' : 'Expires_At_Date',
+                Expiry_DateTime__c = closedBy == 'stamp' ? null : System.now().addHours(-1),
+                Reservations_Closed_Date__c = closedBy == 'stamp' ? System.now().addMinutes(-5) : null,
+                Auto_Accept_Responses__c = true,
+                Auto_Lock_Days__c = '7'
+            );
+            posts.add(post);
+        }
+        System.runAs(posterUser) {
+            insert posts;
+        }
+
+        Test.startTest();
+        List<String> states = new List<String>();
+        System.runAs(viewerUser) {
+            for (Needs_Offers__c post : posts) {
+                Map<String, Object> result = FimbyQuickResponseController.getQuickResponseContext(post.Id, 'bulkBuy');
+                states.add((String) result.get('viewState'));
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals('reservationsClosed', states[0], 'Stamped buy should show closed, not the form');
+        System.assertEquals('reservationsClosed', states[1], 'Past-expiry buy should show closed, not the form');
+    }
+
+    @isTest
     static void testOpenEventType() {
         User testUser = getTestUser();
         Contact testContact = getTestContact();

@@ -218,13 +218,15 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
             this.myPosts = posts.map(p => {
                 const rtName = p.RecordType?.Name;
                 const evtType = p.Event_Type__c;
+                const isBulkBuy = rtName === 'Bulk_Buy' || rtName === 'Bulk Buy';
+                const reservationsClosed = isBulkBuy && p.Display_Status__c === 'Reservations Closed';
                 let displayTypeName, typeBadgeClass, badgeIconFile;
 
                 if (rtName === 'Need') {
                     displayTypeName = 'Ask';
                     typeBadgeClass = 'type-badge need-type';
                     badgeIconFile = POST_ICON_MAP.Need;
-                } else if (rtName === 'Bulk_Buy' || rtName === 'Bulk Buy') {
+                } else if (isBulkBuy) {
                     displayTypeName = 'Bulk Buy';
                     typeBadgeClass = 'type-badge bulkbuy-type';
                     badgeIconFile = POST_ICON_MAP.Bulk_Buy;
@@ -248,8 +250,12 @@ export default class FimbyMyStuffPage extends NavigationMixin(LightningElement) 
                     displayTypeName,
                     typeBadgeClass,
                     badgeIconUrl: `${IMPACT_ICONS}/${badgeIconFile}`,
-                    statusBadgeClass: POST_STATUS_CLASSES[p.Status__c] || 'status-badge',
-                    statusLabel: POST_STATUS_LABELS[p.Status__c] || p.Status__c,
+                    statusBadgeClass: reservationsClosed
+                        ? 'status-badge status-accepted'
+                        : (POST_STATUS_CLASSES[p.Status__c] || 'status-badge'),
+                    statusLabel: isBulkBuy && p.Display_Status__c
+                        ? p.Display_Status__c
+                        : (POST_STATUS_LABELS[p.Status__c] || p.Status__c),
                     formattedDate: this._formatDate(p.CreatedDate)
                 };
             });

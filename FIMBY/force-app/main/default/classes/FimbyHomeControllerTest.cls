@@ -516,6 +516,41 @@ public class FimbyHomeControllerTest {
         System.assert(!shown.containsKey(byLabel.get('cancelled').Id), 'Withdrawn asks leave the feed.');
     }
 
+    @IsTest
+    static void testUnifiedFeedCarriesReservationsClosedDate() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+        Id bulkBuyRtId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Bulk_Buy').getRecordTypeId();
+
+        Datetime stampedAt = Datetime.newInstance(Datetime.now().addMinutes(-30).getTime() / 1000 * 1000);
+        Needs_Offers__c closed = lifecyclePost('Closed bulk buy', 'Available', null);
+        closed.Reservations_Closed_Date__c = stampedAt;
+        Needs_Offers__c open = lifecyclePost('Open bulk buy', 'Available', null);
+        for (Needs_Offers__c p : new List<Needs_Offers__c>{ closed, open }) {
+            p.Neighbourhood__c = testNeighbourhood.Id;
+            p.Contact__c = testContact.Id;
+            p.Posted_By__c = testContact.Id;
+            p.RecordTypeId = bulkBuyRtId;
+            p.Total_Quantity__c = 10;
+            p.Availability_Rule__c = 'Open_Until_Full_Or_Closed';
+        }
+        insert new List<Needs_Offers__c>{ closed, open };
+
+        Test.startTest();
+        Map<Id, FimbyFeedItem> shown = new Map<Id, FimbyFeedItem>();
+        System.runAs(testUser) {
+            for (FimbyFeedItem item : FimbyHomeController.getUnifiedFeed(0, 50).items) {
+                shown.put(Id.valueOf(item.recordId), item);
+            }
+        }
+        Test.stopTest();
+
+        System.assert(shown.containsKey(closed.Id), 'Closed bulk buy stays in the feed while Available.');
+        System.assertEquals(stampedAt, shown.get(closed.Id).reservationsClosedDate, 'Closure stamp reaches the card.');
+        System.assertEquals(null, shown.get(open.Id).reservationsClosedDate, 'Open bulk buy carries no closure.');
+    }
+
     private static Needs_Offers__c lifecyclePost(String name, String status, Datetime closedDate) {
         return new Needs_Offers__c(
             Name = name,

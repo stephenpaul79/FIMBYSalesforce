@@ -35,6 +35,8 @@ public with sharing class FimbyQuickResponseController {
                 String rvState = (String) ctx.get('viewState');
                 if (rvState == 'blocked') {
                     viewState = 'blocked';
+                } else if (rvState == 'reservationsClosed') {
+                    viewState = 'reservationsClosed';
                 } else if (rvState == 'unavailable' || rvState == 'fullyReserved') {
                     viewState = 'unavailable';
                 } else if (rvState == 'alreadyReserved') {
@@ -128,6 +130,7 @@ public with sharing class FimbyQuickResponseController {
                        Expected_Attendance__c, Event_Link__c
                 FROM Needs_Offers__c
                 WHERE Id = :recordId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             return rows.isEmpty() ? null : rows[0];

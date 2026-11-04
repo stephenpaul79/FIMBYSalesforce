@@ -21,6 +21,8 @@ import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
 
 const UNAVAILABLE_PATTERN = /no longer (available|accepting)|is full\b|not available right now|^Only 0 /i;
 const ADJUSTABLE_LIMIT_PATTERN = /^(Only \d+ (shares?|spots?)|Maximum \d+ shares)/i;
+const RESERVATIONS_CLOSED_PATTERN = /^Reservations have closed/i;
+const RESERVATIONS_CLOSED_MESSAGE = 'Reservations have closed for this bulk buy.';
 
 const TYPE_CONFIG = {
     story: {
@@ -398,6 +400,9 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
     }
 
     get showMatchedNotice() {
+        if (this._context?.recordType === 'Need') {
+            return false;
+        }
         return !this.isGatheringType && this._context?.isMatched === true;
     }
 
@@ -630,7 +635,10 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
             }
 
             const vs = result.viewState;
-            if (vs === 'alreadyResponded') {
+            if (vs === 'reservationsClosed') {
+                this._viewState = 'unavailable';
+                this._errorMessage = RESERVATIONS_CLOSED_MESSAGE;
+            } else if (vs === 'alreadyResponded') {
                 this._viewState = 'alreadyResponded';
             } else if (vs === 'unavailable' || vs === 'fullyReserved' || vs === 'blocked') {
                 this._viewState = 'unavailable';
@@ -851,7 +859,10 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
         } catch (error) {
             const msg = error.body?.message || error.message || '';
-            if (UNAVAILABLE_PATTERN.test(msg)) {
+            if (RESERVATIONS_CLOSED_PATTERN.test(msg)) {
+                this._errorMessage = RESERVATIONS_CLOSED_MESSAGE;
+                this._viewState = 'unavailable';
+            } else if (UNAVAILABLE_PATTERN.test(msg)) {
                 this._errorMessage = "Looks like this isn't available anymore — someone responded a bit more quickly.";
                 this._viewState = 'unavailable';
             } else {

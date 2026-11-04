@@ -797,6 +797,7 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
+              AND Reservations_Closed_Date__c = NULL
               AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded
@@ -811,6 +812,7 @@ public without sharing class FimbyDigestEmailBuilder {
             SELECT COUNT() FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
+              AND Reservations_Closed_Date__c = NULL
               AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded
@@ -1442,6 +1444,7 @@ public without sharing class FimbyDigestEmailBuilder {
             FROM Needs_Offers__c
             WHERE Neighbourhood__c = :nhId
               AND RecordType.DeveloperName = 'Bulk_Buy'
+              AND Reservations_Closed_Date__c = NULL
               AND Posted_Date__c >= :startDt AND Posted_Date__c < :endDt
               AND Status__c IN ('Posted', 'Available', 'Reply Received')
               AND Contact__c NOT IN :excluded AND Posted_By__c NOT IN :excluded

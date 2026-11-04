@@ -126,6 +126,37 @@ private class FimbyProfileActivityControllerTest {
     }
 
     @IsTest
+    static void testGetProfileActivity_carriesReservationsClosedDate() {
+        Contact owner = getOwnerContact();
+        Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Datetime passedExpiry = Datetime.newInstance(Datetime.now().addHours(-2).getTime() / 1000 * 1000);
+        Needs_Offers__c pastExpiry = new Needs_Offers__c(
+            RecordTypeId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName()
+                .get('Bulk_Buy').getRecordTypeId(),
+            Name = 'Past-expiry bulk buy', Details__c = 'Rice', Status__c = 'Available',
+            Total_Quantity__c = 10, Availability_Rule__c = 'Expires_At_Date', Expiry_DateTime__c = passedExpiry,
+            Neighbourhood__c = nh.Id, Posted_By__c = owner.Id, Contact__c = owner.Id
+        );
+        insert pastExpiry;
+
+        User viewerUser = getCommunityUser();
+
+        Test.startTest();
+        FimbyFeedItem shown;
+        System.runAs(viewerUser) {
+            for (FimbyFeedItem item : FimbyProfileActivityController.getProfileActivity(owner.Id, 0, 50).items) {
+                if (item.recordId == pastExpiry.Id) {
+                    shown = item;
+                }
+            }
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, shown, 'Past-expiry bulk buy still shows on the profile before the job runs.');
+        System.assertEquals(passedExpiry, shown.reservationsClosedDate, 'Passed expiry reads as closed on the card.');
+    }
+
+    @IsTest
     static void testGetProfileActivity_excludesModeratedAndInactive() {
         Contact owner = getOwnerContact();
         Account nh = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];

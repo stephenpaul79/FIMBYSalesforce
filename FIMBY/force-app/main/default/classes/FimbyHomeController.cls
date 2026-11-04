@@ -151,7 +151,7 @@ public with sharing class FimbyHomeController {
                           'Category__c, Neighbourhood__c ' +
                           'FROM Needs_Offers__c ' +
                           'WHERE (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
-                          'AND ' + FEED_VISIBILITY_PREDICATE + ' ';
+                          'AND ' + String.escapeSingleQuotes(FEED_VISIBILITY_PREDICATE) + ' ';
             Set<String> activeFeedStatuses = ACTIVE_FEED_STATUSES;
             String completedStatus = FimbyConstants.NEEDS_OFFERS_COMPLETED;
             Datetime lingerCutoff = lingerCutoff();
@@ -439,11 +439,11 @@ public with sharing class FimbyHomeController {
                                  'Active_Reserver_Ids__c, Is_Urgent__c, ' +
                                  'Event_Details__c, Location__c, Event_Type__c, Event_Link__c, ' +
                                  'Recurrence_Frequency__c, Series_Parent__c, Current_Occurrence__c, ' +
-                                 'Closed_Date__c, ' +
+                                 'Closed_Date__c, Reservations_Closed_Date__c, Availability_Rule__c, Expiry_DateTime__c, ' +
                                  'RecordType.Name, Category__c ' +
                                  'FROM Needs_Offers__c ' +
                                  'WHERE (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ' +
-                                 'AND ' + FEED_VISIBILITY_PREDICATE + ' ';
+                                 'AND ' + String.escapeSingleQuotes(FEED_VISIBILITY_PREDICATE) + ' ';
                 Set<String> activeFeedStatuses = ACTIVE_FEED_STATUSES;
                 String completedStatus = FimbyConstants.NEEDS_OFFERS_COMPLETED;
                 Datetime lingerCutoff = lingerCutoff();
@@ -482,6 +482,7 @@ public with sharing class FimbyHomeController {
              * are excluded entirely — the Library has its own nav.
              * ----------------------------------------------------------- */
             if (isAllCategory) {
+                Integer justListedDays = FimbySettings.libraryJustListedDays();
                 String libQuery = 'SELECT Id, Name, Description__c, Category__c, Status__c, CreatedDate, ' +
                                  'Owner_Contact__c, Listed_By__c, ' +
                                  'Owner_Contact__r.Full_Name__c, Owner_Contact__r.Image_URL__c, Owner_Contact__r.Display_Avatar_URL__c, ' +
@@ -490,7 +491,7 @@ public with sharing class FimbyHomeController {
                                  'Image_URL__c, Image_Ratio__c ' +
                                  'FROM Library_Item__c ' +
                                  'WHERE Status__c = \'Available\' ' +
-                                 'AND CreatedDate = LAST_N_DAYS:' + FimbySettings.libraryJustListedDays() + ' ' +
+                                 'AND CreatedDate = LAST_N_DAYS:' + justListedDays + ' ' +
                                  'AND (Moderation_Status__c = null OR Moderation_Status__c = \'Visible\') ';
 
                 if (String.isNotBlank(neighbourhoodAccountId)) {
@@ -573,6 +574,7 @@ public with sharing class FimbyHomeController {
                   AND Status__c = :FimbyConstants.SKILL_ACTIVE
                   AND CreatedDate >= :cutoff
                   AND (Moderation_Status__c = null OR Moderation_Status__c = 'Visible')
+                WITH SYSTEM_MODE
                 ORDER BY CreatedDate DESC
                 LIMIT :lim
             ];

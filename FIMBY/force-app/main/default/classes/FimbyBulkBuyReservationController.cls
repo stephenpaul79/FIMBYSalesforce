@@ -5,6 +5,28 @@
 public with sharing class FimbyBulkBuyReservationController {
 
     private static final String CLASS_NAME = 'FimbyBulkBuyReservationController';
+    @TestVisible
+    private static final String WINDOW_CLOSED_MESSAGE =
+        'Reservations have closed for this bulk buy. You can message the organiser if something has changed.';
+
+    /**
+     * @description True once the reservation window has closed: either the closure timestamp is
+     * stamped (job or organiser), or a dated buy's expiry has passed before the job has run.
+     * Callers must select Reservations_Closed_Date__c, Availability_Rule__c and Expiry_DateTime__c.
+     * @param post the Bulk Buy post
+     * @return whether reserver create/change/cancel is frozen
+     */
+    public static Boolean isReservationWindowClosed(Needs_Offers__c post) {
+        if (post == null) {
+            return false;
+        }
+        if (post.Reservations_Closed_Date__c != null) {
+            return true;
+        }
+        return post.Availability_Rule__c == 'Expires_At_Date'
+            && post.Expiry_DateTime__c != null
+            && post.Expiry_DateTime__c <= System.now();
+    }
 
     @AuraEnabled
     public static Map<String, Object> createReservation(String postId, Integer amount) {
@@ -13,7 +35,7 @@ public with sharing class FimbyBulkBuyReservationController {
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
 
             // Block check evaluates the represented identity (who is making the reservation)
-            Contact c = [SELECT Id, Is_Bulk_Buy_Blocked__c FROM Contact WHERE Id = :actingAsContactId LIMIT 1];
+            Contact c = [SELECT Id, Is_Bulk_Buy_Blocked__c FROM Contact WHERE Id = :actingAsContactId WITH SYSTEM_MODE LIMIT 1];
             if (c.Is_Bulk_Buy_Blocked__c) {
                 return new Map<String, Object>{
                     'success' => false,
@@ -53,6 +75,9 @@ public with sharing class FimbyBulkBuyReservationController {
             }
             if (resp.Status__c != FimbyConstants.RESPONSE_RESERVED) {
                 throw new AuraHandledException('This reservation cannot be cancelled.');
+            }
+            if (isReservationWindowClosed(resp.Need_Offer_Responded_To__r)) {
+                throw new AuraHandledException(WINDOW_CLOSED_MESSAGE);
             }
 
             Id postId = resp.Need_Offer_Responded_To__c;
@@ -167,19 +192,20 @@ public with sharing class FimbyBulkBuyReservationController {
             Id actingAsContactId = FimbyIdentityRepository.getActingAsContactId();
 
             // Block evaluation is based on the represented identity (whose history matters)
-            Contact c = [SELECT Id, Is_Bulk_Buy_Blocked__c FROM Contact WHERE Id = :actingAsContactId LIMIT 1];
+            Contact c = [SELECT Id, Is_Bulk_Buy_Blocked__c FROM Contact WHERE Id = :actingAsContactId WITH SYSTEM_MODE LIMIT 1];
 
             Needs_Offers__c post = [
                 SELECT Id, Name, Status__c, Display_Status__c, Total_Quantity__c, Total_Reserved__c,
                        Total_Available__c, Owner_Shares__c, Per_Response_Limit__c, Allocation_Unit_Label__c,
                        Total_Estimated_Cost__c, Estimated_Cost_Per_Share__c,
                        Image_1_URL__c, Posted_By__c, Contact__c,
+                       Reservations_Closed_Date__c, Availability_Rule__c, Expiry_DateTime__c,
                        Posted_By__r.FirstName, Posted_By__r.LastName,
                        Posted_By__r.Full_Name__c, Posted_By__r.Image_URL__c,
                        Posted_By__r.Display_Avatar_URL__c
                 FROM Needs_Offers__c
                 WHERE Id = :postId
-                /* with sharing enforces record access */
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 
@@ -192,7 +218,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 AND (On_Behalf_Of_Contact__c = :actingAsContactId
                      OR (On_Behalf_Of_Contact__c = NULL AND Contact__c = :actingAsContactId))
                 AND Status__c = :FimbyConstants.RESPONSE_RESERVED
-                /* with sharing enforces record access */
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 
@@ -205,6 +231,8 @@ public with sharing class FimbyBulkBuyReservationController {
                 viewState = 'blocked';
             } else if (isOwnPost) {
                 viewState = 'unavailable';
+            } else if (post.Status__c == FimbyConstants.NEEDS_OFFERS_AVAILABLE && isReservationWindowClosed(post)) {
+                viewState = 'reservationsClosed';
             } else if (!existing.isEmpty()) {
                 viewState = 'alreadyReserved';
             } else if (post.Status__c != FimbyConstants.NEEDS_OFFERS_AVAILABLE) {
@@ -221,6 +249,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 'post' => post,
                 'existingReservation' => existing.isEmpty() ? null : existing[0],
                 'isBlocked' => c.Is_Bulk_Buy_Blocked__c,
+                'reservationsClosed' => isReservationWindowClosed(post),
                 'contactId' => actingAsContactId
             };
         } catch (Exception e) {
@@ -242,6 +271,7 @@ public with sharing class FimbyBulkBuyReservationController {
             FROM Response__c
             WHERE Need_Offer_Responded_To__c = :post.Id
             AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+            WITH SYSTEM_MODE
         ];
         return (!ar.isEmpty() && ar[0].get('total') != null) ? (Decimal) ar[0].get('total') : 0;
     }
@@ -256,6 +286,7 @@ public with sharing class FimbyBulkBuyReservationController {
             SELECT Total_Quantity__c, Owner_Shares__c
             FROM Needs_Offers__c
             WHERE Id = :postId
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         Decimal owner = post.Owner_Shares__c != null ? post.Owner_Shares__c : 0;
@@ -264,6 +295,7 @@ public with sharing class FimbyBulkBuyReservationController {
             FROM Response__c
             WHERE Need_Offer_Responded_To__c = :postId
             AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+            WITH SYSTEM_MODE
         ];
         Decimal sumReserved = (!ar.isEmpty() && ar[0].get('total') != null)
             ? (Decimal) ar[0].get('total')
@@ -283,16 +315,20 @@ public with sharing class FimbyBulkBuyReservationController {
                        Need_Offer_Responded_To__r.Contact__c,
                        Need_Offer_Responded_To__r.Group_Conversation__c,
                        Need_Offer_Responded_To__r.Name,
+                       Need_Offer_Responded_To__r.Reservations_Closed_Date__c,
+                       Need_Offer_Responded_To__r.Availability_Rule__c,
+                       Need_Offer_Responded_To__r.Expiry_DateTime__c,
                        Contact__r.FirstName, On_Behalf_Of_Contact__r.FirstName
                 FROM Response__c
                 WHERE Id = :responseId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
         }
 
         public Id getPostOwnerContactId(Id postId) {
             Needs_Offers__c post = [
-                SELECT Contact__c, Posted_By__c FROM Needs_Offers__c WHERE Id = :postId LIMIT 1
+                SELECT Contact__c, Posted_By__c FROM Needs_Offers__c WHERE Id = :postId WITH SYSTEM_MODE LIMIT 1
             ];
             return FimbyConstants.postOwnerContactId(post);
         }
@@ -302,6 +338,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 SELECT Total_Quantity__c, Owner_Shares__c
                 FROM Needs_Offers__c
                 WHERE Id = :postId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             Decimal owner = post.Owner_Shares__c != null ? post.Owner_Shares__c : 0;
@@ -310,6 +347,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 FROM Response__c
                 WHERE Need_Offer_Responded_To__c = :postId
                 AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+                WITH SYSTEM_MODE
             ];
             Decimal sumReserved = (!ar.isEmpty() && ar[0].get('total') != null)
                 ? (Decimal) ar[0].get('total')
@@ -320,14 +358,19 @@ public with sharing class FimbyBulkBuyReservationController {
         public Map<String, Object> doCreateReservation(Id postId, Id realContactId, Id actingAsContactId, Integer amount) {
             Needs_Offers__c post = [
                 SELECT Id, Total_Quantity__c, Total_Reserved__c, Total_Available__c, Owner_Shares__c,
-                       Per_Response_Limit__c, Group_Conversation__c, Contact__c, Posted_By__c, Name, Status__c
+                       Per_Response_Limit__c, Group_Conversation__c, Contact__c, Posted_By__c, Name, Status__c,
+                       Reservations_Closed_Date__c, Availability_Rule__c, Expiry_DateTime__c
                 FROM Needs_Offers__c
                 WHERE Id = :postId
+                WITH SYSTEM_MODE
                 FOR UPDATE
             ];
 
             if (post.Status__c != FimbyConstants.NEEDS_OFFERS_AVAILABLE) {
                 throw new AuraHandledException('This bulk buy is no longer accepting reservations.');
+            }
+            if (isReservationWindowClosed(post)) {
+                throw new AuraHandledException(WINDOW_CLOSED_MESSAGE);
             }
 
             Decimal available = getAvailableShareCount(post);
@@ -345,6 +388,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 AND (On_Behalf_Of_Contact__c = :actingAsContactId
                      OR (On_Behalf_Of_Contact__c = NULL AND Contact__c = :actingAsContactId))
                 AND Status__c = :FimbyConstants.RESPONSE_RESERVED
+                WITH SYSTEM_MODE
             ];
             if (!existing.isEmpty()) {
                 throw new AuraHandledException('You already have a reservation.');
@@ -358,9 +402,9 @@ public with sharing class FimbyBulkBuyReservationController {
                 Amount_Requested__c = amount,
                 Status__c = FimbyConstants.RESPONSE_NEW
             );
-            insert resp;
+            insert as system resp;
             resp.Status__c = FimbyConstants.RESPONSE_RESERVED;
-            update resp;
+            update as system resp;
 
             Id groupConvId = post.Group_Conversation__c;
             if (groupConvId == null) {
@@ -368,7 +412,7 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             // Group conversation membership represents the identity (so neighbours see the org/individual)
-            Contact reserver = [SELECT FirstName FROM Contact WHERE Id = :actingAsContactId LIMIT 1];
+            Contact reserver = [SELECT FirstName FROM Contact WHERE Id = :actingAsContactId WITH SYSTEM_MODE LIMIT 1];
 
             FimbyGroupConversationController.addMember(groupConvId, actingAsContactId);
 
@@ -404,6 +448,7 @@ public with sharing class FimbyBulkBuyReservationController {
                 SELECT Id, Contact__c, On_Behalf_Of_Contact__c, Amount_Requested__c, Need_Offer_Responded_To__c
                 FROM Response__c
                 WHERE Id = :responseId
+                WITH SYSTEM_MODE
                 FOR UPDATE
             ];
 
@@ -416,11 +461,16 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             Needs_Offers__c post = [
-                SELECT Id, Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Per_Response_Limit__c
+                SELECT Id, Total_Quantity__c, Total_Reserved__c, Owner_Shares__c, Per_Response_Limit__c,
+                       Reservations_Closed_Date__c, Availability_Rule__c, Expiry_DateTime__c
                 FROM Needs_Offers__c
                 WHERE Id = :resp.Need_Offer_Responded_To__c
+                WITH SYSTEM_MODE
                 FOR UPDATE
             ];
+            if (isReservationWindowClosed(post)) {
+                throw new AuraHandledException(WINDOW_CLOSED_MESSAGE);
+            }
 
             Decimal currentAmount = resp.Amount_Requested__c;
             Decimal available = getAvailableShareCount(post) + currentAmount;
@@ -433,11 +483,11 @@ public with sharing class FimbyBulkBuyReservationController {
             }
 
             resp.Amount_Requested__c = newAmount;
-            update resp;
+            update as system resp;
 
             return new Map<String, Object>{ 'success' => true };
         }
 
-        public void updateResponse(Response__c resp) { update resp; }
+        public void updateResponse(Response__c resp) { update as system resp; }
     }
 }

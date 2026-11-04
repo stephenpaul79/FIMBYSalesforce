@@ -172,7 +172,7 @@ public with sharing class FimbyMyStuffController {
         Set<String> activeStatuses = MY_ACTIVE_POST_STATUSES;
 
         return [
-            SELECT Id, Name, Details__c, Type__c, Status__c, CreatedDate, Posted_Date__c,
+            SELECT Id, Name, Details__c, Type__c, Status__c, Display_Status__c, CreatedDate, Posted_Date__c,
                    RecordType.Name, Category__c, Event_Type__c
             FROM Needs_Offers__c
             WHERE (Contact__c = :contactId OR (Contact__c = null AND Posted_By__c = :contactId))
@@ -623,6 +623,7 @@ public with sharing class FimbyMyStuffController {
                        Lent_By__r.Full_Name__c, Start_Date__c, End_Date__c, CreatedDate
                 FROM Lending_History__c
                 WHERE Borrowed_By__c = :borrowedByContactId
+                WITH SYSTEM_MODE
                 ORDER BY End_Date__c DESC NULLS LAST, CreatedDate DESC
                 LIMIT :limitSize
                 OFFSET :offsetVal
@@ -660,7 +661,7 @@ public with sharing class FimbyMyStuffController {
             Contact c = [
                 SELECT Id, Name, Email, Phone, MailingStreet, MailingCity, MailingState,
                        MailingPostalCode, MailingCountry
-                FROM Contact WHERE Id = :contactId LIMIT 1
+                FROM Contact WHERE Id = :contactId WITH SYSTEM_MODE LIMIT 1
             ];
             return new Map<String, Object>{
                 'email' => c.Email,
@@ -699,6 +700,7 @@ public with sharing class FimbyMyStuffController {
                        Country__c, Additional_Info__c, Status__c, Origin__c, CreatedDate
                 FROM Shared_Contact_Info__c
                 WHERE Contact__c = :contactId OR Shared_To__c = :contactId
+                WITH SYSTEM_MODE
                 ORDER BY CreatedDate DESC, Id DESC
                 LIMIT :sharedLim
             ];
@@ -806,7 +808,7 @@ public with sharing class FimbyMyStuffController {
          */
         public List<Map<String, Object>> searchNeighbourhoodContactsInternal(String myContactId, String searchTerm) {
             List<Map<String, Object>> results = new List<Map<String, Object>>();
-            Contact me = [SELECT Id, AccountId FROM Contact WHERE Id = :myContactId LIMIT 1];
+            Contact me = [SELECT Id, AccountId FROM Contact WHERE Id = :myContactId WITH SYSTEM_MODE LIMIT 1];
             if (me.AccountId == null) return results;
 
             Set<Id> existingIds = new Set<Id>{ me.Id };
@@ -815,6 +817,7 @@ public with sharing class FimbyMyStuffController {
                 SELECT Shared_To__c FROM Shared_Contact_Info__c
                 WHERE Contact__c = :myContactId
                   AND Status__c != :FimbyConstants.SHARED_CONTACT_REVOKED
+                WITH SYSTEM_MODE
             ]) {
                 if (sci.Shared_To__c != null) existingIds.add(sci.Shared_To__c);
             }
@@ -830,6 +833,7 @@ public with sharing class FimbyMyStuffController {
                   AND Id NOT IN :existingIds
                   AND Is_Organization_Contact__c = false
                   AND (Name LIKE :term OR Email LIKE :term OR FirstName LIKE :term OR LastName LIKE :term)
+                WITH SYSTEM_MODE
                 ORDER BY Name
                 LIMIT 20
             ];
@@ -874,7 +878,7 @@ public with sharing class FimbyMyStuffController {
                 throw new AuraHandledException('Select at least one type of contact info to share.');
             }
 
-            Contact recipient = [SELECT Id, Name FROM Contact WHERE Id = :recipientContactId LIMIT 1];
+            Contact recipient = [SELECT Id, Name FROM Contact WHERE Id = :recipientContactId WITH SYSTEM_MODE LIMIT 1];
 
             FimbySharedContactService.ShareRequest request = new FimbySharedContactService.ShareRequest();
             request.sharerContactId = (Id) sharingContactId;
@@ -927,6 +931,7 @@ public with sharing class FimbyMyStuffController {
                 SELECT AccountId
                 FROM Contact
                 WHERE Id = :myContactId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 
@@ -942,6 +947,7 @@ public with sharing class FimbyMyStuffController {
                        Care_Standing_Visible__c, Care_Updated_Date__c
                 FROM Contact
                 WHERE Id = :neighbourContactId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 

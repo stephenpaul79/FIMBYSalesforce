@@ -54,6 +54,34 @@ private class FimbyFeedItemTest {
     }
 
     @IsTest
+    static void constructor_carriesReservationWindowClosure() {
+        Datetime stampedAt = Datetime.now().addMinutes(-30);
+        Datetime passedExpiry = Datetime.now().addHours(-2);
+
+        FimbyFeedItem stamped = new FimbyFeedItem(new Needs_Offers__c(
+            Name = 'Stamped', Status__c = 'Available', Reservations_Closed_Date__c = stampedAt,
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed'
+        ));
+        FimbyFeedItem pastExpiry = new FimbyFeedItem(new Needs_Offers__c(
+            Name = 'Past expiry', Status__c = 'Available',
+            Availability_Rule__c = 'Expires_At_Date', Expiry_DateTime__c = passedExpiry
+        ));
+        FimbyFeedItem futureExpiry = new FimbyFeedItem(new Needs_Offers__c(
+            Name = 'Future expiry', Status__c = 'Available',
+            Availability_Rule__c = 'Expires_At_Date', Expiry_DateTime__c = Datetime.now().addDays(1)
+        ));
+        FimbyFeedItem undated = new FimbyFeedItem(new Needs_Offers__c(
+            Name = 'Undated', Status__c = 'Available',
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed', Expiry_DateTime__c = passedExpiry
+        ));
+
+        System.assertEquals(stampedAt, stamped.reservationsClosedDate, 'Stamp reaches the card');
+        System.assertEquals(passedExpiry, pastExpiry.reservationsClosedDate, 'Passed expiry closes before the job runs');
+        System.assertEquals(null, futureExpiry.reservationsClosedDate, 'Future expiry stays open');
+        System.assertEquals(null, undated.reservationsClosedDate, 'Expiry is ignored for open-until-full buys');
+    }
+
+    @IsTest
     static void constructor_toleratesRowsWithoutLifecycleFields() {
         Needs_Offers__c bare = new Needs_Offers__c(Name = 'Bare', Type__c = 'Goods - Unperishable');
 
@@ -61,6 +89,7 @@ private class FimbyFeedItemTest {
 
         System.assertEquals(null, item.closedDate);
         System.assertEquals(null, item.closedOutcome);
+        System.assertEquals(null, item.reservationsClosedDate);
         FimbyFeedItem.applyEngagement(new List<FimbyFeedItem>(), null);
         FimbyFeedItem.applyEngagement(null, null);
     }

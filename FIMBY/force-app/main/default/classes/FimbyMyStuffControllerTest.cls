@@ -168,6 +168,47 @@ public class FimbyMyStuffControllerTest {
     }
 
     @IsTest
+    static void testGetMyPosts_closedBulkBuyReturnsDisplayStatus() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Needs_Offers__c closed = new Needs_Offers__c(
+            RecordTypeId = Schema.SObjectType.Needs_Offers__c.getRecordTypeInfosByDeveloperName().get('Bulk_Buy').getRecordTypeId(),
+            Name = 'Closed bulk buy',
+            Details__c = 'Reservations closed',
+            Full_Details__c = 'Reservations closed',
+            Status__c = 'Available',
+            Reservations_Closed_Date__c = Datetime.now().addMinutes(-10),
+            Neighbourhood__c = testNeighbourhood.Id,
+            Posted_By__c = testContact.Id,
+            Contact__c = testContact.Id,
+            Giver_Recipient_Type__c = 'Self',
+            Total_Quantity__c = 10,
+            Allocation_Unit_Label__c = 'shares',
+            Availability_Rule__c = 'Open_Until_Full_Or_Closed',
+            Auto_Accept_Responses__c = true,
+            Auto_Lock_Days__c = '7'
+        );
+        insert closed;
+
+        Test.startTest();
+        Needs_Offers__c shown;
+        System.runAs(testUser) {
+            for (Needs_Offers__c p : FimbyMyStuffController.getMyPosts(20)) {
+                if (p.Id == closed.Id) {
+                    shown = p;
+                }
+            }
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, shown, 'Closed but still Available bulk buy stays in My Posts');
+        System.assertEquals('Reservations Closed', shown.Display_Status__c,
+            'My Posts shows the closed window rather than raw Available');
+    }
+
+    @IsTest
     static void testGetMyPosts_includesPickupReady() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];

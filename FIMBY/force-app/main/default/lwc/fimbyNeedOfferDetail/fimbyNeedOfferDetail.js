@@ -21,6 +21,7 @@ import getBulkBuyDetail from '@salesforce/apex/FimbyBulkBuyController.getBulkBuy
 import getFollowUpStatus from '@salesforce/apex/FimbyFollowUpController.getFollowUpStatus';
 import completeBulkBuy from '@salesforce/apex/FimbyBulkBuyController.completeBulkBuy';
 import cancelBulkBuy from '@salesforce/apex/FimbyBulkBuyController.cancelBulkBuy';
+import closeReservations from '@salesforce/apex/FimbyBulkBuyController.closeReservations';
 import quickEventResponse from '@salesforce/apex/FimbyResponseController.quickEventResponse';
 import createEventGroupChat from '@salesforce/apex/FimbyGroupConversationController.createEventGroupChat';
 import declineResponseApex from '@salesforce/apex/FimbyResponseThreadController.declineResponse';
@@ -1227,12 +1228,19 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
         return reservation?.amount || 0;
     }
 
+    /** Server flag covers both a stamped closure and a dated buy past expiry before the job runs. */
+    get bulkBuyReservationsClosed() {
+        return this.bulkBuyData?.reservationsClosed === true
+            && this.bulkBuyData?.post?.Status__c === 'Available';
+    }
+
     get bulkBuyStatusBadgeText() {
         if (this.userHasBulkBuyReservation) {
             const amt = this.userBulkBuyReservationAmount;
-            return amt === 1 ? '1 Share Reserved' : `${amt} Shares Reserved`;
+            const reserved = amt === 1 ? '1 Share Reserved' : `${amt} Shares Reserved`;
+            return this.bulkBuyReservationsClosed ? `${reserved} \u00B7 Reservations closed` : reserved;
         }
-        return this.bulkBuyDisplayStatus;
+        return this.bulkBuyReservationsClosed ? 'Reservations Closed' : this.bulkBuyDisplayStatus;
     }
 
     get bulkBuyStatusBadgeClass() {
@@ -1281,6 +1289,15 @@ export default class FimbyNeedOfferDetail extends NavigationMixin(LightningEleme
     async handleBulkBuyCancel() {
         try {
             await cancelBulkBuy({ postId: this.recordId });
+            this.loadBulkBuyDetail();
+        } catch (error) {
+            fireErrorToast(error);
+        }
+    }
+
+    async handleBulkBuyCloseReservations() {
+        try {
+            await closeReservations({ postId: this.recordId });
             this.loadBulkBuyDetail();
         } catch (error) {
             fireErrorToast(error);
