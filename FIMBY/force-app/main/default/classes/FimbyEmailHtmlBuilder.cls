@@ -65,6 +65,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         'God Story' => '#A38045', 'Thank You' => '#B07248',
         'Prayer' => '#7E7495', 'Lament' => '#5E7B92',
         'Bio' => '#6B7D54', 'Neighbourhood Moment' => '#AF827D',
+        'Grace Moment' => '#7E7495', 'Heavy Heart' => '#5E7B92', 'Good News' => '#A38045',
         'Story' => '#A38045',
         'Library' => '#8D7B6A'
     };
@@ -77,6 +78,7 @@ public without sharing class FimbyEmailHtmlBuilder {
         'God Story' => 'GodStoryActive.png', 'Thank You' => 'ThankYouActive.png',
         'Prayer' => 'PrayActive.png', 'Lament' => 'LamentActive.png',
         'Bio' => 'BioActive.png', 'Neighbourhood Moment' => 'tulips.png',
+        'Grace Moment' => 'PrayActive.png', 'Heavy Heart' => 'LamentActive.png', 'Good News' => 'GodStoryActive.png',
         'Story' => 'StoriesActive.png',
         'Library' => 'ToolboxActive.png'
     };
@@ -159,6 +161,7 @@ public without sharing class FimbyEmailHtmlBuilder {
             intentLines = [
                 SELECT Message__c FROM FIMBY_Loading_Message__mdt
                 WHERE Active__c = true AND Context__c = 'Email_Intent'
+                WITH SYSTEM_MODE
             ];
         }
         if (intentLines.isEmpty()) {

@@ -32,9 +32,9 @@ public class FimbyStoriesControllerTest {
                 Posted_By__c = testContact.Id
             ));
             testStories.add(new Story__c(
-                Name = 'Prayer Story 1',
-                Message__c = 'This is a prayer story',
-                Type__c = 'Prayer',
+                Name = 'Heavy Heart Story 1',
+                Message__c = 'This is a heavy heart story',
+                Type__c = 'Heavy Heart',
                 Neighbourhood__c = testNeighbourhood.Id,
                 Posted_By__c = testContact.Id
             ));
@@ -64,14 +64,63 @@ public class FimbyStoriesControllerTest {
     static void testGetStoriesFiltered() {
         Test.startTest();
         FimbyStoriesController.StoriesResult thankYouStories = FimbyStoriesController.getStories(10, 0, 'Thank You');
-        FimbyStoriesController.StoriesResult prayerStories = FimbyStoriesController.getStories(10, 0, 'Prayer');
+        FimbyStoriesController.StoriesResult heavyHeartStories = FimbyStoriesController.getStories(10, 0, 'Heavy Heart');
         Test.stopTest();
 
         System.assertNotEquals(null, thankYouStories, 'Thank You stories result should not be null');
         System.assertEquals(2, thankYouStories.stories.size(), 'Should return 2 thank you stories');
 
-        System.assertNotEquals(null, prayerStories, 'Prayer stories result should not be null');
-        System.assertEquals(1, prayerStories.stories.size(), 'Should return 1 prayer story');
+        System.assertNotEquals(null, heavyHeartStories, 'Heavy Heart stories result should not be null');
+        System.assertEquals(1, heavyHeartStories.stories.size(), 'Should return 1 heavy heart story');
+    }
+
+    @IsTest
+    static void testExpandTypeFilter() {
+        System.assertEquals(null, FimbyStoriesController.expandTypeFilter(null), 'Null means no filter');
+        System.assertEquals(null, FimbyStoriesController.expandTypeFilter(''), 'Blank means no filter');
+        System.assertEquals(null, FimbyStoriesController.expandTypeFilter('All'), 'All means no filter');
+
+        Set<String> heavy = FimbyStoriesController.expandTypeFilter('Heavy Heart');
+        System.assertEquals(new Set<String>{ 'Heavy Heart', 'Lament' }, heavy, 'Heavy Heart should include retired Lament');
+        System.assert(!heavy.contains('Prayer'), 'Prayer must not surface under Heavy Heart');
+
+        System.assertEquals(
+            new Set<String>{ 'Grace Moment', 'God Story' },
+            FimbyStoriesController.expandTypeFilter('Grace Moment'),
+            'Grace Moment should include retired God Story'
+        );
+        System.assertEquals(
+            new Set<String>{ 'Good News' },
+            FimbyStoriesController.expandTypeFilter('Good News'),
+            'Other types map to themselves'
+        );
+    }
+
+    @IsTest
+    static void testSocialShareEligibility() {
+        System.assert(FimbyStoriesController.isSocialShareEligible('Thank You'));
+        System.assert(FimbyStoriesController.isSocialShareEligible('Neighbourhood Moment'));
+        System.assert(FimbyStoriesController.isSocialShareEligible('Good News'));
+        System.assert(!FimbyStoriesController.isSocialShareEligible('Grace Moment'));
+        System.assert(!FimbyStoriesController.isSocialShareEligible('Heavy Heart'));
+        System.assert(!FimbyStoriesController.isSocialShareEligible('Bio'));
+        System.assert(!FimbyStoriesController.isSocialShareEligible(null));
+    }
+
+    @IsTest
+    static void testResolveShareOnSocial_RetiredTypeUnchanged() {
+        System.assertEquals(true,
+            FimbyStoriesController.resolveShareOnSocial('God Story', false, true, true),
+            'An unchanged retired post keeps an existing opt-in');
+        System.assertEquals(false,
+            FimbyStoriesController.resolveShareOnSocial('God Story', false, true, false),
+            'An unchanged retired post can revoke its opt-in');
+        System.assertEquals(false,
+            FimbyStoriesController.resolveShareOnSocial('God Story', false, false, true),
+            'An unchanged retired post cannot newly opt in');
+        System.assertEquals(false,
+            FimbyStoriesController.resolveShareOnSocial('Heavy Heart', true, true, true),
+            'Changing to an ineligible type clears the opt-in');
     }
 
     @IsTest
@@ -105,12 +154,12 @@ public class FimbyStoriesControllerTest {
         Test.startTest();
         Integer allCount = FimbyStoriesController.getStoriesCount('All');
         Integer thankYouCount = FimbyStoriesController.getStoriesCount('Thank You');
-        Integer prayerCount = FimbyStoriesController.getStoriesCount('Prayer');
+        Integer heavyHeartCount = FimbyStoriesController.getStoriesCount('Heavy Heart');
         Test.stopTest();
 
         System.assertEquals(3, allCount, 'Should count all 3 stories');
         System.assertEquals(2, thankYouCount, 'Should count 2 thank you stories');
-        System.assertEquals(1, prayerCount, 'Should count 1 prayer story');
+        System.assertEquals(1, heavyHeartCount, 'Should count 1 heavy heart story');
     }
 
     @IsTest
@@ -391,7 +440,7 @@ public class FimbyStoriesControllerTest {
             'recordId' => story.Id,
             'title' => 'Updated Story Title',
             'content' => 'Updated message body',
-            'category' => 'Prayer',
+            'category' => 'Good News',
             'shareOnSocial' => true
         };
 
@@ -410,8 +459,54 @@ public class FimbyStoriesControllerTest {
         ];
         System.assertEquals('Updated Story Title', updated.Name);
         System.assertEquals('Updated message body', updated.Message__c);
-        System.assertEquals('Prayer', updated.Type__c);
+        System.assertEquals('Good News', updated.Type__c);
         System.assertEquals(true, updated.Share_on_Social_Media__c);
+    }
+
+    @IsTest
+    static void testUpdateStory_IneligibleTypeClearsSocialShare() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = createTestUser(testContact.Id);
+
+        Story__c story = [SELECT Id FROM Story__c WHERE Type__c = 'Thank You' LIMIT 1];
+        story.Share_on_Social_Media__c = true;
+        update story;
+
+        Map<String, Object> updateData = new Map<String, Object>{
+            'recordId' => story.Id,
+            'category' => 'Heavy Heart',
+            'shareOnSocial' => true
+        };
+
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            FimbyStoriesController.updateStory(JSON.serialize(updateData));
+        }
+        Test.stopTest();
+
+        Story__c updated = [SELECT Type__c, Share_on_Social_Media__c FROM Story__c WHERE Id = :story.Id];
+        System.assertEquals('Heavy Heart', updated.Type__c);
+        System.assertEquals(false, updated.Share_on_Social_Media__c, 'Heavy Heart posts are never reshared');
+    }
+
+    @IsTest
+    static void testCreateStory_IneligibleTypeIgnoresSocialShare() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = createTestUser(testContact.Id);
+
+        Test.startTest();
+        FimbyIdentityRepository.clearCache();
+        System.runAs(testUser) {
+            Id storyId = FimbyStoriesController.createStory(
+                'A quiet miracle', 'Something we did not see coming', 'Grace Moment', null, null, true
+            );
+            Story__c created = [SELECT Share_on_Social_Media__c FROM Story__c WHERE Id = :storyId];
+            System.assertEquals(false, created.Share_on_Social_Media__c, 'Grace Moment posts are never reshared');
+        }
+        Test.stopTest();
     }
 
     @IsTest
@@ -429,7 +524,7 @@ public class FimbyStoriesControllerTest {
         User otherUser = createTestUser(otherContact.Id);
 
         Story__c story = [
-            SELECT Id FROM Story__c WHERE Type__c = 'Prayer' LIMIT 1
+            SELECT Id FROM Story__c WHERE Type__c = 'Heavy Heart' LIMIT 1
         ];
         Map<String, Object> updateData = new Map<String, Object>{
             'recordId' => story.Id,
@@ -533,7 +628,7 @@ public class FimbyStoriesControllerTest {
     @IsTest
     static void testUseProfilePhotoForStory_NotOwner() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood Stories' LIMIT 1];
-        Story__c targetStory = [SELECT Id FROM Story__c WHERE Type__c = 'Prayer' LIMIT 1];
+        Story__c targetStory = [SELECT Id FROM Story__c WHERE Type__c = 'Heavy Heart' LIMIT 1];
 
         Contact other = new Contact(
             FirstName = 'Other', LastName = 'PhotoUser',

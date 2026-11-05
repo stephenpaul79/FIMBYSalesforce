@@ -482,9 +482,10 @@ public with sharing class FimbyMyStuffController {
         String baseQuery = 'SELECT Id, Name, Message__c, Type__c, CreatedDate FROM Story__c WHERE Posted_By__c = :contactId AND Id NOT IN :recentIds';
         String countQuery = 'SELECT COUNT() FROM Story__c WHERE Posted_By__c = :contactId AND Id NOT IN :recentIds';
 
-        if (String.isNotBlank(filterType) && filterType != 'All') {
-            baseQuery += ' AND Type__c = :filterType';
-            countQuery += ' AND Type__c = :filterType';
+        Set<String> filterTypes = FimbyStoriesController.expandTypeFilter(filterType);
+        if (filterTypes != null) {
+            baseQuery += ' AND Type__c IN :filterTypes';
+            countQuery += ' AND Type__c IN :filterTypes';
         }
 
         baseQuery += ' WITH SECURITY_ENFORCED ORDER BY CreatedDate DESC LIMIT :limitSize OFFSET :offsetVal';

@@ -341,7 +341,7 @@ export default class FimbyGuidedTour extends NavigationMixin(LightningElement) {
     }
 
     get progressLabel() {
-        return getProgressLabel(this.currentStep, this._stepIndex, this._steps, this._trackPhase);
+        return getProgressLabel(this.currentStep, this._stepIndex, this._steps);
     }
 
     get showProgressSection() {

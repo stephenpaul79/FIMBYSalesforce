@@ -9,11 +9,11 @@ const PAGE_SIZE = 20;
 const FILTERS = [
     { label: 'All', value: 'All' },
     { label: 'Thank You', value: 'Thank You' },
-    { label: 'God Story', value: 'God Story' },
-    { label: 'Prayer', value: 'Prayer' },
-    { label: 'Lament', value: 'Lament' },
-    { label: 'Bio', value: 'Bio' },
-    { label: 'Neighbourhood', value: 'Neighbourhood Moment' }
+    { label: 'Neighbourhood', value: 'Neighbourhood Moment' },
+    { label: 'Grace Moment', value: 'Grace Moment' },
+    { label: 'Heavy Heart', value: 'Heavy Heart' },
+    { label: 'Good News', value: 'Good News' },
+    { label: 'Introduction', value: 'Bio' }
 ];
 
 const TYPE_BADGE_MAP = {
@@ -22,7 +22,10 @@ const TYPE_BADGE_MAP = {
     'Prayer': 'type-badge prayer-type',
     'Lament': 'type-badge lament-type',
     'Bio': 'type-badge bio-type',
-    'Neighbourhood Moment': 'type-badge neighbourhood-type'
+    'Neighbourhood Moment': 'type-badge neighbourhood-type',
+    'Grace Moment': 'type-badge prayer-type',
+    'Heavy Heart': 'type-badge lament-type',
+    'Good News': 'type-badge godstory-type'
 };
 
 const STORY_ICON_MAP = {
@@ -31,7 +34,10 @@ const STORY_ICON_MAP = {
     'Prayer':    'PrayActive.png',
     'Lament':    'LamentActive.png',
     'Bio':       'BioActive.png',
-    'Neighbourhood Moment': 'tulips.png'
+    'Neighbourhood Moment': 'tulips.png',
+    'Grace Moment': 'PrayActive.png',
+    'Heavy Heart':  'LamentActive.png',
+    'Good News':    'GodStoryActive.png'
 };
 
 const STORY_DISPLAY_NAMES = {

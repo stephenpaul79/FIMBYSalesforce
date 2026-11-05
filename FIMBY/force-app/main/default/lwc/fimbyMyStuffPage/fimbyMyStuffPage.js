@@ -40,7 +40,10 @@ const STORY_TYPE_CLASSES = {
     'Prayer':    'type-badge prayer-type',
     'Lament':    'type-badge lament-type',
     'Bio':       'type-badge bio-type',
-    'Neighbourhood Moment': 'type-badge neighbourhood-type'
+    'Neighbourhood Moment': 'type-badge neighbourhood-type',
+    'Grace Moment': 'type-badge prayer-type',
+    'Heavy Heart':  'type-badge lament-type',
+    'Good News':    'type-badge godstory-type'
 };
 
 const STORY_ICON_MAP = {
@@ -49,7 +52,10 @@ const STORY_ICON_MAP = {
     'Prayer':    'PrayActive.png',
     'Lament':    'LamentActive.png',
     'Bio':       'BioActive.png',
-    'Neighbourhood Moment': 'tulips.png'
+    'Neighbourhood Moment': 'tulips.png',
+    'Grace Moment': 'PrayActive.png',
+    'Heavy Heart':  'LamentActive.png',
+    'Good News':    'GodStoryActive.png'
 };
 
 const STORY_DISPLAY_NAMES = {

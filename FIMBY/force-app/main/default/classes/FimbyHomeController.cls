@@ -358,7 +358,9 @@ public with sharing class FimbyHomeController {
      * @param category  L1 filter: null/'all' = everything (stories capped at Story_Feed_TTL_Days__c),
      *                  'story' = stories only (full history), 'askOffer' = needs/offers only
      * @param subType   L2 filter: null/'All' = no sub-filter, or specific sub-type string
-     *                  - For stories: 'Thank You', 'God Story', 'Prayer', 'Lament', 'Bio'
+     *                  - For stories: 'Thank You', 'Neighbourhood Moment', 'Grace Moment',
+     *                    'Heavy Heart', 'Good News', 'Bio' (Grace Moment and Heavy Heart
+     *                    also match their retired predecessors; see expandTypeFilter)
      *                  - For askOffer: 'Need', 'Offer', 'Event', 'Bulk Buy'
      */
     @AuraEnabled(cacheable=false)
@@ -398,8 +400,9 @@ public with sharing class FimbyHomeController {
                         ' OR (Neighbourhood__c IN :adjacentIds AND Visibility_Scope__c IN (\'Adjacent\',\'Regional\'))' +
                         ' OR (Neighbourhood__c IN :adjacentIds AND Contact__c IN :sharedContactIds))');
                 }
-                if (category == 'story' && hasSubType) {
-                    storyWheres.add('Type__c = :subType');
+                Set<String> storyTypes = FimbyStoriesController.expandTypeFilter(subType);
+                if (category == 'story' && storyTypes != null) {
+                    storyWheres.add('Type__c IN :storyTypes');
                 }
                 if (storyTtl > 0) {
                     storyWheres.add('CreatedDate >= LAST_N_DAYS:' + storyTtl);

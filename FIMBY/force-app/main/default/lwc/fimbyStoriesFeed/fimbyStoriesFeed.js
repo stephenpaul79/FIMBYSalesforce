@@ -2,7 +2,7 @@
  * DEPRECATED — fimbyStoriesFeed
  *
  * This component has been replaced by cascading filters in fimbyHomeFeed.
- * Story sub-type filtering (Thank You, God Story, Prayer, Lament, Bio) is
+ * Story sub-type filtering (Thank You, Neighbourhood Moment, Grace Moment, Heavy Heart, Good News, Bio) is
  * now handled as Level 2 pills in the unified home feed.
  *
  * This stub auto-redirects to the home feed with ?filter=story so that

@@ -50,7 +50,10 @@ const STORY_SUB_ICONS = {
     'Prayer':    { active: 'PrayActive.png',       inactive: 'PrayInactive.png' },
     'Lament':    { active: 'LamentActive.png',     inactive: 'LamentInactive.png' },
     'Bio':       { active: 'BioActive.png',         inactive: 'BioInactive.png' },
-    'Neighbourhood Moment': { active: 'tulips.png', inactive: 'tulipsInactive.png' }
+    'Neighbourhood Moment': { active: 'tulips.png', inactive: 'tulipsInactive.png' },
+    'Grace Moment': { active: 'PrayActive.png',     inactive: 'PrayInactive.png' },
+    'Heavy Heart':  { active: 'LamentActive.png',   inactive: 'LamentInactive.png' },
+    'Good News':    { active: 'GodStoryActive.png', inactive: 'GodStoryInactive.png' }
 };
 
 /* Story badge CSS-class map */
@@ -60,7 +63,10 @@ const BADGE_CLASS_MAP = {
     'Lament':    'card-type-badge lament-badge',
     'Prayer':    'card-type-badge prayer-badge',
     'Bio':       'card-type-badge bio-badge',
-    'Neighbourhood Moment': 'card-type-badge neighbourhood-badge'
+    'Neighbourhood Moment': 'card-type-badge neighbourhood-badge',
+    'Grace Moment': 'card-type-badge prayer-badge',
+    'Heavy Heart':  'card-type-badge lament-badge',
+    'Good News':    'card-type-badge godstory-badge'
 };
 
 /* Earth-tone palette — shared by card accent borders AND badge pills */
@@ -70,7 +76,10 @@ const ACCENT_COLORS = {
     'Lament':    'rgba(94, 123, 146, 0.9)',
     'Prayer':    'rgba(126, 116, 149, 0.9)',
     'Bio':       'rgba(107, 125, 84, 0.9)',
-    'Neighbourhood Moment': 'rgba(175, 130, 125, 0.9)'
+    'Neighbourhood Moment': 'rgba(175, 130, 125, 0.9)',
+    'Grace Moment': 'rgba(126, 116, 149, 0.9)',
+    'Heavy Heart':  'rgba(94, 123, 146, 0.9)',
+    'Good News':    'rgba(163, 128, 69, 0.9)'
 };
 
 const BADGE_BG_COLORS = {
@@ -88,11 +97,11 @@ const BADGE_BG_COLORS = {
 const STORY_SUB_FILTERS = [
     { value: 'All', label: 'All' },
     { value: 'Thank You', label: "Thank You's" },
-    { value: 'God Story', label: 'God Stories' },
-    { value: 'Prayer', label: 'Prayers' },
-    { value: 'Lament', label: 'Laments' },
-    { value: 'Bio', label: 'Bios' },
-    { value: 'Neighbourhood Moment', label: 'Neighbourhood' }
+    { value: 'Neighbourhood Moment', label: 'Neighbourhood' },
+    { value: 'Grace Moment', label: 'Grace Moment' },
+    { value: 'Heavy Heart', label: 'Heavy Heart' },
+    { value: 'Good News', label: 'Good News' },
+    { value: 'Bio', label: 'Introductions' }
 ];
 
 const ASK_OFFER_SUB_FILTERS = [
@@ -1583,6 +1592,12 @@ export default class FimbyHomeFeed extends NavigationMixin(LightningElement) {
             if (!ownerHint) return false;
             const state = readCache(CACHE_KEY, { identityId: ownerHint, ttlMs: CACHE_MAX_AGE_MS });
             if (!state || !Array.isArray(state.feedItems)) return false;
+            // A sub-filter that no longer exists (e.g. a retired story type) reloads fresh under All.
+            if (state.activeFilter === 'story'
+                && state.activeSubFilter
+                && !STORY_SUB_FILTERS.some((opt) => opt.value === state.activeSubFilter)) {
+                return false;
+            }
 
             this.feedItems = state.feedItems;
             this.filteredFeedItems = [...state.feedItems];

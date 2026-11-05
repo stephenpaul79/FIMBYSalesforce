@@ -73,6 +73,13 @@ public class FimbyStoryCommentControllerTest {
     }
 
     @isTest
+    static void testBuildCommentContextLabel_NewTypes() {
+        System.assertEquals('On the grace moment', FimbyStoryCommentController.buildCommentContextLabel('Grace Moment'));
+        System.assertEquals('On the heavy heart', FimbyStoryCommentController.buildCommentContextLabel('Heavy Heart'));
+        System.assertEquals('On the good news', FimbyStoryCommentController.buildCommentContextLabel('Good News'));
+    }
+
+    @isTest
     static void testGetStoryForComment_NonOwnerInNeighbourhood() {
         User viewerUser = getTestUser();
         Contact viewerContact = getTestContact();

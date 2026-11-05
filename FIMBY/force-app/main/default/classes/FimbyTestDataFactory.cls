@@ -140,7 +140,7 @@ public class FimbyTestDataFactory {
     public static List<Story__c> createStories(Id neighbourhoodId, Id postedByContactId, Integer count, Boolean doInsert) {
         List<Story__c> stories = new List<Story__c>();
 
-        List<String> storyTypes = new List<String>{'Thank You', 'God Story', 'Prayer', 'Bio', 'Lament'};
+        List<String> storyTypes = new List<String>{'Thank You', 'Grace Moment', 'Heavy Heart', 'Bio', 'Good News'};
 
         for (Integer i = 0; i < count; i++) {
             Story__c story = new Story__c(

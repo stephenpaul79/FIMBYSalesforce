@@ -53,7 +53,8 @@ export const WALKTHROUGH_SCREENS = [
         title: 'Find your way around.',
         body:
             "Your home feed is the bulletin board for the street. Filter by " +
-            "<strong>Shared Life</strong> for stories, prayers and thank-yous, or " +
+            "<strong>Shared Life</strong> for thank-yous, neighbourhood moments, grace, " +
+            "heavy hearts, good news and introductions, or " +
             "<strong>Ask &amp; Offer</strong> for practical needs.<br/><br/>" +
             "You've got your nav &mdash; <strong>Home</strong>, " +
             "<strong>Library</strong>, the big plus to post, <strong>Messages</strong>, " +
@@ -80,11 +81,12 @@ export const WALKTHROUGH_SCREENS = [
                 id: 'shared-life',
                 title: 'Share more than logistics.',
                 body:
-                    "Some moments aren't asks or offers &mdash; they're a thank-you, " +
-                    "a prayer request, a hard week, a small piece of your story. " +
+                    "Some moments aren't asks or offers. They're a thank-you, " +
+                    "a quiet miracle, something hard, good news, or a small piece of your story. " +
                     "<strong>Shared Life</strong> holds those.<br/><br/>" +
-                    "Post a <strong>Thank You</strong>, a <strong>Prayer</strong>, " +
-                    "a <strong>Lament</strong>, or a <strong>Neighbourhood Moment</strong>. " +
+                    "Post a <strong>Thank You</strong>, <strong>Neighbourhood Moment</strong>, " +
+                    "<strong>Grace Moment</strong>, <strong>Heavy Heart</strong>, " +
+                    "<strong>Good News</strong>, or <strong>Introduction</strong>. " +
                     "Your neighbours can comment."
             },
             {
@@ -136,9 +138,10 @@ export const WALKTHROUGH_SCREENS = [
 
 export const SHARED_LIFE_PILLS = [
     { type: 'Thank You', label: 'Thank You', iconFile: 'ThankYouActive.png' },
-    { type: 'Prayer', label: 'Prayer', iconFile: 'PrayActive.png' },
-    { type: 'Lament', label: 'Lament', iconFile: 'LamentActive.png' },
-    { type: 'Neighbourhood Moment', label: 'Neighbourhood', iconFile: 'tulips.png' }
+    { type: 'Neighbourhood Moment', label: 'Neighbourhood', iconFile: 'tulips.png' },
+    { type: 'Grace Moment', label: 'Grace Moment', iconFile: 'PrayActive.png' },
+    { type: 'Heavy Heart', label: 'Heavy Heart', iconFile: 'LamentActive.png' },
+    { type: 'Good News', label: 'Good News', iconFile: 'GodStoryActive.png' }
 ];
 
 // Sample posts shown inside the phone-frame for Slide 4a (Shared Life).
@@ -157,13 +160,13 @@ export const SHARED_LIFE_PHONE_POSTS = [
         body: "Kids were sick all week and Huy watched them so I could run errands. I almost cried in the grocery store."
     },
     {
-        id: 'prayer-kim',
+        id: 'heavyheart-kim',
         initials: 'KW',
         name: 'Kim W.',
         time: 'Yesterday',
-        badgeLabel: 'PRAYER',
-        badgeEmoji: '\u{1F64F}', // praying hands
-        badgeColor: 'rgba(126, 116, 149, 0.9)', // Prayer lavender
+        badgeLabel: 'HEAVY HEART',
+        badgeEmoji: '\u{1F499}', // blue heart
+        badgeColor: 'rgba(94, 123, 146, 0.9)', // Heavy Heart slate
         accentColor: 'var(--fimby-earth-ochre, #7D6234)',
         title: 'Big week ahead',
         body: "Surgery on Thursday. If you've got a quiet moment, please think of us."

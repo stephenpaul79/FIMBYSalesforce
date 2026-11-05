@@ -38,11 +38,11 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         title: 'Your home feed',
         body:
-            'Our lives sit side by side here. Shared Life is for thanks, prayer, ' +
-            'and small updates. Ask & Offer is for practical neighbour help.',
+            'Our lives sit side by side here. Shared Life is for thanks, grace, hard things, ' +
+            'good news and small updates. Ask & Offer is for practical neighbour help.',
         mobileBody:
-            'Our lives sit side by side here. Shared Life is for thanks, prayer, ' +
-            'and small updates. Ask & Offer is for practical neighbour help.',
+            'Our lives sit side by side here. Shared Life is for thanks, grace, hard things, ' +
+            'good news and small updates. Ask & Offer is for practical neighbour help.',
         actionLabel: 'Try a filter',
         iconFile: 'StoriesInactive.png',
         clickAdvanceOn: ['story', 'askOffer']
@@ -226,7 +226,7 @@ export function getFilteredSteps(options = {}) {
     });
 }
 
-export function getProgressLabel(step, stepIndex, steps, trackPhase) {
+export function getProgressLabel(step, stepIndex, steps) {
     if (step.hideProgressLabel) {
         return '';
     }

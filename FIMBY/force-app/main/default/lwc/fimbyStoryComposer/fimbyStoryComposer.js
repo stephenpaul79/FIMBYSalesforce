@@ -25,8 +25,19 @@ const MEME_GIFS = [
     { resource: 'MEMES2', file: 'Superstar.gif' }
 ];
 
-// Prayer and Lament are deliberately excluded — too private to ask about resharing.
-const SOCIAL_SHARE_ELIGIBLE_TYPES = ['Thank You', 'Neighbourhood Moment', 'God Story'];
+// Grace Moment and Heavy Heart are deliberately excluded — too private to ask about resharing.
+// Mirrors FimbyStoriesController.SOCIAL_SHARE_ELIGIBLE_TYPES.
+const SOCIAL_SHARE_ELIGIBLE_TYPES = ['Thank You', 'Neighbourhood Moment', 'Good News'];
+
+const DEFAULT_MESSAGE_PLACEHOLDER = 'Share your thoughts, experience, or a slice of life...';
+const MESSAGE_PLACEHOLDERS = {
+    'Thank You': 'Who helped you out lately? Tell them, and the rest of us.',
+    'Neighbourhood Moment': 'A porch chat, a garden in bloom, chalk art on the sidewalk...',
+    'Grace Moment': 'An answered prayer, a coincidence too good to be one, a moment bigger than you.',
+    'Heavy Heart': "What are you carrying right now? You don't have to keep it to yourself.",
+    'Good News': 'New baby, new job, a year sober, finally fixed the bike. Let us celebrate with you.',
+    Bio: "How long you've been on the block, what you love doing, what you're good at. Let us get to know you."
+};
 
 export default class FimbyStoryComposer extends NavigationMixin(LightningElement) {
     // Form state
@@ -99,12 +110,12 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
 
     get storyTypesList() {
         const types = [
-            { value: 'Thank You',            label: 'Thank You',            description: 'Express gratitude',              icon: 'ThankYouActive.png' },
-            { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Share a moment you noticed',     icon: 'tulips.png' },
-            { value: 'Prayer',               label: 'Prayer Request',       description: 'Ask for prayers and support',    icon: 'PrayActive.png' },
-            { value: 'Lament',               label: 'Lament',               description: "Share what's hard",             icon: 'LamentActive.png' },
-            { value: 'God Story',            label: 'God Story',            description: 'Share a faith experience',       icon: 'GodStoryActive.png' },
-            { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbors',icon: 'BioActive.png' }
+            { value: 'Thank You',            label: 'Thank You',            description: 'Name someone who showed up',             icon: 'ThankYouActive.png' },
+            { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Something small worth sharing',          icon: 'tulips.png' },
+            { value: 'Grace Moment',         label: 'Grace Moment',         description: "A quiet miracle you didn't see coming",  icon: 'PrayActive.png' },
+            { value: 'Heavy Heart',          label: 'Heavy Heart',          description: "Share what's hard, you're not alone",    icon: 'LamentActive.png' },
+            { value: 'Good News',            label: 'Good News',            description: 'Share a win or a milestone',             icon: 'GodStoryActive.png' },
+            { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbours',       icon: 'BioActive.png' }
         ];
         return types.map((t) => {
             const selected = this.selectedStoryType === t.value;
@@ -154,6 +165,10 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
         if (len >= 2000) return 'character-count at-limit';
         if (len >= 1800) return 'character-count near-limit';
         return 'character-count';
+    }
+
+    get messagePlaceholder() {
+        return MESSAGE_PLACEHOLDERS[this.selectedStoryType] || DEFAULT_MESSAGE_PLACEHOLDER;
     }
 
     get showPostingOptions() {

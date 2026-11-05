@@ -30,7 +30,7 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void composeActorLedTitle_actorContactSet_prependsName() {
-        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Id actorId = Contact.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getKeyPrefix() + '000000000001';
         Notification__c n = new Notification__c(
             Title__c = 'would like you to vouch for them',
             Type__c = 'Vouch_Request_Received',
@@ -56,7 +56,7 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void composeActorLedTitle_messageStyleType_passesThrough() {
-        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Id actorId = Contact.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getKeyPrefix() + '000000000001';
         Notification__c n = new Notification__c(
             Title__c = 'Maya replied',
             Type__c = 'Message',
@@ -70,7 +70,7 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void buildAlertCards_actorLedTitle_rendersNameInHeadlineOnce() {
-        Id actorId = Contact.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        Id actorId = Contact.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getKeyPrefix() + '000000000001';
         Notification__c n = new Notification__c(
             Title__c = 'would like you to vouch for them',
             Body__c = 'Vouching for them opens up the lending library so they can borrow from neighbours.',
@@ -277,6 +277,17 @@ private class FimbyEmailHtmlBuilderTest {
     static void getBadgeIcon_knownType_returnsFilename() {
         System.assertEquals('BulletinBoardActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Need'));
         System.assertEquals('bulkbuy.png', FimbyEmailHtmlBuilder.getBadgeIcon('Bulk_Buy'));
+    }
+
+    @IsTest
+    static void sharedLifeTypes_reuseRetiredTypeBadges() {
+        System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('Prayer'), FimbyEmailHtmlBuilder.getBadgeColor('Grace Moment'));
+        System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('Lament'), FimbyEmailHtmlBuilder.getBadgeColor('Heavy Heart'));
+        System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('God Story'), FimbyEmailHtmlBuilder.getBadgeColor('Good News'));
+        System.assertEquals('PrayActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Grace Moment'));
+        System.assertEquals('LamentActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Heavy Heart'));
+        System.assertEquals('GodStoryActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Good News'));
+        System.assertEquals('GodStoryActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('God Story'));
     }
 
     @IsTest

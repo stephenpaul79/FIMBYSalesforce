@@ -388,15 +388,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-section">
-                                <h3 class="section-title">
-                                    <img src={settingsIconUrl} alt="" class="section-icon">
-                                    Sharing
-                                </h3>
-                                <div class="form-field field-full-width">
-                                    <lightning-input type="checkbox" label="Okay with FIMBY reposting on social media" checked={shareOnSocial} onchange={handleShareOnSocialChange}></lightning-input>
+                            <template lwc:if={showStorySocialOption}>
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <img src={settingsIconUrl} alt="" class="section-icon">
+                                        Sharing
+                                    </h3>
+                                    <div class="form-field field-full-width">
+                                        <lightning-input type="checkbox" label="Okay with FIMBY reposting on social media" checked={shareOnSocial} onchange={handleShareOnSocialChange}></lightning-input>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
                         </template>
 
                         <!-- ========== LIBRARY ========== -->

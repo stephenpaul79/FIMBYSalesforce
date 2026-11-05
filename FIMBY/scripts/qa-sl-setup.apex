@@ -32,7 +32,7 @@ List<Story__c> inserts = new List<Story__c>{
     new Story__c(
         Name = 'QA-SL-F-20260527-Delete story anchor',
         Message__c = 'QA anchor for author delete story test.',
-        Type__c = 'Prayer',
+        Type__c = 'Heavy Heart',
         Neighbourhood__c = nh,
         Posted_By__c = desktop,
         Contact__c = desktop,
@@ -42,7 +42,7 @@ List<Story__c> inserts = new List<Story__c>{
     new Story__c(
         Name = 'QA-SL-D-20260527-Notification anchor',
         Message__c = 'QA anchor for owner comment and mention notifications.',
-        Type__c = 'God Story',
+        Type__c = 'Grace Moment',
         Neighbourhood__c = nh,
         Posted_By__c = desktop,
         Contact__c = desktop,

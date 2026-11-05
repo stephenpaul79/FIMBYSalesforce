@@ -17,14 +17,24 @@
                 <label>Thank You</label>
             </value>
             <value>
-                <fullName>God Story</fullName>
+                <fullName>Neighbourhood Moment</fullName>
                 <default>false</default>
-                <label>God Story</label>
+                <label>Neighbourhood Moment</label>
             </value>
             <value>
-                <fullName>Prayer</fullName>
+                <fullName>Grace Moment</fullName>
                 <default>false</default>
-                <label>Prayer</label>
+                <label>Grace Moment</label>
+            </value>
+            <value>
+                <fullName>Heavy Heart</fullName>
+                <default>false</default>
+                <label>Heavy Heart</label>
+            </value>
+            <value>
+                <fullName>Good News</fullName>
+                <default>false</default>
+                <label>Good News</label>
             </value>
             <value>
                 <fullName>Bio</fullName>
@@ -32,14 +42,22 @@
                 <label>Bio</label>
             </value>
             <value>
+                <fullName>Prayer</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Prayer</label>
+            </value>
+            <value>
                 <fullName>Lament</fullName>
                 <default>false</default>
+                <isActive>false</isActive>
                 <label>Lament</label>
             </value>
             <value>
-                <fullName>Neighbourhood Moment</fullName>
+                <fullName>God Story</fullName>
                 <default>false</default>
-                <label>Neighbourhood Moment</label>
+                <isActive>false</isActive>
+                <label>God Story</label>
             </value>
         </valueSetDefinition>
     </valueSet>

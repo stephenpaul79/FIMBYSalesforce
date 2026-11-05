@@ -2,6 +2,52 @@
  * @description Handles Story__c feed retrieval, creation, like, share, and category picklist for community stories.
  */
 public with sharing class FimbyStoriesController {
+
+    private static final Set<String> SOCIAL_SHARE_ELIGIBLE_TYPES = new Set<String>{
+        'Thank You', 'Neighbourhood Moment', 'Good News'
+    };
+
+    // Active filter chips that also surface posts saved under a retired type.
+    // Prayer is deliberately left out of Heavy Heart.
+    private static final Map<String, Set<String>> TYPE_FILTER_GROUPS = new Map<String, Set<String>>{
+        'Heavy Heart' => new Set<String>{ 'Heavy Heart', 'Lament' },
+        'Grace Moment' => new Set<String>{ 'Grace Moment', 'God Story' }
+    };
+
+    /**
+     * @description Expands a Shared Life filter value into the stored Type__c values it covers.
+     * @param filterValue Filter chip value; blank or 'All' means no filter
+     * @return Set of Type__c values to match, or null when no type filter applies
+     */
+    public static Set<String> expandTypeFilter(String filterValue) {
+        if (String.isBlank(filterValue) || filterValue == 'All') {
+            return null;
+        }
+        if (TYPE_FILTER_GROUPS.containsKey(filterValue)) {
+            return new Set<String>(TYPE_FILTER_GROUPS.get(filterValue));
+        }
+        return new Set<String>{ filterValue };
+    }
+
+    /**
+     * @description Whether a story type may be offered for FIMBY social media resharing.
+     * @param storyType Story__c.Type__c value
+     * @return True for types neighbours can opt in to resharing
+     */
+    public static Boolean isSocialShareEligible(String storyType) {
+        return storyType != null && SOCIAL_SHARE_ELIGIBLE_TYPES.contains(storyType);
+    }
+
+    @TestVisible
+    private static Boolean resolveShareOnSocial(String newType, Boolean typeChanged, Boolean currentValue, Boolean requested) {
+        if (isSocialShareEligible(newType)) {
+            return requested;
+        }
+        if (!typeChanged && currentValue == true) {
+            return requested;
+        }
+        return false;
+    }
     
     /**
      * @description LWC-callable cacheable method that retrieves paginated stories for the user's neighbourhood, optionally filtered by category.
@@ -30,8 +76,9 @@ public with sharing class FimbyStoriesController {
                     ' OR (Neighbourhood__c IN :adjacentIds AND Contact__c IN :sharedContactIds))');
             }
             
-            if (String.isNotBlank(category) && category != 'All') {
-                whereConditions.add('Type__c = :category');
+            Set<String> types = expandTypeFilter(category);
+            if (types != null) {
+                whereConditions.add('Type__c IN :types');
             }
 
             whereConditions.add('(Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')');
@@ -72,8 +119,9 @@ public with sharing class FimbyStoriesController {
         String query = 'SELECT COUNT() FROM Story__c ';
         
         List<String> conditions = new List<String>();
-        if (String.isNotBlank(category) && category != 'All') {
-            conditions.add('Type__c = :category');
+        Set<String> types = expandTypeFilter(category);
+        if (types != null) {
+            conditions.add('Type__c IN :types');
         }
         conditions.add('(Moderation_Status__c = null OR Moderation_Status__c = \'Visible\')');
         query += 'WHERE ' + String.join(conditions, ' AND ');
@@ -107,11 +155,11 @@ public with sharing class FimbyStoriesController {
                 Posted_By__c = actingAsContactId,
                 Contact__c = realContactId,
                 Image_URL__c = imageUrl,
-                Share_on_Social_Media__c = Boolean.valueOf(shareOnSocial)
+                Share_on_Social_Media__c = shareOnSocial == true && isSocialShareEligible(category)
             );
             newStory.Visibility_Scope__c = 'Neighbourhood';
             
-            Database.insert(newStory, true);
+            Database.insert(newStory, true, AccessLevel.SYSTEM_MODE);
             return newStory.Id;
         } catch (Exception e) {
             throw new AuraHandledException('Error creating story: ' + e.getMessage());
@@ -190,20 +238,29 @@ public with sharing class FimbyStoriesController {
                 throw new AuraHandledException('You can only edit stories you created.');
             }
 
+            // Only changed fields are sent so a retired Type__c value is never re-saved.
+            Story__c changes = new Story__c(Id = story.Id);
             if (data.containsKey('title')) {
-                story.Name = (String) data.get('title');
+                changes.Name = (String) data.get('title');
             }
             if (data.containsKey('content')) {
-                story.Message__c = (String) data.get('content');
+                changes.Message__c = (String) data.get('content');
             }
-            if (data.containsKey('category')) {
-                story.Type__c = (String) data.get('category');
+            String newType = data.containsKey('category') ? (String) data.get('category') : story.Type__c;
+            Boolean typeChanged = newType != story.Type__c;
+            Boolean requestedShare = data.containsKey('shareOnSocial')
+                ? data.get('shareOnSocial') == true
+                : story.Share_on_Social_Media__c == true;
+            Boolean resolvedShare = resolveShareOnSocial(newType, typeChanged, story.Share_on_Social_Media__c, requestedShare);
+
+            if (typeChanged) {
+                changes.Type__c = newType;
             }
-            if (data.containsKey('shareOnSocial')) {
-                story.Share_on_Social_Media__c = data.get('shareOnSocial') == true;
+            if (resolvedShare != story.Share_on_Social_Media__c) {
+                changes.Share_on_Social_Media__c = resolvedShare;
             }
 
-            new StoryUpdateHelper().updateStory(story);
+            new StoryUpdateHelper().updateStory(changes);
 
             return new Map<String, Object>{
                 'success' => true,
@@ -392,6 +449,7 @@ public with sharing class FimbyStoriesController {
                 SELECT Id, Posted_By__c, Contact__c, Name, Message__c, Type__c, Share_on_Social_Media__c
                 FROM Story__c
                 WHERE Id = :storyId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             return rows.isEmpty() ? null : rows[0];
@@ -405,13 +463,14 @@ public with sharing class FimbyStoriesController {
                 SELECT Id, Display_Avatar_URL__c, Image_Ratio__c
                 FROM Contact
                 WHERE Id = :contactId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             return rows.isEmpty() ? null : rows[0];
         }
 
         public void updateStory(Story__c story) {
-            update story;
+            update as system story;
         }
     }
 
@@ -421,6 +480,7 @@ public with sharing class FimbyStoriesController {
                 SELECT Id, Posted_By__c, Contact__c
                 FROM Story__c
                 WHERE Id = :storyId
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             if (rows.isEmpty()) {
@@ -432,7 +492,7 @@ public with sharing class FimbyStoriesController {
             if (!canDelete) {
                 throw new AuraHandledException('You can only remove your own stories.');
             }
-            delete story;
+            delete as system story;
         }
     }
 }

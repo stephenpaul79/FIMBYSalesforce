@@ -23,7 +23,10 @@ const STORY_SUB_ICONS = {
     'Prayer':    'PrayActive.png',
     'Lament':    'LamentActive.png',
     'Bio':       'BioActive.png',
-    'Neighbourhood Moment': 'tulips.png'
+    'Neighbourhood Moment': 'tulips.png',
+    'Grace Moment': 'PrayActive.png',
+    'Heavy Heart':  'LamentActive.png',
+    'Good News':    'GodStoryActive.png'
 };
 
 /**
@@ -37,7 +40,10 @@ const BADGE_CLASSES = {
     'Lament':               'lament-badge',
     'Prayer':               'prayer-badge',
     'Bio':                  'bio-badge',
-    'Neighbourhood Moment': 'neighbourhood-badge'
+    'Neighbourhood Moment': 'neighbourhood-badge',
+    'Grace Moment':         'prayer-badge',
+    'Heavy Heart':          'lament-badge',
+    'Good News':            'godstory-badge'
 };
 
 const BADGE_LABELS = {

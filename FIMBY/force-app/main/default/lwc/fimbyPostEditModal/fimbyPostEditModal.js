@@ -68,12 +68,22 @@ const LIBRARY_FIELDS = [
 
 const STORY_TYPE_OPTIONS = [
     { label: 'Thank You', value: 'Thank You' },
-    { label: 'God Story', value: 'God Story' },
-    { label: 'Prayer Request', value: 'Prayer' },
-    { label: 'Introduction', value: 'Bio' },
-    { label: 'Support Needed', value: 'Lament' },
-    { label: 'Neighbourhood Moment', value: 'Neighbourhood Moment' }
+    { label: 'Neighbourhood Moment', value: 'Neighbourhood Moment' },
+    { label: 'Grace Moment', value: 'Grace Moment' },
+    { label: 'Heavy Heart', value: 'Heavy Heart' },
+    { label: 'Good News', value: 'Good News' },
+    { label: 'Introduction', value: 'Bio' }
 ];
+
+// Inactive picklist values: offered only to a post already saved with one, so it can stay as is.
+const RETIRED_STORY_TYPE_LABELS = {
+    Prayer: 'Prayer Request (retired)',
+    Lament: 'Support Needed (retired)',
+    'God Story': 'God Story (retired)'
+};
+
+// Mirrors FimbyStoriesController.SOCIAL_SHARE_ELIGIBLE_TYPES.
+const SOCIAL_SHARE_ELIGIBLE_TYPES = ['Thank You', 'Neighbourhood Moment', 'Good News'];
 
 export default class FimbyPostEditModal extends LightningElement {
     _shellScrim = createShellScrimHandle();
@@ -134,6 +144,8 @@ export default class FimbyPostEditModal extends LightningElement {
     @track storyType = '';
     @track storyMessage = '';
     @track shareOnSocial = false;
+    originalStoryType = '';
+    originalShareOnSocial = false;
 
     // Library
     @track libraryCategory = '';
@@ -372,10 +384,20 @@ export default class FimbyPostEditModal extends LightningElement {
     }
 
     get storyTypeOptions() {
-        return STORY_TYPE_OPTIONS.map((opt) => ({
+        const options = [...STORY_TYPE_OPTIONS];
+        const retiredLabel = RETIRED_STORY_TYPE_LABELS[this.originalStoryType];
+        if (retiredLabel) {
+            options.push({ label: retiredLabel, value: this.originalStoryType });
+        }
+        return options.map((opt) => ({
             ...opt,
             selected: this.storyType === opt.value
         }));
+    }
+
+    get showStorySocialOption() {
+        if (SOCIAL_SHARE_ELIGIBLE_TYPES.includes(this.storyType)) return true;
+        return this.storyType === this.originalStoryType && this.originalShareOnSocial;
     }
 
     get libraryCategorySelectOptions() {
@@ -463,6 +485,8 @@ export default class FimbyPostEditModal extends LightningElement {
             this.storyMessage = getFieldValue(data, 'Story__c.Message__c') || '';
             this.storyType = getFieldValue(data, 'Story__c.Type__c') || '';
             this.shareOnSocial = getFieldValue(data, 'Story__c.Share_on_Social_Media__c') === true;
+            this.originalStoryType = this.storyType;
+            this.originalShareOnSocial = this.shareOnSocial;
             return;
         }
 
@@ -630,6 +654,8 @@ export default class FimbyPostEditModal extends LightningElement {
         this.storyType = '';
         this.storyMessage = '';
         this.shareOnSocial = false;
+        this.originalStoryType = '';
+        this.originalShareOnSocial = false;
         this.libraryCategory = '';
         this.maxLendingDays = 7;
         this.recurrenceEnabled = false;
@@ -660,6 +686,9 @@ export default class FimbyPostEditModal extends LightningElement {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         if (field) {
             this[field] = value;
+        }
+        if (field === 'storyType' && !this.showStorySocialOption) {
+            this.shareOnSocial = false;
         }
     }
 

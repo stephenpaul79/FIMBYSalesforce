@@ -361,6 +361,10 @@ public class FimbyMyStuffControllerTest {
             // Test with type filter
             FimbyMyStuffController.ArchiveResult filteredResult = FimbyMyStuffController.getMyStoriesArchive(20, 0, 'Thank You');
             System.assertNotEquals(null, filteredResult, 'Filtered result should not be null');
+
+            FimbyMyStuffController.ArchiveResult groupedResult = FimbyMyStuffController.getMyStoriesArchive(20, 0, 'Heavy Heart');
+            System.assertNotEquals(null, groupedResult, 'Grouped type filter should query without error');
+            System.assertEquals(0, groupedResult.totalCount, 'No archived Heavy Heart stories exist yet');
         }
         Test.stopTest();
     }

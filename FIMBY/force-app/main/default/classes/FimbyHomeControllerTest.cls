@@ -254,6 +254,35 @@ public class FimbyHomeControllerTest {
     }
 
     @IsTest
+    static void testUnifiedFeedStorySubTypeFilter() {
+        Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
+        Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
+        User testUser = [SELECT Id FROM User WHERE ContactId = :testContact.Id LIMIT 1];
+
+        Story__c heavyHeart = new Story__c(
+            Name = 'Heavy heart filter story', Message__c = 'Carrying a lot', Type__c = 'Heavy Heart',
+            Neighbourhood__c = testNeighbourhood.Id, Posted_By__c = testContact.Id, Contact__c = testContact.Id
+        );
+        Story__c thankYou = new Story__c(
+            Name = 'Thank you filter story', Message__c = 'Thanks for the ladder', Type__c = 'Thank You',
+            Neighbourhood__c = testNeighbourhood.Id, Posted_By__c = testContact.Id, Contact__c = testContact.Id
+        );
+        insert new List<Story__c>{ heavyHeart, thankYou };
+
+        Test.startTest();
+        Set<String> returnedIds = new Set<String>();
+        System.runAs(testUser) {
+            for (FimbyFeedItem item : FimbyHomeController.getUnifiedFeed(0, 50, 'story', 'Heavy Heart').items) {
+                returnedIds.add(String.valueOf(item.recordId));
+            }
+        }
+        Test.stopTest();
+
+        System.assert(returnedIds.contains(String.valueOf(heavyHeart.Id)), 'Heavy Heart chip should include Heavy Heart posts');
+        System.assert(!returnedIds.contains(String.valueOf(thankYou.Id)), 'Heavy Heart chip should exclude other types');
+    }
+
+    @IsTest
     static void testUnifiedFeedStoryEngagementCountFromRollup() {
         Account testNeighbourhood = [SELECT Id FROM Account WHERE Name = 'Test Neighbourhood 1' LIMIT 1];
         Contact testContact = [SELECT Id FROM Contact WHERE AccountId = :testNeighbourhood.Id LIMIT 1];
