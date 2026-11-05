@@ -38,6 +38,7 @@
       --fimby-badge-event: rgba(68, 142, 158, 0.90);
       --fimby-badge-library: rgba(141, 123, 106, 0.90);
       --fimby-badge-prayer: rgba(126, 116, 149, 0.90);
+      --fimby-badge-lament: rgba(94, 123, 146, 0.90);
       --fimby-badge-thank-you: rgba(176, 114, 72, 0.90);
       --fimby-badge-bulk-buy: rgba(168, 132, 78, 0.90);
       --fimby-badge-thank-you: rgba(176, 114, 72, 0.90);
@@ -310,6 +311,7 @@
     .card-bulkBuy  { border-left: 3px solid var(--fimby-earth-ochre); }
     .card-event    { border-left: 3px solid var(--fimby-earth-teal); }
     .card-prayer   { border-left: 3px solid var(--fimby-earth-dusty-violet); }
+    .card-heavyheart { border-left: 3px solid var(--fimby-earth-slate); }
 
     .card-header {
       display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;

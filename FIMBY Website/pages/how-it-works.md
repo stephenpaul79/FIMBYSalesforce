@@ -27,7 +27,7 @@ During onboarding you'll set care preferences — what kind of support is welcom
 
 Your neighbourhood feed shows asks, offers, stories, events, and more — all from the people around you.
 
-Filter by Shared Life to see stories, prayers, and thank yous. Switch to Asks & Offers for practical needs and bulk buys.
+Switch to Asks & Offers for practical needs and bulk buys. Filter by Shared Life to see thank-yous, neighbourhood moments, grace, heavy hearts, good news, and introductions.
 
 You'll see the same neighbours over time, not thousands of strangers.
 
@@ -36,7 +36,7 @@ You'll see the same neighbours over time, not thousands of strangers.
 ### Step 3
 ## Ask, offer, and share
 
-Ask for help, offer something, share a story, or a prayer request if you'd like. Your neighbourhood sees it right away.
+Ask for help, offer something, or share a moment from your life. Your neighbourhood sees it right away.
 
 Tap the + button and choose what you'd like to post. Each type has its own flow — asks and offers track responses, events handle RSVPs, and bulk buys coordinate shared purchases.
 

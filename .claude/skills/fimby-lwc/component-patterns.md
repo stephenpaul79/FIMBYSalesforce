@@ -8,11 +8,12 @@ Every feed card shows a type badge (pill) top-right. Primary badges = white text
 | Badge | Token | Class | Icon |
 |-------|-------|-------|------|
 | Story | `--fimby-badge-story` | `.story-badge` | `StoriesActive.png` |
-| God Story | `--fimby-badge-god-story` | `.godstory-badge` | `GodStoryActive.png` |
 | Thank You | `--fimby-badge-thank-you` | `.thankyou-badge` | `ThankYouActive.png` |
-| Lament | `--fimby-badge-lament` | `.lament-badge` | `LamentActive.png` |
-| Prayer | `--fimby-badge-prayer` | `.prayer-badge` | `PrayActive.png` |
-| Bio | `--fimby-badge-bio` | `.bio-badge` | `BioActive.png` |
+| Neighbourhood Moment | `--fimby-badge-neighbourhood` | `.neighbourhood-badge` | `tulips.png` |
+| Grace Moment (and retired Prayer) | `--fimby-badge-prayer` | `.prayer-badge` | `PrayActive.png` |
+| Heavy Heart (and retired Lament) | `--fimby-badge-lament` | `.lament-badge` | `LamentActive.png` |
+| Good News (and retired God Story) | `--fimby-badge-god-story` | `.godstory-badge` | `GodStoryActive.png` |
+| Bio (Introduction) | `--fimby-badge-bio` | `.bio-badge` | `BioActive.png` |
 | Ask & Offer | `--fimby-badge-ask-offer` | `.ask-offer-badge` | `BulletinBoardActive.png` |
 | Event | `--fimby-badge-event` | `.event-badge` | `plannersm.png` |
 | Library | per-category inline style | per-category | per-category (see icons-resources.md) |

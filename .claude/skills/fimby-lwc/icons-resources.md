@@ -27,7 +27,7 @@ get homeIconUrl() { return `${IMPACT_ICONS}/${this.isActive ? TAB_ICONS.home.act
 
 **Navigation (Active / Inactive pairs):** Home/Neighbourhood `NeighborhoodActive.png`/`NeighborhoodInactive.png`; Library/Toolbox `ToolboxActive`/`ToolboxInactive`; Messages `SpeechBubbleActive`/`SpeechBubbleInactive`; Profile/My Stuff `ProfileActive`/`ProfileInactive`; Notifications `BellActive`/`BellInactive`; Stories `StoriesActive`/`StoriesInactive`; Bulletin Board `BulletinBoardActive`/`BulletinBoardInactive`.
 
-**Story types (Active / Inactive):** Thank You `ThankYouActive`/`ThankYouInactive`; God Story `GodStoryActive`/`GodStoryInactive`; Prayer `PrayActive`/`PrayInactive`; Bio `BioActive`/`BioInactive`; Lament `LamentActive`/`LamentInactive`.
+**Story types (Active / Inactive):** Thank You `ThankYouActive`/`ThankYouInactive`; Neighbourhood Moment `tulips`/`tulipsInactive`; Grace Moment (and retired Prayer) `PrayActive`/`PrayInactive`; Heavy Heart (and retired Lament) `LamentActive`/`LamentInactive`; Good News (and retired God Story) `GodStoryActive`/`GodStoryInactive`; Bio `BioActive`/`BioInactive`. Retired types keep display entries so old posts render, but are never offered in composers or filter chips.
 
 **Actions & UI:** Add `add.png`; Search `Magnify.png`; Kebab (universal header only) `Kebab.png`; horizontal dots (subheaders, feed cards, comment menus) `utility:threedots` (lightning-icon); Comment `comment.png`; Reply `reply.png`; RSVP `rsvp.png`; Borrow `borrow.png` / `BorrowActive.png`; Settings `gear.png`; Edit `edit.png`; Photo `photo.png`; Delete `trash.png`; Warning `warning.png`.
 

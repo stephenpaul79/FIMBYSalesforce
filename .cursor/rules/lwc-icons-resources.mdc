@@ -61,10 +61,13 @@ get homeIconUrl() {
 | Type | Active | Inactive |
 |------|--------|----------|
 | Thank You | `ThankYouActive.png` | `ThankYouInactive.png` |
-| God Story | `GodStoryActive.png` | `GodStoryInactive.png` |
-| Prayer | `PrayActive.png` | `PrayInactive.png` |
-| Bio | `BioActive.png` | `BioInactive.png` |
-| Lament | `LamentActive.png` | `LamentInactive.png` |
+| Neighbourhood Moment | `tulips.png` | `tulipsInactive.png` |
+| Grace Moment (and retired Prayer) | `PrayActive.png` | `PrayInactive.png` |
+| Heavy Heart (and retired Lament) | `LamentActive.png` | `LamentInactive.png` |
+| Good News (and retired God Story) | `GodStoryActive.png` | `GodStoryInactive.png` |
+| Bio (Introduction) | `BioActive.png` | `BioInactive.png` |
+
+Prayer, Lament and God Story are inactive `Story__c.Type__c` values: keep their display entries so old posts render, but never offer them in composers or filter chips.
 
 ### Actions & UI
 

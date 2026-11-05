@@ -32,7 +32,7 @@ Yes — free to you. There are no ads, no premium tiers, no fees, and we don't s
 ## How it works
 
 **What can I post?**
-You can post asks (things you need), offers (things you can give), events (gatherings, open events, community events), bulk buys (shared purchases), stories, prayers, and thank yous. See [How it works](https://fimby.com/how-it-works/) for a visual walkthrough.
+You can post asks (things you need), offers (things you can give), events (gatherings, open events, community events), bulk buys (shared purchases), Shared Life posts (thank-yous, neighbourhood moments, grace moments, heavy hearts, good news, and introductions), and library listings. See [How it works](https://fimby.com/how-it-works/) for a visual walkthrough.
 
 **Can someone help me use FIMBY?**
 Yes. FIMBY has a support person feature — someone you trust can use the app on your behalf, posting, responding, and messaging as you. Learn more about this on [Our Approach](https://fimby.com/our-approach/).
