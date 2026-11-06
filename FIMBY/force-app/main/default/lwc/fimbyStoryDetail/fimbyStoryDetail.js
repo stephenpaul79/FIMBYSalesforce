@@ -24,7 +24,7 @@ const STORY_SUB_ICONS = {
     'Lament':    'LamentActive.png',
     'Bio':       'BioActive.png',
     'Neighbourhood Moment': 'tulips.png',
-    'Grace Moment': 'PrayActive.png',
+    'Hope': 'PrayActive.png',
     'Heavy Heart':  'LamentActive.png',
     'Good News':    'GodStoryActive.png'
 };
@@ -41,7 +41,7 @@ const BADGE_CLASSES = {
     'Prayer':               'prayer-badge',
     'Bio':                  'bio-badge',
     'Neighbourhood Moment': 'neighbourhood-badge',
-    'Grace Moment':         'prayer-badge',
+    'Hope':         'prayer-badge',
     'Heavy Heart':          'lament-badge',
     'Good News':            'godstory-badge'
 };

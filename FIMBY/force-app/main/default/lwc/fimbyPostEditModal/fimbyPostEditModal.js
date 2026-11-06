@@ -69,7 +69,7 @@ const LIBRARY_FIELDS = [
 const STORY_TYPE_OPTIONS = [
     { label: 'Thank You', value: 'Thank You' },
     { label: 'Neighbourhood Moment', value: 'Neighbourhood Moment' },
-    { label: 'Grace Moment', value: 'Grace Moment' },
+    { label: 'Hope', value: 'Hope' },
     { label: 'Heavy Heart', value: 'Heavy Heart' },
     { label: 'Good News', value: 'Good News' },
     { label: 'Introduction', value: 'Bio' }

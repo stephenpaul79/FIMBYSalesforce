@@ -8,10 +8,10 @@ public with sharing class FimbyStoriesController {
     };
 
     // Active filter chips that also surface posts saved under a retired type.
-    // Prayer is deliberately left out of Heavy Heart.
+    // Prayer belongs with Hope, never Heavy Heart.
     private static final Map<String, Set<String>> TYPE_FILTER_GROUPS = new Map<String, Set<String>>{
         'Heavy Heart' => new Set<String>{ 'Heavy Heart', 'Lament' },
-        'Grace Moment' => new Set<String>{ 'Grace Moment', 'God Story' }
+        'Hope' => new Set<String>{ 'Hope', 'Prayer', 'God Story' }
     };
 
     /**

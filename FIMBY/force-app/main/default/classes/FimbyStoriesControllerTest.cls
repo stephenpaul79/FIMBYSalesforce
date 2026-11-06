@@ -85,9 +85,9 @@ public class FimbyStoriesControllerTest {
         System.assert(!heavy.contains('Prayer'), 'Prayer must not surface under Heavy Heart');
 
         System.assertEquals(
-            new Set<String>{ 'Grace Moment', 'God Story' },
-            FimbyStoriesController.expandTypeFilter('Grace Moment'),
-            'Grace Moment should include retired God Story'
+            new Set<String>{ 'Hope', 'Prayer', 'God Story' },
+            FimbyStoriesController.expandTypeFilter('Hope'),
+            'Hope should include retired Prayer and God Story'
         );
         System.assertEquals(
             new Set<String>{ 'Good News' },
@@ -101,7 +101,7 @@ public class FimbyStoriesControllerTest {
         System.assert(FimbyStoriesController.isSocialShareEligible('Thank You'));
         System.assert(FimbyStoriesController.isSocialShareEligible('Neighbourhood Moment'));
         System.assert(FimbyStoriesController.isSocialShareEligible('Good News'));
-        System.assert(!FimbyStoriesController.isSocialShareEligible('Grace Moment'));
+        System.assert(!FimbyStoriesController.isSocialShareEligible('Hope'));
         System.assert(!FimbyStoriesController.isSocialShareEligible('Heavy Heart'));
         System.assert(!FimbyStoriesController.isSocialShareEligible('Bio'));
         System.assert(!FimbyStoriesController.isSocialShareEligible(null));
@@ -501,10 +501,10 @@ public class FimbyStoriesControllerTest {
         FimbyIdentityRepository.clearCache();
         System.runAs(testUser) {
             Id storyId = FimbyStoriesController.createStory(
-                'A quiet miracle', 'Something we did not see coming', 'Grace Moment', null, null, true
+                'A wish for my sister', 'Hoping her surgery goes well', 'Hope', null, null, true
             );
             Story__c created = [SELECT Share_on_Social_Media__c FROM Story__c WHERE Id = :storyId];
-            System.assertEquals(false, created.Share_on_Social_Media__c, 'Grace Moment posts are never reshared');
+            System.assertEquals(false, created.Share_on_Social_Media__c, 'Hope posts are never reshared');
         }
         Test.stopTest();
     }

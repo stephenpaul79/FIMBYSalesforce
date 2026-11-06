@@ -51,7 +51,7 @@ const STORY_SUB_ICONS = {
     'Lament':    { active: 'LamentActive.png',     inactive: 'LamentInactive.png' },
     'Bio':       { active: 'BioActive.png',         inactive: 'BioInactive.png' },
     'Neighbourhood Moment': { active: 'tulips.png', inactive: 'tulipsInactive.png' },
-    'Grace Moment': { active: 'PrayActive.png',     inactive: 'PrayInactive.png' },
+    'Hope': { active: 'PrayActive.png',     inactive: 'PrayInactive.png' },
     'Heavy Heart':  { active: 'LamentActive.png',   inactive: 'LamentInactive.png' },
     'Good News':    { active: 'GodStoryActive.png', inactive: 'GodStoryInactive.png' }
 };
@@ -64,7 +64,7 @@ const BADGE_CLASS_MAP = {
     'Prayer':    'card-type-badge prayer-badge',
     'Bio':       'card-type-badge bio-badge',
     'Neighbourhood Moment': 'card-type-badge neighbourhood-badge',
-    'Grace Moment': 'card-type-badge prayer-badge',
+    'Hope': 'card-type-badge prayer-badge',
     'Heavy Heart':  'card-type-badge lament-badge',
     'Good News':    'card-type-badge godstory-badge'
 };
@@ -77,7 +77,7 @@ const ACCENT_COLORS = {
     'Prayer':    'rgba(126, 116, 149, 0.9)',
     'Bio':       'rgba(107, 125, 84, 0.9)',
     'Neighbourhood Moment': 'rgba(175, 130, 125, 0.9)',
-    'Grace Moment': 'rgba(126, 116, 149, 0.9)',
+    'Hope': 'rgba(126, 116, 149, 0.9)',
     'Heavy Heart':  'rgba(94, 123, 146, 0.9)',
     'Good News':    'rgba(163, 128, 69, 0.9)'
 };
@@ -98,7 +98,7 @@ const STORY_SUB_FILTERS = [
     { value: 'All', label: 'All' },
     { value: 'Thank You', label: "Thank You's" },
     { value: 'Neighbourhood Moment', label: 'Neighbourhood' },
-    { value: 'Grace Moment', label: 'Grace Moment' },
+    { value: 'Hope', label: 'Hope' },
     { value: 'Heavy Heart', label: 'Heavy Heart' },
     { value: 'Good News', label: 'Good News' },
     { value: 'Bio', label: 'Introductions' }

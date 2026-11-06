@@ -42,7 +42,7 @@ List<Story__c> inserts = new List<Story__c>{
     new Story__c(
         Name = 'QA-SL-D-20260527-Notification anchor',
         Message__c = 'QA anchor for owner comment and mention notifications.',
-        Type__c = 'Grace Moment',
+        Type__c = 'Hope',
         Neighbourhood__c = nh,
         Posted_By__c = desktop,
         Contact__c = desktop,

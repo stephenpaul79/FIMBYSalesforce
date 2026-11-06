@@ -25,7 +25,7 @@ const MEME_GIFS = [
     { resource: 'MEMES2', file: 'Superstar.gif' }
 ];
 
-// Grace Moment and Heavy Heart are deliberately excluded — too private to ask about resharing.
+// Hope and Heavy Heart are deliberately excluded — too private to ask about resharing.
 // Mirrors FimbyStoriesController.SOCIAL_SHARE_ELIGIBLE_TYPES.
 const SOCIAL_SHARE_ELIGIBLE_TYPES = ['Thank You', 'Neighbourhood Moment', 'Good News'];
 
@@ -33,7 +33,7 @@ const DEFAULT_MESSAGE_PLACEHOLDER = 'Share your thoughts, experience, or a slice
 const MESSAGE_PLACEHOLDERS = {
     'Thank You': 'Who helped you out lately? Tell them, and the rest of us.',
     'Neighbourhood Moment': 'A porch chat, a garden in bloom, chalk art on the sidewalk...',
-    'Grace Moment': 'An answered prayer, a coincidence too good to be one, a moment bigger than you.',
+    Hope: "A dream you're holding, a prayer you're carrying, a wish for someone you love. Let us carry it with you.",
     'Heavy Heart': "What are you carrying right now? You don't have to keep it to yourself.",
     'Good News': 'New baby, new job, a year sober, finally fixed the bike. Let us celebrate with you.',
     Bio: "How long you've been on the block, what you love doing, what you're good at. Let us get to know you."
@@ -112,7 +112,7 @@ export default class FimbyStoryComposer extends NavigationMixin(LightningElement
         const types = [
             { value: 'Thank You',            label: 'Thank You',            description: 'Name someone who showed up',             icon: 'ThankYouActive.png' },
             { value: 'Neighbourhood Moment', label: 'Neighbourhood Moment', description: 'Something small worth sharing',          icon: 'tulips.png' },
-            { value: 'Grace Moment',         label: 'Grace Moment',         description: "A quiet miracle you didn't see coming",  icon: 'PrayActive.png' },
+            { value: 'Hope',                 label: 'Hope',                 description: 'A dream, a prayer, a wish',              icon: 'PrayActive.png' },
             { value: 'Heavy Heart',          label: 'Heavy Heart',          description: "Share what's hard, you're not alone",    icon: 'LamentActive.png' },
             { value: 'Good News',            label: 'Good News',            description: 'Share a win or a milestone',             icon: 'GodStoryActive.png' },
             { value: 'Bio',                  label: 'Introduction',         description: 'Introduce yourself to neighbours',       icon: 'BioActive.png' }

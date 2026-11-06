@@ -16,7 +16,7 @@ const BADGE_BG_COLORS = {
     'Prayer': 'rgba(126, 116, 149, 0.9)',
     'Bio': 'rgba(107, 125, 84, 0.9)',
     'Neighbourhood Moment': 'rgba(175, 130, 125, 0.9)',
-    'Grace Moment': 'rgba(126, 116, 149, 0.9)',
+    'Hope': 'rgba(126, 116, 149, 0.9)',
     'Heavy Heart': 'rgba(94, 123, 146, 0.9)',
     'Good News': 'rgba(163, 128, 69, 0.9)',
     'Need': 'rgba(91, 135, 96, 0.9)',
@@ -34,7 +34,7 @@ const STORY_BADGE_ICONS = {
     'Lament': 'LamentActive.png',
     'Bio': 'BioActive.png',
     'Neighbourhood Moment': 'tulips.png',
-    'Grace Moment': 'PrayActive.png',
+    'Hope': 'PrayActive.png',
     'Heavy Heart': 'LamentActive.png',
     'Good News': 'GodStoryActive.png'
 };

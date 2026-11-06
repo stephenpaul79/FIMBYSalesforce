@@ -281,10 +281,10 @@ private class FimbyEmailHtmlBuilderTest {
 
     @IsTest
     static void sharedLifeTypes_reuseRetiredTypeBadges() {
-        System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('Prayer'), FimbyEmailHtmlBuilder.getBadgeColor('Grace Moment'));
+        System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('Prayer'), FimbyEmailHtmlBuilder.getBadgeColor('Hope'));
         System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('Lament'), FimbyEmailHtmlBuilder.getBadgeColor('Heavy Heart'));
         System.assertEquals(FimbyEmailHtmlBuilder.getBadgeColor('God Story'), FimbyEmailHtmlBuilder.getBadgeColor('Good News'));
-        System.assertEquals('PrayActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Grace Moment'));
+        System.assertEquals('PrayActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Hope'));
         System.assertEquals('LamentActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Heavy Heart'));
         System.assertEquals('GodStoryActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('Good News'));
         System.assertEquals('GodStoryActive.png', FimbyEmailHtmlBuilder.getBadgeIcon('God Story'));

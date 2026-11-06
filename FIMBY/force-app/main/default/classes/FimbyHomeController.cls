@@ -358,8 +358,8 @@ public with sharing class FimbyHomeController {
      * @param category  L1 filter: null/'all' = everything (stories capped at Story_Feed_TTL_Days__c),
      *                  'story' = stories only (full history), 'askOffer' = needs/offers only
      * @param subType   L2 filter: null/'All' = no sub-filter, or specific sub-type string
-     *                  - For stories: 'Thank You', 'Neighbourhood Moment', 'Grace Moment',
-     *                    'Heavy Heart', 'Good News', 'Bio' (Grace Moment and Heavy Heart
+     *                  - For stories: 'Thank You', 'Neighbourhood Moment', 'Hope',
+     *                    'Heavy Heart', 'Good News', 'Bio' (Hope and Heavy Heart
      *                    also match their retired predecessors; see expandTypeFilter)
      *                  - For askOffer: 'Need', 'Offer', 'Event', 'Bulk Buy'
      */

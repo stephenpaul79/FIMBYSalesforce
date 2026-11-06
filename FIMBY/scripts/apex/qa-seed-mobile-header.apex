@@ -109,7 +109,7 @@ for (Integer i = 0; i < 3; i++) {
 insert posts;
 
 // 30 stories (archive = everything beyond the newest 10)
-List<String> storyTypes = new List<String>{ 'Thank You', 'Grace Moment', 'Heavy Heart', 'Bio', 'Good News', 'Neighbourhood Moment' };
+List<String> storyTypes = new List<String>{ 'Thank You', 'Hope', 'Heavy Heart', 'Bio', 'Good News', 'Neighbourhood Moment' };
 List<Story__c> stories = new List<Story__c>();
 for (Integer i = 0; i < 30; i++) {
     stories.add(new Story__c(

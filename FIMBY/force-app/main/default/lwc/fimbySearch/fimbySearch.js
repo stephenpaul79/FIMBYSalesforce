@@ -51,7 +51,7 @@ const STORY_TYPE_ICONS = {
     'Lament':     'LamentActive.png',
     'Bio':        'BioActive.png',
     'Neighbourhood Moment': 'tulips.png',
-    'Grace Moment': 'PrayActive.png',
+    'Hope': 'PrayActive.png',
     'Heavy Heart':  'LamentActive.png',
     'Good News':    'GodStoryActive.png'
 };
@@ -63,7 +63,7 @@ const STORY_BADGE_STYLES = {
     'Prayer': 'background-color: var(--fimby-badge-prayer); color: #ffffff;',
     'Bio': 'background-color: var(--fimby-badge-bio); color: #ffffff;',
     'Neighbourhood Moment': 'background-color: var(--fimby-badge-neighbourhood); color: #ffffff;',
-    'Grace Moment': 'background-color: var(--fimby-badge-prayer); color: #ffffff;',
+    'Hope': 'background-color: var(--fimby-badge-prayer); color: #ffffff;',
     'Heavy Heart': 'background-color: var(--fimby-badge-lament); color: #ffffff;',
     'Good News': 'background-color: var(--fimby-badge-god-story); color: #ffffff;'
 };

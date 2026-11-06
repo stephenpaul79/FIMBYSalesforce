@@ -10,7 +10,7 @@ const FILTERS = [
     { label: 'All', value: 'All' },
     { label: 'Thank You', value: 'Thank You' },
     { label: 'Neighbourhood', value: 'Neighbourhood Moment' },
-    { label: 'Grace Moment', value: 'Grace Moment' },
+    { label: 'Hope', value: 'Hope' },
     { label: 'Heavy Heart', value: 'Heavy Heart' },
     { label: 'Good News', value: 'Good News' },
     { label: 'Introduction', value: 'Bio' }
@@ -23,7 +23,7 @@ const TYPE_BADGE_MAP = {
     'Lament': 'type-badge lament-type',
     'Bio': 'type-badge bio-type',
     'Neighbourhood Moment': 'type-badge neighbourhood-type',
-    'Grace Moment': 'type-badge prayer-type',
+    'Hope': 'type-badge prayer-type',
     'Heavy Heart': 'type-badge lament-type',
     'Good News': 'type-badge godstory-type'
 };
@@ -35,7 +35,7 @@ const STORY_ICON_MAP = {
     'Lament':    'LamentActive.png',
     'Bio':       'BioActive.png',
     'Neighbourhood Moment': 'tulips.png',
-    'Grace Moment': 'PrayActive.png',
+    'Hope': 'PrayActive.png',
     'Heavy Heart':  'LamentActive.png',
     'Good News':    'GodStoryActive.png'
 };

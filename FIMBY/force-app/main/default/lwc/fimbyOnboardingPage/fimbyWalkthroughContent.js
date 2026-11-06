@@ -53,7 +53,7 @@ export const WALKTHROUGH_SCREENS = [
         title: 'Find your way around.',
         body:
             "Your home feed is the bulletin board for the street. Filter by " +
-            "<strong>Shared Life</strong> for thank-yous, neighbourhood moments, grace, " +
+            "<strong>Shared Life</strong> for thank-yous, neighbourhood moments, hopes, " +
             "heavy hearts, good news and introductions, or " +
             "<strong>Ask &amp; Offer</strong> for practical needs.<br/><br/>" +
             "You've got your nav &mdash; <strong>Home</strong>, " +
@@ -82,10 +82,10 @@ export const WALKTHROUGH_SCREENS = [
                 title: 'Share more than logistics.',
                 body:
                     "Some moments aren't asks or offers. They're a thank-you, " +
-                    "a quiet miracle, something hard, good news, or a small piece of your story. " +
+                    "a hope or a prayer, something hard, good news, or a small piece of your story. " +
                     "<strong>Shared Life</strong> holds those.<br/><br/>" +
                     "Post a <strong>Thank You</strong>, <strong>Neighbourhood Moment</strong>, " +
-                    "<strong>Grace Moment</strong>, <strong>Heavy Heart</strong>, " +
+                    "<strong>Hope</strong>, <strong>Heavy Heart</strong>, " +
                     "<strong>Good News</strong>, or <strong>Introduction</strong>. " +
                     "Your neighbours can comment."
             },
@@ -139,7 +139,7 @@ export const WALKTHROUGH_SCREENS = [
 export const SHARED_LIFE_PILLS = [
     { type: 'Thank You', label: 'Thank You', iconFile: 'ThankYouActive.png' },
     { type: 'Neighbourhood Moment', label: 'Neighbourhood', iconFile: 'tulips.png' },
-    { type: 'Grace Moment', label: 'Grace Moment', iconFile: 'PrayActive.png' },
+    { type: 'Hope', label: 'Hope', iconFile: 'PrayActive.png' },
     { type: 'Heavy Heart', label: 'Heavy Heart', iconFile: 'LamentActive.png' },
     { type: 'Good News', label: 'Good News', iconFile: 'GodStoryActive.png' }
 ];

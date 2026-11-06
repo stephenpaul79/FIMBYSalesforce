@@ -38,10 +38,10 @@ export const TOUR_STEPS = [
         placement: 'bottom',
         title: 'Your home feed',
         body:
-            'Our lives sit side by side here. Shared Life is for thanks, grace, hard things, ' +
+            'Our lives sit side by side here. Shared Life is for thanks, hopes, hard things, ' +
             'good news and small updates. Ask & Offer is for practical neighbour help.',
         mobileBody:
-            'Our lives sit side by side here. Shared Life is for thanks, grace, hard things, ' +
+            'Our lives sit side by side here. Shared Life is for thanks, hopes, hard things, ' +
             'good news and small updates. Ask & Offer is for practical neighbour help.',
         actionLabel: 'Try a filter',
         iconFile: 'StoriesInactive.png',
