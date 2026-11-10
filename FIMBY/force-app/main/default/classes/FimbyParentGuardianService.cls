@@ -23,6 +23,8 @@ public with sharing class FimbyParentGuardianService {
 
     /** Under 19 matches Contact.Is_Minor__c, which is advisory-only for badges. */
     private static final Integer FIMBY_ADULT_AGE = 19;
+    /** Youngest age a parent-managed profile can be set up for. */
+    private static final Integer MIN_MANAGED_AGE = 10;
     /** A birthdate older than this is a typo, not a child. */
     private static final Integer OLDEST_PLAUSIBLE_YEARS = 120;
 
@@ -51,6 +53,35 @@ public with sharing class FimbyParentGuardianService {
     }
 
     /**
+     * @description Refuses a birthdate outside the parent-managed age range (10 through 18).
+     * @param birthdate The young person's date of birth; already known to be non-null.
+     */
+    private static void validateManagedAge(Date birthdate) {
+        Date today = Date.today();
+        if (birthdate > today) {
+            throw refuse('That date of birth is in the future. Please check it.');
+        }
+        if (birthdate.addYears(OLDEST_PLAUSIBLE_YEARS) < today) {
+            throw refuse('That date of birth doesn\'t look right. Please check it.');
+        }
+        if (birthdate.addYears(MIN_MANAGED_AGE) > today) {
+            throw refuse(
+                'Parent-managed profiles are for young people aged 10 to 18. '
+                + 'You\'re welcome to add them once they turn 10.'
+            );
+        }
+        // A profile is parent-managed because the person is a minor. Letting an
+        // adult be created this way would hand one neighbour a durable, silent
+        // login-as over another with no consent record anywhere.
+        if (birthdate.addYears(FIMBY_ADULT_AGE) <= today) {
+            throw refuse(
+                'This person is 19 or older, so they set up their own FIMBY profile. '
+                + 'If they need help using it, add them as a support relationship instead.'
+            );
+        }
+    }
+
+    /**
      * @description Creates the child Contact and its approved Parent_Guardian
      *              relationship in one transaction, then fires the receipt and the
      *              passive review task.
@@ -74,23 +105,7 @@ public with sharing class FimbyParentGuardianService {
                     'Please confirm you\'re the parent or guardian before we set this up.'
                 );
             }
-
-            Date today = Date.today();
-            if (input.birthdate > today) {
-                throw refuse('That date of birth is in the future. Please check it.');
-            }
-            if (input.birthdate.addYears(OLDEST_PLAUSIBLE_YEARS) < today) {
-                throw refuse('That date of birth doesn\'t look right. Please check it.');
-            }
-            // A profile is parent-managed because the person is a minor. Letting an
-            // adult be created this way would hand one neighbour a durable, silent
-            // login-as over another with no consent record anywhere.
-            if (input.birthdate.addYears(FIMBY_ADULT_AGE) <= today) {
-                throw refuse(
-                    'This person is 19 or older, so they set up their own FIMBY profile. '
-                    + 'If they need help using it, add them as a support relationship instead.'
-                );
-            }
+            validateManagedAge(input.birthdate);
 
             User currentUser = FimbyIdentityRepository.getCurrentUser();
             if (currentUser == null || currentUser.ContactId == null) {

@@ -1,12 +1,10 @@
 .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: transparent;
+    position: fixed; inset: 0; background: transparent; background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: 9999;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 .modal-card {
@@ -16,7 +14,7 @@
     padding: 24px;
     max-width: 560px;
     width: 100%;
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100% - 32px);
     overflow-y: auto;
 }
 
@@ -68,6 +66,11 @@
 .form-field {
     display: block;
     margin-bottom: 18px;
+}
+
+.field-banner {
+    display: block;
+    margin: -8px 0 18px;
 }
 
 .field-label,
@@ -246,4 +249,15 @@
     --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
     --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
     font-size: var(--fimby-input-font-size, 16px);
+}
+
+/* Shell chrome zones — content scrim stops above bottom nav (mobile) */
+@media (max-width: 891px) {
+    .modal-backdrop,
+    .modal-overlay,
+    .intro-modal-backdrop,
+    .delete-overlay,
+    .confirm-overlay {
+        bottom: var(--fimby-bottom-nav-height, 70px);
+    }
 }

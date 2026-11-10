@@ -48,12 +48,17 @@
                         </label>
 
                         <label class="form-field">
-                            <span class="field-label">Date of birth</span>
-                            <input type="date" class="date-input" value={birthdate} onchange={handleBirthdateChange} />
+                            <span class="field-label">Date of birth (ages 10 to 18)</span>
+                            <input type="date" class="date-input" value={birthdate}
+                                   min={earliestBirthdate} max={latestBirthdate}
+                                   onchange={handleBirthdateChange} />
                             <span class="helper-text helper-text--quiet">
                                 We use this to know they're a young person. It isn't shown to neighbours.
                             </span>
                         </label>
+                        <template lwc:if={birthdateError}>
+                            <c-fimby-inline-banner class="field-banner" variant="error" message={birthdateError}></c-fimby-inline-banner>
+                        </template>
 
                         <label class="attestation">
                             <input type="checkbox" checked={attested} onchange={handleAttestationChange} />

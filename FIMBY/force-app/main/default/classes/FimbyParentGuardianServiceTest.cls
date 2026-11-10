@@ -100,7 +100,7 @@ private class FimbyParentGuardianServiceTest {
         Test.startTest();
         System.runAs(guardianUser()) {
             FimbyIdentityRepository.clearCache();
-            FimbyParentGuardianService.createFamilyMember(input('Maya', Date.today().addYears(-9), true));
+            FimbyParentGuardianService.createFamilyMember(input('Maya', Date.today().addYears(-12), true));
         }
         Test.stopTest();
 
@@ -254,6 +254,30 @@ private class FimbyParentGuardianServiceTest {
         Test.stopTest();
     }
 
+    /** Parent-managed profiles start at 10; the day they turn 10 is the first day it's allowed. */
+    @IsTest
+    static void theMinimumAgeIsCheckedOnTheDayItIsReached() {
+        String tooYoung;
+        Test.startTest();
+        System.runAs(guardianUser()) {
+            FimbyIdentityRepository.clearCache();
+            tooYoung = refusalFor(input('Almost10', Date.today().addYears(-10).addDays(1), true));
+            System.assertEquals(
+                null,
+                refusalFor(input('Just10', Date.today().addYears(-10), true)),
+                'Someone who turns 10 today can have a parent-managed profile'
+            );
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, tooYoung, 'One day short of 10 is too young');
+        System.assertEquals(
+            true,
+            tooYoung.contains('aged 10 to 18'),
+            'The refusal has to say which ages fit, or the guardian is left guessing'
+        );
+    }
+
     @isTest
     static void anyOneGuardianCanRemoveTheProfileAndTheOtherIsTold() {
         Contact parent = guardian();
@@ -315,7 +339,7 @@ private class FimbyParentGuardianServiceTest {
         System.runAs(guardianUser()) {
             FimbyIdentityRepository.clearCache();
             created = FimbyParentGuardianService.createFamilyMember(
-                input('Sam', Date.today().addYears(-9), true)
+                input('Sam', Date.today().addYears(-12), true)
             );
         }
 

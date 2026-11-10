@@ -4,6 +4,25 @@ import createFamilyMember from '@salesforce/apex/FimbyParentGuardianService.crea
 import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const FIRST_NAME_MAX = 40;
+// Mirrors FimbyParentGuardianService: parent-managed profiles cover ages 10 through 18.
+const MIN_AGE = 10;
+const ADULT_AGE = 19;
+const TOO_YOUNG_MESSAGE = 'Parent-managed profiles are for young people aged 10 to 18. '
+    + 'You\'re welcome to add them once they turn 10.';
+const TOO_OLD_MESSAGE = 'This person is 19 or older, so they set up their own FIMBY profile. '
+    + 'If they need help using it, add them as a support relationship instead.';
+
+/** Same calendar date `years` ago as a YYYY-MM-DD string; Feb 29 falls back to Feb 28 like Apex addYears. */
+function isoDateYearsAgo(years, extraDays = 0) {
+    const now = new Date();
+    const date = new Date(now.getFullYear() - years, now.getMonth(), now.getDate() + extraDays);
+    if (extraDays === 0 && date.getMonth() !== now.getMonth()) {
+        date.setDate(0);
+    }
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${mm}-${dd}`;
+}
 
 /**
  * Sets up a parent-managed profile for a young person in the guardian's family.
@@ -37,7 +56,7 @@ export default class FimbyFamilyMemberSetupModal extends LightningElement {
         this.createdContactId = '';
         this.createdName = '';
         this.isOpen = true;
-        this._shellScrim.bind(() => this.close());
+        this._shellScrim.bind(() => this.close(), this.template.host);
     }
 
     @api
@@ -61,8 +80,24 @@ export default class FimbyFamilyMemberSetupModal extends LightningElement {
         return 'character-count';
     }
 
+    get earliestBirthdate() {
+        return isoDateYearsAgo(ADULT_AGE, 1);
+    }
+
+    get latestBirthdate() {
+        return isoDateYearsAgo(MIN_AGE);
+    }
+
+    get birthdateError() {
+        if (!this.birthdate) return '';
+        if (this.birthdate > this.latestBirthdate) return TOO_YOUNG_MESSAGE;
+        if (this.birthdate < this.earliestBirthdate) return TOO_OLD_MESSAGE;
+        return '';
+    }
+
     get submitDisabled() {
-        return this.isSubmitting || !this.firstName.trim() || !this.birthdate || !this.attested;
+        return this.isSubmitting || !this.firstName.trim() || !this.birthdate
+            || !!this.birthdateError || !this.attested;
     }
 
     handleFirstNameChange(event) {
