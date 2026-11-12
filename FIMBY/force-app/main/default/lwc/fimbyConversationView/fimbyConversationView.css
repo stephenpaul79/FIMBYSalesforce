@@ -664,10 +664,17 @@
 
 /* â”€â”€ Block/Report Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 section[role="dialog"].slds-modal {
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    background-color: var(--fimby-scrim);
+    z-index: var(--fimby-modal-stack-z, 10051);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     box-sizing: border-box;
 }
 
@@ -678,7 +685,7 @@ section[role="dialog"].slds-modal {
     border-radius: var(--fimby-radius-lg);
     overflow: hidden;
     background-color: var(--fimby-surface-card);
-    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    max-height: 100%;
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;

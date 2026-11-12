@@ -288,12 +288,18 @@
 }
 
 .confirm-overlay {
-    position: fixed; inset: 0; background: transparent; background-color: transparent; padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
-    background-color: rgba(0, 0, 0, 0.45);
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: var(--fimby-modal-stack-z, 10051);
 }
 
 .confirm-dialog {
@@ -353,12 +359,3 @@
 }
 
 /* Shell chrome zones ï¿½ content scrim stops above bottom nav (mobile) */
-@media (max-width: 891px) {
-    .modal-backdrop,
-    .modal-overlay,
-    .intro-modal-backdrop,
-    .delete-overlay,
-    .confirm-overlay {
-        bottom: var(--fimby-bottom-nav-height, 70px);
-    }
-}

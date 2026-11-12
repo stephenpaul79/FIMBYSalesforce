@@ -423,13 +423,17 @@
 /* Cancel Reservation Modal */
 .cancel-overlay {
     position: fixed;
-    inset: 0;
-    background: var(--fimby-scrim, rgba(0, 0, 0, 0.5));
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 .cancel-modal {

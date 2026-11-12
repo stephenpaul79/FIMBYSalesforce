@@ -54,13 +54,20 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
         }
     }
 
+    renderedCallback() {
+        this._shellScrim.sync(this.shouldShowModal, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
     _modalTrigger = null;
 
     @api
     show(relatedRecordId) {
         this._modalTrigger = document.activeElement;
         this.isModalVisible = true;
-        this._shellScrim.bind(() => this.hide());
         if (relatedRecordId) {
             this._recordIdFromState = relatedRecordId;
         }
@@ -74,7 +81,6 @@ export default class FimbySubmitFeedback extends NavigationMixin(LightningElemen
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.isModalVisible = false;
         this.resetForm();
         if (this._modalTrigger && typeof this._modalTrigger.focus === 'function') {

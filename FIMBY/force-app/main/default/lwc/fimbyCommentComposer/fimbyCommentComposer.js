@@ -5,7 +5,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import searchContactsForMention from '@salesforce/apex/FimbyStoryCommentController.searchContactsForMention';
 import postStoryComment from '@salesforce/apex/FimbyStoryCommentController.postStoryComment';
 import updateStoryComment from '@salesforce/apex/FimbyStoryCommentController.updateStoryComment';
-import { bindShellScrimDismiss } from 'c/fimbyModalShell';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyCommentComposer extends NavigationMixin(LightningElement) {
     @api recordId; // Story__c Id
@@ -52,7 +52,7 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     // Modal state - start hidden, only show when show() is called
     @track isModalMode = true; // Always use modal mode when embedded
     @track _isModalVisible = false;
-    _releaseShellScrim = null;
+    _shellScrim = createShellScrimHandle();
 
     // Character limit
     maxCharacters = 1000;
@@ -80,10 +80,8 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
     // Modal API methods
     @api
     show(storyId, commentId, existingText) {
-        this._clearShellScrim();
         this.isModalMode = true;
         this._isModalVisible = true;
-        this._releaseShellScrim = bindShellScrimDismiss(() => this.hide());
         if (storyId) {
             this._recordId = storyId;
         }
@@ -95,7 +93,6 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
 
     @api
     hide() {
-        this._clearShellScrim();
         this._isModalVisible = false;
         this.isModalMode = false;
         this.resetForm();
@@ -116,11 +113,12 @@ export default class FimbyCommentComposer extends NavigationMixin(LightningEleme
         this.hide();
     }
 
-    _clearShellScrim() {
-        if (this._releaseShellScrim) {
-            this._releaseShellScrim();
-            this._releaseShellScrim = null;
-        }
+    renderedCallback() {
+        this._shellScrim.sync(this._isModalVisible, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     resetForm() {

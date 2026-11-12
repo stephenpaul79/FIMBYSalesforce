@@ -174,7 +174,6 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
         this._responseType = responseType;
         this._isItemAvailable = options?.isItemAvailable !== false;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide(), this.template.host);
         this._viewState = 'loading';
         this._resetForm();
         this._loadContext();
@@ -182,7 +181,6 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
 
     @api
     hide() {
-        this._shellScrim.clear();
         this._isVisible = false;
         this._resetForm();
         this.dispatchEvent(new CustomEvent('modalclosed', {
@@ -203,6 +201,10 @@ export default class FimbyQuickResponseModal extends NavigationMixin(LightningEl
             console.error('Error loading identities:', error);
             this._hasMultipleIdentities = false;
         }
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
     }
 
     disconnectedCallback() {

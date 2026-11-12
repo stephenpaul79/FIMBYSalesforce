@@ -97,6 +97,30 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
         }
     }
 
+    renderedCallback() {
+        this._shellScrim.sync(this._dimsShell, () => this._dismissActiveDialog(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
+    get _dimsShell() {
+        return (this.showModal && !this._isStandalonePage) || this.showBlockModal;
+    }
+
+    _dismissActiveDialog() {
+        if (this.showBlockModal) {
+            this.handleCloseBlockModal();
+        } else if (this.showModal && !this._isStandalonePage) {
+            this.hide();
+        }
+    }
+
+    get backdropClass() {
+        return this._isStandalonePage ? 'modal-backdrop is-page' : 'modal-backdrop is-modal';
+    }
+
     @wire(getAvailableIdentities)
     wiredIdentities({ error, data }) {
         if (data) {
@@ -271,7 +295,6 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
     @api
     show() {
         this.showModal = true;
-        this._shellScrim.bind(() => this.hide());
         if (this.activeRecordId && !this.response) {
             this.loadData();
         }
@@ -279,7 +302,6 @@ export default class FimbyResponseReply extends NavigationMixin(LightningElement
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
     }

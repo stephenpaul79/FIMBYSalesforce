@@ -73,16 +73,22 @@ export default class FimbyBulkBuyPickupModal extends LightningElement {
     @api
     show() {
         this.isOpen = true;
-        this._shellScrim.bind(() => this.hide());
         this.message = '';
         this.receiptImageUrl = '';
     }
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.isOpen = false;
         this.isLoading = false;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     async handleSubmit() {

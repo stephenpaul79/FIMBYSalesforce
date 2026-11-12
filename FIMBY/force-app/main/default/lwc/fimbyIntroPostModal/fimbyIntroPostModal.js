@@ -6,7 +6,7 @@ import getActingAsContact from '@salesforce/apex/FimbyContactController.getActin
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import getProfileData from '@salesforce/apex/FimbyProfileController.getProfileData';
 import createStory from '@salesforce/apex/FimbyStoriesController.createStory';
-import useProfilePhotoForStory from '@salesforce/apex/FimbyStoriesController.useProfilePhotoForStory';
+import applyProfilePhotoToStory from '@salesforce/apex/FimbyStoriesController.useProfilePhotoForStory';
 import markBioPostCompleted from '@salesforce/apex/FimbyOnboardingController.markBioPostCompleted';
 import { createShellScrimHandle } from 'c/fimbyModalShell';
 
@@ -59,7 +59,6 @@ export default class FimbyIntroPostModal extends LightningElement {
     @api
     show() {
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
         this._showPhotoStep = false;
         this._showCelebration = false;
         this._createdStoryId = null;
@@ -71,9 +70,16 @@ export default class FimbyIntroPostModal extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         this._isVisible = false;
         document.body.classList.remove('fimby-modal-open');
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get showForm() {
@@ -245,7 +251,7 @@ export default class FimbyIntroPostModal extends LightningElement {
         }
         this._isApplyingProfilePhoto = true;
         try {
-            await useProfilePhotoForStory({ storyId: this._createdStoryId });
+            await applyProfilePhotoToStory({ storyId: this._createdStoryId });
             this._goToCelebration();
         } catch (err) {
             console.error('fimbyIntroPostModal: error reusing profile photo', err);

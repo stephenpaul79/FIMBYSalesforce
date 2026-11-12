@@ -23,19 +23,23 @@
 
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background-color: transparent;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    z-index: 9000;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 @media (min-width: 768px) {
     .modal-backdrop {
         align-items: center;
-        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     }
 }
 
@@ -47,7 +51,7 @@
     box-shadow: var(--fimby-shadow-modal);
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 100%;
     overflow: hidden;
 }
 
@@ -73,7 +77,7 @@
 }
 
 .close-btn {
-    background: transparent;
+    background-color: transparent;
     border: none;
     width: 36px;
     height: 36px;

@@ -6,6 +6,7 @@ import { avatarImageUrl } from 'c/fimbyImageUrl';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import cancelReservation from '@salesforce/apex/FimbyBulkBuyReservationController.cancelReservation';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 /**
  * Detail page body for Bulk Buy posts.
@@ -23,6 +24,27 @@ export default class FimbyBulkBuyDetailBody extends NavigationMixin(LightningEle
     @track cancelPostConfirmVisible = false;
     @track closeReservationsConfirmVisible = false;
     @track realContactId = null;
+    _shellScrim = createShellScrimHandle();
+
+    get _cancelDialogOpen() {
+        return this.cancelConfirmVisible || this.cancelPostConfirmVisible;
+    }
+
+    _dismissActiveDialog() {
+        if (this.cancelConfirmVisible) {
+            this.handleCancelDismiss();
+        } else if (this.cancelPostConfirmVisible) {
+            this.handleCancelPostDismiss();
+        }
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._cancelDialogOpen, () => this._dismissActiveDialog(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
 
     @wire(getActingAsContact)
     wiredActingAs({ data }) {

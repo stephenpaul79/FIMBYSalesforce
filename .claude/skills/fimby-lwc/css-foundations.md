@@ -139,36 +139,52 @@ No `min-height`/`max-width`/`padding` on `:host`. Surface mapping: inner wrapper
 Narrow form pages: same, plus `max-width: 640px; margin: 0 auto;`.
 
 ## Modal positioning (desktop)
-`fimbyUniversalHeader` is sticky at `--fimby-header-height: 70px`. Modals use `position: fixed`, z-index 9999+. The **scrim** must cover the full viewport (including the header) so only the dialog card stays bright; **dialog placement** clears the sticky header via padding/max-height — never by shortening the scrim.
+`fimbyUniversalHeader` is sticky at `--fimby-header-height: 70px`. Modals use `position: fixed` at `--fimby-modal-stack-z` (10051) via host elevation. Each pixel is dimmed exactly once by one of three zones, so the content backdrop is a **middle band** that starts below the header — not a full-viewport scrim.
 
-Layout tokens: `--fimby-header-height: 70px`, `--fimby-modal-top-gap: 16px`, `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` (86px), `--fimby-bottom-nav-height: 70px`. Layout tokens don't need `@property`.
+Layout tokens: `--fimby-header-height: 70px`, `--fimby-modal-top-gap: 16px`, `--fimby-modal-inset-top` (86px; full-screen exceptions only — never inside a band), `--fimby-bottom-nav-height: 70px` (page layout only). Band tokens: `--fimby-modal-scrim-band-top`, `--fimby-modal-scrim-band-bottom`. Layout tokens don't need `@property`.
 
-**Three-zone modal dim (LWR):** Header `.fimby-header-modal-scrim`, content `.modal-backdrop` at **9999**, footer `.fimby-footer-modal-scrim` — synced via `createShellScrimHandle()`.
+**Three-zone modal dim (LWR):** Header `.fimby-header-modal-scrim`, content middle-band backdrop, mobile footer `.fimby-footer-modal-scrim` — header/footer zones are driven by the component's shell scrim handle.
+
+**Shell scrim lifecycle (visibility-driven):**
+
+```js
+import { createShellScrimHandle } from 'c/fimbyModalShell';
+_shellScrim = createShellScrimHandle();
+renderedCallback() { this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host); }
+disconnectedCallback() { this._shellScrim.clear(); }
+```
+
+Never `bind()` in `show()` / `clear()` in `hide()` — a missed close path leaks the ref-count and leaves the header/nav dimmed. Multi-dialog components sync one `showA || showB` getter with a stable `_dismissActiveDialog()`. Don't count a self-syncing child modal (e.g. `c-fimby-confirm-modal`) in the parent getter. Dual-mode components (`fimbyResponseReply`) exclude standalone-page mode and use separate page/modal classes.
+
+**Full-screen exceptions** (own full-viewport layer, no shell sync): Quick Post, App Prompt / Terms of Service gate, Guided Tour, Image Cropper / Lightbox, loading curtains.
 
 **Canonical modal backdrop** (reference: `fimbyQuickResponseModal`, `fimbyCommentComposer`):
 
 ```css
 .modal-backdrop {
     position: fixed;
-    inset: 0;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
     box-sizing: border-box;
     background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 .modal-container {
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: 100%;
 }
 ```
 
-Mobile bottom sheets (≤480px): `align-items: flex-end`; `padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px`. Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom and never `padding: 0` flush to the viewport.
+Mobile bottom sheets (≤480px): `align-items: flex-end`; `padding: var(--fimby-modal-top-gap, 16px) 16px 16px`; card `max-height: 100%`. The band already stops above the bottom nav — never add `--fimby-bottom-nav-height` padding or a `@media (max-width: 891px) { bottom: var(--fimby-bottom-nav-height) }` override. Always `border-radius: var(--fimby-radius-lg)` on all four corners — never square the bottom and never `padding: 0` flush to the viewport.
 
-SLDS / inline confirm overlays: same rule — `inset: 0` scrim + `padding: var(--fimby-modal-inset-top, 86px) 16px 16px` on the flex wrapper.
+SLDS / inline confirm overlays: same band rule on the flex wrapper. For SLDS dialogs put the band on `<section class="slds-modal">`, add the dismiss `onclick` there with `stopPropagation` on `.slds-modal__container`, and delete the separate `.slds-backdrop` div.
 
-**Anti-patterns:** `inset: var(--fimby-modal-inset-top) 0 0 0` or `top: var(--fimby-modal-inset-top)` on the scrim (leaves header undimmed); `top: 50%; transform: translate(-50%,-50%)`; `inset: 0` + `align-items: center` with uniform `padding: 16px` only (dialog can sit under the header).
+**Anti-patterns:** `inset: 0`, `transparent`, or hardcoded `z-index: 9999` / `1100` / `200` on a content-modal backdrop; `--fimby-modal-inset-top` padding inside a band (double-counts the header); a separate `.slds-backdrop`; `top: 50%; transform: translate(-50%,-50%)`.
 
 ## Form controls — never smaller than 16px
 iOS WKWebView auto-zooms the whole page when a focused `input`/`textarea`/`select` is smaller than 16px. With `.fimby-zoom-locked` the user cannot pinch back out, and SPA navigation does not reset scale. Native fields in LWC CSS must use `font-size: 16px` or larger (or `var(--fimby-input-font-size)`). Do not use `14px` / `0.875rem` / `0.9rem` / `0.9375rem` on form controls — `html` is 17px, so those rem values compute under 16px and still zoom. Checkboxes, radios, and file inputs do not trigger this. Light-DOM and `lightning-input` inherit `--slds-c-input-text-font-size` / `--dxp-*-input-text-font-size` from tokens (`16px`). Each LWC bundle also has a `:host input/textarea/select` floor so unclassed fields cannot inherit a smaller size.

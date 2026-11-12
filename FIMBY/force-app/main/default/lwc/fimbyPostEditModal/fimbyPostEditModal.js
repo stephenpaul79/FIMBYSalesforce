@@ -435,7 +435,6 @@ export default class FimbyPostEditModal extends LightningElement {
         this._resetFormState();
         this._formPopulated = false;
         this.isVisible = true;
-        this._shellScrim.bind(() => this.hide(), this.template.host);
         this.isLoading = true;
         this.errorMessage = '';
         this.isSaving = false;
@@ -443,12 +442,16 @@ export default class FimbyPostEditModal extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.isVisible = false;
         this.isSaving = false;
     }
 
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
     renderedCallback() {
+        this._shellScrim.sync(this.isVisible, () => this.hide(), this.template.host);
         if (!this._needsDomSync || this.isLoading || !this.isVisible) {
             return;
         }

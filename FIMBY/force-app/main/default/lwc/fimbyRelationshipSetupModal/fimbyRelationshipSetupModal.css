@@ -1,12 +1,16 @@
 .modal-overlay {
     position: fixed;
-    inset: 0;
-    background-color: transparent;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 .modal-card {
     background-color: var(--fimby-surface-card);
@@ -15,7 +19,7 @@
     padding: 24px;
     max-width: 640px;
     width: 100%;
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100% - 32px);
     overflow-y: auto;
 }
 .modal-header {

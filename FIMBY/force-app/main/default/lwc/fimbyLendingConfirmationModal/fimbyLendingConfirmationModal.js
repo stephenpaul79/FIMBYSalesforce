@@ -69,7 +69,6 @@ export default class FimbyLendingConfirmationModal extends LightningElement {
     show(requestId) {
         this._recordId = requestId;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadRequest();
@@ -77,7 +76,6 @@ export default class FimbyLendingConfirmationModal extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.dispatchEvent(new CustomEvent('confirmationmodalclosed', {
             bubbles: true,
             composed: true
@@ -87,6 +85,10 @@ export default class FimbyLendingConfirmationModal extends LightningElement {
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
+    }
 
     disconnectedCallback() {
         this._shellScrim.clear();

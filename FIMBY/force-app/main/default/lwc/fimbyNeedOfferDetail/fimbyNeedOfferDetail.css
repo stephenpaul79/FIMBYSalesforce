@@ -1926,12 +1926,3 @@ button.post-image-container.bulk-buy-image-container .post-image {
 }
 
 /* Shell chrome zones ï¿½ content scrim stops above bottom nav (mobile) */
-@media (max-width: 891px) {
-    .modal-backdrop,
-    .modal-overlay,
-    .intro-modal-backdrop,
-    .delete-overlay,
-    .confirm-overlay {
-        bottom: var(--fimby-bottom-nav-height, 70px);
-    }
-}

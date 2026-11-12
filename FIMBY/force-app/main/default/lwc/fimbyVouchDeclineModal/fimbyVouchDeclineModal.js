@@ -57,7 +57,6 @@ export default class FimbyVouchDeclineModal extends LightningElement {
         this.selectedReason = '';
         this.details = '';
         this.isOpen = true;
-        this._shellScrim.bind(() => this.close());
         Promise.resolve().then(() => {
             const first = this.template.querySelector('input[type="radio"]');
             if (first) first.focus();
@@ -66,9 +65,16 @@ export default class FimbyVouchDeclineModal extends LightningElement {
 
     @api
     close() {
-        this._shellScrim.clear();
         this.isOpen = false;
         this.dispatchEvent(new CustomEvent('close'));
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get reasonOptions() {

@@ -1,7 +1,7 @@
 <template>
     <div class="fimby-response-reply">
         <template lwc:if={showModal}>
-            <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class={backdropClass} onclick={handleBackdropClick}>
                 <div class="modal-container" onclick={handleModalClick}>
 
                     <!-- Loading State -->
@@ -199,8 +199,8 @@
              Moderator_Task__c via FimbyModeratorTaskService. -->
         <template lwc:if={showBlockModal}>
             <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true"
-                     aria-labelledby="reply-block-modal-title">
-                <div class="slds-modal__container block-modal-container">
+                     aria-labelledby="reply-block-modal-title" onclick={handleCloseBlockModal}>
+                <div class="slds-modal__container block-modal-container" onclick={handleModalClick}>
                     <div class="block-modal-header">
                         <h2 id="reply-block-modal-title" class="block-modal-title">Block {otherPartyFirstName}?</h2>
                         <button class="modal-close-btn"
@@ -271,7 +271,6 @@
                     </div>
                 </div>
             </section>
-            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
         </template>
     </div>
 </template>

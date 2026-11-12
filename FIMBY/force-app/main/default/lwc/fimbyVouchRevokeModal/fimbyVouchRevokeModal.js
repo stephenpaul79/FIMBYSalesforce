@@ -66,14 +66,20 @@ export default class FimbyVouchRevokeModal extends LightningElement {
         this.selectedCategory = '';
         this.details = '';
         this.isOpen = true;
-        this._shellScrim.bind(() => this.close());
     }
 
     @api
     close() {
-        this._shellScrim.clear();
         this.isOpen = false;
         this.dispatchEvent(new CustomEvent('close'));
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get countingOptions() {

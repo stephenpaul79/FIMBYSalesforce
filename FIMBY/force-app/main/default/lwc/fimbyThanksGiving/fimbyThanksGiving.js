@@ -75,7 +75,6 @@ export default class FimbyThanksGiving extends LightningElement {
     @api
     show(recipientId, recipientName, relatedRecordId) {
         this.isModalVisible = true;
-        this._shellScrim.bind(() => this.hide());
         if (recipientId) this._recipientId = recipientId;
         if (recipientName) this._recipientName = recipientName;
         if (relatedRecordId) this._recordId = relatedRecordId;
@@ -84,10 +83,17 @@ export default class FimbyThanksGiving extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.isModalVisible = false;
         this.resetForm();
         this.dispatchEvent(new CustomEvent('close'));
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.shouldShowModal, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     resetForm() {

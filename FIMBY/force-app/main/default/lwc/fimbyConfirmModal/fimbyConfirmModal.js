@@ -54,15 +54,14 @@ export default class FimbyConfirmModal extends LightningElement {
     }
 
     renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.handleCancel(), this.template.host);
         if (this.isOpen && !this._wasOpen) {
-            this._shellScrim.bind(() => this.handleCancel(), this.template.host);
             this._wasOpen = true;
             // Cancel takes focus rather than the confirm button: a stray Enter on a
             // destructive dialog should back out, not go through with it.
             this._previouslyFocused = document.activeElement;
             this.template.querySelector('.nav-back')?.focus();
         } else if (!this.isOpen && this._wasOpen) {
-            this._shellScrim.clear();
             this._wasOpen = false;
             this._restoreFocus();
         }

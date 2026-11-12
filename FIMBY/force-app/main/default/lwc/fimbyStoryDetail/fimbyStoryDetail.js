@@ -109,7 +109,7 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
     _shellScrim = createShellScrimHandle();
 
     get _inlineConfirmOpen() {
-        return this.showDeleteConfirm || this.showCommentDeleteConfirm;
+        return this.showDeleteConfirm || this.showCommentDeleteConfirm || this.showPhotoUploader;
     }
 
     renderedCallback() {
@@ -121,6 +121,8 @@ export default class FimbyStoryDetail extends NavigationMixin(LightningElement) 
             this.handleDeleteCancel();
         } else if (this.showCommentDeleteConfirm) {
             this.handleCommentDeleteCancel();
+        } else if (this.showPhotoUploader) {
+            this.handleClosePhotoUploader();
         }
     }
 

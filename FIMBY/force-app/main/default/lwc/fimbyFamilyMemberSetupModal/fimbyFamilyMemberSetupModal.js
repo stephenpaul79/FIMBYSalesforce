@@ -56,13 +56,19 @@ export default class FimbyFamilyMemberSetupModal extends LightningElement {
         this.createdContactId = '';
         this.createdName = '';
         this.isOpen = true;
-        this._shellScrim.bind(() => this.close(), this.template.host);
     }
 
     @api
     close() {
-        this._shellScrim.clear();
         this.isOpen = false;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     get isPhotoStep() {

@@ -277,10 +277,17 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
         this.error = '';
     }
 
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
     @api
     open() {
         this.isOpen = true;
-        this._shellScrim.bind(() => this.close());
         this.currentStep = 0;
         this.selectedType = '';
         this.selectedIdentity = null;
@@ -335,7 +342,6 @@ export default class FimbyRelationshipSetupModal extends LightningElement {
             this.handleSuccessDoneClose();
             return;
         }
-        this._shellScrim.clear();
         this.isOpen = false;
     }
 

@@ -33,13 +33,17 @@
 /* Modal Backdrop â€” starts below universal header */
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background-color: transparent;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 1rem 1rem;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 1rem 1rem;
     animation: fadeIn 0.2s ease-out;
 }
 
@@ -101,7 +105,7 @@
 }
 
 .close-button {
-    background: transparent;
+    background-color: transparent;
     border: none;
     border-radius: 50%;
     width: 36px;
@@ -318,13 +322,12 @@
 @media (max-width: 480px) {
     .modal-backdrop {
         padding: 16px;
-        padding-top: var(--fimby-header-height, 70px);
         align-items: flex-end;
     }
 
     .modal-container {
         max-width: 100%;
-        max-height: calc(100vh - var(--fimby-header-height, 70px));
+        max-height: 100%;
         max-height: calc(100dvh - var(--fimby-header-height, 70px));
         border-radius: var(--fimby-radius-lg);
         animation: slideUpMobile 0.3s ease-out;

@@ -13,6 +13,7 @@ import { honourActAsThenNavigate, parseActAsFromUrl } from 'c/fimbyActAsNavigati
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 const PAGE_SIZE = 20;
 const SWIPE_THRESHOLD = 40;
@@ -90,6 +91,7 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
 
     _escapeHandler = null;
     currentContactId = null;
+    _shellScrim = createShellScrimHandle();
 
     async connectedCallback() {
         this.loadInitial();
@@ -109,9 +111,11 @@ export default class FimbyNotificationsList extends NavigationMixin(LightningEle
         if (this._escapeHandler) window.removeEventListener('keydown', this._escapeHandler);
         if (this._justReadTimeout) clearTimeout(this._justReadTimeout);
         if (this._swipeHideTimer) clearTimeout(this._swipeHideTimer);
+        this._shellScrim.clear();
     }
 
     renderedCallback() {
+        this._shellScrim.sync(this.showConfirmation, () => this.handleConfirmCancel(), this.template.host);
         this._playReflowFlip();
     }
 

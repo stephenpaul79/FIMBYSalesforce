@@ -1069,11 +1069,17 @@
 
 /* Confirmation Dialog */
 .confirm-overlay {
-    position: fixed; inset: 0; background: transparent; background-color: transparent; background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: var(--fimby-modal-stack-z, 10051);
     padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
 }
 
@@ -1321,7 +1327,7 @@
     border-radius: var(--fimby-radius-lg);
     overflow: hidden;
     background-color: var(--fimby-surface-card);
-    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    max-height: 100%;
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
@@ -1475,6 +1481,13 @@
 }
 
 section[role="dialog"].slds-modal {
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    background-color: var(--fimby-scrim);
+    z-index: var(--fimby-modal-stack-z, 10051);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1505,12 +1518,3 @@ section[role="dialog"].slds-modal {
 }
 
 /* Shell chrome zones � content scrim stops above bottom nav (mobile) */
-@media (max-width: 891px) {
-    .modal-backdrop,
-    .modal-overlay,
-    .intro-modal-backdrop,
-    .delete-overlay,
-    .confirm-overlay {
-        bottom: var(--fimby-bottom-nav-height, 70px);
-    }
-}

@@ -113,7 +113,6 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
     @api
     show() {
         this.showModal = true;
-        this._shellScrim.bind(() => this.hide());
         if (this.recordId && !this.response) {
             this.loadData();
         }
@@ -121,9 +120,16 @@ export default class FimbyResponseStatusUpdate extends NavigationMixin(Lightning
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.showModal, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     resetForm() {

@@ -21,6 +21,7 @@ import { buildSentByLabel } from 'c/fimbyProxyLabels';
 import sendMessageAndAcceptApex from '@salesforce/apex/FimbyResponseThreadController.sendMessageAndAccept';
 import { fireErrorToast } from 'c/fimbyToastHelper';
 import { SCOPED_KEYS, clearCache } from 'c/fimbyCache';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -116,6 +117,7 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     @track reportDetails = '';
     @track blockError = '';
     @track isBlockSubmitting = false;
+    _shellScrim = createShellScrimHandle();
 
     // --- Getters ---
 
@@ -469,6 +471,27 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     disconnectedCallback() {
         if (this._windowScrollHandler) {
             window.removeEventListener('scroll', this._windowScrollHandler);
+        }
+        this._shellScrim.clear();
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this._threadDialogOpen, () => this._dismissActiveDialog(), this.template.host);
+    }
+
+    get _threadDialogOpen() {
+        return this.showConfirmDialog || this.showEditAmount || this.showShareContact || this.showBlockModal;
+    }
+
+    _dismissActiveDialog() {
+        if (this.showBlockModal) {
+            this.handleCloseBlockModal();
+        } else if (this.showConfirmDialog) {
+            this.handleConfirmDialogClose();
+        } else if (this.showEditAmount) {
+            this.handleEditAmountClose();
+        } else if (this.showShareContact) {
+            this.handleShareContactClose();
         }
     }
 
@@ -1145,6 +1168,10 @@ export default class FimbyResponseThread extends NavigationMixin(LightningElemen
     handleMenuClick() {
         if (!this.otherPartyContactId) return;
         this.showBlockModal = true;
+    }
+
+    stopDialogClick(event) {
+        event.stopPropagation();
     }
 
     handleCloseBlockModal() {

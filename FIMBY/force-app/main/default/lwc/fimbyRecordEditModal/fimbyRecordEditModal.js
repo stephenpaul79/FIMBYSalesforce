@@ -94,8 +94,6 @@ export default class FimbyRecordEditModal extends LightningElement {
         if (fieldSetName) this._fieldSetName = fieldSetName;
 
         this.isVisible = true;
-
-        this._shellScrim.bind(() => this.hide());
         this.hasError = false;
         this.errorMessage = '';
         this.loadFieldSet();
@@ -104,9 +102,16 @@ export default class FimbyRecordEditModal extends LightningElement {
     // Public API to hide the modal
     @api
     hide() {
-        this._shellScrim.clear();
         this.isVisible = false;
         this.isSaving = false;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isVisible, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     // Load field set fields from Apex

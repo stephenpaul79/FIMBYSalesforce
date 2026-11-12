@@ -1,13 +1,17 @@
 /* Modal Shell */
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background-color: transparent;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     animation: fadeIn 0.2s ease;
 }
 
@@ -22,7 +26,7 @@
     width: 100%;
     max-width: 480px;
     max-height: calc(100vh - var(--fimby-modal-inset-top, 86px) - 32px);
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: calc(100% - 32px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -254,14 +258,13 @@
 
 @media (max-width: 480px) {
     .modal-backdrop {
-        padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
         align-items: flex-end;
     }
 
     .modal-container {
         border-radius: var(--fimby-radius-lg, 16px);
-        max-height: 90vh;
-        max-height: 90dvh;
+        max-height: 100%;
         animation: slideUpMobile 0.3s ease;
     }
 

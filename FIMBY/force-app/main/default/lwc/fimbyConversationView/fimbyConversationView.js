@@ -22,6 +22,7 @@ import withdrawVouchRequest from '@salesforce/apex/FimbyVouchController.withdraw
 import { getHeaderBadge } from 'c/fimbyThreadBadgeConfig';
 import { buildSentByLabel, buildProxyExplainer } from 'c/fimbyProxyLabels';
 import { getInitials, getAvatarToneStyle } from 'c/fimbyAvatarTone';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 function resolveAvatarUrl(url) {
     if (!url) return null;
@@ -99,6 +100,7 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
     get replyIconUrl() { return `${IMPACT_ICONS}/reply.png`; }
 
     @track showBlockModal = false;
+    _shellScrim = createShellScrimHandle();
     @track blockReason = '';
     @track isReporting = false;
     @track reportDetails = '';
@@ -310,6 +312,18 @@ export default class FimbyConversationView extends NavigationMixin(LightningElem
 
     get middleCount() {
         return this._rawMiddle.length;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.showBlockModal, () => this.handleCloseBlockModal(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
+    stopDialogClick(event) {
+        event.stopPropagation();
     }
 
     connectedCallback() {

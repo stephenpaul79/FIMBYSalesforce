@@ -200,8 +200,8 @@
 
         <!-- New Message Contact Picker Modal -->
         <template lwc:if={showNewMessageModal}>
-            <section class="slds-modal slds-fade-in-open new-message-modal" role="dialog" aria-modal="true">
-                <div class="slds-modal__container compose-modal-container">
+            <section class="slds-modal slds-fade-in-open new-message-modal" role="dialog" aria-modal="true" onclick={handleCloseNewMessage}>
+                <div class="slds-modal__container compose-modal-container" onclick={stopDialogClick}>
                     <div class="modal-header">
                         <h2 class="modal-title">Compose</h2>
                         <button class="modal-close" onclick={handleCloseNewMessage} aria-label="Close">
@@ -249,7 +249,6 @@
                     </div>
                 </div>
             </section>
-            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseNewMessage}></div>
         </template>
 
         <!-- Bottom Navigation -->

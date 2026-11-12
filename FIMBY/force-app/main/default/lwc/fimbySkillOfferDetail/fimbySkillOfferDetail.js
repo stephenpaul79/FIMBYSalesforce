@@ -6,6 +6,7 @@ import { getCategoryIconUrl, getCategoryStyle } from 'c/fimbySkillCategoryConfig
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import { decodeHtmlEntities } from 'c/fimbyTextUtils';
 import { getPageReference, navigate, profilePathForContact } from 'c/fimbyNavigation';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 import getSkillOffer from '@salesforce/apex/FimbySkillsController.getSkillOffer';
 import setSkillStatus from '@salesforce/apex/FimbySkillsController.setSkillStatus';
@@ -23,6 +24,19 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
     @track detailsExpanded = true;
     _pendingEditOpen = false;
     @track realContactId = null;
+    _shellScrim = createShellScrimHandle();
+
+    get _confirmOpen() {
+        return this.showPauseConfirm || this.showRemoveConfirm;
+    }
+
+    _dismissActiveDialog() {
+        if (this.showPauseConfirm) {
+            this.handleCancelPause();
+        } else if (this.showRemoveConfirm) {
+            this.handleCancelRemove();
+        }
+    }
 
     @wire(getActingAsContact)
     wiredActingAs({ data }) {
@@ -60,7 +74,12 @@ export default class FimbySkillOfferDetail extends NavigationMixin(LightningElem
         }
     }
 
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
     renderedCallback() {
+        this._shellScrim.sync(this._confirmOpen, () => this._dismissActiveDialog(), this.template.host);
         if (!this._pendingEditOpen || this.isLoading || !this.skill?.isOwner) return;
         this._pendingEditOpen = false;
         const modal = this.template.querySelector('c-fimby-skill-edit-modal');

@@ -11,10 +11,13 @@
 
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background: transparent;
-    background-color: transparent;
-    z-index: 9999;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
+    background-color: var(--fimby-scrim);
+    z-index: var(--fimby-modal-stack-z, 10051);
     display: flex;
     flex-direction: column;
     animation: fadeIn 0.2s ease;
@@ -31,7 +34,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    height: 100dvh;
     background-color: var(--fimby-surface-card, #FAF7F2);
     overflow: hidden;
     outline: none;
@@ -163,7 +165,7 @@
     .modal-backdrop {
         align-items: center;
         justify-content: center;
-        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     }
 
     .modal-container {
@@ -194,16 +196,5 @@
     .close-button {
         transition: none;
         animation: none;
-    }
-}
-
-/* Shell chrome zones � content scrim stops above bottom nav (mobile) */
-@media (max-width: 891px) {
-    .modal-backdrop,
-    .modal-overlay,
-    .intro-modal-backdrop,
-    .delete-overlay,
-    .confirm-overlay {
-        bottom: var(--fimby-bottom-nav-height, 70px);
     }
 }

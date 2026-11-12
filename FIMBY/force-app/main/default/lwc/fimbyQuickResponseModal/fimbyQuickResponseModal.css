@@ -786,14 +786,13 @@
 
 @media (max-width: 480px) {
     .modal-backdrop {
-        padding: var(--fimby-modal-top-gap, 16px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
+        padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
         align-items: flex-end;
     }
 
     .modal-container {
         border-radius: var(--fimby-radius-lg, 16px);
-        max-height: 85vh;
-        max-height: 85dvh;
+        max-height: 100%;
         animation: slideUpMobile 0.3s ease;
     }
 

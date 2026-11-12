@@ -24,7 +24,6 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
     show(requestId) {
         this._recordId = requestId;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._errorMessage = '';
         this._loadRequest();
@@ -32,7 +31,6 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         // Parent must refresh lending UI whenever this modal closes (including "already handled"
         // dismiss) — composed + bubbles so the event crosses the child component shadow boundary.
         this.dispatchEvent(new CustomEvent('pickupmodalclosed', {
@@ -44,6 +42,10 @@ export default class FimbyPickupConfirmationModal extends LightningElement {
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
+    }
 
     disconnectedCallback() {
         this._shellScrim.clear();

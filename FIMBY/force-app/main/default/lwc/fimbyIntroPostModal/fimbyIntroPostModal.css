@@ -3,7 +3,7 @@
     display: contents;
 }
 
-/* Posting As â€” identity display (matches fimbyAskOfferComposer) */
+/* Posting As �?? identity display (matches fimbyAskOfferComposer) */
 .posting-as {
     display: flex;
     align-items: center;
@@ -40,22 +40,17 @@
    never a fullscreen sheet. */
 .intro-modal-backdrop {
     position: fixed;
-    inset: 0;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
     box-sizing: border-box;
-    background: transparent;
+    background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10051;
-    padding: var(--fimby-modal-inset-top, 86px) 16px
-        calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px;
-}
-
-@media (min-width: 481px) {
-    .intro-modal-backdrop {
-        inset: 0;
-        padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
-    }
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
 .intro-modal-card {

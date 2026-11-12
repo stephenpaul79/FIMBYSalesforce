@@ -156,8 +156,6 @@ export default class FimbySkillEditModal extends LightningElement {
 
         this.isVisible = true;
 
-        this._shellScrim.bind(() => this.hide());
-
         this.loadError = '';
 
         this.saveError = '';
@@ -181,10 +179,17 @@ export default class FimbySkillEditModal extends LightningElement {
     @api
 
     hide() {
-        this._shellScrim.clear();
 
         this.isVisible = false;
 
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isVisible, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
 
@@ -358,4 +363,3 @@ export default class FimbySkillEditModal extends LightningElement {
     }
 
 }
-

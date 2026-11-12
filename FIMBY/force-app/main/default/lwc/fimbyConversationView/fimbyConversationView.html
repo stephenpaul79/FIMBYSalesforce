@@ -414,8 +414,8 @@
 
         <!-- Block/Report Modal -->
         <template lwc:if={showBlockModal}>
-            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
-                <div class="slds-modal__container block-modal-container">
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true" onclick={handleCloseBlockModal}>
+                <div class="slds-modal__container block-modal-container" onclick={stopDialogClick}>
                     <div class="block-modal-header">
                         <h2 class="block-modal-title">Block {otherParticipantFirstName}?</h2>
                         <button class="modal-close-btn" onclick={handleCloseBlockModal} aria-label="Close">
@@ -464,7 +464,6 @@
                     </div>
                 </div>
             </section>
-            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
         </template>
 
         <!-- Vouch Decline Modal -->

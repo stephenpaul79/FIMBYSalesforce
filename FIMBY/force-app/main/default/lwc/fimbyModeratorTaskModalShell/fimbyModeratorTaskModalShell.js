@@ -39,7 +39,6 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
         this._taskData = taskData || {};
         this._viewState = 'ready';
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide(), this.template.host);
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         requestAnimationFrame(() => {
@@ -53,7 +52,6 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
     @api
     hide() {
         if (!this._isVisible) return;
-        this._shellScrim.clear();
         this._isVisible = false;
         this._isDirty = false;
         this._showDiscardConfirm = false;
@@ -67,11 +65,13 @@ export default class FimbyModeratorTaskModalShell extends LightningElement {
 
     // ── Lifecycle ───────────────────────────────────────────────────
 
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
+    }
+
     disconnectedCallback() {
-        if (this._isVisible) {
-            this._shellScrim.clear();
-            this._isVisible = false;
-        }
+        this._shellScrim.clear();
+        this._isVisible = false;
     }
 
     // ── Getters ─────────────────────────────────────────────────────

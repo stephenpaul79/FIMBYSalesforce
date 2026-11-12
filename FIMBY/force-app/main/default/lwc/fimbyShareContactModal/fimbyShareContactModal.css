@@ -1,11 +1,21 @@
 .share-contact-modal {
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    background-color: var(--fimby-scrim);
+    z-index: var(--fimby-modal-stack-z, 10051);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     box-sizing: border-box;
 }
 
 .share-contact-modal .slds-modal__container {
     max-width: 480px;
-    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
+    max-height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -21,6 +31,7 @@
 
 .share-search-input {
     width: 100%;
+    font-size: var(--fimby-input-font-size, 16px);
 }
 
 .share-results-list {
@@ -181,4 +192,26 @@ button.share-result-item {
     font-size: 14px;
     font-weight: 600;
     color: var(--fimby-text-strong);
+}
+
+/* iOS-keyboard-16px : WKWebView zooms below 16px and never unzooms under .fimby-zoom-locked. */
+:host {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-select-text-font-size: var(--fimby-input-font-size, 16px);
+}
+:host input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]):not([type="color"]),
+:host textarea,
+:host select {
+    font-size: var(--fimby-input-font-size, 16px);
+}
+:host lightning-input,
+:host lightning-textarea,
+:host lightning-combobox,
+:host lightning-select,
+:host lightning-input-field,
+:host lightning-input-rich-text {
+    --slds-c-input-text-font-size: var(--fimby-input-font-size, 16px);
+    --slds-c-textarea-text-font-size: var(--fimby-input-font-size, 16px);
+    font-size: var(--fimby-input-font-size, 16px);
 }

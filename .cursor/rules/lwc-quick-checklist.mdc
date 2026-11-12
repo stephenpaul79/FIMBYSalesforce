@@ -19,7 +19,8 @@ Consider these rules if they affect your changes.
 - [ ] Outer wrapper uses `box-sizing: border-box`
 - [ ] Page header and body share same width — no independent `max-width` on `c-fimby-page-header`
 - [ ] Full-viewport components subtract `--fimby-header-height` + `--fimby-bottom-nav-height` on mobile, header-only on desktop (≥ 892px)
-- [ ] Modal scrim uses full viewport (`inset: 0` + `--fimby-scrim`); dialog clearance via `padding` / `max-height` with `--fimby-modal-inset-top` (never inset-shortened scrim)
+- [ ] Content modals paint one middle-band scrim (`top: var(--fimby-modal-scrim-band-top)`, `bottom: var(--fimby-modal-scrim-band-bottom)`, `--fimby-scrim`, `z-index: var(--fimby-modal-stack-z)`) — never `inset: 0`, transparent, a separate `.slds-backdrop`, or a mobile `bottom-nav-height` override; dialog uses `--fimby-modal-top-gap` padding + `max-height: 100%`
+- [ ] Modal shell dim is visibility-driven: `_shellScrim.sync(isOpen, dismiss, this.template.host)` in `renderedCallback` + `_shellScrim.clear()` in `disconnectedCallback` — never `bind()` in show / `clear()` in hide. Full-screen exceptions only: Quick Post, App Prompt/TOS, Guided Tour, Image Cropper/Lightbox, loading curtains
 - [ ] Brand/nav/content icons from `Impact_Icons` — `lightning-icon` only for generic UI (arrows, close, chevrons)
 - [ ] `utility:image` and `utility:delete` never used — replaced with `photo.png` and `trash.png`
 - [ ] `utility:edit` only for subtle inline edit pencils; pill buttons use `edit.png`

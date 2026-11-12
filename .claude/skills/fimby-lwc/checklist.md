@@ -23,7 +23,8 @@ Review before finishing or deploying any LWC change. Consider each item if it af
 - [ ] Outer wrapper uses `box-sizing: border-box`.
 - [ ] Page header and body share width — no independent `max-width` on `c-fimby-page-header`.
 - [ ] Full-viewport components subtract header + bottom-nav on mobile, header-only on desktop (≥892px).
-- [ ] Desktop modal backdrop uses `--fimby-modal-inset-top` (not bare `inset: 0` centering).
+- [ ] Content modal backdrop is the middle band (`--fimby-modal-scrim-band-top` / `-bottom`, `--fimby-scrim`, `--fimby-modal-stack-z`) with `--fimby-modal-top-gap` padding — never `inset: 0`, transparent, a separate `.slds-backdrop`, or a mobile `bottom-nav-height` override.
+- [ ] Shell dim is visibility-driven: `_shellScrim.sync(isOpen, dismiss, this.template.host)` in `renderedCallback` + `clear()` in `disconnectedCallback` — never `bind()` in show / `clear()` in hide.
 
 ## Icons
 - [ ] Brand/nav/content icons from `Impact_Icons`; `lightning-icon` only for generic UI (arrows, close, chevrons).

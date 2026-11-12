@@ -84,7 +84,6 @@ export default class FimbyItemReturnModal extends LightningElement {
     show(recordId) {
         this._recordId = recordId;
         this._isVisible = true;
-        this._shellScrim.bind(() => this.hide());
         this._viewState = 'loading';
         this._resetForm();
         this._loadData();
@@ -92,7 +91,6 @@ export default class FimbyItemReturnModal extends LightningElement {
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.dispatchEvent(new CustomEvent('returnmodalclosed', {
             bubbles: true,
             composed: true
@@ -102,6 +100,10 @@ export default class FimbyItemReturnModal extends LightningElement {
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isVisible, () => this.hide(), this.template.host);
+    }
 
     disconnectedCallback() {
         this._shellScrim.clear();

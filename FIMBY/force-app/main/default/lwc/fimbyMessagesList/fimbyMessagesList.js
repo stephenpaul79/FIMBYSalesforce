@@ -15,6 +15,7 @@ import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipCon
 import { avatarImageUrl } from 'c/fimbyImageUrl';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
 import { applyStickyHeaderOffset } from 'c/fimbyDomUtils';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 import {
     getInboxBadge,
     getThreadAvatarIcon,
@@ -62,6 +63,7 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
     @track currentContactId = null;
 
     @track showNewMessageModal = false;
+    _shellScrim = createShellScrimHandle();
     @track messageableContacts = [];
     @track contactSearchTerm = '';
     @track isLoadingContacts = false;
@@ -221,6 +223,15 @@ export default class FimbyMessagesList extends NavigationMixin(LightningElement)
         if (this._windowScrollHandler) window.removeEventListener('scroll', this._windowScrollHandler);
         if (this._escapeHandler) window.removeEventListener('keydown', this._escapeHandler);
         if (this._swipeHideTimer) clearTimeout(this._swipeHideTimer);
+        this._shellScrim.clear();
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.showNewMessageModal, () => this.handleCloseNewMessage(), this.template.host);
+    }
+
+    stopDialogClick(event) {
+        event.stopPropagation();
     }
 
     _measureHeaderHeight() {

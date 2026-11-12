@@ -653,8 +653,8 @@
              Moderator_Task__c through FimbyModeratorTaskService. -->
         <template lwc:if={showBlockModal}>
             <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true"
-                     aria-labelledby="block-modal-title">
-                <div class="slds-modal__container block-modal-container">
+                     aria-labelledby="block-modal-title" onclick={handleCloseBlockModal}>
+                <div class="slds-modal__container block-modal-container" onclick={stopDialogClick}>
                     <div class="block-modal-header">
                         <h2 id="block-modal-title" class="block-modal-title">Block {otherPartyFirstName}?</h2>
                         <button class="modal-close-btn"
@@ -724,7 +724,6 @@
                     </div>
                 </div>
             </section>
-            <div class="slds-backdrop slds-backdrop_open" onclick={handleCloseBlockModal}></div>
         </template>
     </div>
 </template>

@@ -636,13 +636,16 @@ button.story-image-container {
 .photo-uploader-overlay,
 .delete-overlay {
     position: fixed;
-    inset: 0;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
     background-color: var(--fimby-scrim);
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1100;
+    z-index: var(--fimby-modal-stack-z, 10051);
     padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 
@@ -763,12 +766,3 @@ button.story-image-container {
     }
 }
 /* Shell chrome zones Â content scrim stops above bottom nav (mobile) */
-@media (max-width: 891px) {
-    .modal-backdrop,
-    .modal-overlay,
-    .intro-modal-backdrop,
-    .delete-overlay,
-    .confirm-overlay {
-        bottom: var(--fimby-bottom-nav-height, 70px);
-    }
-}

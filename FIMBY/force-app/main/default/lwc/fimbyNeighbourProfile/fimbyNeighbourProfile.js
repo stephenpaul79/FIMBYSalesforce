@@ -9,6 +9,7 @@ import { navigate, navigateBack, navigateToRoute } from 'c/fimbyNavigation';
 import blockContact from '@salesforce/apex/FimbyConversationController.blockContact';
 import isModeratorContact from '@salesforce/apex/FimbyModeratorDashboardController.isModeratorContact';
 import { isActingAsProxiedChild as loadIsActingAsProxiedChild } from 'c/fimbyProxiedIdentity';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyNeighbourProfile extends NavigationMixin(LightningElement) {
     @track isLoading = true;
@@ -19,6 +20,15 @@ export default class FimbyNeighbourProfile extends NavigationMixin(LightningElem
     @track isProfileModerator = false;
     @track isActingAsProxiedChild = false;
     @track canModeratorVouch = false;
+    _shellScrim = createShellScrimHandle();
+
+    renderedCallback() {
+        this._shellScrim.sync(this.showBlockConfirm, () => this.handleBlockCancel(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
 
     get chatIconUrl() { return `${IMPACT_ICONS}/chat.png`; }
     get contactIconUrl() { return `${IMPACT_ICONS}/sign.png`; }

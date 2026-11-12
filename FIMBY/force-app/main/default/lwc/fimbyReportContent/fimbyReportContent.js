@@ -103,16 +103,22 @@ export default class FimbyReportContent extends NavigationMixin(LightningElement
         if (contentId) this._contentId = contentId;
         if (contentType) this._contentType = contentType;
         this.showModal = true;
-        this._shellScrim.bind(() => this.hide());
         this.resetForm();
         await this.loadExistingReportState();
     }
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.showModal = false;
         this.resetForm();
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.showModal, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     resetForm() {

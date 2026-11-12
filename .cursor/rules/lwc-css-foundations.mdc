@@ -367,54 +367,85 @@ Where `<bottom>` is typically `80px` (bottom-nav clearance), reduced to `24px` a
 
 ## Modal Positioning (Desktop)
 
-`fimbyUniversalHeader` is **sticky** at `--fimby-header-height: 70px`. Modals use `position: fixed` at z-index 9999+. The **scrim** covers the full viewport (header included); **dialog placement** uses `--fimby-modal-inset-top` in padding and `max-height` — never by inset-shortening the scrim.
+`fimbyUniversalHeader` is **sticky** at `--fimby-header-height: 70px`. Modals use `position: fixed` at `--fimby-modal-stack-z` (10051) via host elevation + backdrop. The content backdrop **starts below the header** (middle band), so dialog placement inside it only needs `--fimby-modal-top-gap` padding and `max-height: 100%` — never `--fimby-modal-inset-top` (that double-counts the header).
 
 **Required layout tokens** (in `fimby-tokens.css`):
 
 - `--fimby-header-height: 70px` — page layout + mobile bottom-sheet clearance
 - `--fimby-modal-top-gap: 16px` — visible breathing room below header
-- `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` — dialog top offset (86px)
-- `--fimby-bottom-nav-height: 70px` — mobile bottom-sheet padding
+- `--fimby-modal-inset-top: calc(var(--fimby-header-height) + var(--fimby-modal-top-gap))` — 86px; only for full-screen exceptions, never inside a middle-band backdrop
+- `--fimby-bottom-nav-height: 70px` — page layout; modal bands use `--fimby-modal-scrim-band-bottom` instead
 
 Layout tokens do **not** need `@property` registration (color tokens only).
 
-**Three-zone modal dim (LWR)** — Header, content, and footer are separate stacking contexts. (1) `fimbyUniversalHeader` `.fimby-header-modal-scrim` on the header bar. (2) Each modal opaque `.modal-backdrop` at **9999**. (3) `fimbyBottomNavigation` `.fimby-footer-modal-scrim` on mobile footer. Modals bind `createShellScrimHandle()` so zones 1+3 sync with 2; header/footer scrim tap dispatches dismiss.
+**Three-zone modal dim (LWR)** — One scrim layer per pixel; **no** full-viewport scrim in the header or on `document.body`. (1) Header `.fimby-header-modal-scrim` (`position: absolute` on the bar, slight `--fimby-modal-scrim-seam-overlap` below). (2) Content `.modal-backdrop` — opaque `var(--fimby-scrim)` on the **middle band** (`top: var(--fimby-modal-scrim-content-top)`, `bottom` above mobile nav); z-index 10051. (3) Footer `.fimby-footer-modal-scrim` on mobile. `publishPageHeaderLayoutMetrics()` aligns `--fimby-modal-scrim-content-top` with measured `header.sticky-header`.
+
+**Shell scrim lifecycle (visibility-driven)** — every content-region modal owns one handle and syncs it from render, so every close path (Cancel, Save, backdrop, header/nav tap, parent unmount, navigation) releases the header/nav dim:
+
+```js
+import { createShellScrimHandle } from 'c/fimbyModalShell';
+
+_shellScrim = createShellScrimHandle();
+
+renderedCallback() {
+    this._shellScrim.sync(this.isOpen, () => this.close(), this.template.host);
+}
+
+disconnectedCallback() {
+    this._shellScrim.clear();
+}
+```
+
+- Never call `_shellScrim.bind(...)` from `show()`/`open()` or `clear()` from `hide()`/`close()` — a missed close path leaks the ref-count and leaves the header/nav dimmed.
+- Components with several dialogs sync one getter (`showA || showB`) and pass a stable `_dismissActiveDialog()` that closes whichever is open (`sync` keeps its first callback while the flag stays true).
+- Don't count a child `c-fimby-confirm-modal` (or other self-syncing child modal) in the parent getter — it holds its own handle.
+- Dual-mode components (e.g. `fimbyResponseReply`) exclude their standalone-page mode from the getter and use separate page/modal classes so the page never paints a scrim over itself.
+
+**Full-screen exceptions** (no shell sync, own full-viewport layer, by design): Quick Post, App Prompt / Terms of Service gate, Guided Tour, Image Cropper / Lightbox, and loading curtains.
 
 **Canonical modal backdrop** — reference: `fimbyQuickResponseModal.css`, `fimbyCommentComposer.css`:
 
 ```css
 .modal-backdrop {
     position: fixed;
-    inset: 0;
+    top: var(--fimby-modal-scrim-band-top);
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom);
+    left: 0;
     box-sizing: border-box;
     background-color: var(--fimby-scrim);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
 }
 .modal-container {
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: 100%;
 }
 ```
 
-**Confirm / SLDS overlays** — same scrim rule on the flex wrapper:
+**Confirm / SLDS overlays** — the same band rule on the flex wrapper. For SLDS dialogs, put the band on the `<section class="slds-modal">` itself, add the dismiss `onclick` there (with `stopPropagation` on `.slds-modal__container`), and **delete** the separate `<div class="slds-backdrop">` — a second full-viewport layer double-dims the chrome:
 
 ```css
 .confirm-overlay,
 section[role="dialog"].slds-modal {
     position: fixed;
-    inset: 0;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    box-sizing: border-box;
     background-color: var(--fimby-scrim);
-    padding: var(--fimby-modal-inset-top, 86px) 24px 24px;
+    z-index: var(--fimby-modal-stack-z, 10051);
+    padding: var(--fimby-modal-top-gap, 16px) 24px 24px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 ```
 
-**Mobile bottom sheets** (`max-width: 480px`): `align-items: flex-end`; `padding: var(--fimby-modal-inset-top, 86px) 16px calc(var(--fimby-bottom-nav-height, 70px) + 16px) 16px`. Always `border-radius: var(--fimby-radius-lg)` on all four corners.
+**Mobile bottom sheets** (`max-width: 480px`): `align-items: flex-end`; `padding: var(--fimby-modal-top-gap, 16px) 16px 16px`; card `max-height: 100%`. The band already stops above the mobile bottom nav via `--fimby-modal-scrim-band-bottom` — never add `--fimby-bottom-nav-height` padding or a `@media (max-width: 891px) { bottom: var(--fimby-bottom-nav-height) }` override. Always `border-radius: var(--fimby-radius-lg)` on all four corners.
 
 ## Form Controls — Never Smaller Than 16px
 
@@ -423,9 +454,10 @@ iOS WKWebView auto-zooms the page when a focused `input`/`textarea`/`select` is 
 **Anti-patterns:**
 
 - `inset: var(--fimby-modal-inset-top) 0 0 0` or `top: var(--fimby-modal-inset-top)` on the scrim (bright header band)
-- `inset: 0` + uniform `padding: 16px` only (dialog under sticky header)
+- `inset: 0` on a content-modal backdrop, a `transparent` backdrop, or a hardcoded `z-index: 9999` / `1100` / `200` (bypasses the three-zone dim)
 - `top: 50%; transform: translate(-50%, -50%)` for dialogs
-- SLDS `<section class="slds-modal">` without full scrim + `--fimby-modal-inset-top` padding
+- SLDS `<section class="slds-modal">` paired with a separate `.slds-backdrop` div instead of the band on the section
+- `_shellScrim.bind()` in `show()` / `clear()` in `hide()` instead of `sync()` in `renderedCallback`
 
 ## Full-Viewport Height Components
 

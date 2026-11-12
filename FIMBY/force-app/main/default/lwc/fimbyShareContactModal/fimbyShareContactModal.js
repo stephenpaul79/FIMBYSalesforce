@@ -6,6 +6,7 @@ import shareContactInfoDirect from '@salesforce/apex/FimbyMyStuffController.shar
 import getActingAsContact from '@salesforce/apex/FimbyContactController.getActingAsContact';
 import getAvailableIdentities from '@salesforce/apex/FimbySupportRelationshipController.getAvailableIdentities';
 import IMPACT_ICONS from '@salesforce/resourceUrl/Impact_Icons';
+import { createShellScrimHandle } from 'c/fimbyModalShell';
 
 export default class FimbyShareContactModal extends LightningElement {
     @api editMode = false;
@@ -34,6 +35,19 @@ export default class FimbyShareContactModal extends LightningElement {
     _shareSearchTimeout;
     _initializedForOpen = false;
     _previouslyFocused = null;
+    _shellScrim = createShellScrimHandle();
+
+    renderedCallback() {
+        this._shellScrim.sync(this._isOpen, () => this.handleClose(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
+    }
+
+    stopDialogClick(event) {
+        event.stopPropagation();
+    }
 
     @api
     get isOpen() {

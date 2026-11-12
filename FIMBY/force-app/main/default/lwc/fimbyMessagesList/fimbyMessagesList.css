@@ -586,10 +586,17 @@
 
 /* â”€â”€ New-Message modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .new-message-modal {
+    position: fixed;
+    top: var(--fimby-modal-scrim-band-top, calc(var(--fimby-header-height, 70px) - 2px));
+    right: 0;
+    bottom: var(--fimby-modal-scrim-band-bottom, 0px);
+    left: 0;
+    background-color: var(--fimby-scrim);
+    z-index: var(--fimby-modal-stack-z, 10051);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--fimby-modal-inset-top, 86px) 16px 16px;
+    padding: var(--fimby-modal-top-gap, 16px) 16px 16px;
     box-sizing: border-box;
 }
 
@@ -601,8 +608,7 @@
     overflow: hidden;
     background-color: var(--fimby-surface-card, #FAF7F2);
     box-shadow: var(--fimby-shadow-modal);
-    max-height: calc(90vh - var(--fimby-modal-inset-top, 86px));
-    max-height: calc(100dvh - var(--fimby-modal-inset-top, 86px) - 32px);
+    max-height: 100%;
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;

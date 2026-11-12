@@ -100,16 +100,22 @@ export default class FimbyNotRespondingModal extends LightningElement {
         if (reservationId) this.reservationId = reservationId;
         if (reserverName) this.reserverName = reserverName;
         this.isOpen = true;
-        this._shellScrim.bind(() => this.hide());
         this.message = '';
         this.reasonSubtype = '';
     }
 
     @api
     hide() {
-        this._shellScrim.clear();
         this.isOpen = false;
         this.isSubmitting = false;
+    }
+
+    renderedCallback() {
+        this._shellScrim.sync(this.isOpen, () => this.hide(), this.template.host);
+    }
+
+    disconnectedCallback() {
+        this._shellScrim.clear();
     }
 
     async handleSubmit() {
